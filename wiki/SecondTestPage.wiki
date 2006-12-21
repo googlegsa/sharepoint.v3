@@ -13,7 +13,7 @@ This stuff came from http://zwiki.org/MoinMoinMarkupExamples
 
 =Text formatting=
 
-This: __bold__ works
+This: *bold* works
 
 This: _italic_ works
 
@@ -56,9 +56,9 @@ The following should show up as a full block of inline code{{{
 c = sqrt(a*a + b*b)
 }}}
 
-Here is a link to [NonexistentPage].  Does the little question mark appear?
+=Links=
 
-This:
+Here are some links:
 
  * http://www.cylab.cmu.edu/
  * [http://www.cylab.cmu.edu/]
