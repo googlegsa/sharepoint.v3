@@ -1,11 +1,16 @@
 #summary A bunch of examples from a moinmoin samples page
 
+This stuff came from http://zwiki.org/MoinMoinMarkupExamples
+
+=Header 1=
 = Header 1 = 
 == Header 2 ==
 === Header 3 ===
 ==== Header 4 ====
 ===== Header 5 =====
 ====== Header 6 ====== 
+
+Horizontal rules don't work:
 
 Any line that starts with 4 or more dashes should produce a horizontal rule even if text follows:
 
@@ -17,92 +22,46 @@ Any line that starts with 4 or more dashes should produce a horizontal rule even
 Between two HRs
 ---- Text after pushed to next line
 
-Text formatting
+=Text formatting=
 
-This: __underlined__ Produces: underlined
+This: __bold__ works
 
-This: ''emphasized'' Produces: emphasized
+This: _italic_ works
 
-This: '''strong''' Produces: strong
+This: ~~strikethrough~~ works
 
-This: a^2^ + b^2^ = c^2^ Produces: a2 + b2 = c2
+This: __underlined__ doesn't work
 
-This: H,,2,,O Produces: H2O
+This: ''emphasized'' doesn't work
+
+This: '''strong''' doesn't work
+
+This: a^2^ + b^2^ = c^2^ works nicely
+
+This: H,,2,,O works nicely
 
 Mixing like this: '''''Mix''' at the beginning'' Produces: Mix at the beginning
 
-Mixing like this: '''''Mix'' in __the middle__ and the beginning''' Produces: Mix in the middle and the beginning
+=Lists and Definitions=
 
-Interleaved mixing like this: '''Interleaved __mixing''' even works__ Produces: Interleaved mixing even works
-
-Mixing inside superscript and subscript like this: F^__super__^ A,,'''sub''',, Doesn't work: F__super__ A'''sub'''
-
-But mixing superscript and subscript inside others: __F^super^__ '''A,,sub,,''' Does: Fsuper Asub
-Lists and Definitions
-
-This:
+This seems to work well:
 
   * one bullet
     * nested to level 2
       * nested to level 3
         * nested to level 4
   * second bullet
-    1. nested numbered list (doesn't work)
-    2. nested numbered list (doesn't work)
+    # nested numbered list (doesn't work)
+    # nested numbered list (doesn't work)
   * third bullet
-
-Produces:
-
-    *
-
-      one bullet
-          o
-
-            nested to level 2
-                +
-
-                  nested to level 3
-                      #
-
-                        nested to level 4
-    *
-
-      second bullet
-         1.
-
-            nested numbered list
-         2.
-
-            nested numbered list
-    *
-
-      third bullet
 
 This:
 
-  1. Top-level numbered list
-  2. Top-level numbered list
+  # Top-level numbered list
+  # Top-level numbered list
     * nested bullet
     * nested bullet
-  3. See if we keep the numbering here!
-
-Produces:
-
-   1.
-
-      Top-level numbered list
-   2.
-
-      Top-level numbered list
-          *
-
-            nested bullet
-          *
-
-            nested bullet
-   3.
-
-      See if we keep the numbering here!
+  # See if we keep the numbering here!
 
 This:
 
