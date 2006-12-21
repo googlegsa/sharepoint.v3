@@ -54,7 +54,7 @@ Putting the braces on different lines runs the code bock the full width, so this
 
 =Links=
 
-In a Wiki page, you use [square brackets] to create links. When you save the page, the contents of the square bracketed text will have a small ? link next to it, which you click to create a new page with that name. This is the primary way to create new pages in a wiki.
+In a Wiki page, you use [NonexistentPage] to create links. When you save the page, the contents of the square bracketed text will have a small ? link next to it, which you click to create a new page with that name. This is the primary way to create new pages in a wiki.
 
 Here are some links:
 
@@ -64,4 +64,3 @@ Here are some links:
  * ftp://www.nowwhere.com/pub/docs
  * mailto:no-one@nowhere.com
  * [TestPage] Link inside of this wiki 
-
