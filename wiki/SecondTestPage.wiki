@@ -52,11 +52,9 @@ How about this: {{{Inline with braces}}} and this `Inline with backticks`
 
 Putting the braces on different lines runs the code bock the full width, so this:
 
-The following should show up as a full block of inline code{{{
-c = sqrt(a*a + b*b)
-}}}
-
 =Links=
+
+In a Wiki page, you use [square brackets]? to create links. When you save the page, the contents of the square bracketed text will have a small ? link next to it, which you click to create a new page with that name. This is the primary way to create new pages in a wiki.
 
 Here are some links:
 
