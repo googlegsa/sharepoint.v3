@@ -1,0 +1,24 @@
+#summary This page is just for experimenting with the Wiki
+
+= Introduction =
+
+Is this a link? http://google.com
+
+= Details =
+
+Here is some *bold* *text*.  *Is this whole sentence bold?*
+
+Some more things to try:
+  # A numbered list.
+  # Suppose I have a list item that just goes on and on.  I mean really long - longer than 80 characters, longer than anyone might expect.  Does is get broken at a reasonable place?   Or does it end up looking really stupid?
+  # I should probably test line spacing
+
+Here is a paragraph.  It starts two new-lines after the previous list.
+Here is another paragraph.  It starts just one new-line after the previous paragraph.
+
+This paragraph starts two new-lines after the previous one.  I wonder what all this looks like?
+
+|| Column1 || Column2||
+|| blue    || green  ||
+
+Wow!  
