@@ -1,0 +1,202 @@
+#summary A bunch of examples from a moinmoin samples page
+
+= Header 1 = 
+== Header 2 ==
+=== Header 3 ===
+==== Header 4 ====
+===== Header 5 =====
+====== Header 6 ====== 
+
+Any line that starts with 4 or more dashes should produce a horizontal rule even if text follows:
+
+----
+-----
+------
+-------
+--------
+Between two HRs
+---- Text after pushed to next line
+
+Text formatting
+
+This: __underlined__ Produces: underlined
+
+This: ''emphasized'' Produces: emphasized
+
+This: '''strong''' Produces: strong
+
+This: a^2^ + b^2^ = c^2^ Produces: a2 + b2 = c2
+
+This: H,,2,,O Produces: H2O
+
+Mixing like this: '''''Mix''' at the beginning'' Produces: Mix at the beginning
+
+Mixing like this: '''''Mix'' in __the middle__ and the beginning''' Produces: Mix in the middle and the beginning
+
+Interleaved mixing like this: '''Interleaved __mixing''' even works__ Produces: Interleaved mixing even works
+
+Mixing inside superscript and subscript like this: F^__super__^ A,,'''sub''',, Doesn't work: F__super__ A'''sub'''
+
+But mixing superscript and subscript inside others: __F^super^__ '''A,,sub,,''' Does: Fsuper Asub
+Lists and Definitions
+
+This:
+
+  * one bullet
+    * nested to level 2
+      * nested to level 3
+        * nested to level 4
+  * second bullet
+    1. nested numbered list (doesn't work)
+    2. nested numbered list (doesn't work)
+  * third bullet
+
+Produces:
+
+    *
+
+      one bullet
+          o
+
+            nested to level 2
+                +
+
+                  nested to level 3
+                      #
+
+                        nested to level 4
+    *
+
+      second bullet
+         1.
+
+            nested numbered list
+         2.
+
+            nested numbered list
+    *
+
+      third bullet
+
+This:
+
+  1. Top-level numbered list
+  2. Top-level numbered list
+    * nested bullet
+    * nested bullet
+  3. See if we keep the numbering here!
+
+Produces:
+
+   1.
+
+      Top-level numbered list
+   2.
+
+      Top-level numbered list
+          *
+
+            nested bullet
+          *
+
+            nested bullet
+   3.
+
+      See if we keep the numbering here!
+
+This:
+
+  Term:: a definition
+  Another Term:: another definition, but with ''markup''
+  :: a definition without a term
+
+Produces:
+
+Term
+
+    a definition
+Another Term
+
+    another definition, but with markup
+
+    a definition without a term
+
+But this:
+
+* First bullet without leading space(s)
+1. Numbered list without leading space(s)
+Term/Definition markup:: without leading space(s)
+
+Doesn't work without leading spaces: * First bullet without leading space(s) 1. Numbered list without leading space(s) Term/Definition markup:: without leading space(s)
+Inline code
+
+Doing this: {{{Inline with braces}}} or this `Inline with backticks` Produces this: Inline with braces and Inline with backticks.
+
+Putting the braces on different lines runs the code bock the full width, so this:
+
+The following should show up as a full block of inline code <three left braces>
+c = sqrt(a*a + b*b)
+<three right braces>
+
+Produces:
+
+The following should show up as a full block of inline code
+
+c = sqrt(a*a + b*b)
+
+Note that I have to use <three left braces> in the code block above because I'm using the inline code block feature to create the example.
+Linking and graphics
+
+In a Wiki page, you use [square brackets]? to create links. When you save the page, the contents of the square bracketed text will have a small ? link next to it, which you click to create a new page with that name. This is the primary way to create new pages in a wiki.
+
+This:
+
+ * http://www.cylab.cmu.edu/
+ * [http://www.cylab.cmu.edu/]
+ * [http://www.cylab.cmu.edu/ Carnegie Mellon CyLab]
+ * ftp://www.nowwhere.com/pub/docs
+ * mailto:no-one@nowhere.com
+ * Show graphic only
+http://www.cylab.cmu.edu/images/sm_cylab_logo.jpg
+ * Show graphic and make it a link
+[http://www.cylab.cmu.edu http://www.cylab.cmu.edu/images/sm_cylab_logo.jpg]
+ * [BestPractices] Link inside of this wiki (using wiki rename tool will update)
+ * [Best Practices] Even works when you add the spaces
+ * [http:../somewhere/ Relative Link within site but outside of this wiki]
+
+Produces:
+
+    *
+
+      http://www.cylab.cmu.edu/
+    *
+
+      http://www.cylab.cmu.edu/
+    *
+
+      Carnegie Mellon CyLab?
+    *
+
+      ftp://www.nowwhere.com/pub/docs
+    *
+
+      mailto:no-one@nowhere.com
+    *
+
+      Show graphic only
+
+    *
+
+      Show graphic and make it a link
+
+http://www.cylab.cmu.edu
+
+    *
+
+      BestPractices Link inside of this wiki (using wiki rename tool will update)
+    *
+
+      Best Practices Even works when you add the spaces
+    *
+
+      Relative Link within site but outside of this wiki
