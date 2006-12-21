@@ -19,7 +19,7 @@ Inside the connector-manager directory, you will find the following directories 
       * testdata/
     * {{{test-connectorA/}}}
     * test-connectorB/
-    * third_party/
+    * {{{third_party/}}}
       * lib/
 
 == Copy the JCR Jar to the Right Place ==
