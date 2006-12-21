@@ -2,7 +2,7 @@
 
 This stuff came from http://zwiki.org/MoinMoinMarkupExamples
 
-=Header 1=
+=Header 1 With no Spaces around equals signs=
 = Header 1 = 
 == Header 2 ==
 === Header 3 ===
@@ -10,17 +10,6 @@ This stuff came from http://zwiki.org/MoinMoinMarkupExamples
 ===== Header 5 =====
 ====== Header 6 ====== 
 
-Horizontal rules don't work:
-
-Any line that starts with 4 or more dashes should produce a horizontal rule even if text follows:
-
-----
------
-------
--------
---------
-Between two HRs
----- Text after pushed to next line
 
 =Text formatting=
 
@@ -30,17 +19,9 @@ This: _italic_ works
 
 This: ~~strikethrough~~ works
 
-This: __underlined__ doesn't work
-
-This: ''emphasized'' doesn't work
-
-This: '''strong''' doesn't work
-
 This: a^2^ + b^2^ = c^2^ works nicely
 
 This: H,,2,,O works nicely
-
-Mixing like this: '''''Mix''' at the beginning'' Produces: Mix at the beginning
 
 =Lists and Definitions=
 
@@ -55,7 +36,7 @@ This seems to work well:
     # nested numbered list (doesn't work)
   * third bullet
 
-This:
+So does this:
 
   # Top-level numbered list
   # Top-level numbered list
@@ -63,50 +44,19 @@ This:
     * nested bullet
   # See if we keep the numbering here!
 
-This:
+Definition lists don't work.
 
-  Term:: a definition
-  Another Term:: another definition, but with ''markup''
-  :: a definition without a term
+=Inline code=
 
-Produces:
-
-Term
-
-    a definition
-Another Term
-
-    another definition, but with markup
-
-    a definition without a term
-
-But this:
-
-* First bullet without leading space(s)
-1. Numbered list without leading space(s)
-Term/Definition markup:: without leading space(s)
-
-Doesn't work without leading spaces: * First bullet without leading space(s) 1. Numbered list without leading space(s) Term/Definition markup:: without leading space(s)
-Inline code
-
-Doing this: {{{Inline with braces}}} or this `Inline with backticks` Produces this: Inline with braces and Inline with backticks.
+How about this: {{{Inline with braces}}} and this `Inline with backticks` 
 
 Putting the braces on different lines runs the code bock the full width, so this:
 
-The following should show up as a full block of inline code <three left braces>
+The following should show up as a full block of inline code{{{
 c = sqrt(a*a + b*b)
-<three right braces>
+}}}
 
-Produces:
-
-The following should show up as a full block of inline code
-
-c = sqrt(a*a + b*b)
-
-Note that I have to use <three left braces> in the code block above because I'm using the inline code block feature to create the example.
-Linking and graphics
-
-In a Wiki page, you use [square brackets]? to create links. When you save the page, the contents of the square bracketed text will have a small ? link next to it, which you click to create a new page with that name. This is the primary way to create new pages in a wiki.
+Here is a link to [NonexistentPage].  Does the little question mark appear?
 
 This:
 
@@ -115,47 +65,5 @@ This:
  * [http://www.cylab.cmu.edu/ Carnegie Mellon CyLab]
  * ftp://www.nowwhere.com/pub/docs
  * mailto:no-one@nowhere.com
- * Show graphic only
-http://www.cylab.cmu.edu/images/sm_cylab_logo.jpg
- * Show graphic and make it a link
-[http://www.cylab.cmu.edu http://www.cylab.cmu.edu/images/sm_cylab_logo.jpg]
- * [BestPractices] Link inside of this wiki (using wiki rename tool will update)
- * [Best Practices] Even works when you add the spaces
- * [http:../somewhere/ Relative Link within site but outside of this wiki]
-
-Produces:
-
-    *
-
-      http://www.cylab.cmu.edu/
-    *
-
-      http://www.cylab.cmu.edu/
-    *
-
-      Carnegie Mellon CyLab?
-    *
-
-      ftp://www.nowwhere.com/pub/docs
-    *
-
-      mailto:no-one@nowhere.com
-    *
-
-      Show graphic only
-
-    *
-
-      Show graphic and make it a link
-
-http://www.cylab.cmu.edu
-
-    *
-
-      BestPractices Link inside of this wiki (using wiki rename tool will update)
-    *
-
-      Best Practices Even works when you add the spaces
-    *
-
-      Relative Link within site but outside of this wiki
+ * [TestPage] Link inside of this wiki 
+ * [Test Page] Even works when you add the spaces
