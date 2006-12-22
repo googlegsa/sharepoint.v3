@@ -3,7 +3,7 @@
 This stuff came from http://zwiki.org/MoinMoinMarkupExamples
 
 =Header 1 With no Spaces around equals signs=
-= Header 1 =
+= Header 1 = 
 == Header 2 ==
 === Header 3 ===
 ==== Header 4 ====
@@ -64,3 +64,4 @@ Here are some links:
  * ftp://www.nowwhere.com/pub/docs
  * mailto:no-one@nowhere.com
  * [TestPage] Link inside of this wiki 
+
