@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+	<bean id="sharepoint-connector"
+		class="com.google.enterprise.connector.spi.SimpleConnectorType">
+		<property name="configKeys">
+			<list>
+        <value>sharepointUrl</value>
+        <value>domain</value>
+        <value>host</value>
+        <value>port</value>
+				<value>username</value>
+				<value>password</value>
+			</list>
+		</property>
+	</bean>
+</beans>
