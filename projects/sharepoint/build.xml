@@ -1,125 +1,125 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-
 <project name="sharepoint-connector" default="sharepoint-connector" basedir=".">
-
-	<!-- ========================= PROPERTIES ============================= -->
-	<property name="version" value="1.0" />
-
-	<!-- Define Directories. -->
-	<property name="projects.dir" value=".." />
-
-	<property name="COMPILE_DEBUG_FLAG" value="true" />
-	<property name="COMPILE_DEBUG_LEVEL" value="source,lines,vars" />
-
-	<property name="build" value="build" />
-	<property name="dist" value="dist" />
-	<property name="src" value="source/java" />
-	<property name="classes" value="${build}/classes" />
-  <property name="config" value="config" />
-  
-	<property name="tests.src" value="source/javatests" />
-	<property name="tests.build" value="build/tests" />
-	<property name="tests.classes" value="${tests.build}/classes" />
-	<property name="tests.todir" value="tests_outdir" />
-	<property name="jar.dir" value="${dist}/jarfile" />
-  <property name="jarfile" value="${jar.dir}/sharepoint-connector.jar" />
-
+  <!-- ========================= PROPERTIES ============================= -->
+  <property name="version" value="1.0"/>
+  <!-- Define Directories. -->
+  <property name="projects.dir" value=".."/>
+  <property name="COMPILE_DEBUG_FLAG" value="true"/>
+  <property name="COMPILE_DEBUG_LEVEL" value="source,lines,vars"/>
+  <property name="build" value="build"/>
+  <property name="dist" value="dist"/>
+  <property name="src" value="source/java"/>
+  <property name="classes" value="${build}/classes"/>
+  <property name="config" value="config"/>
+  <property environment="env"/>
+  <property name="wsdl" value="wsdl"/>
+  <property name="axis2_home" value="${env.AXIS2_HOME}"/>
+  <property name="tests.src" value="source/javatests"/>
+  <property name="tests.build" value="build/tests"/>
+  <property name="tests.classes" value="${tests.build}/classes"/>
+  <property name="tests.todir" value="tests_outdir"/>
+  <property name="jar.dir" value="${dist}/jarfile"/>
+  <property name="jarfile" value="${jar.dir}/sharepoint-connector.jar"/>
   <property name="connector-manager.dir"
-    value="../../../google-enterprise-connector-manager/projects/connector-manager" />
+    value="../../../google-enterprise-connector-manager/projects/connector-manager"/>
   <property name="spi.jarfile"
-    value="${connector-manager.dir}/${jar.dir}/connector_spi.jar" />
-  <property name="connector.jarfile" value="${connector-manager.dir}/${jar.dir}/connector.jar" />
-  
-  <property name="lib.jar.dir" value="lib" />
-  <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
-  <property name="junit.jarfile" value="${lib.jar.dir}/junit.jar" />
-  <property name="tests.jarfile" value="${spi.jar.dir}/connector_tests.jar" />
-
-
-	<!-- =========================== TASKS =============================== -->
-
-  <target name="sharepoint-connector" depends="init,compile,jar">
-  </target>
-
+    value="${connector-manager.dir}/${jar.dir}/connector_spi.jar"/>
+  <property name="connector.jarfile"
+    value="${connector-manager.dir}/${jar.dir}/connector.jar"/>
+  <property name="lib.jar.dir" value="lib"/>
+  <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}"/>
+  <property name="junit.jarfile" value="${lib.jar.dir}/junit.jar"/>
+  <property name="tests.jarfile" value="${spi.jar.dir}/connector_tests.jar"/>
+  <!-- =========================== TASKS =============================== -->
+  <target name="sharepoint-connector" depends="init,compile,jar"> </target>
   <target name="init">
-    <mkdir dir="${build}" />
-    <mkdir dir="${dist}" />
-    <mkdir dir="${classes}" />
-    <mkdir dir="${tests.build}" />
-    <mkdir dir="${tests.classes}" />
-    <mkdir dir="${tests.todir}" />
-    <mkdir dir="${jar.dir}" />
+    <mkdir dir="${build}"/>
+    <mkdir dir="${dist}"/>
+    <mkdir dir="${classes}"/>
+    <mkdir dir="${wsdl}"/>
+    <mkdir dir="${tests.build}"/>
+    <mkdir dir="${tests.classes}"/>
+    <mkdir dir="${tests.todir}"/>
+    <mkdir dir="${jar.dir}"/>
   </target>
-  
-	<target name="compile" depends="init">
-		<!-- compile java source files -->
-		<javac srcdir="${src}" destdir="${classes}"
-			debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}">
+  <target name="stubs" depends="init" >
+    <apply  executable="${axis2_home}/bin/wsdl2java.sh"
+      failonerror="true"  dir="." verbose="true"
+      dest="java/com/google/enterprise/connector/sharepoint/generated">
+      <arg value="-uri "/>
+      <srcfile/>
+      <arg value="-p com.google.enterprise.connector.sharepoint.generated"/>
+      <arg value="-d adb"/>
+      <arg value="-S source/java"/>
+      <arg value="-s"/> 
+      <fileset dir="${wsdl}" includes="*.wsdl"/>
+      <mapper type="regexp" from="([A-Za-z_0-9]*).wsdl" to="\1Stub.java"/>
+    </apply>
+  </target>
+
+  <target name="compile" depends="init, stubs">
+    <!-- compile java source files -->
+    <javac srcdir="${src}" destdir="${classes}" debug="${COMPILE_DEBUG_FLAG}"
+      debuglevel="${COMPILE_DEBUG_LEVEL}">
       <classpath>
-        <pathelement location="${spi.jarfile}" />
-        <pathelement location="${lib.jar.dir}" />
+        <pathelement location="${spi.jarfile}"/>
+        <pathelement location="${lib.jar.dir}"/>
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
+          <include name="**/*.jar"/>
         </fileset>
-			</classpath>
-		</javac>
-	</target>
-
-	<target name="compile_tests" depends="init">
-		<!-- compile java source files for tests -->
-		<javac srcdir="${tests.src}" destdir="${tests.classes}"
-			debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}">
+      </classpath>
+    </javac>
+  </target>
+  <target name="compile_tests" depends="init">
+    <!-- compile java source files for tests -->
+    <javac srcdir="${tests.src}" destdir="${tests.classes}"
+      debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}">
       <classpath>
-        <pathelement location="${spi.jar.dir}/connector.jar" />
-        <pathelement location="${spi.jar.dir}/connector_tests.jar" />
-        <pathelement location="${spi.jarfile}" />
-        <pathelement location="${jarfile}" />
-        <pathelement location="${classes}" />
+        <pathelement location="${spi.jar.dir}/connector.jar"/>
+        <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
+        <pathelement location="${spi.jarfile}"/>
+        <pathelement location="${jarfile}"/>
+        <pathelement location="${classes}"/>
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
+          <include name="**/*.jar"/>
         </fileset>
-			</classpath>
-		</javac>
-	</target>
-
-	<target name="run_tests" depends="compile_tests,jar">
-		<junit>
+      </classpath>
+    </javac>
+  </target>
+  <target name="run_tests" depends="compile_tests,jar">
+    <junit>
       <classpath>
-        <pathelement location="${spi.jar.dir}/connector.jar" />
-        <pathelement location="${spi.jar.dir}/connector_tests.jar" />
-        <pathelement location="${jarfile}" />
-        <pathelement location="${spi.jarfile}" />
-				<fileset dir="${lib.jar.dir}">
-					<include name="**/*.jar" />
-				</fileset>
-				<pathelement location="${tests.classes}" />
-				<pathelement location="${tests.src}" />
-				<pathelement path="${java.class.path}" />
-			</classpath>
-			<formatter type="plain" />
-			<batchtest fork="yes" todir="${tests.todir}">
-				<fileset dir="${tests.src}">
-					<include name="**/*Test.java" />
-				</fileset>
-			</batchtest>
-		</junit>
-	</target>
-
-	<target name="jar" depends="compile,compile_tests"
+        <pathelement location="${spi.jar.dir}/connector.jar"/>
+        <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
+        <pathelement location="${jarfile}"/>
+        <pathelement location="${spi.jarfile}"/>
+        <fileset dir="${lib.jar.dir}">
+          <include name="**/*.jar"/>
+        </fileset>
+        <pathelement location="${tests.classes}"/>
+        <pathelement location="${tests.src}"/>
+        <pathelement path="${java.class.path}"/>
+      </classpath>
+      <formatter type="plain"/>
+      <batchtest fork="yes" todir="${tests.todir}">
+        <fileset dir="${tests.src}">
+          <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+  <target name="jar" depends="compile,compile_tests"
     description="sharepoint-connector">
     <jar jarfile="${jarfile}">
       <fileset dir="${classes}"/>
       <fileset dir="${config}"/>
       <fileset dir="source">
-        <include name="**/*.properties" />
+        <include name="**/*.properties"/>
       </fileset>
-		</jar>
-	</target>
-
-	<target name="clean" description="Deletes all build files.">
-		<delete dir="${build}" />
-		<delete dir="${dist}" />
-	</target>
-
+    </jar>
+  </target>
+  <target name="clean" description="Deletes all build files.">
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
 </project>

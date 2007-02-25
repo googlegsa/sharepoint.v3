@@ -225,12 +225,12 @@
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetWeb
-                        * @param param24
+                        * @param param0
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetWebResponse GetWeb(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetWeb param24)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetWeb param0)
                     throws java.rmi.RemoteException
                     
                     {
@@ -248,7 +248,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param24,
+                                                    param0,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetWeb")));
                                                 
@@ -325,85 +325,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetWeb
-                    * @param param24
-                
-                */
-                public  void startGetWeb(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetWeb param24,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[0].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetWeb");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param24,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetWeb")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetWebResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetWeb((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetWebResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetWeb(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[0].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[0].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetAttachments
-                        * @param param26
+                        * @param param2
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetAttachmentsResponse GetAttachments(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetAttachments param26)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetAttachments param2)
                     throws java.rmi.RemoteException
                     
                     {
@@ -421,7 +351,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param26,
+                                                    param2,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetAttachments")));
                                                 
@@ -498,85 +428,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetAttachments
-                    * @param param26
-                
-                */
-                public  void startGetAttachments(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetAttachments param26,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[1].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetAttachments");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param26,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetAttachments")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetAttachmentsResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetAttachments((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetAttachmentsResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetAttachments(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[1].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[1].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#EnumerateFolder
-                        * @param param28
+                        * @param param4
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.EnumerateFolderResponse EnumerateFolder(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.EnumerateFolder param28)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.EnumerateFolder param4)
                     throws java.rmi.RemoteException
                     
                     {
@@ -594,7 +454,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param28,
+                                                    param4,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "EnumerateFolder")));
                                                 
@@ -671,85 +531,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startEnumerateFolder
-                    * @param param28
-                
-                */
-                public  void startEnumerateFolder(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.EnumerateFolder param28,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[2].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/EnumerateFolder");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param28,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "EnumerateFolder")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.EnumerateFolderResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultEnumerateFolder((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.EnumerateFolderResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorEnumerateFolder(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[2].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[2].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetListCollection
-                        * @param param30
+                        * @param param6
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListCollectionResponse GetListCollection(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListCollection param30)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListCollection param6)
                     throws java.rmi.RemoteException
                     
                     {
@@ -767,7 +557,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param30,
+                                                    param6,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetListCollection")));
                                                 
@@ -844,85 +634,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetListCollection
-                    * @param param30
-                
-                */
-                public  void startGetListCollection(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListCollection param30,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[3].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetListCollection");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param30,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetListCollection")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListCollectionResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetListCollection((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListCollectionResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetListCollection(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[3].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[3].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetSiteUrl
-                        * @param param32
+                        * @param param8
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteUrlResponse GetSiteUrl(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteUrl param32)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteUrl param8)
                     throws java.rmi.RemoteException
                     
                     {
@@ -940,7 +660,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param32,
+                                                    param8,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetSiteUrl")));
                                                 
@@ -1017,85 +737,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetSiteUrl
-                    * @param param32
-                
-                */
-                public  void startGetSiteUrl(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteUrl param32,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[4].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetSiteUrl");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param32,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetSiteUrl")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteUrlResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetSiteUrl((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteUrlResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetSiteUrl(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[4].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[4].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetContent
-                        * @param param34
+                        * @param param10
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetContentResponse GetContent(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetContent param34)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetContent param10)
                     throws java.rmi.RemoteException
                     
                     {
@@ -1113,7 +763,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param34,
+                                                    param10,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetContent")));
                                                 
@@ -1190,85 +840,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetContent
-                    * @param param34
-                
-                */
-                public  void startGetContent(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetContent param34,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[5].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetContent");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param34,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetContent")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetContentResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetContent((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetContentResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetContent(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[5].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[5].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetChanges
-                        * @param param36
+                        * @param param12
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetChangesResponse GetChanges(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetChanges param36)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetChanges param12)
                     throws java.rmi.RemoteException
                     
                     {
@@ -1286,7 +866,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param36,
+                                                    param12,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetChanges")));
                                                 
@@ -1363,85 +943,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetChanges
-                    * @param param36
-                
-                */
-                public  void startGetChanges(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetChanges param36,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[6].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetChanges");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param36,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetChanges")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetChangesResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetChanges((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetChangesResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetChanges(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[6].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[6].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetURLSegments
-                        * @param param38
+                        * @param param14
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetURLSegmentsResponse GetURLSegments(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetURLSegments param38)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetURLSegments param14)
                     throws java.rmi.RemoteException
                     
                     {
@@ -1459,7 +969,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param38,
+                                                    param14,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetURLSegments")));
                                                 
@@ -1536,85 +1046,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetURLSegments
-                    * @param param38
-                
-                */
-                public  void startGetURLSegments(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetURLSegments param38,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[7].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetURLSegments");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param38,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetURLSegments")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetURLSegmentsResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetURLSegments((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetURLSegmentsResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetURLSegments(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[7].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[7].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetSite
-                        * @param param40
+                        * @param param16
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteResponse GetSite(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSite param40)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSite param16)
                     throws java.rmi.RemoteException
                     
                     {
@@ -1632,7 +1072,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param40,
+                                                    param16,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetSite")));
                                                 
@@ -1709,85 +1149,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetSite
-                    * @param param40
-                
-                */
-                public  void startGetSite(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSite param40,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[8].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetSite");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param40,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetSite")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetSite((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetSite(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[8].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[8].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetListItems
-                        * @param param42
+                        * @param param18
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListItemsResponse GetListItems(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListItems param42)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListItems param18)
                     throws java.rmi.RemoteException
                     
                     {
@@ -1805,7 +1175,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param42,
+                                                    param18,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetListItems")));
                                                 
@@ -1882,85 +1252,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetListItems
-                    * @param param42
-                
-                */
-                public  void startGetListItems(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListItems param42,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[9].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetListItems");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param42,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetListItems")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListItemsResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetListItems((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListItemsResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetListItems(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[9].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[9].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetList
-                        * @param param44
+                        * @param param20
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListResponse GetList(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetList param44)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetList param20)
                     throws java.rmi.RemoteException
                     
                     {
@@ -1978,7 +1278,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param44,
+                                                    param20,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetList")));
                                                 
@@ -2055,85 +1355,15 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetList
-                    * @param param44
-                
-                */
-                public  void startGetList(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetList param44,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[10].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetList");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param44,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetList")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetList((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetListResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetList(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[10].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[10].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
                     /**
                     * Auto generated method signature
                     * @see com.google.enterprise.connector.sharepoint.generated.SiteData#GetSiteAndWeb
-                        * @param param46
+                        * @param param22
                     
                     */
                     public com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteAndWebResponse GetSiteAndWeb(
 
-                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteAndWeb param46)
+                    com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteAndWeb param22)
                     throws java.rmi.RemoteException
                     
                     {
@@ -2151,7 +1381,7 @@
                                     
                                                     
                                                     env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param46,
+                                                    param22,
                                                     optimizeContent(new javax.xml.namespace.QName("",
                                                     "GetSiteAndWeb")));
                                                 
@@ -2228,76 +1458,6 @@
         }
         }
             
-                /**
-                * Auto generated method signature for Asynchronous Invocations
-                * @see com.google.enterprise.connector.sharepoint.generated.SiteData#startGetSiteAndWeb
-                    * @param param46
-                
-                */
-                public  void startGetSiteAndWeb(
-
-                 com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteAndWeb param46,
-
-                  final com.google.enterprise.connector.sharepoint.generated.SiteDataCallbackHandler callback)
-
-                throws java.rmi.RemoteException{
-
-              org.apache.axis2.client.OperationClient _operationClient = _serviceClient.createClient(_operations[11].getName());
-             _operationClient.getOptions().setAction("http://schemas.microsoft.com/sharepoint/soap/GetSiteAndWeb");
-             _operationClient.getOptions().setExceptionToBeThrownOnSOAPFault(true);
-
-          
-
-              // create SOAP envelope with that payload
-              org.apache.axiom.soap.SOAPEnvelope env=null;
-                    
-                                    //Style is Doc.
-                                    
-                                                    
-                                                    env = toEnvelope(getFactory(_operationClient.getOptions().getSoapVersionURI()),
-                                                    param46,
-                                                    optimizeContent(new javax.xml.namespace.QName("",
-                                                    "GetSiteAndWeb")));
-                                                
-        //adding SOAP headers
-         _serviceClient.addHeadersToEnvelope(env);
-        // create message context with that soap envelope
-        org.apache.axis2.context.MessageContext _messageContext = new org.apache.axis2.context.MessageContext() ;
-        _messageContext.setEnvelope(env);
-
-        // add the message contxt to the operation client
-        _operationClient.addMessageContext(_messageContext);
-
-
-                    
-                           _operationClient.setCallback(new org.apache.axis2.client.async.Callback() {
-                    public void onComplete(
-                            org.apache.axis2.client.async.AsyncResult result) {
-                        java.lang.Object object = fromOM(result.getResponseEnvelope().getBody().getFirstElement(),
-                               com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteAndWebResponse.class,
-                               getEnvelopeNamespaces(result.getResponseEnvelope())
-                            );
-                        callback.receiveResultGetSiteAndWeb((com.google.enterprise.connector.sharepoint.generated.SiteDataStub.GetSiteAndWebResponse) object);
-                    }
-
-                    public void onError(java.lang.Exception e) {
-                        callback.receiveErrorGetSiteAndWeb(e);
-                    }
-                });
-                        
-
-          org.apache.axis2.util.CallbackReceiver _callbackReceiver = null;
-        if ( _operations[11].getMessageReceiver()==null &&  _operationClient.getOptions().isUseSeparateListener()) {
-           _callbackReceiver = new org.apache.axis2.util.CallbackReceiver();
-          _operations[11].setMessageReceiver(
-                    _callbackReceiver);
-        }
-
-           //execute the operation client
-           _operationClient.execute(false);
-
-                    }
-                
 
        /**
         *  A utility method that copies the namepaces from the SOAPEnvelope
