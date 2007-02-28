@@ -9,6 +9,7 @@
   <property name="build" value="build"/>
   <property name="dist" value="dist"/>
   <property name="src" value="source/java"/>
+  <property name="src_generated" value="source/java/com/google/enterprise/connector/sharepoint/generated"/>
   <property name="classes" value="${build}/classes"/>
   <property name="config" value="config"/>
   <property environment="env"/>
@@ -31,7 +32,8 @@
   <property name="junit.jarfile" value="${lib.jar.dir}/junit.jar"/>
   <property name="tests.jarfile" value="${spi.jar.dir}/connector_tests.jar"/>
   <!-- =========================== TASKS =============================== -->
-  <target name="sharepoint-connector" depends="init,compile,jar"> </target>
+  <target name="sharepoint-connector" depends="init, compile, jar"> </target>
+
   <target name="init">
     <mkdir dir="${build}"/>
     <mkdir dir="${dist}"/>
@@ -41,17 +43,18 @@
     <mkdir dir="${tests.classes}"/>
     <mkdir dir="${tests.todir}"/>
     <mkdir dir="${jar.dir}"/>
+    <mkdir dir="${src_generated}"/>
   </target>
+
   <target name="stubs" depends="init" >
-    <apply  executable="${axis2_home}/bin/wsdl2java.sh"
-      failonerror="true"  dir="." verbose="true"
-      dest="java/com/google/enterprise/connector/sharepoint/generated">
+    <apply executable="${axis2_home}/bin/wsdl2java.sh"
+      failonerror="true"  verbose="true">
       <arg value="-uri "/>
       <srcfile/>
       <arg value="-p com.google.enterprise.connector.sharepoint.generated"/>
       <arg value="-d adb"/>
-      <arg value="-S source/java"/>
-      <arg value="-s"/> 
+      <arg value="-S ${src}"/>
+      <arg value="-s"/>
       <fileset dir="${wsdl}" includes="*.wsdl"/>
       <mapper type="regexp" from="([A-Za-z_0-9]*).wsdl" to="\1Stub.java"/>
     </apply>
@@ -70,7 +73,8 @@
       </classpath>
     </javac>
   </target>
-  <target name="compile_tests" depends="init">
+
+  <target name="compile_tests" depends="init, compile">
     <!-- compile java source files for tests -->
     <javac srcdir="${tests.src}" destdir="${tests.classes}"
       debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}">
@@ -78,7 +82,6 @@
         <pathelement location="${spi.jar.dir}/connector.jar"/>
         <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
         <pathelement location="${spi.jarfile}"/>
-        <pathelement location="${jarfile}"/>
         <pathelement location="${classes}"/>
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar"/>
@@ -86,12 +89,12 @@
       </classpath>
     </javac>
   </target>
-  <target name="run_tests" depends="compile_tests,jar">
-    <junit>
+
+  <target name="run_tests" depends="compile_tests">
+    <junit haltonfailure="yes">
       <classpath>
         <pathelement location="${spi.jar.dir}/connector.jar"/>
         <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
-        <pathelement location="${jarfile}"/>
         <pathelement location="${spi.jarfile}"/>
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar"/>
@@ -108,7 +111,8 @@
       </batchtest>
     </junit>
   </target>
-  <target name="jar" depends="compile,compile_tests"
+
+  <target name="jar" depends="compile"
     description="sharepoint-connector">
     <jar jarfile="${jarfile}">
       <fileset dir="${classes}"/>
@@ -118,8 +122,16 @@
       </fileset>
     </jar>
   </target>
-  <target name="clean" description="Deletes all build files.">
+
+  <target name="clean" description="Deletes files produced by compile and test.">
     <delete dir="${build}"/>
     <delete dir="${dist}"/>
+    <delete>
+      <fileset dir="${tests.todir}" includes='**/*'/>
+    </delete>
+    <delete>
+      <fileset dir="${src_generated}" includes="*Stub.java"/>
+    </delete>
   </target>
+
 </project>
