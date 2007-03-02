@@ -1,36 +1,28 @@
 // Copyright 2007 Google Inc.  All Rights Reserved.
 package com.google.enterprise.connector.sharepoint.client;
 
-import com.google.enterprise.connector.sharepoint.generated.SiteDataStub;
-import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf_sWebWithTime;
-import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sWebWithTime;
 import com.google.enterprise.connector.spi.Property;
-import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.ResultSet;
 import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SimplePropertyMap;
 import com.google.enterprise.connector.spi.SimpleResultSet;
 import com.google.enterprise.connector.spi.SimpleValue;
 import com.google.enterprise.connector.spi.SpiConstants;
-import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.ValueType;
 
-import org.apache.axis2.AxisFault;
-
-import java.rmi.RemoteException;
-import java.util.Calendar;
-import java.util.Iterator;
+import java.util.ArrayList;
 
 /**
  * 
- * Class to connect to the web services API of the sharepoint server.
+ * Class which maintains has all the methods needed to get documents and sites 
+ * from the sharepoint server. It is a layer between the connector and the 
+ * actual web services calls .
  *
  */
 
 public class SharepointClient {
 
   private SharepointClientContext sharepointClientContext;
-  private static final String siteDataEndpoint = "/_vti_bin/SiteData.asmx";
   
   public SharepointClient(SharepointClientContext sharepointClientContext) {
     this.sharepointClientContext = sharepointClientContext;
@@ -42,44 +34,70 @@ public class SharepointClient {
    */
   public ResultSet getSites() {
     SimpleResultSet resultSet = new SimpleResultSet();
-    String endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
-                       sharepointClientContext.getPort() + siteDataEndpoint;
-    try {
-      SiteDataStub stub = new SiteDataStub(endpoint);
-      sharepointClientContext.setStubWithAuth(stub, endpoint);    
-      SiteDataStub.GetSite req = new SiteDataStub.GetSite();
-      SiteDataStub.GetSiteResponse res = stub.GetSite(req);  
-      
-      ArrayOf_sWebWithTime webs = res.getVWebs();
-      _sWebWithTime[] els = webs.get_sWebWithTime();
-      for (int i = 0; i < els.length; ++i) {
-        String url = els[i].getUrl();      
-        Calendar lastModified = els[i].getLastModified();   
-        SimplePropertyMap pm = new SimplePropertyMap();        
-        
-        Property contentUrlProp = new SimpleProperty(
-          SpiConstants.PROPNAME_CONTENTURL, new SimpleValue(ValueType.STRING, url));
-        pm.put(SpiConstants.PROPNAME_CONTENTURL, contentUrlProp);
-        
-        Property docIdProp = new SimpleProperty(
-          SpiConstants.PROPNAME_DOCID, new SimpleValue(ValueType.STRING, url ));
-        pm.put(SpiConstants.PROPNAME_DOCID, docIdProp);        
-        
-        Property searchUrlProp = new SimpleProperty(
-          SpiConstants.PROPNAME_SEARCHURL, new SimpleValue(ValueType.STRING, url ));
-        pm.put(SpiConstants.PROPNAME_SEARCHURL, searchUrlProp);
-        
-        Property lastModifyProp = new SimpleProperty(
-        SpiConstants.PROPNAME_LASTMODIFY, new SimpleValue(
-          ValueType.DATE, SimpleValue.calendarToIso8601(lastModified)));
-        pm.put(SpiConstants.PROPNAME_LASTMODIFY, lastModifyProp);
-        resultSet.add(pm);
-      }      
-     } catch (AxisFault e) {      
-      e.printStackTrace();
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }    
+    SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
+    ArrayList<Document> sites = siteDataWS.getSites();
+    for(int i=0; i<sites.size(); i++) {
+      SimplePropertyMap pm = buildPropertyMap(sites.get(i));
+      System.out.println(sites.get(i).getUrl());
+      resultSet.add(pm);
+    }
     return resultSet;
-  }    
+  } 
+  
+  /**
+   * Gets all the docs from the Document Library in sharepoint.
+   * It first calls SiteData web service to get all the Lists.
+   * And then calls Lists web service to get the list items for the 
+   * lists which are of the type Document Library.
+   * @return resultSet 
+   */
+  public ResultSet getDocsFromDocumentLibrary() {
+    SimpleResultSet resultSet = new SimpleResultSet();
+    SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
+    ListsWS listsWS = new ListsWS(sharepointClientContext);
+    ArrayList<BaseList> listCollection = siteDataWS.getListCollection();
+    for(int i=0; i<listCollection.size(); i++) {
+      if(listCollection.get(i).getType().equals("DocumentLibrary")) {
+        ArrayList<Document> listItems = 
+            listsWS.getListItems(listCollection.get(i).getInternalName());   
+        System.out.println(listCollection.get(i).getTitle());
+        for(int j=0; j<listItems.size(); j++ ){
+          SimplePropertyMap pm = buildPropertyMap(listItems.get(j));
+          resultSet.add(pm);
+        }
+      }      
+    }
+    return resultSet;
+  }
+  
+  /**
+   * Build the Property Map for the connector manager from the 
+   * sharepoint document.
+   * @param doc sharepoint document
+   * @return Property Map.
+   */
+  private SimplePropertyMap buildPropertyMap(Document doc) {
+    SimplePropertyMap pm = new SimplePropertyMap();
+    Property contentUrlProp = new SimpleProperty(
+      SpiConstants.PROPNAME_CONTENTURL, new SimpleValue(ValueType.STRING, 
+      doc.getUrl()));
+    pm.put(SpiConstants.PROPNAME_CONTENTURL, contentUrlProp);
+    
+    Property docIdProp = new SimpleProperty(
+      SpiConstants.PROPNAME_DOCID, new SimpleValue(ValueType.STRING, 
+      doc.getDocId()));
+    pm.put(SpiConstants.PROPNAME_DOCID, docIdProp);        
+    
+    Property searchUrlProp = new SimpleProperty(
+      SpiConstants.PROPNAME_SEARCHURL, new SimpleValue(ValueType.STRING, 
+      doc.getUrl()));
+    pm.put(SpiConstants.PROPNAME_SEARCHURL, searchUrlProp);
+    
+    Property lastModifyProp = new SimpleProperty(
+      SpiConstants.PROPNAME_LASTMODIFY, new SimpleValue(
+        ValueType.DATE, SimpleValue.calendarToIso8601(doc.getDate())));  
+    pm.put(SpiConstants.PROPNAME_LASTMODIFY, lastModifyProp);
+    return pm;
+    
+  }  
 }

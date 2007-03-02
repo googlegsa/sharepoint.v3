@@ -44,18 +44,18 @@ public class SharepointQueryTraveralManagerTest extends TestCase {
    */
   public final void testRunBatch() throws InterruptedException, RepositoryException, FileNotFoundException {
     
-    runTestBatches(1);
-    runTestBatches(2);
-    runTestBatches(3);
-    runTestBatches(4);
+  //  runTestBatches(1);
+  //  runTestBatches(2);
+  //  runTestBatches(3);
+  //  runTestBatches(4);
     runTestBatches(5);
     
   }
 
   private void runTestBatches(int batchSize) throws InterruptedException, RepositoryException {
-    final String sharepointUrl = "http://entpoint05";
+    final String sharepointUrl = "http://entpoint05.corp.google.com/gsite1";
     final String domain = "ent-qa-d3";
-    final String host = "entpoint05";
+    final String host = "entpoint05.corp.google.com";
     final int port = 80;
     final String username = "testing";
     final String password = "g00gl3";

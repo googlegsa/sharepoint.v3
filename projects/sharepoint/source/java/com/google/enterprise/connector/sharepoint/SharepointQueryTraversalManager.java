@@ -54,7 +54,8 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
   public ResultSet startTraversal() throws RepositoryException {
    
     SharepointClient sharepointClient = new SharepointClient(sharepointClientContext);
-    ResultSet rs = sharepointClient.getSites();
+  //  ResultSet rs = sharepointClient.getSites();
+    ResultSet rs = sharepointClient.getDocsFromDocumentLibrary();
     return rs;    
   }
 
