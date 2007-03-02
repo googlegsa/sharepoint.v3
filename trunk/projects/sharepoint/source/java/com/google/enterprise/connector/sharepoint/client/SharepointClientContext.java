@@ -82,14 +82,16 @@ public class SharepointClientContext {
 
   /**
    * Sets the stub 
-   * @param stub Stub Axis Client Stub to call the webservices on Sharepoint server.
+   * @param stub Stub Axis Client Stub to call the webservices on 
+   * Sharepoint server.
    * @param endpoint Suffix to the particular webserive to use.
    */
   public void setStubWithAuth(Stub stub, String endpoint) {
     Options options = new Options();
     EndpointReference target = new EndpointReference(endpoint);
     options.setTo(target);
-    HttpTransportProperties.Authenticator auth = new HttpTransportProperties.Authenticator();
+    HttpTransportProperties.Authenticator auth = 
+      new HttpTransportProperties.Authenticator();
     auth.setDomain(domain);
     auth.setUsername(username);
     auth.setPassword(password);
