@@ -5,9 +5,7 @@
 		class="com.google.enterprise.connector.sharepoint.SharepointConnector">
       <constructor-arg index="0" value="${sharepointUrl}"/>
       <constructor-arg index="1" value="${domain}"/>
-      <constructor-arg index="2" value="${host}"/>
-      <constructor-arg index="3" value="${port}"/>
-      <constructor-arg index="4" value="${username}"/>
-      <constructor-arg index="5" value="${password}"/>
+      <constructor-arg index="2" value="${username}"/>
+      <constructor-arg index="3" value="${password}"/>
 	</bean>
 </beans>
