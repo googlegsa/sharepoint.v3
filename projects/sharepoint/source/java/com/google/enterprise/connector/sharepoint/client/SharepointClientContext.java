@@ -7,6 +7,9 @@ import org.apache.axis2.client.Stub;
 import org.apache.axis2.transport.http.HTTPConstants;
 import org.apache.axis2.transport.http.HttpTransportProperties;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 /**
  * Class to hold the context information for sharepoint client connection.
  *
@@ -14,19 +17,29 @@ import org.apache.axis2.transport.http.HttpTransportProperties;
 
 public class SharepointClientContext {
 
-  private String sharepointUrl;
+  private String siteName;
   private String domain;
   private String username;
   private String password;
   private int port = 80;
   private String host;
   
-  public SharepointClientContext(String sharepointUrl, String domain, String host,
-      int port, String username, String password) {
-    this.sharepointUrl = sharepointUrl;
-    this.domain = domain;
-    this.host = host;
-    this.port = port;
+  public SharepointClientContext(String sharepointUrl, String domain,
+                                 String username, String password) {
+    
+    try {
+      URL url = new URL(sharepointUrl);
+      this.host = url.getHost();
+      if (-1 != url.getPort()) {
+        this.port = url.getPort();
+      }
+      this.siteName = url.getPath();      
+    } catch (MalformedURLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    
+    this.domain = domain;    
     this.username = username;
     this.password = password;
   }
@@ -48,8 +61,8 @@ public class SharepointClientContext {
     return port;
   }
 
-  public String getSharepointUrl() {
-    return sharepointUrl;
+  public String getsiteName() {
+    return siteName;
   }
 
   public String getUsername() {
@@ -64,8 +77,8 @@ public class SharepointClientContext {
     this.password = password;
   }
 
-  public void setSharepointUrl(String sharepointUrl) {
-    this.sharepointUrl = sharepointUrl;
+  public void setsiteName(String siteName) {
+    this.siteName = siteName;
   }
 
   public void setUsername(String username) {
@@ -82,7 +95,7 @@ public class SharepointClientContext {
 
   /**
    * Sets the stub 
-   * @param stub Stub Axis Client Stub to call the webservices on 
+   * @param stub Axis Client Stub to call the webservices on 
    * Sharepoint server.
    * @param endpoint Suffix to the particular webserive to use.
    */

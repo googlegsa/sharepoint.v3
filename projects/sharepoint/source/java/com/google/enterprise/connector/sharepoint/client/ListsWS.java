@@ -13,6 +13,7 @@ import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.namespace.QName;
 
@@ -21,83 +22,85 @@ import javax.xml.namespace.QName;
  *
  */
 public class ListsWS {
-    private static final String listsEndpoint = "/_vti_bin/Lists.asmx";
-    private SharepointClientContext sharepointClientContext;
-    private String endpoint;
-    private ListsStub stub;
-    
-    public ListsWS(SharepointClientContext sharepointClientContext) {
-      this.sharepointClientContext = sharepointClientContext;
-      endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
-                  sharepointClientContext.getPort() + listsEndpoint;
-      try {
-        stub = new ListsStub(endpoint);
-        sharepointClientContext.setStubWithAuth(stub, endpoint);
-      } catch (AxisFault e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
+  private static final String listsEndpoint = "/_vti_bin/Lists.asmx";
+  private SharepointClientContext sharepointClientContext;
+  private String endpoint;
+  private ListsStub stub;
+  
+  public ListsWS(SharepointClientContext sharepointClientContext) 
+    throws SharepointException {
+    this.sharepointClientContext = sharepointClientContext;
+    endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
+                sharepointClientContext.getPort() + 
+                sharepointClientContext.getsiteName() + listsEndpoint;
+    try {
+      stub = new ListsStub(endpoint);
+      sharepointClientContext.setStubWithAuth(stub, endpoint);
+    } catch (AxisFault e) {
+      throw new SharepointException(e.toString());        
     }
-    
-    /**
-     * Gets all the list items of a particular list
-     * @param listName internal name of the list
-     * @return list of sharepoint documents corresponding to items in the list.
-     */
-    public ArrayList<Document> getListItems(String listName) {
-      ArrayList<Document> listItems = new ArrayList<Document>();
-      String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" + 
-                          sharepointClientContext.getPort() + "/";
-      StringBuffer url = new StringBuffer();
-      ListsStub.GetListItems req = new ListsStub.GetListItems();
-      req.setListName(listName);
-      req.setQuery(null);
-      req.setViewFields(null);
-      req.setRowLimit("");
-      req.setViewName("");
-      req.setWebID("");
-      try {
-        ListsStub.GetListItemsResponse res = stub.GetListItems(req);
-        OMFactory omf = OMAbstractFactory.getOMFactory();
-        OMElement oe = res.getGetListItemsResult().getOMElement
+  }
+  
+  /**
+   * Gets all the list items of a particular list
+   * @param listName internal name of the list
+   * @return list of sharepoint documents corresponding to items in the list.
+   */
+  public List getListItems(String listName) {
+    ArrayList<Document> listItems = new ArrayList<Document>();
+    String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" + 
+                        sharepointClientContext.getPort() + "/";
+      
+    ListsStub.GetListItems req = new ListsStub.GetListItems();
+    req.setListName(listName);
+    req.setQuery(null);
+    req.setViewFields(null);
+    req.setRowLimit("");
+    req.setViewName("");
+    req.setWebID("");
+    try {
+      ListsStub.GetListItemsResponse res = stub.GetListItems(req);
+      OMFactory omf = OMAbstractFactory.getOMFactory();
+      OMElement oe = res.getGetListItemsResult().getOMElement
                            (GetListItems.MY_QNAME, omf);
-        Iterator ita = oe.getChildElements();  
-        while (ita.hasNext()) {            
-          OMElement resultOmElement = (OMElement) ita.next();
-          Iterator resultIt = resultOmElement.getChildElements();
-          OMElement dataOmElement = (OMElement) resultIt.next();  
-          Iterator dataIt = dataOmElement.getChildElements();
-          while (dataIt.hasNext()) {           
-            OMElement rowOmElement = (OMElement) dataIt.next();                   
-            if (rowOmElement.getAttribute(new QName("ows_FileRef")) != null) {
-              String docId = rowOmElement.getAttribute(
-                new QName("ows_UniqueId")).getAttributeValue();  
-              String lastModified = rowOmElement.getAttribute(
-                new QName("ows_Modified")).getAttributeValue();
-              String fileName = rowOmElement.getAttribute(
-                new QName("ows_FileRef")).getAttributeValue();
-              fileName = fileName.substring(fileName.indexOf("#") + 1);
-                       
-              url.setLength(0);
-              url.append(urlPrefix);
-              url.append(fileName);
-              
+      Iterator ita = oe.getChildElements();
+      StringBuffer url = new StringBuffer();
+      while (ita.hasNext()) {            
+        OMElement resultOmElement = (OMElement) ita.next();
+        Iterator resultIt = resultOmElement.getChildElements();
+        OMElement dataOmElement = (OMElement) resultIt.next();  
+        Iterator dataIt = dataOmElement.getChildElements();
+        while (dataIt.hasNext()) {           
+          OMElement rowOmElement = (OMElement) dataIt.next();
+          if (rowOmElement.getAttribute(new QName("ows_FileRef")) != null) {
+            String docId = rowOmElement.getAttribute(
+              new QName("ows_UniqueId")).getAttributeValue();  
+            String lastModified = rowOmElement.getAttribute(
+              new QName("ows_Modified")).getAttributeValue();
+            String fileName = rowOmElement.getAttribute(
+              new QName("ows_FileRef")).getAttributeValue();
+            fileName = fileName.substring(fileName.indexOf("#") + 1);
+                     
+            url.setLength(0);
+            url.append(urlPrefix);
+            url.append(fileName);              
+                          
+            try {
               Document doc;
-              try {
-                doc = new Document(docId, url.toString(), 
-                                   Util.StringToCalendar(lastModified));
-                listItems.add(doc);
-              } catch (ParseException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-              }                         
-            }
+              doc = new Document(docId, url.toString(), 
+                                 Util.StringToCalendar(lastModified));
+              listItems.add(doc);
+            } catch (ParseException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }                         
           }
         }
-      } catch (RemoteException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }     
-      return listItems;
-    }
+      }
+    } catch (RemoteException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }     
+    return listItems;
+  }
 }

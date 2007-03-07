@@ -10,11 +10,11 @@ import com.google.enterprise.connector.spi.SimpleValue;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.ValueType;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
- * Class which maintains has all the methods needed to get documents and sites 
+ * Class which maintains all the methods needed to get documents and sites 
  * from the sharepoint server. It is a layer between the connector and the 
  * actual web services calls .
  *
@@ -34,12 +34,15 @@ public class SharepointClient {
    */
   public ResultSet getSites() {
     SimpleResultSet resultSet = new SimpleResultSet();
-    SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
-    ArrayList<Document> sites = siteDataWS.getSites();
-    for(int i=0; i<sites.size(); i++) {
-      SimplePropertyMap pm = buildPropertyMap(sites.get(i));
-      System.out.println(sites.get(i).getUrl());
-      resultSet.add(pm);
+    try {
+      SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
+      List sites = siteDataWS.getSites();
+      for(int i=0; i<sites.size(); i++) {
+        SimplePropertyMap pm = buildPropertyMap((Document) sites.get(i));
+        resultSet.add(pm);
+      }
+    } catch (SharepointException e) {
+      e.printStackTrace();
     }
     return resultSet;
   } 
@@ -53,19 +56,25 @@ public class SharepointClient {
    */
   public ResultSet getDocsFromDocumentLibrary() {
     SimpleResultSet resultSet = new SimpleResultSet();
-    SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
-    ListsWS listsWS = new ListsWS(sharepointClientContext);
-    ArrayList<BaseList> listCollection = siteDataWS.getListCollection();
-    for(int i=0; i<listCollection.size(); i++) {
-      if(listCollection.get(i).getType().equals("DocumentLibrary")) {
-        ArrayList<Document> listItems = 
-            listsWS.getListItems(listCollection.get(i).getInternalName());   
-        System.out.println(listCollection.get(i).getTitle());
-        for(int j=0; j<listItems.size(); j++ ){
-          SimplePropertyMap pm = buildPropertyMap(listItems.get(j));
-          resultSet.add(pm);
+    try {
+      SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
+      ListsWS listsWS = new ListsWS(sharepointClientContext);
+      List listCollection = siteDataWS.getListCollection();
+      for(int i=0; i<listCollection.size(); i++) {
+        BaseList baseList = (BaseList) listCollection.get(i);
+        if(baseList.getType().equals("DocumentLibrary")) {
+          List listItems = listsWS.getListItems(baseList.getInternalName());   
+          System.out.println(baseList.getTitle());
+
+          for(int j=0; j<listItems.size(); j++ ){
+            SimplePropertyMap pm = 
+              buildPropertyMap((Document) listItems.get(j));
+            resultSet.add(pm);
+          }
         }
-      }      
+      }
+    } catch (SharepointException e) {
+      e.printStackTrace();
     }
     return resultSet;
   }

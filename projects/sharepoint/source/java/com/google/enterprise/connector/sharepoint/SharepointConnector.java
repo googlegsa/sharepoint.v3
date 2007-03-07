@@ -3,22 +3,29 @@
 package com.google.enterprise.connector.sharepoint;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.SharepointSession;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.LoginException;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
 
-import java.util.logging.Logger;
+import java.net.MalformedURLException;
+import java.net.URL;
 
+/**
+ * 
+ * Implementation of the Connector interface from the spi.
+ *
+ */
 public class SharepointConnector implements Connector {
   
   private final SharepointClientContext sharepointClientContext;
   
-  public SharepointConnector(String sharepointUrl, String domain, String host,
-      int port, String username, String password) {
-    sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, host, port, 
-                                            username, password);
+  public SharepointConnector(String sharepointUrl, String domain, 
+                             String username, String password) {
+    
+    sharepointClientContext = new SharepointClientContext(sharepointUrl, 
+        domain, username, password);
+    
   }
   
   public void setDomain(String domain) {
@@ -34,7 +41,17 @@ public class SharepointConnector implements Connector {
   }
   
   public void setSharepointUrl(String sharepointUrl) {
-    sharepointClientContext.setSharepointUrl(sharepointUrl);
+    try {
+      URL url = new URL(sharepointUrl);
+      sharepointClientContext.setHost(url.getHost());
+      if (-1 != url.getPort()) {
+        sharepointClientContext.setPort(url.getPort());
+      }
+      sharepointClientContext.setsiteName(url.getPath());
+    } catch (MalformedURLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
   }
   
   public void setUsername(String username) {

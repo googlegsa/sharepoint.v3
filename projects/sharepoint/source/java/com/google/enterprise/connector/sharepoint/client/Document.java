@@ -8,26 +8,26 @@ import java.util.Calendar;
  *
  */
 public class Document {
-    
-    private String docId;
-    private String url;
-    private Calendar date;
-    
-    public Document(String docId, String url, Calendar date) {
-      this.docId = docId;
-      this.url = url;
-      this.date = date;
-    }
+  
+  private String docId;
+  private String url;
+  private Calendar date;
+  
+  public Document(String docId, String url, Calendar date) {
+    this.docId = docId;
+    this.url = url;
+    this.date = date;
+  }
 
-    public Calendar getDate() {
-      return date;
-    }
+  public Calendar getDate() {
+    return date;
+  }
 
-    public String getDocId() {
-      return docId;
-    }
+  public String getDocId() {
+    return docId;
+  }
 
-    public String getUrl() {
-      return url;
-    }   
+  public String getUrl() {
+    return url;
+  }   
 }
