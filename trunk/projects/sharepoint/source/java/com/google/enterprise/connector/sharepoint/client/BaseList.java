@@ -3,29 +3,31 @@ package com.google.enterprise.connector.sharepoint.client;
 
 /**
  * Class to hold data regarding a sharepoint list.
+ * internalName is the GUID of the list and type is the type of the list 
+ * e.g., DocumentLibrary.
  *
  */
 public class BaseList {
-    private String internalName;
-    private String title;
-    private String type;
-    
-    public BaseList(String internalName, String title, String type) {
-      this.internalName = internalName;
-      this.title = title;
-      this.type = type;
-    }
+  private String internalName;
+  private String title;
+  private String type;
+  
+  public BaseList(String internalName, String title, String type) {
+    this.internalName = internalName;
+    this.title = title;
+    this.type = type;
+  }
 
-    public String getInternalName() {
-      return internalName;
-    }
+  public String getInternalName() {
+    return internalName;
+  }
 
-    public String getTitle() {
-      return title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getType() {
-      return type;
-    }
-    
+  public String getType() {
+    return type;
+  }
+  
 }
