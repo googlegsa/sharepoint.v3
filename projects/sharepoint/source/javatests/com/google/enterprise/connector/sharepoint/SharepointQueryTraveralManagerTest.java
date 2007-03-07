@@ -1,4 +1,4 @@
-// Copyright (C) 2006 Google Inc.
+// Copyright (C) 2007 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,18 +42,16 @@ public class SharepointQueryTraveralManagerTest extends TestCase {
    * #runBatch(int)}.
    * @throws InterruptedException 
    */
-  public final void testRunBatch() throws InterruptedException, RepositoryException, FileNotFoundException {
+  public final void testRunBatch() throws InterruptedException, 
+    RepositoryException, FileNotFoundException {  
     
-  //  runTestBatches(1);
-  //  runTestBatches(2);
-  //  runTestBatches(3);
-  //  runTestBatches(4);
     runTestBatches(5);
     
   }
 
-  private void runTestBatches(int batchSize) throws InterruptedException, RepositoryException {
-    final String sharepointUrl = "http://entpoint05.corp.google.com/gsite1";
+  private void runTestBatches(int batchSize) throws InterruptedException, 
+    RepositoryException {
+    final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
     final String domain = "ent-qa-d3";
     final String host = "entpoint05.corp.google.com";
     final int port = 80;
@@ -61,8 +59,8 @@ public class SharepointQueryTraveralManagerTest extends TestCase {
     final String password = "g00gl3";
     
     
-    SharepointConnector sharepointConnector = new SharepointConnector(sharepointUrl,domain,host,
-        port, username, password);
+    SharepointConnector sharepointConnector = new SharepointConnector(
+                        sharepointUrl, domain, username, password);
     Session sess = sharepointConnector.login();
     
 
@@ -71,7 +69,8 @@ public class SharepointQueryTraveralManagerTest extends TestCase {
     Pusher pusher;
     boolean caughtException = false;
     try {
-      PrintStream out = new PrintStream(new FileOutputStream("traverser-test.log"));
+      PrintStream out = 
+        new PrintStream(new FileOutputStream("traverser-test.log"));
       pusher = new DocPusher(new MockFileFeedConnection(out));
       ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
       Traverser traverser =
