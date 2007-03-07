@@ -7,10 +7,8 @@
 			<list>
         <value>sharepointUrl</value>
         <value>domain</value>
-        <value>host</value>
-        <value>port</value>
-				<value>username</value>
-				<value>password</value>
+        <value>username</value>
+        <value>password</value>
 			</list>
 		</property>
 	</bean>
