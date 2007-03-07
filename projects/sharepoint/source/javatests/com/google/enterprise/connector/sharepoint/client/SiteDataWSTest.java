@@ -1,5 +1,5 @@
 // Copyright 2007 Google Inc.  All Rights Reserved.
-package com.google.enterprise.connector.sharepoint;
+package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.enterprise.connector.sharepoint.client.BaseList;
 import com.google.enterprise.connector.sharepoint.client.Document;
