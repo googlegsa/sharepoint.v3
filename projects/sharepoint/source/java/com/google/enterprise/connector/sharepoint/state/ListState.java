@@ -154,7 +154,7 @@ public class ListState extends StatefulObject {
     Element element = domDoc.createElement("document");
     element.setAttribute("id", doc.getDocId());
     Element lastMod = domDoc.createElement("lastMod");
-    long millis = timeConverter.getInstantMillis(doc.getDate(), chron);
+    long millis = timeConverter.getInstantMillis(doc.getLastMod(), chron);
     lastMod.appendChild(domDoc.createTextNode(
         formatter.print(new DateTime(millis))));
     element.appendChild(lastMod);
