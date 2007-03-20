@@ -27,7 +27,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 
-public class SharepointQueryTraveralManagerTest extends TestCase {
+public class SharepointQueryTraversalManagerTest extends TestCase {
 
   final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
   final String domain = "ent-qa-d3";
