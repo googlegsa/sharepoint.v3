@@ -1,4 +1,17 @@
-// Copyright 2007 Google Inc.  All Rights Reserved.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.enterprise.connector.spi.Property;
@@ -10,6 +23,7 @@ import com.google.enterprise.connector.spi.SimpleValue;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.ValueType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +33,6 @@ import java.util.List;
  * actual web services calls .
  *
  */
-
 public class SharepointClient {
 
   private SharepointClientContext sharepointClientContext;
@@ -29,15 +42,16 @@ public class SharepointClient {
   }
   
   /**
-   * Gets all the sites on the sharepoint server.
+   * Gets all the sites under the current site on the sharepoint server.
    * @return resultSet ResultSet containing the PropertyMap for each site.
    */
   public ResultSet getSites() {
     SimpleResultSet resultSet = new SimpleResultSet();
     try {
       SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
-      List sites = siteDataWS.getSites();
-      for(int i=0; i<sites.size(); i++) {
+      List sites = siteDataWS.getAllChildrenSites();
+      for(int i=0; i<sites.size(); i++) {       
+        Document doc = (Document) sites.get(i);
         SimplePropertyMap pm = buildPropertyMap((Document) sites.get(i));
         resultSet.add(pm);
       }
@@ -48,35 +62,62 @@ public class SharepointClient {
   } 
   
   /**
-   * Gets all the docs from the Document Library in sharepoint.
-   * It first calls SiteData web service to get all the Lists.
-   * And then calls Lists web service to get the list items for the 
-   * lists which are of the type Document Library.
-   * @return resultSet 
+   * Calls DocsFromDocLibPerSite for all the sites under the current site.
+   * @return resultSet
    */
   public ResultSet getDocsFromDocumentLibrary() {
     SimpleResultSet resultSet = new SimpleResultSet();
     try {
       SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
-      ListsWS listsWS = new ListsWS(sharepointClientContext);
-      List listCollection = siteDataWS.getListCollection();
-      for(int i=0; i<listCollection.size(); i++) {
-        BaseList baseList = (BaseList) listCollection.get(i);
-        if(baseList.getType().equals("DocumentLibrary")) {
-          List listItems = listsWS.getListItems(baseList.getInternalName());   
-          System.out.println(baseList.getTitle());
-
-          for(int j=0; j<listItems.size(); j++ ){
-            SimplePropertyMap pm = 
-              buildPropertyMap((Document) listItems.get(j));
-            resultSet.add(pm);
-          }
+      List allSites = siteDataWS.getAllChildrenSites();
+      for (int i=0; i<allSites.size(); i++) {
+        Document doc = (Document) allSites.get(i);
+        List listItems = DocsFromDocLibPerSite(doc.getUrl());    
+        for(int j=0; j<listItems.size(); j++ ){
+          Document doc1 = (Document) listItems.get(j);
+          SimplePropertyMap pm = 
+            buildPropertyMap((Document) listItems.get(j));          
+          resultSet.add(pm);
         }
       }
     } catch (SharepointException e) {
       e.printStackTrace();
     }
     return resultSet;
+  }
+  
+  /**
+   * Gets all the docs from the Document Library in sharepoint under a 
+   * given site. It first calls SiteData web service to get all the Lists.
+   * And then calls Lists web service to get the list items for the 
+   * lists which are of the type Document Library.
+   * @return resultSet 
+   */  
+  private List DocsFromDocLibPerSite(String siteName) {
+    List listItems = new ArrayList<Document>();
+    List allListItems = new ArrayList<Document>();
+    SiteDataWS siteDataWS;
+    ListsWS listsWS;
+    try {
+      if (siteName == null) {
+        siteDataWS = new SiteDataWS(sharepointClientContext);
+        listsWS = new ListsWS(sharepointClientContext);
+      } else {
+        siteDataWS = new SiteDataWS(sharepointClientContext, 
+            siteName);
+        listsWS = new ListsWS(sharepointClientContext, siteName);
+      }
+      List listCollection = siteDataWS.getDocumentLibraries();
+      for(int i=0; i<listCollection.size(); i++) {
+        BaseList baseList = (BaseList) listCollection.get(i);                
+        listItems = listsWS.getListItems(baseList.getInternalName());
+        allListItems.addAll(listItems);                       
+      }
+    } catch (SharepointException e) {
+      e.printStackTrace();
+    }
+    return allListItems;
+    
   }
   
   /**
@@ -104,7 +145,7 @@ public class SharepointClient {
     
     Property lastModifyProp = new SimpleProperty(
       SpiConstants.PROPNAME_LASTMODIFY, new SimpleValue(
-        ValueType.DATE, SimpleValue.calendarToIso8601(doc.getDate())));  
+        ValueType.DATE, SimpleValue.calendarToIso8601(doc.getLastMod())));  
     pm.put(SpiConstants.PROPNAME_LASTMODIFY, lastModifyProp);
     return pm;
     
