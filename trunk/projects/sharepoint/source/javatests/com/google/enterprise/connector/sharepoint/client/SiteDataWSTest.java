@@ -1,15 +1,12 @@
 // Copyright 2007 Google Inc.  All Rights Reserved.
 package com.google.enterprise.connector.sharepoint.client;
 
-import com.google.enterprise.connector.sharepoint.client.BaseList;
-import com.google.enterprise.connector.sharepoint.client.Document;
-import com.google.enterprise.connector.sharepoint.client.ListsWS;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
-import com.google.enterprise.connector.sharepoint.client.SiteDataWS;
-
 import junit.framework.TestCase;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -29,7 +26,6 @@ public class SiteDataWSTest extends TestCase {
    * @see junit.framework.TestCase#setUp()
    */
   protected void setUp() throws Exception {
-    
     SharepointClientContext sharepointClientContext = new 
       SharepointClientContext(sharepointUrl, domain, username, password); 
     siteDataWS = new SiteDataWS(sharepointClientContext);   
@@ -41,20 +37,17 @@ public class SiteDataWSTest extends TestCase {
    * Test method for {@link 
    * com.google.enterprise.connector.sharepoint.client.SiteDataWS#getSites()}.
    */
-  public void testGetSites() {
-    boolean foundUnittestSite = false;
+  public void testGetAllChildrenSites() {
+    int i = 0;
     try {
-      List sites = siteDataWS.getSites();
+      List sites = siteDataWS.getAllChildrenSites();
       System.out.println("Sites found - ");
-      for(int i=0; i< sites.size(); i++) {
+      for(; i< sites.size(); i++) {
         Document doc = (Document) sites.get(i);
-        if (doc.getUrl().equals(sharepointUrl));
-        foundUnittestSite = true;     
         System.out.println(doc.getUrl());
       }
-      assertTrue(foundUnittestSite);
-    } catch (SharepointException e) {
-      // TODO Auto-generated catch block
+      assertEquals(i, 5);
+    } catch (SharepointException e) {      
       e.printStackTrace();
     }   
   }
@@ -62,21 +55,22 @@ public class SiteDataWSTest extends TestCase {
   /**
    * Test method for {@link 
    * com.google.enterprise.connector.sharepoint.client.SiteDataWS
-   * #getListCollection()}.
+   * #getDocumentLibraries()}.
    */
-  public void testGetListCollection() {
+  public void testGetDocumentLibraries() {
     int numDocLib = 0;
     try {
-      List listCollection = siteDataWS.getListCollection();
+      List listCollection = siteDataWS.getDocumentLibraries();
+      System.out.println("Document Libraries found - ");
       for(int i=0; i<listCollection.size(); i++) {
         BaseList baseList = (BaseList) listCollection.get(i);
         if(baseList.getType().equals("DocumentLibrary")) {
+          System.out.println(baseList.getTitle());
           numDocLib++;
         }
       }
       assertEquals(2, numDocLib);
     } catch (SharepointException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }

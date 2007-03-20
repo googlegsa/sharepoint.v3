@@ -16,75 +16,56 @@ package com.google.enterprise.connector.sharepoint;
 
 
 
-import com.google.enterprise.connector.persist.ConnectorStateStore;
-import com.google.enterprise.connector.persist.MockConnectorStateStore;
-import com.google.enterprise.connector.pusher.DocPusher;
-import com.google.enterprise.connector.pusher.Pusher;
-import com.google.enterprise.connector.spi.QueryTraversalManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
-import com.google.enterprise.connector.traversal.QueryTraverser;
-import com.google.enterprise.connector.traversal.Traverser;
+import com.google.enterprise.connector.spi.SimpleResultSet;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 
 public class SharepointQueryTraveralManagerTest extends TestCase {
 
+  final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
+  final String domain = "ent-qa-d3";
+  final String host = "entpoint05.corp.google.com";
+  final int port = 80;
+  final String username = "testing";
+  final String password = "g00gl3";
+  
   /**
    * Test method for
    * {@link com.google.enterprise.connector.traversal.QueryTraverser
    * #runBatch(int)}.
-   * @throws InterruptedException 
+   * @throws InterruptedException, RepositoryException
    */
   public final void testRunBatch() throws InterruptedException, 
-    RepositoryException, FileNotFoundException {  
-    
-    runTestBatches(5);
-    
+    RepositoryException {      
+    runTestBatches(5); 
+    runTestBatches(6);
+    runTestBatches(7);
+    runTestBatches(8);
+    runTestBatches(9);
+    runTestBatches(10);
   }
 
   private void runTestBatches(int batchSize) throws InterruptedException, 
     RepositoryException {
-    final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
-    final String domain = "ent-qa-d3";
-    final String host = "entpoint05.corp.google.com";
-    final int port = 80;
-    final String username = "testing";
-    final String password = "g00gl3";
-    
-    
     SharepointConnector sharepointConnector = new SharepointConnector(
                         sharepointUrl, domain, username, password);
     Session sess = sharepointConnector.login();
-    
-
     String connectorName = "sharepoint-connector";
-    QueryTraversalManager qtm = sess.getQueryTraversalManager();
-    Pusher pusher;
-    boolean caughtException = false;
+    SharepointQueryTraversalManager qtm = 
+        (SharepointQueryTraversalManager) sess.getQueryTraversalManager();
     try {
-      PrintStream out = 
-        new PrintStream(new FileOutputStream("traverser-test.log"));
-      pusher = new DocPusher(new MockFileFeedConnection(out));
-      ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
-      Traverser traverser =
-        new QueryTraverser(pusher, qtm, connectorStateStore, connectorName);
-
-      System.out.println();
-      System.out.println("Running batch test batchsize " + batchSize);
-      
-      traverser.runBatch(batchSize);      
-      
-    } catch (Exception e) {
-      caughtException = true;
+      System.out.println("\nRunning batch test batchsize " + batchSize);
+      SimpleResultSet rs = (SimpleResultSet) qtm.startTraversal();
+      Assert.assertEquals(7, rs.size());
+    } catch (Exception e) {      
+      fail(e.toString());
     }
-    Assert.assertFalse(caughtException);
-  }
-
+  }  
 }
