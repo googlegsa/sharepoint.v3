@@ -22,6 +22,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.TreeSet;
@@ -139,7 +140,7 @@ public class GlobalStateTest extends TestCase {
       list2.setLastDocCrawled(doc2);
 
       // make a crawl queue & store it in our "current" ListState
-      TreeSet<Document> docTree = new TreeSet<Document>();
+      ArrayList<Document> docTree = new ArrayList<Document>();
       Document doc3 = new Document("id3", "url3", new GregorianCalendar());
       docTree.add(doc3);
       Document doc4 = new Document("id4", "url4", new GregorianCalendar());
