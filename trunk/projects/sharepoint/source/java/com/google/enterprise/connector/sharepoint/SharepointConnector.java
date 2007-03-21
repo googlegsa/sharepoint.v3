@@ -15,6 +15,8 @@
 package com.google.enterprise.connector.sharepoint;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.GlobalStateInitializer;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.LoginException;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -26,7 +28,6 @@ import java.net.URL;
 /**
  * 
  * Implementation of the Connector interface from the spi.
- * It implements the login method and is used by the Spring instantiator.
  *
  */
 public class SharepointConnector implements Connector {
@@ -34,11 +35,15 @@ public class SharepointConnector implements Connector {
   private final SharepointClientContext sharepointClientContext;
   
   public SharepointConnector(String sharepointUrl, String domain, 
-                             String username, String password) {
-    
-    sharepointClientContext = new SharepointClientContext(sharepointUrl, 
-        domain, username, password);
-    
+                             String username, String password)
+    throws RepositoryException {
+    try {
+      GlobalStateInitializer.init(); // does dependency-injection
+      sharepointClientContext = new SharepointClientContext(sharepointUrl, 
+          domain, username, password);
+    } catch (SharepointException e) {
+      throw new RepositoryException("Internal error: " + e.toString());
+    }
   }
   
   public void setDomain(String domain) {
@@ -62,6 +67,7 @@ public class SharepointConnector implements Connector {
       }
       sharepointClientContext.setsiteName(url.getPath());
     } catch (MalformedURLException e) {
+      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -73,7 +79,9 @@ public class SharepointConnector implements Connector {
   public void setPassword(String password) {
     sharepointClientContext.setPassword(password);
   }  
-  
+  /* (non-Javadoc)
+   * @see com.google.enterprise.connector.spi.Connector#login()
+   */
   public Session login() throws LoginException, RepositoryException {
     
     return new SharepointSession(this, sharepointClientContext);
