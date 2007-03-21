@@ -126,6 +126,9 @@ public class ListState extends StatefulObject {
    */
   public void setLastDocCrawled(Document doc) {
     lastDocCrawled = doc;
+    if (crawlQueue == null) {
+      return;
+    }
     if (!crawlQueue.contains(doc)) {
       // don't log. The caller may be removing through an iterator, which 
       // we wouldn't see
