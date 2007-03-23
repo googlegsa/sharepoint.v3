@@ -53,10 +53,6 @@ public class ListState extends StatefulObject {
    * this is maintained in the persistent state.
    */
   private Document lastDocCrawled;
-  /**
-   * crawlQueue is persisted only for the current List. Lists are made
-   * current only through GlobalState, which enforces uniqueness.
-   */
   private List<Document> crawlQueue = null;
   
   /**
@@ -148,8 +144,22 @@ public class ListState extends StatefulObject {
     return crawlQueue;
   }
   
+  public void dumpCrawlQueue() {
+    if (crawlQueue != null && crawlQueue.size() > 0) {
+      System.out.println("Crawl queue for " + getGuid());
+      for (Iterator<Document> iter = crawlQueue.iterator(); iter.hasNext(); ) {
+        Document doc = iter.next();
+        System.out.println(doc.getLastMod().getTime() + ", " + doc.getUrl());
+      }
+    }
+    else {
+      System.out.println("Empty crawl queue for "+ getGuid());
+    }
+  }
+  
   public void setCrawlQueue(List<Document> crawlQueue) {
     this.crawlQueue = crawlQueue;
+
   }
   
   private Node dumpDocToDOM(org.w3c.dom.Document domDoc, Document doc)
@@ -185,9 +195,11 @@ public class ListState extends StatefulObject {
     
     // dump the "last doc crawled"
     if (lastDocCrawled != null) {
-      element.appendChild(dumpDocToDOM(domDoc, lastDocCrawled));
+      Element elementLastDocCrawled = domDoc.createElement("lastDocCrawled");
+      element.appendChild(elementLastDocCrawled);
+      elementLastDocCrawled.appendChild(dumpDocToDOM(domDoc, lastDocCrawled));
     }
-    if (isCurrent() && crawlQueue != null) {
+    if (crawlQueue != null) {
       Element queue = domDoc.createElement("crawlQueue");
       element.appendChild(queue);
       for (Iterator<Document> iter = crawlQueue.iterator();  iter.hasNext(); ) {
@@ -211,12 +223,6 @@ public class ListState extends StatefulObject {
     }
     String lastModString = lastModNodeList.item(0).getTextContent();
     DateTime lastMod = parseLastMod(lastModString);
-    /**
-    GregorianCalendar calDate = new GregorianCalendar(lastMod.getYear(),
-        lastMod.getMonthOfYear(), lastMod.getDayOfMonth(),
-        lastMod.getHourOfDay(), lastMod.getMinuteOfHour(),
-        lastMod.getSecondOfMinute());
-    **/
     GregorianCalendar calDate = new GregorianCalendar();
     calDate.setTimeInMillis(lastMod.getMillis());
     String url = URLDecoder.decode(urlNodeList.item(0).getTextContent());
@@ -238,17 +244,17 @@ public class ListState extends StatefulObject {
       throw new SharepointException("Invalid XML: bad date " + lastModString);
     }
     // get the lastDocCrawled
-    NodeList documentNodeList = element.getElementsByTagName("document");
-    for (int i = 0; i < documentNodeList.getLength(); i++) {
-      Node documentNode = documentNodeList.item(i);
-      if (documentNode.getParentNode() == element) { // not from crawlQueue
-        Document doc = loadDocFromDOM((Element) documentNode);
-        if (doc != null) {
-          lastDocCrawled = doc;
-          break;
-        }
+    NodeList lastDocCrawledNodeList = 
+      element.getElementsByTagName("lastDocCrawled");
+    if (lastDocCrawledNodeList != null && 
+        lastDocCrawledNodeList.getLength() > 0) {
+      Node lastDocCrawledNode = lastDocCrawledNodeList.item(0);
+      Node documentNode = lastDocCrawledNode.getFirstChild();
+      if (documentNode.getNodeType() == Node.ELEMENT_NODE) {
+        lastDocCrawled = loadDocFromDOM((Element) documentNode);
       }
     }
+    
     // get the crawlQueue
     NodeList crawlQueueNodeList = element.getElementsByTagName("crawlQueue");
     if (crawlQueueNodeList.getLength() > 0) {

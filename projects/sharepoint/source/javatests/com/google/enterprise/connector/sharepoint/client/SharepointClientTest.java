@@ -2,6 +2,9 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.GlobalStateInitializer;
+import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -21,43 +24,18 @@ public class SharepointClientTest extends TestCase {
   final String username = "testing";
   final String password = "g00gl3";
   private SharepointClient sharepointClient;
+  private GlobalState globalState;
   
   /* (non-Javadoc)
    * @see junit.framework.TestCase#setUp()
    */
   protected void setUp() throws Exception {
+    GlobalStateInitializer.init();
     SharepointClientContext sharepointClientContext = new 
       SharepointClientContext(sharepointUrl, domain, username, password);
     sharepointClient = new SharepointClient(sharepointClientContext);
+    globalState = new GlobalState();
     super.setUp();
-  }
-
-  /**
-   * Test method for {@link com.google.enterprise.connector.sharepoint.client.
-   * SharepointClient#getSites()}.
-   */
-  public void testGetSites() {
-    ResultSet rs = sharepointClient.getSites();
-    int numSites = 0;
-    boolean found = false;
-    try {
-      Iterator<PropertyMap> it = rs.iterator();
-      while(it.hasNext()) {
-        PropertyMap pm = it.next();
-        Property urlProp = pm.getProperty(SpiConstants.PROPNAME_SEARCHURL);
-        String url = urlProp.getValue().getString();
-        System.out.println(url);
-        if (url.equals("http://entpoint05.corp.google.com/unittest/" +
-                "site1/site11")) {
-          found = true;
-        }
-        numSites++;
-      }
-    } catch (RepositoryException e) {
-      e.printStackTrace();
-    }
-    assertTrue(found);
-    assertEquals(numSites, 5);
   }
 
   /**
@@ -65,7 +43,8 @@ public class SharepointClientTest extends TestCase {
    * SharepointClient#getDocsFromDocumentLibrary()}.
    */
   public void testGetDocsFromDocumentLibrary() {
-    ResultSet rs = sharepointClient.getDocsFromDocumentLibrary();
+    sharepointClient.updateGlobalState(globalState);
+    ResultSet rs = sharepointClient.traverse(globalState, 100);
     boolean found = false;
     int numDocs = 0;
     try {

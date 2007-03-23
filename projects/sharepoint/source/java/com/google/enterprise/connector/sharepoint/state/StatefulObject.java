@@ -44,11 +44,11 @@ public abstract class StatefulObject
   protected DateTime lastMod = null;
   private boolean visited = false;
   private boolean isCurrent = false;
-  protected final InstantConverter timeConverter =
+  public static final InstantConverter timeConverter =
     ConverterManager.getInstance().getInstantConverter(
       new GregorianCalendar());
-  protected final Chronology chron = new DateTime().getChronology();
-  protected final DateTimeFormatter formatter =
+  public static final Chronology chron = new DateTime().getChronology();
+  public static final DateTimeFormatter formatter =
     ISODateTimeFormat.basicDateTime();
 
   /**
@@ -74,6 +74,18 @@ public abstract class StatefulObject
     throw new SharepointException("Unimplemented make()");
   }
 
+  /**
+   * Convenience routine for callers who don't use Joda time
+   * @param key
+   * @param lastModCal
+   * @return new object
+   * @throws UnsupportedOperationException
+   */
+  public static StatefulObject make(String key, Calendar lastModCal)
+    throws UnsupportedOperationException {
+    long millis = timeConverter.getInstantMillis(lastModCal, chron);
+    return make(key, new DateTime(millis));
+  }
   /**
    * A StatefulObject must be able to create a DOM subtree from itself,
    * and load itself from one.
