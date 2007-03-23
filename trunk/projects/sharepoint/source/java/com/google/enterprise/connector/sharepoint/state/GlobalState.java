@@ -31,6 +31,7 @@ import org.xml.sax.SAXException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -160,6 +161,22 @@ public class GlobalState {
     } catch (IllegalAccessException e) {
       throw new SharepointException("Internal error: " + e.toString());
     }
+  }
+  
+  /**
+   * Convenience routine for clients who don't deal in Joda time.
+   * @param simpleName
+   * @param key
+   * @param lastModCal (Calendar, not Joda time)
+   * @return new object
+   * @throws SharepointException if simpleName is not one of the 
+   * dependencies of this object.
+   */
+  public StatefulObject makeDependentObject(String simpleName,
+      String key, Calendar lastModCal)  throws SharepointException {
+    long millis = StatefulObject.timeConverter.getInstantMillis(lastModCal, 
+        StatefulObject.chron);
+    return makeDependentObject(simpleName, key, new DateTime(millis));
   }
   
   /**
@@ -415,7 +432,8 @@ public class GlobalState {
     String state = store.getConnectorState(CONNECTOR_NAME);
     loadStateXML(state);
   }
-  
+
+
   /**
    * For a given dependency (e.g. ListState), set the given object as "current"
    * This will be remembered in the XML state.
@@ -425,7 +443,7 @@ public class GlobalState {
    *   dependency
    */
   public void setCurrentObject(String simpleName, StatefulObject obj)
-    throws SharepointException {
+  throws SharepointException {
     if (dependencies.get(simpleName) == null) {
       throw new SharepointException("Internal error: bad class name " +
           simpleName);
@@ -437,7 +455,9 @@ public class GlobalState {
     }
     // set the new current
     currentObjs.put(simpleName, obj);
-    obj.setCurrent(true);
+    if (obj != null) {
+      obj.setCurrent(true);
+    }
   }
   
   /**
