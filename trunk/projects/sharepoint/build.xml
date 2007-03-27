@@ -66,6 +66,7 @@
       debuglevel="${COMPILE_DEBUG_LEVEL}">
       <classpath>
         <pathelement location="${spi.jarfile}"/>
+        <pathelement location="${connector.jarfile}"/>
         <pathelement location="${lib.jar.dir}"/>
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar"/>
