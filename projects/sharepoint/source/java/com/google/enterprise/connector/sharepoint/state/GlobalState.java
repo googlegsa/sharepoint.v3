@@ -346,7 +346,9 @@ public class GlobalState {
  
   public void saveState()  throws SharepointException {
     PrefsStore store = new PrefsStore();
-    store.storeConnectorState(CONNECTOR_NAME, saveStateXML());
+    String xml = saveStateXML();
+    logger.info(xml);
+    store.storeConnectorState(CONNECTOR_NAME, xml);
   }
   
   /**
@@ -430,7 +432,9 @@ public class GlobalState {
   public void loadState() throws SharepointException {
     PrefsStore store = new PrefsStore();
     String state = store.getConnectorState(CONNECTOR_NAME);
-    loadStateXML(state);
+    if (state != null) {
+      loadStateXML(state);
+    }
   }
 
 

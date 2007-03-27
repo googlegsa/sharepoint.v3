@@ -168,7 +168,8 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    */
   public void setBatchHint(int hint) throws RepositoryException {
     logger.info("setBatchHint " + hint);
-    this.hint = hint;
+    // this.hint = hint;
+    this.hint = 5;
   }
 
   /* (non-Javadoc)
@@ -197,6 +198,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
       sharepointClient.updateGlobalState(globalState);
       rs = sharepointClient.traverse(globalState, hint);
     }
+    logger.info("doTraversal returning " + rs.size() + " items");
     return rs;           
   }
 }

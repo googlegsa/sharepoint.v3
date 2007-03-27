@@ -47,6 +47,11 @@ import java.util.List;
  */
 public class ListState extends StatefulObject {
   private static Log logger;
+  
+  /**
+   * The URL of the List is more human-readable, which is good for debugging:
+   */
+  private String url = "";
   /**
    * this should be set by the main Sharepoint client every time it 
    * successfully crawls a Document. For Lists that are NOT current,
@@ -93,6 +98,14 @@ public class ListState extends StatefulObject {
   protected ListState(String guid, DateTime lastMod) {
     this.key = guid;
     this.lastMod = lastMod;
+  }
+  
+  public void setUrl(String url) {
+    this.url = url;
+  }
+  
+  public String getUrl() {
+    return url;
   }
   
   public Document getLastDocCrawled() {
@@ -146,7 +159,7 @@ public class ListState extends StatefulObject {
   
   public void dumpCrawlQueue() {
     if (crawlQueue != null && crawlQueue.size() > 0) {
-      System.out.println("Crawl queue for " + getGuid());
+      System.out.println("Crawl queue for " + getUrl());
       for (Iterator<Document> iter = crawlQueue.iterator(); iter.hasNext(); ) {
         Document doc = iter.next();
         System.out.println(doc.getLastMod().getTime() + ", " + doc.getUrl());
@@ -188,10 +201,18 @@ public class ListState extends StatefulObject {
   throws SharepointException{
     Element element = domDoc.createElement(this.getClass().getSimpleName());
     element.setAttribute("id", getGuid());
+    
+    // the lastMod
     Element lastMod = domDoc.createElement("lastMod");
     Text text = domDoc.createTextNode(dumpLastMod());
     lastMod.appendChild(text);
     element.appendChild(lastMod);
+    
+    // the URL
+    Element url = domDoc.createElement("URL");
+    Text urlText = domDoc.createTextNode(getUrl());
+    url.appendChild(urlText);
+    element.appendChild(url);
     
     // dump the "last doc crawled"
     if (lastDocCrawled != null) {
@@ -234,6 +255,8 @@ public class ListState extends StatefulObject {
     if (key == null || key.length() == 0) {
       throw new SharepointException("Invalid XML: no id attribute");
     }
+    
+    // lastMod
     NodeList lastModNodeList = element.getElementsByTagName("lastMod");
     if (lastModNodeList.getLength() == 0) {
       throw new SharepointException("Invalid XML: no lastMod");
@@ -243,6 +266,13 @@ public class ListState extends StatefulObject {
     if (lastMod == null) {
       throw new SharepointException("Invalid XML: bad date " + lastModString);
     }
+    
+    // URL
+    NodeList urlNodeList = element.getElementsByTagName("URL");
+    if (urlNodeList.getLength() > 0) {
+      url = urlNodeList.item(0).getTextContent();
+    }
+    
     // get the lastDocCrawled
     NodeList lastDocCrawledNodeList = 
       element.getElementsByTagName("lastDocCrawled");
