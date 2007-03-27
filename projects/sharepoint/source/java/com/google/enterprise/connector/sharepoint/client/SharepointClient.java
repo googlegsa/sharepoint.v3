@@ -149,7 +149,7 @@ public class SharepointClient {
    */
   private SimpleResultSet handleCrawlQueueForList(GlobalState state, 
       ListState list) {
-    logger.info("handling " + list.getGuid());
+    logger.info("handling " + list.getUrl());
     SimpleResultSet resultSet = new SimpleResultSet();
     List<Document> crawlQueue = list.getCrawlQueue();
     if (crawlQueue == null) return resultSet;
@@ -181,7 +181,7 @@ public class SharepointClient {
         (ListState) state.getCurrentObject(LIST_STATE_NAME);
       boolean reachedLastVisited = false;
       if (lastVisited != null) {
-        logger.info("traverse() looking for " + lastVisited.getGuid());
+        logger.info("traverse() looking for " + lastVisited.getUrl());
       }
       for (Iterator<StatefulObject> iter = state.getIterator(LIST_STATE_NAME);
         iter.hasNext(); ) {
@@ -259,7 +259,6 @@ public class SharepointClient {
       List listCollection = siteDataWS.getDocumentLibraries();
       for(int i=0; i<listCollection.size(); i++) {
         BaseList baseList = (BaseList) listCollection.get(i); 
-        logger.info("found list " + baseList.getInternalName());
         ListState listState = (ListState) state.lookupObject(LIST_STATE_NAME, 
             baseList.getInternalName());
         /*
@@ -270,9 +269,12 @@ public class SharepointClient {
         if (listState == null) {
           listState = (ListState) state.makeDependentObject(LIST_STATE_NAME, 
               baseList.getInternalName(), baseList.getLastMod());
+          listState.setUrl(baseList.getTitle());
           listItems = listsWS.getListItemChanges(baseList.getInternalName(),
               null);
+          logger.info("creating new listState: " + baseList.getTitle());
         } else {
+          logger.info("revisiting old listState: " + listState.getUrl());
           state.updateStatefulObject(listState, listState.getLastMod());
           Document docLast = listState.getLastDocCrawled();
           if (docLast != null) {  // if we know what doc we did last:
@@ -281,12 +283,15 @@ public class SharepointClient {
             listItems = listsWS.getListItemChanges(baseList.getInternalName(), 
                 docLast.getLastMod()); // just get docs changed since that
           } else { // we don't know what we did last. Fetch everything
-            listItems = listsWS.getListItems(baseList.getInternalName());
+            logger.info("fetching all items");
+            listItems = listsWS.getListItemChanges(baseList.getInternalName(),
+                null);
           }
         }
-        logger.info("list has " + listItems.size() + " items to crawl");
+        logger.info("found " + listItems.size() + " items to crawl in " +
+            siteName);
         listState.setCrawlQueue(listItems);
-        // listState.dumpCrawlQueue();
+        listState.dumpCrawlQueue();
       }
     } catch (SharepointException e) {
       e.printStackTrace();
