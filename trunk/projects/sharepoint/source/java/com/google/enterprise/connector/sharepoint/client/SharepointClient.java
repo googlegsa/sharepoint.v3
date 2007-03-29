@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.client;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.StatefulObject;
+import com.google.enterprise.connector.sharepoint.state.Util;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -276,17 +277,10 @@ public class SharepointClient {
         } else {
           logger.info("revisiting old listState: " + listState.getUrl());
           state.updateStatefulObject(listState, listState.getLastMod());
-          Document docLast = listState.getLastDocCrawled();
-          if (docLast != null) {  // if we know what doc we did last:
-            logger.info("fetching changes since " + 
-                docLast.getLastMod().toString());
-            listItems = listsWS.getListItemChanges(baseList.getInternalName(), 
-                docLast.getLastMod()); // just get docs changed since that
-          } else { // we don't know what we did last. Fetch everything
-            logger.info("fetching all items");
-            listItems = listsWS.getListItemChanges(baseList.getInternalName(),
-                null);
-          }
+          Calendar dateSince = listState.getDateForWSRefresh();
+          logger.info("fetching changes since " + Util.formatDate(dateSince));
+          listItems = listsWS.getListItemChanges(baseList.getInternalName(), 
+              dateSince); 
         }
         logger.info("found " + listItems.size() + " items to crawl in " +
             siteName);

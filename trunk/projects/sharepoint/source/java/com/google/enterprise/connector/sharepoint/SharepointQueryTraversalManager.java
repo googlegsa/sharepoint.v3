@@ -21,6 +21,8 @@ import com.google.enterprise.connector.sharepoint.client.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.StatefulObject;
+import com.google.enterprise.connector.sharepoint.state.Util;
+import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.QueryTraversalManager;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -90,7 +92,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
       for (Iterator<StatefulObject> iter = globalState.getIterator("ListState");
         iter.hasNext(); ) {
         if (docCheckpoint.getLastMod().compareTo(
-            listCheckpoint.getLastModAsCalendar()) > 0) {
+            Util.jodaToCalendar(listCheckpoint.getLastMod())) > 0) {
           listCheckpoint.setCrawlQueue(null);
         } else {
           break;
@@ -125,7 +127,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
           }    
         }  
       } else { // some other list. Assume CM got all the way through the queue
-        logger.info("zeroing crawl queue for " + listState.getPrimaryKey());
+        logger.info("zeroing crawl queue for " + listState.getUrl());
         if (crawlQueue != null && crawlQueue.size() > 0) {
           listState.setLastDocCrawled(crawlQueue.get(crawlQueue.size() - 1));
         }
@@ -146,7 +148,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
     Document doc = SharepointClient.docFromPropertyMap(map);
     logger.info("checkpoint received for " + doc.getUrl() + " in list " +
         SharepointClient.listGuidFromPropertyMap(map) + " with date " +
-        doc.getLastMod());
+        Util.formatDate(Util.calendarToJoda(doc.getLastMod())));
     implementCheckpoint(map);
     logger.info("checkpoint processed; saving GlobalState to disk.");
     globalState.saveState(); // snapshot it all to disk
@@ -168,8 +170,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    */
   public void setBatchHint(int hint) throws RepositoryException {
     logger.info("setBatchHint " + hint);
-    // this.hint = hint;
-    this.hint = 5;
+    this.hint = hint;
   }
 
   /* (non-Javadoc)
@@ -181,6 +182,22 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
     return doTraversal();
   }
 
+  private void dumpResultSet(SimpleResultSet rs) {
+    System.out.println("ResultSet=" + rs.size() + " items");
+    try {
+      for (Iterator iter = rs.iterator(); iter.hasNext(); ) {
+        PropertyMap pm = (PropertyMap) iter.next();
+        for (Iterator iterProp = pm.getProperties(); iterProp.hasNext(); ) {
+          Property prop = (Property) iterProp.next();
+          System.out.println(prop.getName().toString() +
+              " = " + prop.getValue().toString());
+        }
+      }
+    } catch (RepositoryException e) {
+      System.out.println("caught exception: " + e.toString());
+    }
+  }
+  
   /**
    * Private routine that actually does the traversal. If no docs are found
    * in the first sharepointClient.traverse() call, we go back to Sharepoint
@@ -198,7 +215,9 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
       sharepointClient.updateGlobalState(globalState);
       rs = sharepointClient.traverse(globalState, hint);
     }
-    logger.info("doTraversal returning " + rs.size() + " items");
+    if (logger.isInfoEnabled()) {
+      dumpResultSet(rs);
+    }
     return rs;           
   }
 }
