@@ -174,9 +174,8 @@ public class GlobalState {
    */
   public StatefulObject makeDependentObject(String simpleName,
       String key, Calendar lastModCal)  throws SharepointException {
-    long millis = StatefulObject.timeConverter.getInstantMillis(lastModCal, 
-        StatefulObject.chron);
-    return makeDependentObject(simpleName, key, new DateTime(millis));
+    return makeDependentObject(simpleName, key, 
+        Util.calendarToJoda(lastModCal));
   }
   
   /**
