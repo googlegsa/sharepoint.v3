@@ -34,6 +34,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
@@ -108,6 +109,39 @@ public class ListState extends StatefulObject {
     return url;
   }
   
+  /**
+   * Return the date which should be passed to Web Services (the
+   * GetListItemChanges call of ListWS) in order to find new items for
+   * this List.  This should be called in preference to getLastDocCrawled()
+   * or any other lower-level method,
+   * since this method can apply some intelligence, e.g. looking at the 
+   * crawl queue, and that intelligence may change over time.
+   * 
+   * Current algorithm: take the later of the date in getLastDocCrawled()
+   * and the crawl queue, IF ANY.  Otherwise, take the lastMod of the
+   * List itself.
+   * 
+   * @return Calendar suitable for passing to WebServices
+   */
+  public Calendar getDateForWSRefresh() {
+    Calendar date = Util.jodaToCalendar(getLastMod()); // our default
+    if (lastDocCrawled != null) {
+      Calendar lastDocDate = lastDocCrawled.getLastMod();
+      if (lastDocDate.compareTo(date) < 0) {
+        date = lastDocDate;
+      }
+    }
+    // now, if there's a crawl queue, we might take its last entry:
+    if (crawlQueue != null && crawlQueue.size() > 0) {
+      Calendar lastCrawlQueueDate = 
+        crawlQueue.get(crawlQueue.size() - 1).getLastMod();
+      if (lastCrawlQueueDate.compareTo(date) < 0) {
+        date = lastCrawlQueueDate;
+      }
+    }
+    return date;
+  }
+  
   public Document getLastDocCrawled() {
     return lastDocCrawled;
   }
@@ -166,7 +200,7 @@ public class ListState extends StatefulObject {
       }
     }
     else {
-      System.out.println("Empty crawl queue for "+ getGuid());
+      System.out.println("Empty crawl queue for "+ getUrl());
     }
   }
   
@@ -180,9 +214,8 @@ public class ListState extends StatefulObject {
     Element element = domDoc.createElement("document");
     element.setAttribute("id", doc.getDocId());
     Element lastMod = domDoc.createElement("lastMod");
-    long millis = timeConverter.getInstantMillis(doc.getLastMod(), chron);
     lastMod.appendChild(domDoc.createTextNode(
-        formatter.print(new DateTime(millis))));
+        Util.formatDate(Util.calendarToJoda(doc.getLastMod()))));
     element.appendChild(lastMod);
     Element url = domDoc.createElement("url");
     try {
@@ -243,7 +276,7 @@ public class ListState extends StatefulObject {
       throw new SharepointException("Invalid XML: " + element.toString());
     }
     String lastModString = lastModNodeList.item(0).getTextContent();
-    DateTime lastMod = parseLastMod(lastModString);
+    DateTime lastMod = Util.parseDate(lastModString);
     GregorianCalendar calDate = new GregorianCalendar();
     calDate.setTimeInMillis(lastMod.getMillis());
     String url = URLDecoder.decode(urlNodeList.item(0).getTextContent());
@@ -262,7 +295,7 @@ public class ListState extends StatefulObject {
       throw new SharepointException("Invalid XML: no lastMod");
     }
     String lastModString = lastModNodeList.item(0).getTextContent();
-    lastMod = parseLastMod(lastModString);
+    lastMod = Util.parseDate(lastModString);
     if (lastMod == null) {
       throw new SharepointException("Invalid XML: bad date " + lastModString);
     }
@@ -304,10 +337,6 @@ public class ListState extends StatefulObject {
         }
       }
     }
-  }
-  
-  private DateTime parseLastModForList(String str) {
-    return parseLastMod(str);
   }
    
   public String getGuid() {

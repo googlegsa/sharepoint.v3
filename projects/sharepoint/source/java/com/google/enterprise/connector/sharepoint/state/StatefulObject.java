@@ -44,12 +44,6 @@ public abstract class StatefulObject
   protected DateTime lastMod = null;
   private boolean visited = false;
   private boolean isCurrent = false;
-  public static final InstantConverter timeConverter =
-    ConverterManager.getInstance().getInstantConverter(
-      new GregorianCalendar());
-  public static final Chronology chron = new DateTime().getChronology();
-  public static final DateTimeFormatter formatter =
-    ISODateTimeFormat.basicDateTime();
 
   /**
    * All StatefulObjects must provide a static factory method which
@@ -83,8 +77,7 @@ public abstract class StatefulObject
    */
   public static StatefulObject make(String key, Calendar lastModCal)
     throws UnsupportedOperationException {
-    long millis = timeConverter.getInstantMillis(lastModCal, chron);
-    return make(key, new DateTime(millis));
+    return make(key, Util.calendarToJoda(lastModCal));
   }
   /**
    * A StatefulObject must be able to create a DOM subtree from itself,
@@ -130,17 +123,7 @@ public abstract class StatefulObject
   }
  
   protected String dumpLastMod() {
-    return formatter.print(lastMod);
-
-  }
-  
-  /**
-   * parse a joda-time formatted date-time string
-   * @param str
-   * @return DateTime, or null if the parse failed
-   */
-  protected DateTime parseLastMod(String str) {
-    return formatter.parseDateTime(str);
+    return Util.formatDate(lastMod);
   }
 
   /**
@@ -169,18 +152,6 @@ public abstract class StatefulObject
 
   public DateTime getLastMod() {
     return lastMod;
-  }
-
-  /**
-   * Convenience routine to get the lastMod NOT in JodaTime, but in 
-   * java.util.Calendar
-   * @return Calendar format for lastMod
-   */
-  public Calendar getLastModAsCalendar() {
-    long millis = timeConverter.getInstantMillis(lastMod, chron);
-    GregorianCalendar cal =  new GregorianCalendar();
-    cal.setTimeInMillis(millis);
-    return cal;
   }
   
   public void setLastMod(DateTime lastMod) {
