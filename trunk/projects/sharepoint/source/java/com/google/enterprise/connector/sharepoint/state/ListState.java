@@ -311,8 +311,10 @@ public class ListState extends StatefulObject {
       element.getElementsByTagName("lastDocCrawled");
     if (lastDocCrawledNodeList != null && 
         lastDocCrawledNodeList.getLength() > 0) {
-      Node lastDocCrawledNode = lastDocCrawledNodeList.item(0);
-      Node documentNode = lastDocCrawledNode.getFirstChild();
+      Element lastDocCrawledNode = (Element) lastDocCrawledNodeList.item(0);
+      NodeList documentNodeList = 
+        lastDocCrawledNode.getElementsByTagName("document");
+      Node documentNode = documentNodeList.item(0);
       if (documentNode.getNodeType() == Node.ELEMENT_NODE) {
         lastDocCrawled = loadDocFromDOM((Element) documentNode);
       }
