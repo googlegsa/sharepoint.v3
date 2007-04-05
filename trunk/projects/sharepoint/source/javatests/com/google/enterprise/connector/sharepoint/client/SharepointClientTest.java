@@ -2,9 +2,9 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.GlobalStateInitializer;
-import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -42,7 +42,7 @@ public class SharepointClientTest extends TestCase {
    * Test method for {@link com.google.enterprise.connector.sharepoint.client.
    * SharepointClient#getDocsFromDocumentLibrary()}.
    */
-  public void testGetDocsFromDocumentLibrary() {
+  public void testTraverse() {
     sharepointClient.updateGlobalState(globalState);
     ResultSet rs = sharepointClient.traverse(globalState, 100);
     boolean found = false;
@@ -52,9 +52,31 @@ public class SharepointClientTest extends TestCase {
       System.out.println("Documents found - ");
       while(it.hasNext()) {
         PropertyMap pm = it.next();
-        Property urlProp = pm.getProperty(SpiConstants.PROPNAME_SEARCHURL);
-        String url = urlProp.getValue().getString();
-        System.out.println(url);
+        Property lastModProp = pm.getProperty(SpiConstants.PROPNAME_LASTMODIFY);
+        Property docProp = pm.getProperty(SpiConstants.PROPNAME_DOCID);
+        Property contentUrlProp = 
+            pm.getProperty(SpiConstants.PROPNAME_CONTENTURL);
+        Property searchUrlProp = 
+            pm.getProperty(SpiConstants.PROPNAME_SEARCHURL);                
+        Property authorProp = pm.getProperty(Util.AUTHOR);
+        Property listGuidProp = pm.getProperty(Util.LIST_GUID);
+        System.out.println("<document>");
+        System.out.println("<docId>" + docProp.getValue().getString() + 
+            "</docId>");
+        System.out.println("<searchUrl>" + searchUrlProp.getValue().getString() 
+            + "</searchUrl>");
+        System.out.println("<contentUrl>" + 
+            contentUrlProp.getValue().getString() + "</contentUrl>");
+        System.out.println("<lastModify>" + 
+            lastModProp.getValue().getDate().getTime() + "</lastModify>");
+        if (authorProp != null) {
+          System.out.println("<author>" + authorProp.getValue().getString() +
+              "</author>");
+        }
+        System.out.println("<listGuid>" + listGuidProp.getValue().getString() +
+            "</listguid>");  
+        System.out.println("</document>");
+        String url = searchUrlProp.getValue().getString();        
         if (url.equals("http://entpoint05.corp.google.com:80/unittest/" +
                 "TestDocumentLibrary/TestFolder/TestFolder1/webDav.doc")) {
           found = true;
@@ -65,6 +87,6 @@ public class SharepointClientTest extends TestCase {
       e.printStackTrace();
     }
     assertTrue(found);
-    assertEquals(numDocs, 7);
+    assertEquals(10, numDocs);
   }
 }

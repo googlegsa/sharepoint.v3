@@ -21,7 +21,6 @@ import com.google.enterprise.connector.sharepoint.client.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.StatefulObject;
-import com.google.enterprise.connector.sharepoint.state.Util;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.QueryTraversalManager;
@@ -74,8 +73,8 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
   }
   
   private void implementCheckpoint(PropertyMap map) throws RepositoryException {
-    Document docCheckpoint = SharepointClient.docFromPropertyMap(map);
-    String listGuid = SharepointClient.listGuidFromPropertyMap(map);
+    Document docCheckpoint = Util.docFromPropertyMap(map);
+    String listGuid = Util.listGuidFromPropertyMap(map);
 
     /* fix the GlobalState to match 'doc'. Since the Connector Manager may
      * have finished several lists, we have to iterate through all the 
@@ -145,9 +144,9 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    * (com.google.enterprise.connector.spi.PropertyMap)
    */
   public String checkpoint(PropertyMap map) throws RepositoryException {
-    Document doc = SharepointClient.docFromPropertyMap(map);
+    Document doc = Util.docFromPropertyMap(map);
     logger.info("checkpoint received for " + doc.getUrl() + " in list " +
-        SharepointClient.listGuidFromPropertyMap(map) + " with date " +
+        Util.listGuidFromPropertyMap(map) + " with date " +
         Util.formatDate(Util.calendarToJoda(doc.getLastMod())));
     implementCheckpoint(map);
     logger.info("checkpoint processed; saving GlobalState to disk.");
@@ -190,7 +189,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
         for (Iterator iterProp = pm.getProperties(); iterProp.hasNext(); ) {
           Property prop = (Property) iterProp.next();
           System.out.println(prop.getName().toString() +
-              " = " + prop.getValue().toString());
+              " = " + prop.getValue().getString());
         }
       }
     } catch (RepositoryException e) {
