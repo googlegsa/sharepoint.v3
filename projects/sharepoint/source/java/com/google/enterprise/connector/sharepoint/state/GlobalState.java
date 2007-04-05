@@ -18,7 +18,9 @@
 package com.google.enterprise.connector.sharepoint.state;
 
 import com.google.enterprise.connector.persist.PrefsStore;
+import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;

@@ -14,7 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub;
+import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetAttachmentCollection;
+import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItemChanges;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItems;
 import com.google.enterprise.connector.spi.SimpleValue;
 
@@ -146,17 +149,25 @@ public class ListsWS {
                   Util.listItemsStringToCalendar(lastModified));             
               listItems.add(doc);
             } catch (ParseException e) {
-              throw new SharepointException(e.toString());
+              throw new SharepointException(e.toString(), e);
             }                         
           }
         }
       }
     } catch (RemoteException e) {
-      throw new SharepointException(e.toString());
+      throw new SharepointException(e.toString(), e);
     }     
     return listItems;
   }
   
+  /**
+   * Gets all the list item changes of a particular list since a particular 
+   * time.
+   * @param listName internal name of the list
+   * @return list of sharepoint documents corresponding to items in the list. 
+   * These are ordered by last Modified time.
+   * @throws SharepointException 
+   */
   public List getListItemChanges(String listName, Calendar since) 
       throws SharepointException {
     ArrayList<Document> listItems = new ArrayList<Document>();
@@ -174,7 +185,7 @@ public class ListsWS {
       ListsStub.GetListItemChangesResponse res = stub.GetListItemChanges(req);
       OMFactory omf = OMAbstractFactory.getOMFactory();
       OMElement oe = res.getGetListItemChangesResult().getOMElement
-          (GetListItems.MY_QNAME, omf);
+          (GetListItemChanges.MY_QNAME, omf);
       StringBuffer url = new StringBuffer();
       for (Iterator<OMElement> ita = oe.getChildElements(); ita.hasNext(); ) {
         OMElement resultOmElement = ita.next();
@@ -190,25 +201,95 @@ public class ListsWS {
                 new QName("ows_Modified")).getAttributeValue();
             String fileName = rowOmElement.getAttribute(
                 new QName("ows_FileRef")).getAttributeValue();
+            /*
+             * An example of ows_FileRef is 
+             * 1;#unittest/Shared Documents/sync.doc 
+             * We need to get rid of 1;#
+             */
             fileName = fileName.substring(fileName.indexOf("#") + 1);                    
             url.setLength(0);
             url.append(urlPrefix);
-            url.append(fileName);       
+            url.append(fileName);    
+            String metaInfo = rowOmElement.getAttribute(
+                new QName("ows_MetaInfo")).getAttributeValue();
+            String objType = rowOmElement.getAttribute(
+                new QName("ows_FSObjType")).getAttributeValue();
+            String[] arrayOfMetaInfo = metaInfo.split("\n");
+            String author = null;
+            for (String authorMeta : arrayOfMetaInfo) {
+              if (authorMeta.startsWith("vti_author")) {
+                author =authorMeta.substring
+                    (authorMeta.indexOf(":") + 1).trim();                                
+              }
+            }            
             try {
               Document doc;
               doc = new Document(docId, url.toString(), 
-                  Util.listItemChangesStringToCalendar(lastModified));             
+                  Util.listItemChangesStringToCalendar(lastModified));
+              doc.setObjType(objType);
+              if (author != null) {
+                doc.setAuthor(author);
+              }
               listItems.add(doc);
             } catch (ParseException e) {
-              throw new SharepointException(e.toString());
+              throw new SharepointException(e.toString(), e);
             }                         
           }
         }
       }
       Collections.sort(listItems);
     } catch (RemoteException e) {
-      throw new SharepointException(e.toString());
+      throw new SharepointException(e.toString(), e);
     }     
     return listItems;
   }  
+  
+  /**
+   * Gets all the attachments of a particular list item.
+   * @param baseList List to which the item belongs
+   * @param listItem list item for which the attachments need to be retrieved.
+   * @return list of sharepoint documents corresponding to attachments
+   * for the given list item. 
+   * These are ordered by last Modified time.
+   * @throws SharepointException 
+   */
+  public List getAttachments(BaseList baseList, Document listItem) 
+      throws SharepointException {
+    String listName = baseList.getInternalName();
+    /*
+     * An example of docId is 3;#{BC0E981B-FAA5-4476-A44F-83EA27155513}.
+     * For listItemId, we need to pass "3". 
+     */
+   
+    String arrayOflistItemId[] = listItem.getDocId().split(";#");
+    String listItemId = arrayOflistItemId[0];
+    ArrayList<Document> listAttachments = new ArrayList<Document>();
+    ListsStub.GetAttachmentCollection req = 
+        new ListsStub.GetAttachmentCollection();
+    req.setListName(listName);
+    req.setListItemID(listItemId);
+    try {
+      ListsStub.GetAttachmentCollectionResponse res = 
+          stub.GetAttachmentCollection(req);
+      OMFactory omf = OMAbstractFactory.getOMFactory();
+      OMElement oe = res.getGetAttachmentCollectionResult().getOMElement
+          (GetAttachmentCollection.MY_QNAME, omf);
+      Iterator<OMElement> ita = oe.getChildElements();
+      OMElement attachmentsOmElement = ita.next();
+      Iterator<OMElement> attachmentsIt =
+          attachmentsOmElement.getChildElements();      
+      for (Iterator<OMElement> attachmentIt = 
+          attachmentsOmElement.getChildElements(); attachmentsIt.hasNext();) {
+        OMElement attachmentOmElement = attachmentsIt.next();        
+        String url = attachmentOmElement.getText();               
+        Document doc;
+        doc = new Document(url, url, baseList.getLastMod());        
+        listAttachments.add(doc);                
+      }
+      Collections.sort(listAttachments);
+    } catch (RemoteException e) {
+      throw new SharepointException(e.toString(), e);
+    }
+    return listAttachments;
+  }
 }

@@ -1,5 +1,7 @@
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.Util;
+
 import junit.framework.TestCase;
 
 import java.text.ParseException;
@@ -58,5 +60,29 @@ public class ListsWSTest extends TestCase {
     } catch (ParseException e) {
       e.printStackTrace();
     }    
+  }
+  
+  public void testGetAttachments() {
+    final String listName = "{3D97F002-39A2-463B-9343-0830CCC9CE49}";    
+    try {
+      BaseList baseList = new BaseList(
+          "{3D97F002-39A2-463B-9343-0830CCC9CE49}", "Test List", "Test Type",
+          Util.listItemsStringToCalendar("2007-03-15 23:00:40"));
+      Document listItem = new Document(
+          "3;#{3D97F002-39A2-463B-9343-0830CCC9CE49}", "http://docId", 
+          Util.listItemsStringToCalendar("2007-03-15 23:00:40"), "author_foo",
+          "1");      
+      List attachments = listsWS.getAttachments(baseList, listItem);
+      System.out.println("Attachments found  - ");
+      for (int i = 0; i < attachments.size(); i++) {
+        Document doc = (Document) attachments.get(i);
+        System.out.println(doc.getUrl());
+      }
+      assertEquals(2, attachments.size());
+    } catch (ParseException e1) {
+      e1.printStackTrace();
+    } catch (SharepointException e) {
+      e.printStackTrace();
+    }
   }
 }

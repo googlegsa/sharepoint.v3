@@ -63,7 +63,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
         numDocs++;         
        }
       assertTrue(found);
-      assertEquals(numDocs, 7);
+      assertEquals(10, numDocs);
     } catch (RepositoryException e) {
       e.printStackTrace();
       fail("caught exception " + e.toString());
@@ -82,7 +82,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
         Property urlProp = pm.getProperty(SpiConstants.PROPNAME_SEARCHURL);
         String url = urlProp.getValue().getString();
         System.out.println(url + " from " + 
-            pm.getProperty(SharepointClient.LIST_GUID).getValue().getString());
+            pm.getProperty(Util.LIST_GUID).getValue().getString());
         if (url.equals("http://entpoint05.corp.google.com:80/unittest" + 
             "/Shared Documents/sync.doc")) {
           found = true;
@@ -101,7 +101,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
         Property urlProp = pm.getProperty(SpiConstants.PROPNAME_SEARCHURL);
         String url = urlProp.getValue().getString();
         System.out.println(url + " from " + 
-            pm.getProperty(SharepointClient.LIST_GUID).getValue().getString());
+            pm.getProperty(Util.LIST_GUID).getValue().getString());
         if (url.equals("http://entpoint05.corp.google.com:80/unittest" +
             "/TestDocumentLibrary/TestFolder/webDav.doc")) {
           found = true;
@@ -133,7 +133,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
         Property urlProp = pm.getProperty(SpiConstants.PROPNAME_SEARCHURL);
         String url = urlProp.getValue().getString();
         System.out.println(url + " from " + 
-            pm.getProperty(SharepointClient.LIST_GUID).getValue().getString());
+            pm.getProperty(Util.LIST_GUID).getValue().getString());
         if (url.equals("http://entpoint05.corp.google.com:80/unittest" + 
             "/Shared Documents/sync.doc")) {
           found = true;
@@ -159,7 +159,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
         Property urlProp = pm.getProperty(SpiConstants.PROPNAME_SEARCHURL);
         String url = urlProp.getValue().getString();
         System.out.println(url + " from " + 
-            pm.getProperty(SharepointClient.LIST_GUID).getValue().getString());
+            pm.getProperty(Util.LIST_GUID).getValue().getString());
         if (url.equals("http://entpoint05.corp.google.com:80/unittest" +
             "/TestDocumentLibrary/TestFolder/webDav.doc")) {
           found = true;

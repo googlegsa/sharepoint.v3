@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf_sList;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf_sWebWithTime;
@@ -36,6 +37,8 @@ import java.util.List;
 public class SiteDataWS {   
   
   private static final String siteDataEndpoint = "/_vti_bin/SiteData.asmx";
+  public static final String DOC_LIB = "DocumentLibrary";
+  public static final String GENERIC_LIST = "GenericList";
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private SiteDataStub stub;
@@ -96,10 +99,29 @@ public class SiteDataWS {
   }
    
   /**
-   * Gets the collection of all the lists on the sharepoint server.
+   * Gets the collection of all the Document Libraries on the sharepoint server.
    * @return list of BaseList objects.
+   * @throws SharepointException
    */
   public  List getDocumentLibraries() throws SharepointException {
+    return getNamedLists(DOC_LIB);
+  }
+  
+  /**
+   * Gets the collection of all the Generic Lists on the sharepoint server.
+   * @return list of BaseList objects.
+   * @throws SharepointException
+   */
+  public  List getGenericLists() throws SharepointException {
+    return getNamedLists(GENERIC_LIST);
+  }
+  
+  /**
+   * Gets the collection of all the lists on the sharepoint server which are
+   * of a given type. E.g., DocumentLibrary
+   * @return list of BaseList objects.
+   */
+  private List getNamedLists(String baseType) throws SharepointException {
     ArrayList<BaseList> listCollection = new ArrayList<BaseList>();      
     try {
       SiteDataStub.GetListCollection req = 
@@ -110,11 +132,11 @@ public class SiteDataWS {
       _sList[] sl = asl.get_sList();
       if (sl != null) {
         for(int i=0; i<sl.length; i++) {
-          try {
-            if(sl[i].getBaseType().equals("DocumentLibrary")) {
+          try {                     
+            if(sl[i].getBaseType().equals(baseType)) {
               BaseList list = new BaseList(sl[i].getInternalName(), 
                 sl[i].getTitle(), sl[i].getBaseType(), 
-                Util.siteDataStringToCalendar(sl[i].getLastModified()));            
+                Util.siteDataStringToCalendar(sl[i].getLastModified()));              
               listCollection.add(list);
             }
           } catch (ParseException e) {

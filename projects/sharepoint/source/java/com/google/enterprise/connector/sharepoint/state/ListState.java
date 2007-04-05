@@ -17,18 +17,18 @@
 package com.google.enterprise.connector.sharepoint.state;
 
 
+import com.google.enterprise.connector.sharepoint.Util;
+import com.google.enterprise.connector.sharepoint.client.Document;
+import com.google.enterprise.connector.sharepoint.client.SharepointException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
-
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
-import com.google.enterprise.connector.sharepoint.client.Document;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
