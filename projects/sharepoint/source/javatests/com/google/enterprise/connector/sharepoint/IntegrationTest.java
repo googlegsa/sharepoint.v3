@@ -74,8 +74,7 @@ public class IntegrationTest extends TestCase {
     runTestBatches(2);
     runTestBatches(3);
     runTestBatches(4);
-    runTestBatches(10);
-    
+    runTestBatches(11);
   }
 
   private void runTestBatches(int batchSize) throws InterruptedException,
@@ -103,7 +102,7 @@ public class IntegrationTest extends TestCase {
       System.out.println("Batch# " + batchNumber + " docs " + docsProcessed +
           " checkpoint " + connectorStateStore.getConnectorState(connectorName));
       batchNumber++;
-    }
-    Assert.assertEquals(7,totalDocsProcessed);
+    }    
+    Assert.assertEquals(10,totalDocsProcessed);
   }
 }

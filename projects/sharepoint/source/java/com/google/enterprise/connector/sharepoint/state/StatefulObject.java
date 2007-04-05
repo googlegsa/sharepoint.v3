@@ -16,18 +16,14 @@
  */
 package com.google.enterprise.connector.sharepoint.state;
 
+import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
-import org.joda.time.Chronology;
+
 import org.joda.time.DateTime;
-import org.joda.time.convert.ConverterManager;
-import org.joda.time.convert.InstantConverter;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 /**
  * Base class of all Sharepoint-related objects which can be persisted

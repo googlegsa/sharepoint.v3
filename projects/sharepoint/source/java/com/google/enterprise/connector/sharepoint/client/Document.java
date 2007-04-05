@@ -22,9 +22,13 @@ import java.util.Calendar;
  */
 public class Document implements Comparable<Document>{
   
+  public final static String NO_OBJ_TYPE = "No Object Type";
+  public final static String NO_AUTHOR = "No author";
   private String docId;
   private String url;
   private Calendar lastMod;
+  private String author = NO_AUTHOR;
+  private String objType = NO_OBJ_TYPE;
   
   public Document(String docId, String url, Calendar lastMod) {
     this.docId = docId;
@@ -32,6 +36,15 @@ public class Document implements Comparable<Document>{
     this.lastMod = lastMod;
   }
 
+  public Document(String docId, String url, Calendar lastMod, String author,
+      String objType) {
+    this.docId = docId;
+    this.url = url;
+    this.lastMod = lastMod;
+    this.author = author;
+    this.objType = objType;
+  }
+  
   public Calendar getLastMod() {
     return lastMod;
   }
@@ -42,8 +55,24 @@ public class Document implements Comparable<Document>{
 
   public String getUrl() {
     return url;
-  }   
+  }      
   
+  public String getAuthor() {
+    return author;
+  }
+
+  public String getObjType() {
+    return objType;
+  }
+  
+  public void setAuthor(String author) {
+    this.author = author;
+  }
+  
+  public void setObjType(String objType) {
+    this.objType = objType;
+  }
+
   public int compareTo(Document doc) {
     int comparison = this.lastMod.getTime().compareTo(doc.lastMod.getTime());
     if (0 == comparison) {

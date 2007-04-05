@@ -64,12 +64,26 @@ public class SiteDataWSTest extends TestCase {
       System.out.println("Document Libraries found - ");
       for(int i=0; i<listCollection.size(); i++) {
         BaseList baseList = (BaseList) listCollection.get(i);
-        if(baseList.getType().equals("DocumentLibrary")) {
-          System.out.println(baseList.getTitle());
-          numDocLib++;
-        }
+        System.out.println(baseList.getTitle());        
+        numDocLib++;        
       }
       assertEquals(2, numDocLib);
+    } catch (SharepointException e) {
+      e.printStackTrace();
+    }
+  }
+  
+  public void testGetGenericLists() {
+    int numDocLib = 0;
+    try {
+      List listCollection = siteDataWS.getGenericLists();
+      System.out.println("Generic Lists found - ");
+      for(int i=0; i<listCollection.size(); i++) {
+        BaseList baseList = (BaseList) listCollection.get(i);
+        System.out.println(baseList.getTitle());        
+        numDocLib++;        
+      }
+      assertEquals(5, numDocLib);
     } catch (SharepointException e) {
       e.printStackTrace();
     }
