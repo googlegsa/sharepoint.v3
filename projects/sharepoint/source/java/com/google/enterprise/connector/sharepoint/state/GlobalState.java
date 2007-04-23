@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
@@ -54,12 +55,25 @@ import javax.xml.transform.stream.StreamResult;
 
 
 /**
- * Represents the state of a site. Can be persisted.
+ * Represents the state of a site. Can be persisted to XML and
+ * loaded again from the XML. This would normally be done if the
+ * connector wants to be restartable.
+ * GlobalState can have an arbitrary number of StatefulObject-derived
+ * classes injected into it at initialization time. Its state is
+ * composed almost entirely of the state of those classes. (the "almost"
+ * comes from the fact that GlobalState stores the "current" member of
+ * each dependent class, if any exists)
+ * As of April 2007, there is only one StatefulObject -- ListState.
+ *
+ * Classes:
+ *    GlobalState.
+ * related classes:
+ *   StatefulObject (base class)
+ *   ListState (instance of StatefulObject)
  *
  */
 public class GlobalState {
-  private static Log logger;
-  private boolean refreshing = false;
+  private static Log logger = LogFactory.getLog(GlobalState.class);
   private static final String CONNECTOR_NAME = "Sharepoint";
 
   /**
@@ -68,6 +82,8 @@ public class GlobalState {
    */
   private static HashMap<String, Class<StatefulObject>> dependencies =
     new HashMap<String, Class<StatefulObject>>(3);
+
+  private boolean refreshing = false;
 
   /**
    * For each dependency, we keep two data structures: a TreeSet relying on
@@ -80,51 +96,43 @@ public class GlobalState {
     new HashMap<String, HashMap<String, StatefulObject>>(3);
 
   /**
-   * The "current" object for each dependency. There can be either zero
-   * or one current object, per dependency (e.g. ListState).
+   * The "current" object for each dependency, e.g. ListState. The current
+   * object may be null.
    */
   protected HashMap<String, StatefulObject> currentObjs =
     new HashMap<String, StatefulObject>(3);
 
   /**
-   * Internal XML parsing class.  For loading our state from XML. Mainly
-   * passes on the XML to sub-handlers, who are gotten from the elementMap
-   * object.
-   *
-   */
-
-  /**
    * The dependency-injection point.  A StatefulObject object is a stateful
    * object which can save its state to XML and load from that XML. GlobalState
-   * must also act as a Factory for  
+   * must also act as a Factory for the class.
    * @param dependency class, which must be assignable from StatefulObject
    */
-  public static void injectDependency(Class dependency) 
+  public static void injectDependency(Class dependency)
     throws SharepointException {
     if (!StatefulObject.class.isAssignableFrom(dependency)) {
-      throw new SharepointException("invalid class: " + 
+      throw new SharepointException("invalid class: " +
           dependency.getCanonicalName());
     }
     String className = dependency.getSimpleName();
     dependencies.put(className, dependency);
   }
-  
+
   /**
-   * Constructor. addDependency() (a static method) should have been called
+   * Constructor. injectDependency(), a static method, should have been called
    * before this.
    * @throws SharepointException if there are no dependencies (since that
    * almost certainly indicates a programming error)
    */
   public GlobalState() throws SharepointException{
-    logger = LogFactory.getLog(GlobalState.class);
-    
+
     // for each dependency, create the two maps (on lastMod and key)
-    Set<Entry<String, Class<StatefulObject>>> entries = 
+    Set<Entry<String, Class<StatefulObject>>> entries =
       dependencies.entrySet();
     if (entries.size() == 0) {
       throw new SharepointException("bad initialization (no dependencies)");
     }
-    for (Iterator<Entry<String, Class<StatefulObject>>> iter = 
+    for (Iterator<Entry<String, Class<StatefulObject>>> iter =
         entries.iterator(); iter.hasNext(); ) {
       Entry<String, Class<StatefulObject>> entry = iter.next();
       String simpleName = entry.getValue().getSimpleName();
@@ -133,17 +141,17 @@ public class GlobalState {
       currentObjs.put(simpleName, null);
     }
   }
-  
+
   /**
-   * Create a StatefulObject (e.g. a ListState). 
+   * Create a StatefulObject (e.g. a ListState).
    * @param simpleName  simple name of the class, e.g. "ListState", which
-   * must be one of this class's dependencies (staticly added via 
+   * must be one of this class's dependencies (staticly added via
    * addDependency()).
    * @param key the "primary key" of the object. For ListState this would
    * probably be the GUID.
    * @param lastMod most recent time this object was modified.
    * @return new object
-   * @throws SharepointException if simpleName is not one of the 
+   * @throws SharepointException if simpleName is not one of the
    * dependencies of this object.
    */
   public StatefulObject makeDependentObject(String simpleName,
@@ -164,22 +172,22 @@ public class GlobalState {
       throw new SharepointException("Internal error: " + e.toString());
     }
   }
-  
+
   /**
    * Convenience routine for clients who don't deal in Joda time.
    * @param simpleName
    * @param key
    * @param lastModCal (Calendar, not Joda time)
    * @return new object
-   * @throws SharepointException if simpleName is not one of the 
+   * @throws SharepointException if simpleName is not one of the
    * dependencies of this object.
    */
   public StatefulObject makeDependentObject(String simpleName,
       String key, Calendar lastModCal)  throws SharepointException {
-    return makeDependentObject(simpleName, key, 
+    return makeDependentObject(simpleName, key,
         Util.calendarToJoda(lastModCal));
   }
-  
+
   /**
    * Look up the key -> obj map for the class simpleName.  Since this is
    * a private routine, it's assumed that the class name is valid; otherwise
@@ -187,33 +195,33 @@ public class GlobalState {
    * @param simpleName
    * @return the HashMap for that class
    */
-  private HashMap<String, StatefulObject> getKeyMap(String simpleName) {
+  private Map<String, StatefulObject> getKeyMap(String simpleName) {
     return keyMaps.get(simpleName);
   }
-  
-  private TreeSet<StatefulObject> getDateMap(String simpleName) {
+
+  private SortedSet<StatefulObject> getDateMap(String simpleName) {
     return dateMaps.get(simpleName);
   }
   /**
    * Signal that a complete "refresh" cycle is beginning, where all sites
    * and all lists are being fetched from SharePoint.  This GlobalState will
    * keep track of which objects are still present.  At the endRefresh()
-   * call, objects no longer present may be removed. 
+   * call, objects no longer present may be removed.
    *
    */
   public void startRefresh() {
     refreshing = true;
     // for each dependency, set all the instances "not visited"
-    Set<Entry<String, Class<StatefulObject>>> dependencySet = 
+    Set<Entry<String, Class<StatefulObject>>> dependencySet =
       dependencies.entrySet();
-    for (Iterator<Entry<String, Class<StatefulObject>>> iter = 
+    for (Iterator<Entry<String, Class<StatefulObject>>> iter =
       dependencySet.iterator(); iter.hasNext(); ) {
       Entry<String, Class<StatefulObject>> dependency = iter.next();
       String simpleName = dependency.getValue().getSimpleName();
       setAllVisited(simpleName, false);
     }
   }
-  
+
   /**
    * Signals that the refresh cycle is over, and GlobalState may now
    * delete any StatefulObject which did not appear in a updateSite() /
@@ -224,15 +232,15 @@ public class GlobalState {
       logger.error("called endRefresh() when not in a refresh state");
       return;
     }
-    Set<Entry<String, Class<StatefulObject>>> dependencySet = 
+    Set<Entry<String, Class<StatefulObject>>> dependencySet =
       dependencies.entrySet();
-    for (Iterator<Entry<String, Class<StatefulObject>>> iterDependencies = 
+    for (Iterator<Entry<String, Class<StatefulObject>>> iterDependencies =
       dependencySet.iterator(); iterDependencies.hasNext(); ) {
       Entry<String, Class<StatefulObject>> dependency = iterDependencies.next();
       String simpleName = dependency.getValue().getSimpleName();
-      HashMap<String, StatefulObject> keyMap = getKeyMap(simpleName);
-      TreeSet<StatefulObject> dateMap = getDateMap(simpleName);
-      for (Iterator<StatefulObject> iterObj = dateMap.iterator(); 
+      Map<String, StatefulObject> keyMap = getKeyMap(simpleName);
+      SortedSet<StatefulObject> dateMap = getDateMap(simpleName);
+      for (Iterator<StatefulObject> iterObj = dateMap.iterator();
       iterObj.hasNext(); ) {
         StatefulObject obj = iterObj.next();
         if (!obj.isVisited()) {
@@ -250,41 +258,82 @@ public class GlobalState {
    * @param simpleName the name of the class for the desired objects
    *   (e.g. "ListState")
    * @return Iterator on the objects by lastModified time
-   * @throws SharepointException if simpleName is not one of the 
+   * @throws SharepointException if simpleName is not one of the
    *  dependencies of this class
    */
   public Iterator<StatefulObject> getIterator(String simpleName)
      throws SharepointException {
-    TreeSet<StatefulObject> dateMap = getDateMap(simpleName);
+    SortedSet<StatefulObject> dateMap = getDateMap(simpleName);
     if (dateMap == null) {
       throw new SharepointException("Internal error: no class " + simpleName);
     }
     return dateMap.iterator();
   }
- 
+
   /**
    * Lookup a StatefulObject by its key
    * @param simpleName class of the object
    * @param key primary key
    * @return object handle, or null if none found
-   * @throws SharepointException if simpleName is not one of the 
+   * @throws SharepointException if simpleName is not one of the
    *  dependencies of this class
    */
-  public StatefulObject lookupObject(String simpleName, String key) 
+  public StatefulObject lookupObject(String simpleName, String key)
       throws SharepointException{
-    HashMap<String, StatefulObject> keyMap = getKeyMap(simpleName);
+    Map<String, StatefulObject> keyMap = getKeyMap(simpleName);
     if (keyMap == null) {
       throw new SharepointException("Internal error: no class " + simpleName);
     }
     return keyMap.get(key);
   }
-  
+
   /**
-   * Cast our state into XML. This is mainly delegated to the dependent
-   * classes (e.g. ListState)
+   * Return an XML string representing the current state. Since our state
+   * is comprised almost entirely of the state of the dependent
+   * classes (e.g. ListState), this is largely done by calling an
+   * analogous method on those classes. Here is an example (note that
+   * the only state that belongs to GlobalState itself if the "current"
+   * object for each dependent class).  Consult ListState for details on
+   * its XML representation.
+   * <pre>
+    <?xml version="1.0" encoding="UTF-8"?>
+    <state>
+      <current id="foo" type="ListState"/>
+      <ListState id="bar">
+        <lastMod>20070420T154348.133-0700</lastMod>
+        <URL/>
+        <lastDocCrawled>
+          <document id="id2">
+            <lastMod>20070420T154348.133-0700</lastMod>
+            <url>url2</url>
+          </document>
+        </lastDocCrawled>
+      </ListState>
+      <ListState id="foo">
+        <lastMod>20070420T154348.133-0700</lastMod>
+        <URL/>
+        <lastDocCrawled>
+          <document id="id1">
+            <lastMod>20070420T154348.133-0700</lastMod>
+            <url>url1</url>
+          </document>
+        </lastDocCrawled>
+        <crawlQueue>
+          <document id="id3">
+            <lastMod>20070420T154348.133-0700</lastMod>
+            <url>url3</url>
+          </document>
+          <document id="id4">
+            <lastMod>20070420T154348.133-0700</lastMod>
+            <url>url4</url>
+          </document>
+        </crawlQueue>
+      </ListState>
+    </state>
+   * </pre>
    * @return XML string
    */
-  public String saveStateXML() throws SharepointException {
+  public String getStateXML() throws SharepointException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     org.w3c.dom.Document doc;
     try {
@@ -292,14 +341,14 @@ public class GlobalState {
       doc = builder.newDocument();
     } catch (ParserConfigurationException e) {
       throw new SharepointException(e.toString());
-    }  
+    }
     Element top = doc.createElement("state");
     doc.appendChild(top);
-    Set<Entry<String, Class<StatefulObject>>> dependencySet = 
+    Set<Entry<String, Class<StatefulObject>>> dependencySet =
       dependencies.entrySet();
 
     // first dump our "current" objects, for each dependency:
-    for (Iterator<Entry<String, Class<StatefulObject>>> iterDependencies = 
+    for (Iterator<Entry<String, Class<StatefulObject>>> iterDependencies =
       dependencySet.iterator(); iterDependencies.hasNext(); ) {
       Entry<String, Class<StatefulObject>> dependency = iterDependencies.next();
       String simpleName = dependency.getValue().getSimpleName();
@@ -313,11 +362,11 @@ public class GlobalState {
     }
 
     // now dump the actual dependent objects (ListState, initially):
-    for (Iterator<Entry<String, Class<StatefulObject>>> iterDependencies = 
+    for (Iterator<Entry<String, Class<StatefulObject>>> iterDependencies =
       dependencySet.iterator(); iterDependencies.hasNext(); ) {
       Entry<String, Class<StatefulObject>> dependency = iterDependencies.next();
-      String simpleName = dependency.getValue().getSimpleName();      
-      TreeSet<StatefulObject> dateMap = getDateMap(simpleName);
+      String simpleName = dependency.getValue().getSimpleName();
+      SortedSet<StatefulObject> dateMap = getDateMap(simpleName);
       for (Iterator<StatefulObject> iterObj = dateMap.iterator();
       iterObj.hasNext(); ) {
         StatefulObject obj = iterObj.next();
@@ -344,18 +393,23 @@ public class GlobalState {
     }
     return os.toString();
   }
- 
+
+  /**
+   * Creates an XML representation of our state, and saves it, using the
+   * PrefsStore mechanism.
+   * @throws SharepointException
+   */
   public void saveState()  throws SharepointException {
     PrefsStore store = new PrefsStore();
-    String xml = saveStateXML();
+    String xml = getStateXML();
     logger.info(xml);
     store.storeConnectorState(CONNECTOR_NAME, xml);
   }
-  
+
   /**
-   * Load from persistent state. 
+   * Load from XML.
    * @param persisted - a string representing the output of a previous
-   * dump() call.
+   * getStateXML() call.
    */
   public void loadStateXML(String persisted) throws SharepointException {
     try {
@@ -369,7 +423,7 @@ public class GlobalState {
       }
       // temporary list of the "current" objects (just their keys):
       HashMap<String, String> currentKeys = new HashMap<String, String>();
-      
+
       NodeList children = nodeList.item(0).getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
         Node node = children.item(i);
@@ -398,12 +452,12 @@ public class GlobalState {
           throw new SharepointException(e.toString());
         } catch (IllegalAccessException e) {
           throw new SharepointException(e.toString());
-        }        
+        }
       }
       // now, for each "current", for which so far we've only the key, find the
       // actual object:
       Set<Entry<String, String>> entries = currentKeys.entrySet();
-      for (Iterator<Entry<String, String>> iter = entries.iterator(); 
+      for (Iterator<Entry<String, String>> iter = entries.iterator();
         iter.hasNext(); ) {
         Entry<String, String> entry = iter.next();
         String simpleName = entry.getKey();
@@ -464,7 +518,7 @@ public class GlobalState {
       obj.setCurrent(true);
     }
   }
-  
+
   /**
    * Get the current object for a given dependency (e.g. ListState)
    * @param simpleName
@@ -472,7 +526,7 @@ public class GlobalState {
    * @throws SharepointException if simpleName doesn't correspond to a
    *   known dependency
    */
-  public StatefulObject getCurrentObject(String simpleName) 
+  public StatefulObject getCurrentObject(String simpleName)
   throws SharepointException {
     if (dependencies.get(simpleName) == null) {
       throw new SharepointException("Internal error: bad class name " +
@@ -480,7 +534,7 @@ public class GlobalState {
     }
     return currentObjs.get(simpleName);
   }
-  
+
   /**
    * For a single StatefulObject, update the two
    * data structures (url -> obj and time -> obj) and mark
@@ -491,8 +545,8 @@ public class GlobalState {
   public void updateStatefulObject(StatefulObject state, DateTime time)
     throws SharepointException {
     String simpleName = state.getClass().getSimpleName();
-    HashMap<String, StatefulObject> keyMap = getKeyMap(simpleName);
-    TreeSet<StatefulObject> dateMap = getDateMap(simpleName);
+    Map<String, StatefulObject> keyMap = getKeyMap(simpleName);
+    SortedSet<StatefulObject> dateMap = getDateMap(simpleName);
     if (keyMap == null || dateMap == null) {
       throw new SharepointException("Internal error: invalid class");
     }
@@ -511,17 +565,22 @@ public class GlobalState {
     }
     dateMap.add(state);
   }
-  
+
+  /**
+   * Mark all the dependent objects "visited"
+   * @param simpleName
+   * @param visited
+   */
   private void setAllVisited(String simpleName, boolean visited) {
-    HashMap<String, StatefulObject> keyMap = getKeyMap(simpleName);
+    Map<String, StatefulObject> keyMap = getKeyMap(simpleName);
     Set<Entry<String, StatefulObject>> entries = keyMap.entrySet();
     for (Iterator iter = entries.iterator(); iter.hasNext(); ) {
-      Map.Entry<String, StatefulObject> entry = 
+      Map.Entry<String, StatefulObject> entry =
         (Entry<String, StatefulObject>) iter.next();
       StatefulObject state = entry.getValue();
       state.setVisited(visited);
     }
   }
-  
+
 
 }

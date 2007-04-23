@@ -21,12 +21,14 @@ import com.google.enterprise.connector.sharepoint.client.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.StatefulObject;
+import com.google.enterprise.connector.sharepoint.state.Util;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.QueryTraversalManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.ResultSet;
 import com.google.enterprise.connector.spi.SimpleResultSet;
+import com.google.enterprise.connector.traversal.QueryTraverserMonitor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +51,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
   private SharepointConnector connector;
   protected GlobalState globalState; // not private, so the unittest can see it
   private int hint = -1;
+  private QueryTraverserMonitor monitor;
   
   public SharepointQueryTraversalManager(SharepointConnector connector,
     SharepointClientContext sharepointClientContext) 
@@ -73,8 +76,8 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
   }
   
   private void implementCheckpoint(PropertyMap map) throws RepositoryException {
-    Document docCheckpoint = Util.docFromPropertyMap(map);
-    String listGuid = Util.listGuidFromPropertyMap(map);
+    Document docCheckpoint = SharepointClient.docFromPropertyMap(map);
+    String listGuid = SharepointClient.listGuidFromPropertyMap(map);
 
     /* fix the GlobalState to match 'doc'. Since the Connector Manager may
      * have finished several lists, we have to iterate through all the 
@@ -144,9 +147,9 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    * (com.google.enterprise.connector.spi.PropertyMap)
    */
   public String checkpoint(PropertyMap map) throws RepositoryException {
-    Document doc = Util.docFromPropertyMap(map);
+    Document doc = SharepointClient.docFromPropertyMap(map);
     logger.info("checkpoint received for " + doc.getUrl() + " in list " +
-        Util.listGuidFromPropertyMap(map) + " with date " +
+        SharepointClient.listGuidFromPropertyMap(map) + " with date " +
         Util.formatDate(Util.calendarToJoda(doc.getLastMod())));
     implementCheckpoint(map);
     logger.info("checkpoint processed; saving GlobalState to disk.");
@@ -158,8 +161,10 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    * @see com.google.enterprise.connector.spi.QueryTraversalManager
    * #resumeTraversal(java.lang.String)
    */
-  public ResultSet resumeTraversal(String arg0) throws RepositoryException {
+  public ResultSet resumeTraversal(String arg0, QueryTraverserMonitor monitor) 
+    throws RepositoryException {
     logger.info("resumeTraversal");
+    this.monitor = monitor;
     return doTraversal();
   }
 
@@ -176,8 +181,10 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    * @see com.google.enterprise.connector.spi.QueryTraversalManager
    * #startTraversal()
    */
-  public ResultSet startTraversal() throws RepositoryException {
+  public ResultSet startTraversal(QueryTraverserMonitor monitor) 
+    throws RepositoryException {
     logger.info("startTraversal");
+    this.monitor = monitor;
     return doTraversal();
   }
 
@@ -189,7 +196,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
         for (Iterator iterProp = pm.getProperties(); iterProp.hasNext(); ) {
           Property prop = (Property) iterProp.next();
           System.out.println(prop.getName().toString() +
-              " = " + prop.getValue().getString());
+              " = " + prop.getValue().toString());
         }
       }
     } catch (RepositoryException e) {
@@ -207,6 +214,9 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
   private ResultSet doTraversal() throws RepositoryException {
     SharepointClient sharepointClient = 
       new SharepointClient(sharepointClientContext);
+    if (this.monitor != null) {
+      this.monitor.requestTimeout(Long.MAX_VALUE);
+    }
     SimpleResultSet rs = sharepointClient.traverse(globalState, hint);
     // if the set is empty, then we need to sweep Sharepoint again:
     if (rs.size() == 0) {

@@ -38,7 +38,10 @@ public class SharepointClientContext {
   
   public SharepointClientContext(String sharepointUrl, String domain,
                                  String username, String password) {
-    
+    if (sharepointUrl.endsWith("/")) {
+      sharepointUrl = sharepointUrl.substring(
+          0, sharepointUrl.lastIndexOf("/"));
+    }
     try {
       URL url = new URL(sharepointUrl);
       this.host = url.getHost();

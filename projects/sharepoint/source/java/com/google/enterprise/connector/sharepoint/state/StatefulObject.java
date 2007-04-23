@@ -16,14 +16,14 @@
  */
 package com.google.enterprise.connector.sharepoint.state;
 
-import com.google.enterprise.connector.sharepoint.Util;
+import com.google.enterprise.connector.sharepoint.state.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
-
 import org.joda.time.DateTime;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.util.Calendar;
+
 
 /**
  * Base class of all Sharepoint-related objects which can be persisted
@@ -98,7 +98,7 @@ public abstract class StatefulObject
     if (lastModComparison != 0) {
       return lastModComparison;
     } else {
-      return this.key.compareTo(state.key) ;
+      return this.key.compareTo(state.key);
     }
   }
  
