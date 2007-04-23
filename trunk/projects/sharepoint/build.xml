@@ -85,7 +85,7 @@
         <pathelement location="${spi.jarfile}"/>
         <pathelement location="${classes}"/>
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar"/>
+          <include name="*.jar"/>
         </fileset>
       </classpath>
     </javac>
@@ -95,10 +95,12 @@
     <junit haltonfailure="yes">
       <classpath>
         <pathelement location="${spi.jar.dir}/connector.jar"/>
+        <pathelement location="${spi.jar.dir}/connector_spi.jar"/>
         <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
-        <pathelement location="${spi.jarfile}"/>
+        <pathelement location="${spi.jar.dir}/connector_util.jar"/>
+        <pathelement location="${jarfile}"/>
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar"/>
+          <include name="*.jar"/>
         </fileset>
         <pathelement location="${tests.classes}"/>
         <pathelement location="${tests.src}"/>
