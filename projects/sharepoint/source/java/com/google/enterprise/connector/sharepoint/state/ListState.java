@@ -198,9 +198,8 @@ public class ListState extends StatefulObject {
         Document doc = iter.next();
         System.out.println(doc.getLastMod().getTime() + ", " + doc.getUrl());
       }
-    }
-    else {
-      System.out.println("Empty crawl queue for "+ getUrl());
+    } else {
+      System.out.println("Empty crawl queue for " + getUrl());
     }
   }
   
@@ -217,16 +216,16 @@ public class ListState extends StatefulObject {
     lastMod.appendChild(domDoc.createTextNode(
         Util.formatDate(Util.calendarToJoda(doc.getLastMod()))));
     element.appendChild(lastMod);
-    Element url = domDoc.createElement("url");
+    Element urlTmp = domDoc.createElement("url");
     try {
-      url.appendChild(domDoc.createTextNode(
+      urlTmp.appendChild(domDoc.createTextNode(
           URLEncoder.encode(doc.getUrl(), "UTF-8")));
     } catch (DOMException e) {
       throw new SharepointException(e.toString());
     } catch (UnsupportedEncodingException e) {
       throw new SharepointException(e.toString());
     }
-    element.appendChild(url);
+    element.appendChild(urlTmp);
     return element;
   }
   
@@ -242,10 +241,10 @@ public class ListState extends StatefulObject {
     element.appendChild(lastMod);
     
     // the URL
-    Element url = domDoc.createElement("URL");
+    Element urlTmp = domDoc.createElement("URL");
     Text urlText = domDoc.createTextNode(getUrl());
-    url.appendChild(urlText);
-    element.appendChild(url);
+    urlTmp.appendChild(urlText);
+    element.appendChild(urlTmp);
     
     // dump the "last doc crawled"
     if (lastDocCrawled != null) {
@@ -279,8 +278,8 @@ public class ListState extends StatefulObject {
     DateTime lastMod = Util.parseDate(lastModString);
     GregorianCalendar calDate = new GregorianCalendar();
     calDate.setTimeInMillis(lastMod.getMillis());
-    String url = URLDecoder.decode(urlNodeList.item(0).getTextContent());
-    return new Document(id, url, calDate);
+    String urlTmp = URLDecoder.decode(urlNodeList.item(0).getTextContent());
+    return new Document(id, urlTmp, calDate);
   }
   
   public void loadFromDOM(Element element) throws SharepointException {

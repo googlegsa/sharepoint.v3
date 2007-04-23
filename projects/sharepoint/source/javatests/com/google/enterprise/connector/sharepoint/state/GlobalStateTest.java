@@ -45,6 +45,11 @@ public class GlobalStateTest extends TestCase {
     }
   }
   
+  /**
+   * Test basic functionality: create a GlobalState, save it to XML,
+   * load another from XML, save THAT to XML, and verify that the XML
+   * is the same.
+   */
   public final void testBasic() {
     DateTime time1 = new DateTime();
     DateTime time2 = new DateTime();
@@ -60,7 +65,7 @@ public class GlobalStateTest extends TestCase {
       fail();
     }
     try {
-      String output = state.saveStateXML();
+      String output = state.getStateXML();
       System.out.println(output + "\n\n");
       state.saveState();
       GlobalState state2 = null;
@@ -68,7 +73,7 @@ public class GlobalStateTest extends TestCase {
       state2 = new GlobalState();
       state2.loadState(); // load from the old GlobalState's XML
       // output of the new GlobalState should match the old one's:
-      String output2 = state2.saveStateXML();
+      String output2 = state2.getStateXML();
 
       assertEquals(output, output2);
 
@@ -108,7 +113,7 @@ public class GlobalStateTest extends TestCase {
       Document doc2 = new Document("id2", "url2", new GregorianCalendar());
       list2.setLastDocCrawled(doc2);
 
-      String output = state.saveStateXML();
+      String output = state.getStateXML();
       System.out.println(output);
       state.saveState();
       GlobalState state2 = null;
@@ -116,7 +121,7 @@ public class GlobalStateTest extends TestCase {
       state2 = new GlobalState();
       state2.loadState(); // load from the old GlobalState's XML
       // output of the new GlobalState should match the old one's:
-      String output2 = state2.saveStateXML();
+      String output2 = state2.getStateXML();
       assertEquals(output, output2);
     } catch (SharepointException e) {
       e.printStackTrace();
@@ -124,6 +129,9 @@ public class GlobalStateTest extends TestCase {
     }   
   }
   
+  /**
+   * tests that we can persistify the crawl queue, and reload from it
+   */
   public final void testCrawlQueue() {
     DateTime time1 = new DateTime();
     DateTime time2 = new DateTime();
@@ -147,7 +155,7 @@ public class GlobalStateTest extends TestCase {
       docTree.add(doc4);
       list1.setCrawlQueue(docTree);
       
-      String output = state.saveStateXML();
+      String output = state.getStateXML();
       System.out.println(output);
       state.saveState();
       GlobalState state2 = null;
@@ -155,7 +163,7 @@ public class GlobalStateTest extends TestCase {
       state2 = new GlobalState();
       state2.loadState(); // load from the old GlobalState's XML
       // output of the new GlobalState should match the old one's:
-      String output2 = state2.saveStateXML();
+      String output2 = state2.getStateXML();
       assertEquals(output, output2);
     } catch (SharepointException e) {
       e.printStackTrace();
