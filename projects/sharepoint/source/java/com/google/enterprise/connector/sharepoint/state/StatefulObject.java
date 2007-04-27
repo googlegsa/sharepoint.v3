@@ -16,7 +16,7 @@
  */
 package com.google.enterprise.connector.sharepoint.state;
 
-import com.google.enterprise.connector.sharepoint.state.Util;
+import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
 import org.joda.time.DateTime;
 import org.w3c.dom.Element;
