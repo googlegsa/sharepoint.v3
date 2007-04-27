@@ -88,6 +88,7 @@ public class ListsWS {
     req.setListName(listName);
     req.setQuery(null);
     req.setViewFields(null);
+    // req.setViewFields(SiteDataWS.getViewFields(listName));
     req.setRowLimit("");
     req.setViewName("");
     req.setWebID("");
@@ -123,6 +124,7 @@ public class ListsWS {
       OMFactory omf = OMAbstractFactory.getOMFactory();
       OMElement oe = res.getGetListItemsResult().getOMElement
           (GetListItems.MY_QNAME, omf);
+      System.out.println(oe.toString());
       StringBuffer url = new StringBuffer();
       for (Iterator<OMElement> ita = oe.getChildElements(); ita.hasNext(); ) {
         OMElement resultOmElement = ita.next();
