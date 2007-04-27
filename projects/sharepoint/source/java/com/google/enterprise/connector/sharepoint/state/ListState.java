@@ -17,7 +17,7 @@
 package com.google.enterprise.connector.sharepoint.state;
 
 
-import com.google.enterprise.connector.sharepoint.state.Util;
+import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.Document;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
 

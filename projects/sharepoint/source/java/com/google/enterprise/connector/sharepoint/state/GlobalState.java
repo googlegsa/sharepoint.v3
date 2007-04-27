@@ -18,7 +18,7 @@
 package com.google.enterprise.connector.sharepoint.state;
 
 import com.google.enterprise.connector.persist.PrefsStore;
-import com.google.enterprise.connector.sharepoint.state.Util;
+import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
 import org.apache.commons.logging.Log;
