@@ -89,13 +89,13 @@ public class ViewsWS {
 }
 
   /**
-   * Gets the viewFields for a given list. This is a partial (unfortunately)
+   * Gets the viewFields for a given list. This is a partial (unfortunately!)
    * list of the metadata available for members of the list.
    * @param listName internal name of the list
-   * @return   TODO  : List of the viewFields on this list
+   * @return  List of the viewFields on this list
    * @throws SharepointException
    */
-  public ArrayList<String> getViewNames(String listName) throws SharepointException {
+  public List<String> getViewNames(String listName) throws SharepointException {
     ArrayList<String> listItems = new ArrayList<String>();
     String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" +
         sharepointClientContext.getPort() + "/";

@@ -20,7 +20,7 @@ import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf_sWebWithTime;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sList;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sWebWithTime;
-
+import com.google.enterprise.connector.sharepoint.generated.ViewsStub;
 import org.apache.axis2.AxisFault;
 
 import java.rmi.RemoteException;
@@ -42,6 +42,7 @@ public class SiteDataWS {
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private SiteDataStub stub;
+  private ViewsWS viewsStub;
   
   public SiteDataWS(SharepointClientContext sharepointClientContext) 
     throws SharepointException {
@@ -52,6 +53,7 @@ public class SiteDataWS {
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
+      viewsStub = new ViewsWS(sharepointClientContext);
     } catch (AxisFault e) {
       throw new SharepointException(e.toString());
     }     
@@ -59,15 +61,16 @@ public class SiteDataWS {
   
   public SiteDataWS(SharepointClientContext sharepointClientContext, 
       String siteName) throws SharepointException {
-  this.sharepointClientContext = sharepointClientContext;
-  endpoint = siteName + siteDataEndpoint;
-  try {
-    stub = new SiteDataStub(endpoint);
-    sharepointClientContext.setStubWithAuth(stub, endpoint);
-  } catch (AxisFault e) {
-    throw new SharepointException(e.toString());
-  }     
-}
+    this.sharepointClientContext = sharepointClientContext;
+    endpoint = siteName + siteDataEndpoint;
+    try {
+      stub = new SiteDataStub(endpoint);
+      sharepointClientContext.setStubWithAuth(stub, endpoint);
+      viewsStub = new ViewsWS(sharepointClientContext);
+    } catch (AxisFault e) {
+      throw new SharepointException(e.toString());
+    }     
+  }
   
   /**
    * Gets all the sites from the sharepoint server.
@@ -138,6 +141,9 @@ public class SiteDataWS {
                 sl[i].getTitle(), sl[i].getBaseType(), 
                 Util.siteDataStringToCalendar(sl[i].getLastModified()));              
               listCollection.add(list);
+              
+              // find out what "columns" (metadata) are enabled on this List:
+              viewsStub.getViewNames(list.getInternalName());
             }
           } catch (ParseException e) {
             throw new SharepointException(e.toString());

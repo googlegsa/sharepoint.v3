@@ -35,8 +35,6 @@ import com.google.enterprise.connector.traversal.Traverser;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import javax.jcr.query.QueryManager;
-
 /**
  * 
  */
@@ -97,7 +95,7 @@ public class IntegrationTest extends TestCase {
     int totalDocsProcessed = 0;
     int batchNumber = 0;
     while (docsProcessed != 0) {
-      docsProcessed = traverser.runBatch(batchSize);
+      docsProcessed = traverser.runBatch(batchSize, null);
       totalDocsProcessed += docsProcessed;
       System.out.println("Batch# " + batchNumber + " docs " + docsProcessed +
           " checkpoint " + connectorStateStore.getConnectorState(connectorName));
