@@ -190,15 +190,74 @@ public class ListsWS {
   }
   
   /**
-   * Gets all the list item changes of a particular list since a particular 
-   * time.
-   * @param listName internal name of the list
+   * Gets all the list item changes of a particular generic list since 
+   * a particular time. Generic lists include Discussion boards, Calendar,
+   * Tasks, Links, Announcements.
+   * @param list BaseList object
    * @return list of sharepoint documents corresponding to items in the list. 
    * These are ordered by last Modified time.
    * @throws SharepointException 
    */
-  public List getListItemChanges(String listName, Calendar since) 
+  public List getGenericListItemChanges(BaseList list, Calendar since) 
       throws SharepointException {
+    String listName = list.getInternalName();
+    ArrayList<Document> listItems = new ArrayList<Document>();
+    String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" + 
+    sharepointClientContext.getPort() 
+    + sharepointClientContext.getsiteName() + "/" + "Lists" + "/" 
+    + list.getTitle() + "/" + "DispForm.aspx?ID=";
+    ListsStub.GetListItemChanges req = new ListsStub.GetListItemChanges();
+    req.setListName(listName);
+    req.setViewFields(null);   
+    if (since != null) {
+      req.setSince(SimpleValue.calendarToIso8601(since));
+    } else {
+      req.setSince(null);      
+    }
+    try {
+      ListsStub.GetListItemChangesResponse res = stub.GetListItemChanges(req);
+      OMFactory omf = OMAbstractFactory.getOMFactory();
+      OMElement oe = res.getGetListItemChangesResult().getOMElement
+          (GetListItemChanges.MY_QNAME, omf);
+      StringBuffer url = new StringBuffer();
+      for (Iterator<OMElement> ita = oe.getChildElements(); ita.hasNext(); ) {
+        OMElement resultOmElement = ita.next();
+        Iterator<OMElement> resultIt = resultOmElement.getChildElements();
+        OMElement dataOmElement = resultIt.next();
+        for (Iterator<OMElement> dataIt = dataOmElement.getChildElements();
+            dataIt.hasNext(); ) {
+          OMElement rowOmElement = dataIt.next();            
+          
+          String docId = rowOmElement.getAttribute(
+              new QName("ows_UniqueId")).getAttributeValue();
+          String itemId = rowOmElement.getAttribute(
+              new QName("ows_ID")).getAttributeValue();     
+          url.setLength(0);
+          url.append(urlPrefix);
+          url.append(itemId);                                
+          Document doc;
+          doc = new Document(docId, url.toString(), list.getLastMod());
+          listItems.add(doc);                                  
+        }
+      }
+      Collections.sort(listItems);
+    } catch (RemoteException e) {
+      throw new SharepointException(e.toString(), e);
+    }     
+    return listItems;
+  }  
+  
+  /**
+   * Gets all the list item changes of a particular document library since 
+   * a particular time.
+   * @param list BaseList object
+   * @return list of sharepoint documents corresponding to items in the list. 
+   * These are ordered by last Modified time.
+   * @throws SharepointException 
+   */
+  public List getDocLibListItemChanges(BaseList list, Calendar since) 
+      throws SharepointException {
+    String listName = list.getInternalName();
     ArrayList<Document> listItems = new ArrayList<Document>();
     String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" + 
     sharepointClientContext.getPort() + "/";
@@ -271,7 +330,7 @@ public class ListsWS {
       throw new SharepointException(e.toString(), e);
     }     
     return listItems;
-  }  
+  }
   
   /**
    * Gets all the attachments of a particular list item.

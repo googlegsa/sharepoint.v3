@@ -14,10 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import com.google.enterprise.connector.jcradaptor.SpiQueryTraversalManagerFromJcr;
-import com.google.enterprise.connector.mock.MockRepository;
-import com.google.enterprise.connector.mock.MockRepositoryEventList;
-import com.google.enterprise.connector.mock.jcr.MockJcrQueryManager;
 import com.google.enterprise.connector.persist.ConnectorStateStore;
 import com.google.enterprise.connector.persist.MockConnectorStateStore;
 import com.google.enterprise.connector.pusher.MockPusher;
@@ -26,7 +22,6 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.state.GlobalStateInitializer;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.LoginException;
-import com.google.enterprise.connector.spi.QueryTraversalManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
 import com.google.enterprise.connector.traversal.QueryTraverser;
@@ -48,6 +43,8 @@ public class IntegrationTest extends TestCase {
   final String password = "g00gl3";
   private SharepointClient sharepointClient;
   private Connector connector;  
+  
+  public static final int TOTAL_DOCS = 13;
   
   public void setUp() throws Exception {
     GlobalStateInitializer.init();
@@ -72,7 +69,7 @@ public class IntegrationTest extends TestCase {
     runTestBatches(2);
     runTestBatches(3);
     runTestBatches(4);
-    runTestBatches(11);
+    runTestBatches(20);
   }
 
   private void runTestBatches(int batchSize) throws InterruptedException,
@@ -101,6 +98,6 @@ public class IntegrationTest extends TestCase {
           " checkpoint " + connectorStateStore.getConnectorState(connectorName));
       batchNumber++;
     }    
-    Assert.assertEquals(10,totalDocsProcessed);
+    Assert.assertEquals(TOTAL_DOCS,totalDocsProcessed);
   }
 }
