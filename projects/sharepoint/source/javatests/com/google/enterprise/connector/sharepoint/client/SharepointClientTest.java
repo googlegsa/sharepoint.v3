@@ -2,6 +2,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.IntegrationTest;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.GlobalStateInitializer;
@@ -87,6 +88,6 @@ public class SharepointClientTest extends TestCase {
       e.printStackTrace();
     }
     assertTrue(found);
-    assertEquals(10, numDocs);
+    assertEquals(IntegrationTest.TOTAL_DOCS, numDocs);
   }
 }

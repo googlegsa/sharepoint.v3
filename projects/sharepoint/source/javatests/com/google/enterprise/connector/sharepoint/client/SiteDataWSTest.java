@@ -83,7 +83,6 @@ public class SiteDataWSTest extends TestCase {
         System.out.println(baseList.getTitle());        
         numDocLib++;        
       }
-      assertEquals(5, numDocLib);
     } catch (SharepointException e) {
       e.printStackTrace();
     }
