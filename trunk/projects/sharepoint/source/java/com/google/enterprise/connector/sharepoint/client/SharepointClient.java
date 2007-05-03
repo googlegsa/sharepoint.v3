@@ -204,17 +204,27 @@ public class SharepointClient {
         if (listState == null) {
           listState = (ListState) state.makeDependentObject(LIST_STATE_NAME,
               baseList.getInternalName(), baseList.getLastMod());
-          listState.setUrl(baseList.getTitle());          
-          listItems = listsWS.getListItemChanges(baseList.getInternalName(),
-              null);
+          listState.setUrl(baseList.getTitle());
+          if (baseList.getType().equals(SiteDataWS.DOC_LIB)) {
+            listItems = listsWS.getDocLibListItemChanges(
+                baseList, null);
+          } else if (baseList.getType().equals(SiteDataWS.GENERIC_LIST)) {
+            listItems = listsWS.getGenericListItemChanges(
+                baseList, null);
+          }
           logger.info("creating new listState: " + baseList.getTitle());
         } else {
           logger.info("revisiting old listState: " + listState.getUrl());
           state.updateStatefulObject(listState, listState.getLastMod());
           Calendar dateSince = listState.getDateForWSRefresh();
           logger.info("fetching changes since " + Util.formatDate(dateSince));
-          listItems = listsWS.getListItemChanges(baseList.getInternalName(),
-              dateSince);
+          if (baseList.getType().equals(SiteDataWS.DOC_LIB)) {
+            listItems = listsWS.getDocLibListItemChanges(
+                baseList, dateSince);
+          } else if (baseList.getType().equals(SiteDataWS.GENERIC_LIST)) {
+            listItems = listsWS.getGenericListItemChanges(
+                baseList, dateSince);
+          }
         }
         if (baseList.getType().equals(SiteDataWS.GENERIC_LIST)) {
           List attachmentItems = new ArrayList<Document>();
