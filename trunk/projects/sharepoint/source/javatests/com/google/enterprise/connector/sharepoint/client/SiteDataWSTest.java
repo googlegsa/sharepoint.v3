@@ -43,7 +43,7 @@ public class SiteDataWSTest extends TestCase {
       List sites = siteDataWS.getAllChildrenSites();
       System.out.println("Sites found - ");
       for(; i< sites.size(); i++) {
-        Document doc = (Document) sites.get(i);
+        SPDocument doc = (SPDocument) sites.get(i);
         System.out.println(doc.getUrl());
       }
       assertEquals(i, 5);
@@ -61,7 +61,7 @@ public class SiteDataWSTest extends TestCase {
     int numDocLib = 0;
     try {
       List listCollection = siteDataWS.getDocumentLibraries();
-      System.out.println("Document Libraries found - ");
+      System.out.println("SPDocument Libraries found - ");
       for(int i=0; i<listCollection.size(); i++) {
         BaseList baseList = (BaseList) listCollection.get(i);
         System.out.println(baseList.getTitle());        

@@ -14,7 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import com.google.enterprise.connector.sharepoint.client.Document;
+import com.google.enterprise.connector.sharepoint.client.SPDocument;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -123,7 +123,7 @@ public class Util {
    * @return Property Map.
    */
   public static SimplePropertyMap propertyMapFromDoc(String guidList, 
-      Document doc) {
+      SPDocument doc) {
     SimplePropertyMap pm = new SimplePropertyMap();
     Property contentUrlProp = new SimpleProperty(
       SpiConstants.PROPNAME_CONTENTURL, new SimpleValue(ValueType.STRING, 
@@ -149,7 +149,7 @@ public class Util {
         LIST_GUID, new SimpleValue(ValueType.STRING, guidList));
     pm.put(LIST_GUID, listGuidProp);
     
-    if (!doc.getAuthor().equals(Document.NO_AUTHOR)) {
+    if (!doc.getAuthor().equals(SPDocument.NO_AUTHOR)) {
       Property authorProp = new SimpleProperty(AUTHOR, 
           new SimpleValue(ValueType.STRING, doc.getAuthor()));    
       pm.put(AUTHOR, authorProp);
@@ -159,13 +159,13 @@ public class Util {
   
   /**
    * The inverse process of the above method: if the Connector manager (or
-   * someone) gives us back a PropertyMap, reconstruct the Document object
+   * someone) gives us back a PropertyMap, reconstruct the SPDocument object
    * that it represents.
    * @param map
-   * @return Document
+   * @return SPDocument
    * @throws RepositoryException
    */
-  public static Document docFromPropertyMap(PropertyMap map) 
+  public static SPDocument docFromPropertyMap(PropertyMap map) 
     throws RepositoryException {
     try {
       String url = map.getProperty(
@@ -174,7 +174,7 @@ public class Util {
           SpiConstants.PROPNAME_DOCID).getValue().getString();
       Calendar lastMod = map.getProperty(
           SpiConstants.PROPNAME_LASTMODIFY).getValue().getDate();
-      Document doc = new Document(id, url, lastMod);
+      SPDocument doc = new SPDocument(id, url, lastMod);
       Property authorProp = map.getProperty(Util.AUTHOR);
       if (authorProp != null) {
         doc.setAuthor(authorProp.getValue().getString());
@@ -189,7 +189,7 @@ public class Util {
   
   /**
    * The List's GUID is also stored in the property map for a ResultSet.
-   * We don't want to duplicate that in every Document instance, so this is
+   * We don't want to duplicate that in every SPDocument instance, so this is
    * the way to grab that.
    * @param map
    * @return GUID

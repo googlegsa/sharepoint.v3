@@ -77,7 +77,7 @@ public class SiteDataWS {
    * @return list of sharepoint documents corresponding to sites.
    */
   public List getAllChildrenSites() throws SharepointException {
-    ArrayList<Document> sites = new ArrayList<Document>();
+    ArrayList<SPDocument> sites = new ArrayList<SPDocument>();
     try {
       SiteDataStub.GetSite req = new SiteDataStub.GetSite();
       SiteDataStub.GetSiteResponse res = stub.GetSite(req);
@@ -91,7 +91,7 @@ public class SiteDataWS {
             url.startsWith("http://" + sharepointClientContext.getHost() 
                 + sharepointClientContext.getsiteName())) {
           Calendar lastModified = els[i].getLastModified();   
-          Document doc = new Document(url, url, lastModified);
+          SPDocument doc = new SPDocument(url, url, lastModified);
           sites.add(doc);
         }
       }  
@@ -102,7 +102,7 @@ public class SiteDataWS {
   }
    
   /**
-   * Gets the collection of all the Document Libraries on the sharepoint server.
+   * Gets the collection of all the SPDocument Libraries on the sharepoint server.
    * @return list of BaseList objects.
    * @throws SharepointException
    */

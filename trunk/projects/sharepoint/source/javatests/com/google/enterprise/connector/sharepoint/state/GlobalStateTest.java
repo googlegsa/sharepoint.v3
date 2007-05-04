@@ -1,23 +1,10 @@
-// Copyright 2006 Google Inc.
-
-/*
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package com.google.enterprise.connector.sharepoint.state;
 
 import junit.framework.TestCase;
-import com.google.enterprise.connector.sharepoint.client.Document;
+
+
+import junit.framework.TestCase;
+import com.google.enterprise.connector.sharepoint.client.SPDocument;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
 import org.joda.time.DateTime;
@@ -35,16 +22,11 @@ import java.util.TreeSet;
 public class GlobalStateTest extends TestCase {
 
   private GlobalState state;
-
-  public final void setUp() {
-    try {
-      GlobalState.injectDependency(ListState.class);
-      state = new GlobalState();
-    } catch (SharepointException e) {
-      fail("failed to inject dependencies");
-    }
-  }
   
+  public final void setUp() {
+    state = new GlobalState();
+  }
+
   /**
    * Test basic functionality: create a GlobalState, save it to XML,
    * load another from XML, save THAT to XML, and verify that the XML
@@ -55,15 +37,10 @@ public class GlobalStateTest extends TestCase {
     DateTime time2 = new DateTime();
     time2.plusHours(1);
     ListState list1 = null, list2 = null;
-    try {
-      list1 = (ListState) 
-        state.makeDependentObject("ListState", "foo", time1);
-      list2 = (ListState)
-        state.makeDependentObject("ListState", "bar", time2);
-    } catch (SharepointException e) {
-      e.printStackTrace();
-      fail();
-    }
+
+    list1 = (ListState) state.makeListState("foo", time1);
+    list2 = (ListState) state.makeListState("bar", time2);
+
     try {
       String output = state.getStateXML();
       System.out.println(output + "\n\n");
@@ -80,37 +57,30 @@ public class GlobalStateTest extends TestCase {
     } catch (SharepointException e1) {
       fail(e1.toString());
     }
-    
+
     state.startRefresh();
-    try {
-      state.updateStatefulObject(list1, list1.getLastMod());
-    } catch (SharepointException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+     state.updateList(list1, list1.getLastMod());
     state.endRefresh();
-    
+
     // list1 should still be there, list2 should be gone
-    HashMap<String, StatefulObject> keyMap = state.keyMaps.get("ListState");
-    assertNotNull(keyMap);
-    StatefulObject obj = keyMap.get("bar");
+    StatefulObject obj = state.keyMap.get("bar");
     assertNull(obj);
-    obj = keyMap.get("foo");
+    obj = state.keyMap.get("foo");
     assertNotNull(obj);
   }
-  
+
   public final void testLastDocCrawled() {
     DateTime time1 = new DateTime();
     DateTime time2 = new DateTime();
     time2.plusHours(1);
     ListState list1 = null, list2 = null;
     try {
-      list1 = (ListState) state.makeDependentObject("ListState", "foo", time1);
-      list2 = (ListState) state.makeDependentObject("ListState", "bar", time2);
-      Document doc1 = new Document("id1", "url1", new GregorianCalendar());
+      list1 = (ListState) state.makeListState("foo", time1);
+      list2 = (ListState) state.makeListState("bar", time2);
+      SPDocument doc1 = new SPDocument("id1", "url1", new GregorianCalendar());
       list1.setLastDocCrawled(doc1);
-      state.setCurrentObject("ListState", list1);
-      Document doc2 = new Document("id2", "url2", new GregorianCalendar());
+      state.setCurrentList(list1);
+      SPDocument doc2 = new SPDocument("id2", "url2", new GregorianCalendar());
       list2.setLastDocCrawled(doc2);
 
       String output = state.getStateXML();
@@ -128,7 +98,7 @@ public class GlobalStateTest extends TestCase {
       fail();
     }   
   }
-  
+
   /**
    * tests that we can persistify the crawl queue, and reload from it
    */
@@ -138,23 +108,23 @@ public class GlobalStateTest extends TestCase {
     time2.plusHours(1);
     ListState list1 = null, list2 = null;
     try {
-      list1 = (ListState) state.makeDependentObject("ListState", "foo", time1);
-      list2 = (ListState) state.makeDependentObject("ListState", "bar", time2);
-      Document doc1 = new Document("id1", "url1", new GregorianCalendar());
+      list1 = (ListState) state.makeListState("foo", time1);
+      list2 = (ListState) state.makeListState("bar", time2);
+      SPDocument doc1 = new SPDocument("id1", "url1", new GregorianCalendar());
       list1.setLastDocCrawled(doc1);
-      state.setCurrentObject("ListState", list1);
-      
-      Document doc2 = new Document("id2", "url2", new GregorianCalendar());
+      state.setCurrentList(list1);
+
+      SPDocument doc2 = new SPDocument("id2", "url2", new GregorianCalendar());
       list2.setLastDocCrawled(doc2);
 
       // make a crawl queue & store it in our "current" ListState
-      ArrayList<Document> docTree = new ArrayList<Document>();
-      Document doc3 = new Document("id3", "url3", new GregorianCalendar());
+      ArrayList<SPDocument> docTree = new ArrayList<SPDocument>();
+      SPDocument doc3 = new SPDocument("id3", "url3", new GregorianCalendar());
       docTree.add(doc3);
-      Document doc4 = new Document("id4", "url4", new GregorianCalendar());
+      SPDocument doc4 = new SPDocument("id4", "url4", new GregorianCalendar());
       docTree.add(doc4);
       list1.setCrawlQueue(docTree);
-      
+
       String output = state.getStateXML();
       System.out.println(output);
       state.saveState();
@@ -170,4 +140,5 @@ public class GlobalStateTest extends TestCase {
       fail();
     }      
   }
+
 }

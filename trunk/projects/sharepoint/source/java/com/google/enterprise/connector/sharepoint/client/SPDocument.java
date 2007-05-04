@@ -20,7 +20,7 @@ import java.util.Calendar;
  * Class to hold data regarding a sharepoint document.
  *
  */
-public class Document implements Comparable<Document>{
+public class SPDocument implements Comparable<SPDocument>{
   
   public final static String NO_OBJ_TYPE = "No Object Type";
   public final static String NO_AUTHOR = "No author";
@@ -30,13 +30,13 @@ public class Document implements Comparable<Document>{
   private String author = NO_AUTHOR;
   private String objType = NO_OBJ_TYPE;
   
-  public Document(String docId, String url, Calendar lastMod) {
+  public SPDocument(String docId, String url, Calendar lastMod) {
     this.docId = docId;
     this.url = url;
     this.lastMod = lastMod;
   }
 
-  public Document(String docId, String url, Calendar lastMod, String author,
+  public SPDocument(String docId, String url, Calendar lastMod, String author,
       String objType) {
     this.docId = docId;
     this.url = url;
@@ -73,7 +73,7 @@ public class Document implements Comparable<Document>{
     this.objType = objType;
   }
 
-  public int compareTo(Document doc) {
+  public int compareTo(SPDocument doc) {
     int comparison = this.lastMod.getTime().compareTo(doc.lastMod.getTime());
     if (0 == comparison) {
       comparison = this.docId.compareTo(doc.docId);

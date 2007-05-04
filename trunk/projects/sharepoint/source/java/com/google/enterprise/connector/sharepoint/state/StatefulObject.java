@@ -1,173 +1,70 @@
-// Copyright 2006 Google Inc.
-
-/*
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package com.google.enterprise.connector.sharepoint.state;
 
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
+
 import org.joda.time.DateTime;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.util.Calendar;
-
-
 /**
- * Base class of all Sharepoint-related objects which can be persisted
- * by GlobalState.  Currently there is just one, ListState, but there may
- * be others in the future.
- * A StatefulObject has a unique key (for Lists, this is the GUID), and
- * a lastModified time.
- * This is an abstract class. Some functions are implemented here, and some
- * are left to the concrete subclass.
+ * StatefulObject is an interface which is implemented by any object which
+ * maintains the traversal state of a SharePoint object.  ListState is the
+ * canonical example of a StatefulObject; a List corresponds to a 
+ * SPDocument Library and other SharePoint containers.
+ * 
+ * A StatefulObject must have at least two attributes:
+ * 1) a PrimaryKey, which is unique across all instances of that object.
+ * 2) a LastMod date, which represents the time the underlying SharePoint
+ * was last modified.  LastMod need not be unique.
+ * 
+ * A StatefulObject must dump its state to a DOM object when asked, and
+ * restore its state from a DOM object. A master object (GlobalState) is
+ * responsible for assembling those DOM objects into a master DOM, which
+ * it dumps to XML and restores from XML.
+ *
  */
-public abstract class StatefulObject
-  implements Comparable<StatefulObject> {
-  protected String key = null;
-  protected DateTime lastMod = null;
-  private boolean visited = false;
-  private boolean isCurrent = false;
+public interface StatefulObject extends Comparable {
 
-  /**
-   * All StatefulObjects must provide a static factory method which
-   * takes a string and a lastMod as arguments
-   * @param key the primary key (for Lists, this would be the GUID)
-   * @param lastMod the time the object was last modified
-   * @return a new object.
-   * @throws UnsupportedOperationException
-   */
-  public static StatefulObject make(String key, DateTime lastMod)
-  throws UnsupportedOperationException {
-    throw new UnsupportedOperationException();
-  }
-  /**
-   * All StatefulObjects must provide a static factory method which
-   * takes no arguments.
-   * @return a new object.
-   * @throws UnsupportedOperationException
-   */
-  public static StatefulObject make()
-  throws SharepointException {
-    throw new SharepointException("Unimplemented make()");
-  }
-
-  /**
-   * Convenience routine for callers who don't use Joda time
-   * @param key
-   * @param lastModCal
-   * @return new object
-   * @throws UnsupportedOperationException
-   */
-  public static StatefulObject make(String key, Calendar lastModCal)
-    throws UnsupportedOperationException {
-    return make(key, Util.calendarToJoda(lastModCal));
-  }
-  /**
-   * A StatefulObject must be able to create a DOM subtree from itself,
-   * and load itself from one.
-   * @param element
-   * @throws UnsupportedOperationException
-   */
-  public void loadFromDOM(Element element)
-    throws SharepointException {
-    throw new SharepointException("Unimplemented loadFromDOM()");
-  }
-  /** 
-   * method implementing the Comparable interface. Primarily compares on
-   * lastMod time, with key as a tie-breaker.  This permits a TreeMap to
-   * sort on lastMod even if there are duplicates.
-   * The method is final because GlobalState.java depends on this
-   * comparison method.
-   * @param state : other object being compared
-   */
-  public final int compareTo(StatefulObject state) {
-    int lastModComparison = this.lastMod.compareTo(state.lastMod);
-    if (lastModComparison != 0) {
-      return lastModComparison;
-    } else {
-      return this.key.compareTo(state.key);
-    }
-  }
- 
-  /**
-   * A StatefulObject may want to maintain different information when it's
-   * the "current" object.  For example, ListState keeps a crawl queue for
-   * the current list, but only a lastModForDocuments for non-current lists.
-   * Concrete classes should, but aren't required to, provide their own
-   * implementation of this.
-   * @param isCurrent
-   */
-  protected void setCurrent(boolean current) {
-    this.isCurrent = current;
-  }
+  public Node dumpToDOM(Document doc) throws SharepointException;
+  public void loadFromDOM(Element element) throws SharepointException;
   
-  public boolean isCurrent() {
-    return isCurrent;
-  }
- 
-  protected String dumpLastMod() {
-    return Util.formatDate(lastMod);
-  }
+  /**
+   * Getter for the primary key
+   * @return primary key
+   */
+  public String getPrimaryKey();
 
   /**
-   * A StatefulObject must be able to create a DOM subtree which represents
-   * itself.
-   * @param doc
-   * @return
-   * @throws UnsupportedOperationException
+   * Setter for the primary key
+   * @param newKey
    */
-  public Node dumpToDOM(org.w3c.dom.Document doc) 
-    throws SharepointException {
-    throw new SharepointException("Unimplemented method: dumpToDOM");
-  }
+  public void setPrimaryKey(String newKey);
 
-  /**
-   * get the "name" of this object (which must be unique)
-   * @return string 
-   */
-  public String getPrimaryKey() {
-    return key;
-  }
-
-  public void setPrimaryKey(String newKey) {
-    this.key = newKey;
-  }
-
-  public DateTime getLastMod() {
-    return lastMod;
-  }
+  public DateTime getLastMod();
   
-  public void setLastMod(DateTime lastMod) {
-    this.lastMod = lastMod;
-  }
   /**
-   * Get the "visited" state.  This is intended for use in traversal, to
+   * Get lastMod in string form
+   * @return string version of lastMod
+   */
+  public String dumpLastMod();
+  
+  public void setLastMod(DateTime lastMod);
+  
+
+  /**
+   * Get the "existing" state.  This is intended for use in traversal, to
    * be able to detect deleted lists from one WebServices call to another.
-   * @return visited state
+   * @return existing state
    */
-  public boolean isVisited() {
-    return visited;
-  }
+  public boolean isExisting();
 
   /**
-   * Set the "visited" state.  This is intended for use in traversal, to
+   * Set the "existing" state.  This is intended for use in traversal, to
    * be able to detect deleted lists from one WebServices call to another.
    * @param visited 
    */  
-  protected void setVisited(boolean visited) {
-    this.visited = visited;
-  }  
-}
+  public void setExisting(boolean existing);
+  
+  }

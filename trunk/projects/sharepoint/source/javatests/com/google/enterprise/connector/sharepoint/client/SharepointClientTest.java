@@ -5,7 +5,6 @@ package com.google.enterprise.connector.sharepoint.client;
 import com.google.enterprise.connector.sharepoint.IntegrationTest;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.GlobalStateInitializer;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -31,7 +30,6 @@ public class SharepointClientTest extends TestCase {
    * @see junit.framework.TestCase#setUp()
    */
   protected void setUp() throws Exception {
-    GlobalStateInitializer.init();
     SharepointClientContext sharepointClientContext = new 
       SharepointClientContext(sharepointUrl, domain, username, password);
     sharepointClient = new SharepointClient(sharepointClientContext);
