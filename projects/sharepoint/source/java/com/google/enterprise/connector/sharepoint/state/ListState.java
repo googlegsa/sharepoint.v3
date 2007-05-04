@@ -1,30 +1,29 @@
-// Copyright 2006 Google Inc.
-
-/*
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- */
 package com.google.enterprise.connector.sharepoint.state;
 
 
-import com.google.enterprise.connector.sharepoint.Util;
-import com.google.enterprise.connector.sharepoint.client.Document;
+//Copyright (C) 2006 Google Inc.
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
+import com.google.enterprise.connector.sharepoint.client.SPDocument;
+import com.google.enterprise.connector.sharepoint.Util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -39,76 +38,109 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-
-/**
- * Stores the Connector's state information about a List. Besides the 
- * standard StatefulObject fields of primary key (the GUID) and lastMod time,
- * ListState can also store
- *
- */
-public class ListState extends StatefulObject {
-  private static Log logger;
+public class ListState implements StatefulObject {
+  protected String key = null;
+  protected DateTime lastMod = null;
+  
+  /**
+   * Whether the underlying SharePoint object that this object was created
+   * to represent actually exists. This variable is periodically set to false
+   * by GlobalState, and then set true if the underlying object is found to
+   * be still there.
+   */
+  private boolean exists = true;
   
   /**
    * The URL of the List is more human-readable, which is good for debugging:
    */
   private String url = "";
-  /**
-   * this should be set by the main Sharepoint client every time it 
-   * successfully crawls a Document. For Lists that are NOT current,
-   * this is maintained in the persistent state.
-   */
-  private Document lastDocCrawled;
-  private List<Document> crawlQueue = null;
+  
+  private static Log logger = LogFactory.getLog(ListState.class);
   
   /**
-   * Factory method, required by the superclass
+   * No-args constructor
+   */
+  public ListState() {}
+  
+  /**
+   * Constructor
    * @param key
    * @param lastMod
-   * @return new object
-   * @throws UnsupportedOperationException
    */
-  public static ListState make(String key, DateTime lastMod) {
-    ListState obj = new ListState(key, lastMod);
-    return obj;
-  }
-  /**
-   * Factory method, required by the superclass
-   * @return new object
-   * @throws UnsupportedOperationException
-   */
-  public static ListState make() {
-    return new ListState();
-  }  
-  
-  /**
-   * No-argument constructor, for parsers & whatnot. 
-   *
-   */
-  protected ListState() {
-    logger = LogFactory.getLog(ListState.class); 
-  }
-  
-  /**
-   * Constructor with List GUID and lastMod. Private because only the
-   * Factory method, make() can invoke (and the Factory method can only
-   * be invoked by GlobalState.java)
-   * @param guid
-   * @param lastMod
-   */
-  protected ListState(String guid, DateTime lastMod) {
-    this.key = guid;
+  public ListState(String key, DateTime lastMod) {
+    this.key = key;
     this.lastMod = lastMod;
   }
   
-  public void setUrl(String url) {
-    this.url = url;
+  public ListState get() {
+    return new ListState();
+  }
+  /**
+   * this should be set by the main Sharepoint client every time it 
+   * successfully crawls a SPDocument. For Lists that are NOT current,
+   * this is maintained in the persistent state.
+   */
+  private SPDocument lastDocCrawled;
+  private List<SPDocument> crawlQueue = null;
+  
+  /**
+   * Get the lastMod time
+   * @return time the List was last modified
+   */
+  public DateTime getLastMod() {
+    return lastMod;
+  }
+
+  /**
+   * Set the lastMod time
+   * @param lastMod time
+   */
+  public void setLastMod(DateTime lastMod) {
+    this.lastMod = lastMod;
+  }
+
+  /**
+   * Return lastMod in String form
+   * @return  lastMod string-ified
+   */
+  public String dumpLastMod() {
+    return Util.formatDate(lastMod);
   }
   
-  public String getUrl() {
-    return url;
+  /**
+   * Get the primary key
+   * @return primary key
+   */
+  public String getPrimaryKey() {
+    return key;
+  }
+
+  /**
+   * Sets the primary key
+   * @param key
+   */
+  public void setPrimaryKey(String newKey) {
+    key = newKey;
   }
   
+  public boolean isExisting() {
+    return exists;
+  }
+
+  public void setExisting(boolean existing) {
+    this.exists = existing;
+  }
+
+  public int compareTo(Object o) {
+    ListState other = (ListState) o;
+    int lastModComparison = this.lastMod.compareTo(other.lastMod);
+    if (lastModComparison != 0) {
+      return lastModComparison;
+    } else {
+      return this.key.compareTo(other.key);
+    }
+  }
+
   /**
    * Return the date which should be passed to Web Services (the
    * GetListItemChanges call of ListWS) in order to find new items for
@@ -142,7 +174,7 @@ public class ListState extends StatefulObject {
     return date;
   }
   
-  public Document getLastDocCrawled() {
+  public SPDocument getLastDocCrawled() {
     return lastDocCrawled;
   }
 
@@ -167,7 +199,7 @@ public class ListState extends StatefulObject {
    * 2) remove everything up to and including the doc.
    * @param doc
    */
-  public void setLastDocCrawled(Document doc) {
+  public void setLastDocCrawled(SPDocument doc) {
     lastDocCrawled = doc;
     if (crawlQueue == null) {
       return;
@@ -177,8 +209,8 @@ public class ListState extends StatefulObject {
       // we wouldn't see
       return;
     }
-    for (Iterator<Document> iter = crawlQueue.iterator(); iter.hasNext(); ) {
-      Document docQ = iter.next();
+    for (Iterator<SPDocument> iter = crawlQueue.iterator(); iter.hasNext(); ) {
+      SPDocument docQ = iter.next();
       iter.remove();
       if (docQ.equals(doc)) {
         break;
@@ -187,15 +219,23 @@ public class ListState extends StatefulObject {
   }
 
   
-  public List<Document> getCrawlQueue() {
+  public List<SPDocument> getCrawlQueue() {
     return crawlQueue;
+  }
+  
+  public void setUrl(String url) {
+    this.url = url;
+  }
+  
+  public String getUrl() {
+    return url;
   }
   
   public void dumpCrawlQueue() {
     if (crawlQueue != null && crawlQueue.size() > 0) {
       System.out.println("Crawl queue for " + getUrl());
-      for (Iterator<Document> iter = crawlQueue.iterator(); iter.hasNext(); ) {
-        Document doc = iter.next();
+      for (Iterator<SPDocument> iter = crawlQueue.iterator(); iter.hasNext(); ) {
+        SPDocument doc = iter.next();
         System.out.println(doc.getLastMod().getTime() + ", " + doc.getUrl());
       }
     } else {
@@ -203,12 +243,12 @@ public class ListState extends StatefulObject {
     }
   }
   
-  public void setCrawlQueue(List<Document> crawlQueue) {
+  public void setCrawlQueue(List<SPDocument> crawlQueue) {
     this.crawlQueue = crawlQueue;
 
   }
   
-  private Node dumpDocToDOM(org.w3c.dom.Document domDoc, Document doc)
+  private Node dumpDocToDOM(org.w3c.dom.Document domDoc, SPDocument doc)
       throws SharepointException {
     Element element = domDoc.createElement("document");
     element.setAttribute("id", doc.getDocId());
@@ -229,8 +269,10 @@ public class ListState extends StatefulObject {
     return element;
   }
   
-  public Node dumpToDOM(org.w3c.dom.Document domDoc) 
-  throws SharepointException{
+  /**
+   * Debug routine
+   */
+  public Node dumpToDOM(Document domDoc) throws SharepointException{
     Element element = domDoc.createElement(this.getClass().getSimpleName());
     element.setAttribute("id", getGuid());
     
@@ -255,14 +297,14 @@ public class ListState extends StatefulObject {
     if (crawlQueue != null) {
       Element queue = domDoc.createElement("crawlQueue");
       element.appendChild(queue);
-      for (Iterator<Document> iter = crawlQueue.iterator();  iter.hasNext(); ) {
+      for (Iterator<SPDocument> iter = crawlQueue.iterator();  iter.hasNext(); ) {
         queue.appendChild(dumpDocToDOM(domDoc, iter.next()));
       }
     }
     return element;
   }
   
-  private Document loadDocFromDOM(Element element) throws SharepointException {
+  private SPDocument loadDocFromDOM(Element element) throws SharepointException {
     if (!element.getTagName().equals("document")) {
       throw new SharepointException("should be 'document', was " + 
           element.getTagName());
@@ -279,7 +321,7 @@ public class ListState extends StatefulObject {
     GregorianCalendar calDate = new GregorianCalendar();
     calDate.setTimeInMillis(lastMod.getMillis());
     String urlTmp = URLDecoder.decode(urlNodeList.item(0).getTextContent());
-    return new Document(id, urlTmp, calDate);
+    return new SPDocument(id, urlTmp, calDate);
   }
   
   public void loadFromDOM(Element element) throws SharepointException {
@@ -325,13 +367,13 @@ public class ListState extends StatefulObject {
       Node crawlQueueNode = crawlQueueNodeList.item(0);
       NodeList docNodeList = crawlQueueNode.getChildNodes();
       if (docNodeList != null) {
-        crawlQueue = new ArrayList<Document>();
+        crawlQueue = new ArrayList<SPDocument>();
         for (int i = 0; i < docNodeList.getLength(); i++) {
           Node node = docNodeList.item(i);
           if (node.getNodeType() != Node.ELEMENT_NODE) {
             continue;
           }
-          Document doc = loadDocFromDOM((Element) node);
+          SPDocument doc = loadDocFromDOM((Element) node);
           if (doc != null) {
             crawlQueue.add(doc);
           }
@@ -343,6 +385,4 @@ public class ListState extends StatefulObject {
   public String getGuid() {
     return key;
   }
-  
-
 }

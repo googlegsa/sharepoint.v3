@@ -16,7 +16,6 @@ package com.google.enterprise.connector.sharepoint;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.GlobalStateInitializer;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.LoginException;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -35,16 +34,10 @@ public class SharepointConnector implements Connector {
   private final SharepointClientContext sharepointClientContext;
   
   public SharepointConnector(String sharepointUrl, String domain, 
-                             String username, String password)
-    throws RepositoryException {
-    try {
-      GlobalStateInitializer.init(); // does dependency-injection
-      sharepointClientContext = new SharepointClientContext(sharepointUrl, 
-          domain, username, password);
-    } catch (SharepointException e) {
-      throw new RepositoryException("Internal error: " + e.toString());
-    }
-  }
+      String username, String password) {
+  sharepointClientContext = new SharepointClientContext(sharepointUrl, 
+      domain, username, password);
+}
   
   public void setDomain(String domain) {
     sharepointClientContext.setDomain(domain);
