@@ -14,7 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import com.google.enterprise.connector.sharepoint.client.Document;
+import com.google.enterprise.connector.sharepoint.client.SPDocument;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
@@ -68,15 +68,11 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    * doesn't get confused by a file left around from a previous run.
    */
   protected void forgetStateForUnittest() {
-    try {
-      this.globalState = new GlobalState();
-    } catch (SharepointException e) {
-      logger.error(e.toString());
-    }
+    this.globalState = new GlobalState();
   }
   
   private void implementCheckpoint(PropertyMap map) throws RepositoryException {
-    Document docCheckpoint = Util.docFromPropertyMap(map);
+    SPDocument docCheckpoint = Util.docFromPropertyMap(map);
     String listGuid = Util.listGuidFromPropertyMap(map);
 
     /* fix the GlobalState to match 'doc'. Since the Connector Manager may
@@ -87,11 +83,11 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
      * actually know about:
      */
     ListState listCheckpoint = 
-      (ListState) globalState.lookupObject("ListState", listGuid);
+      (ListState) globalState.lookupList(listGuid);
     if (listCheckpoint == null) {
       logger.error("Checkpoint specifies a non-existent list: " + listGuid);
       // what to do here? certainly remove crawl queues from any earlier Lists:
-      for (Iterator<StatefulObject> iter = globalState.getIterator("ListState");
+      for (Iterator<ListState> iter = globalState.getIterator();
         iter.hasNext(); ) {
         if (docCheckpoint.getLastMod().compareTo(
             Util.jodaToCalendar(listCheckpoint.getLastMod())) > 0) {
@@ -103,18 +99,18 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
       return;
     }
     logger.info("looking for " + listGuid);
-    Iterator<StatefulObject> iterLists = globalState.getIterator("ListState");
+    Iterator<ListState> iterLists = globalState.getIterator();
     boolean foundCheckpoint = false;
     while (iterLists.hasNext() && !foundCheckpoint) {
       ListState listState = (ListState) iterLists.next();
-      List<Document> crawlQueue= listState.getCrawlQueue();
+      List<SPDocument> crawlQueue= listState.getCrawlQueue();
       if (listState.getGuid().equals(listGuid)) {
         logger.info("found it");
         foundCheckpoint = true;
         // take out everything up to this document's lastMod date
-        for (Iterator<Document> iterQueue = crawlQueue.iterator(); 
+        for (Iterator<SPDocument> iterQueue = crawlQueue.iterator(); 
           iterQueue.hasNext(); ) {
-          Document docQueue = iterQueue.next();
+          SPDocument docQueue = iterQueue.next();
 
           // if this doc is later than the checkpoint, we're done:
           if (docQueue.getLastMod().compareTo(docCheckpoint.getLastMod()) >  0) {
@@ -139,7 +135,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
     /* once we've done this, there's no more need to remember where we
      * were. We can start at the earliest (by lastMod) List we have. 
      */
-    globalState.setCurrentObject(SharepointClient.LIST_STATE_NAME, null);
+    globalState.setCurrentList(null);
   }
   
   /* (non-Javadoc)
@@ -147,7 +143,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    * (com.google.enterprise.connector.spi.PropertyMap)
    */
   public String checkpoint(PropertyMap map) throws RepositoryException {
-    Document doc = Util.docFromPropertyMap(map);
+    SPDocument doc = Util.docFromPropertyMap(map);
     logger.info("checkpoint received for " + doc.getUrl() + " in list " +
         Util.listGuidFromPropertyMap(map) + " with date " +
         Util.formatDate(Util.calendarToJoda(doc.getLastMod())));

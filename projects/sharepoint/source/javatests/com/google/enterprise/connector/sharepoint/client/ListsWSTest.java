@@ -38,13 +38,14 @@ public class ListsWSTest extends TestCase {
 
   public void testGetDocLibListItems() {
     try {
+
       System.out.println("Items found (Document Libraries) - ");
       BaseList baseList = new BaseList(docLibLInternalName, "DocumentLibrary", 
           docLibLInternalName, null);
       List listItemChanges = listsWS.getDocLibListItemChanges(
           baseList, null);
       for (int i=0 ; i<listItemChanges.size(); i++) {
-        Document doc = (Document) listItemChanges.get(i);
+        SPDocument doc = (SPDocument) listItemChanges.get(i);
         System.out.println(doc.getUrl());
       }
     } catch (SharepointException e) {
@@ -61,7 +62,7 @@ public class ListsWSTest extends TestCase {
       List listItemChanges = listsWS.getDocLibListItemChanges(
           baseList, Util.listItemsStringToCalendar("2006-03-15 22:00:40"));
       for (int i=0 ; i<listItemChanges.size(); i++) {
-        Document doc = (Document) listItemChanges.get(i);
+        SPDocument doc = (SPDocument) listItemChanges.get(i);
         System.out.println(doc.getUrl());
       }
     } catch (SharepointException e) {
@@ -83,7 +84,7 @@ public class ListsWSTest extends TestCase {
         List listItemChanges = listsWS.getGenericListItemChanges(baseList,  
             Util.listItemsStringToCalendar("2006-03-15 22:00:40"));
         for (int i=0 ; i<listItemChanges.size(); i++) {
-          Document doc = (Document) listItemChanges.get(i);
+          SPDocument doc = (SPDocument) listItemChanges.get(i);
           System.out.println(doc.getUrl() +  "   " + doc.getDocId());
         }
       } catch (SharepointException e) {
@@ -95,13 +96,14 @@ public class ListsWSTest extends TestCase {
   }
   
   public void testGetAttachments() {
+
     for (String listInternalName : listInternalNames.keySet()) {
       try {
         BaseList baseList = new BaseList(
             listInternalName, listInternalNames.get(listInternalName),
             "Test Type",
             Util.listItemsStringToCalendar("2007-03-15 23:00:40"));
-        Document listItem = new Document(
+        SPDocument listItem = new SPDocument(
             "1;#", "http://docId", 
             Util.listItemsStringToCalendar("2007-03-15 23:00:40"), "author_foo",
             "1");      
@@ -109,7 +111,7 @@ public class ListsWSTest extends TestCase {
         System.out.println("Attachments found for " + 
             listInternalNames.get(listInternalName));
         for (int i = 0; i < attachments.size(); i++) {
-          Document doc = (Document) attachments.get(i);
+          SPDocument doc = (SPDocument) attachments.get(i);
           System.out.println(doc.getUrl());
         }
       } catch (ParseException e1) {

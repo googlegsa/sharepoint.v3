@@ -19,7 +19,6 @@ import com.google.enterprise.connector.persist.MockConnectorStateStore;
 import com.google.enterprise.connector.pusher.MockPusher;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.state.GlobalStateInitializer;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.LoginException;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -47,7 +46,6 @@ public class IntegrationTest extends TestCase {
   public static final int TOTAL_DOCS = 13;
   
   public void setUp() throws Exception {
-    GlobalStateInitializer.init();
     SharepointClientContext sharepointClientContext = new 
       SharepointClientContext(sharepointUrl, domain, username, password);
     sharepointClient = new SharepointClient(sharepointClientContext);

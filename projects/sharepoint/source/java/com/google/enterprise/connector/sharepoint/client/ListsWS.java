@@ -87,7 +87,7 @@ public class ListsWS {
    * @throws SharepointException 
    */
   public List getListItems(String listName) throws SharepointException {
-    ArrayList<Document> listItems = new ArrayList<Document>();
+    ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
     String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" + 
         sharepointClientContext.getPort() + "/";
       
@@ -173,8 +173,8 @@ public class ListsWS {
             url.append(fileName);              
                           
             try {
-              Document doc;
-              doc = new Document(docId, url.toString(), 
+              SPDocument doc;
+              doc = new SPDocument(docId, url.toString(), 
                   Util.listItemsStringToCalendar(lastModified));             
               listItems.add(doc);
             } catch (ParseException e) {
@@ -194,14 +194,14 @@ public class ListsWS {
    * a particular time. Generic lists include Discussion boards, Calendar,
    * Tasks, Links, Announcements.
    * @param list BaseList object
-   * @return list of sharepoint documents corresponding to items in the list. 
+   * @return list of sharepoint SPDocuments corresponding to items in the list. 
    * These are ordered by last Modified time.
    * @throws SharepointException 
    */
   public List getGenericListItemChanges(BaseList list, Calendar since) 
       throws SharepointException {
     String listName = list.getInternalName();
-    ArrayList<Document> listItems = new ArrayList<Document>();
+    ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
     String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" + 
     sharepointClientContext.getPort() 
     + sharepointClientContext.getsiteName() + "/" + "Lists" + "/" 
@@ -235,8 +235,8 @@ public class ListsWS {
           url.setLength(0);
           url.append(urlPrefix);
           url.append(itemId);                                
-          Document doc;
-          doc = new Document(docId, url.toString(), list.getLastMod());
+          SPDocument doc;
+          doc = new SPDocument(docId, url.toString(), list.getLastMod());
           listItems.add(doc);                                  
         }
       }
@@ -248,17 +248,17 @@ public class ListsWS {
   }  
   
   /**
-   * Gets all the list item changes of a particular document library since 
+   * Gets all the list item changes of a particular SPDocument library since 
    * a particular time.
    * @param list BaseList object
-   * @return list of sharepoint documents corresponding to items in the list. 
+   * @return list of sharepoint SPDocuments corresponding to items in the list. 
    * These are ordered by last Modified time.
    * @throws SharepointException 
    */
   public List getDocLibListItemChanges(BaseList list, Calendar since) 
       throws SharepointException {
     String listName = list.getInternalName();
-    ArrayList<Document> listItems = new ArrayList<Document>();
+    ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
     String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" + 
     sharepointClientContext.getPort() + "/";
     ListsStub.GetListItemChanges req = new ListsStub.GetListItemChanges();
@@ -291,7 +291,7 @@ public class ListsWS {
                 new QName("ows_FileRef")).getAttributeValue();
             /*
              * An example of ows_FileRef is 
-             * 1;#unittest/Shared Documents/sync.doc 
+             * 1;#unittest/Shared SPDocuments/sync.doc 
              * We need to get rid of 1;#
              */
             fileName = fileName.substring(fileName.indexOf("#") + 1);                    
@@ -311,8 +311,8 @@ public class ListsWS {
               }
             }            
             try {
-              Document doc;
-              doc = new Document(docId, url.toString(), 
+              SPDocument doc;
+              doc = new SPDocument(docId, url.toString(), 
                   Util.listItemChangesStringToCalendar(lastModified));
               doc.setObjType(objType);
               if (author != null) {
@@ -336,12 +336,12 @@ public class ListsWS {
    * Gets all the attachments of a particular list item.
    * @param baseList List to which the item belongs
    * @param listItem list item for which the attachments need to be retrieved.
-   * @return list of sharepoint documents corresponding to attachments
+   * @return list of sharepoint SPDocuments corresponding to attachments
    * for the given list item. 
    * These are ordered by last Modified time.
    * @throws SharepointException 
    */
-  public List getAttachments(BaseList baseList, Document listItem) 
+  public List getAttachments(BaseList baseList, SPDocument listItem) 
       throws SharepointException {
     String listName = baseList.getInternalName();
     /*
@@ -351,7 +351,7 @@ public class ListsWS {
    
     String arrayOflistItemId[] = listItem.getDocId().split(";#");
     String listItemId = arrayOflistItemId[0];
-    ArrayList<Document> listAttachments = new ArrayList<Document>();
+    ArrayList<SPDocument> listAttachments = new ArrayList<SPDocument>();
     ListsStub.GetAttachmentCollection req = 
         new ListsStub.GetAttachmentCollection();
     req.setListName(listName);
@@ -370,8 +370,8 @@ public class ListsWS {
           attachmentsOmElement.getChildElements(); attachmentsIt.hasNext();) {
         OMElement attachmentOmElement = attachmentsIt.next();        
         String url = attachmentOmElement.getText();               
-        Document doc;
-        doc = new Document(url, url, baseList.getLastMod());        
+        SPDocument doc;
+        doc = new SPDocument(url, url, baseList.getLastMod());        
         listAttachments.add(doc);                
       }
       Collections.sort(listAttachments);

@@ -48,7 +48,6 @@ import java.util.List;
 public class SharepointClient {
   private static Log logger = LogFactory.getLog(ListState.class);
 
-  public static final String LIST_STATE_NAME = ListState.class.getSimpleName();
   /**
    * Build the Property Map for the connector manager from the sharepoint
    * document.
@@ -79,9 +78,9 @@ public class SharepointClient {
       ListState list) {
     logger.info("handling " + list.getUrl());
     SimpleResultSet resultSet = new SimpleResultSet();
-    List<Document> crawlQueue = list.getCrawlQueue();
+    List<SPDocument> crawlQueue = list.getCrawlQueue();
     if (crawlQueue == null) return resultSet;
-    for (Iterator<Document> iter = crawlQueue.iterator(); iter.hasNext();) {
+    for (Iterator<SPDocument> iter = crawlQueue.iterator(); iter.hasNext();) {
       SimplePropertyMap pm = Util.propertyMapFromDoc(list.getGuid(), iter
           .next());
       resultSet.add(pm);
@@ -104,41 +103,37 @@ public class SharepointClient {
    */
   public SimpleResultSet traverse(GlobalState state, int sizeHint) {
     SimpleResultSet resultSet = new SimpleResultSet();
-    try {
-      int sizeSoFar = 0;
-      ListState lastVisited = (ListState) state
-          .getCurrentObject(LIST_STATE_NAME);
-      boolean reachedLastVisited = false;
-      if (lastVisited != null) {
-        logger.info("traverse() looking for " + lastVisited.getUrl());
-      }
-      for (Iterator<StatefulObject> iter = state.getIterator(LIST_STATE_NAME); 
-          iter.hasNext();) {
-        ListState list = (ListState) iter.next();
-        if (lastVisited != null && !reachedLastVisited) {
-          if (list.getGuid().equals(lastVisited.getGuid())) {
-            reachedLastVisited = true;
-          }
-          continue;
-        }
-        state.setCurrentObject(LIST_STATE_NAME, list);
-        if (list.getCrawlQueue() == null) continue;
-        SimpleResultSet resultsList = handleCrawlQueueForList(state, list);
-        if (resultsList.size() > 0) {
-          resultSet.addAll(resultsList);
-          sizeSoFar += resultsList.size();
-        }
-        // we heed the batch hint, but always finish a List before checking:
-        if (sizeHint > 0 && sizeSoFar >= sizeHint) {
-          logger.info("Stopping traversal because batch hint " + sizeHint
-              + " has been reached");
-          break;
-        }
-      }
-    } catch (SharepointException e) {
-      e.printStackTrace();
-      logger.error(e.toString());
+
+    int sizeSoFar = 0;
+    ListState lastVisited = state.getCurrentList();
+    boolean reachedLastVisited = false;
+    if (lastVisited != null) {
+      logger.info("traverse() looking for " + lastVisited.getUrl());
     }
+    for (Iterator<ListState> iter = state.getIterator(); 
+    iter.hasNext();) {
+      ListState list = (ListState) iter.next();
+      if (lastVisited != null && !reachedLastVisited) {
+        if (list.getGuid().equals(lastVisited.getGuid())) {
+          reachedLastVisited = true;
+        }
+        continue;
+      }
+      state.setCurrentList(list);
+      if (list.getCrawlQueue() == null) continue;
+      SimpleResultSet resultsList = handleCrawlQueueForList(state, list);
+      if (resultsList.size() > 0) {
+        resultSet.addAll(resultsList);
+        sizeSoFar += resultsList.size();
+      }
+      // we heed the batch hint, but always finish a List before checking:
+      if (sizeHint > 0 && sizeSoFar >= sizeHint) {
+        logger.info("Stopping traversal because batch hint " + sizeHint
+            + " has been reached");
+        break;
+      }
+    }
+
     return resultSet;
   }
 
@@ -155,7 +150,7 @@ public class SharepointClient {
       List allSites = siteDataWS.getAllChildrenSites();
       state.startRefresh();
       for (int i = 0; i < allSites.size(); i++) {
-        Document doc = (Document) allSites.get(i);
+        SPDocument doc = (SPDocument) allSites.get(i);
         updateGlobalStateFromSite(state, doc.getUrl());
       }
     } catch (SharepointException e) {
@@ -166,18 +161,18 @@ public class SharepointClient {
   }
 
   /**
-   * Gets all the docs from the Document Library and all the attachments 
+   * Gets all the docs from the SPDocument Library and all the attachments 
    * from items of Generic Lists in sharepoint under a given
    * site. It first calls SiteData web service to get all the Lists. And then
    * calls Lists web service to get the list items for the lists which are of
-   * the type Document Library. 
+   * the type SPDocument Library. 
    * For attachments in Generic List items, it calls Lists web service to get 
    * attachments for these list items. 
    * @return resultSet
    */
   private void updateGlobalStateFromSite(GlobalState state, String siteName) {
     logger.info("updateGlobalStateFromSite for " + siteName);
-    List listItems = new ArrayList<Document>();
+    List listItems = new ArrayList<SPDocument>();
 
     SiteDataWS siteDataWS;
     ListsWS listsWS;
@@ -194,16 +189,15 @@ public class SharepointClient {
       listCollection.addAll(listCollectionGenList);
       for (int i = 0; i < listCollection.size(); i++) {
         BaseList baseList = (BaseList) listCollection.get(i);
-        ListState listState = (ListState) state.lookupObject(LIST_STATE_NAME,
-            baseList.getInternalName());
+        ListState listState = state.lookupList(baseList.getInternalName());
         /*
          * If we already knew about this list, then only fetch docs that have
          * changed since the last doc we processed. If it's a new list (e.g. the
          * first Sharepoint traversal), we fetch everything.
          */
         if (listState == null) {
-          listState = (ListState) state.makeDependentObject(LIST_STATE_NAME,
-              baseList.getInternalName(), baseList.getLastMod());
+          listState = state.makeListState(
+            baseList.getInternalName(), baseList.getLastMod());
           listState.setUrl(baseList.getTitle());
           if (baseList.getType().equals(SiteDataWS.DOC_LIB)) {
             listItems = listsWS.getDocLibListItemChanges(
@@ -215,7 +209,7 @@ public class SharepointClient {
           logger.info("creating new listState: " + baseList.getTitle());
         } else {
           logger.info("revisiting old listState: " + listState.getUrl());
-          state.updateStatefulObject(listState, listState.getLastMod());
+          state.updateList(listState, listState.getLastMod());
           Calendar dateSince = listState.getDateForWSRefresh();
           logger.info("fetching changes since " + Util.formatDate(dateSince));
           if (baseList.getType().equals(SiteDataWS.DOC_LIB)) {
@@ -227,9 +221,9 @@ public class SharepointClient {
           }
         }
         if (baseList.getType().equals(SiteDataWS.GENERIC_LIST)) {
-          List attachmentItems = new ArrayList<Document>();
+          List attachmentItems = new ArrayList<SPDocument>();
           for (int j = 0; j < listItems.size(); j++) {           
-            Document doc = (Document) listItems.get(j);            
+            SPDocument doc = (SPDocument) listItems.get(j);            
             List attachments = listsWS.getAttachments(baseList, doc);
             attachmentItems.addAll(attachments);
           }
