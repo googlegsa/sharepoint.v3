@@ -148,7 +148,7 @@ public class SharepointClient {
     try {
       SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
       List allSites = siteDataWS.getAllChildrenSites();
-      state.startRefresh();
+      state.startRecrawl();
       for (int i = 0; i < allSites.size(); i++) {
         SPDocument doc = (SPDocument) allSites.get(i);
         updateGlobalStateFromSite(state, doc.getUrl());
@@ -157,7 +157,7 @@ public class SharepointClient {
       e.printStackTrace();
       logger.error(e.toString());
     }
-    state.endRefresh();
+    state.endRecrawl();
   }
 
   /**
