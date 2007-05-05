@@ -1,4 +1,6 @@
-//Copyright (C) 2006 Google Inc.
+// Copyright 2006 Google Inc.
+package com.google.enterprise.connector.sharepoint.state;
+
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -12,13 +14,11 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.state;
+
 
 import com.google.enterprise.connector.persist.PrefsStore;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.StatefulObject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
@@ -71,7 +70,7 @@ public class GlobalState {
   private static Log logger = LogFactory.getLog(GlobalState.class);
   private static final String CONNECTOR_NAME = "Sharepoint";
 
-  private boolean refreshing = false;
+  private boolean recrawling = false;
 
   /**
    * To keep track of ListStates, we keep two data structures: a TreeSet relying
@@ -122,13 +121,13 @@ public class GlobalState {
   }
 
   /**
-   * Signal that a complete "refresh" cycle is beginning, where all lists
+   * Signal that a complete "recrawl" cycle is beginning, where all lists
    * are being fetched from SharePoint.  This GlobalState will
-   * keep track of which objects are still present.  At the endRefresh()
+   * keep track of which objects are still present.  At the endRecrawl()
    * call, objects no longer existing may be removed.
    */
-  public void startRefresh() {
-    refreshing = true;
+  public void startRecrawl() {
+    recrawling = true;
     
     // for each ListState, set "not existing"
     for (Iterator<ListState> iter = dateMap.iterator(); iter.hasNext(); ) {
@@ -138,13 +137,13 @@ public class GlobalState {
   }
 
   /**
-   * Signals that the refresh cycle is over, and GlobalState may now
+   * Signals that the recrawl cycle is over, and GlobalState may now
    * delete any ListState which did not appear in a 
-   * updateList() call since the startRefresh() call.
+   * updateList() call since the startRecrawl() call.
    */
-  public void endRefresh() {
-    if (!refreshing) {
-      logger.error("called endRefresh() when not in a refresh state");
+  public void endRecrawl() {
+    if (!recrawling) {
+      logger.error("called endRecrawl() when not in a recrawl state");
       return;
     }
     for (Iterator<ListState> iter = getIterator(); iter.hasNext(); ) {
@@ -154,7 +153,7 @@ public class GlobalState {
         keyMap.remove(obj.getPrimaryKey());
       }
     }
-    refreshing = false;
+    recrawling = false;
   }
 
   /**
@@ -354,7 +353,7 @@ public class GlobalState {
   /**
    * Set the given List as "current"
    * This will be remembered in the XML state.
-   * @param obj
+   * @param obj ListState
    */
   public void setCurrentList(ListState obj) {
     currentObj = obj;
@@ -371,9 +370,10 @@ public class GlobalState {
   /**
    * For a single StatefulObject, update the two
    * data structures (url -> obj and time -> obj) and mark
-   * it "Existing" (if between startRefresh() and endRefresh())
+   * it "Existing" (if between startRecrawl() and endRecrawl())
    * @param ListState
-   * @param time
+   * @param time lastMod time for the List. If time is later than the existing
+   *  lastMod, the List is reindexed in the dateMap.
    */
   public void updateList(ListState state, DateTime time) {
     ListState stateOld = keyMap.get(state.getPrimaryKey());
@@ -386,7 +386,7 @@ public class GlobalState {
       state.setLastMod(time);
       keyMap.put(state.getPrimaryKey(), state);
     }
-    if (refreshing) {
+    if (recrawling) {
       state.setExisting(true); // remember we saw this one!
     }
     dateMap.add(state);
@@ -394,8 +394,7 @@ public class GlobalState {
 
   /**
    * Mark all the dependent objects "Existing"
-   * @param simpleName
-   * @param Existing
+   * @param existing
    */
   private void setAllExisting(boolean existing) {
     Set<Entry<String, ListState>> entries = keyMap.entrySet();
