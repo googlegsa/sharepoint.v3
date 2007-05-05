@@ -1,7 +1,7 @@
+//Copyright 2006 Google Inc.
+
 package com.google.enterprise.connector.sharepoint.state;
 
-
-//Copyright (C) 2006 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -38,6 +38,19 @@ import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Maintains the SharePoint connector's state with respect to a List (a
+ * SharePoint container, e.g. Document Library).  In addition to the 
+ * functionality required by the StatefulObject interface, ListState also keeps
+ * 1) The "crawl queue", an ordered list of SPDocuments due to be fed
+ * to the Connector Manager
+ * 2) The "last crawled" SPDocument, i.e. the last one that was successfully
+ * fed to Connector Manager
+ * 3) the List "url", the trailing part of the URL for this List
+ * It also determines, from at least (1) and (2), the date-time that the 
+ * connector should pass to SharePoint in its GetListItemChanges web services
+ * call.
+ */
 public class ListState implements StatefulObject {
   protected String key = null;
   protected DateTime lastMod = null;
@@ -231,10 +244,16 @@ public class ListState implements StatefulObject {
     return url;
   }
   
+  /**
+   * Debug routine: dump the crawl queue to stdout. (this is deliberately
+   * in preference to log messages, since it's much easier to follow in 
+   * Eclipse.)
+   */
   public void dumpCrawlQueue() {
     if (crawlQueue != null && crawlQueue.size() > 0) {
       System.out.println("Crawl queue for " + getUrl());
-      for (Iterator<SPDocument> iter = crawlQueue.iterator(); iter.hasNext(); ) {
+      for (Iterator<SPDocument> iter = crawlQueue.iterator(); 
+        iter.hasNext(); ) {
         SPDocument doc = iter.next();
         System.out.println(doc.getLastMod().getTime() + ", " + doc.getUrl());
       }
@@ -245,17 +264,24 @@ public class ListState implements StatefulObject {
   
   public void setCrawlQueue(List<SPDocument> crawlQueue) {
     this.crawlQueue = crawlQueue;
-
   }
   
+  /**
+   * Create a DOM tree for an SPDocument.
+   * @param domDoc the containing XML document (which is needed to create
+   * new DOM nodes)
+   * @param doc SPDocument
+   * @return Node head of the DOM tree
+   * @throws SharepointException
+   */
   private Node dumpDocToDOM(org.w3c.dom.Document domDoc, SPDocument doc)
       throws SharepointException {
     Element element = domDoc.createElement("document");
     element.setAttribute("id", doc.getDocId());
-    Element lastMod = domDoc.createElement("lastMod");
-    lastMod.appendChild(domDoc.createTextNode(
+    Element lastModTmp = domDoc.createElement("lastMod");
+    lastModTmp.appendChild(domDoc.createTextNode(
         Util.formatDate(Util.calendarToJoda(doc.getLastMod()))));
-    element.appendChild(lastMod);
+    element.appendChild(lastModTmp);
     Element urlTmp = domDoc.createElement("url");
     try {
       urlTmp.appendChild(domDoc.createTextNode(
@@ -270,17 +296,21 @@ public class ListState implements StatefulObject {
   }
   
   /**
-   * Debug routine
+   * Create a DOM tree for the entire ListState object.
+   * @param domDoc DOM node for the containing XML document, which is necessary
+   *  for creating new DOM nodes
+   * @return Node head of DOM tree
+   * @throws SharepointException
    */
   public Node dumpToDOM(Document domDoc) throws SharepointException{
     Element element = domDoc.createElement(this.getClass().getSimpleName());
     element.setAttribute("id", getGuid());
     
     // the lastMod
-    Element lastMod = domDoc.createElement("lastMod");
+    Element lastModTmp = domDoc.createElement("lastMod");
     Text text = domDoc.createTextNode(dumpLastMod());
-    lastMod.appendChild(text);
-    element.appendChild(lastMod);
+    lastModTmp.appendChild(text);
+    element.appendChild(lastModTmp);
     
     // the URL
     Element urlTmp = domDoc.createElement("URL");
@@ -297,14 +327,22 @@ public class ListState implements StatefulObject {
     if (crawlQueue != null) {
       Element queue = domDoc.createElement("crawlQueue");
       element.appendChild(queue);
-      for (Iterator<SPDocument> iter = crawlQueue.iterator();  iter.hasNext(); ) {
+      for (Iterator<SPDocument> iter = crawlQueue.iterator(); 
+        iter.hasNext(); ) {
         queue.appendChild(dumpDocToDOM(domDoc, iter.next()));
       }
     }
     return element;
   }
   
-  private SPDocument loadDocFromDOM(Element element) throws SharepointException {
+  /**
+   * Create an SPDocument from a DOM tree
+   * @param element DOM node representing the SPDocument
+   * @return SPDocument
+   * @throws SharepointException
+   */
+  private SPDocument loadDocFromDOM(Element element) 
+    throws SharepointException {
     if (!element.getTagName().equals("document")) {
       throw new SharepointException("should be 'document', was " + 
           element.getTagName());
@@ -317,13 +355,19 @@ public class ListState implements StatefulObject {
       throw new SharepointException("Invalid XML: " + element.toString());
     }
     String lastModString = lastModNodeList.item(0).getTextContent();
-    DateTime lastMod = Util.parseDate(lastModString);
+    DateTime lastModTmp = Util.parseDate(lastModString);
     GregorianCalendar calDate = new GregorianCalendar();
-    calDate.setTimeInMillis(lastMod.getMillis());
+    calDate.setTimeInMillis(lastModTmp.getMillis());
     String urlTmp = URLDecoder.decode(urlNodeList.item(0).getTextContent());
     return new SPDocument(id, urlTmp, calDate);
   }
   
+  /**
+   * Reload this ListState from a DOM tree.  The opposite of dumpToDOM().
+   * @param Element the DOM element
+   * @throws SharepointException if the DOM tree is not a valid representation
+   *   of a ListState 
+   */
   public void loadFromDOM(Element element) throws SharepointException {
     key = element.getAttribute("id");
     if (key == null || key.length() == 0) {
