@@ -22,6 +22,7 @@ import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.StatefulObject;
 import com.google.enterprise.connector.sharepoint.Util;
+import com.google.enterprise.connector.spi.HasTimeout;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.QueryTraversalManager;
@@ -33,6 +34,8 @@ import com.google.enterprise.connector.traversal.QueryTraverserMonitor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.IOException;
+import java.lang.Integer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,13 +48,13 @@ import java.util.TreeSet;
  *
  */
 
-public class SharepointQueryTraversalManager implements QueryTraversalManager {
+public class SharepointQueryTraversalManager implements QueryTraversalManager,
+  HasTimeout {
   private static Log logger;
   private SharepointClientContext sharepointClientContext;
   private SharepointConnector connector;
   protected GlobalState globalState; // not private, so the unittest can see it
   private int hint = -1;
-  private QueryTraverserMonitor monitor;
   
   public SharepointQueryTraversalManager(SharepointConnector connector,
     SharepointClientContext sharepointClientContext) 
@@ -64,11 +67,12 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
   }
   
   /**
-   * Forget whatever state we have. This is strictly for the unittest, so it
-   * doesn't get confused by a file left around from a previous run.
+   * For the HasTimeout interface: tell ConnectorManager we need the maximum
+   * amount of time
+   * @return integer
    */
-  protected void forgetStateForUnittest() {
-    this.globalState = new GlobalState();
+  public int getTimeoutMillis() {
+    return Integer.MAX_VALUE;
   }
   
   private void implementCheckpoint(PropertyMap map) throws RepositoryException {
@@ -157,10 +161,9 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    * @see com.google.enterprise.connector.spi.QueryTraversalManager
    * #resumeTraversal(java.lang.String)
    */
-  public ResultSet resumeTraversal(String arg0, QueryTraverserMonitor monitor) 
+  public ResultSet resumeTraversal(String arg0) 
     throws RepositoryException {
     logger.info("resumeTraversal");
-    this.monitor = monitor;
     return doTraversal();
   }
 
@@ -177,10 +180,9 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
    * @see com.google.enterprise.connector.spi.QueryTraversalManager
    * #startTraversal()
    */
-  public ResultSet startTraversal(QueryTraverserMonitor monitor) 
+  public ResultSet startTraversal() 
     throws RepositoryException {
     logger.info("startTraversal");
-    this.monitor = monitor;
     return doTraversal();
   }
 
@@ -210,9 +212,6 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager {
   private ResultSet doTraversal() throws RepositoryException {
     SharepointClient sharepointClient = 
       new SharepointClient(sharepointClientContext);
-    if (this.monitor != null) {
-      this.monitor.requestTimeout(Long.MAX_VALUE);
-    }
     SimpleResultSet rs = sharepointClient.traverse(globalState, hint);
     // if the set is empty, then we need to sweep Sharepoint again:
     if (rs.size() == 0) {

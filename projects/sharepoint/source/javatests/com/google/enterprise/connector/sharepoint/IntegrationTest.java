@@ -19,6 +19,7 @@ import com.google.enterprise.connector.persist.MockConnectorStateStore;
 import com.google.enterprise.connector.pusher.MockPusher;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.LoginException;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -74,9 +75,9 @@ public class IntegrationTest extends TestCase {
       LoginException, RepositoryException {
     String connectorName = "sharepoint";
     Session session = connector.login();
+    GlobalState.forgetState();
     SharepointQueryTraversalManager manager = 
         (SharepointQueryTraversalManager) session.getQueryTraversalManager(); 
-    manager.forgetStateForUnittest();
     MockPusher pusher = new MockPusher(System.out);
     ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
 
@@ -90,7 +91,7 @@ public class IntegrationTest extends TestCase {
     int totalDocsProcessed = 0;
     int batchNumber = 0;
     while (docsProcessed != 0) {
-      docsProcessed = traverser.runBatch(batchSize, null);
+      docsProcessed = traverser.runBatch(batchSize);
       totalDocsProcessed += docsProcessed;
       System.out.println("Batch# " + batchNumber + " docs " + docsProcessed +
           " checkpoint " + connectorStateStore.getConnectorState(connectorName));

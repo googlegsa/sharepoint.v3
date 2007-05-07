@@ -44,6 +44,9 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
   private SharepointQueryTraversalManager manager;
   
   public void setUp() throws Exception {
+    // important: forget any global state left over from previous runs
+    GlobalState.forgetState();
+    
     SharepointClientContext sharepointClientContext = new 
       SharepointClientContext(sharepointUrl, domain, username, password);
     sharepointClient = new SharepointClient(sharepointClientContext);
@@ -51,9 +54,6 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
         domain, username, password);
     manager = new SharepointQueryTraversalManager(connector, 
         sharepointClientContext);
-    
-    // important: make it forget whatever it read in from a left-over file
-    manager.forgetStateForUnittest();
     super.setUp();    
   }
   
@@ -62,7 +62,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
    */
   public void testBasic() {
     try {
-      ResultSet rs = manager.startTraversal(null);
+      ResultSet rs = manager.startTraversal();
       boolean found = false;
       int numDocs = 0;
       for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {
@@ -87,7 +87,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
   public void testHints() {
     try {
       manager.setBatchHint(3);
-      ResultSet rs = manager.startTraversal(null);
+      ResultSet rs = manager.startTraversal();
       boolean found = false;
       int numDocs = 0;
       for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {
@@ -106,7 +106,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
       assertEquals(numDocs, 3); 
       
       // now, get the next bunch:
-      rs = manager.startTraversal(null);
+      rs = manager.startTraversal();
       found = false;
       numDocs = 0;
       for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {
@@ -138,7 +138,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
     System.out.println("\n\ntestHintsWithCheckpoint\n\n");
     try {
       manager.setBatchHint(3);
-      ResultSet rs = manager.startTraversal(null);
+      ResultSet rs = manager.startTraversal();
       boolean found = false;
       int numDocs = 0;
       PropertyMap pm = null;
@@ -165,7 +165,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
       System.out.println(manager.globalState.getStateXML());
       
       // now, get the next bunch:
-      rs = manager.startTraversal(null);
+      rs = manager.startTraversal();
       found = false;
       numDocs = 0;
       for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {

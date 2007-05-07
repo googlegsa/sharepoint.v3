@@ -30,6 +30,9 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Calendar;
@@ -69,6 +72,7 @@ import javax.xml.transform.stream.StreamResult;
 public class GlobalState {
   private static Log logger = LogFactory.getLog(GlobalState.class);
   private static final String CONNECTOR_NAME = "Sharepoint";
+  private static final String CONNECTOR_PREFIX = "_state.xml";
 
   private boolean recrawling = false;
 
@@ -89,6 +93,22 @@ public class GlobalState {
    */
   protected ListState currentObj = null;
 
+  /**
+   * Delete our state file. This is for debugging purposes, so that unit
+   * tests can start from a clean state.
+   */
+  public static void forgetState() {
+    PrefsStore store = new PrefsStore();
+    String stateFileName = store.getConnectorState(CONNECTOR_NAME);
+    if (stateFileName != null && stateFileName.length() > 0) {
+      File f = new File(stateFileName);
+      if (f.exists()) {
+        f.delete();
+        store.storeConnectorState(CONNECTOR_NAME, "");
+      }
+    }
+  }
+  
   /**
    * Constructor. 
    */
@@ -276,20 +296,32 @@ public class GlobalState {
     PrefsStore store = new PrefsStore();
     String xml = getStateXML();
     logger.info(xml);
-    store.storeConnectorState(CONNECTOR_NAME, xml);
+    
+    // replace this with a (yet-to-be-written) spi call to get the
+    // connector working dir:
+    File f = new File(CONNECTOR_NAME + CONNECTOR_PREFIX);
+    // store just the filename in the preferences:
+    try {
+      FileOutputStream out = new FileOutputStream(f);
+      out.write(xml.getBytes());
+      out.close();
+      logger.info("saving state to " + f.getCanonicalPath());
+      store.storeConnectorState(CONNECTOR_NAME, f.getCanonicalPath());
+    } catch (IOException e) {
+      throw new SharepointException(e.toString());
+    } 
   }
 
   /**
    * Load from XML.
-   * @param persisted - a string representing the output of a previous
-   * getStateXML() call.
+   * @param persisted - file name for the state file, which has already been
+   *  checked as to its existence.
    */
-  public void loadStateXML(String persisted) throws SharepointException {
+  public void loadStateXML(File fileState) throws SharepointException {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
-      StringReader stringReader = new StringReader(persisted);
-      org.w3c.dom.Document doc = builder.parse(new InputSource(stringReader));
+      org.w3c.dom.Document doc = builder.parse(fileState);
       NodeList nodeList = doc.getElementsByTagName("state");
       if (nodeList.getLength() == 0) {
         throw new SharepointException("Invalid XML: no <state> element");
@@ -344,11 +376,25 @@ public class GlobalState {
    */
   public void loadState() throws SharepointException {
     PrefsStore store = new PrefsStore();
-    String state = store.getConnectorState(CONNECTOR_NAME);
-    if (state != null) {
-      loadStateXML(state);
+    String stateFileName = store.getConnectorState(CONNECTOR_NAME);
+    if (stateFileName == null || stateFileName.length() == 0) {
+      logger.info("no state file found");
+      return;
+    }
+    try {
+      File f = new File(stateFileName);
+      if (!f.exists()) {
+        logger.error("state file '" + f.getCanonicalPath() + 
+        "' does not exist");
+        return;
+      }
+      logger.info("loading state from " + f.getCanonicalPath());
+      loadStateXML(f);
+    } catch (IOException e) {
+      throw new SharepointException(e.toString());
     }
   }
+
 
   /**
    * Set the given List as "current"
