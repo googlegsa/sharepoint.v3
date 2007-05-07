@@ -143,7 +143,8 @@ public class SiteDataWS {
               listCollection.add(list);
               
               // find out what "columns" (metadata) are enabled on this List:
-              viewsStub.getViewNames(list.getInternalName());
+              // BP: this was causing SoapExceptions, so commented out for now:
+              // viewsStub.getViewNames(list.getInternalName());
             }
           } catch (ParseException e) {
             throw new SharepointException(e.toString());
