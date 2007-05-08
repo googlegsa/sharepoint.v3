@@ -2,6 +2,7 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.enterprise.connector.sharepoint.Util;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import java.text.ParseException;
@@ -27,8 +28,10 @@ public class ListsWSTest extends TestCase {
     listsWS = new ListsWS(sharepointClientContext);
     
     listInternalNames.put("{6E22CD53-4BDF-422F-8BAD-85506558A589}", "Calendar");
-    listInternalNames.put("{AF8B8E07-3B75-4506-B77B-77A5CA39C52D}",
-        "Meghnas unittest discussion board");
+  //  listInternalNames.put("{AF8B8E07-3B75-4506-B77B-77A5CA39C52D}",
+   //     "Meghnas unittest discussion board");
+    listInternalNames.put("{0530191C-CA21-4CDE-ACAB-B0DB1E63E22F}", 
+        "Team Discussion");
     listInternalNames.put("{E8B9B5C1-A9EE-4803-9544-60802B5CD9FA}", "Tasks");
     listInternalNames.put("{3D97F002-39A2-463B-9343-0830CCC9CE49}", 
         "Announcements");
@@ -54,6 +57,7 @@ public class ListsWSTest extends TestCase {
   }
   
   public void testGetDocLibListItemChanges() {
+    int num = 0;
     try {
       System.out.println("Changed items found (Document Libraries) - ");
       BaseList baseList = new BaseList(docLibLInternalName, "DocumentLibrary", 
@@ -64,15 +68,18 @@ public class ListsWSTest extends TestCase {
       for (int i=0 ; i<listItemChanges.size(); i++) {
         SPDocument doc = (SPDocument) listItemChanges.get(i);
         System.out.println(doc.getUrl());
+        num++;
       }
     } catch (SharepointException e) {
       e.printStackTrace();
     } catch (ParseException e) {
       e.printStackTrace();
     }    
+    Assert.assertEquals(4, num);
   }
   
   public void testGetGenericListItemChanges() {
+    int num = 0;
     for (String listInternalName : listInternalNames.keySet()) {
       try {      
         BaseList baseList = new BaseList(
@@ -85,7 +92,8 @@ public class ListsWSTest extends TestCase {
             Util.listItemsStringToCalendar("2006-03-15 22:00:40"));
         for (int i=0 ; i<listItemChanges.size(); i++) {
           SPDocument doc = (SPDocument) listItemChanges.get(i);
-          System.out.println(doc.getUrl() +  "   " + doc.getDocId());
+          System.out.println(doc.getUrl());
+          num++;
         }
       } catch (SharepointException e) {
         e.printStackTrace();
@@ -93,10 +101,11 @@ public class ListsWSTest extends TestCase {
         e.printStackTrace();
       }    
     }
+    Assert.assertEquals(8, num);
   }
   
   public void testGetAttachments() {
-
+    int num = 0;
     for (String listInternalName : listInternalNames.keySet()) {
       try {
         BaseList baseList = new BaseList(
@@ -113,6 +122,7 @@ public class ListsWSTest extends TestCase {
         for (int i = 0; i < attachments.size(); i++) {
           SPDocument doc = (SPDocument) attachments.get(i);
           System.out.println(doc.getUrl());
+          num++;
         }
       } catch (ParseException e1) {
         e1.printStackTrace();
@@ -120,5 +130,6 @@ public class ListsWSTest extends TestCase {
         e.printStackTrace();
       }
     }
+    Assert.assertEquals(4, num);
   }
 }

@@ -44,7 +44,7 @@ public class IntegrationTest extends TestCase {
   private SharepointClient sharepointClient;
   private Connector connector;  
   
-  public static final int TOTAL_DOCS = 13;
+  public static final int TOTAL_DOCS = 27;
   
   public void setUp() throws Exception {
     SharepointClientContext sharepointClientContext = new 
@@ -68,7 +68,7 @@ public class IntegrationTest extends TestCase {
     runTestBatches(2);
     runTestBatches(3);
     runTestBatches(4);
-    runTestBatches(20);
+    runTestBatches(40);
   }
 
   private void runTestBatches(int batchSize) throws InterruptedException,
