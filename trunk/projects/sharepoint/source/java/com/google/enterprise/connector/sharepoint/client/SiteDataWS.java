@@ -135,7 +135,7 @@ public class SiteDataWS {
       _sList[] sl = asl.get_sList();
       if (sl != null) {
         for(int i=0; i<sl.length; i++) {
-          try {                     
+          try {   
             if(sl[i].getBaseType().equals(baseType)) {
               BaseList list = new BaseList(sl[i].getInternalName(), 
                 sl[i].getTitle(), sl[i].getBaseType(), 
