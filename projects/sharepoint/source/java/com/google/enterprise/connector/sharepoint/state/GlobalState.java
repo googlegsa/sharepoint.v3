@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
@@ -84,8 +85,8 @@ public class GlobalState {
    * one time, it was thought that there would be other instances of 
    * StatefulObject, and in the future there could be again)
    */
-  protected TreeSet<ListState> dateMap = new TreeSet<ListState>();
-  protected HashMap<String, ListState> keyMap = 
+  protected SortedSet<ListState> dateMap = new TreeSet<ListState>();
+  protected Map<String, ListState> keyMap = 
     new HashMap<String, ListState>();
 
   /**
@@ -317,7 +318,7 @@ public class GlobalState {
    * @param persisted - file name for the state file, which has already been
    *  checked as to its existence.
    */
-  public void loadStateXML(File fileState) throws SharepointException {
+  private void loadStateXML(File fileState) throws SharepointException {
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
