@@ -226,15 +226,13 @@ public class SharepointClient {
             SPDocument doc = (SPDocument) listItems.get(j);            
             List attachments = listsWS.getAttachments(baseList, doc);
             attachmentItems.addAll(attachments);
-          }
-          listState.setCrawlQueue(attachmentItems);
-          logger.info("found " + attachmentItems.size() + " items(attachments)"
-              + " to crawl in " + siteName);    
-        } else {
-          listState.setCrawlQueue(listItems);
-          logger.info("found " + listItems.size() + " items to crawl in "
-            + siteName);        
-        }
+         }
+          listItems.addAll(attachmentItems);    
+        } 
+        
+        listState.setCrawlQueue(listItems);
+            logger.info("found " + listItems.size() + " items to crawl in "
+            + siteName);               
         listState.dumpCrawlQueue();
       }
     } catch (SharepointException e) {

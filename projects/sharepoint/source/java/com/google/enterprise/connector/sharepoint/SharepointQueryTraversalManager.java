@@ -17,11 +17,8 @@ package com.google.enterprise.connector.sharepoint;
 import com.google.enterprise.connector.sharepoint.client.SPDocument;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.StatefulObject;
-import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.spi.HasTimeout;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
@@ -29,18 +26,12 @@ import com.google.enterprise.connector.spi.QueryTraversalManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.ResultSet;
 import com.google.enterprise.connector.spi.SimpleResultSet;
-import com.google.enterprise.connector.traversal.QueryTraverserMonitor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
-import java.lang.Integer;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * This class is an implementation of the QueryTraversalManager from the spi.
