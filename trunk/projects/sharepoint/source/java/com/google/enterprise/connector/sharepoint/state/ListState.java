@@ -116,7 +116,7 @@ public class ListState implements StatefulObject {
    * Return lastMod in String form
    * @return  lastMod string-ified
    */
-  public String dumpLastMod() {
+  public String getLastModString() {
     return Util.formatDate(lastMod);
   }
   
@@ -308,7 +308,7 @@ public class ListState implements StatefulObject {
     
     // the lastMod
     Element lastModTmp = domDoc.createElement("lastMod");
-    Text text = domDoc.createTextNode(dumpLastMod());
+    Text text = domDoc.createTextNode(getLastModString());
     lastModTmp.appendChild(text);
     element.appendChild(lastModTmp);
     

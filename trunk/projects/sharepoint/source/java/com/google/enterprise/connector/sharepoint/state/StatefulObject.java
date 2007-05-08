@@ -62,7 +62,7 @@ public interface StatefulObject extends Comparable {
    * Get lastMod in string form
    * @return string version of lastMod
    */
-  public String dumpLastMod();
+  public String getLastModString();
   
   public void setLastMod(DateTime lastMod);
   
@@ -77,7 +77,7 @@ public interface StatefulObject extends Comparable {
   /**
    * Set the "existing" state.  This is intended for use in traversal, to
    * be able to detect deleted lists from one WebServices call to another.
-   * @param visited 
+   * @param existing 
    */  
   public void setExisting(boolean existing);
   
