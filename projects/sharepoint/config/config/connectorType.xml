@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="sharepoint-connector"
-		class="com.google.enterprise.connector.spi.SimpleConnectorType">
+		class="com.google.enterprise.connector.sharepoint.SharepointConnectorType">
 		<property name="configKeys">
 			<list>
         <value>sharepointUrl</value>
