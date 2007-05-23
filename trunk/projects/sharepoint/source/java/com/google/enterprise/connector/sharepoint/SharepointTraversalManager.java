@@ -22,10 +22,10 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.spi.HasTimeout;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
-import com.google.enterprise.connector.spi.QueryTraversalManager;
+import com.google.enterprise.connector.spi.TraversalManager;
 import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.ResultSet;
-import com.google.enterprise.connector.spi.SimpleResultSet;
+import com.google.enterprise.connector.spi.PropertyMapList;
+import com.google.enterprise.connector.spi.SimplePropertyMapList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,12 +34,12 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * This class is an implementation of the QueryTraversalManager from the spi.
+ * This class is an implementation of the TraversalManager from the spi.
  * All the traversal based logic is onvoked through this class.
  *
  */
 
-public class SharepointQueryTraversalManager implements QueryTraversalManager,
+public class SharepointTraversalManager implements TraversalManager,
   HasTimeout {
   private static Log logger;
   private SharepointClientContext sharepointClientContext;
@@ -47,10 +47,10 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager,
   protected GlobalState globalState; // not private, so the unittest can see it
   private int hint = -1;
   
-  public SharepointQueryTraversalManager(SharepointConnector connector,
+  public SharepointTraversalManager(SharepointConnector connector,
     SharepointClientContext sharepointClientContext) 
       throws RepositoryException {
-    logger = LogFactory.getLog(SharepointQueryTraversalManager.class);
+    logger = LogFactory.getLog(SharepointTraversalManager.class);
     this.connector = connector;
     this.sharepointClientContext = sharepointClientContext;
     this.globalState = new GlobalState();
@@ -134,7 +134,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager,
   }
   
   /* (non-Javadoc)
-   * @see com.google.enterprise.connector.spi.QueryTraversalManager#checkpoint
+   * @see com.google.enterprise.connector.spi.TraversalManager#checkpoint
    * (com.google.enterprise.connector.spi.PropertyMap)
    */
   public String checkpoint(PropertyMap map) throws RepositoryException {
@@ -149,17 +149,17 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager,
   }
 
   /* (non-Javadoc)
-   * @see com.google.enterprise.connector.spi.QueryTraversalManager
+   * @see com.google.enterprise.connector.spi.TraversalManager
    * #resumeTraversal(java.lang.String)
    */
-  public ResultSet resumeTraversal(String arg0) 
+  public PropertyMapList resumeTraversal(String arg0) 
     throws RepositoryException {
     logger.info("resumeTraversal");
     return doTraversal();
   }
 
   /* (non-Javadoc)
-   * @see com.google.enterprise.connector.spi.QueryTraversalManager
+   * @see com.google.enterprise.connector.spi.TraversalManager
    * #setBatchHint(int)
    */
   public void setBatchHint(int hint) throws RepositoryException {
@@ -168,17 +168,17 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager,
   }
 
   /* (non-Javadoc)
-   * @see com.google.enterprise.connector.spi.QueryTraversalManager
+   * @see com.google.enterprise.connector.spi.TraversalManager
    * #startTraversal()
    */
-  public ResultSet startTraversal() 
+  public PropertyMapList startTraversal() 
     throws RepositoryException {
     logger.info("startTraversal");
     return doTraversal();
   }
 
-  private void dumpResultSet(SimpleResultSet rs) {
-    System.out.println("ResultSet=" + rs.size() + " items");
+  private void dumpPropertyMapList(SimplePropertyMapList rs) {
+    System.out.println("PropertyMapList=" + rs.size() + " items");
     try {
       for (Iterator iter = rs.iterator(); iter.hasNext(); ) {
         PropertyMap pm = (PropertyMap) iter.next();
@@ -197,13 +197,13 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager,
    * Private routine that actually does the traversal. If no docs are found
    * in the first sharepointClient.traverse() call, we go back to Sharepoint
    * and fetch a new set of stuff.
-   * @return ResultSet
+   * @return PropertyMapList
    * @throws RepositoryException
    */
-  private ResultSet doTraversal() throws RepositoryException {
+  private PropertyMapList doTraversal() throws RepositoryException {
     SharepointClient sharepointClient = 
       new SharepointClient(sharepointClientContext);
-    SimpleResultSet rs = sharepointClient.traverse(globalState, hint);
+    SimplePropertyMapList rs = sharepointClient.traverse(globalState, hint);
     // if the set is empty, then we need to sweep Sharepoint again:
     if (rs.size() == 0) {
       logger.info("traversal returned no new docs: re-fetching ...");
@@ -211,7 +211,7 @@ public class SharepointQueryTraversalManager implements QueryTraversalManager,
       rs = sharepointClient.traverse(globalState, hint);
     }
     if (logger.isInfoEnabled()) {
-      dumpResultSet(rs);
+      dumpPropertyMapList(rs);
     }
     return rs;           
   }
