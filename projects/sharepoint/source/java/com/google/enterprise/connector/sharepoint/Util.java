@@ -141,9 +141,9 @@ public class Util {
     pm.put(SpiConstants.PROPNAME_SEARCHURL, searchUrlProp);
     
     Property lastModifyProp = new SimpleProperty(
-      SpiConstants.PROPNAME_LASTMODIFY, new SimpleValue(
+      SpiConstants.PROPNAME_LASTMODIFIED, new SimpleValue(
         ValueType.DATE, SimpleValue.calendarToIso8601(doc.getLastMod())));  
-    pm.put(SpiConstants.PROPNAME_LASTMODIFY, lastModifyProp);
+    pm.put(SpiConstants.PROPNAME_LASTMODIFIED, lastModifyProp);
     
     Property listGuidProp = new SimpleProperty(
         LIST_GUID, new SimpleValue(ValueType.STRING, guidList));
@@ -173,7 +173,7 @@ public class Util {
       String id = map.getProperty(
           SpiConstants.PROPNAME_DOCID).getValue().getString();
       Calendar lastMod = map.getProperty(
-          SpiConstants.PROPNAME_LASTMODIFY).getValue().getDate();
+          SpiConstants.PROPNAME_LASTMODIFIED).getValue().getDate();
       SPDocument doc = new SPDocument(id, url, lastMod);
       Property authorProp = map.getProperty(Util.AUTHOR);
       if (authorProp != null) {

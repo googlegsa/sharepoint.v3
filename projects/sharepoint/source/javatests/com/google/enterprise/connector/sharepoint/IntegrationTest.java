@@ -21,8 +21,8 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.spi.Connector;
-import com.google.enterprise.connector.spi.LoginException;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.RepositoryLoginException;
 import com.google.enterprise.connector.spi.Session;
 import com.google.enterprise.connector.traversal.QueryTraverser;
 import com.google.enterprise.connector.traversal.Traverser;
@@ -63,7 +63,7 @@ public class IntegrationTest extends TestCase {
    * @throws LoginException 
    */
   public final void testRunBatch() throws InterruptedException,
-      LoginException, RepositoryException {    
+      RepositoryLoginException, RepositoryException {    
     runTestBatches(1);
     runTestBatches(2);
     runTestBatches(3);
@@ -72,12 +72,12 @@ public class IntegrationTest extends TestCase {
   }
 
   private void runTestBatches(int batchSize) throws InterruptedException,
-      LoginException, RepositoryException {
+      RepositoryLoginException, RepositoryException {
     String connectorName = "sharepoint";
     Session session = connector.login();
     GlobalState.forgetState();
-    SharepointQueryTraversalManager manager = 
-        (SharepointQueryTraversalManager) session.getQueryTraversalManager(); 
+    SharepointTraversalManager manager = 
+        (SharepointTraversalManager) session.getTraversalManager(); 
     MockPusher pusher = new MockPusher(System.out);
     ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
 
