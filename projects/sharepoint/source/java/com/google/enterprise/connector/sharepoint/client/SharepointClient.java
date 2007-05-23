@@ -21,10 +21,10 @@ import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.ResultSet;
+import com.google.enterprise.connector.spi.PropertyMapList;
 import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SimplePropertyMap;
-import com.google.enterprise.connector.spi.SimpleResultSet;
+import com.google.enterprise.connector.spi.SimplePropertyMapList;
 import com.google.enterprise.connector.spi.SimpleValue;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.ValueType;
@@ -74,10 +74,10 @@ public class SharepointClient {
    * @param crawlQueue
    * @return
    */
-  private SimpleResultSet handleCrawlQueueForList(GlobalState state,
+  private SimplePropertyMapList handleCrawlQueueForList(GlobalState state,
       ListState list) {
     logger.info("handling " + list.getUrl());
-    SimpleResultSet resultSet = new SimpleResultSet();
+    SimplePropertyMapList resultSet = new SimplePropertyMapList();
     List<SPDocument> crawlQueue = list.getCrawlQueue();
     if (crawlQueue == null) return resultSet;
     for (Iterator<SPDocument> iter = crawlQueue.iterator(); iter.hasNext();) {
@@ -99,10 +99,10 @@ public class SharepointClient {
    * Connector Manager's call to checkpoint(). Until that time, it's possible
    * we'd have to traverse() it again.
    * 
-   * @return resultSet
+   * @return SimplePropertyMapList
    */
-  public SimpleResultSet traverse(GlobalState state, int sizeHint) {
-    SimpleResultSet resultSet = new SimpleResultSet();
+  public SimplePropertyMapList traverse(GlobalState state, int sizeHint) {
+    SimplePropertyMapList resultSet = new SimplePropertyMapList();
 
     int sizeSoFar = 0;
     ListState lastVisited = state.getCurrentList();
@@ -121,7 +121,7 @@ public class SharepointClient {
       }
       state.setCurrentList(list);
       if (list.getCrawlQueue() == null) continue;
-      SimpleResultSet resultsList = handleCrawlQueueForList(state, list);
+      SimplePropertyMapList resultsList = handleCrawlQueueForList(state, list);
       if (resultsList.size() > 0) {
         resultSet.addAll(resultsList);
         sizeSoFar += resultsList.size();

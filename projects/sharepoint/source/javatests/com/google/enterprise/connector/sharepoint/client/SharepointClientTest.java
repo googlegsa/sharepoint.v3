@@ -8,7 +8,7 @@ import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.ResultSet;
+import com.google.enterprise.connector.spi.PropertyMapList;
 import com.google.enterprise.connector.spi.SpiConstants;
 
 import junit.framework.TestCase;
@@ -43,7 +43,7 @@ public class SharepointClientTest extends TestCase {
    */
   public void testTraverse() {
     sharepointClient.updateGlobalState(globalState);
-    ResultSet rs = sharepointClient.traverse(globalState, 100);
+    PropertyMapList rs = sharepointClient.traverse(globalState, 100);
     boolean found = false;
     int numDocs = 0;
     try {
@@ -51,7 +51,7 @@ public class SharepointClientTest extends TestCase {
       System.out.println("Documents found - ");
       while(it.hasNext()) {
         PropertyMap pm = it.next();
-        Property lastModProp = pm.getProperty(SpiConstants.PROPNAME_LASTMODIFY);
+        Property lastModProp = pm.getProperty(SpiConstants.PROPNAME_LASTMODIFIED);
         Property docProp = pm.getProperty(SpiConstants.PROPNAME_DOCID);
         Property contentUrlProp = 
             pm.getProperty(SpiConstants.PROPNAME_CONTENTURL);
