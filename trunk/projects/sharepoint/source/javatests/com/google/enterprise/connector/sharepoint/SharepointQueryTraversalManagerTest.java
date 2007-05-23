@@ -15,7 +15,7 @@ package com.google.enterprise.connector.sharepoint;
 // limitations under the License.
 
 import com.google.enterprise.connector.sharepoint.SharepointConnector;
-import com.google.enterprise.connector.sharepoint.SharepointQueryTraversalManager;
+import com.google.enterprise.connector.sharepoint.SharepointTraversalManager;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -24,7 +24,7 @@ import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.PropertyMap;
 import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.ResultSet;
+import com.google.enterprise.connector.spi.PropertyMapList;
 import com.google.enterprise.connector.spi.SpiConstants;
 
 import junit.framework.TestCase;
@@ -41,7 +41,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
   final String password = "g00gl3";
   private SharepointClient sharepointClient;
   private SharepointConnector connector;
-  private SharepointQueryTraversalManager manager;
+  private SharepointTraversalManager manager;
   
   public void setUp() throws Exception {
     // important: forget any global state left over from previous runs
@@ -52,7 +52,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
     sharepointClient = new SharepointClient(sharepointClientContext);
     connector = new SharepointConnector(sharepointUrl, 
         domain, username, password);
-    manager = new SharepointQueryTraversalManager(connector, 
+    manager = new SharepointTraversalManager(connector, 
         sharepointClientContext);
     super.setUp();    
   }
@@ -62,7 +62,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
    */
   public void testBasic() {
     try {
-      ResultSet rs = manager.startTraversal();
+      PropertyMapList rs = manager.startTraversal();
       boolean found = false;
       int numDocs = 0;
       for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {
@@ -87,7 +87,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
   public void testHints() {
     try {
       manager.setBatchHint(3);
-      ResultSet rs = manager.startTraversal();
+      PropertyMapList rs = manager.startTraversal();
       boolean found = false;
       int numDocs = 0;
       for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {
@@ -139,7 +139,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
     System.out.println("\n\ntestHintsWithCheckpoint\n\n");
     try {
       manager.setBatchHint(3);
-      ResultSet rs = manager.startTraversal();
+      PropertyMapList rs = manager.startTraversal();
       boolean found = false;
       int numDocs = 0;
       PropertyMap pm = null;

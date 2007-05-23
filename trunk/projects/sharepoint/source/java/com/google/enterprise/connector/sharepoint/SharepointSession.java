@@ -18,7 +18,7 @@ package com.google.enterprise.connector.sharepoint;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
-import com.google.enterprise.connector.spi.QueryTraversalManager;
+import com.google.enterprise.connector.spi.TraversalManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
 
@@ -51,9 +51,9 @@ public class SharepointSession implements Session {
     return null;
   }
 
-  public QueryTraversalManager getQueryTraversalManager()
+  public TraversalManager getTraversalManager()
       throws RepositoryException {
-    return new SharepointQueryTraversalManager(connector, 
+    return new SharepointTraversalManager(connector, 
         sharepointClientContext);
   }
 }
