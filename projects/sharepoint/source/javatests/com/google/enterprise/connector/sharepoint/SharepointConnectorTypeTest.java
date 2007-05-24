@@ -89,7 +89,20 @@ public class SharepointConnectorTypeTest extends TestCase {
     Assert.assertEquals(expected, response.getFormSnippet());    
   }
   
-  public void testValidateConfig() {
+  public void testValidateConfigRequiredField() {
+    String expectedMessage = "Foo field is missing.";
+    Map configMap = new HashMap();
+    configMap.put("foo", "");
+    configMap.put("bar", "http://xyz.com");
+    configMap.put("password", "password_val");
+    ConfigureResponse response = 
+      sharepointConnectorType.validateConfig(configMap, new Locale("test"));
+    System.out.println(response.getMessage() + "\n" + 
+        response.getFormSnippet());
+    Assert.assertEquals(expectedMessage, response.getMessage());
+  }
+  
+  public void testValidateConfigFQDN() {
     String expectedMessage = "Url entered should be fully qualified.";
     Map configMap = new HashMap();
     configMap.put("foo", "foo_val");
