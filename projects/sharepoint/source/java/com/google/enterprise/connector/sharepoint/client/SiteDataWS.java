@@ -23,6 +23,7 @@ import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sWebWi
 import com.google.enterprise.connector.sharepoint.generated.ViewsStub;
 import org.apache.axis2.AxisFault;
 
+import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ import java.util.List;
  */
 public class SiteDataWS {   
   
-  private static final String siteDataEndpoint = "/_vti_bin/SiteData.asmx";
+  private static final String siteDataEndpoint = "_vti_bin/SiteData.asmx";
   public static final String DOC_LIB = "DocumentLibrary";
   public static final String GENERIC_LIST = "GenericList";
   private SharepointClientContext sharepointClientContext;
@@ -47,9 +48,13 @@ public class SiteDataWS {
   public SiteDataWS(SharepointClientContext sharepointClientContext) 
     throws SharepointException {
     this.sharepointClientContext = sharepointClientContext;
+ //   System.out.println("Maggi - " + sharepointClientContext.getsiteName());
+ //   System.out.println("Maggi - " + URLEncoder.encode(sharepointClientContext.getsiteName()));
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
-                sharepointClientContext.getPort() + 
-                sharepointClientContext.getsiteName() + siteDataEndpoint;
+                sharepointClientContext.getPort() +
+                Util.getEscapedSiteName(sharepointClientContext.getsiteName()) +
+                siteDataEndpoint;
+    System.out.println(endpoint);
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
@@ -62,7 +67,7 @@ public class SiteDataWS {
   public SiteDataWS(SharepointClientContext sharepointClientContext, 
       String siteName) throws SharepointException {
     this.sharepointClientContext = sharepointClientContext;
-    endpoint = siteName + siteDataEndpoint;
+    endpoint = Util.getEscapedSiteName(siteName) + siteDataEndpoint;
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
@@ -70,7 +75,7 @@ public class SiteDataWS {
     } catch (AxisFault e) {
       throw new SharepointException(e.toString());
     }     
-  }
+  }  
   
   /**
    * Gets all the sites from the sharepoint server.

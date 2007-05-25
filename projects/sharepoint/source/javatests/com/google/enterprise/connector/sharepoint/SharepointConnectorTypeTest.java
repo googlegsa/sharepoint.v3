@@ -90,7 +90,7 @@ public class SharepointConnectorTypeTest extends TestCase {
   }
   
   public void testValidateConfigRequiredField() {
-    String expectedMessage = "Foo field is missing.";
+    String expectedMessage = "Required field not specified: Foo";
     Map configMap = new HashMap();
     configMap.put("foo", "");
     configMap.put("bar", "http://xyz.com");
@@ -103,7 +103,7 @@ public class SharepointConnectorTypeTest extends TestCase {
   }
   
   public void testValidateConfigFQDN() {
-    String expectedMessage = "Url entered should be fully qualified.";
+    String expectedMessage = "The Bar must contain a fully qualified domain name. Please check the Bar value.";
     Map configMap = new HashMap();
     configMap.put("foo", "foo_val");
     configMap.put("bar", "http://");

@@ -59,7 +59,8 @@ public class ListsWS {
     this.sharepointClientContext = sharepointClientContext;
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
         sharepointClientContext.getPort() + 
-        sharepointClientContext.getsiteName() + listsEndpoint;
+        Util.getEscapedSiteName(sharepointClientContext.getsiteName()) + 
+        listsEndpoint;
     try {
       stub = new ListsStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
@@ -71,7 +72,7 @@ public class ListsWS {
   public ListsWS(SharepointClientContext sharepointClientContext, 
       String siteName) throws SharepointException {
   this.sharepointClientContext = sharepointClientContext;
-  endpoint = siteName + listsEndpoint;
+  endpoint = Util.getEscapedSiteName(siteName) + listsEndpoint;
   try {
     stub = new ListsStub(endpoint);
     sharepointClientContext.setStubWithAuth(stub, endpoint);

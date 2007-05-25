@@ -47,9 +47,9 @@ public class SharepointConnectorType implements ConnectorType {
   private static final String TR_START = "<tr>\r\n";
   
   private static final String REQ_FIELDS_MISSING = 
-    "Field_Is_Missing";
+    "Field_Is_Required";
   private static final String REQ_FQDN_URL = 
-    "Url_Entered_Should_Be_Fully_Qualified";
+    "Url_Must_Be_Fully_Qualified";
   
   private List keys = null;
   private Set keySet = null;
@@ -192,7 +192,7 @@ public class SharepointConnectorType implements ConnectorType {
 
       String value = (String) configMap.get(key);
       if (value == null || value.length() == 0) {
-        message = configKey + " "  + rb.getString(REQ_FIELDS_MISSING);
+        message = rb.getString(REQ_FIELDS_MISSING) + " " + configKey;
       }      
       if (value.startsWith("http://") && !value.contains(".")) {
         message = rb.getString(REQ_FQDN_URL);
