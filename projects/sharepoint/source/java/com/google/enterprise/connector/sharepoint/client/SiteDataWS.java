@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class SiteDataWS {   
   
-  private static final String siteDataEndpoint = "_vti_bin/SiteData.asmx";
+  private static final String siteDataEndpoint = "/_vti_bin/SiteData.asmx";
   public static final String DOC_LIB = "DocumentLibrary";
   public static final String GENERIC_LIST = "GenericList";
   private SharepointClientContext sharepointClientContext;
@@ -48,12 +48,9 @@ public class SiteDataWS {
   public SiteDataWS(SharepointClientContext sharepointClientContext) 
     throws SharepointException {
     this.sharepointClientContext = sharepointClientContext;
- //   System.out.println("Maggi - " + sharepointClientContext.getsiteName());
- //   System.out.println("Maggi - " + URLEncoder.encode(sharepointClientContext.getsiteName()));
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
                 sharepointClientContext.getPort() +
-                Util.getEscapedSiteName(sharepointClientContext.getsiteName()) +
-                siteDataEndpoint;
+                sharepointClientContext.getsiteName() + siteDataEndpoint;
     System.out.println(endpoint);
     try {
       stub = new SiteDataStub(endpoint);
@@ -67,7 +64,7 @@ public class SiteDataWS {
   public SiteDataWS(SharepointClientContext sharepointClientContext, 
       String siteName) throws SharepointException {
     this.sharepointClientContext = sharepointClientContext;
-    endpoint = Util.getEscapedSiteName(siteName) + siteDataEndpoint;
+    endpoint = siteName + siteDataEndpoint;
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);

@@ -12,9 +12,8 @@ import java.util.List;
 /**
  *
  */
-public class SiteDataWSTest extends TestCase {
-  final String sharepointUrl = "http://entpoint05.corp.google.com/site with spaces/";
-  //final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
+public class SiteDataWSTest extends TestCase {  
+  final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
   final String domain = "ent-qa-d3";
   final String host = "entpoint05.corp.google.com";
   final int port = 80;
@@ -50,7 +49,6 @@ public class SiteDataWSTest extends TestCase {
       assertEquals(i, 5);
     } catch (SharepointException e) {      
       e.printStackTrace();   
-      fail();
     }   
   }
 

@@ -31,7 +31,6 @@ import org.joda.time.convert.InstantConverter;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -215,14 +214,5 @@ public class Util {
     Pattern pattern = Pattern.compile(patternStr);
     Matcher matcher = pattern.matcher(inputStr);
     return matcher.replaceAll(replaceStr);
-  }
-  
-  public static String getEscapedSiteName(String siteName) {
-    StringBuffer escapedSiteName = new StringBuffer();
-    String siteNamearray[] = siteName.split("/");
-    for (String str : siteNamearray) {     
-      escapedSiteName.append(URLEncoder.encode(str)).append("/");
-    }
-    return escapedSiteName.toString();    
-  }
+  }  
 }
