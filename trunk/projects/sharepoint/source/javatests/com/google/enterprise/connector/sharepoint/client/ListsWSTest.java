@@ -28,8 +28,6 @@ public class ListsWSTest extends TestCase {
     listsWS = new ListsWS(sharepointClientContext);
     
     listInternalNames.put("{6E22CD53-4BDF-422F-8BAD-85506558A589}", "Calendar");
-  //  listInternalNames.put("{AF8B8E07-3B75-4506-B77B-77A5CA39C52D}",
-   //     "Meghnas unittest discussion board");
     listInternalNames.put("{0530191C-CA21-4CDE-ACAB-B0DB1E63E22F}", 
         "Team Discussion");
     listInternalNames.put("{E8B9B5C1-A9EE-4803-9544-60802B5CD9FA}", "Tasks");
