@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -35,14 +34,12 @@ public class SharepointConnector implements Connector {
   
   public SharepointConnector(String sharepointUrl, String domain, 
       String username, String password, String googleConnectorWorkDir) {
-    System.out.println("New constructor called");
     sharepointClientContext = new SharepointClientContext(sharepointUrl, 
         domain, username, password, googleConnectorWorkDir);
   }
 
   public SharepointConnector(String sharepointUrl, String domain, 
       String username, String password) {
-    System.out.println("Old constructor still being called");
   }
   
   public void setDomain(String domain) {

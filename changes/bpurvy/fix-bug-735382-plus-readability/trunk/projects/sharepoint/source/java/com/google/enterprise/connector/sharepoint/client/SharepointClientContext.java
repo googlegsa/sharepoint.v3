@@ -98,8 +98,8 @@ public class SharepointClientContext {
     this.password = password;
   }
 
-  public void setsiteName(String siteName) {
-    this.siteName = siteName;
+  public void setsiteName(String siteNameNew) {
+    this.siteName = siteNameNew;
   }
 
   public void setUsername(String username) {

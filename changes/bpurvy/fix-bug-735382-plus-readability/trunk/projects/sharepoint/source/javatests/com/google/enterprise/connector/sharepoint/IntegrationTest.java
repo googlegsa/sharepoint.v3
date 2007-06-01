@@ -75,7 +75,7 @@ public class IntegrationTest extends TestCase {
       RepositoryLoginException, RepositoryException {
     String connectorName = "sharepoint";
     Session session = connector.login();
-    GlobalState.forgetState();
+    GlobalState.forgetState(null);
     SharepointTraversalManager manager = 
         (SharepointTraversalManager) session.getTraversalManager(); 
     MockPusher pusher = new MockPusher(System.out);

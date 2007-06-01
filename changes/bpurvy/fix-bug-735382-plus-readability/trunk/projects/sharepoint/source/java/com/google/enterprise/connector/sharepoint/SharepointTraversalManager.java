@@ -51,6 +51,9 @@ public class SharepointTraversalManager implements TraversalManager,
     SharepointClientContext sharepointClientContext) 
       throws RepositoryException {
     logger = LogFactory.getLog(SharepointTraversalManager.class);
+    logger.info("SharepointTraversalManager: " + 
+        sharepointClientContext.getsiteName() + ", " +
+        sharepointClientContext.getGoogleConnectorWorkDir());
     this.connector = connector;
     this.sharepointClientContext = sharepointClientContext;
     this.globalState = new GlobalState(
@@ -99,7 +102,7 @@ public class SharepointTraversalManager implements TraversalManager,
     boolean foundCheckpoint = false;
     while (iterLists.hasNext() && !foundCheckpoint) {
       ListState listState = (ListState) iterLists.next();
-      List<SPDocument> crawlQueue= listState.getCrawlQueue();
+      List<SPDocument> crawlQueue = listState.getCrawlQueue();
       if (listState.getGuid().equals(listGuid)) {
         logger.info("found it");
         foundCheckpoint = true;
@@ -109,7 +112,8 @@ public class SharepointTraversalManager implements TraversalManager,
           SPDocument docQueue = iterQueue.next();
 
           // if this doc is later than the checkpoint, we're done:
-          if (docQueue.getLastMod().compareTo(docCheckpoint.getLastMod()) >  0) {
+          if (docQueue.getLastMod().compareTo(
+              docCheckpoint.getLastMod()) >  0) {
             break;
           }
           // otherwise remove it from the queue
@@ -163,9 +167,9 @@ public class SharepointTraversalManager implements TraversalManager,
    * @see com.google.enterprise.connector.spi.TraversalManager
    * #setBatchHint(int)
    */
-  public void setBatchHint(int hint) throws RepositoryException {
-    logger.info("setBatchHint " + hint);
-    this.hint = hint;
+  public void setBatchHint(int hintNew) throws RepositoryException {
+    logger.info("setBatchHint " + hintNew);
+    this.hint = hintNew;
   }
 
   /* (non-Javadoc)
@@ -202,6 +206,9 @@ public class SharepointTraversalManager implements TraversalManager,
    * @throws RepositoryException
    */
   private PropertyMapList doTraversal() throws RepositoryException {
+    logger.info("SharepointTraversalManager::doTraversal:  " + 
+        sharepointClientContext.getsiteName() + ", " +
+        sharepointClientContext.getGoogleConnectorWorkDir());
     SharepointClient sharepointClient = 
       new SharepointClient(sharepointClientContext);
     SimplePropertyMapList rs = sharepointClient.traverse(globalState, hint);

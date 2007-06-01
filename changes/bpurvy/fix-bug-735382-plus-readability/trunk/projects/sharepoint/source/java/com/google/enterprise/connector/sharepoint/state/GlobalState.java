@@ -14,9 +14,6 @@ package com.google.enterprise.connector.sharepoint.state;
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-
-
-import com.google.enterprise.connector.persist.PrefsStore;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
@@ -95,16 +92,18 @@ public class GlobalState {
   /**
    * Delete our state file. This is for debugging purposes, so that unit
    * tests can start from a clean state.
+   * @param workDir the googleConnectorWorkDir argument to the constructor
    */
-  public static void forgetState() {
-    PrefsStore store = new PrefsStore();
-    String stateFileName = store.getConnectorState(CONNECTOR_NAME);
-    if (stateFileName != null && stateFileName.length() > 0) {
-      File f = new File(stateFileName);
-      if (f.exists()) {
-        f.delete();
-        store.storeConnectorState(CONNECTOR_NAME, "");
-      }
+  public static void forgetState(String workDir) {
+    File f;
+    if (workDir == null) {
+      logger.info("No working directory was given; using cwd");
+      f = new File(CONNECTOR_NAME + CONNECTOR_PREFIX);
+    } else {
+      f = new File(workDir, CONNECTOR_NAME + CONNECTOR_PREFIX);
+    }
+    if (f.exists()) {
+      f.delete();
     }
   }
   
@@ -300,22 +299,13 @@ public class GlobalState {
    * @throws SharepointException
    */
   public void saveState()  throws SharepointException {
-    PrefsStore store = new PrefsStore();
     String xml = getStateXML();
-    logger.info(xml);
-    File f;
-    if (workDir == null) {
-      f = new File(CONNECTOR_NAME + CONNECTOR_PREFIX);
-    } else {
-      f = new File(workDir, CONNECTOR_NAME + CONNECTOR_PREFIX);
-    }
-    // store just the filename in the preferences:
+    File f = getStateFileLocation();
     try {
       FileOutputStream out = new FileOutputStream(f);
       out.write(xml.getBytes());
       out.close();
       logger.info("saving state to " + f.getCanonicalPath());
-      store.storeConnectorState(CONNECTOR_NAME, f.getCanonicalPath());
     } catch (IOException e) {
       throw new SharepointException(e.toString());
     } 
@@ -384,14 +374,8 @@ public class GlobalState {
    * invalid in any way.
    */
   public void loadState() throws SharepointException {
-    PrefsStore store = new PrefsStore();
-    String stateFileName = store.getConnectorState(CONNECTOR_NAME);
-    if (stateFileName == null || stateFileName.length() == 0) {
-      logger.info("no state file found");
-      return;
-    }
+    File f = getStateFileLocation();
     try {
-      File f = new File(stateFileName);
       if (!f.exists()) {
         logger.error("state file '" + f.getCanonicalPath() + 
         "' does not exist");
@@ -458,4 +442,20 @@ public class GlobalState {
     }
   }
 
+  /**
+   * Return the location for our state file. If we were given a 
+   * googleConnectorWorkDir (the expected case), use that; else use the
+   * current working directory and log an error.
+   * @return File
+   */
+  private File getStateFileLocation() {
+    File f;
+    if (workDir == null) {
+      logger.info("No working directory was given; using cwd");
+      f = new File(CONNECTOR_NAME + CONNECTOR_PREFIX);
+    } else {
+      f = new File(workDir, CONNECTOR_NAME + CONNECTOR_PREFIX);
+    }
+    return f;
+  }
 }

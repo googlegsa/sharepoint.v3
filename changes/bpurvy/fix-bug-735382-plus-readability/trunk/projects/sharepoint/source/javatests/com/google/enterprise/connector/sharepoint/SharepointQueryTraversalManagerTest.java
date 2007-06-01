@@ -45,7 +45,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
   
   public void setUp() throws Exception {
     // important: forget any global state left over from previous runs
-    GlobalState.forgetState();
+    GlobalState.forgetState(null);
     
     SharepointClientContext sharepointClientContext = new 
       SharepointClientContext(sharepointUrl, domain, username, password, null);
