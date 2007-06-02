@@ -66,7 +66,13 @@ public class ListsWS {
   public ListsWS(SharepointClientContext sharepointClientContext, 
       String siteName) throws SharepointException, RepositoryException {
   this.sharepointClientContext = sharepointClientContext;
-  endpoint = Util.getEscapedSiteName(siteName) + listsEndpoint;
+  if (siteName.startsWith("http://")) {
+    siteName = siteName.substring(7);
+    endpoint = "http://" + Util.getEscapedSiteName(siteName) + listsEndpoint;
+  }
+  else {
+    endpoint = Util.getEscapedSiteName(siteName) + listsEndpoint;
+  }
   try {
     stub = new ListsStub(endpoint);
     sharepointClientContext.setStubWithAuth(stub, endpoint);

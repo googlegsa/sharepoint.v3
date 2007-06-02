@@ -65,7 +65,13 @@ public class SiteDataWS {
   public SiteDataWS(SharepointClientContext sharepointClientContext, 
       String siteName) throws SharepointException, RepositoryException {
     this.sharepointClientContext = sharepointClientContext;
-    endpoint = Util.getEscapedSiteName(siteName) + siteDataEndpoint;
+    if (siteName.startsWith("http://")) {
+      siteName = siteName.substring(7);
+      endpoint = "http://" + Util.getEscapedSiteName(siteName) + siteDataEndpoint;
+    }
+    else {
+      endpoint = Util.getEscapedSiteName(siteName) + siteDataEndpoint;
+    }
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
