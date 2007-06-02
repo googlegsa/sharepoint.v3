@@ -14,20 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.StatefulObject;
 import com.google.enterprise.connector.sharepoint.Util;
-import com.google.enterprise.connector.spi.Property;
-import com.google.enterprise.connector.spi.PropertyMap;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.PropertyMapList;
-import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SimplePropertyMap;
 import com.google.enterprise.connector.spi.SimplePropertyMapList;
-import com.google.enterprise.connector.spi.SimpleValue;
-import com.google.enterprise.connector.spi.SpiConstants;
-import com.google.enterprise.connector.spi.ValueType;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

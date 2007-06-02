@@ -20,12 +20,10 @@ import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf_sWebWithTime;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sList;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sWebWithTime;
-import com.google.enterprise.connector.sharepoint.generated.ViewsStub;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 import org.apache.axis2.AxisFault;
 
-import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -52,7 +50,8 @@ public class SiteDataWS {
     this.sharepointClientContext = sharepointClientContext;
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
                 sharepointClientContext.getPort() +
-                Util.getEscapedSiteName(sharepointClientContext.getsiteName()) + siteDataEndpoint;
+                Util.getEscapedSiteName(sharepointClientContext.getsiteName()) 
+                + siteDataEndpoint;
     System.out.println(endpoint);
     try {
       stub = new SiteDataStub(endpoint);
@@ -106,7 +105,8 @@ public class SiteDataWS {
   }
    
   /**
-   * Gets the collection of all the SPDocument Libraries on the sharepoint server.
+   * Gets the collection of all the SPDocument Libraries on the sharepoint 
+   * server.
    * @return list of BaseList objects.
    * @throws SharepointException
    */
@@ -138,12 +138,12 @@ public class SiteDataWS {
       ArrayOf_sList asl = res.getVLists();
       _sList[] sl = asl.get_sList();
       if (sl != null) {
-        for(int i=0; i<sl.length; i++) {
+        for (int i = 0; i < sl.length; i++) {
           try {   
-            if(sl[i].getBaseType().equals(baseType)) {
+            if (sl[i].getBaseType().equals(baseType)) {
               BaseList list = new BaseList(sl[i].getInternalName(), 
-                sl[i].getTitle(), sl[i].getBaseType(), 
-                Util.siteDataStringToCalendar(sl[i].getLastModified()));              
+                sl[i].getTitle(), sl[i].getBaseType(),
+                    Util.siteDataStringToCalendar(sl[i].getLastModified()));              
               listCollection.add(list);
               
               // find out what "columns" (metadata) are enabled on this List:

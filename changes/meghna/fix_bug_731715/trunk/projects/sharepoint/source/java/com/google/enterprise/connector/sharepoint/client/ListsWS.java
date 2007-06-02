@@ -19,8 +19,6 @@ import com.google.enterprise.connector.sharepoint.generated.ListsStub;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetAttachmentCollection;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItemChanges;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItems;
-import com.google.enterprise.connector.sharepoint.generated.ListsStub.ViewFields_type14;
-import com.google.enterprise.connector.sharepoint.generated.ListsStub.ViewFields_type35;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SimpleValue;
 
@@ -28,11 +26,7 @@ import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
-import org.apache.axiom.om.OMNamespace;
-import org.apache.axiom.soap.SOAPFactory;
-import org.apache.axiom.soap.impl.dom.factory.DOMSOAPFactory;
 import org.apache.axis2.AxisFault;
-import org.apache.axis2.databinding.ADBSOAPModelBuilder;
 
 import java.rmi.RemoteException;
 import java.text.ParseException;
@@ -43,7 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamReader;
 
 /**
  * This class holds data and methods for any call to Lists Web Service.
@@ -169,7 +162,7 @@ public class ListsWS {
                 new QName("ows_Modified")).getAttributeValue();
             String fileName = rowOmElement.getAttribute(
                 new QName("ows_FileRef")).getAttributeValue();
-            fileName = fileName.substring(fileName.indexOf("#") + 1);                    
+            fileName = fileName.substring(fileName.indexOf("#") + 1);
             url.setLength(0);
             url.append(urlPrefix);
             url.append(fileName);              
@@ -308,7 +301,7 @@ public class ListsWS {
             String author = null;
             for (String authorMeta : arrayOfMetaInfo) {
               if (authorMeta.startsWith("vti_author")) {
-                author =authorMeta.substring
+                author = authorMeta.substring
                     (authorMeta.indexOf(":") + 1).trim();                                
               }
             }            

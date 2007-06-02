@@ -68,9 +68,9 @@ public class Util {
   }
   
   public static Calendar listItemsStringToCalendar(String strDate) 
-    throws ParseException  {
-    SimpleDateFormat formatter = new SimpleDateFormat(timeFormat1);
-    Date dt = formatter.parse(strDate);
+      throws ParseException  {
+    SimpleDateFormat simpleDateFormatter = new SimpleDateFormat(timeFormat1);
+    Date dt = simpleDateFormatter.parse(strDate);
     Calendar c = Calendar.getInstance();
     c.setTime(dt);    
     return c;
@@ -78,8 +78,8 @@ public class Util {
   
   public static Calendar listItemChangesStringToCalendar(String strDate) 
       throws ParseException  {
-    SimpleDateFormat formatter = new SimpleDateFormat(timeFormat3);
-    Date dt = formatter.parse(strDate);
+    SimpleDateFormat  simpleDateFormatter = new SimpleDateFormat(timeFormat3);
+    Date dt = simpleDateFormatter.parse(strDate);
     Calendar c = Calendar.getInstance();
     c.setTime(dt);    
     return c;
@@ -87,8 +87,8 @@ public class Util {
   
   public static Calendar siteDataStringToCalendar(String strDate) 
       throws ParseException  {
-    SimpleDateFormat formatter = new SimpleDateFormat(timeFormat2);
-    Date dt = formatter.parse(strDate);
+    SimpleDateFormat simpleDateFormatter = new SimpleDateFormat(timeFormat2);
+    Date dt = simpleDateFormatter.parse(strDate);
     Calendar c = Calendar.getInstance();
     c.setTime(dt);    
     return c;
@@ -229,6 +229,6 @@ public class Util {
         throw new RepositoryException(e.toString());
       }
     }
-    return escapedSiteName.toString().replace("+","%20");    
+    return escapedSiteName.toString().replace("+", "%20");    
   }
 }
