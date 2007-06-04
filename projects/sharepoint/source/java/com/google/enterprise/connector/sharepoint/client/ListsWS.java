@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.generated.ListsStub;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetAttachmentCollection;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItemChanges;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItems;
+import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SimpleValue;
 
 import org.apache.axiom.om.OMAbstractFactory;
@@ -42,17 +43,18 @@ import javax.xml.namespace.QName;
  *
  */
 public class ListsWS {
-  private static final String listsEndpoint = "/_vti_bin/Lists.asmx";
+  private static final String listsEndpoint = "_vti_bin/Lists.asmx";
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private ListsStub stub;
   
   public ListsWS(SharepointClientContext sharepointClientContext) 
-      throws SharepointException {
+      throws SharepointException, RepositoryException {
     this.sharepointClientContext = sharepointClientContext;
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
         sharepointClientContext.getPort() + 
-        sharepointClientContext.getsiteName() + listsEndpoint;
+        Util.getEscapedSiteName(sharepointClientContext.getsiteName()) + 
+        listsEndpoint;
     try {
       stub = new ListsStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
@@ -62,9 +64,14 @@ public class ListsWS {
   }
   
   public ListsWS(SharepointClientContext sharepointClientContext, 
-      String siteName) throws SharepointException {
+      String siteName) throws SharepointException, RepositoryException {
   this.sharepointClientContext = sharepointClientContext;
-  endpoint = siteName + listsEndpoint;
+  if (siteName.startsWith("http://")) {
+    siteName = siteName.substring(7);
+    endpoint = "http://" + Util.getEscapedSiteName(siteName) + listsEndpoint;
+  } else {
+    endpoint = Util.getEscapedSiteName(siteName) + listsEndpoint;
+  }
   try {
     stub = new ListsStub(endpoint);
     sharepointClientContext.setStubWithAuth(stub, endpoint);
@@ -140,7 +147,7 @@ public class ListsWS {
                 new QName("ows_Modified")).getAttributeValue();
             String fileName = rowOmElement.getAttribute(
                 new QName("ows_FileRef")).getAttributeValue();
-            fileName = fileName.substring(fileName.indexOf("#") + 1);                    
+            fileName = fileName.substring(fileName.indexOf("#") + 1);
             url.setLength(0);
             url.append(urlPrefix);
             url.append(fileName);              
@@ -279,7 +286,7 @@ public class ListsWS {
             String author = null;
             for (String authorMeta : arrayOfMetaInfo) {
               if (authorMeta.startsWith("vti_author")) {
-                author =authorMeta.substring
+                author = authorMeta.substring
                     (authorMeta.indexOf(":") + 1).trim();                                
               }
             }            
