@@ -24,7 +24,7 @@ public class ListsWSTest extends TestCase {
   
   protected void setUp() throws Exception {
     SharepointClientContext sharepointClientContext = new 
-    SharepointClientContext(sharepointUrl, domain, username, password); 
+    SharepointClientContext(sharepointUrl, domain, username, password, null); 
     listsWS = new ListsWS(sharepointClientContext);
     
     listInternalNames.put("{6E22CD53-4BDF-422F-8BAD-85506558A589}", "Calendar");

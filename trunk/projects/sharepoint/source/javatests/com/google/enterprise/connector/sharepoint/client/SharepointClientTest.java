@@ -31,9 +31,10 @@ public class SharepointClientTest extends TestCase {
    */
   protected void setUp() throws Exception {
     SharepointClientContext sharepointClientContext = new 
-      SharepointClientContext(sharepointUrl, domain, username, password);
+      SharepointClientContext(sharepointUrl, domain, username, password, null);
     sharepointClient = new SharepointClient(sharepointClientContext);
-    globalState = new GlobalState();
+    globalState = new GlobalState(
+        sharepointClientContext.getGoogleConnectorWorkDir());
     super.setUp();
   }
 

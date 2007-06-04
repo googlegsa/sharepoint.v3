@@ -114,7 +114,7 @@ public class ListState implements StatefulObject {
 
   /**
    * Return lastMod in String form
-   * @return  lastMod string-ified
+   * @return lastMod string-ified
    */
   public String getLastModString() {
     return Util.formatDate(lastMod);
@@ -222,6 +222,7 @@ public class ListState implements StatefulObject {
       // we wouldn't see
       return;
     }
+    // "foreach" syntax not used because we need the iterator to remove()
     for (Iterator<SPDocument> iter = crawlQueue.iterator(); iter.hasNext(); ) {
       SPDocument docQ = iter.next();
       iter.remove();
@@ -252,9 +253,7 @@ public class ListState implements StatefulObject {
   public void dumpCrawlQueue() {
     if (crawlQueue != null && crawlQueue.size() > 0) {
       System.out.println("Crawl queue for " + getUrl());
-      for (Iterator<SPDocument> iter = crawlQueue.iterator(); 
-        iter.hasNext(); ) {
-        SPDocument doc = iter.next();
+      for (SPDocument doc : crawlQueue) {
         System.out.println(doc.getLastMod().getTime() + ", " + doc.getUrl());
       }
     } else {
@@ -327,9 +326,8 @@ public class ListState implements StatefulObject {
     if (crawlQueue != null) {
       Element queue = domDoc.createElement("crawlQueue");
       element.appendChild(queue);
-      for (Iterator<SPDocument> iter = crawlQueue.iterator(); 
-        iter.hasNext(); ) {
-        queue.appendChild(dumpDocToDOM(domDoc, iter.next()));
+      for (SPDocument docTmp : crawlQueue) {
+        queue.appendChild(dumpDocToDOM(domDoc, docTmp));
       }
     }
     return element;

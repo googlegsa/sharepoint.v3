@@ -20,10 +20,8 @@ import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf_sWebWithTime;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sList;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sWebWithTime;
-import com.google.enterprise.connector.sharepoint.generated.ViewsStub;
 import org.apache.axis2.AxisFault;
 
-import java.net.URLEncoder;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -143,10 +141,6 @@ public class SiteDataWS {
                 sl[i].getTitle(), sl[i].getBaseType(), 
                 Util.siteDataStringToCalendar(sl[i].getLastModified()));              
               listCollection.add(list);
-              
-              // find out what "columns" (metadata) are enabled on this List:
-              // BP: this was causing SoapExceptions, so commented out for now:
-              // viewsStub.getViewNames(list.getInternalName());
             }
           } catch (ParseException e) {
             throw new SharepointException(e.toString());

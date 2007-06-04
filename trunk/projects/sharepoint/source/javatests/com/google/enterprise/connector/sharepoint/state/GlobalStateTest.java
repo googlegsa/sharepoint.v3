@@ -6,7 +6,6 @@ import junit.framework.TestCase;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SPDocument;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
-
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -21,8 +20,15 @@ public class GlobalStateTest extends TestCase {
 
   private GlobalState state;
   
+  /**
+   * Directory where the GlobalState file will be stored.
+   * Replace this with a suitable temporary directory if not running on 
+   * a Linux or Unix-like system.
+   */
+  private static final String TMP_DIR = "/tmp";
+  
   public final void setUp() {
-    state = new GlobalState();
+    state = new GlobalState(TMP_DIR);
   }
 
   /**
@@ -57,7 +63,7 @@ public class GlobalStateTest extends TestCase {
       state.saveState();
       GlobalState state2 = null;
 
-      state2 = new GlobalState();
+      state2 = new GlobalState(TMP_DIR);
       state2.loadState(); // load from the old GlobalState's XML
       // output of the new GlobalState should match the old one's:
       String output2 = state2.getStateXML();
@@ -69,7 +75,7 @@ public class GlobalStateTest extends TestCase {
     }
 
     state.startRecrawl();
-     state.updateList(list1, list1.getLastMod());
+    state.updateList(list1, list1.getLastMod());
     state.endRecrawl();
 
     // list1 should still be there, list2 should be gone
@@ -123,7 +129,7 @@ public class GlobalStateTest extends TestCase {
       state.saveState();
       GlobalState state2 = null;
 
-      state2 = new GlobalState();
+      state2 = new GlobalState(TMP_DIR);
       state2.loadState(); // load from the old GlobalState's XML
       // output of the new GlobalState should match the old one's:
       String output2 = state2.getStateXML();
@@ -203,7 +209,7 @@ public class GlobalStateTest extends TestCase {
       state.saveState();
       GlobalState state2 = null;
 
-      state2 = new GlobalState();
+      state2 = new GlobalState(TMP_DIR);
       state2.loadState(); // load from the old GlobalState's XML
       // output of the new GlobalState should match the old one's:
       String output2 = state2.getStateXML();
