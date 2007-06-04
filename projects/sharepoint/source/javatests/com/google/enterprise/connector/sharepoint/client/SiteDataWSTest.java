@@ -27,7 +27,7 @@ public class SiteDataWSTest extends TestCase {
    */
   protected void setUp() throws Exception {
     SharepointClientContext sharepointClientContext = new 
-      SharepointClientContext(sharepointUrl, domain, username, password); 
+      SharepointClientContext(sharepointUrl, domain, username, password, null); 
     siteDataWS = new SiteDataWS(sharepointClientContext);   
     listsWS = new ListsWS(sharepointClientContext);
     super.setUp();

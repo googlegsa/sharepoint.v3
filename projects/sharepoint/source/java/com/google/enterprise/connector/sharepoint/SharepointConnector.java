@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -31,14 +30,14 @@ import java.net.URL;
  */
 public class SharepointConnector implements Connector {
   
-  private final SharepointClientContext sharepointClientContext;
+  private SharepointClientContext sharepointClientContext = null;
   
   public SharepointConnector(String sharepointUrl, String domain, 
-      String username, String password) {
-  sharepointClientContext = new SharepointClientContext(sharepointUrl, 
-      domain, username, password);
-}
-  
+      String username, String password, String googleConnectorWorkDir) {
+    sharepointClientContext = new SharepointClientContext(sharepointUrl, 
+        domain, username, password, googleConnectorWorkDir);
+  }
+
   public void setDomain(String domain) {
     sharepointClientContext.setDomain(domain);
   }
@@ -72,6 +71,11 @@ public class SharepointConnector implements Connector {
   public void setPassword(String password) {
     sharepointClientContext.setPassword(password);
   }  
+  
+  public void setGoogleConnectorWorkDir(String workDir) {
+    sharepointClientContext.setGoogleConnectorWorkDir(workDir);
+  }
+  
   /* (non-Javadoc)
    * @see com.google.enterprise.connector.spi.Connector#login()
    */

@@ -48,10 +48,10 @@ public class IntegrationTest extends TestCase {
   
   public void setUp() throws Exception {
     SharepointClientContext sharepointClientContext = new 
-      SharepointClientContext(sharepointUrl, domain, username, password);
+      SharepointClientContext(sharepointUrl, domain, username, password, null);
     sharepointClient = new SharepointClient(sharepointClientContext);
     connector = new SharepointConnector(sharepointUrl, 
-        domain, username, password);      
+        domain, username, password, null);      
     super.setUp();    
   }
   /**
@@ -75,7 +75,7 @@ public class IntegrationTest extends TestCase {
       RepositoryLoginException, RepositoryException {
     String connectorName = "sharepoint";
     Session session = connector.login();
-    GlobalState.forgetState();
+    GlobalState.forgetState(null);
     SharepointTraversalManager manager = 
         (SharepointTraversalManager) session.getTraversalManager(); 
     MockPusher pusher = new MockPusher(System.out);
