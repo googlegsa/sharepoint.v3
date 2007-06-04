@@ -38,10 +38,6 @@ public class SharepointConnector implements Connector {
         domain, username, password, googleConnectorWorkDir);
   }
 
-  public SharepointConnector(String sharepointUrl, String domain, 
-      String username, String password) {
-  }
-  
   public void setDomain(String domain) {
     sharepointClientContext.setDomain(domain);
   }
