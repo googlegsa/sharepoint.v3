@@ -148,7 +148,7 @@ public class SiteDataWS {
             if (sl[i].getBaseType().equals(baseType)) {
               BaseList list = new BaseList(sl[i].getInternalName(), 
                 sl[i].getTitle(), sl[i].getBaseType(),
-                    Util.siteDataStringToCalendar(sl[i].getLastModified()));              
+                Util.siteDataStringToCalendar(sl[i].getLastModified()));              
               listCollection.add(list);
             }
           } catch (ParseException e) {
