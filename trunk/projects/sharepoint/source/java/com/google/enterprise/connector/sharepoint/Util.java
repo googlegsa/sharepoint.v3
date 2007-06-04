@@ -31,6 +31,8 @@ import org.joda.time.convert.InstantConverter;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -61,32 +63,34 @@ public class Util {
   private static final Chronology chron = new DateTime().getChronology();
   private static final DateTimeFormatter formatter =
     ISODateTimeFormat.basicDateTime();
-  
+  private static final SimpleDateFormat simpleDateFormatter1 = 
+      new SimpleDateFormat(timeFormat1);
+  private static final SimpleDateFormat simpleDateFormatter2 = 
+    new SimpleDateFormat(timeFormat2);
+  private static final SimpleDateFormat simpleDateFormatter3 = 
+    new SimpleDateFormat(timeFormat3);
   private Util() {   
   }
   
   public static Calendar listItemsStringToCalendar(String strDate) 
-    throws ParseException  {
-    SimpleDateFormat formatter = new SimpleDateFormat(timeFormat1);
-    Date dt = formatter.parse(strDate);
+      throws ParseException  {    
+    Date dt = simpleDateFormatter1.parse(strDate);
     Calendar c = Calendar.getInstance();
     c.setTime(dt);    
     return c;
   }
   
   public static Calendar listItemChangesStringToCalendar(String strDate) 
-      throws ParseException  {
-    SimpleDateFormat formatter = new SimpleDateFormat(timeFormat3);
-    Date dt = formatter.parse(strDate);
+      throws ParseException  {    
+    Date dt = simpleDateFormatter3.parse(strDate);
     Calendar c = Calendar.getInstance();
     c.setTime(dt);    
     return c;
   }
   
   public static Calendar siteDataStringToCalendar(String strDate) 
-      throws ParseException  {
-    SimpleDateFormat formatter = new SimpleDateFormat(timeFormat2);
-    Date dt = formatter.parse(strDate);
+      throws ParseException  {    
+    Date dt = simpleDateFormatter2.parse(strDate);
     Calendar c = Calendar.getInstance();
     c.setTime(dt);    
     return c;
@@ -196,7 +200,7 @@ public class Util {
    * @throws RepositoryException
    */
   public static String listGuidFromPropertyMap(PropertyMap map)
-  throws RepositoryException {
+      throws RepositoryException {
     String guid;
     try {
       guid = map.getProperty(LIST_GUID).getValue().getString();
@@ -215,4 +219,18 @@ public class Util {
     Matcher matcher = pattern.matcher(inputStr);
     return matcher.replaceAll(replaceStr);
   }  
+  
+  public static String getEscapedSiteName(String siteName) 
+      throws RepositoryException {
+    StringBuffer escapedSiteName = new StringBuffer();
+    String siteNamearray[] = siteName.split("/");
+    for (String str : siteNamearray) {     
+      try {
+        escapedSiteName.append(URLEncoder.encode(str, "UTF-8")).append("/");
+      } catch (UnsupportedEncodingException e) {
+        throw new RepositoryException(e.toString());
+      }
+    }
+    return escapedSiteName.toString().replace("+", "%20");    
+  }
 }
