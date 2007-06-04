@@ -19,19 +19,13 @@ import com.google.enterprise.connector.sharepoint.generated.ListsStub;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetAttachmentCollection;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItemChanges;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItems;
-import com.google.enterprise.connector.sharepoint.generated.ListsStub.ViewFields_type14;
-import com.google.enterprise.connector.sharepoint.generated.ListsStub.ViewFields_type35;
 import com.google.enterprise.connector.spi.SimpleValue;
 
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
-import org.apache.axiom.om.OMNamespace;
-import org.apache.axiom.soap.SOAPFactory;
-import org.apache.axiom.soap.impl.dom.factory.DOMSOAPFactory;
 import org.apache.axis2.AxisFault;
-import org.apache.axis2.databinding.ADBSOAPModelBuilder;
 
 import java.rmi.RemoteException;
 import java.text.ParseException;
@@ -42,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamReader;
 
 /**
  * This class holds data and methods for any call to Lists Web Service.
@@ -95,26 +88,6 @@ public class ListsWS {
     req.setListName(listName);
     req.setQuery(null);
     
-    /** 
-    OMFactory factory = OMAbstractFactory.getOMFactory();
-    OMNamespace ms = factory.createOMNamespace(
-        "http://schemas.microsoft.com/sharepoint/soap/", "ms");
-
-    OMElement root = factory.createOMElement("ViewFields", ms);
-    OMElement childTest = factory.createOMElement("FieldRef", ms);
-    ADBSOAPModelBuilder builder = new ADBSOAPModelBuilder(
-        root.getXMLStreamReader(), new DOMSOAPFactory());
-
-    ViewFields_type35 viewFields = new ListsStub.ViewFields_type35());
-    ViewFields_type35 viewFieldsTmp = req.getViewFields();
-
-    OMElement root = viewFields.getOMElement(
-        new QName("http://schemas.microsoft.com/sharepoint/soap/", 
-            "ViewFields"), factory);
-
-    OMElement childTest = factory.createOMElement("FieldRef", ms);
-    childTest.addAttribute("Name", "Author", ms);
-    **/
     req.setViewFields(null);
     req.setRowLimit("");
     req.setViewName("");
