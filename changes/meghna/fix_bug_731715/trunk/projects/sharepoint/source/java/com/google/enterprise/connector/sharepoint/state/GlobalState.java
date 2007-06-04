@@ -14,9 +14,6 @@ package com.google.enterprise.connector.sharepoint.state;
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-
-
-import com.google.enterprise.connector.persist.PrefsStore;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
@@ -26,15 +23,12 @@ import org.joda.time.DateTime;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -76,6 +70,7 @@ public class GlobalState {
   private static final String CONNECTOR_PREFIX = "_state.xml";
 
   private boolean recrawling = false;
+  private String workDir = null;
 
   /**
    * To keep track of ListStates, we keep two data structures: a TreeSet relying
@@ -87,7 +82,7 @@ public class GlobalState {
    */
   protected SortedSet<ListState> dateMap = new TreeSet<ListState>();
   protected Map<String, ListState> keyMap = 
-    new HashMap<String, ListState>();
+      new HashMap<String, ListState>();
 
   /**
    * The "current" object for ListState. The current object may be null.
@@ -97,23 +92,33 @@ public class GlobalState {
   /**
    * Delete our state file. This is for debugging purposes, so that unit
    * tests can start from a clean state.
+   * @param workDir the googleConnectorWorkDir argument to the constructor
    */
-  public static void forgetState() {
-    PrefsStore store = new PrefsStore();
-    String stateFileName = store.getConnectorState(CONNECTOR_NAME);
-    if (stateFileName != null && stateFileName.length() > 0) {
-      File f = new File(stateFileName);
-      if (f.exists()) {
-        f.delete();
-        store.storeConnectorState(CONNECTOR_NAME, "");
-      }
+  public static void forgetState(String workDir) {
+    File f;
+    if (workDir == null) {
+      logger.info("No working directory was given; using cwd");
+      f = new File(CONNECTOR_NAME + CONNECTOR_PREFIX);
+    } else {
+      f = new File(workDir, CONNECTOR_NAME + CONNECTOR_PREFIX);
+    }
+    if (f.exists()) {
+      f.delete();
     }
   }
   
   /**
    * Constructor. 
+   * @param workDir the googleConnectorWorkDir (which we ask for
+   *     in connectorInstance.xml).  The state file is saved in this
+   *     directory.  If workDir is null, the current working directory is
+   *     used instead.  (In either case, the location of the file is
+   *     saved in the system preferences, so that environmental changes don't
+   *     make us lose the file.)
    */
-  public GlobalState() {
+  public GlobalState(String workDir) {
+    this.workDir = workDir;
+    logger.info("workDir=" + workDir);
   }
 
   /**
@@ -121,7 +126,8 @@ public class GlobalState {
    * @param key the "primary key" of the object. This would
    * probably be the GUID.
    * @param lastMod most recent time this object was modified.
-   * @return new object
+   * @return new ListState which is already indexed in GlobalState's
+   *     dateMap and keyMap
    */
   public ListState makeListState(String key, DateTime lastMod) {
     ListState obj = new ListState(); 
@@ -135,7 +141,8 @@ public class GlobalState {
    * Convenience factory for clients who don't deal in Joda time.
    * @param key
    * @param lastModCal (Calendar, not Joda time)
-   * @return new ListState
+   * @return new ListState which is already indexed in GlobalState's
+   *     dateMap and keyMap
    */
   public ListState makeListState(String key, Calendar lastModCal) {
     return makeListState(key, Util.calendarToJoda(lastModCal));
@@ -151,8 +158,7 @@ public class GlobalState {
     recrawling = true;
     
     // for each ListState, set "not existing"
-    for (Iterator<ListState> iter = dateMap.iterator(); iter.hasNext(); ) {
-      ListState obj = iter.next();
+    for (StatefulObject obj : dateMap) {
       obj.setExisting(false);
     }
   }
@@ -167,8 +173,9 @@ public class GlobalState {
       logger.error("called endRecrawl() when not in a recrawl state");
       return;
     }
+    // 'foreach' not used here, since we need the iterator for remove()
     for (Iterator<ListState> iter = getIterator(); iter.hasNext(); ) {
-      ListState obj = iter.next(); 
+        ListState obj = iter.next(); 
       if (!obj.isExisting()) {
         iter.remove(); // we MUST use the iterator's own remove() here
         keyMap.remove(obj.getPrimaryKey());
@@ -203,42 +210,43 @@ public class GlobalState {
    * the only state that belongs to GlobalState itself if the "current"
    * object for each dependent class).  Consult ListState for details on
    * its XML representation.
-   * <pre>
-    <?xml version="1.0" encoding="UTF-8"?>
-    <state>
-      <current id="foo" type="ListState"/>
-      <ListState id="bar">
-        <lastMod>20070420T154348.133-0700</lastMod>
-        <URL/>
-        <lastDocCrawled>
-          <document id="id2">
-            <lastMod>20070420T154348.133-0700</lastMod>
-            <url>url2</url>
-          </document>
-        </lastDocCrawled>
-      </ListState>
-      <ListState id="foo">
-        <lastMod>20070420T154348.133-0700</lastMod>
-        <URL/>
-        <lastDocCrawled>
-          <document id="id1">
-            <lastMod>20070420T154348.133-0700</lastMod>
-            <url>url1</url>
-          </document>
-        </lastDocCrawled>
-        <crawlQueue>
-          <document id="id3">
-            <lastMod>20070420T154348.133-0700</lastMod>
-            <url>url3</url>
-          </document>
-          <document id="id4">
-            <lastMod>20070420T154348.133-0700</lastMod>
-            <url>url4</url>
-          </document>
-        </crawlQueue>
-      </ListState>
-    </state>
-   * </pre>
+   * (we have to use &lt; and &gt; here so the javadocs will come out right.)
+<pre>
+        &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+        &lt;state&gt;
+          &lt;current id="foo" type="ListState"/&gt;
+          &lt;ListState id="bar"&gt;
+            &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+            &lt;URL/&gt;
+           &lt;lastDocCrawled&gt;
+              &lt;document id="id2"&gt;
+                &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+                &lt;url&gt;url2&lt;/url&gt;
+              &lt;/document&gt;
+            &lt;/lastDocCrawled&gt;
+          &lt;/ListState&gt;
+          &lt;ListState id="foo"&gt;
+            &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+            &lt;URL/&gt;
+            &lt;lastDocCrawled&gt;
+              &lt;document id="id1"&gt;
+                &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+                &lt;url&gt;url1&lt;/url&gt;
+             &lt;/document&gt;
+            &lt;/lastDocCrawled&gt;
+            &lt;crawlQueue&gt;
+              &lt;document id="id3"&gt;
+                &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+                &lt;url&gt;url3&lt;/url&gt;
+              &lt;/document&gt;
+              &lt;document id="id4"&gt;
+               &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+                &lt;url&gt;url4&lt;/url&gt;
+              &lt;/document&gt;
+            &lt;/crawlQueue&gt;
+          &lt;/ListState&gt;
+        &lt;/state&gt;
+</pre>
    * @return XML string
    */
   public String getStateXML() throws SharepointException {
@@ -261,12 +269,9 @@ public class GlobalState {
     }
 
     // now dump the actual ListStates:
-    for (Iterator<ListState> iterObj = dateMap.iterator();
-        iterObj.hasNext(); ) {
-      StatefulObject obj = iterObj.next();
+    for (StatefulObject obj : dateMap) {
       top.appendChild(obj.dumpToDOM(doc));
     }
-
     TransformerFactory tf = TransformerFactory.newInstance();
     Transformer t = null;
     try {
@@ -294,20 +299,13 @@ public class GlobalState {
    * @throws SharepointException
    */
   public void saveState()  throws SharepointException {
-    PrefsStore store = new PrefsStore();
     String xml = getStateXML();
-    logger.info(xml);
-    
-    // replace this with a (yet-to-be-written) spi call to get the
-    // connector working dir:
-    File f = new File(CONNECTOR_NAME + CONNECTOR_PREFIX);
-    // store just the filename in the preferences:
+    File f = getStateFileLocation();
     try {
       FileOutputStream out = new FileOutputStream(f);
       out.write(xml.getBytes());
       out.close();
       logger.info("saving state to " + f.getCanonicalPath());
-      store.storeConnectorState(CONNECTOR_NAME, f.getCanonicalPath());
     } catch (IOException e) {
       throw new SharepointException(e.toString());
     } 
@@ -376,14 +374,8 @@ public class GlobalState {
    * invalid in any way.
    */
   public void loadState() throws SharepointException {
-    PrefsStore store = new PrefsStore();
-    String stateFileName = store.getConnectorState(CONNECTOR_NAME);
-    if (stateFileName == null || stateFileName.length() == 0) {
-      logger.info("no state file found");
-      return;
-    }
+    File f = getStateFileLocation();
     try {
-      File f = new File(stateFileName);
       if (!f.exists()) {
         logger.error("state file '" + f.getCanonicalPath() + 
         "' does not exist");
@@ -395,7 +387,6 @@ public class GlobalState {
       throw new SharepointException(e.toString());
     }
   }
-
 
   /**
    * Set the given List as "current"
@@ -445,12 +436,26 @@ public class GlobalState {
    */
   private void setAllExisting(boolean existing) {
     Set<Entry<String, ListState>> entries = keyMap.entrySet();
-    for (Iterator iter = entries.iterator(); iter.hasNext(); ) {
-      Map.Entry<String, ListState> entry =
-        (Entry<String, ListState>) iter.next();
+    for (Map.Entry<String, ListState> entry : entries) {
       ListState state = entry.getValue();
       state.setExisting(existing);
     }
   }
 
+  /**
+   * Return the location for our state file. If we were given a 
+   * googleConnectorWorkDir (the expected case), use that; else use the
+   * current working directory and log an error.
+   * @return File
+   */
+  private File getStateFileLocation() {
+    File f;
+    if (workDir == null) {
+      logger.info("No working directory was given; using cwd");
+      f = new File(CONNECTOR_NAME + CONNECTOR_PREFIX);
+    } else {
+      f = new File(workDir, CONNECTOR_NAME + CONNECTOR_PREFIX);
+    }
+    return f;
+  }
 }

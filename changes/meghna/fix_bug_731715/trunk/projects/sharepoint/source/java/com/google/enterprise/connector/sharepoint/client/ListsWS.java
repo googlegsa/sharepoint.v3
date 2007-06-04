@@ -69,8 +69,7 @@ public class ListsWS {
   if (siteName.startsWith("http://")) {
     siteName = siteName.substring(7);
     endpoint = "http://" + Util.getEscapedSiteName(siteName) + listsEndpoint;
-  }
-  else {
+  } else {
     endpoint = Util.getEscapedSiteName(siteName) + listsEndpoint;
   }
   try {
@@ -96,26 +95,6 @@ public class ListsWS {
     req.setListName(listName);
     req.setQuery(null);
     
-    /** 
-    OMFactory factory = OMAbstractFactory.getOMFactory();
-    OMNamespace ms = factory.createOMNamespace(
-        "http://schemas.microsoft.com/sharepoint/soap/", "ms");
-
-    OMElement root = factory.createOMElement("ViewFields", ms);
-    OMElement childTest = factory.createOMElement("FieldRef", ms);
-    ADBSOAPModelBuilder builder = new ADBSOAPModelBuilder(
-        root.getXMLStreamReader(), new DOMSOAPFactory());
-
-    ViewFields_type35 viewFields = new ListsStub.ViewFields_type35());
-    ViewFields_type35 viewFieldsTmp = req.getViewFields();
-
-    OMElement root = viewFields.getOMElement(
-        new QName("http://schemas.microsoft.com/sharepoint/soap/", 
-            "ViewFields"), factory);
-
-    OMElement childTest = factory.createOMElement("FieldRef", ms);
-    childTest.addAttribute("Name", "Author", ms);
-    **/
     req.setViewFields(null);
     req.setRowLimit("");
     req.setViewName("");

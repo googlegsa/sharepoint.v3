@@ -27,7 +27,7 @@ public class SiteDataWSTest extends TestCase {
    */
   protected void setUp() throws Exception {
     SharepointClientContext sharepointClientContext = new 
-      SharepointClientContext(sharepointUrl, domain, username, password); 
+      SharepointClientContext(sharepointUrl, domain, username, password, null); 
     siteDataWS = new SiteDataWS(sharepointClientContext);   
     listsWS = new ListsWS(sharepointClientContext);
     super.setUp();
@@ -48,7 +48,8 @@ public class SiteDataWSTest extends TestCase {
       }
       assertEquals(i, 5);
     } catch (SharepointException e) {      
-      e.printStackTrace();   
+      e.printStackTrace();
+      fail();
     }   
   }
 
@@ -58,7 +59,7 @@ public class SiteDataWSTest extends TestCase {
     try {
       SharepointClientContext sharepointClientContextSpaces = new 
       SharepointClientContext(sharepointUrlWithSpaces, 
-          domain, username, password); 
+          domain, username, password, null); 
       SiteDataWS siteDataWSSpaces = 
           new SiteDataWS(sharepointClientContextSpaces);   
       List listCollection = siteDataWSSpaces.getDocumentLibraries();
@@ -71,8 +72,10 @@ public class SiteDataWSTest extends TestCase {
       assertEquals(1, numDocLib);
     } catch (SharepointException e) {
       e.printStackTrace();
+      fail();
     } catch (RepositoryException e1) {
       e1.printStackTrace();
+      fail();
     }    
   }
   /**
@@ -93,6 +96,7 @@ public class SiteDataWSTest extends TestCase {
       assertEquals(2, numDocLib);
     } catch (SharepointException e) {
       e.printStackTrace();
+      fail();
     }
   }
   

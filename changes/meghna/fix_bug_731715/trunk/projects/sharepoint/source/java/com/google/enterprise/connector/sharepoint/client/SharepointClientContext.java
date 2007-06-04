@@ -35,9 +35,11 @@ public class SharepointClientContext {
   private String password;
   private int port = 80;
   private String host;
+  private String googleConnectorWorkDir = null;
   
   public SharepointClientContext(String sharepointUrl, String domain,
-                                 String username, String password) {
+                                 String username, String password,
+                                 String googleConnectorWorkDir) {
     if (sharepointUrl.endsWith("/")) {
       sharepointUrl = sharepointUrl.substring(
           0, sharepointUrl.lastIndexOf("/"));
@@ -56,6 +58,7 @@ public class SharepointClientContext {
     this.domain = domain;    
     this.username = username;
     this.password = password;
+    this.googleConnectorWorkDir = googleConnectorWorkDir;
   }
 
  
@@ -83,6 +86,10 @@ public class SharepointClientContext {
     return username;
   }
 
+  public String getGoogleConnectorWorkDir() {
+    return this.googleConnectorWorkDir;
+  }
+  
   public void setDomain(String domain) {
     this.domain = domain;
   }
@@ -91,8 +98,8 @@ public class SharepointClientContext {
     this.password = password;
   }
 
-  public void setsiteName(String siteName) {
-    this.siteName = siteName;
+  public void setsiteName(String siteNameNew) {
+    this.siteName = siteNameNew;
   }
 
   public void setUsername(String username) {
@@ -107,6 +114,10 @@ public class SharepointClientContext {
     this.port = port;
   }
 
+  public void setGoogleConnectorWorkDir(String workDir) {
+    this.googleConnectorWorkDir = workDir;
+  }
+  
   /**
    * Sets the stub 
    * @param stub Axis Client Stub to call the webservices on 

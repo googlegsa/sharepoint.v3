@@ -68,6 +68,7 @@
         <pathelement location="${spi.jarfile}"/>
         <pathelement location="${connector.jarfile}"/>
         <pathelement location="${lib.jar.dir}"/>
+        <pathelement location="${config}"/>
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar"/>
         </fileset>
@@ -83,6 +84,7 @@
         <pathelement location="${spi.jar.dir}/connector.jar"/>
         <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
         <pathelement location="${spi.jarfile}"/>
+        <pathelement location="${config}"/>
         <pathelement location="${classes}"/>
         <fileset dir="${lib.jar.dir}">
           <include name="*.jar"/>
@@ -99,8 +101,10 @@
         <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
         <pathelement location="${spi.jar.dir}/connector_util.jar"/>
         <pathelement location="${jarfile}"/>
+        <pathelement location="${config}"/>
         <fileset dir="${lib.jar.dir}">
           <include name="*.jar"/>
+          <include name="**/*.properties"/>
         </fileset>
         <pathelement location="${tests.classes}"/>
         <pathelement location="${tests.src}"/>

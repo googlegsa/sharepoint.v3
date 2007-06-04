@@ -21,7 +21,6 @@ import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sList;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sWebWithTime;
 import com.google.enterprise.connector.spi.RepositoryException;
-
 import org.apache.axis2.AxisFault;
 
 import java.rmi.RemoteException;
@@ -49,9 +48,9 @@ public class SiteDataWS {
     throws SharepointException, RepositoryException {
     this.sharepointClientContext = sharepointClientContext;
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
-                sharepointClientContext.getPort() +
-                Util.getEscapedSiteName(sharepointClientContext.getsiteName()) 
-                + siteDataEndpoint;
+        sharepointClientContext.getPort() +
+        Util.getEscapedSiteName(sharepointClientContext.getsiteName()) 
+        + siteDataEndpoint;
     System.out.println(endpoint);
     try {
       stub = new SiteDataStub(endpoint);
@@ -151,10 +150,6 @@ public class SiteDataWS {
                 sl[i].getTitle(), sl[i].getBaseType(),
                     Util.siteDataStringToCalendar(sl[i].getLastModified()));              
               listCollection.add(list);
-              
-              // find out what "columns" (metadata) are enabled on this List:
-              // BP: this was causing SoapExceptions, so commented out for now:
-              // viewsStub.getViewNames(list.getInternalName());
             }
           } catch (ParseException e) {
             throw new SharepointException(e.toString());
