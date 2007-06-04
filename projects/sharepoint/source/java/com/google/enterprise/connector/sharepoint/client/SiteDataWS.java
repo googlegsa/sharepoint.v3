@@ -20,6 +20,7 @@ import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub.ArrayOf_sWebWithTime;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sList;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sWebWithTime;
+import com.google.enterprise.connector.spi.RepositoryException;
 import org.apache.axis2.AxisFault;
 
 import java.rmi.RemoteException;
@@ -35,7 +36,7 @@ import java.util.List;
  */
 public class SiteDataWS {   
   
-  private static final String siteDataEndpoint = "/_vti_bin/SiteData.asmx";
+  private static final String siteDataEndpoint = "_vti_bin/SiteData.asmx";
   public static final String DOC_LIB = "DocumentLibrary";
   public static final String GENERIC_LIST = "GenericList";
   private SharepointClientContext sharepointClientContext;
@@ -44,11 +45,12 @@ public class SiteDataWS {
   private ViewsWS viewsStub;
   
   public SiteDataWS(SharepointClientContext sharepointClientContext) 
-    throws SharepointException {
+    throws SharepointException, RepositoryException {
     this.sharepointClientContext = sharepointClientContext;
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
-                sharepointClientContext.getPort() +
-                sharepointClientContext.getsiteName() + siteDataEndpoint;
+        sharepointClientContext.getPort() +
+        Util.getEscapedSiteName(sharepointClientContext.getsiteName()) 
+        + siteDataEndpoint;
     System.out.println(endpoint);
     try {
       stub = new SiteDataStub(endpoint);
@@ -60,9 +62,15 @@ public class SiteDataWS {
   }
   
   public SiteDataWS(SharepointClientContext sharepointClientContext, 
-      String siteName) throws SharepointException {
+      String siteName) throws SharepointException, RepositoryException {
     this.sharepointClientContext = sharepointClientContext;
-    endpoint = siteName + siteDataEndpoint;
+    if (siteName.startsWith("http://")) {
+      siteName = siteName.substring(7);
+      endpoint = "http://" + Util.getEscapedSiteName(siteName) + siteDataEndpoint;
+    }
+    else {
+      endpoint = Util.getEscapedSiteName(siteName) + siteDataEndpoint;
+    }
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
@@ -102,7 +110,8 @@ public class SiteDataWS {
   }
    
   /**
-   * Gets the collection of all the SPDocument Libraries on the sharepoint server.
+   * Gets the collection of all the SPDocument Libraries on the sharepoint 
+   * server.
    * @return list of BaseList objects.
    * @throws SharepointException
    */
@@ -134,11 +143,11 @@ public class SiteDataWS {
       ArrayOf_sList asl = res.getVLists();
       _sList[] sl = asl.get_sList();
       if (sl != null) {
-        for(int i=0; i<sl.length; i++) {
+        for (int i = 0; i < sl.length; i++) {
           try {   
-            if(sl[i].getBaseType().equals(baseType)) {
+            if (sl[i].getBaseType().equals(baseType)) {
               BaseList list = new BaseList(sl[i].getInternalName(), 
-                sl[i].getTitle(), sl[i].getBaseType(), 
+                sl[i].getTitle(), sl[i].getBaseType(),
                 Util.siteDataStringToCalendar(sl[i].getLastModified()));              
               listCollection.add(list);
             }
