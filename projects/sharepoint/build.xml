@@ -110,7 +110,7 @@
         <pathelement location="${tests.src}"/>
         <pathelement path="${java.class.path}"/>
       </classpath>
-      <formatter type="plain"/>
+      <formatter type="xml"/>
       <batchtest fork="yes" todir="${tests.todir}">
         <fileset dir="${tests.src}">
           <include name="**/*Test.java"/>
@@ -140,5 +140,7 @@
       <fileset dir="${src_generated}" includes="*Stub.java"/>
     </delete>
   </target>
+
+  <target name="everything" description="Do it all!" depends="clean,sharepoint-connector,run_tests"/>
 
 </project>
