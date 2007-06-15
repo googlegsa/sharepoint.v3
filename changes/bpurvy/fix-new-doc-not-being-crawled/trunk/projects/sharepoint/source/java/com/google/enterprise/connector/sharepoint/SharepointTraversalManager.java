@@ -46,12 +46,12 @@ public class SharepointTraversalManager implements TraversalManager,
   private SharepointConnector connector;
   protected GlobalState globalState; // not private, so the unittest can see it
   private int hint = -1;
-
+  
   public SharepointTraversalManager(SharepointConnector connector,
-    SharepointClientContext sharepointClientContext)
+    SharepointClientContext sharepointClientContext) 
       throws RepositoryException {
     logger = LogFactory.getLog(SharepointTraversalManager.class);
-    logger.info("SharepointTraversalManager: " +
+    logger.info("SharepointTraversalManager: " + 
         sharepointClientContext.getsiteName() + ", " +
         sharepointClientContext.getGoogleConnectorWorkDir());
     this.connector = connector;
@@ -60,7 +60,7 @@ public class SharepointTraversalManager implements TraversalManager,
         sharepointClientContext.getGoogleConnectorWorkDir());
     this.globalState.loadState();
   }
-
+  
   /**
    * For the HasTimeout interface: tell ConnectorManager we need the maximum
    * amount of time
@@ -69,19 +69,19 @@ public class SharepointTraversalManager implements TraversalManager,
   public int getTimeoutMillis() {
     return Integer.MAX_VALUE;
   }
-
+  
   private void implementCheckpoint(PropertyMap map) throws RepositoryException {
     SPDocument docCheckpoint = Util.docFromPropertyMap(map);
     String listGuid = Util.listGuidFromPropertyMap(map);
 
     /* fix the GlobalState to match 'doc'. Since the Connector Manager may
-     * have finished several lists, we have to iterate through all the
+     * have finished several lists, we have to iterate through all the 
      * lists until we hit this one (that's why we save the list GUID).
-     *
+     * 
      * First make sure there's no mistake, and this list is something we
      * actually know about:
      */
-    ListState listCheckpoint =
+    ListState listCheckpoint = 
       (ListState) globalState.lookupList(listGuid);
     if (listCheckpoint == null) {
       logger.error("Checkpoint specifies a non-existent list: " + listGuid);
@@ -93,7 +93,7 @@ public class SharepointTraversalManager implements TraversalManager,
           listCheckpoint.setCrawlQueue(null);
         } else {
           break;
-        }
+        }        
       }
       return;
     }
@@ -107,7 +107,7 @@ public class SharepointTraversalManager implements TraversalManager,
         logger.info("found it");
         foundCheckpoint = true;
         // take out everything up to this document's lastMod date
-        for (Iterator<SPDocument> iterQueue = crawlQueue.iterator();
+        for (Iterator<SPDocument> iterQueue = crawlQueue.iterator(); 
           iterQueue.hasNext(); ) {
           SPDocument docQueue = iterQueue.next();
 
@@ -122,8 +122,8 @@ public class SharepointTraversalManager implements TraversalManager,
           listState.setLastDocCrawled(docQueue);
           if (docQueue.getDocId().equals(docCheckpoint.getDocId())) {
             break;
-          }
-        }
+          }    
+        }  
       } else { // some other list. Assume CM got all the way through the queue
         logger.info("zeroing crawl queue for " + listState.getUrl());
         if (crawlQueue != null && crawlQueue.size() > 0) {
@@ -133,11 +133,11 @@ public class SharepointTraversalManager implements TraversalManager,
       }
     }
     /* once we've done this, there's no more need to remember where we
-     * were. We can start at the earliest (by lastMod) List we have.
+     * were. We can start at the earliest (by lastMod) List we have. 
      */
     globalState.setCurrentList(null);
   }
-
+  
   /* (non-Javadoc)
    * @see com.google.enterprise.connector.spi.TraversalManager#checkpoint
    * (com.google.enterprise.connector.spi.PropertyMap)
@@ -157,7 +157,7 @@ public class SharepointTraversalManager implements TraversalManager,
    * @see com.google.enterprise.connector.spi.TraversalManager
    * #resumeTraversal(java.lang.String)
    */
-  public PropertyMapList resumeTraversal(String arg0)
+  public PropertyMapList resumeTraversal(String arg0) 
     throws RepositoryException {
     logger.info("resumeTraversal");
     return doTraversal();
@@ -176,28 +176,28 @@ public class SharepointTraversalManager implements TraversalManager,
    * @see com.google.enterprise.connector.spi.TraversalManager
    * #startTraversal()
    */
-  public PropertyMapList startTraversal()
+  public PropertyMapList startTraversal() 
     throws RepositoryException {
     logger.info("startTraversal");
     return doTraversal();
   }
 
   private void dumpPropertyMapList(SimplePropertyMapList rs) {
-    logger.info("PropertyMapList=" + rs.size() + " items");
+    System.out.println("PropertyMapList=" + rs.size() + " items");
     try {
       for (Iterator iter = rs.iterator(); iter.hasNext(); ) {
         PropertyMap pm = (PropertyMap) iter.next();
         for (Iterator iterProp = pm.getProperties(); iterProp.hasNext(); ) {
           Property prop = (Property) iterProp.next();
-          logger.info(prop.getName().toString() +
+          System.out.println(prop.getName().toString() +
               " = " + prop.getValue().toString());
         }
       }
     } catch (RepositoryException e) {
-      logger.info("caught exception: " + e.toString());
+      System.out.println("caught exception: " + e.toString());
     }
   }
-
+  
   /**
    * Private routine that actually does the traversal. If no docs are found
    * in the first sharepointClient.traverse() call, we go back to Sharepoint
@@ -206,10 +206,10 @@ public class SharepointTraversalManager implements TraversalManager,
    * @throws RepositoryException
    */
   private PropertyMapList doTraversal() throws RepositoryException {
-    logger.info("SharepointTraversalManager::doTraversal:  " +
+    logger.info("SharepointTraversalManager::doTraversal:  " + 
         sharepointClientContext.getsiteName() + ", " +
         sharepointClientContext.getGoogleConnectorWorkDir());
-    SharepointClient sharepointClient =
+    SharepointClient sharepointClient = 
       new SharepointClient(sharepointClientContext);
     SimplePropertyMapList rs = sharepointClient.traverse(globalState, hint);
     // if the set is empty, then we need to sweep Sharepoint again:
@@ -221,6 +221,6 @@ public class SharepointTraversalManager implements TraversalManager,
     if (logger.isInfoEnabled()) {
       dumpPropertyMapList(rs);
     }
-    return rs;
+    return rs;           
   }
 }
