@@ -97,20 +97,9 @@ public class SharepointClient {
     SimplePropertyMapList resultSet = new SimplePropertyMapList();
 
     int sizeSoFar = 0;
-    ListState lastVisited = state.getCurrentList();
-    boolean reachedLastVisited = false;
-    if (lastVisited != null) {
-      logger.info("traverse() looking for " + lastVisited.getUrl());
-    }
-    for (Iterator<ListState> iter = state.getIterator(); 
-    iter.hasNext();) {
+    for (Iterator<ListState> iter = state.getCircularIterator(); 
+        iter.hasNext();) {
       ListState list = (ListState) iter.next();
-      if (lastVisited != null && !reachedLastVisited) {
-        if (list.getGuid().equals(lastVisited.getGuid())) {
-          reachedLastVisited = true;
-        }
-        continue;
-      }
       state.setCurrentList(list);
       if (list.getCrawlQueue() == null) continue;
       SimplePropertyMapList resultsList = handleCrawlQueueForList(state, list);
