@@ -132,8 +132,8 @@
     </jar>
   </target>
 
-	<target name="make-downloads-dir">
-		<mkdir dir="${downloads.dir}" />
+  <target name="make-downloads-dir">
+    <mkdir dir="${downloads.dir}" />
   </target>
 
   <target name="download-sharepoint-connector" depends="jar,make-downloads-dir">
@@ -152,8 +152,15 @@
         <include name="README"/>
         <include name="LICENSE"/>
       </tarfileset>
-    </tar>    
-	</target>
+    </tar>
+    <gzip zipfile="${downloads.dir}/sharepoint-connector-${version}.tar.gz"
+      src="${downloads.dir}/sharepoint-connector-${version}.tar"/>
+    <zip destfile="${downloads.dir}/sharepoint-connector-${version}.zip">
+      <zipfileset dir="." includes="README,LICENSE"/>
+      <zipfileset dir="${lib.jar.dir}" includes="*.jar" prefix="WEB-INF/lib"/>
+      <zipfileset dir="${jar.dir}" includes="sharepoint-connector.jar" prefix="WEB-INF/lib"/>
+    </zip>
+  </target>
 
 
   <target name="clean" description="Deletes files produced by compile and test.">
