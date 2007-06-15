@@ -22,8 +22,6 @@ import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sList;
 import com.google.enterprise.connector.sharepoint.generated.SiteDataStub._sWebWithTime;
 import com.google.enterprise.connector.spi.RepositoryException;
 import org.apache.axis2.AxisFault;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.rmi.RemoteException;
 import java.text.ParseException;
@@ -36,9 +34,8 @@ import java.util.List;
  * This class holds data and methods for any call to SiteData web service.
  *
  */
-public class SiteDataWS {
-  private static Log logger = LogFactory.getLog(SiteDataWS.class);
-
+public class SiteDataWS {   
+  
   private static final String siteDataEndpoint = "_vti_bin/SiteData.asmx";
   public static final String DOC_LIB = "DocumentLibrary";
   public static final String GENERIC_LIST = "GenericList";
@@ -46,29 +43,26 @@ public class SiteDataWS {
   private String endpoint;
   private SiteDataStub stub;
   private ViewsWS viewsStub;
-
-  public SiteDataWS(SharepointClientContext sharepointClientContext)
+  
+  public SiteDataWS(SharepointClientContext sharepointClientContext) 
     throws SharepointException, RepositoryException {
-    logger.info("SiteDataWS constructor 1");
     this.sharepointClientContext = sharepointClientContext;
-    endpoint = "http://" + sharepointClientContext.getHost() + ":" +
+    endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
         sharepointClientContext.getPort() +
-        Util.getEscapedSiteName(sharepointClientContext.getsiteName())
+        Util.getEscapedSiteName(sharepointClientContext.getsiteName()) 
         + siteDataEndpoint;
-    logger.info(endpoint);
+    System.out.println(endpoint);
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
       viewsStub = new ViewsWS(sharepointClientContext);
     } catch (AxisFault e) {
-      logger.info("SiteDataWS constructor exception:" + e.toString());
       throw new SharepointException(e.toString());
-    }
+    }     
   }
-
-  public SiteDataWS(SharepointClientContext sharepointClientContext,
+  
+  public SiteDataWS(SharepointClientContext sharepointClientContext, 
       String siteName) throws SharepointException, RepositoryException {
-    logger.info("SiteDataWS constructor 2");
     this.sharepointClientContext = sharepointClientContext;
     if (siteName.startsWith("http://")) {
       siteName = siteName.substring(7);
@@ -82,45 +76,41 @@ public class SiteDataWS {
       sharepointClientContext.setStubWithAuth(stub, endpoint);
       viewsStub = new ViewsWS(sharepointClientContext);
     } catch (AxisFault e) {
-      logger.info("SiteDataWS constructor exception:" + e.toString());
       throw new SharepointException(e.toString());
-    }
-  }
-
+    }     
+  }  
+  
   /**
    * Gets all the sites from the sharepoint server.
    * @return list of sharepoint documents corresponding to sites.
    */
   public List getAllChildrenSites() throws SharepointException {
-    logger.info("getAllChildrenSites");
     ArrayList<SPDocument> sites = new ArrayList<SPDocument>();
     try {
       SiteDataStub.GetSite req = new SiteDataStub.GetSite();
       SiteDataStub.GetSiteResponse res = stub.GetSite(req);
       ArrayOf_sWebWithTime webs = res.getVWebs();
       _sWebWithTime[] els = webs.get_sWebWithTime();
-      for (int i = 0; i < els.length; ++i) {
-        String url = els[i].getUrl();
-        if (url.startsWith("http://" + sharepointClientContext.getHost()
-            + ":" + sharepointClientContext.getPort() +
-            sharepointClientContext.getsiteName()) ||
-            url.startsWith("http://" + sharepointClientContext.getHost()
+      for (int i = 0; i < els.length; ++i) {        
+        String url = els[i].getUrl();      
+        if (url.startsWith("http://" + sharepointClientContext.getHost() 
+            + ":" + sharepointClientContext.getPort() + 
+            sharepointClientContext.getsiteName()) || 
+            url.startsWith("http://" + sharepointClientContext.getHost() 
                 + sharepointClientContext.getsiteName())) {
-          Calendar lastModified = els[i].getLastModified();
+          Calendar lastModified = els[i].getLastModified();   
           SPDocument doc = new SPDocument(url, url, lastModified);
           sites.add(doc);
         }
-      }
+      }  
     } catch (RemoteException e) {
-      logger.info("getAllChildrenSites exception:" + e.toString());
-      throw new SharepointException(e.toString());
+      throw new SharepointException(e.toString());        
     }
-    logger.info("getAllChildrenSites exiting");
-    return sites;
+    return sites;      
   }
-
+   
   /**
-   * Gets the collection of all the SPDocument Libraries on the sharepoint
+   * Gets the collection of all the SPDocument Libraries on the sharepoint 
    * server.
    * @return list of BaseList objects.
    * @throws SharepointException
@@ -128,7 +118,7 @@ public class SiteDataWS {
   public  List getDocumentLibraries() throws SharepointException {
     return getNamedLists(DOC_LIB);
   }
-
+  
   /**
    * Gets the collection of all the Generic Lists on the sharepoint server.
    * @return list of BaseList objects.
@@ -137,16 +127,16 @@ public class SiteDataWS {
   public  List getGenericLists() throws SharepointException {
     return getNamedLists(GENERIC_LIST);
   }
-
+  
   /**
    * Gets the collection of all the lists on the sharepoint server which are
    * of a given type. E.g., DocumentLibrary
    * @return list of BaseList objects.
    */
   private List getNamedLists(String baseType) throws SharepointException {
-    ArrayList<BaseList> listCollection = new ArrayList<BaseList>();
+    ArrayList<BaseList> listCollection = new ArrayList<BaseList>();      
     try {
-      SiteDataStub.GetListCollection req =
+      SiteDataStub.GetListCollection req = 
         new SiteDataStub.GetListCollection();
       SiteDataStub.GetListCollectionResponse res;
       res = stub.GetListCollection(req);
@@ -154,11 +144,11 @@ public class SiteDataWS {
       _sList[] sl = asl.get_sList();
       if (sl != null) {
         for (int i = 0; i < sl.length; i++) {
-          try {
+          try {   
             if (sl[i].getBaseType().equals(baseType)) {
-              BaseList list = new BaseList(sl[i].getInternalName(),
+              BaseList list = new BaseList(sl[i].getInternalName(), 
                 sl[i].getTitle(), sl[i].getBaseType(),
-                Util.siteDataStringToCalendar(sl[i].getLastModified()));
+                Util.siteDataStringToCalendar(sl[i].getLastModified()));              
               listCollection.add(list);
             }
           } catch (ParseException e) {
@@ -169,7 +159,10 @@ public class SiteDataWS {
       }
     } catch (RemoteException e) {
       throw new SharepointException(e.toString());
-    }
+    }           
     return listCollection;
   }
 }
+
+
+
