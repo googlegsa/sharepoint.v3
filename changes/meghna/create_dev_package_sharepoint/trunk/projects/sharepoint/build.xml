@@ -139,13 +139,11 @@
   <target name="download-sharepoint-connector" depends="jar,make-downloads-dir">
     <tar destfile="${downloads.dir}/sharepoint-connector-${version}.tar">
       <tarfileset dir="${jar.dir}" 
-        prefix="WEB-INF/lib"
-        preserveLeadingSlashes="true">
+        prefix="WEB-INF/lib">
         <include name="sharepoint-connector.jar"/>
       </tarfileset>
       <tarfileset dir="${lib.jar.dir}"
-        prefix="WEB-INF/lib"
-        preserveLeadingSlashes="true">
+        prefix="WEB-INF/lib">
         <include name="*.jar"/>
       </tarfileset>
       <tarfileset dir=".">
@@ -164,8 +162,7 @@
     <checksum file="${downloads.dir}/sharepoint-connector-${version}.zip"/>
     <tar destfile="${downloads.dir}/sharepoint-connector-dev-${version}.tar">
       <tarfileset dir="."
-        prefix="sharepoint"
-        preserveLeadingSlashes="true">
+        prefix="sharepoint">
         <include name="source/java/**/*"/>
         <include name="source/javatests/**/*"/>
         <include name="lib/**/*"/>
@@ -174,6 +171,8 @@
         <include name="build.xml"/>
         <include name="LICENSE"/>
         <include name="README"/>
+        <include name=".classpath"/>
+        <include name=".project"/>
       </tarfileset>
     </tar>
     <gzip zipfile="${downloads.dir}/sharepoint-connector-dev-${version}.tar.gz"
@@ -181,7 +180,7 @@
     <zip destfile="${downloads.dir}/sharepoint-connector-dev-${version}.zip">
       <zipfileset dir="."
         includes="source/java/**/*,source/javatests/**/*,lib/**/*,wsdl/**/*,
-        config/**/*,build.xml,LICENSE,README" prefix="sharepoint"/>
+        config/**/*,build.xml,LICENSE,README,.classpath,.project" prefix="sharepoint"/>
     </zip>
     <checksum file="${downloads.dir}/sharepoint-connector-dev-${version}.tar.gz"/>
     <checksum file="${downloads.dir}/sharepoint-connector-dev-${version}.zip"/>
