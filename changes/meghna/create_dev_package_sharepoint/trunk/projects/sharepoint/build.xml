@@ -171,6 +171,8 @@
         <include name="build.xml"/>
         <include name="LICENSE"/>
         <include name="README"/>
+      </tarfileset>
+      <tarfileset dir="..">
         <include name=".classpath"/>
         <include name=".project"/>
       </tarfileset>
@@ -180,7 +182,9 @@
     <zip destfile="${downloads.dir}/sharepoint-connector-dev-${version}.zip">
       <zipfileset dir="."
         includes="source/java/**/*,source/javatests/**/*,lib/**/*,wsdl/**/*,
-        config/**/*,build.xml,LICENSE,README,.classpath,.project" prefix="sharepoint"/>
+        config/**/*,build.xml,LICENSE,README" prefix="sharepoint"/>
+      <zipfileset dir=".."
+        includes=".classpath,.project"/>
     </zip>
     <checksum file="${downloads.dir}/sharepoint-connector-dev-${version}.tar.gz"/>
     <checksum file="${downloads.dir}/sharepoint-connector-dev-${version}.zip"/>
