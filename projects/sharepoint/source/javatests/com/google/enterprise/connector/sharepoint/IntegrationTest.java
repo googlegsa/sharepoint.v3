@@ -44,7 +44,7 @@ public class IntegrationTest extends TestCase {
   private SharepointClient sharepointClient;
   private Connector connector;  
   
-  public static final int TOTAL_DOCS = 27;
+  public static final int TOTAL_DOCS = 29;
   
   public void setUp() throws Exception {
     SharepointClientContext sharepointClientContext = new 
