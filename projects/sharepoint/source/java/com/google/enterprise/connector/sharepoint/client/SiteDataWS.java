@@ -39,6 +39,7 @@ public class SiteDataWS {
   private static final String siteDataEndpoint = "_vti_bin/SiteData.asmx";
   public static final String DOC_LIB = "DocumentLibrary";
   public static final String GENERIC_LIST = "GenericList";
+  public static final String ISSUE = "Issue";
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private SiteDataStub stub;
@@ -129,6 +130,15 @@ public class SiteDataWS {
   }
   
   /**
+   * Gets the collection of all the Issues on the sharepoint server.
+   * @return list of BaseList objects.
+   * @throws SharepointException
+   */
+  public  List getIssues() throws SharepointException {
+    return getNamedLists(ISSUE);
+  }
+  
+  /**
    * Gets the collection of all the lists on the sharepoint server which are
    * of a given type. E.g., DocumentLibrary
    * @return list of BaseList objects.
@@ -144,7 +154,7 @@ public class SiteDataWS {
       _sList[] sl = asl.get_sList();
       if (sl != null) {
         for (int i = 0; i < sl.length; i++) {
-          try {   
+          try { 
             if (sl[i].getBaseType().equals(baseType)) {
               BaseList list = new BaseList(sl[i].getInternalName(), 
                 sl[i].getTitle(), sl[i].getBaseType(),

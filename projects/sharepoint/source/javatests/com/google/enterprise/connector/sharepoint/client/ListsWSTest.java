@@ -18,6 +18,7 @@ public class ListsWSTest extends TestCase {
   final String username = "testing";
   final String password = "g00gl3";
   final String docLibLInternalName = "{8F2F5129-4380-4932-AE1C-E760C64F5D8F}"; 
+  final String issuesInternalName = "{2CCEF12F-A3C4-4921-98B6-E4334D1CFB9C}";
   
   private Map<String, String> listInternalNames = new HashMap<String, String>();       
   private ListsWS listsWS;
@@ -34,6 +35,7 @@ public class ListsWSTest extends TestCase {
     listInternalNames.put("{3D97F002-39A2-463B-9343-0830CCC9CE49}", 
         "Announcements");
     listInternalNames.put("{380EC82B-67DC-42DC-99CF-9E38F4050AB4}", "Links");
+    listInternalNames.put(issuesInternalName, "Issues");
     super.setUp();
   }
 
@@ -99,7 +101,7 @@ public class ListsWSTest extends TestCase {
         e.printStackTrace();
       }    
     }
-    Assert.assertEquals(8, num);
+    Assert.assertEquals(9, num);
   }
   
   public void testGetAttachments() {
@@ -128,6 +130,6 @@ public class ListsWSTest extends TestCase {
         e.printStackTrace();
       }
     }
-    Assert.assertEquals(4, num);
+    Assert.assertEquals(5, num);
   }
 }
