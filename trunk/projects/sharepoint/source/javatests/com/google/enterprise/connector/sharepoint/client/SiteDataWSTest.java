@@ -101,15 +101,33 @@ public class SiteDataWSTest extends TestCase {
   }
   
   public void testGetGenericLists() {
-    int numDocLib = 0;
+    int numGenList = 0;
     try {
       List listCollection = siteDataWS.getGenericLists();
       System.out.println("Generic Lists found - ");
       for (int i = 0; i < listCollection.size(); i++) {
         BaseList baseList = (BaseList) listCollection.get(i);
         System.out.println(baseList.getTitle());        
-        numDocLib++;        
+        numGenList++;        
       }
+      assertEquals(9, numGenList);
+    } catch (SharepointException e) {      
+      e.printStackTrace();
+      fail();
+    }
+  }
+  
+  public void testIssues() {
+    int numIssues = 0;
+    try {
+      List listCollection = siteDataWS.getIssues();
+      System.out.println("Issues found - ");
+      for (int i = 0; i < listCollection.size(); i++) {
+        BaseList baseList = (BaseList) listCollection.get(i);
+        System.out.println(baseList.getTitle());        
+        numIssues++;        
+      }
+      assertEquals(1, numIssues);
     } catch (SharepointException e) {      
       e.printStackTrace();
       fail();

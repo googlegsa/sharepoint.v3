@@ -145,13 +145,13 @@ public class SharepointClient {
   }
 
   /**
-   * Gets all the docs from the SPDocument Library and all the attachments 
-   * from items of Generic Lists in sharepoint under a given
+   * Gets all the docs from the SPDocument Library and all the items and their 
+   * attachments from Generic Lists and Issues in sharepoint under a given
    * site. It first calls SiteData web service to get all the Lists. And then
    * calls Lists web service to get the list items for the lists which are of
-   * the type SPDocument Library. 
-   * For attachments in Generic List items, it calls Lists web service to get 
-   * attachments for these list items. 
+   * the type SPDocument Library, Generic Lists or Issues.
+   * For attachments in Generic List items and Issues, it calls Lists 
+   * web service to get attachments for these list items. 
    * @return resultSet
    */
   private void updateGlobalStateFromSite(GlobalState state, String siteName) {
@@ -170,7 +170,9 @@ public class SharepointClient {
       }
       List listCollection = siteDataWS.getDocumentLibraries();
       List listCollectionGenList = siteDataWS.getGenericLists();
+      List listCollectionIssues = siteDataWS.getIssues();
       listCollection.addAll(listCollectionGenList);
+      listCollection.addAll(listCollectionIssues);
       for (int i = 0; i < listCollection.size(); i++) {
         BaseList baseList = (BaseList) listCollection.get(i);
         ListState listState = state.lookupList(baseList.getInternalName());
@@ -186,10 +188,11 @@ public class SharepointClient {
           if (baseList.getType().equals(SiteDataWS.DOC_LIB)) {
             listItems = listsWS.getDocLibListItemChanges(
                 baseList, null);
-          } else if (baseList.getType().equals(SiteDataWS.GENERIC_LIST)) {
+          } else if (baseList.getType().equals(SiteDataWS.GENERIC_LIST) || 
+              baseList.getType().equals(SiteDataWS.ISSUE)) {
             listItems = listsWS.getGenericListItemChanges(
                 baseList, null);
-          }
+          }       
           logger.info("creating new listState: " + baseList.getTitle());
         } else {
           logger.info("revisiting old listState: " + listState.getUrl());
@@ -199,12 +202,14 @@ public class SharepointClient {
           if (baseList.getType().equals(SiteDataWS.DOC_LIB)) {
             listItems = listsWS.getDocLibListItemChanges(
                 baseList, dateSince);
-          } else if (baseList.getType().equals(SiteDataWS.GENERIC_LIST)) {
+          } else if (baseList.getType().equals(SiteDataWS.GENERIC_LIST) || 
+              baseList.getType().equals(SiteDataWS.ISSUE)) {
             listItems = listsWS.getGenericListItemChanges(
                 baseList, dateSince);
-          }
+          } 
         }
-        if (baseList.getType().equals(SiteDataWS.GENERIC_LIST)) {
+        if (baseList.getType().equals(SiteDataWS.GENERIC_LIST) || 
+            baseList.getType().equals(SiteDataWS.ISSUE)) {
           List attachmentItems = new ArrayList<SPDocument>();
           for (int j = 0; j < listItems.size(); j++) {           
             SPDocument doc = (SPDocument) listItems.get(j);            
