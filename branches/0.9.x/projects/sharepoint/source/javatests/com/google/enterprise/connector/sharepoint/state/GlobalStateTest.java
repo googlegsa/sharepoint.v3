@@ -10,6 +10,8 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Tests the GlobalState object. In most cases, it creates the object,
@@ -220,4 +222,42 @@ public class GlobalStateTest extends TestCase {
     }      
   }
 
+  /**
+   * Utility for testCircularIterators():  make sure the iterator returns
+   * the same set of items as list
+   * @param iter  iterator to be tested
+   * @param list  array of the expected results
+   */
+  void verifyIterator(Iterator<ListState> iter, ListState[] expected) {
+    for (int i = 0; i < expected.length; i++) {
+      assertTrue(iter.hasNext());
+      ListState found = iter.next();
+      assertEquals(found, expected[i]);
+    }
+    assertFalse(iter.hasNext());
+  }
+  
+  /**
+   * Make sure that the getCircularIterator() call works properly (since, if it
+   * doesn't, the connector will fail to pick up new or changed SharePoint
+   * documents)
+   */
+  public void testCircularIterators() {
+    DateTime time1 = Util.parseDate("20070504T144419.403-0700");
+    DateTime time2 = Util.parseDate("20070505T144419.867-0700");
+    DateTime time3 = Util.parseDate("20070506T144419.867-0700");
+    ListState list1 = null, list2 = null, list3 = null;
+
+    list1 = (ListState) state.makeListState("foo", time1);
+    list2 = (ListState) state.makeListState("bar", time2);
+    list3 = (ListState) state.makeListState("baz", time3);
+    ListState[] arr1 = {list1, list2, list3};
+    ListState[] arr2 = {list2, list3, list1};
+    ListState[] arr3 = {list3, list1, list2};
+    verifyIterator(state.getCircularIterator(), arr1);
+    state.setCurrentList(list2);
+    verifyIterator(state.getCircularIterator(), arr2);
+    state.setCurrentList(list3);
+    verifyIterator(state.getCircularIterator(), arr3);
+  }
 }
