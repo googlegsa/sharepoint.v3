@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -193,6 +194,24 @@ public class GlobalState {
     return dateMap.iterator();
   }
 
+  /**
+   * Get dateMap iterator beginning at the current ListState and wrapping 
+   * around to finish just before the current.  If there is no current,
+   * you just get an ordinary iterator.
+   * @return Iterator which begins at getCurrentList() and wraps around the end
+   */
+
+  public Iterator<ListState> getCircularIterator() {
+    ListState start = getCurrentList();
+    if (start == null) {
+      return getIterator();
+    }
+    // one might think you could just do tail.addAll(head) here. But you can't.
+    ArrayList<ListState> full = new ArrayList(dateMap.tailSet(start));
+    full.addAll(dateMap.headSet(start));
+    return full.iterator();
+  }
+  
   /**
    * Lookup a ListState by its key
    * @param key primary key
