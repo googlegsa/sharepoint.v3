@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -204,15 +205,15 @@ public class SharepointConnectorType implements ConnectorType {
   private String checkConnectivity() {
     SharepointClientContext sharepointClientContext = new 
     SharepointClientContext(sharepointUrl, domain, username, 
-    password, null);
+        password, null);
     try {
       SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
       siteDataWS.getAllChildrenSites();
-    } catch (SharepointException e) {
-      e.printStackTrace();      
+    } catch (SharepointException e) {      
+      LOGGER.log(Level.INFO, e.toString());
       return CANNOT_CONNECT;
-    } catch (RepositoryException e) {        
-      e.printStackTrace();
+    } catch (RepositoryException e) {              
+      LOGGER.log(Level.INFO, e.toString());      
       return CANNOT_CONNECT;
     }         
     return null;
@@ -237,10 +238,10 @@ public class SharepointConnectorType implements ConnectorType {
     }
     if ((sharepointUrl != null) && (domain != null) && (username != null) 
         && (password !=null)) {
-        message = checkConnectivity();
-        if (message != null) {
-          return false;
-        }
+      message = checkConnectivity();
+      if (message != null) {
+        return false;
+      }
     }
     return true;
   }
