@@ -34,8 +34,9 @@ public class SharepointConnectorTypeTest extends TestCase {
    */
   protected void setUp() throws Exception {
     keys = new ArrayList<String>();
-    keys.add("foo");
-    keys.add("bar");
+    keys.add("sharepointUrl");
+    keys.add("domain");
+    keys.add("username");
     keys.add("password");
     sharepointConnectorType = new SharepointConnectorType();
     sharepointConnectorType.setConfigKeys(keys);
@@ -44,74 +45,157 @@ public class SharepointConnectorTypeTest extends TestCase {
 
   public void testGetConfigForm() { 
     String expected = "<tr>\r\n" + 
-            "<td>Foo</td>\r\n" + 
-            "<td><input type=\"text\" name=\"foo\"/></td>\r\n" + 
+            "<td>SharepointUrl TEST</td>\r\n" + 
+            "<td><input type=\"text\" name=\"sharepointUrl\"/></td>\r\n" + 
             "</tr>\r\n" + 
             "<tr>\r\n" + 
-            "<td>Bar</td>\r\n" + 
-            "<td><input type=\"text\" name=\"bar\"/></td>\r\n" + 
+            "<td>Domain TEST</td>\r\n" + 
+            "<td><input type=\"text\" name=\"domain\"/></td>\r\n" + 
+            "</tr>\r\n" + 
+            "<tr>\r\n" +
+            "<td>Username TEST</td>\r\n" + 
+            "<td><input type=\"text\" name=\"username\"/></td>\r\n" + 
             "</tr>\r\n" + 
             "<tr>\r\n" + 
-            "<td>Password</td>\r\n" + 
+            "<td>Password TEST</td>\r\n" + 
             "<td><input type=\"password\" name=\"password\"/></td>\r\n" + 
             "</tr>\r\n";
     ConfigureResponse configureResponse = sharepointConnectorType
         .getConfigForm(new Locale("test"));
     String initialConfigForm = configureResponse.getFormSnippet();
-    System.out.println(initialConfigForm);
     Assert.assertEquals(expected, initialConfigForm);
   }
 
   public void testGetPopulatedConfigForm() {
     String expected = "<tr>\r\n" + 
-            "<td>Foo</td>\r\n" + 
-            "<td><input type=\"text\" name=\"foo\" value=\"foo_val\"/></td>\r\n"
+            "<td>SharepointUrl TEST</td>\r\n" + 
+            "<td><input type=\"text\" name=\"sharepointUrl\" " +
+            "value=\"http://entpoint05.corp.google.com/unittest\"/></td>\r\n"
             + "</tr>\r\n" + 
             "<tr>\r\n" + 
-            "<td>Bar</td>\r\n" + 
-            "<td><input type=\"text\" name=\"bar\" value=\"http://xyz\"/>" +
+            "<td>Domain TEST</td>\r\n" + 
+            "<td><input type=\"text\" name=\"domain\" value=\"ent-qa-d3\"/>" +
             "</td>\r\n" + 
             "</tr>\r\n" + 
             "<tr>\r\n" + 
-            "<td>Password</td>\r\n" + 
+            "<td>Username TEST</td>\r\n" + 
+            "<td><input type=\"text\" name=\"username\" value=\"testing\"/>" +
+            "</td>\r\n" + 
+            "</tr>\r\n" + 
+            "<tr>\r\n" + 
+            "<td>Password TEST</td>\r\n" + 
             "<td><input type=\"password\" name=\"password\" " +
-            "value=\"password_val\"/></td>\r\n" + 
+            "value=\"g00gl3\"/></td>\r\n" + 
             "</tr>\r\n";
     Map configMap = new HashMap();
-    configMap.put("foo", "foo_val");
-    configMap.put("bar", "http://xyz");
-    configMap.put("password", "password_val");
+    configMap.put("sharepointUrl", "http://entpoint05.corp.google.com/unittest");
+    configMap.put("domain", "ent-qa-d3");
+    configMap.put("username", "testing");
+    configMap.put("password", "g00gl3");
     
     ConfigureResponse response = sharepointConnectorType.getPopulatedConfigForm
         (configMap, new Locale("test"));
-    System.out.println(response.getMessage() + "\n" + 
-        response.getFormSnippet());
     Assert.assertEquals(expected, response.getFormSnippet());    
   }
   
   public void testValidateConfigRequiredField() {
-    String expectedMessage = "Required field not specified: Foo";
+    String expectedMessage = "Required field not specified: Domain TEST";
+    String expectedFormSnippet = "<tr>\r\n" + 
+    "<td>SharepointUrl TEST</td>\r\n" + 
+    "<td><input type=\"text\" " +
+    "value=\"http://entpoint05.corp.google.com/unittest\" " +
+    "name=\"sharepointUrl\"/></td>\r\n"
+    + "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td><font color=red>Domain TEST</font></td>\r\n" + 
+    "<td><input type=\"text\" name=\"domain\"/>" +
+    "</td>\r\n" + 
+    "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td>Username TEST</td>\r\n" + 
+    "<td><input type=\"text\" value=\"testing\" name=\"username\"/>" +
+    "</td>\r\n" + 
+    "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td>Password TEST</td>\r\n" + 
+    "<td><input type=\"password\" name=\"password\"" +
+    "/></td>\r\n" + 
+    "</tr>\r\n";
     Map configMap = new HashMap();
-    configMap.put("foo", "");
-    configMap.put("bar", "http://xyz.com");
-    configMap.put("password", "password_val");
+    configMap.put("sharepointUrl", "http://entpoint05.corp.google.com/unittest");
+    configMap.put("domain", "");
+    configMap.put("username", "testing");
+    configMap.put("password", "g00gl3");    
     ConfigureResponse response = 
       sharepointConnectorType.validateConfig(configMap, new Locale("test"));
-    System.out.println(response.getMessage() + "\n" + 
-        response.getFormSnippet());
     Assert.assertEquals(expectedMessage, response.getMessage());
+    Assert.assertEquals(expectedFormSnippet, response.getFormSnippet());
   }
   
   public void testValidateConfigFQDN() {
-    String expectedMessage = "The Bar must contain a fully qualified domain name. Please check the Bar value.";
+    String expectedMessage = "The SharepointUrl TEST must contain a fully " +
+    		"qualified domain name. Please check the SharepointUrl TEST value.";
+    String expectedFormSnippet = "<tr>\r\n" + 
+    "<td><font color=red>SharepointUrl TEST</font></td>\r\n" + 
+    "<td><input type=\"text\" " +
+    "name=\"sharepointUrl\"/></td>\r\n"
+    + "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td>Domain TEST</td>\r\n" + 
+    "<td><input type=\"text\" value=\"ent-qa-d3\" name=\"domain\"/>" +
+    "</td>\r\n" + 
+    "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td>Username TEST</td>\r\n" + 
+    "<td><input type=\"text\" value=\"\" name=\"username\"/>" +
+    "</td>\r\n" + 
+    "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td>Password TEST</td>\r\n" + 
+    "<td><input type=\"password\" name=\"password\"" +
+    "/></td>\r\n" + 
+    "</tr>\r\n";
     Map configMap = new HashMap();
-    configMap.put("foo", "foo_val");
-    configMap.put("bar", "http://");
-    configMap.put("password", "password_val");
+    configMap.put("sharepointUrl", "http://a");
+    configMap.put("domain", "ent-qa-d3");
+    configMap.put("username", "");
+    configMap.put("password", "g00gl3");     
     ConfigureResponse response = 
       sharepointConnectorType.validateConfig(configMap, new Locale("test"));
-    System.out.println(response.getMessage() + "\n" + 
-        response.getFormSnippet());
     Assert.assertEquals(expectedMessage, response.getMessage());
+    Assert.assertEquals(expectedFormSnippet, response.getFormSnippet());
+  }
+  
+  public void testValidateConfigConnectivity() {
+    String expectedMessage = "Cannot connect to the given SharepointUrl TEST with the supplied Domain TEST/Username TEST/Password TEST. Please re-enter.";
+    String expectedFormSnippet = "<tr>\r\n" + 
+    "<td><font color=red>SharepointUrl TEST</font></td>\r\n" + 
+    "<td><input type=\"text\" " +
+    "name=\"sharepointUrl\"/></td>\r\n"
+    + "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td><font color=red>Domain TEST</font></td>\r\n" + 
+    "<td><input type=\"text\" name=\"domain\"/>" +
+    "</td>\r\n" + 
+    "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td><font color=red>Username TEST</font></td>\r\n" + 
+    "<td><input type=\"text\" name=\"username\"/>" +
+    "</td>\r\n" + 
+    "</tr>\r\n" + 
+    "<tr>\r\n" + 
+    "<td><font color=red>Password TEST</font></td>\r\n" + 
+    "<td><input type=\"password\" name=\"password\"" +
+    "/></td>\r\n" + 
+    "</tr>\r\n";
+    Map configMap = new HashMap();
+    configMap.put("sharepointUrl", "http://entpoint.corp.google.com/Marketing");
+    configMap.put("domain", "ent-qa-d3");
+    configMap.put("username", "testing");
+    configMap.put("password", "g00gl3");     
+    ConfigureResponse response = 
+      sharepointConnectorType.validateConfig(configMap, new Locale("test"));
+    Assert.assertEquals(expectedMessage, response.getMessage());
+    Assert.assertEquals(expectedFormSnippet, response.getFormSnippet());
   }
 }
