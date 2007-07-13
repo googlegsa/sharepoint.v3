@@ -192,7 +192,7 @@ public class SharepointConnectorType implements ConnectorType {
   }
   
   private String getErrorMessage(String configKey, String val, 
-        ResourceBundle rb) {    
+      ResourceBundle rb) {    
     if (val == null || val.length() == 0) {
       return rb.getString(REQ_FIELDS_MISSING) + " " + configKey;
     }      
