@@ -14,8 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint;
 
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SharepointException;
+import com.google.enterprise.connector.sharepoint.client.SiteDataWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 import com.google.enterprise.connector.spi.ConnectorType;
+import com.google.enterprise.connector.spi.RepositoryException;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +30,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -46,10 +51,22 @@ public class SharepointConnectorType implements ConnectorType {
   private static final String TD_START = "<td>";
   private static final String TR_START = "<tr>\r\n";
   
+  private static final String USERNAME = "username";
+  private static final String DOMAIN = "domain";
+  private static final String SHAREPOINT_URL = "sharepointUrl";
+  
+  private String sharepointUrl = null;
+  private String domain = null ;
+  private String username = null;
+  private String password = null;
+  
   private static final String REQ_FIELDS_MISSING = 
     "Field_Is_Required";
   private static final String REQ_FQDN_URL = 
-    "Url_Must_Be_Fully_Qualified";
+    "Url_Entered_Should_Be_Fully_Qualified";
+  private static final String CANNOT_CONNECT ="Cannot_Connect";
+  
+  
   
   private List keys = null;
   private Set keySet = null;
@@ -161,21 +178,68 @@ public class SharepointConnectorType implements ConnectorType {
     buf.append(attrValue);
     buf.append("\"");
   }
-
+  
+  private void setSharepointCredentials(String key, String val) {
+    if (key.equalsIgnoreCase(USERNAME)) {
+      username = val;
+    } else if (key.equalsIgnoreCase(DOMAIN)) {
+      domain = val;
+    } else if (key.equalsIgnoreCase(PASSWORD)) {
+      password = val;
+    } else if (key.equalsIgnoreCase(SHAREPOINT_URL)) {
+      sharepointUrl = val;
+    }
+  }
+  
+  private String getErrorMessage(String configKey, String val, 
+      ResourceBundle rb) {    
+    if (val == null || val.length() == 0) {
+      return rb.getString(REQ_FIELDS_MISSING) + " " + configKey;
+    }      
+    if (val.startsWith("http://") && !val.contains(".")) {
+       return rb.getString(REQ_FQDN_URL);      
+    }
+    return null;    
+  }
+  
+  private String checkConnectivity() {
+    SharepointClientContext sharepointClientContext = new 
+        SharepointClientContext(sharepointUrl, domain, username, 
+        password, null);
+    try {
+      SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
+      siteDataWS.getAllChildrenSites();
+    } catch (SharepointException e) {      
+      LOGGER.log(Level.INFO, e.toString());
+      return CANNOT_CONNECT;
+    } catch (RepositoryException e) {              
+      LOGGER.log(Level.INFO, e.toString());      
+      return CANNOT_CONNECT;
+    }         
+    return null;
+  }
+  
   /**
    * Validates a given map, i.e., checks if a value if null or zero length.
    * It also checks if the value is a url, then it should be fully qualified.
    * @param configData Map of keys and values
    * @return message string depending on the validation.
    */
-  private boolean validateConfigMap(Map configData) {
+  private boolean validateConfigMap(Map configData, ResourceBundle rb) {
+    String message;
     for (Iterator i = keys.iterator(); i.hasNext();) {
       String key = (String) i.next();
       String val = (String) configData.get(key);
-      if (val == null || val.length() == 0) {
+      setSharepointCredentials(key, val);
+      message = getErrorMessage(key, val , rb);
+      if (message != null) {
         return false;
-      }      
-      if (val.startsWith("http://") && !val.contains(".")) {
+      }
+    }
+    if ((sharepointUrl != null) && (domain != null) && (username != null) 
+        && (password !=null)) {
+      message = checkConnectivity();
+      if (message != null) {
         return false;
       }
     }
@@ -185,19 +249,19 @@ public class SharepointConnectorType implements ConnectorType {
   private ConfigureResponse makeValidatedForm(Map configMap, ResourceBundle rb) 
       {
     StringBuffer buf = new StringBuffer(2048);   
-    String message = "";
+    String message = null;
+    String finalMessage = null;   
     for (Iterator i = keys.iterator(); i.hasNext();) {
       String key = (String) i.next();
       String configKey = configStrings.get(key);
-
       String value = (String) configMap.get(key);
-      if (value == null || value.length() == 0) {
-        message = rb.getString(REQ_FIELDS_MISSING) + " " + configKey;
+      message = null;
+      if (finalMessage == null) {
+        message = getErrorMessage(configKey, value, rb);
+        finalMessage = message;
       }      
-      if (value.startsWith("http://") && !value.contains(".")) {
-        message = rb.getString(REQ_FQDN_URL);
-      }
-      if (message.equals("")) {
+      setSharepointCredentials(key, value);            
+      if (message == null) {
         appendStartRow(buf, configKey, false);
         buf.append(OPEN_ELEMENT);
         buf.append(INPUT);
@@ -220,6 +284,28 @@ public class SharepointConnectorType implements ConnectorType {
       appendAttribute(buf, NAME, key);
       appendEndRow(buf);
     }
+    
+    if (finalMessage == null) {
+      finalMessage = rb.getString(checkConnectivity());  
+      if (finalMessage != null) {
+        buf.setLength(0);
+        for (Iterator i = keys.iterator(); i.hasNext();) {
+          String key = (String) i.next();
+          String configKey = configStrings.get(key);
+          String value = (String) configMap.get(key);                     
+          appendStartRow(buf, configKey, true);
+          buf.append(OPEN_ELEMENT);
+          buf.append(INPUT);
+          if (key.equalsIgnoreCase(PASSWORD)) {
+            appendAttribute(buf, TYPE, PASSWORD);
+          } else {
+            appendAttribute(buf, TYPE, TEXT);           
+          }
+          appendAttribute(buf, NAME, key);
+          appendEndRow(buf);
+        }
+      }
+    } 
 
     // toss in all the stuff that's in the map but isn't in the keyset
     // taking care to list them in alphabetic order (this is mainly for
@@ -237,7 +323,7 @@ public class SharepointConnectorType implements ConnectorType {
         buf.append("\"/>\r\n");
       }
     }      
-    return new ConfigureResponse(message, buf.toString());
+    return new ConfigureResponse(finalMessage, buf.toString());
   }
   
   public ConfigureResponse getConfigForm(Locale locale) {
@@ -261,7 +347,7 @@ public class SharepointConnectorType implements ConnectorType {
   public ConfigureResponse validateConfig(Map configData, Locale locale) {
     ResourceBundle rb = ResourceBundle.getBundle("SharepointResources", locale);
     setConfigStrings(rb);
-    if (validateConfigMap(configData)) {
+    if (validateConfigMap(configData, rb)) {
       // all is ok
       return null;
     }
