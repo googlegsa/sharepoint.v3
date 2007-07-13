@@ -204,7 +204,7 @@ public class SharepointConnectorType implements ConnectorType {
   
   private String checkConnectivity() {
     SharepointClientContext sharepointClientContext = new 
-    SharepointClientContext(sharepointUrl, domain, username, 
+        SharepointClientContext(sharepointUrl, domain, username, 
         password, null);
     try {
       SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
