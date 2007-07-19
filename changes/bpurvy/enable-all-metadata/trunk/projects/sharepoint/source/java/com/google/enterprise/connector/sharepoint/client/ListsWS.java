@@ -35,7 +35,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -382,7 +381,7 @@ public class ListsWS {
         Iterator<OMElement> resultIt = resultOmElement.getChildElements();
         OMElement dataOmElement = resultIt.next();
         for (Iterator<OMElement> dataIt = dataOmElement.getChildElements();
-        dataIt.hasNext(); ) {
+            dataIt.hasNext(); ) {
           OMElement rowOmElement = dataIt.next();  
           if (rowOmElement.getAttribute(new QName("ows_FileRef")) != null) {
             String docId = rowOmElement.getAttribute(
@@ -484,23 +483,13 @@ public class ListsWS {
    * @param arrayOfMetaInfo array of strings derived from ows_metaInfo
    */
   private void setDocLibMetadata(SPDocument doc, String[] arrayOfMetaInfo) {
-    boolean bobs = false;
     for (String meta : arrayOfMetaInfo) {
       String[] parts = meta.split(":");
       if (parts.length < 2) continue;
       String value = getMetadataContent(meta);
       if (value.length() > 0) {
         doc.setAttribute(parts[0].trim(), value);
-        System.out.println("Extra metadata " + parts[0].trim() + "=" +
-            value + "(meta was '" + meta + "')");
-        if (value.equals("SomeBobData")) {
-          bobs = true;
-        }
       }
-    }
-    if (bobs) {
-      System.out.println("***SomeBobData:");
-      doc.dumpAllAttrs();
     }
   }
 }

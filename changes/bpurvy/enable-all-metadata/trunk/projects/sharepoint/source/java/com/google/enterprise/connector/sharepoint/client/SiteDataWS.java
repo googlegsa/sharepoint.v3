@@ -48,12 +48,6 @@ public class SiteDataWS {
     throws SharepointException, RepositoryException {
     this.sharepointClientContext = sharepointClientContext;
     String siteName = sharepointClientContext.getsiteName();
-    try {
-    String esc = Util.getEscapedSiteName(siteName);
-    } catch (ExceptionInInitializerError e) {
-      e.printStackTrace();
-      
-    }
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
         sharepointClientContext.getPort() +
         Util.getEscapedSiteName(sharepointClientContext.getsiteName()) 

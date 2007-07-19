@@ -158,7 +158,6 @@ public class ViewsWS {
             if (inViewFields &&
                 reader.getName().getLocalPart().equals("FieldRef")) {
               listItems.add(reader.getAttributeValue(0));
-              System.out.println("added " + reader.getAttributeValue(0));
             }
           } else if (reader.isEndElement()) {
             if (inViewFields) {
