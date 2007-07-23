@@ -15,6 +15,10 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import java.util.Calendar;
+import java.util.Iterator;
+
+import javax.management.Attribute;
+import javax.management.AttributeList;
 
 /**
  * Class to hold data regarding a sharepoint document.
@@ -29,6 +33,13 @@ public class SPDocument implements Comparable<SPDocument>{
   private Calendar lastMod;
   private String author = NO_AUTHOR;
   private String objType = NO_OBJ_TYPE;
+  
+  // open-ended dictionary of metadata beyond the above:
+  /**
+   * A guess as to how many attributes we should allow for initially
+   */
+  private static final int initialAttrListSize = 5;
+  private AttributeList attrs = new AttributeList(initialAttrListSize);
   
   public SPDocument(String docId, String url, Calendar lastMod) {
     this.docId = docId;
@@ -55,7 +66,27 @@ public class SPDocument implements Comparable<SPDocument>{
 
   public String getUrl() {
     return url;
-  }      
+  }   
+  
+  public AttributeList getAllAttrs() {
+    return attrs;
+  }
+  
+  // debug routine
+  public void dumpAllAttrs() {
+    for (Iterator<Attribute> iter=attrs.iterator(); iter.hasNext(); ) {
+      Attribute attr = iter.next();
+      System.out.println(attr.getName() + "=" + attr.getValue());
+    }
+  }
+  /**
+   * Set an attribute which may not be one of the named ones listed above
+   * @param key
+   * @param value
+   */
+  public void setAttribute(String key, String value) {
+    attrs.add(new Attribute(key, value));
+  }
   
   public String getAuthor() {
     return author;

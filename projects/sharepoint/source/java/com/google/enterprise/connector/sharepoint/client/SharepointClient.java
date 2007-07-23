@@ -221,7 +221,7 @@ public class SharepointClient {
         
         listState.setCrawlQueue(listItems);
             logger.info("found " + listItems.size() + " items to crawl in "
-            + siteName);               
+            + listState.getUrl());               
         listState.dumpCrawlQueue();
       }
     } catch (SharepointException e) {

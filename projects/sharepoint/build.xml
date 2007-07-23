@@ -30,7 +30,7 @@
   <property name="lib.jar.dir" value="lib"/>
   <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}"/>
   <property name="junit.jarfile" value="${lib.jar.dir}/junit.jar"/>
-  <property name="tests.jarfile" value="${spi.jar.dir}/connector_tests.jar"/>
+  <property name="tests.jarfile" value="${connector-manager.dir}/../install/connector-manager/jarfile/connector_tests.jar"/>
   <property name="downloads.dir" value="downloads"/>
   <!-- =========================== TASKS =============================== -->
   <target name="sharepoint-connector" depends="init, compile, jar,
@@ -84,7 +84,7 @@
       debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}">
       <classpath>
         <pathelement location="${spi.jar.dir}/connector.jar"/>
-        <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
+        <pathelement location="${tests.jarfile}"/>
         <pathelement location="${spi.jarfile}"/>
         <pathelement location="${config}"/>
         <pathelement location="${classes}"/>
@@ -100,7 +100,7 @@
       <classpath>
         <pathelement location="${spi.jar.dir}/connector.jar"/>
         <pathelement location="${spi.jar.dir}/connector_spi.jar"/>
-        <pathelement location="${spi.jar.dir}/connector_tests.jar"/>
+        <pathelement location="${tests.jarfile}"/>
         <pathelement location="${spi.jar.dir}/connector_util.jar"/>
         <pathelement location="${jarfile}"/>
         <pathelement location="${config}"/>

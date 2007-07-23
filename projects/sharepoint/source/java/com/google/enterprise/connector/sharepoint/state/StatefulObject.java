@@ -1,4 +1,4 @@
-//Copyright 2006 Google Inc.
+//Copyright 2007 Google Inc.
 
 package com.google.enterprise.connector.sharepoint.state;
 
@@ -65,7 +65,6 @@ public interface StatefulObject extends Comparable {
   public String getLastModString();
   
   public void setLastMod(DateTime lastMod);
-  
 
   /**
    * Get the "existing" state.  This is intended for use in traversal, to
@@ -81,4 +80,4 @@ public interface StatefulObject extends Comparable {
    */  
   public void setExisting(boolean existing);
   
-  }
+}

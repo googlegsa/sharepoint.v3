@@ -58,7 +58,6 @@ public class SharepointClientTest extends TestCase {
             pm.getProperty(SpiConstants.PROPNAME_CONTENTURL);
         Property searchUrlProp = 
             pm.getProperty(SpiConstants.PROPNAME_SEARCHURL);                
-        Property authorProp = pm.getProperty(Util.AUTHOR);
         Property listGuidProp = pm.getProperty(Util.LIST_GUID);
         System.out.println("<document>");
         System.out.println("<docId>" + docProp.getValue().getString() + 
@@ -69,10 +68,6 @@ public class SharepointClientTest extends TestCase {
             contentUrlProp.getValue().getString() + "</contentUrl>");
         System.out.println("<lastModify>" + 
             lastModProp.getValue().getDate().getTime() + "</lastModify>");
-        if (authorProp != null) {
-          System.out.println("<author>" + authorProp.getValue().getString() +
-              "</author>");
-        }
         System.out.println("<listGuid>" + listGuidProp.getValue().getString() +
             "</listguid>");  
         System.out.println("</document>");

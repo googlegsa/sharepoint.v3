@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.generated.ListsStub;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetAttachmentCollection;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItemChanges;
 import com.google.enterprise.connector.sharepoint.generated.ListsStub.GetListItems;
+import com.google.enterprise.connector.sharepoint.generated.ListsStub.ViewFields_type14;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SimpleValue;
 
@@ -26,6 +27,7 @@ import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.OMFactory;
+import org.apache.axiom.om.OMNamespace;
 import org.apache.axis2.AxisFault;
 
 import java.rmi.RemoteException;
@@ -35,6 +37,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
 
@@ -47,6 +51,97 @@ public class ListsWS {
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private ListsStub stub;
+  private ViewsWS viewsWS;
+
+  /**
+   * The "blacklist" is the SharePoint meta attributes that we will NOT
+   * pass to the GSA. (these all come from the ows_metaInfo attribute, which
+   * actually encodes a large number of other attributes).
+   * Note that these can be regular expressions, in order to catch
+   * 1;#Subject and 2;#Subject
+   * 
+   * Also note that these are just one person's opinion about the metadata you
+   * probably don't want.  Feel free to add or remove items.
+   */
+  private static final ArrayList<Pattern> blacklist;
+  static {
+    blacklist = new ArrayList<Pattern>();
+    blacklist.add(Pattern.compile(".*vti_cachedcustomprops$"));
+    blacklist.add(Pattern.compile(".*vti_parserversion$"));
+    blacklist.add(Pattern.compile(".*ContentType$"));
+    blacklist.add(Pattern.compile(".*vti_cachedtitle$"));
+    blacklist.add(Pattern.compile(".*ContentTypeId$"));
+    blacklist.add(Pattern.compile(".*DocIcon$"));
+    blacklist.add(Pattern.compile(".*vti_cachedhastheme$"));
+    blacklist.add(Pattern.compile(".*vti_metatags$"));
+    blacklist.add(Pattern.compile(".*vti_charset$"));
+    blacklist.add(Pattern.compile(".*vti_cachedbodystyle$"));
+    blacklist.add(Pattern.compile(".*vti_cachedneedsrewrite$"));
+  }
+  
+  /**
+   * The "whitelist" is SharePoint meta attributes that we WILL
+   * pass to the GSA but will treat specially, so they should not be swept
+   * up into the 'attrs'.
+   * There is no operational difference between blacklist and whitelist;
+   * in both cases the attributes are not passed to the GSA.
+   */
+  private static final ArrayList<Pattern> whitelist;
+  static {
+    whitelist = new ArrayList<Pattern>();
+    whitelist.add(Pattern.compile(".*vti_title$"));
+    whitelist.add(Pattern.compile(".*vti_author$"));
+  }
+  
+  /**
+   * Determine if any entry in a given List matches the given input
+   * @param list
+   * @param input
+   * @return boolean
+   */
+  private static boolean listMatches(List<Pattern> list, String input) {
+    for (Pattern pattern: list) {
+      Matcher matcher = pattern.matcher(input);
+      if (matcher.matches()) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  /**
+   * Extract the meaningful part of a meaningful metadata string. The two
+   * "meaningful"s signify, for an example "BobAdditional:SW|SomeBobData"
+   * 1) name: BobAdditional
+   * 2) value: SomeBobData
+   *   because "BobAdditional" is neither in the blacklist nor the whitelist
+   *   The "SW|" is discarded as type info (we treat everything as strings).
+   * example: "vti_author:SW|Bob" returns null, because vti_author
+   *   matches an entry in the whitelist.
+   * example "_Category:SW|" returns "" because there's nothing after
+   *   the "|".
+   * @param meta
+   * @return value, or empty string if none
+   */
+  private static String getMetadataContent(String meta) {
+    String[] parts = meta.split(":");
+    if (parts.length < 2) return "";
+    String name = parts[0].trim();
+    if (!listMatches(blacklist, name) && !listMatches(whitelist, name)) {
+      String value = parts[1].trim();
+      int ix = value.indexOf('|');
+      if (ix >= 0) {
+        if (ix < value.length()) {
+          return value.substring(ix+1);
+        } else {
+          return "";
+        }
+      } else {
+        return value;
+      }
+    }
+    return "";
+  }
   
   public ListsWS(SharepointClientContext sharepointClientContext) 
       throws SharepointException, RepositoryException {
@@ -58,6 +153,7 @@ public class ListsWS {
     try {
       stub = new ListsStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
+      viewsWS = new ViewsWS(sharepointClientContext);
     } catch (AxisFault e) {
       throw new SharepointException(e.toString());        
     }
@@ -75,10 +171,36 @@ public class ListsWS {
   try {
     stub = new ListsStub(endpoint);
     sharepointClientContext.setStubWithAuth(stub, endpoint);
+    viewsWS = new ViewsWS(sharepointClientContext);
   } catch (AxisFault e) {
     throw new SharepointException(e.toString());
   }     
 }
+  
+  private ViewFields_type14 makeViewFields(String listName)
+      throws SharepointException {
+    List<String> viewFieldStrings = viewsWS.getViewFields(listName);
+    if (viewFieldStrings == null) {
+      return null;
+    }
+    OMFactory factory = OMAbstractFactory.getOMFactory();
+    OMNamespace ms = factory.createOMNamespace(
+        "http://schemas.microsoft.com/sharepoint/soap/", "ms");
+
+    OMElement root = factory.createOMElement("ViewFields", ms);
+    OMElement subRoot = factory.createOMElement("viewFields", ms);
+    OMElement childTest = factory.createOMElement("FieldRef", ms);
+    ViewFields_type14 viewFields = new ListsStub.ViewFields_type14();
+    for (String fieldName:viewFieldStrings) {
+      OMElement field = factory.createOMElement("FieldRef", ms);
+      field.addAttribute("Name", fieldName, ms);
+      subRoot.addChild(field);
+    }
+
+    childTest.addAttribute("Name", "Author", ms);
+    viewFields.setExtraElement(subRoot);
+    return viewFields;
+  }
   
   /**
    * Gets all the list items of a particular list
@@ -184,11 +306,11 @@ public class ListsWS {
     ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
     String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" + 
     sharepointClientContext.getPort() 
-    + sharepointClientContext.getsiteName() + "/" + "Lists" + "/" 
-    + list.getTitle() + "/" + "DispForm.aspx?ID=";
+        + sharepointClientContext.getsiteName() + "/" + "Lists" + "/" 
+        + list.getTitle() + "/" + "DispForm.aspx?ID=";
     ListsStub.GetListItemChanges req = new ListsStub.GetListItemChanges();
     req.setListName(listName);
-    req.setViewFields(null);   
+    req.setViewFields(makeViewFields(list.getInternalName()));  
     if (since != null) {
       req.setSince(SimpleValue.calendarToIso8601(since));
     } else {
@@ -207,7 +329,6 @@ public class ListsWS {
         for (Iterator<OMElement> dataIt = dataOmElement.getChildElements();
             dataIt.hasNext(); ) {
           OMElement rowOmElement = dataIt.next();            
-          
           String docId = rowOmElement.getAttribute(
               new QName("ows_UniqueId")).getAttributeValue();
           String itemId = rowOmElement.getAttribute(
@@ -217,7 +338,7 @@ public class ListsWS {
           url.append(itemId);                                
           SPDocument doc;
           doc = new SPDocument(docId, url.toString(), list.getLastMod());
-          listItems.add(doc);                                  
+          listItems.add(doc);
         }
       }
       Collections.sort(listItems);
@@ -243,7 +364,7 @@ public class ListsWS {
     sharepointClientContext.getPort() + "/";
     ListsStub.GetListItemChanges req = new ListsStub.GetListItemChanges();
     req.setListName(listName);
-    req.setViewFields(null);   
+    req.setViewFields(makeViewFields(list.getInternalName()));   
     if (since != null) {
       req.setSince(SimpleValue.calendarToIso8601(since));
     } else {
@@ -261,7 +382,7 @@ public class ListsWS {
         OMElement dataOmElement = resultIt.next();
         for (Iterator<OMElement> dataIt = dataOmElement.getChildElements();
             dataIt.hasNext(); ) {
-          OMElement rowOmElement = dataIt.next();            
+          OMElement rowOmElement = dataIt.next();  
           if (rowOmElement.getAttribute(new QName("ows_FileRef")) != null) {
             String docId = rowOmElement.getAttribute(
                 new QName("ows_UniqueId")).getAttributeValue();  
@@ -280,24 +401,14 @@ public class ListsWS {
             url.append(fileName);    
             String metaInfo = rowOmElement.getAttribute(
                 new QName("ows_MetaInfo")).getAttributeValue();
-            String objType = rowOmElement.getAttribute(
-                new QName("ows_FSObjType")).getAttributeValue();
-            String[] arrayOfMetaInfo = metaInfo.split("\n");
-            String author = null;
-            for (String authorMeta : arrayOfMetaInfo) {
-              if (authorMeta.startsWith("vti_author")) {
-                author = authorMeta.substring
-                    (authorMeta.indexOf(":") + 1).trim();                                
-              }
-            }            
             try {
               SPDocument doc;
               doc = new SPDocument(docId, url.toString(), 
                   Util.listItemChangesStringToCalendar(lastModified));
-              doc.setObjType(objType);
-              if (author != null) {
-                doc.setAuthor(author);
-              }
+ 
+              // gather up the rest of the metadata:
+              String[] arrayOfMetaInfo = metaInfo.split("\n|\r\n");
+              setDocLibMetadata(doc, arrayOfMetaInfo);
               listItems.add(doc);
             } catch (ParseException e) {
               throw new SharepointException(e.toString(), e);
@@ -359,5 +470,26 @@ public class ListsWS {
       throw new SharepointException(e.toString(), e);
     }
     return listAttachments;
+  }
+  
+  /**
+   * Collect all "interesting" metadata for an item from a Document Library
+   * described in a GetListItemsChanges WSDL call.
+   * Do not collect items which are
+   * either already dealt with (the whitelist) or the ones we're configured
+   * to not care about (the blacklist).  whitelist and blacklist are
+   * static sets in this module, so changes should be made there, not here.
+   * @param doc SPDocument
+   * @param arrayOfMetaInfo array of strings derived from ows_metaInfo
+   */
+  private void setDocLibMetadata(SPDocument doc, String[] arrayOfMetaInfo) {
+    for (String meta : arrayOfMetaInfo) {
+      String[] parts = meta.split(":");
+      if (parts.length < 2) continue;
+      String value = getMetadataContent(meta);
+      if (value.length() > 0) {
+        doc.setAttribute(parts[0].trim(), value);
+      }
+    }
   }
 }
