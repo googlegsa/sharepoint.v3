@@ -195,6 +195,12 @@ public class Util {
       if (authorProp != null) {
         doc.setAuthor(authorProp.getValue().getString());
       }
+      
+      // get the "extra" metadata fields, including those added by user:
+      for (Iterator iter = map.getProperties(); iter.hasNext(); ) {
+        Property prop = (Property) iter.next();
+        doc.setAttribute(prop.getName(), prop.getValue().getString());
+      }
       return doc;
     } catch (IllegalArgumentException e) {
       throw new RepositoryException(e.toString());

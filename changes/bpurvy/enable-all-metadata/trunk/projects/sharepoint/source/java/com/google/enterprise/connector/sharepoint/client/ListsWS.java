@@ -51,7 +51,7 @@ public class ListsWS {
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private ListsStub stub;
-  private ViewsWS viewsStub;
+  private ViewsWS viewsWS;
 
   /**
    * The "blacklist" is the SharePoint meta attributes that we will NOT
@@ -153,7 +153,7 @@ public class ListsWS {
     try {
       stub = new ListsStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
-      viewsStub = new ViewsWS(sharepointClientContext);
+      viewsWS = new ViewsWS(sharepointClientContext);
     } catch (AxisFault e) {
       throw new SharepointException(e.toString());        
     }
@@ -171,7 +171,7 @@ public class ListsWS {
   try {
     stub = new ListsStub(endpoint);
     sharepointClientContext.setStubWithAuth(stub, endpoint);
-    viewsStub = new ViewsWS(sharepointClientContext);
+    viewsWS = new ViewsWS(sharepointClientContext);
   } catch (AxisFault e) {
     throw new SharepointException(e.toString());
   }     
@@ -179,7 +179,7 @@ public class ListsWS {
   
   private ViewFields_type14 makeViewFields(String listName)
       throws SharepointException {
-    List<String> viewFieldStrings = viewsStub.getViewFields(listName);
+    List<String> viewFieldStrings = viewsWS.getViewFields(listName);
     if (viewFieldStrings == null) {
       return null;
     }
