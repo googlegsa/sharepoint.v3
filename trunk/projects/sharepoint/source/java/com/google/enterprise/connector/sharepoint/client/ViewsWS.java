@@ -15,26 +15,18 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.enterprise.connector.sharepoint.generated.ViewsStub;
-import com.google.enterprise.connector.sharepoint.generated.ListsStub.ViewFields_type14;
-import com.google.enterprise.connector.sharepoint.generated.ViewsStub.GetView;
-import com.google.enterprise.connector.sharepoint.generated.ViewsStub.GetViewCollection;
-import com.google.enterprise.connector.sharepoint.generated.ViewsStub.GetViewResult_type0;
-import com.google.enterprise.connector.sharepoint.generated.ViewsStub.ViewFields_type37;
-import com.google.enterprise.connector.spi.SimpleValue;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
 
-import org.apache.axiom.om.OMAbstractFactory;
-import org.apache.axiom.om.OMAttribute;
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.OMFactory;
 import org.apache.axis2.AxisFault;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.rmi.RemoteException;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -49,17 +41,59 @@ public class ViewsWS {
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private ViewsStub stub;
+  private static Log logger = LogFactory.getLog(ViewsWS.class);
   
-  // experimental code: keep the list of available viewFields for each list
-  public static HashMap<String, ArrayList<String>> viewFields = 
+  /**
+   * cached list of available viewFields for each Sharepoint List
+   */ 
+  private static HashMap<String, ArrayList<String>> cachedViewFields = 
     new HashMap<String, ArrayList<String>>();
   
-  public static ViewFields_type14 getViewFields(String listName) {
-    List<String> fields = viewFields.get(listName);
-    if (fields == null) {
-      return null;
+  // special flag value for "there are no viewFields for this list"
+  private static final ArrayList<String> emptyViewFields = 
+      new ArrayList<String>();
+  
+  
+  /**
+   * Find the viewFields for this List. A non-obvious twist is, when a List
+   * has been previously set to null, meaning "there are no viewFields for this
+   * List," the special value emptyViewFields is returned. It should not cause
+   * an error to pass an empty viewFields to Sharepoint, but it's preferable
+   * to use null instead.
+   * @param listName
+   * @return viewFields that was previously set for this List. If return
+   * value is emptyViewFields, null should used instead.  A null return value
+   * means that no value has been set for this List. 
+   */
+  private static List<String>  getCachedViewFields(String listName) {
+    return cachedViewFields.get(listName);
+  }
+  
+  /**
+   * Remember the viewFields for this List.
+   * @param listName 
+   * @param viewFields  null is an acceptable value, meaning "there are no
+   * viewFields for this List."  A special flag value is substituted in this
+   * case.
+   */
+  private static void setCachedViewFields(String listName, 
+      ArrayList<String> viewFields) {
+    if (viewFields == null || viewFields.size() == 0) {
+      cachedViewFields.put(listName, emptyViewFields);
+    } else {
+      cachedViewFields.put(listName, viewFields);
     }
-    return null; // TODO(bpurvy): need to implement this
+  }
+  
+  public static void dumpCachedViewedFields() {
+    for (Iterator<Entry<String, ArrayList<String>>> iter = 
+        cachedViewFields.entrySet().iterator(); iter.hasNext(); ) {
+      Entry<String, ArrayList<String>> entry = iter.next();
+      System.out.println(entry.getKey() + "=");
+      for (String field : entry.getValue()) {
+        System.out.println("\t" + field);
+      }
+    }
   }
   
   public ViewsWS(SharepointClientContext sharepointClientContext)
@@ -92,10 +126,16 @@ public class ViewsWS {
    * Gets the viewFields for a given list. This is a partial (unfortunately!)
    * list of the metadata available for members of the list.
    * @param listName internal name of the list
-   * @return  List of the viewFields on this list
+   * @return  List of the viewFields on this list. If this has been fetched
+   *     from Sharepoint before, a cached copy will be returned.
    * @throws SharepointException
    */
-  public List<String> getViewNames(String listName) throws SharepointException {
+  public List<String> getViewFields(String listName) throws SharepointException {
+    System.out.println("getViewFields for " + listName);
+    List<String> listItemsCached = getCachedViewFields(listName);
+    if (listItemsCached == emptyViewFields) {
+      return null;
+    }
     ArrayList<String> listItems = new ArrayList<String>();
     String urlPrefix = "http://" + sharepointClientContext.getHost() + ":" +
         sharepointClientContext.getPort() + "/";
@@ -132,9 +172,17 @@ public class ViewsWS {
       }
 
     } catch (RemoteException e) {
-      throw new SharepointException(e.toString());
+      // not being able to get the viewFields should not stop things:
+      logger.error(e.toString());
+      
+      // remember, and don't keep hitting this List
+      setCachedViewFields(listName, null); 
+      return null;
     }
-    viewFields.put(listName, listItems);
+    setCachedViewFields(listName, listItems);
+    if (listItems.size() == 0) {
+      return null;
+    }
     return listItems;
   }
 

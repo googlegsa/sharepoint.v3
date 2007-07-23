@@ -1,17 +1,19 @@
-// Copyright 2006 Google Inc.
-package com.google.enterprise.connector.sharepoint.state;
+// Copyright 2007 Google Inc.
 
-import junit.framework.TestCase;
+package com.google.enterprise.connector.sharepoint.state;
 
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.SPDocument;
 import com.google.enterprise.connector.sharepoint.client.SharepointException;
 import org.joda.time.DateTime;
 
+import junit.framework.TestCase;
+
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+
 
 /**
  * Tests the GlobalState object. In most cases, it creates the object,
@@ -50,16 +52,16 @@ public class GlobalStateTest extends TestCase {
     try {
       String output = state.getStateXML();
       String expected1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
-            "<state>\n" + 
-            "<ListState id=\"foo\">\n" + 
-            "<lastMod>20070504T142925.499-0700</lastMod>\n" + 
-            "<URL/>\n" + 
-            "</ListState>\n" + 
-            "<ListState id=\"bar\">\n" + 
-            "<lastMod>20070504T142925.772-0700</lastMod>\n" + 
-            "<URL/>\n" + 
-            "</ListState>\n" + 
-            "</state>\n";
+          "<state>\n" + 
+          "<ListState id=\"foo\">\n" + 
+          "<lastMod>20070504T142925.499-0700</lastMod>\n" + 
+          "<URL/>\n" + 
+          "</ListState>\n" + 
+          "<ListState id=\"bar\">\n" + 
+          "<lastMod>20070504T142925.772-0700</lastMod>\n" + 
+          "<URL/>\n" + 
+          "</ListState>\n" + 
+          "</state>\n";
       System.out.println(output + "\n\n");
       assertEquals(expected1, output);
       state.saveState();
@@ -102,29 +104,29 @@ public class GlobalStateTest extends TestCase {
           new GregorianCalendar(2007, 1, 2));
       list2.setLastDocCrawled(doc2);
       String expected1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
-            "<state>\n" + 
-            "<current id=\"foo\" type=\"ListState\"/>\n" + 
-            "<ListState id=\"foo\">\n" + 
-            "<lastMod>20070504T144419.403-0700</lastMod>\n" + 
-            "<URL/>\n" + 
-            "<lastDocCrawled>\n" + 
-            "<document id=\"id1\">\n" + 
-            "<lastMod>20070201T000000.000-0800</lastMod>\n" + 
-            "<url>url1</url>\n" + 
-            "</document>\n" + 
-            "</lastDocCrawled>\n" + 
-            "</ListState>\n" + 
-            "<ListState id=\"bar\">\n" + 
-            "<lastMod>20070504T144419.867-0700</lastMod>\n" + 
-            "<URL/>\n" + 
-            "<lastDocCrawled>\n" + 
-            "<document id=\"id2\">\n" + 
-            "<lastMod>20070202T000000.000-0800</lastMod>\n" + 
-            "<url>url2</url>\n" + 
-            "</document>\n" + 
-            "</lastDocCrawled>\n" + 
-            "</ListState>\n" + 
-            "</state>\n";
+          "<state>\n" + 
+          "<current id=\"foo\" type=\"ListState\"/>\n" + 
+          "<ListState id=\"foo\">\n" + 
+          "<lastMod>20070504T144419.403-0700</lastMod>\n" + 
+          "<URL/>\n" + 
+          "<lastDocCrawled>\n" + 
+          "<document id=\"id1\">\n" + 
+          "<lastMod>20070201T000000.000-0800</lastMod>\n" + 
+          "<url>url1</url>\n" + 
+          "</document>\n" + 
+          "</lastDocCrawled>\n" + 
+          "</ListState>\n" + 
+          "<ListState id=\"bar\">\n" + 
+          "<lastMod>20070504T144419.867-0700</lastMod>\n" + 
+          "<URL/>\n" + 
+          "<lastDocCrawled>\n" + 
+          "<document id=\"id2\">\n" + 
+          "<lastMod>20070202T000000.000-0800</lastMod>\n" + 
+          "<url>url2</url>\n" + 
+          "</document>\n" + 
+          "</lastDocCrawled>\n" + 
+          "</ListState>\n" + 
+          "</state>\n";
       String output = state.getStateXML();
       System.out.println(output);
       assertEquals(expected1, output);
@@ -173,39 +175,39 @@ public class GlobalStateTest extends TestCase {
 
       String output = state.getStateXML();
       String expected1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
-            "<state>\n" + 
-            "<current id=\"foo\" type=\"ListState\"/>\n" + 
-            "<ListState id=\"foo\">\n" + 
-            "<lastMod>20070504T144419.403-0700</lastMod>\n" + 
-            "<URL/>\n" + 
-            "<lastDocCrawled>\n" + 
-            "<document id=\"id1\">\n" + 
-            "<lastMod>20070201T000000.000-0800</lastMod>\n" + 
-            "<url>url1</url>\n" + 
-            "</document>\n" + 
-            "</lastDocCrawled>\n" + 
-            "<crawlQueue>\n" + 
-            "<document id=\"id3\">\n" + 
-            "<lastMod>20070203T000000.000-0800</lastMod>\n" + 
-            "<url>url3</url>\n" + 
-            "</document>\n" + 
-            "<document id=\"id4\">\n" + 
-            "<lastMod>20070204T000000.000-0800</lastMod>\n" + 
-            "<url>url4</url>\n" + 
-            "</document>\n" + 
-            "</crawlQueue>\n" + 
-            "</ListState>\n" + 
-            "<ListState id=\"bar\">\n" + 
-            "<lastMod>20070504T144419.867-0700</lastMod>\n" + 
-            "<URL/>\n" + 
-            "<lastDocCrawled>\n" + 
-            "<document id=\"id2\">\n" + 
-            "<lastMod>20070202T000000.000-0800</lastMod>\n" + 
-            "<url>url2</url>\n" + 
-            "</document>\n" + 
-            "</lastDocCrawled>\n" + 
-            "</ListState>\n" + 
-            "</state>\n";
+          "<state>\n" + 
+          "<current id=\"foo\" type=\"ListState\"/>\n" + 
+          "<ListState id=\"foo\">\n" + 
+          "<lastMod>20070504T144419.403-0700</lastMod>\n" + 
+          "<URL/>\n" + 
+          "<lastDocCrawled>\n" + 
+          "<document id=\"id1\">\n" + 
+          "<lastMod>20070201T000000.000-0800</lastMod>\n" + 
+          "<url>url1</url>\n" + 
+          "</document>\n" + 
+          "</lastDocCrawled>\n" + 
+          "<crawlQueue>\n" + 
+          "<document id=\"id3\">\n" + 
+          "<lastMod>20070203T000000.000-0800</lastMod>\n" + 
+          "<url>url3</url>\n" + 
+          "</document>\n" + 
+          "<document id=\"id4\">\n" + 
+          "<lastMod>20070204T000000.000-0800</lastMod>\n" + 
+          "<url>url4</url>\n" + 
+          "</document>\n" + 
+          "</crawlQueue>\n" + 
+          "</ListState>\n" + 
+          "<ListState id=\"bar\">\n" + 
+          "<lastMod>20070504T144419.867-0700</lastMod>\n" + 
+          "<URL/>\n" + 
+          "<lastDocCrawled>\n" + 
+          "<document id=\"id2\">\n" + 
+          "<lastMod>20070202T000000.000-0800</lastMod>\n" + 
+          "<url>url2</url>\n" + 
+          "</document>\n" + 
+          "</lastDocCrawled>\n" + 
+          "</ListState>\n" + 
+          "</state>\n";
       System.out.println(output);
       assertEquals(expected1, output);
       state.saveState();
