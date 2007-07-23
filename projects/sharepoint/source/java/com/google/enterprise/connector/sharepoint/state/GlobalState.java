@@ -1,4 +1,5 @@
-// Copyright 2006 Google Inc.
+// Copyright 2007 Google Inc.
+
 package com.google.enterprise.connector.sharepoint.state;
 
 //
@@ -34,10 +35,10 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -59,10 +60,10 @@ import javax.xml.transform.stream.StreamResult;
  * As of May 2007, there is only one StatefulObject -- ListState.
  *
  * Classes:
- *    GlobalState.
+ *     GlobalState.
  * related classes:
- *   StatefulObject (interface)
- *   ListState (implements StatefulObject)
+ *     StatefulObject (interface)
+ *     ListState (implements StatefulObject)
  *
  */
 public class GlobalState {
@@ -140,7 +141,8 @@ public class GlobalState {
 
   /**
    * Convenience factory for clients who don't deal in Joda time.
-   * @param key
+   * @param key the "primary key" of the object. This would
+   * probably be the GUID.
    * @param lastModCal (Calendar, not Joda time)
    * @return new ListState which is already indexed in GlobalState's
    *     dateMap and keyMap
@@ -333,7 +335,7 @@ public class GlobalState {
   /**
    * Load from XML.
    * @param persisted - file name for the state file, which has already been
-   *  checked as to its existence.
+   *     checked as to its existence.
    */
   private void loadStateXML(File fileState) throws SharepointException {
     try {
@@ -390,14 +392,14 @@ public class GlobalState {
   /**
    * Load persistent state from our XML state
    * @throws SharepointException if the XML file can't be found, or is
-   * invalid in any way.
+   *     invalid in any way.
    */
   public void loadState() throws SharepointException {
     File f = getStateFileLocation();
     try {
       if (!f.exists()) {
-        logger.error("state file '" + f.getCanonicalPath() + 
-        "' does not exist");
+        logger.error("state file '" + f.getCanonicalPath()
+            + "' does not exist");
         return;
       }
       logger.info("loading state from " + f.getCanonicalPath());
@@ -430,7 +432,7 @@ public class GlobalState {
    * it "Existing" (if between startRecrawl() and endRecrawl())
    * @param ListState
    * @param time lastMod time for the List. If time is later than the existing
-   *  lastMod, the List is reindexed in the dateMap.
+   *     lastMod, the List is reindexed in the dateMap.
    */
   public void updateList(ListState state, DateTime time) {
     ListState stateOld = keyMap.get(state.getPrimaryKey());

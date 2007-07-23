@@ -38,8 +38,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.management.Attribute;
 
 /**
  * Class to hold random utility functions. 
@@ -157,7 +160,16 @@ public class Util {
       Property authorProp = new SimpleProperty(AUTHOR, 
           new SimpleValue(ValueType.STRING, doc.getAuthor()));    
       pm.put(AUTHOR, authorProp);
-    }    
+    } 
+    
+    // get the "extra" metadata fields, including those added by user:
+    for (Iterator<Attribute> iter=doc.getAllAttrs().iterator(); 
+        iter.hasNext(); ) {
+      Attribute attr = iter.next();
+      Property otherProp = new SimpleProperty(attr.getName(), 
+          attr.getValue().toString());
+      pm.put(attr.getName(), otherProp);
+    }
     return pm;
   }  
   
@@ -182,6 +194,12 @@ public class Util {
       Property authorProp = map.getProperty(Util.AUTHOR);
       if (authorProp != null) {
         doc.setAuthor(authorProp.getValue().getString());
+      }
+      
+      // get the "extra" metadata fields, including those added by user:
+      for (Iterator iter = map.getProperties(); iter.hasNext(); ) {
+        Property prop = (Property) iter.next();
+        doc.setAttribute(prop.getName(), prop.getValue().getString());
       }
       return doc;
     } catch (IllegalArgumentException e) {

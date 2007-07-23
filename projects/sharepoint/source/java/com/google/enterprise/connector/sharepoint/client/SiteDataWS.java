@@ -43,11 +43,11 @@ public class SiteDataWS {
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private SiteDataStub stub;
-  private ViewsWS viewsStub;
   
   public SiteDataWS(SharepointClientContext sharepointClientContext) 
     throws SharepointException, RepositoryException {
     this.sharepointClientContext = sharepointClientContext;
+    String siteName = sharepointClientContext.getsiteName();
     endpoint = "http://" + sharepointClientContext.getHost() + ":" + 
         sharepointClientContext.getPort() +
         Util.getEscapedSiteName(sharepointClientContext.getsiteName()) 
@@ -56,7 +56,6 @@ public class SiteDataWS {
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
-      viewsStub = new ViewsWS(sharepointClientContext);
     } catch (AxisFault e) {
       throw new SharepointException(e.toString());
     }     
@@ -75,7 +74,6 @@ public class SiteDataWS {
     try {
       stub = new SiteDataStub(endpoint);
       sharepointClientContext.setStubWithAuth(stub, endpoint);
-      viewsStub = new ViewsWS(sharepointClientContext);
     } catch (AxisFault e) {
       throw new SharepointException(e.toString());
     }     
