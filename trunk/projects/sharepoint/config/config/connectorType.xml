@@ -6,9 +6,16 @@
 		<property name="configKeys">
 			<list>
         <value>sharepointUrl</value>
+        <value>aliasHostName</value>
+        <value>aliasPort</value>
         <value>domain</value>
         <value>username</value>
         <value>password</value>
+        <value>mySiteBaseURL</value>
+        <value>includedURls</value>
+        <value>excludedURls</value>
+        
+
 			</list>
 		</property>
 	</bean>

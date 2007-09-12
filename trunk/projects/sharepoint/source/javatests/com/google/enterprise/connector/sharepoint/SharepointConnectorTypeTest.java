@@ -14,17 +14,19 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import com.google.enterprise.connector.spi.ConfigureResponse;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
+import com.google.enterprise.connector.spi.ConfigureResponse;
+/**
+ * @author amit_kagrawal
+ * */
 public class SharepointConnectorTypeTest extends TestCase {
 
   private List keys;
@@ -33,94 +35,155 @@ public class SharepointConnectorTypeTest extends TestCase {
    * @see junit.framework.TestCase#setUp()
    */
   protected void setUp() throws Exception {
-    keys = new ArrayList<String>();
+    keys = new ArrayList();
     keys.add("sharepointUrl");
     keys.add("domain");
-    keys.add("username");
     keys.add("password");
+    keys.add("username");
+    keys.add("excludedURls");
+    keys.add("includedURls");
+    keys.add("mySiteBaseURL");
+    keys.add("aliasHostName");
+    keys.add("aliasPort");
     sharepointConnectorType = new SharepointConnectorType();
     sharepointConnectorType.setConfigKeys(keys);
     super.setUp();
   }
 
   public void testGetConfigForm() { 
-    String expected = "<tr>\r\n" + 
-            "<td>SharepointUrl TEST</td>\r\n" + 
-            "<td><input type=\"text\" name=\"sharepointUrl\"/></td>\r\n" + 
-            "</tr>\r\n" + 
-            "<tr>\r\n" + 
-            "<td>Domain TEST</td>\r\n" + 
-            "<td><input type=\"text\" name=\"domain\"/></td>\r\n" + 
-            "</tr>\r\n" + 
-            "<tr>\r\n" +
-            "<td>Username TEST</td>\r\n" + 
-            "<td><input type=\"text\" name=\"username\"/></td>\r\n" + 
-            "</tr>\r\n" + 
-            "<tr>\r\n" + 
-            "<td>Password TEST</td>\r\n" + 
-            "<td><input type=\"password\" name=\"password\"/></td>\r\n" + 
-            "</tr>\r\n";
-    ConfigureResponse configureResponse = sharepointConnectorType
-        .getConfigForm(new Locale("test"));
+	 String expected="<tr>\r\n"
+		 +"<td><b>SharePoint Site URL*</b></td>\r\n"
+		 +"<td><input type=\"text\" name=\"sharepointUrl\"/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<tr>\r\n"
+		 +"<td><b>Domain*</b></td>\r\n"
+		 +"<td><input type=\"text\" name=\"domain\"/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<tr>\r\n"
+		 +"<td><b>Password*</b></td>\r\n"
+		 +"<td><input type=\"password\" type=\"text\" name=\"password\"/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<tr>\r\n"
+		 +"<td><b>Username*</b></td>\r\n"
+		 +"<td><input type=\"text\" name=\"username\"/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<tr>\r\n"
+		 +"<td>Do Not Include URLs Matching the Following Patterns</td>\r\n"
+		 +"<td><textarea rows=\"5\" cols=\"60\" name=\"excludedURls\"/></textarea/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<tr>\r\n"
+		 +"<td><b>Include URLs Matching the Following Patterns*</b></td>\r\n"
+		 +"<td><textarea rows=\"5\" cols=\"60\" name=\"includedURls\"/></textarea/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<tr>\r\n"
+		 +"<td>MySite URL</td>\r\n"
+		 +"<td><input type=\"text\" name=\"mySiteBaseURL\"/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<tr>\r\n"
+		 +"<td>SharePoint Site Alias Host Name</td>\r\n"
+		 +"<td><input type=\"text\" name=\"aliasHostName\"/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<tr>\r\n"
+		 +"<td>SharePoint Site Alias Port Number</td>\r\n"
+		 +"<td><input type=\"text\" name=\"aliasPort\"/></td>\r\n"
+		 +"</tr>\r\n"
+		 +"<b>Fields with (*) are Manadatory</b>"; 
+    
+    //ConfigureResponse configureResponse = sharepointConnectorType.getConfigForm(new Locale("test"));
+    ConfigureResponse configureResponse = sharepointConnectorType.getConfigForm(new Locale("en"));
     String initialConfigForm = configureResponse.getFormSnippet();
     Assert.assertEquals(expected, initialConfigForm);
   }
 
   public void testGetPopulatedConfigForm() {
-    String expected = "<tr>\r\n" + 
-            "<td>SharepointUrl TEST</td>\r\n" + 
-            "<td><input type=\"text\" name=\"sharepointUrl\" " +
-            "value=\"http://entpoint05.corp.google.com/unittest\"/></td>\r\n"
-            + "</tr>\r\n" + 
-            "<tr>\r\n" + 
-            "<td>Domain TEST</td>\r\n" + 
-            "<td><input type=\"text\" name=\"domain\" value=\"ent-qa-d3\"/>" +
-            "</td>\r\n" + 
-            "</tr>\r\n" + 
-            "<tr>\r\n" + 
-            "<td>Username TEST</td>\r\n" + 
-            "<td><input type=\"text\" name=\"username\" value=\"testing\"/>" +
-            "</td>\r\n" + 
-            "</tr>\r\n" + 
-            "<tr>\r\n" + 
-            "<td>Password TEST</td>\r\n" + 
-            "<td><input type=\"password\" name=\"password\" " +
-            "value=\"g00gl3\"/></td>\r\n" + 
-            "</tr>\r\n";
-    Map configMap = new HashMap();
-    configMap.put("sharepointUrl", "http://entpoint05.corp.google.com/unittest");
-    configMap.put("domain", "ent-qa-d3");
-    configMap.put("username", "testing");
-    configMap.put("password", "g00gl3");
+	  
+	  String expected="<tr>\r\n"
+		  +"<td><b>SharepointUrl TEST*</b></td>\r\n"
+		  +"<td><input type=\"text\" name=\"sharepointUrl\"/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<tr>\r\n"
+		  +"<td><b>Domain TEST*</b></td>\r\n"
+		  +"<td><input type=\"text\" name=\"domain\"/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<tr>\r\n"
+		  +"<td><b>Password TEST*</b></td>\r\n"
+		  +"<td><input type=\"password\" type=\"text\" name=\"password\" value=\"amit_kagrawal\"/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<tr>\r\n"
+		  +"<td><b>Username TEST*</b></td>\r\n"
+		  +"<td><input type=\"text\" name=\"username\"/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<tr>\r\n"
+		  +"<td>Do Not Include URLs Matching the Following Patterns</td>\r\n"
+		  +"<td><textarea rows=\"5\" cols=\"60\" name=\"excludedURls\"/></textarea/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<tr>\r\n"
+		  +"<td><b>Include URLs Matching the Following Patterns*</b></td>\r\n"
+		  +"<td><textarea rows=\"5\" cols=\"60\" name=\"includedURls\"/></textarea/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<tr>\r\n"
+		  +"<td>MySite URL</td>\r\n"
+		  +"<td><input type=\"text\" name=\"mySiteBaseURL\"/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<tr>\r\n"
+		  +"<td>SharePoint Site Alias Host Name</td>\r\n"
+		  +"<td><input type=\"text\" name=\"aliasHostName\"/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<tr>\r\n"
+		  +"<td>SharePoint Site Alias Port Number</td>\r\n"
+		  +"<td><input type=\"text\" name=\"aliasPort\"/></td>\r\n"
+		  +"</tr>\r\n"
+		  +"<b>Fields with (*) are Manadatory</b>"; 
     
-    ConfigureResponse response = sharepointConnectorType.getPopulatedConfigForm
-        (configMap, new Locale("test"));
+    Map configMap = new HashMap();
+    /*configMap.put("sharepointUrl", "http://entpoint05.corp.google.com/unittest");
+    configMap.put("domain", "ent-qa-d3");
+    configMap.put("username", "testing");*/
+    configMap.put("password", "amit_kagrawal");
+    
+    ConfigureResponse response = sharepointConnectorType.getPopulatedConfigForm(configMap, new Locale("test"));
     Assert.assertEquals(expected, response.getFormSnippet());    
   }
   
   public void testValidateConfigRequiredField() {
     String expectedMessage = "Required field not specified: Domain TEST";
-    String expectedFormSnippet = "<tr>\r\n" + 
-    "<td>SharepointUrl TEST</td>\r\n" + 
-    "<td><input type=\"text\" " +
-    "value=\"http://entpoint05.corp.google.com/unittest\" " +
-    "name=\"sharepointUrl\"/></td>\r\n"
-    + "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td><font color=red>Domain TEST</font></td>\r\n" + 
-    "<td><input type=\"text\" name=\"domain\"/>" +
-    "</td>\r\n" + 
-    "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td>Username TEST</td>\r\n" + 
-    "<td><input type=\"text\" value=\"testing\" name=\"username\"/>" +
-    "</td>\r\n" + 
-    "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td>Password TEST</td>\r\n" + 
-    "<td><input type=\"password\" name=\"password\"" +
-    "/></td>\r\n" + 
-    "</tr>\r\n";
+    String expectedFormSnippet ="<tr>\r\n"
+    	+"<td><b>SharepointUrl TEST*</b></td>\r\n"
+    	+"<td><input type=\"text\" value=\"http://entpoint05.corp.google.com/unittest\" name=\"sharepointUrl\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><font color=red><b>Domain TEST*</b></font></td>\r\n"
+    	+"<td><input type=\"text\" name=\"domain\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Password TEST*</b></td>\r\n"
+    	+"<td><input type=\"password\" type=\"text\" value=\"g00gl3\" name=\"password\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Username TEST*</b></td>\r\n"
+    	+"<td><input type=\"text\" value=\"testing\" name=\"username\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>Do Not Include URLs Matching the Following Patterns</td>\r\n"
+    	+"<td><textarea rows=\"5\" cols=\"60\" name=\"excludedURls\"/>null</textarea/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Include URLs Matching the Following Patterns*</b></td>\r\n"
+    	+"<td><textarea rows=\"5\" cols=\"60\" name=\"includedURls\"/>null</textarea/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>MySite URL</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"mySiteBaseURL\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>SharePoint Site Alias Host Name</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"aliasHostName\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>SharePoint Site Alias Port Number</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"aliasPort\"/></td>\r\n"
+    	+"</tr>\r\n";
+
     Map configMap = new HashMap();
     configMap.put("sharepointUrl", "http://entpoint05.corp.google.com/unittest");
     configMap.put("domain", "");
@@ -133,28 +196,45 @@ public class SharepointConnectorTypeTest extends TestCase {
   }
   
   public void testValidateConfigFQDN() {
-    String expectedMessage = "The SharepointUrl TEST must contain a fully " +
-    		"qualified domain name. Please check the SharepointUrl TEST value.";
-    String expectedFormSnippet = "<tr>\r\n" + 
-    "<td><font color=red>SharepointUrl TEST</font></td>\r\n" + 
-    "<td><input type=\"text\" " +
-    "name=\"sharepointUrl\"/></td>\r\n"
-    + "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td>Domain TEST</td>\r\n" + 
-    "<td><input type=\"text\" value=\"ent-qa-d3\" name=\"domain\"/>" +
-    "</td>\r\n" + 
-    "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td>Username TEST</td>\r\n" + 
-    "<td><input type=\"text\" value=\"\" name=\"username\"/>" +
-    "</td>\r\n" + 
-    "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td>Password TEST</td>\r\n" + 
-    "<td><input type=\"password\" name=\"password\"" +
-    "/></td>\r\n" + 
-    "</tr>\r\n";
+    String expectedMessage = "The SharepointUrl TEST must contain a fully " 
+    	+"qualified domain name. Please check the SharepointUrl TEST value.";
+    String expectedFormSnippet = "<tr>\r\n"
+    	+"<td><font color=red><b>SharepointUrl TEST*</b></font></td>\r\n"
+    	+"<td><input type=\"text\" name=\"sharepointUrl\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Domain TEST*</b></td>\r\n"
+    	+"<td><input type=\"text\" value=\"ent-qa-d3\" name=\"domain\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Password TEST*</b></td>\r\n"
+    	+"<td><input type=\"password\" type=\"text\" value=\"g00gl3\" name=\"password\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Username TEST*</b></td>\r\n"
+    	+"<td><input type=\"text\" value=\"\" name=\"username\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>Do Not Include URLs Matching the Following Patterns</td>\r\n"
+    	+"<td><textarea rows=\"5\" cols=\"60\" name=\"excludedURls\"/>null</textarea/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Include URLs Matching the Following Patterns*</b></td>\r\n"
+    	+"<td><textarea rows=\"5\" cols=\"60\" name=\"includedURls\"/>null</textarea/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>MySite URL</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"mySiteBaseURL\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>SharePoint Site Alias Host Name</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"aliasHostName\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>SharePoint Site Alias Port Number</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"aliasPort\"/></td>\r\n"
+    	+"</tr>\r\n";
+
     Map configMap = new HashMap();
     configMap.put("sharepointUrl", "http://a");
     configMap.put("domain", "ent-qa-d3");
@@ -167,32 +247,49 @@ public class SharepointConnectorTypeTest extends TestCase {
   }
   
   public void testValidateConfigConnectivity() {
-    String expectedMessage = "Cannot connect to the given SharepointUrl TEST with the supplied Domain TEST/Username TEST/Password TEST. Please re-enter.";
-    String expectedFormSnippet = "<tr>\r\n" + 
-    "<td><font color=red>SharepointUrl TEST</font></td>\r\n" + 
-    "<td><input type=\"text\" " +
-    "name=\"sharepointUrl\"/></td>\r\n"
-    + "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td><font color=red>Domain TEST</font></td>\r\n" + 
-    "<td><input type=\"text\" name=\"domain\"/>" +
-    "</td>\r\n" + 
-    "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td><font color=red>Username TEST</font></td>\r\n" + 
-    "<td><input type=\"text\" name=\"username\"/>" +
-    "</td>\r\n" + 
-    "</tr>\r\n" + 
-    "<tr>\r\n" + 
-    "<td><font color=red>Password TEST</font></td>\r\n" + 
-    "<td><input type=\"password\" name=\"password\"" +
-    "/></td>\r\n" + 
-    "</tr>\r\n";
+    String expectedMessage = "The SharepointUrl TEST must contain a fully qualified domain name. Please check the SharepointUrl TEST value.";
+    String expectedFormSnippet = "<tr>\r\n"
+    	+"<td><font color=red><b>SharepointUrl TEST*</b></font></td>\r\n"
+    	+"<td><input type=\"text\" name=\"sharepointUrl\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Domain TEST*</b></td>\r\n"
+    	+"<td><input type=\"text\" value=\"ps4312\" name=\"domain\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Password TEST*</b></td>\r\n"
+    	+"<td><input type=\"password\" type=\"text\" value=\"pspl!@#\" name=\"password\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Username TEST*</b></td>\r\n"
+    	+"<td><input type=\"text\" value=\"Administrator\" name=\"username\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>Do Not Include URLs Matching the Following Patterns</td>\r\n"
+    	+"<td><textarea rows=\"5\" cols=\"60\" name=\"excludedURls\"/>null</textarea/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td><b>Include URLs Matching the Following Patterns*</b></td>\r\n"
+    	+"<td><textarea rows=\"5\" cols=\"60\" name=\"includedURls\"/>null</textarea/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>MySite URL</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"mySiteBaseURL\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>SharePoint Site Alias Host Name</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"aliasHostName\"/></td>\r\n"
+    	+"</tr>\r\n"
+    	+"<tr>\r\n"
+    	+"<td>SharePoint Site Alias Port Number</td>\r\n"
+    	+"<td><input type=\"text\" value=\"null\" name=\"aliasPort\"/></td>\r\n"
+    	+"</tr>\r\n";
+
     Map configMap = new HashMap();
-    configMap.put("sharepointUrl", "http://entpoint.corp.google.com/Marketing");
-    configMap.put("domain", "ent-qa-d3");
-    configMap.put("username", "testing");
-    configMap.put("password", "g00gl3");     
+    configMap.put("sharepointUrl", "http://ps4312:43386/amitsite");
+    configMap.put("domain", "ps4312");
+    configMap.put("username", "Administrator");
+    configMap.put("password", "pspl!@#");     
     ConfigureResponse response = 
       sharepointConnectorType.validateConfig(configMap, new Locale("test"));
     Assert.assertEquals(expectedMessage, response.getMessage());

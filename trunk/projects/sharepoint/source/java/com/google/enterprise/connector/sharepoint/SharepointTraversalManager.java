@@ -14,152 +14,61 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import com.google.enterprise.connector.sharepoint.client.SPDocument;
-import com.google.enterprise.connector.sharepoint.client.SharepointClient;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.spi.HasTimeout;
-import com.google.enterprise.connector.spi.Property;
-import com.google.enterprise.connector.spi.PropertyMap;
-import com.google.enterprise.connector.spi.TraversalManager;
-import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.PropertyMapList;
-import com.google.enterprise.connector.spi.SimplePropertyMapList;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.Iterator;
-import java.util.List;
+import com.google.enterprise.connector.sharepoint.client.SPDocumentList;
+import com.google.enterprise.connector.sharepoint.client.SharepointClient;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.spi.DocumentList;
+import com.google.enterprise.connector.spi.HasTimeout;
+import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.TraversalManager;
 
 /**
  * This class is an implementation of the TraversalManager from the spi.
- * All the traversal based logic is onvoked through this class.
+ * All the traversal based logic is invoked through this class.
  *
  */
 
 public class SharepointTraversalManager implements TraversalManager,
   HasTimeout {
-  private static Log logger;
+  private static final  Log LOGGER = LogFactory.getLog(SharepointTraversalManager.class);
   private SharepointClientContext sharepointClientContext;
-  private SharepointConnector connector;
+  private SharepointClientContext sharepointClientContextOriginal=null;
+  //private SharepointConnector connector; 
   protected GlobalState globalState; // not private, so the unittest can see it
   private int hint = -1;
   
-  public SharepointTraversalManager(SharepointConnector connector,
-    SharepointClientContext sharepointClientContext) 
+  public SharepointTraversalManager(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext) 
       throws RepositoryException {
-    logger = LogFactory.getLog(SharepointTraversalManager.class);
-    logger.info("SharepointTraversalManager: " + 
-        sharepointClientContext.getsiteName() + ", " +
-        sharepointClientContext.getGoogleConnectorWorkDir());
-    this.connector = connector;
-    this.sharepointClientContext = sharepointClientContext;
-    this.globalState = new GlobalState(
-        sharepointClientContext.getGoogleConnectorWorkDir());
-    this.globalState.loadState();
+    if((inConnector!=null)&&(inSharepointClientContext!=null)){
+	    LOGGER.debug("SharepointTraversalManager: " + inSharepointClientContext.getsiteName() + ", " + inSharepointClientContext.getGoogleConnectorWorkDir());
+	    //this.connector = inConnector;
+	    this.sharepointClientContext = inSharepointClientContext;
+	    
+	    this.sharepointClientContextOriginal = (SharepointClientContext) inSharepointClientContext.clone();
+	    this.globalState = new GlobalState(
+	        inSharepointClientContext.getGoogleConnectorWorkDir());
+	    this.globalState.loadState();
+    }
   }
   
   /**
    * For the HasTimeout interface: tell ConnectorManager we need the maximum
-   * amount of time
+   * amount of time.
    * @return integer
    */
   public int getTimeoutMillis() {
     return Integer.MAX_VALUE;
   }
-  
-  private void implementCheckpoint(PropertyMap map) throws RepositoryException {
-    SPDocument docCheckpoint = Util.docFromPropertyMap(map);
-    String listGuid = Util.listGuidFromPropertyMap(map);
-
-    /* fix the GlobalState to match 'doc'. Since the Connector Manager may
-     * have finished several lists, we have to iterate through all the 
-     * lists until we hit this one (that's why we save the list GUID).
-     * 
-     * First make sure there's no mistake, and this list is something we
-     * actually know about:
-     */
-    ListState listCheckpoint = 
-      (ListState) globalState.lookupList(listGuid);
-    if (listCheckpoint == null) {
-      logger.error("Checkpoint specifies a non-existent list: " + listGuid);
-      // what to do here? certainly remove crawl queues from any earlier Lists:
-      for (Iterator<ListState> iter = globalState.getIterator();
-        iter.hasNext(); ) {
-        if (docCheckpoint.getLastMod().compareTo(
-            Util.jodaToCalendar(listCheckpoint.getLastMod())) > 0) {
-          listCheckpoint.setCrawlQueue(null);
-        } else {
-          break;
-        }        
-      }
-      return;
-    }
-    logger.info("looking for " + listGuid);
-    Iterator<ListState> iterLists = globalState.getIterator();
-    boolean foundCheckpoint = false;
-    while (iterLists.hasNext() && !foundCheckpoint) {
-      ListState listState = (ListState) iterLists.next();
-      List<SPDocument> crawlQueue = listState.getCrawlQueue();
-      if (listState.getGuid().equals(listGuid)) {
-        logger.info("found it");
-        foundCheckpoint = true;
-        // take out everything up to this document's lastMod date
-        for (Iterator<SPDocument> iterQueue = crawlQueue.iterator(); 
-          iterQueue.hasNext(); ) {
-          SPDocument docQueue = iterQueue.next();
-
-          // if this doc is later than the checkpoint, we're done:
-          if (docQueue.getLastMod().compareTo(
-              docCheckpoint.getLastMod()) >  0) {
-            break;
-          }
-          // otherwise remove it from the queue
-          logger.info("removing " + docQueue.getUrl() + " from queue");
-          iterQueue.remove(); // it's safe to use the iterator's own remove()
-          listState.setLastDocCrawled(docQueue);
-          if (docQueue.getDocId().equals(docCheckpoint.getDocId())) {
-            break;
-          }    
-        }  
-      } else { // some other list. Assume CM got all the way through the queue
-        logger.info("zeroing crawl queue for " + listState.getUrl());
-        if (crawlQueue != null && crawlQueue.size() > 0) {
-          listState.setLastDocCrawled(crawlQueue.get(crawlQueue.size() - 1));
-        }
-        listState.setCrawlQueue(null);
-      }
-    }
-    /* once we've done this, there's no more need to remember where we
-     * were. We can start at the earliest (by lastMod) List we have. 
-     */
-    globalState.setCurrentList(null);
-  }
-  
-  /* (non-Javadoc)
-   * @see com.google.enterprise.connector.spi.TraversalManager#checkpoint
-   * (com.google.enterprise.connector.spi.PropertyMap)
-   */
-  public String checkpoint(PropertyMap map) throws RepositoryException {
-    SPDocument doc = Util.docFromPropertyMap(map);
-    logger.info("checkpoint received for " + doc.getUrl() + " in list " +
-        Util.listGuidFromPropertyMap(map) + " with date " +
-        Util.formatDate(Util.calendarToJoda(doc.getLastMod())));
-    implementCheckpoint(map);
-    logger.info("checkpoint processed; saving GlobalState to disk.");
-    globalState.saveState(); // snapshot it all to disk
-    return null;
-  }
-
-  /* (non-Javadoc)
-   * @see com.google.enterprise.connector.spi.TraversalManager
-   * #resumeTraversal(java.lang.String)
-   */
-  public PropertyMapList resumeTraversal(String arg0) 
-    throws RepositoryException {
-    logger.info("resumeTraversal");
+   
+  //Note: Even though the checkpoint entry is provided, since sharepoint system does not
+  //  support  checkpointing internally, we need to anyway get all the documents modified 
+  //  after specific time
+  public DocumentList resumeTraversal(String arg0) throws RepositoryException {
+    LOGGER.debug("resumeTraversal");
     return doTraversal();
   }
 
@@ -168,34 +77,17 @@ public class SharepointTraversalManager implements TraversalManager,
    * #setBatchHint(int)
    */
   public void setBatchHint(int hintNew) throws RepositoryException {
-    logger.info("setBatchHint " + hintNew);
+    LOGGER.info("setBatchHint " + hintNew);
     this.hint = hintNew;
   }
 
-  /* (non-Javadoc)
+ /*  (non-Javadoc)
    * @see com.google.enterprise.connector.spi.TraversalManager
    * #startTraversal()
-   */
-  public PropertyMapList startTraversal() 
-    throws RepositoryException {
-    logger.info("startTraversal");
+  */ 
+  public DocumentList startTraversal() throws RepositoryException {
+    LOGGER.debug("startTraversal");
     return doTraversal();
-  }
-
-  private void dumpPropertyMapList(SimplePropertyMapList rs) {
-    System.out.println("PropertyMapList=" + rs.size() + " items");
-    try {
-      for (Iterator iter = rs.iterator(); iter.hasNext(); ) {
-        PropertyMap pm = (PropertyMap) iter.next();
-        for (Iterator iterProp = pm.getProperties(); iterProp.hasNext(); ) {
-          Property prop = (Property) iterProp.next();
-          System.out.println(prop.getName().toString() +
-              " = " + prop.getValue().toString());
-        }
-      }
-    } catch (RepositoryException e) {
-      System.out.println("caught exception: " + e.toString());
-    }
   }
   
   /**
@@ -205,22 +97,25 @@ public class SharepointTraversalManager implements TraversalManager,
    * @return PropertyMapList
    * @throws RepositoryException
    */
-  private PropertyMapList doTraversal() throws RepositoryException {
-    logger.info("SharepointTraversalManager::doTraversal:  " + 
-        sharepointClientContext.getsiteName() + ", " +
-        sharepointClientContext.getGoogleConnectorWorkDir());
-    SharepointClient sharepointClient = 
-      new SharepointClient(sharepointClientContext);
-    SimplePropertyMapList rs = sharepointClient.traverse(globalState, hint);
-    // if the set is empty, then we need to sweep Sharepoint again:
-    if (rs.size() == 0) {
-      logger.info("traversal returned no new docs: re-fetching ...");
+  private DocumentList doTraversal() throws RepositoryException {
+    LOGGER.debug("SharepointTraversalManager::doTraversal:  " +sharepointClientContext.getsiteName() + ", " +sharepointClientContext.getGoogleConnectorWorkDir());
+   /* if(this.sharepointClientContextOriginal != null){
+		  this.sharepointClientContext = (SharepointClientContext) this.sharepointClientContextOriginal.clone();
+	  }*/
+    SharepointClient sharepointClient = new SharepointClient(sharepointClientContext);
+    SPDocumentList rs = sharepointClient.traverse(globalState, hint);
+    
+    //check for the results, If empty sweep Sharepoint again.
+    // initially the rs=null. Once the global state is updated the crawl will be incremental.
+    if ((rs==null)||(rs.size() == 0)) { 
+      LOGGER.info("traversal returned no new docs: re-fetching ...");
       sharepointClient.updateGlobalState(globalState);
       rs = sharepointClient.traverse(globalState, hint);
     }
-    if (logger.isInfoEnabled()) {
-      dumpPropertyMapList(rs);
-    }
+    if(this.sharepointClientContextOriginal != null){
+		  this.sharepointClientContext = (SharepointClientContext) this.sharepointClientContextOriginal.clone();
+	  }
     return rs;           
   }
+
 }

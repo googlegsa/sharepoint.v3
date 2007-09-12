@@ -20,7 +20,9 @@ import com.google.enterprise.connector.spi.RepositoryException;
  * Thrown to indicate connectivity problems with Sharepoint server.
  */
 public class SharepointException extends RepositoryException {
-  /**
+ 	private static final long serialVersionUID = 1L;
+
+/**
    * Constructs a SharepointException with no message and no root cause.
    */
   public SharepointException() {
@@ -40,17 +42,17 @@ public class SharepointException extends RepositoryException {
    * Constructs a SharepointException with message and root cause.
    * @param message   the message. Can be retrieved by the 
    * {@link #getMessage()} method.
-   * @param rootCause root failure cause
+   * @param inRootCause root failure cause
    */
-  public SharepointException(String message, Throwable rootCause) {
-    super(message, rootCause);
+  public SharepointException(String message, Throwable inRootCause) {
+    super(message, inRootCause);
   }
 
   /**
    * Constructs a SharepointException with the specified root cause.
-   * @param rootCause root failure cause
+   * @param inRootCause root failure cause
    */
-  public SharepointException(Throwable rootCause) {
-    super(rootCause);
+  public SharepointException(Throwable inRootCause) {
+    super(inRootCause);
   }
 }
