@@ -15,9 +15,15 @@ package com.google.enterprise.connector.sharepoint.state;
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-import com.google.enterprise.connector.sharepoint.Util;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
-import com.google.enterprise.connector.sharepoint.client.SPDocument;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,16 +35,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.management.Attribute;
+import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
+import com.google.enterprise.connector.sharepoint.Util;
+import com.google.enterprise.connector.sharepoint.client.Attribute;
+import com.google.enterprise.connector.sharepoint.client.SPDocument;
+import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
 /**
  * Maintains the SharePoint connector's state with respect to a List (a
@@ -66,7 +67,7 @@ public class ListState implements StatefulObject {
   private boolean exists = true;
   
   /**
-   * The URL of the List is more human-readable, which is good for debugging:
+   * The URL of the List is more human-readable, which is good for debugging.
    */
   private String url = "";
   
@@ -78,27 +79,30 @@ public class ListState implements StatefulObject {
    * this is maintained in the persistent state.
    */
   private SPDocument lastDocCrawled;
-  private List<SPDocument> crawlQueue = null;
+  private List crawlQueue = null;
   
   private static final String ID = "id";
   private static final String LAST_MOD = "lastMod";
   private static final String ATTR_NAME = "name";
   private static final String ATTR_VALUE = "value";
   private static final String DOC_ATTR = "docAttr";
+  private Collator collator = SharepointConnectorType.getCollator();
   
   /**
-   * No-args constructor
+   * No-args constructor.
    */
   public ListState() {}
   
   /**
-   * Constructor
-   * @param key The GUID for this List
-   * @param lastMod last-modified date for List (from SharePoint)
+   * Constructor.
+   * @param inKey The GUID for this List.
+   * @param inLastMod last-modified date for List (from SharePoint)
    */
-  public ListState(String key, DateTime lastMod) {
-    this.key = key;
-    this.lastMod = lastMod;
+  public ListState(String inKey, DateTime inLastMod){
+	  if(inKey!=null){
+		  this.key = inKey;
+		  this.lastMod = inLastMod;
+	  }
   }
   
   public ListState get() {
@@ -106,7 +110,7 @@ public class ListState implements StatefulObject {
   }
 
   /**
-   * Get the lastMod time
+   * Get the lastMod time.
    * @return time the List was last modified
    */
   public DateTime getLastMod() {
@@ -114,15 +118,15 @@ public class ListState implements StatefulObject {
   }
 
   /**
-   * Set the lastMod time
-   * @param lastMod time
+   * Set the lastMod time.
+   * @param inLastMod time
    */
-  public void setLastMod(DateTime lastMod) {
-    this.lastMod = lastMod;
+  public void setLastMod(DateTime inLastMod) {
+    this.lastMod = inLastMod;
   }
 
   /**
-   * Return lastMod in String form
+   * Return lastMod in String form.
    * @return lastMod string-ified
    */
   public String getLastModString() {
@@ -130,7 +134,7 @@ public class ListState implements StatefulObject {
   }
   
   /**
-   * Get the primary key
+   * Get the primary key.
    * @return primary key
    */
   public String getPrimaryKey() {
@@ -138,11 +142,14 @@ public class ListState implements StatefulObject {
   }
 
   /**
-   * Sets the primary key
+   * Sets the primary key.
    * @param key
    */
   public void setPrimaryKey(String newKey) {
-    key = newKey;
+	  //primary key cannot be null
+	  if( newKey!=null){
+		  key = newKey;
+	  }
   }
   
   public boolean isExisting() {
@@ -191,17 +198,19 @@ public class ListState implements StatefulObject {
    */
   public Calendar getDateForWSRefresh() {
     Calendar date = Util.jodaToCalendar(getLastMod()); // our default
-    if (lastDocCrawled != null) {
+    
+    //modified by amit
+    if ((date!=null)&&(lastDocCrawled != null)) {
       Calendar lastDocDate = lastDocCrawled.getLastMod();
-      if (lastDocDate.compareTo(date) < 0) {
+	  if (lastDocDate.toString().compareTo(date.toString()) < 0) {
         date = lastDocDate;
       }
     }
     // now, if there's a crawl queue, we might take its last entry:
     if (crawlQueue != null && crawlQueue.size() > 0) {
       Calendar lastCrawlQueueDate = 
-          crawlQueue.get(crawlQueue.size() - 1).getLastMod();
-      if (lastCrawlQueueDate.compareTo(date) < 0) {
+          ((SPDocument) crawlQueue.get(crawlQueue.size() - 1)).getLastMod();
+      if (lastCrawlQueueDate.before(date)) {
         date = lastCrawlQueueDate;
       }
     }
@@ -235,31 +244,39 @@ public class ListState implements StatefulObject {
    * @param doc
    */
   public void setLastDocCrawled(SPDocument doc) {
-    lastDocCrawled = doc;
-    if (crawlQueue == null) {
-      return;
-    }
-    if (!crawlQueue.contains(doc)) {
-      // don't log. The caller may be removing through an iterator, which 
-      // we wouldn't see
-      return;
-    }
-    // "foreach" syntax not used because we need the iterator to remove()
-    for (Iterator<SPDocument> iter = crawlQueue.iterator(); iter.hasNext(); ) {
-      SPDocument docQ = iter.next();
-      iter.remove();
-      if (docQ.equals(doc)) {
-        break;
-      }
-    }
+	  //null check added by Amit
+	if(doc!=null){
+	    lastDocCrawled = doc;
+	    if (crawlQueue == null) {
+	      return;
+	    }
+	    if (!crawlQueue.contains(doc)) {
+	      // don't log. The caller may be removing through an iterator, which 
+	      // we wouldn't see
+	      return;
+	    }
+	    // "foreach" syntax not used because we need the iterator to remove()
+	    Iterator iter = crawlQueue.iterator();
+	    if(iter!=null){
+		    while ( iter.hasNext()){
+		      SPDocument docQ = (SPDocument) iter.next();
+		      iter.remove();
+		      if (docQ.equals(doc)) {
+		        break;
+		      }
+		    }
+	    }
+	}//end null check
   }
 
-  public List<SPDocument> getCrawlQueue() {
+  public List getCrawlQueue() {
     return crawlQueue;
   }
   
-  public void setUrl(String url) {
-    this.url = url;
+  public void setUrl(String inUrl) {
+	  if(inUrl!=null){
+		  this.url = inUrl;
+	  }
   }
   
   public String getUrl() {
@@ -272,19 +289,22 @@ public class ListState implements StatefulObject {
    * Eclipse.)
    */
   public void dumpCrawlQueue() {
+	  String sFunctionName = "dumpCrawlQueue()";
     if (crawlQueue != null && crawlQueue.size() > 0) {
-      System.out.println("Crawl queue for " + getUrl());
-      for (SPDocument doc : crawlQueue) {
-        System.out.println(doc.getLastMod().getTime() + ", " + doc.getUrl());
+     logger.debug(sFunctionName+" : Crawl queue for " + getUrl());
+//      for (SPDocument doc : crawlQueue) {
+      for (int iDoc=0; iDoc<crawlQueue.size();++iDoc) {
+    	SPDocument doc =(SPDocument) crawlQueue.get(iDoc);
+        logger.debug(sFunctionName+": "+ doc.getLastMod().getTime() + ", " + doc.getUrl());
         doc.dumpAllAttrs();
       }
     } else {
-      System.out.println("Empty crawl queue for " + getUrl());
+      logger.debug(sFunctionName+" : Empty crawl queue for " + getUrl());
     }
   }
   
-  public void setCrawlQueue(List<SPDocument> crawlQueue) {
-    this.crawlQueue = crawlQueue;
+  public void setCrawlQueue(List inCrawlQueue) {
+    this.crawlQueue = inCrawlQueue;
   }
   
   /**
@@ -299,7 +319,17 @@ public class ListState implements StatefulObject {
    */
   private Node dumpDocToDOM(org.w3c.dom.Document domDoc, SPDocument doc)
       throws SharepointException {
+	  //added by amit
+	 if(domDoc==null){
+		 throw new SharepointException("Unable to get the DOM document");
+	 }
+	  
     Element element = domDoc.createElement("document");
+    //added by amit
+    if(element==null){
+    	throw new SharepointException("Unable to get the documentt element");
+    }
+    
     element.setAttribute(ID, doc.getDocId());
     Element lastModTmp = domDoc.createElement(LAST_MOD);
     lastModTmp.appendChild(domDoc.createTextNode(
@@ -315,7 +345,7 @@ public class ListState implements StatefulObject {
       throw new SharepointException(e.toString());
     }
     element.appendChild(urlTmp);
-    for (Iterator iter = doc.getAllAttrs().iterator(); iter.hasNext(); ) {
+    for (Iterator iter = doc.getAllAttrs().iterator(); iter.hasNext();){
       Attribute attr = (Attribute) iter.next();
       Element docAttr = domDoc.createElement(DOC_ATTR);
       docAttr.setAttribute(ATTR_NAME, attr.getName());
@@ -333,7 +363,8 @@ public class ListState implements StatefulObject {
    * @throws SharepointException
    */
   public Node dumpToDOM(Document domDoc) throws SharepointException{
-    Element element = domDoc.createElement(this.getClass().getSimpleName());
+//    Element element = domDoc.createElement(this.getClass().getSimpleName());
+    Element element = domDoc.createElement(this.getClass().getName());
     element.setAttribute(ID, getGuid());
     
     // the lastMod
@@ -357,7 +388,9 @@ public class ListState implements StatefulObject {
     if (crawlQueue != null) {
       Element queue = domDoc.createElement("crawlQueue");
       element.appendChild(queue);
-      for (SPDocument docTmp : crawlQueue) {
+//      for (SPDocument docTmp : crawlQueue) {
+      for (int iDoc=0;iDoc<crawlQueue.size();++iDoc) {
+    	  SPDocument docTmp = (SPDocument) crawlQueue.get(iDoc);
         queue.appendChild(dumpDocToDOM(domDoc, docTmp));
       }
     }
@@ -365,41 +398,61 @@ public class ListState implements StatefulObject {
   }
   
   /**
-   * Create an SPDocument from a DOM tree
+   * Create an SPDocument from a DOM tree.
    * @param element DOM node representing the SPDocument
    * @return SPDocument
    * @throws SharepointException
    */
   private SPDocument loadDocFromDOM(Element element) 
     throws SharepointException {
-    if (!element.getTagName().equals("document")) {
-      throw new SharepointException("should be 'document', was " + 
-          element.getTagName());
+	 
+	  //added by amit
+	 if(element==null){
+		 throw new SharepointException("element is not found");
+	 }
+	  
+    if (! collator.equals(element.getTagName(),"document")) {
+      throw new SharepointException("should be 'document', was "+element.getTagName());
     }
     String id = element.getAttribute(ID);
     NodeList lastModNodeList = element.getElementsByTagName(LAST_MOD);
     NodeList urlNodeList = element.getElementsByTagName("url");
-    if (id == null || lastModNodeList.getLength() == 0 ||
-        urlNodeList.getLength() == 0) {
+    
+    //modified by amit
+    if ((urlNodeList==null)||(lastModNodeList == null) || (id == null) || lastModNodeList.getLength() == 0 ||urlNodeList.getLength() == 0) {
       throw new SharepointException("Invalid XML: " + element.toString());
     }
-    String lastModString = lastModNodeList.item(0).getTextContent();
+    String lastModString = null;
+    if(lastModNodeList.item(0) != null && lastModNodeList.item(0).getFirstChild() != null) {
+    	lastModString = lastModNodeList.item(0).getFirstChild().getNodeValue();
+    }
     DateTime lastModTmp = Util.parseDate(lastModString);
+    //added by amit
+    if(lastModTmp==null){
+    	throw new SharepointException("Unable to get lastModTmp");
+    }
+    	
     GregorianCalendar calDate = new GregorianCalendar();
     calDate.setTimeInMillis(lastModTmp.getMillis());
-    String urlTmp = URLDecoder.decode(urlNodeList.item(0).getTextContent());
+    String urlTmp = null;
+    if(urlNodeList.item(0) != null && urlNodeList.item(0).getFirstChild() != null) {
+    	urlTmp = URLDecoder.decode(urlNodeList.item(0).getFirstChild().getNodeValue());
+    }
     SPDocument doc = new SPDocument(id, urlTmp, calDate);
     
     // pick up the other document attributes:
     NodeList attrNodeList = element.getElementsByTagName(DOC_ATTR);
-    for (int i = 0; i < attrNodeList.getLength(); i++) {
-      Element docAttr = (Element) attrNodeList.item(i);
-      String attrName = docAttr.getAttribute(ATTR_NAME);
-      String attrValue = docAttr.getAttribute(ATTR_VALUE);
-      if (attrName != null && attrValue != null) {
-        doc.setAttribute(attrName, attrValue);
-      }
-    }
+    //null check added by amit
+    if(attrNodeList!=null){
+	    for (int i = 0; i < attrNodeList.getLength(); i++) {
+	      Element docAttr = (Element) attrNodeList.item(i);
+	      String attrName = docAttr.getAttribute(ATTR_NAME);
+	      String attrValue = docAttr.getAttribute(ATTR_VALUE);
+	      if (attrName != null && attrValue != null) {
+	        doc.setAttribute(attrName, attrValue);
+	      }
+	    }
+    }//end..null check
     return doc;
   }
   
@@ -410,6 +463,10 @@ public class ListState implements StatefulObject {
    *     of a ListState 
    */
   public void loadFromDOM(Element element) throws SharepointException {
+	if(element!=null){
+		throw new SharepointException("element not found");
+	}
+	  
     key = element.getAttribute(ID);
     if (key == null || key.length() == 0) {
       throw new SharepointException("Invalid XML: no id attribute");
@@ -417,10 +474,13 @@ public class ListState implements StatefulObject {
     
     // lastMod
     NodeList lastModNodeList = element.getElementsByTagName(LAST_MOD);
-    if (lastModNodeList.getLength() == 0) {
+    if ((lastModNodeList==null)||lastModNodeList.getLength() == 0) {
       throw new SharepointException("Invalid XML: no lastMod");
     }
-    String lastModString = lastModNodeList.item(0).getTextContent();
+    String lastModString = null;
+    if(lastModNodeList.item(0) != null && lastModNodeList.item(0).getFirstChild() != null) {
+    	lastModString = lastModNodeList.item(0).getFirstChild().getNodeValue();
+    }
     lastMod = Util.parseDate(lastModString);
     if (lastMod == null) {
       throw new SharepointException("Invalid XML: bad date " + lastModString);
@@ -428,15 +488,17 @@ public class ListState implements StatefulObject {
     
     // URL
     NodeList urlNodeList = element.getElementsByTagName("URL");
-    if (urlNodeList.getLength() > 0) {
-      url = urlNodeList.item(0).getTextContent();
+    //modified by amit
+    if((urlNodeList!=null)&& (urlNodeList.getLength() > 0) ){
+    	if(urlNodeList.item(0) != null && urlNodeList.item(0).getFirstChild() != null) {
+    		url = urlNodeList.item(0).getFirstChild().getNodeValue();
+    	}
     }
     
     // get the lastDocCrawled
     NodeList lastDocCrawledNodeList = 
       element.getElementsByTagName("lastDocCrawled");
-    if (lastDocCrawledNodeList != null && 
-        lastDocCrawledNodeList.getLength() > 0) {
+    if (lastDocCrawledNodeList != null && lastDocCrawledNodeList.getLength() > 0) {
       Element lastDocCrawledNode = (Element) lastDocCrawledNodeList.item(0);
       NodeList documentNodeList = 
         lastDocCrawledNode.getElementsByTagName("document");
@@ -448,22 +510,26 @@ public class ListState implements StatefulObject {
     
     // get the crawlQueue
     NodeList crawlQueueNodeList = element.getElementsByTagName("crawlQueue");
-    if (crawlQueueNodeList.getLength() > 0) {
+    //modified by amit
+    if((crawlQueueNodeList!=null)&& (crawlQueueNodeList.getLength() > 0)) {
       Node crawlQueueNode = crawlQueueNodeList.item(0);
+      
+      if(crawlQueueNode!=null){//added by amit
       NodeList docNodeList = crawlQueueNode.getChildNodes();
-      if (docNodeList != null) {
-        crawlQueue = new ArrayList<SPDocument>();
-        for (int i = 0; i < docNodeList.getLength(); i++) {
-          Node node = docNodeList.item(i);
-          if (node.getNodeType() != Node.ELEMENT_NODE) {
-            continue;
-          }
-          SPDocument doc = loadDocFromDOM((Element) node);
-          if (doc != null) {
-            crawlQueue.add(doc);
-          }
-        }
-      }
+	      if (docNodeList != null) {
+	        crawlQueue = new ArrayList();
+	        for (int i = 0; i < docNodeList.getLength(); i++) {
+	          Node node = docNodeList.item(i);
+	          if (node.getNodeType() != Node.ELEMENT_NODE) {
+	            continue;
+	          }
+	          SPDocument doc = loadDocFromDOM((Element) node);
+	          if (doc != null) {
+	            crawlQueue.add(doc);
+	          }
+	        }
+	      }
+    	}
     }
   }
    

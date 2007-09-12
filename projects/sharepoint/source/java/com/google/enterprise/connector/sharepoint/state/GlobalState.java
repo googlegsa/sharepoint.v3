@@ -15,28 +15,16 @@ package com.google.enterprise.connector.sharepoint.state;
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-import com.google.enterprise.connector.sharepoint.Util;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.joda.time.DateTime;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -50,6 +38,18 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
+import com.google.enterprise.connector.sharepoint.Util;
+import com.google.enterprise.connector.sharepoint.client.SharepointException;
 
 /**
  * Represents the state of a site. Can be persisted to XML and
@@ -82,9 +82,9 @@ public class GlobalState {
    * one time, it was thought that there would be other instances of 
    * StatefulObject, and in the future there could be again)
    */
-  protected SortedSet<ListState> dateMap = new TreeSet<ListState>();
-  protected Map<String, ListState> keyMap = 
-      new HashMap<String, ListState>();
+  protected SortedSet dateMap = new TreeSet();
+  protected Map keyMap = 
+      new HashMap();
 
   /**
    * The "current" object for ListState. The current object may be null.
@@ -111,16 +111,18 @@ public class GlobalState {
   
   /**
    * Constructor. 
-   * @param workDir the googleConnectorWorkDir (which we ask for
+   * @param inWorkDir the googleConnectorWorkDir (which we ask for
    *     in connectorInstance.xml).  The state file is saved in this
    *     directory.  If workDir is null, the current working directory is
    *     used instead.  (In either case, the location of the file is
    *     saved in the system preferences, so that environmental changes don't
    *     make us lose the file.)
    */
-  public GlobalState(String workDir) {
-    this.workDir = workDir;
-    logger.info("workDir=" + workDir);
+  public GlobalState(String inWorkDir){
+	 if(inWorkDir!=null){
+		 this.workDir = inWorkDir;
+	 }
+    
   }
 
   /**
@@ -131,12 +133,18 @@ public class GlobalState {
    * @return new ListState which is already indexed in GlobalState's
    *     dateMap and keyMap
    */
-  public ListState makeListState(String key, DateTime lastMod) {
-    ListState obj = new ListState(); 
-    obj.setLastMod(lastMod);
-    obj.setPrimaryKey(key);
-    updateList(obj, lastMod); // add to our maps
-    return obj;
+  public ListState makeListState(String key, DateTime lastMod) throws SharepointException {
+	String sFunName="makeListState(String key, DateTime lastMod)";
+	logger.debug(sFunName+": List key["+key+"], lastmodified["+lastMod+"]");
+	if(key!=null){
+	    ListState obj = new ListState(); 
+	    obj.setLastMod(lastMod);
+	    obj.setPrimaryKey(key);
+	    updateList(obj, lastMod); // add to our maps
+	    return obj;
+	}else{
+		throw new SharepointException(sFunName+": Unable to make ListState due to list key not found");
+	}
   }
 
   /**
@@ -147,8 +155,13 @@ public class GlobalState {
    * @return new ListState which is already indexed in GlobalState's
    *     dateMap and keyMap
    */
-  public ListState makeListState(String key, Calendar lastModCal) {
-    return makeListState(key, Util.calendarToJoda(lastModCal));
+  public ListState makeListState(String key, Calendar lastModCal) throws SharepointException {
+	  String sFunName="makeListState(String key, Calendar lastModCal)";
+	  if(key!=null){
+		  return makeListState(key, Util.calendarToJoda(lastModCal));
+	  }else{
+		  throw new SharepointException(sFunName+": Unable to make ListState due to list key not found");
+	  }
   }
 
   /**
@@ -161,7 +174,10 @@ public class GlobalState {
     recrawling = true;
     
     // for each ListState, set "not existing"
-    for (StatefulObject obj : dateMap) {
+    Iterator it = dateMap.iterator();
+//    for (StatefulObject obj : dateMap) {
+    while(it.hasNext()){
+      StatefulObject obj = (StatefulObject) it.next();
       obj.setExisting(false);
     }
   }
@@ -177,8 +193,8 @@ public class GlobalState {
       return;
     }
     // 'foreach' not used here, since we need the iterator for remove()
-    for (Iterator<ListState> iter = getIterator(); iter.hasNext(); ) {
-        ListState obj = iter.next(); 
+    for (Iterator iter = getIterator(); iter.hasNext();){
+        ListState obj = (ListState) iter.next(); 
       if (!obj.isExisting()) {
         iter.remove(); // we MUST use the iterator's own remove() here
         keyMap.remove(obj.getPrimaryKey());
@@ -189,10 +205,10 @@ public class GlobalState {
 
   /**
    * Get an iterator which returns the objects in increasing order of their
-   * lastModified dates
+   * lastModified dates.
    * @return Iterator on the objects by lastModified time
    */
-  public Iterator<ListState> getIterator() {
+  public Iterator getIterator() {
     return dateMap.iterator();
   }
 
@@ -203,24 +219,24 @@ public class GlobalState {
    * @return Iterator which begins at getCurrentList() and wraps around the end
    */
 
-  public Iterator<ListState> getCircularIterator() {
+  public Iterator getCircularIterator() {
     ListState start = getCurrentList();
     if (start == null) {
       return getIterator();
     }
     // one might think you could just do tail.addAll(head) here. But you can't.
-    ArrayList<ListState> full = new ArrayList(dateMap.tailSet(start));
+    ArrayList full = new ArrayList(dateMap.tailSet(start));
     full.addAll(dateMap.headSet(start));
     return full.iterator();
   }
   
   /**
-   * Lookup a ListState by its key
+   * Lookup a ListState by its key.
    * @param key primary key
    * @return object handle, or null if none found
    */
   public ListState lookupList(String key) {
-    return keyMap.get(key);
+    return (ListState) keyMap.get(key);
   }
 
   /**
@@ -284,13 +300,17 @@ public class GlobalState {
 
     if (currentObj != null) {
       Element element = doc.createElement("current");
-      element.setAttribute("type", ListState.class.getSimpleName());
+      //element.setAttribute("type", ListState.class.getSimpleName());
+      element.setAttribute("type", ListState.class.getName());
       element.setAttribute("id", currentObj.getPrimaryKey());
       top.appendChild(element);
     }
 
     // now dump the actual ListStates:
-    for (StatefulObject obj : dateMap) {
+    Iterator it = dateMap.iterator(); 
+//    for (StatefulObject obj : dateMap) {
+    while(it.hasNext()){
+    	StatefulObject obj = (StatefulObject) it.next();
       top.appendChild(obj.dumpToDOM(doc));
     }
     TransformerFactory tf = TransformerFactory.newInstance();
@@ -329,7 +349,9 @@ public class GlobalState {
       logger.info("saving state to " + f.getCanonicalPath());
     } catch (IOException e) {
       throw new SharepointException(e.toString());
-    } 
+    }catch(Throwable e){
+    	throw new SharepointException(e.toString());
+    }
   }
 
   /**
@@ -338,45 +360,67 @@ public class GlobalState {
    *     checked as to its existence.
    */
   private void loadStateXML(File fileState) throws SharepointException {
+	  String sFunctionName="loadStateXML(File fileState)";
+	  if(fileState==null){
+		  throw new SharepointException(sFunctionName+": Unable to get the file containing the state info");
+	  }
+	  Collator collator = SharepointConnectorType.getCollator();  
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       DocumentBuilder builder = factory.newDocumentBuilder();
       org.w3c.dom.Document doc = builder.parse(fileState);
+      if(doc==null){
+    	  throw new SharepointException("Unable to det doc");
+      }
       NodeList nodeList = doc.getElementsByTagName("state");
-      if (nodeList.getLength() == 0) {
+      if ((nodeList==null) || (nodeList.getLength() == 0)) {
         throw new SharepointException("Invalid XML: no <state> element");
       }
       // temporary list of the "current" objects (just their keys):
       String currentKeyTmp = null;
 
-      NodeList children = nodeList.item(0).getChildNodes();
-      for (int i = 0; i < children.getLength(); i++) {
-        Node node = children.item(i);
-        if (node.getNodeType() != Node.ELEMENT_NODE) {
-          continue;
-        }
-        Element element = (Element) children.item(i);
-        if (element.getTagName().equals("current")) {
-          String type = element.getAttribute("type");
-          String id = element.getAttribute("id");
-          if (type != null && id != null) {
-            currentKeyTmp = id;
-          }
-          continue;
-        }
-        if (!element.getTagName().equals(ListState.class.getSimpleName())) {
-          continue; //no exception; ignore xml for things we don't understand
-        }
-        ListState subObject = new ListState(); 
-        subObject.loadFromDOM(element);
-        updateList(subObject, subObject.getLastMod());
-
-        // now, for "current", for which so far we've only the key, find the
-        // actual object:
-        if (currentKeyTmp != null) {
-          currentObj = keyMap.get(currentKeyTmp);
-        }
+      //added by Amit
+      if(nodeList.item(0)==null){
+    	  throw new SharepointException("Unable to get the item of the nodelist");
       }
+      
+      NodeList children = nodeList.item(0).getChildNodes();
+      if(children!=null){
+	      for (int i = 0; i < children.getLength(); i++) {
+	        Node node = children.item(i);
+	        //modified by amit
+	        if ((node==null)||(node.getNodeType() != Node.ELEMENT_NODE)) {
+	          continue;
+	        }
+	        Element element = (Element) children.item(i);
+	        
+	        //added by amit
+	        if(element==null){
+	        	continue;
+	        }
+	        
+	        if (collator.equals(element.getTagName(),"current")) {
+	          String type = element.getAttribute("type");
+	          String id = element.getAttribute("id");
+	          if (type != null && id != null) {
+	            currentKeyTmp = id;
+	          }
+	          continue;
+	        }
+	        if (! collator.equals(element.getTagName(),ListState.class.getName())) {
+	          continue; //no exception; ignore xml for things we don't understand
+	        }
+	        ListState subObject = new ListState(); 
+	        subObject.loadFromDOM(element);
+	        updateList(subObject, subObject.getLastMod());
+	
+	        // now, for "current", for which so far we've only the key, find the
+	        // actual object:
+	        if (currentKeyTmp != null) {
+	          currentObj = (ListState) keyMap.get(currentKeyTmp);
+	        }
+	      }
+	    }//null check for children
     } catch (IOException e) {
       logger.error(e);
       throw new SharepointException(e.toString());
@@ -386,11 +430,14 @@ public class GlobalState {
     } catch (SAXException e) {
       logger.error(e);
       throw new SharepointException(e.toString());
+    }catch(Throwable e){
+        logger.error(e);
+        throw new SharepointException(e.toString());
     }
   }
 
   /**
-   * Load persistent state from our XML state
+   * Load persistent state from our XML state.
    * @throws SharepointException if the XML file can't be found, or is
    *     invalid in any way.
    */
@@ -398,8 +445,8 @@ public class GlobalState {
     File f = getStateFileLocation();
     try {
       if (!f.exists()) {
-        logger.error("state file '" + f.getCanonicalPath()
-            + "' does not exist");
+        logger.warn("state file '" + f.getCanonicalPath()
+            + "' does not exist");//amit changed this!!
         return;
       }
       logger.info("loading state from " + f.getCanonicalPath());
@@ -419,7 +466,7 @@ public class GlobalState {
   }
 
   /**
-   * Get the current ListState
+   * Get the current ListState.
    * @return the current object, or null if none
    */
   public ListState getCurrentList() {
@@ -429,39 +476,45 @@ public class GlobalState {
   /**
    * For a single StatefulObject, update the two
    * data structures (url -> obj and time -> obj) and mark
-   * it "Existing" (if between startRecrawl() and endRecrawl())
+   * it "Existing" (if between startRecrawl() and endRecrawl()).
    * @param ListState
    * @param time lastMod time for the List. If time is later than the existing
    *     lastMod, the List is reindexed in the dateMap.
    */
   public void updateList(ListState state, DateTime time) {
-    ListState stateOld = keyMap.get(state.getPrimaryKey());
-    if (stateOld != null) {
-      if (stateOld.getLastMod().compareTo(time) != 0) { // if new time differs
-        dateMap.remove(state);
-        state.setLastMod(time);
-      }
-    } else {
-      state.setLastMod(time);
-      keyMap.put(state.getPrimaryKey(), state);
-    }
-    if (recrawling) {
-      state.setExisting(true); // remember we saw this one!
-    }
-    dateMap.add(state);
+	  //null check added by Amit
+	  if(state!=null){
+	    ListState stateOld = (ListState) keyMap.get(state.getPrimaryKey());
+	    if (stateOld != null) {
+	      if (stateOld.getLastMod().compareTo(time) != 0) { // if new time differs
+	        dateMap.remove(state);
+	        state.setLastMod(time);
+	      }
+	    } else {
+	      state.setLastMod(time);
+	      keyMap.put(state.getPrimaryKey(), state);
+	    }
+	    if (recrawling) {
+	      state.setExisting(true); // remember we saw this one!
+	    }
+	    dateMap.add(state);
+	  }//end..null check
   }
 
-  /**
-   * Mark all the dependent objects "Existing"
+/*  *//**
+   * Mark all the dependent objects "Existing".
    * @param existing
-   */
+   *//*
   private void setAllExisting(boolean existing) {
-    Set<Entry<String, ListState>> entries = keyMap.entrySet();
-    for (Map.Entry<String, ListState> entry : entries) {
-      ListState state = entry.getValue();
+    Set entries = keyMap.entrySet();
+    Iterator it = entries.iterator();
+//    for (Map.Entry entry : entries) {
+    while(it.hasNext()){
+      Map.Entry entry = (Entry) it.next(); 	
+      ListState state = (ListState) entry.getValue();
       state.setExisting(existing);
     }
-  }
+  }*/
 
   /**
    * Return the location for our state file. If we were given a 
@@ -472,7 +525,7 @@ public class GlobalState {
   private File getStateFileLocation() {
     File f;
     if (workDir == null) {
-      logger.info("No working directory was given; using cwd");
+      logger.warn("No working directory was given; using cwd");
       f = new File(CONNECTOR_NAME + CONNECTOR_PREFIX);
     } else {
       f = new File(workDir, CONNECTOR_NAME + CONNECTOR_PREFIX);
