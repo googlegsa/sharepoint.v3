@@ -17,23 +17,24 @@ package com.google.enterprise.connector.sharepoint.client;
 import java.util.Calendar;
 
 /**
- * Class to hold data regarding a sharepoint list.
+ * Class to hold data regarding a sharepoint list e.g. DocumentLibrary.
  * internalName is the GUID of the list and type is the type of the list 
- * e.g., DocumentLibrary.
- *
  */
-public class BaseList implements Comparable<BaseList> {
+public class BaseList implements Comparable {
   private String internalName;
   private String title;
   private String type;
   private Calendar lastMod;
   
-  public BaseList(String internalName, String title, String type,
-      Calendar lastMod) {
-    this.internalName = internalName;
-    this.title = title;
-    this.type = type;
-    this.lastMod = lastMod;
+  public BaseList(String inInternalName, String inTitle, String inType,
+      Calendar inLastMod) throws SharepointException {
+	  if(inInternalName==null){
+		  throw new SharepointException("Unable to find Internal name");
+	  }
+    this.internalName = inInternalName;
+    this.title = inTitle;
+    this.type = inType;
+    this.lastMod = inLastMod;
   }
 
   public String getInternalName() {
@@ -52,11 +53,19 @@ public class BaseList implements Comparable<BaseList> {
     return lastMod;
   }
  
-  public int compareTo(BaseList list) {
-    int comparison = this.lastMod.getTime().compareTo(list.lastMod.getTime());
-    if (0 == comparison) {
-      comparison = this.internalName.compareTo(list.internalName);
-    }    
-    return comparison;
+  public int compareTo(BaseList list){
+	if(lastMod!=null){  
+	    int comparison = this.lastMod.getTime().compareTo(list.lastMod.getTime());
+	    if (0 == comparison) {
+	      comparison = this.internalName.compareTo(list.internalName);
+	    }    
+	    return comparison;
+	}else{
+		return -1;//this.lastmodified is null
+	}
+  }
+
+  public int compareTo(Object arg0) {
+	return -1;
   }
 }

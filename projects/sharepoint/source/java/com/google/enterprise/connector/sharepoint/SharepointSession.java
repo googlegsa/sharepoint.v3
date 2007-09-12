@@ -18,9 +18,9 @@ package com.google.enterprise.connector.sharepoint;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
-import com.google.enterprise.connector.spi.TraversalManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+import com.google.enterprise.connector.spi.TraversalManager;
 
 /**
  * Implements the Session interface from the spi.
@@ -30,14 +30,18 @@ import com.google.enterprise.connector.spi.Session;
  */
 public class SharepointSession implements Session {
   
-  private final SharepointConnector connector;
-  private final SharepointClientContext sharepointClientContext;
+  private SharepointConnector connector=null;
+  private SharepointClientContext sharepointClientContext=null;
   
-  public SharepointSession(SharepointConnector connector,
-      SharepointClientContext sharepointClientContext) 
-      throws RepositoryException {
-    this.connector = connector;
-    this.sharepointClientContext = sharepointClientContext;    
+  public SharepointSession(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext)/* throws RepositoryException*/ {
+	if(inConnector!=null){  
+		this.connector = inConnector;
+	}
+	
+	if(inSharepointClientContext!=null){
+		this.sharepointClientContext = inSharepointClientContext;
+	}
+        
   }
 
   public AuthenticationManager getAuthenticationManager()
@@ -47,13 +51,11 @@ public class SharepointSession implements Session {
 
   public AuthorizationManager getAuthorizationManager()
       throws RepositoryException {
-    // TODO(meghna) Implment this.
     return null;
   }
 
-  public TraversalManager getTraversalManager()
-      throws RepositoryException {
-    return new SharepointTraversalManager(connector, 
-        sharepointClientContext);
+  public TraversalManager getTraversalManager() throws RepositoryException {
+	   return new SharepointTraversalManager(connector,sharepointClientContext);
   }
+
 }
