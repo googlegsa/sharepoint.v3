@@ -129,7 +129,8 @@ public class SiteDataWS {
 				}  
 			}
 		} catch (Exception e) {
-			logger.error(e.toString());
+			logger.warn(sFunctionName+": Unable to access URL["+endpoint+"]");
+			logger.debug(e.toString());
 		}
 		return sites;      
 	}
