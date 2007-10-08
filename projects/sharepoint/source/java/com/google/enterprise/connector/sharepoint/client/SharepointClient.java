@@ -380,7 +380,7 @@ public class SharepointClient {
 
 				listState.setCrawlQueue(listItems);
 				if(listItems==null){
-					System.out.println("listitems null");
+					logger.warn("listitems null");
 				}
 				logger.info("found " + listItems.size() + " items to crawl in "
 						+ listState.getUrl());               

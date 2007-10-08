@@ -463,7 +463,7 @@ public class ListState implements StatefulObject {
    *     of a ListState 
    */
   public void loadFromDOM(Element element) throws SharepointException {
-	if(element!=null){
+	if(element==null){
 		throw new SharepointException("element not found");
 	}
 	  
