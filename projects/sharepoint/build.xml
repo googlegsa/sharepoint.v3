@@ -191,6 +191,16 @@
 			<fileset dir="source">
 				<include name="**/*.properties" />
 			</fileset>
+			<!--added by Amit Agrawal-->
+			<!--creation of manifest file-->
+			<manifest>
+			    <attribute name="Implementation-Title" value="Microsoft SharePoint 2007 Connector"/>
+  		        <attribute name="Implementation-Version" value="1.0.0"/>
+			    <attribute name="Implementation-Vendor" value="Google Inc."/>
+			    <attribute name="Specification-Title" value="Connector Manager SPI"/>
+			    <attribute name="Specification-Version" value="1.0 r628"/>
+			    <attribute name="Specification-Vendor" value="Google Inc."/> 
+			</manifest>
 		</jar>
 	</target>
 
