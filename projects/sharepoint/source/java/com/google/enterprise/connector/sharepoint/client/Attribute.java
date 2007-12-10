@@ -1,11 +1,7 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import java.io.Serializable;
-/**
- * 
- * @author Amit A
- *
- */
+
 public class Attribute implements Serializable
 {
  private static final long serialVersionUID = 0x1L;
@@ -53,13 +49,5 @@ public class Attribute implements Serializable
          return name.equals(attribute.getName()) && value.equals(attribute.getValue());
      }
  }
-
-/**
- * @return
- * @see java.lang.String#hashCode()
- */
-public int hashCode() {
-	return super.hashCode();
-}
 
 }

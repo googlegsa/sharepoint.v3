@@ -14,8 +14,6 @@ package com.google.enterprise.connector.sharepoint;
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import java.util.ArrayList;
-
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.client.SPDocument;
@@ -61,7 +59,6 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
 
 //	-------------END: PS4312---------------------------------
 //	-------------PS4312(MOSS 2007)---------------------------------
-	final String SPType = SharepointConnectorType.SP2007;
 //	  final String sharepointUrl = "http://ps4312:43386/amitsite";
 	  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
 	  
@@ -126,39 +123,16 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
 //  private SharepointClient sharepointClient;
   private SharepointConnector connector;
   private SharepointTraversalManager manager;
-  private static ArrayList BLACK_LIST;
-  static {
-		BLACK_LIST = new ArrayList();
-		BLACK_LIST.add(".*vti_cachedcustomprops$");
-		BLACK_LIST.add(".*vti_parserversion$");
-		BLACK_LIST.add(".*ContentType$");
-		BLACK_LIST.add(".*vti_cachedtitle$");
-		BLACK_LIST.add(".*ContentTypeId$");
-		BLACK_LIST.add(".*DocIcon$");
-		BLACK_LIST.add(".*vti_cachedhastheme$");
-		BLACK_LIST.add(".*vti_metatags$");
-		BLACK_LIST.add(".*vti_charset$");
-		BLACK_LIST.add(".*vti_cachedbodystyle$");
-		BLACK_LIST.add(".*vti_cachedneedsrewrite$");
-	}
-  
-  private static ArrayList WHITE_LIST;
-	static {
-		WHITE_LIST = new ArrayList();
-		WHITE_LIST.add(".*vti_title$");
-		WHITE_LIST.add(".*vti_author$");
-	}
   
   public void setUp() throws Exception {
 	  
     //forget any global state left over from previous runs
     GlobalState.forgetState(null);
     
-  SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,SPType,WHITE_LIST,BLACK_LIST);
+  SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null);
 //  sharepointClient = new SharepointClient(sharepointClientContext);
-  connector = new SharepointConnector(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,"","",SPType);
-  connector.setWhiteList(WHITE_LIST);
-  connector.setBlackList(BLACK_LIST);
+  connector = new SharepointConnector(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,"","");
+
   
     /*SharepointClientContext sharepointClientContext = new 
       SharepointClientContext(sharepointUrl, domain, username, password, null);

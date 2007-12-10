@@ -35,17 +35,17 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.util.logging.Logger;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-
 import org.apache.commons.httpclient.HttpClientError;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>
@@ -95,9 +95,8 @@ import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
 public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory {
 
     /** Log object for this class. */
-//    private static final Log LOG = LogFactory.getLog(EasySSLProtocolSocketFactory.class);
-    private static final Logger LOGGER = Logger.getLogger(EasySSLProtocolSocketFactory.class.getName());
-    private String className = EasySSLProtocolSocketFactory.class.getName();
+    private static final Log LOG = LogFactory.getLog(EasySSLProtocolSocketFactory.class);
+
     private SSLContext sslcontext = null;
 
     /**
@@ -108,9 +107,7 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
     }
 
     private static SSLContext createEasySSLContext() {
-    	String sFunctionName = "createEasySSLContext()";
-		LOGGER.entering(EasySSLProtocolSocketFactory.class.getName(), sFunctionName);
-    	try {
+        try {
             SSLContext context = SSLContext.getInstance("SSL");
             
 //          Create a trust manager that does not validate certificate chains
@@ -132,22 +129,17 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
               null, 
               /*new TrustManager[] {new EasyX509TrustManager(null)}*/trustmanagers, 
               null);
-            LOGGER.exiting(EasySSLProtocolSocketFactory.class.getName(), sFunctionName);
             return context;
         } catch (Exception e) {
-//            LOGGER.severe(e.getMessage(), e);
-        	LOGGER.severe(e.getMessage());
+            LOG.error(e.getMessage(), e);
             throw new HttpClientError(e.toString());
         }
     }
 
     private SSLContext getSSLContext() {
-    	String sFunctionName = "getSSLContext()";
-		LOGGER.entering(className, sFunctionName);
         if (this.sslcontext == null) {
             this.sslcontext = createEasySSLContext();
         }
-        LOGGER.exiting(className, sFunctionName);
         return this.sslcontext;
     }
 

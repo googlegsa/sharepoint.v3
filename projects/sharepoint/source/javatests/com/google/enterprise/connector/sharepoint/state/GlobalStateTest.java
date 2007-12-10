@@ -19,9 +19,9 @@ import com.google.enterprise.connector.sharepoint.client.SharepointException;
  * Tests the GlobalState object. In most cases, it creates the object,
  * dumps it to XML file 1, loads from XML file 1, dumps that to XML file 2,
  * and asserts that XML file 1 is identical to XML file 2.
- * @author amit_kagrawal
  */
 
+//modified by: Amit Agrawal
 public class GlobalStateTest extends TestCase {
 
   private GlobalState state;
@@ -31,7 +31,7 @@ public class GlobalStateTest extends TestCase {
    * Replace this with a suitable temporary directory if not running on 
    * a Linux or Unix-like system.
    */
-  private static final String TMP_DIR = "c:";
+  private static final String TMP_DIR = "c:/amit";
   
   public final void setUp() {
     state = new GlobalState(TMP_DIR);
@@ -45,28 +45,30 @@ public class GlobalStateTest extends TestCase {
   public final void testBasic() throws SharepointException {
     // We feed in specific dates for repeatability of the test:
     DateTime time1 = Util.parseDate("20070504T142925.499+0530");
-    DateTime time2 = Util.parseDate("20070504T142925.772+0530");
-    ListState list1 = null;
-    ListState list2 = null;
+//    DateTime time2 = Util.parseDate("20070504T142925.772+0530");
+    ListState list1 = null/*, list2 = null*/;
 
     //creating list states for global state
     list1 = state.makeListState("foo", time1);
-    list2 = state.makeListState("bar", time2);
+//    list2 = state.makeListState("bar", time2);
 
     try {
       String output = state.getStateXML();// get the xml representation of the in-memory global state
       String expected1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
     	  				 +"<state>\r\n"
-    	  				 +"<com.google.enterprise.connector.sharepoint.state.ListState id=\"foo\">\r\n"
+    	  				 +"<ListState id=\"foo\">\r\n"
     	  				 +"<lastMod>20070504T142925.499+0530</lastMod>\r\n"
     	  				 +"<URL/>\r\n"
-    	  				 +"</com.google.enterprise.connector.sharepoint.state.ListState>\r\n"
-    	  				 +"<com.google.enterprise.connector.sharepoint.state.ListState id=\"bar\">\r\n"
+    	  				 +"</ListState>\r\n"
+    	  				 +"<ListState id=\"bar\">\r\n"
     	  				 +"<lastMod>20070504T142925.772+0530</lastMod>\r\n"
     	  				 +"<URL/>\r\n"
-    	  				 +"</com.google.enterprise.connector.sharepoint.state.ListState>\r\n"
+    	  				 +"</ListState>\r\n"
     	  				 +"</state>\r\n";
-
+/*      System.out.println(output);
+      System.out.println("---------------");
+      System.out.println(expected1);
+*/      
       assertEquals(expected1, output);//check if the state is as expected
       state.saveState();//save the state to disk.. forms TMP_DIR\Sharepoint_state.xml file
       GlobalState state2 = null;
@@ -108,8 +110,8 @@ public class GlobalStateTest extends TestCase {
       list2.setLastDocCrawled(doc2);
       String expected1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" 
     	  +"<state>\r\n" 
-    	  +"<current id=\"foo\" type=\"com.google.enterprise.connector.sharepoint.state.ListState\"/>\r\n" 
-    	  +"<com.google.enterprise.connector.sharepoint.state.ListState id=\"foo\">\r\n" 
+    	  +"<current id=\"foo\" type=\"ListState\"/>\r\n" 
+    	  +"<ListState id=\"foo\">\r\n" 
     	  +"<lastMod>20070505T031419.403+0530</lastMod>\r\n" 
     	  +"<URL/>\r\n" 
     	  +"<lastDocCrawled>\r\n" 
@@ -118,8 +120,8 @@ public class GlobalStateTest extends TestCase {
     	  +"<url>url1</url>\r\n" 
     	  +"</document>\r\n" 
     	  +"</lastDocCrawled>\r\n" 
-    	  +"</com.google.enterprise.connector.sharepoint.state.ListState>\r\n" 
-    	  +"<com.google.enterprise.connector.sharepoint.state.ListState id=\"bar\">\r\n" 
+    	  +"</ListState>\r\n" 
+    	  +"<ListState id=\"bar\">\r\n" 
     	  +"<lastMod>20070505T031419.867+0530</lastMod>\r\n" 
     	  +"<URL/>\r\n" 
     	  +"<lastDocCrawled>\r\n" 
@@ -128,7 +130,7 @@ public class GlobalStateTest extends TestCase {
     	  +"<url>url2</url>\r\n" 
     	  +"</document>\r\n" 
     	  +"</lastDocCrawled>\r\n" 
-    	  +"</com.google.enterprise.connector.sharepoint.state.ListState>\r\n" 
+    	  +"</ListState>\r\n" 
     	  +"</state>\r\n";
       String output = state.getStateXML();
       System.out.println(output);
@@ -179,8 +181,8 @@ public class GlobalStateTest extends TestCase {
       String output = state.getStateXML();
       String expected1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" 
     	  +"<state>\r\n" 
-    	  +"<current id=\"foo\" type=\"com.google.enterprise.connector.sharepoint.state.ListState\"/>\r\n" 
-    	  +"<com.google.enterprise.connector.sharepoint.state.ListState id=\"foo\">\r\n" 
+    	  +"<current id=\"foo\" type=\"ListState\"/>\r\n" 
+    	  +"<ListState id=\"foo\">\r\n" 
     	  +"<lastMod>20070505T031419.403+0530</lastMod>\r\n" 
     	  +"<URL/>\r\n" 
     	  +"<lastDocCrawled>\r\n" 
@@ -199,8 +201,8 @@ public class GlobalStateTest extends TestCase {
     	  +"<url>url4</url>\r\n" 
     	  +"</document>\r\n" 
     	  +"</crawlQueue>\r\n" 
-    	  +"</com.google.enterprise.connector.sharepoint.state.ListState>\r\n" 
-    	  +"<com.google.enterprise.connector.sharepoint.state.ListState id=\"bar\">\r\n" 
+    	  +"</ListState>\r\n" 
+    	  +"<ListState id=\"bar\">\r\n" 
     	  +"<lastMod>20070505T031419.867+0530</lastMod>\r\n" 
     	  +"<URL/>\r\n" 
     	  +"<lastDocCrawled>\r\n" 
@@ -209,7 +211,7 @@ public class GlobalStateTest extends TestCase {
     	  +"<url>url2</url>\r\n" 
     	  +"</document>\r\n" 
     	  +"</lastDocCrawled>\r\n" 
-    	  +"</com.google.enterprise.connector.sharepoint.state.ListState>\r\n" 
+    	  +"</ListState>\r\n" 
     	  +"</state>\r\n";
       System.out.println(output);
       assertEquals(expected1, output);

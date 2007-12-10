@@ -5,7 +5,6 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 /**
@@ -47,11 +46,11 @@ public class SiteDataWSTest extends TestCase {
 
 //	-------------END: PS4312---------------------------------
 //	-------------PS4312(MOSS 2007)---------------------------------
-	 /* final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
+	  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
 	  final String sharepointUrlWithSpaces ="http://ps4312.persistent.co.in:43386/amitsite  ";
 	  final String host = "ps4312";
 	  final int port = 43386;
-	  final String SPType = SharepointConnectorType.SP2007;
+	  
 	  final String username = "Administrator";
 	  final String password = "pspl!@#";
 	  final String domain = "ps4312";
@@ -61,32 +60,9 @@ public class SiteDataWSTest extends TestCase {
 	  final String exclURLs ="" ;
 	  final String inclURLs ="http://ps4312.persistent.co.in:43386,http://ps4312.persistent.co.in:23508,http://ps4312:43386,http://ps4312:23508";
 	  final String docLibLInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}"; 
-	  final String issuesInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}";*/
-//	-------------END: PS4312---------------------------------
-//		-------------v07ps45372k3(sps 2003)---------------------------------
-	final String SPType = SharepointConnectorType.SP2003;
-	  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088/sites/amit";
-	  final String sharepointUrlWithSpaces ="http://v07ps45372k3.persistent.co.in:8088/sites/amit  ";
-//	  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088/sites/amit/sub_amit_1";
-//	  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088";
-//	  final String sharepointUrl = "http://v07ps45372k3:8088";
-	  final String domain = "v07ps45372k3";
-	  final String host = "v07ps45372k3";
-	  final int port = 8088;
-	  final String username = "Administrator";
-	  final String password = "Pspl!@#";
-	  final String mySiteBaseURL=null;
-	  final String googleConnWorkDir = null;
-	  final String exclURLs ="http://v07ps45372k3.persistent.co.in:8088/sites/amit/sub_amit_1" ;
-	  final String aliasHost = null;
-	  final String aliasPort = null;
-//	  final String inclURLs =".*";
-	  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088/sites/amit";
-	  final String docLibLInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}"; 
 	  final String issuesInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}";
-//	  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088";
-//	  final String inclURLs =".*";
-//	-------------END: v07ps45372k3---------------------------------
+//	-------------END: PS4312---------------------------------
+
 
   private SiteDataWS siteDataWS;
   
@@ -94,7 +70,7 @@ public class SiteDataWSTest extends TestCase {
    * @see junit.framework.TestCase#setUp()
    */
   protected void setUp() throws Exception {
-	SharepointClientContext sharepointClientContext = new SharepointClientContext(SPType,sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null);
+	SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null);
     siteDataWS = new SiteDataWS(sharepointClientContext);   
     super.setUp();
   }
@@ -125,7 +101,7 @@ public class SiteDataWSTest extends TestCase {
     
     int numDocLib = 0;    
     try {
-      SharepointClientContext sharepointClientContextSpaces =  new SharepointClientContext(SPType,sharepointUrlWithSpaces, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null); 
+      SharepointClientContext sharepointClientContextSpaces =  new SharepointClientContext(sharepointUrlWithSpaces, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null); 
       SiteDataWS siteDataWSSpaces =new SiteDataWS(sharepointClientContextSpaces);   
       List listCollection = siteDataWSSpaces.getDocumentLibraries();
       System.out.println("SPDocument Libraries found - ");
@@ -183,7 +159,7 @@ public class SiteDataWSTest extends TestCase {
         System.out.println(baseList.getTitle());        
         numGenList++;        
       }
-      assertEquals(7, numGenList);//count no: of generic lists
+      assertEquals(5, numGenList);//count no: of generic lists
     } catch (SharepointException e) {      
       e.printStackTrace();
       fail();

@@ -15,7 +15,6 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.text.Collator;
 import java.util.List;
 
@@ -149,23 +148,10 @@ public class SharepointClientUtils {
 		if((strList != null) && (strValue != null)) {
 			int length = strList.length;
 			for(int i=0; i<length ; i++) {
-				String strURLPat = strList[i];
 				if(strList[i]!= null && ! collator.equals(strList[i],BLANK_STRING)) {
-
-
-					if(strValue.matches((String)strURLPat)) {
+					if(strValue.matches(strList[i]) || strValue.startsWith(strList[i])) {
 						return true ;
-					}else{
-						String strDecodedValue = URLDecoder.decode(strValue);
-						String strDecodedURLPat = URLDecoder.decode(strURLPat);
-						if(strDecodedValue!=null){
-							if(strDecodedValue.startsWith(strDecodedURLPat)){
-								return true;
-							}
-						}
-
 					}
-
 				}
 			}
 		}
@@ -184,20 +170,9 @@ public class SharepointClientUtils {
 		if((strList != null) && (strValue != null)) {
 			int length = strList.size();
 			for(int i=0; i<length ; i++) {
-				String strURLPat = (String) strList.get(i);
-				if(strURLPat!= null && ! collator.equals(strURLPat,BLANK_STRING)){
-
-					if(strValue.matches((String)strURLPat)) {
+				if(strList.get(i)!= null && ! collator.equals((String)strList.get(i),BLANK_STRING)){
+					if(strValue.matches((String)strList.get(i)) || strValue.startsWith((String)strList.get(i))) {
 						return true ;
-					}else{
-						String strDecodedValue = URLDecoder.decode(strValue);
-						String strDecodedURLPat = URLDecoder.decode(strURLPat);
-						if(strDecodedValue!=null){
-							if(strDecodedValue.startsWith(strDecodedURLPat)){
-								return true;
-							}
-						}
-
 					}
 				}
 			}
@@ -210,7 +185,7 @@ public class SharepointClientUtils {
 	 * @param strKeyList
 	 * @param strValueList
 	 * @return
-	 *//*
+	 */
 	public List match(String[] strKeyList, List strValueList){
 
 		if((strKeyList != null) && (strValueList != null)) {
@@ -220,7 +195,7 @@ public class SharepointClientUtils {
 				if(strKeyList[i]!= null && ! collator.equals(strKeyList[i],BLANK_STRING)) {
 					for(int j= (sizeValueList -1) ; i >= 0  ; j--)	{
 						String strValue = (String) strValueList.get(j);
-						if(strValue.matches(strKeyList[i]) || (URLDecoder.decode(strValue)).startsWith(URLDecoder.decode(strKeyList[i]))) {
+						if(strValue.matches(strKeyList[i]) || strValue.startsWith(strKeyList[i])) {
 							strValueList.remove(j);
 						}
 					}
@@ -228,7 +203,7 @@ public class SharepointClientUtils {
 			}
 		}
 		return strValueList;
-	}*/
+	}
 
 
 
@@ -239,7 +214,7 @@ public class SharepointClientUtils {
 	 * @return
 	 */
 
-	/*public List match(List strKeyList, List strValueList){
+	public List match(List strKeyList, List strValueList){
 
 		if((strKeyList != null) && (strValueList != null)) {
 			int sizeKeyList = strKeyList.size();
@@ -248,7 +223,7 @@ public class SharepointClientUtils {
 				if(strKeyList.get(i)!= null && ! collator.equals((String) strKeyList.get(i),BLANK_STRING)) {
 					for(int j= (sizeValueList -1) ; i >= 0  ; j--)	{
 						String strValue = (String) strValueList.get(j);
-						if(strValue.matches(URLDecoder.decode((String)strKeyList.get(i))) || (URLDecoder.decode(strValue)).startsWith(URLDecoder.decode((String)strKeyList.get(i)))) {
+						if(strValue.matches((String)strKeyList.get(i)) || strValue.startsWith((String)strKeyList.get(i))) {
 							strValueList.remove(j);
 						}
 					}
@@ -256,6 +231,6 @@ public class SharepointClientUtils {
 			}
 		}
 		return strValueList;
-	}*/
+	}
 
 }

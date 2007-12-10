@@ -5,7 +5,6 @@ package com.google.enterprise.connector.sharepoint.client;
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.IntegrationTest;
-import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.spi.Property;
@@ -51,7 +50,7 @@ public class SharepointClientTest extends TestCase {
 	  final String sharepointUrlWithSpaces ="http://ps4312.persistent.co.in:43386/amitsite  ";
 	  final String host = "ps4312";
 	  final int port = 43386;
-	  final String SPType = SharepointConnectorType.SP2007;
+	  
 	  final String username = "Administrator";
 	  final String password = "pspl!@#";
 	  final String domain = "ps4312";
@@ -71,7 +70,7 @@ public class SharepointClientTest extends TestCase {
    * @see junit.framework.TestCase#setUp()
    */
   protected void setUp() throws Exception {
-	SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,SPType);
+	SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null);
 	       
     sharepointClient = new SharepointClient(sharepointClientContext);
     globalState = new GlobalState(sharepointClientContext.getGoogleConnectorWorkDir());

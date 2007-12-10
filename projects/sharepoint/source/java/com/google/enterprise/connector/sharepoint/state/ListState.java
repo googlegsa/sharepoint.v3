@@ -24,8 +24,9 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -70,9 +71,7 @@ public class ListState implements StatefulObject {
    */
   private String url = "";
   
-//  private static Log logger = LogFactory.getLog(ListState.class);
-  private static final Logger LOGGER = Logger.getLogger(ListState.class.getName());
-  private String className = GlobalState.class.getName();
+  private static Log logger = LogFactory.getLog(ListState.class);
   
   /**
    * this should be set by the main Sharepoint client every time it 
@@ -148,7 +147,7 @@ public class ListState implements StatefulObject {
    */
   public void setPrimaryKey(String newKey) {
 	  //primary key cannot be null
-	  if(newKey!=null){
+	  if( newKey!=null){
 		  key = newKey;
 	  }
   }
@@ -198,8 +197,6 @@ public class ListState implements StatefulObject {
    * @return Calendar suitable for passing to WebServices
    */
   public Calendar getDateForWSRefresh() {
-	  String sFunctionName = "getDateForWSRefresh()";
-		LOGGER.entering(className, sFunctionName);
     Calendar date = Util.jodaToCalendar(getLastMod()); // our default
     
     //modified by amit
@@ -217,7 +214,6 @@ public class ListState implements StatefulObject {
         date = lastCrawlQueueDate;
       }
     }
-    LOGGER.exiting(className, sFunctionName);
     return date;
   }
   
@@ -248,8 +244,6 @@ public class ListState implements StatefulObject {
    * @param doc
    */
   public void setLastDocCrawled(SPDocument doc) {
-	  String sFunctionName = "setLastDocCrawled(SPDocument doc)";
-		LOGGER.entering(className, sFunctionName);
 	  //null check added by Amit
 	if(doc!=null){
 	    lastDocCrawled = doc;
@@ -264,7 +258,7 @@ public class ListState implements StatefulObject {
 	    // "foreach" syntax not used because we need the iterator to remove()
 	    Iterator iter = crawlQueue.iterator();
 	    if(iter!=null){
-		    while (iter.hasNext()){
+		    while ( iter.hasNext()){
 		      SPDocument docQ = (SPDocument) iter.next();
 		      iter.remove();
 		      if (docQ.equals(doc)) {
@@ -273,7 +267,6 @@ public class ListState implements StatefulObject {
 		    }
 	    }
 	}//end null check
-	LOGGER.exiting(className, sFunctionName);
   }
 
   public List getCrawlQueue() {
@@ -297,19 +290,17 @@ public class ListState implements StatefulObject {
    */
   public void dumpCrawlQueue() {
 	  String sFunctionName = "dumpCrawlQueue()";
-	  LOGGER.entering(className, sFunctionName);
     if (crawlQueue != null && crawlQueue.size() > 0) {
-     LOGGER.config(sFunctionName+" : Crawl queue for " + getUrl());
+     logger.debug(sFunctionName+" : Crawl queue for " + getUrl());
 //      for (SPDocument doc : crawlQueue) {
       for (int iDoc=0; iDoc<crawlQueue.size();++iDoc) {
     	SPDocument doc =(SPDocument) crawlQueue.get(iDoc);
-        LOGGER.config(sFunctionName+": "+ doc.getLastMod().getTime() + ", " + doc.getUrl());
+        logger.debug(sFunctionName+": "+ doc.getLastMod().getTime() + ", " + doc.getUrl());
         doc.dumpAllAttrs();
       }
     } else {
-      LOGGER.config(sFunctionName+" : Empty crawl queue for " + getUrl());
+      logger.debug(sFunctionName+" : Empty crawl queue for " + getUrl());
     }
-    LOGGER.exiting(className, sFunctionName);
   }
   
   public void setCrawlQueue(List inCrawlQueue) {
@@ -328,8 +319,6 @@ public class ListState implements StatefulObject {
    */
   private Node dumpDocToDOM(org.w3c.dom.Document domDoc, SPDocument doc)
       throws SharepointException {
-	  String sFunctionName = "dumpDocToDOM(org.w3c.dom.Document domDoc, SPDocument doc)";
-	  LOGGER.entering(className, sFunctionName);
 	  //added by amit
 	 if(domDoc==null){
 		 throw new SharepointException("Unable to get the DOM document");
@@ -363,7 +352,6 @@ public class ListState implements StatefulObject {
       docAttr.setAttribute(ATTR_VALUE, attr.getValue().toString());
       element.appendChild(docAttr);
     }
-    LOGGER.exiting(className, sFunctionName);
     return element;
   }
   
@@ -375,8 +363,6 @@ public class ListState implements StatefulObject {
    * @throws SharepointException
    */
   public Node dumpToDOM(Document domDoc) throws SharepointException{
-	  String sFunctionName = "dumpToDOM(Document domDoc)";
-	  LOGGER.entering(className, sFunctionName);
 //    Element element = domDoc.createElement(this.getClass().getSimpleName());
     Element element = domDoc.createElement(this.getClass().getName());
     element.setAttribute(ID, getGuid());
@@ -408,7 +394,6 @@ public class ListState implements StatefulObject {
         queue.appendChild(dumpDocToDOM(domDoc, docTmp));
       }
     }
-    LOGGER.exiting(className, sFunctionName);
     return element;
   }
   
@@ -420,8 +405,7 @@ public class ListState implements StatefulObject {
    */
   private SPDocument loadDocFromDOM(Element element) 
     throws SharepointException {
-	  String sFunctionName = "loadDocFromDOM(Element element)";
-	  LOGGER.entering(className, sFunctionName);
+	 
 	  //added by amit
 	 if(element==null){
 		 throw new SharepointException("element is not found");
@@ -469,7 +453,6 @@ public class ListState implements StatefulObject {
 	      }
 	    }
     }//end..null check
-    LOGGER.exiting(className, sFunctionName);
     return doc;
   }
   
@@ -480,8 +463,6 @@ public class ListState implements StatefulObject {
    *     of a ListState 
    */
   public void loadFromDOM(Element element) throws SharepointException {
-	  String sFunctionName = "loadFromDOM(Element element)";
-	  LOGGER.entering(className, sFunctionName);
 	if(element==null){
 		throw new SharepointException("element not found");
 	}
@@ -508,7 +489,7 @@ public class ListState implements StatefulObject {
     // URL
     NodeList urlNodeList = element.getElementsByTagName("URL");
     //modified by amit
-    if((urlNodeList!=null)&& (urlNodeList.getLength() > 0)){
+    if((urlNodeList!=null)&& (urlNodeList.getLength() > 0) ){
     	if(urlNodeList.item(0) != null && urlNodeList.item(0).getFirstChild() != null) {
     		url = urlNodeList.item(0).getFirstChild().getNodeValue();
     	}
@@ -550,7 +531,6 @@ public class ListState implements StatefulObject {
 	      }
     	}
     }
-    LOGGER.exiting(className, sFunctionName);
   }
    
   public String getGuid() {

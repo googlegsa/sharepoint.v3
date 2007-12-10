@@ -20,10 +20,6 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Logger;
-
-/*import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;*/
 
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
 import com.google.enterprise.connector.spi.Document;
@@ -47,7 +43,7 @@ public class SPDocument implements Document, Comparable{
 
 	//list guid
 	private String listguid;
-	private static final Logger LOGGER = Logger.getLogger(SPDocument.class.getName());
+
 	public static final String AUTHOR = "sharepoint:author";
 	public static final String LIST_GUID = "sharepoint:listguid";
 	public static final String OBJECT_TYPE = "google:objecttype";
@@ -76,13 +72,10 @@ public class SPDocument implements Document, Comparable{
 	}
 
 	public SPDocument(String inDocId, String inUrl, Calendar inLastMod,String inObjectType) {
-		final String sFunctionName ="SPDocument(String inDocId, String inUrl, Calendar inLastMod,String inObjectType)";
 		this.docId = inDocId;
 		this.url = inUrl;
 		this.lastMod = inLastMod;
 		this.objType = inObjectType;
-		this.author = NO_AUTHOR;
-		LOGGER.config(sFunctionName+": docid["+inDocId+"], URL["+inUrl+"], LastMod["+inLastMod+"], ObjectType["+inObjectType+"],author["+author+"]");
 	}
 	public SPDocument(String inDocId, String inUrl, Calendar inLastMod){
 		this.docId = inDocId;
@@ -90,13 +83,11 @@ public class SPDocument implements Document, Comparable{
 		this.lastMod = inLastMod;
 	}
 	public SPDocument(String inDocId, String inUrl, Calendar inLastMod, String inAuthor,String inObjType) {
-		final String sFunctionName ="SPDocument(String inDocId, String inUrl, Calendar inLastMod, String inAuthor,String inObjType)";
 		this.docId = inDocId;
 		this.url = inUrl;
 		this.lastMod = inLastMod;
 		this.author = inAuthor;
 		this.objType = inObjType;
-		LOGGER.config(sFunctionName+": docid["+inDocId+"], URL["+inUrl+"], LastMod["+inLastMod+"], ObjectType["+inObjType+"],author["+inAuthor+"]");
 	}
 
 	public Calendar getLastMod() {
@@ -180,56 +171,38 @@ public class SPDocument implements Document, Comparable{
 	}
 
 	public Property findProperty(String strPropertyName) throws RepositoryException {
-//		System.out.println("----------findProperty(String strPropertyName)--------");
-		String sFuncName = "findProperty(String strPropertyName)";
-		LOGGER.entering(SPDocument.class.getName(), sFuncName);
 		if(strPropertyName==null){
-			LOGGER.warning("findProperty: unable to find the property name");
 			return null;
 		}
-		
-//		System.out.print("Time: "+new Date().toString());
 		Collator collator = SharepointConnectorType.getCollator();
 		if(collator.equals(strPropertyName,SpiConstants.PROPNAME_CONTENTURL)){
-//			System.out.println(SpiConstants.PROPNAME_CONTENTURL+": "+ new StringValue(getUrl()));
 			return new SPProperty(SpiConstants.PROPNAME_CONTENTURL, new StringValue(getUrl()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_SEARCHURL)){
-//			System.out.println(SpiConstants.PROPNAME_SEARCHURL+": "+ new StringValue(getUrl()));
 			return new SPProperty(SpiConstants.PROPNAME_SEARCHURL, new StringValue(getUrl()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_DISPLAYURL)){
-//			System.out.println(SpiConstants.PROPNAME_DISPLAYURL+": "+ new StringValue(getUrl()));
 			return new SPProperty(SpiConstants.PROPNAME_DISPLAYURL, new StringValue(getUrl()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_DOCID)){
-//			System.out.println(SpiConstants.PROPNAME_DOCID+": "+ new StringValue(getDocId()));
 			return new SPProperty(SpiConstants.PROPNAME_DOCID, new StringValue(getDocId()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_LASTMODIFIED)){
-//			System.out.println(SpiConstants.PROPNAME_LASTMODIFIED+": "+ new DateValue(getLastMod()));
 			return new SPProperty(SpiConstants.PROPNAME_LASTMODIFIED, new DateValue(getLastMod()));
 		}else if(collator.equals(strPropertyName,LIST_GUID)){
-//			System.out.println(LIST_GUID+": "+ new StringValue(getListGuid()));
 			return new SPProperty(LIST_GUID, new StringValue(getListGuid()));
 		}else if(collator.equals(strPropertyName,AUTHOR)){
-//			System.out.println(AUTHOR+": "+ new StringValue(getAuthor()));
 			return new SPProperty(AUTHOR, new StringValue(getAuthor()));
 		}else if(strPropertyName.equals(OBJECT_TYPE)){
-//			System.out.println(OBJECT_TYPE+": "+ new StringValue(getObjType()));
 			return new SPProperty(OBJECT_TYPE, new StringValue(getObjType()));
 		}else if(strPropertyName.equals(SpiConstants.PROPNAME_ISPUBLIC)){
-//			System.out.println(SpiConstants.PROPNAME_ISPUBLIC+": "+ BooleanValue.makeBooleanValue(false));
 			return new SPProperty(SpiConstants.PROPNAME_ISPUBLIC, BooleanValue.makeBooleanValue(false));
 		}else{
 			//check if the property is in the name of the custom metadata
 			for (Iterator iter=this.getAllAttrs().iterator();iter.hasNext();){
 				Attribute attr = (Attribute) iter.next();
 				if(collator.equals(strPropertyName,attr.getName())){
-//					System.out.println(strPropertyName+": "+ new StringValue(attr.getValue().toString()));
 					return new SPProperty(strPropertyName, new StringValue(attr.getValue().toString()));
 				}
 			}	
 
 		}
-		LOGGER.finer("no matches found for["+strPropertyName+"]");
-		LOGGER.exiting(SPDocument.class.getName(), sFuncName);
 		return null;//no matches found
 	}
 
@@ -250,23 +223,8 @@ public class SPDocument implements Document, Comparable{
 			Attribute attr = (Attribute) iter.next();
 			s.add(attr.getName().toString());
 		}
-
 		return s;
 	}
-
-/*	private void dumpPropertyNames(HashSet s) {
-		System.out.println("-----------{dumpPropertyNames(Set s)}------------------");
-		if(s==null){
-			System.out.println("NULLLLLLLLLLLLLLLLLLLLLLLL");
-		}else{
-			Iterator it = s.iterator();
-			
-			while(it.hasNext()){
-				System.out.println("Prop: "+it.next());
-			}
-		}
-		System.out.println("-----------end: {dumpPropertyNames(Set s)}------------------");
-	}*/
 
 	public int compareTo(Object arg0) {
 		return -1;

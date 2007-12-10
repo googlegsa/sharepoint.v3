@@ -24,7 +24,6 @@
 	<property name="connector-manager.dir" value="${env.CONNECTOR_MANAGER_DIR}" />
 	<property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
 	<property name="connector.jarfile" value="${connector-manager.dir}/${jar.dir}/connector.jar" />
-	<!--<property name="lib.jar.dir" value="C:/required_jars" />-->
 	<property name="lib.jar.dir" value="lib" />
 	<property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
 	<property name="junit.jarfile" value="${lib.jar.dir}/junit.jar" />
@@ -53,7 +52,6 @@
 		<os family="windows" />
 	</condition>
 	
-		
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 	<!-- =========================== TASKS =============================== -->
 	<target name="sharepoint-connector" depends="clean,init, compile, jar,
@@ -73,77 +71,8 @@
 	</target>
 
 	<target name="stubs" depends="init">
-	<!-- changed by amit: Convert WSDL to Java files -->	
-		<!--<echo message="${src}"/>-->
-		<!--<echo message="${lib.jar.dir}"/>-->
-		<!--for SiteData.wsdl-->
-		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-				 <arg line="${wsdl}/SiteData.wsdl -p com.google.enterprise.connector.sharepoint.generated.sitedata -o ${src}"/>
-			<classpath>
-				<fileset dir="${lib.jar.dir}">
-						<include name="**/*.jar" />
-				</fileset>
-			</classpath>
-		 </java>
-		
-		<!--for Lists.wsdl-->
-		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-						 <arg line="${wsdl}/Lists.wsdl -p com.google.enterprise.connector.sharepoint.generated.lists -o ${src}"/>
-					<classpath>
-						<fileset dir="${lib.jar.dir}">
-								<include name="**/*.jar" />
-						</fileset>
-					</classpath>
-		</java>
-		
-		<!--for Webs.wsdl-->
-		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-						 <arg line="${wsdl}/Webs.wsdl -p com.google.enterprise.connector.sharepoint.generated.webs -o ${src}"/>
-					<classpath>
-						<fileset dir="${lib.jar.dir}">
-								<include name="**/*.jar" />
-						</fileset>
-					</classpath>
-		</java>
-		
-		<!--for Views.wsdl-->
-		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-						 <arg line="${wsdl}/Views.wsdl -p com.google.enterprise.connector.sharepoint.generated.views -o ${src}"/>
-					<classpath>
-						<fileset dir="${lib.jar.dir}">
-								<include name="**/*.jar" />
-						</fileset>
-					</classpath>
-		</java>
-		
-		<!--for UserProfileService.wsdl (SP2007)-->
-		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-						 <arg line="${wsdl}/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.userprofileservice -o ${src}"/>
-					<classpath>
-						<fileset dir="${lib.jar.dir}">
-								<include name="**/*.jar" />
-						</fileset>
-					</classpath>
-		</java>
-		<!--for UserProfileService.wsdl (SP2003)-->
-		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-						 <arg line="${wsdl}/sp2003/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice -o ${src}"/>
-					<classpath>
-						<fileset dir="${lib.jar.dir}">
-								<include name="**/*.jar" />
-						</fileset>
-					</classpath>
-		</java>
-		<!--for Alerts.wsdl-->
-		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-						 <arg line="${wsdl}/Alerts.wsdl -p com.google.enterprise.connector.sharepoint.generated.alerts -o ${src}"/>
-					<classpath>
-						<fileset dir="${lib.jar.dir}">
-								<include name="**/*.jar" />
-						</fileset>
-					</classpath>
-		</java>
-		<!--
+	<!-- added by abhijit mitra 
+	     Convert WSDL to Java files -->	
 		<if>
 		 		<equals arg1="${family}" arg2="windows" />
 		<then>
@@ -184,7 +113,7 @@
 				   		<echo message="OS FAMILY NOT SUPPORTED" />
 			 	</else>
 		</if>
--->
+
 	</target>
 
 
@@ -258,24 +187,15 @@
 	<target name="jar" depends="compile" description="sharepoint-connector">
 		<jar jarfile="${jarfile}">
 			<fileset dir="${classes}" />
-			<fileset dir="${config}" >
-				<exclude name="**/logconfig.properties"/>
-			</fileset>
+			<fileset dir="${config}" />
 			<fileset dir="source">
 				<include name="**/*.properties" />
-				<!--<include name="**/*.wsdd" />-->
 			</fileset>
-
-			<fileset dir="source/java/org/apache/axis/client">
-				<include name="**/*.wsdd" />
-			</fileset>
-
-
 			<!--added by Amit Agrawal-->
 			<!--creation of manifest file-->
 			<manifest>
-			    <attribute name="Implementation-Title" value="Microsoft SharePoint 2003,2007 Connector"/>
-  		        <attribute name="Implementation-Version" value="1.1.0"/>
+			    <attribute name="Implementation-Title" value="Microsoft SharePoint 2007 Connector"/>
+  		        <attribute name="Implementation-Version" value="1.0.0"/>
 			    <attribute name="Implementation-Vendor" value="Google Inc."/>
 			    <attribute name="Specification-Title" value="Connector Manager SPI"/>
 			    <attribute name="Specification-Version" value="1.0 r628"/>

@@ -35,7 +35,7 @@ import com.google.enterprise.connector.spi.RepositoryException;
 
 /**
  * Class to hold random utility functions. 
- * @author amit_kagrawal
+ *
  */
 public final class Util {
 
@@ -132,9 +132,27 @@ public final class Util {
         throw new RepositoryException(e.toString());
       }
     }
+//    return escapedSiteName.toString().replace("+", "%20");  
     String str = escapedSiteName.toString();
     str.replace('+', ' ');
+    //String str2="+";
     return str.replaceAll(" ", "%20");
   }
 
+	/*public static Set propertyNamesFromDoc() {
+		//construct the property for document
+		Set s = new HashSet();
+		s.add(SpiConstants.PROPNAME_CONTENTURL);
+		s.add(SpiConstants.PROPNAME_DOCID);
+		s.add(SpiConstants.PROPNAME_DISPLAYURL);
+		s.add(SpiConstants.PROPNAME_LASTMODIFIED);
+		s.add(LIST_GUID);
+		s.add(AUTHOR);
+		return s;
+		
+	}*/
+
+	/*public static Property propertyFromDoc() {
+		return null;
+	}*/
 }

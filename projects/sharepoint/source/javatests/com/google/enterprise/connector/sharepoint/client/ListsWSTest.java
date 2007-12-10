@@ -11,7 +11,6 @@ import java.util.Set;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
 import com.google.enterprise.connector.sharepoint.Util;
 
 /**
@@ -54,7 +53,7 @@ public class ListsWSTest extends TestCase {
 //	-------------END: PS4312---------------------------------
 //	-------------PS4312(MOSS 2007)---------------------------------
 	  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
-	  final String sptype = SharepointConnectorType.SP2007;
+	  
 	  final String host = "ps4312";
 	  final int port = 43386;
 	  final String username = "Administrator";
@@ -114,7 +113,7 @@ public class ListsWSTest extends TestCase {
   protected void setUp() throws Exception {
 /*    SharepointClientContext sharepointClientContext = new 
     SharepointClientContext(sharepointUrl, domain, username, password, null,includeURL,null,null);*/
-    SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,sptype);
+    SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null);
 
     
     

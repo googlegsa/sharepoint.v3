@@ -25,29 +25,16 @@ public class BaseList implements Comparable {
   private String title;
   private String type;
   private Calendar lastMod;
-  private String baseTemplate;
   
   public BaseList(String inInternalName, String inTitle, String inType,
-      Calendar inLastMod,String inBaseTemplate) throws SharepointException {
-	  
-    if(inInternalName==null){
-	    throw new SharepointException("Unable to find Internal name");
-    }
+      Calendar inLastMod) throws SharepointException {
+	  if(inInternalName==null){
+		  throw new SharepointException("Unable to find Internal name");
+	  }
     this.internalName = inInternalName;
-    if(inTitle!=null){
-    	this.title = inTitle;
-    }
-    if(inType!=null){
-    	this.type = inType;
-    }
-    
-    if(inLastMod!=null){
-    	this.lastMod = inLastMod;
-    }
-    
-    if(inBaseTemplate!=null){
-    	this.baseTemplate = inBaseTemplate;
-    }
+    this.title = inTitle;
+    this.type = inType;
+    this.lastMod = inLastMod;
   }
 
   public String getInternalName() {
@@ -81,14 +68,4 @@ public class BaseList implements Comparable {
   public int compareTo(Object arg0) {
 	return -1;
   }
-
-	public String getBaseTemplate() {
-		return baseTemplate;
-	}
-	
-	public void setBaseTemplate(String inBaseTemplate) {
-		if(inBaseTemplate!=null){
-			this.baseTemplate = inBaseTemplate;
-		}
-	}
 }
