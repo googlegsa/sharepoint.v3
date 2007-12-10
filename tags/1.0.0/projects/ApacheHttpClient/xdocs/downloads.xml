@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+
+   <properties>
+      <title>HttpClient Downloads</title>
+      <author email="httpcomponents-dev@jakarta.apache.org">HttpComponents Team</author>
+      <revision>$Id: downloads.xml 552281 2007-07-01 11:22:51Z rolandw $</revision>
+   </properties>
+
+   <body>
+
+     <section name="Downloads">
+       <p>
+         The following releases are available for download:
+       </p>
+       <ul>
+         <li>CURRENT - 3.1-rc1 - 16 March 2007 - 
+            <a href="http://jakarta.apache.org/site/downloads/downloads_commons-httpclient.cgi">Download</a> - <a 
+             href="http://www.apache.org/dist/jakarta/commons/httpclient/RELEASE-NOTES.txt"
+             >Release notes</a></li>
+       </ul>
+       <ul>
+         <li>STABLE - 3.0.1 - 08 May 2006 - 
+            <a href="http://jakarta.apache.org/site/downloads/downloads_commons-httpclient.cgi">Download</a> - <a 
+             href="http://www.apache.org/dist/jakarta/commons/httpclient/RELEASE-NOTES.txt"
+             >Release notes</a></li>
+       </ul>
+<!--
+       <p>
+         Nightly source drops and binary builds can be obtained at the following URLs:
+       </p>
+       <ul>
+           <li>UNSTABLE - <a href="http://svn.apache.org/builds/jakarta-commons/nightly/commons-httpclient/">latest from HEAD (3.1)</a></li>
+       </ul>
+-->
+       <p>
+         The Subversion repository for <em>HttpClient</em> can be
+         <a href="http://svn.apache.org/viewvc/jakarta/httpcomponents/oac.hc3x/trunk/">browsed online</a>.
+       </p>
+       <p>
+         The best way to get the <em>HttpClient</em> source is to checkout
+         directly from our public Subversion
+         <a href="http://svn.apache.org/repos/asf/jakarta/httpcomponents/oac.hc3x/trunk/">repository</a>.
+         Instructions are linked from <a href="http://jakarta.apache.org/site/cvsindex.html#Subversion">here</a>.
+       </p>
+       <p>
+         If you are using Maven for your project, you can create a dependency in your
+         project.xml with one of the following:</p>
+	 <p><b>3.1-rc1</b></p>
+         <source><![CDATA[
+<dependency>
+    <groupId>commons-httpclient</groupId>
+    <artifactId>commons-httpclient</artifactId>
+    <version>3.1-rc1</version>
+    <url>http://jakarta.apache.org/commons/httpclient/</url>
+</dependency>
+         ]]></source>
+     <p><b>3.0.1</b></p>
+         <source><![CDATA[
+<dependency>
+    <groupId>commons-httpclient</groupId>
+    <artifactId>commons-httpclient</artifactId>
+    <version>3.0.1</version>
+    <url>http://jakarta.apache.org/commons/httpclient/</url>
+</dependency>
+         ]]></source>
+
+           <p>There are also other jar versions available.  You can check
+           <a href="http://www.ibiblio.org/maven/commons-httpclient/">HttpClient on ibiblio</a>
+           for exactly what is available.
+       </p>
+     </section>
+
+   </body>
+
+ </document>
