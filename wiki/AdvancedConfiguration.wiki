@@ -1,0 +1,29 @@
+=AdvancedConfiguration Advanced configuration for the SharePoint connector=
+== Configure the connectorInstance.xml file ==
+ 
+The advanced configuration is done through the modification of the file connectorInstance.xml. After modification put connectorInstance.xml in the folder /connector-manager/WEB-INF/connectors/sharepoint-connector/instance_of_connector/ 
+
+ 
+==== Change BlackList and WhiteList ====
+ 
+By modifying the value of the property named “blackList”, you can provide the list of metadata which should not be fed to the appliance (blacklisted-metadata).
+
+For e.g. 
+  .*vti_cachedcustomprops$ .*vti_parserversion$   
+By modifying the value of the property named “whiteList”, you can provide the list of metadata which appliance can crawl for a document.
+
+For e.g.     
+  .*vti_title$ .*vti_author$   
+The connector does not crawl the list of metadata specified in blacklist and whitelist. 
+If you wish to add a metadata in the included list or excluded list for the connector, you have to add a line between the tags and : `name_of_the_metadata` 
+Once the modification of the file is done, you have to restart the connector service. 
+
+   
+ 
+==== Enable/Disable FQDN Resolution for Host Names====
+ 
+'FQDNConversion' property, if set to true would convert the document and attachment URLs as fetched by the connector to FQDN format. 
+For e.g. [[http://moss_host1/]]  will be converted to [[http://moss_host1.yourdomain.com/]]. 
+The default value is set to false.
+
+Note: The FQDN resolution will happen using the Connector system's name resolution. Hosts not accesible from the connector machine will not be resolved.
