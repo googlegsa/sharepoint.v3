@@ -1,4 +1,4 @@
-=AdvancedConfiguration Advanced configuration for the SharePoint connector=
+=Advanced configuration for the SharePoint connector=
 == Configure the connectorInstance.xml file ==
  
 The advanced configuration is done through the modification of the file connectorInstance.xml. After modification put connectorInstance.xml in the folder /connector-manager/WEB-INF/connectors/sharepoint-connector/instance_of_connector/ 
