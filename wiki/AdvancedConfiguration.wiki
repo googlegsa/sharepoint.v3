@@ -12,18 +12,20 @@ For e.g.
 <property name="blackList">
 	<list>
 		<value>vti_cachedcustomprops</value>
-		<value>vti_parserversion</value>
 	</list>
-</property>  
+</property>
+
+
 By modifying the value of the property named “whiteList”, you can provide the list of metadata which appliance can crawl for a document.
 
 For e.g.     
   <property name="whiteList">
 	<list>
 		<value>vti_title</value>
-		<value>vti_author</value>
 	</list>
-</property> 
+</property>
+
+
 The connector does not crawl the list of metadata specified in blacklist and whitelist. 
 If you wish to add a metadata in the included list or excluded list for the connector, you have to add a line between the tags and : `name_of_the_metadata` 
 Once the modification of the file is done, you have to restart the connector service. 
