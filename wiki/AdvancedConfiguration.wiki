@@ -9,11 +9,21 @@ The advanced configuration is done through the modification of the file connecto
 By modifying the value of the property named “blackList”, you can provide the list of metadata which should not be fed to the appliance (blacklisted-metadata).
 
 For e.g. 
-  .*vti_cachedcustomprops$ .*vti_parserversion$   
+<property name="blackList">
+	<list>
+		<value>vti_cachedcustomprops</value>
+		<value>vti_parserversion</value>
+	</list>
+</property>  
 By modifying the value of the property named “whiteList”, you can provide the list of metadata which appliance can crawl for a document.
 
 For e.g.     
-  .*vti_title$ .*vti_author$   
+  <property name="whiteList">
+	<list>
+		<value>vti_title</value>
+		<value>vti_author</value>
+	</list>
+</property> 
 The connector does not crawl the list of metadata specified in blacklist and whitelist. 
 If you wish to add a metadata in the included list or excluded list for the connector, you have to add a line between the tags and : `name_of_the_metadata` 
 Once the modification of the file is done, you have to restart the connector service. 
