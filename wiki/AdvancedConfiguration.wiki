@@ -4,7 +4,7 @@
 The advanced configuration is done through the modification of the file connectorInstance.xml. After modification put connectorInstance.xml in the folder /connector-manager/WEB-INF/connectors/sharepoint-connector/instance_of_connector/ 
 
  
-==== Change BlackList and WhiteList ====
+==== Change !BlackList and !WhiteList ====
  
 By modifying the value of the property named “blackList”, you can provide the list of metadata which should not be fed to the appliance (blacklisted-metadata).
 
