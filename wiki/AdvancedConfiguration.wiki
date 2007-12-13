@@ -1,4 +1,4 @@
-#summary Advanced configuration for the !SharePoint connector
+#summary Advanced configuration for the SharePoint connector
 =Advanced configuration for the !SharePoint connector=
 == Configure the connectorInstance.xml file ==
  
