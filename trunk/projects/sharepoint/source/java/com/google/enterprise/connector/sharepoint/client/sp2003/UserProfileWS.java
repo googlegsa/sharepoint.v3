@@ -156,6 +156,9 @@ public class UserProfileWS {
 	      index = Integer.parseInt(next);
 	    }
 	    LOGGER.exiting(className, sFunctionName);
+	    if(lstAllPersonalSites!=null){
+	    	LOGGER.info("Total personal sites returned: "+lstAllPersonalSites.size());
+	    }
 		return lstAllPersonalSites;
 	 }
 	

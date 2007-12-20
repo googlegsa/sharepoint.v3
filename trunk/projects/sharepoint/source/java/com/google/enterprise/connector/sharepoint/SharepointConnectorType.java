@@ -71,7 +71,12 @@ public class SharepointConnectorType implements ConnectorType {
 	private static final String END_BOLD = "</b>";
 	private static final String MANDATORY_FIELDS = "Mandatory_Fields" ;  
 	private static final String  TEXTBOX_SIZE= "size";	
-	private static final String TEXTBOX_SIZE_VALUE = "50";	
+	private static final String TEXTBOX_SIZE_VALUE = "50";
+	
+	private static final char SPACE = ' ';     // SEPARATOR  
+	private static final char NEW_LINE = '\n';
+	
+	
 
 	private static final String USERNAME = "username";
 	private static final String DOMAIN = "domain";
@@ -152,6 +157,7 @@ public class SharepointConnectorType implements ConnectorType {
 			configStrings.put(SP2003, rb.getString(SP2003));
 			configStrings.put(SP2007, rb.getString(SP2007));
 			configStrings.put(SP_CONNECTOR_TYPE, rb.getString(SP_CONNECTOR_TYPE));
+			LOGGER.config(sFunctionName+" : Config Strings loaded from the resource bundle : "+configStrings.toString());
 		}else{
 			LOGGER.warning(sFunctionName+": unable to get resource bundle");
 		}
@@ -165,9 +171,9 @@ public class SharepointConnectorType implements ConnectorType {
 	private String getInitialConfigForm() {
 		String sFuncName = "getInitialConfigForm()";
 		LOGGER.entering(className, sFuncName);
-		if (initialConfigForm != null) {
-			return initialConfigForm;
-		}
+//		if (initialConfigForm != null) {
+//			return initialConfigForm;
+//		}
 		if (keys == null) {
 			throw new IllegalStateException();
 		}
@@ -244,7 +250,7 @@ public class SharepointConnectorType implements ConnectorType {
 						final String value = (String) configMap.get(key);
 						if (value != null) {
 							if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
-								buf.append(value);	
+								buf.append(value.replace(SPACE, NEW_LINE));	
 							}else {
 								appendAttribute(buf, VALUE, value);
 							}
@@ -596,7 +602,7 @@ public class SharepointConnectorType implements ConnectorType {
 
 					if (value != null) {
 						if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
-							buf.append(value);	
+							buf.append(value.replace(SPACE, NEW_LINE));	
 						}else {
 							appendAttribute(buf, VALUE, value);
 						}
@@ -704,7 +710,7 @@ public class SharepointConnectorType implements ConnectorType {
 									buf.append(CLOSE_ELEMENT);
 								}else if(collator.equals(key,MYSITE_BASE_URL)){
 									appendAttribute(buf, "id", SP2007);
-									if(isSP2007){
+									if(!isSP2007){
 										appendAttribute(buf, READONLY, TRUE);
 									}
 								}
@@ -712,7 +718,7 @@ public class SharepointConnectorType implements ConnectorType {
 
 								if (value != null) {
 									if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
-										buf.append(value);	
+										buf.append(value.replace(SPACE, NEW_LINE));	
 									}else {
 										appendAttribute(buf, VALUE, value);
 									}
@@ -823,7 +829,7 @@ public class SharepointConnectorType implements ConnectorType {
 									buf.append(CLOSE_ELEMENT);
 								}else if(collator.equals(key,MYSITE_BASE_URL)){
 									appendAttribute(buf, "id", SP2007);
-									if(isSP2007){
+									if(!isSP2007){
 											appendAttribute(buf, READONLY, TRUE);
 									}
 								}
@@ -831,7 +837,7 @@ public class SharepointConnectorType implements ConnectorType {
 
 								if (value != null) {
 									if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
-										buf.append(value);	
+										buf.append(value.replace(SPACE, NEW_LINE));	
 									}else {
 										appendAttribute(buf, VALUE, value);
 									}
@@ -915,9 +921,10 @@ public class SharepointConnectorType implements ConnectorType {
 	public ConfigureResponse getConfigForm(final Locale locale) {
 		final String sFunctionName = "getConfigForm(Locale locale)";
 		LOGGER.entering(className, sFunctionName);
+		LOGGER.config(sFunctionName+": Locale "+locale);
 		setCollator(locale);
 		final ResourceBundle rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
-		SharepointClientContext.setResourcebundle(rb);
+	//	SharepointClientContext.setResourcebundle(rb);
 		setConfigStrings(rb);
 		final ConfigureResponse result = new ConfigureResponse("",
 				getInitialConfigForm());
@@ -929,9 +936,10 @@ public class SharepointConnectorType implements ConnectorType {
 	public ConfigureResponse getPopulatedConfigForm(final Map configMap, final Locale locale)  {
 		final String sFunctionName = "getPopulatedConfigForm(Map configMap, Locale locale)";
 		LOGGER.entering(className, sFunctionName);
+		LOGGER.config(sFunctionName+": Locale "+locale);
 		setCollator(locale);
 		final ResourceBundle rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
-		SharepointClientContext.setResourcebundle(rb);
+	//	SharepointClientContext.setResourcebundle(rb);
 		setConfigStrings(rb);
 		final ConfigureResponse result = new ConfigureResponse("",
 				makeConfigForm(configMap));
@@ -943,8 +951,9 @@ public class SharepointConnectorType implements ConnectorType {
 	public ConfigureResponse validateConfig(final Map configData, final Locale locale) {
 		final String sFunctionName = "validateConfig(Map configData, Locale locale)";
 		LOGGER.entering(className, sFunctionName);
+		LOGGER.config(sFunctionName+": Locale "+locale);
 		final ResourceBundle rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
-		SharepointClientContext.setResourcebundle(rb);
+	//	SharepointClientContext.setResourcebundle(rb);
 		setConfigStrings(rb);
 		if (validateConfigMap(configData, rb)) {
 			// all is ok

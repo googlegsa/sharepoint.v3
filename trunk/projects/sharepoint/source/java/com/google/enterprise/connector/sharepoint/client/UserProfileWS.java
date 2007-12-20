@@ -188,6 +188,10 @@ public class UserProfileWS {
 			String next = result.getNextValue();
 			index = Integer.parseInt(next);
 		}
+		
+		if(lstAllPersonalSites!=null){
+			LOGGER.info("Total Personal sites returned: "+lstAllPersonalSites);
+		}
 		LOGGER.exiting(className, sFunctionName);
 		return lstAllPersonalSites;
 	}
@@ -251,6 +255,10 @@ public class UserProfileWS {
 
 			String next = result.getNextValue();
 			index = Integer.parseInt(next);
+		}
+		
+		if(lstAllMyLinks!=null){
+			LOGGER.info("Total MyLinks returned: "+lstAllMyLinks.size());
 		}
 		LOGGER.exiting(className, sFunctionName);
 		return lstAllMyLinks;

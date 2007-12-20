@@ -1,6 +1,7 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -10,7 +11,7 @@ import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
 
-import org.apache.catalina.util.URL;
+//import org.apache.catalina.util.URL;
 import org.apache.catalina.util.URLEncoder;
 
 import com.google.enterprise.connector.sharepoint.generated.alerts.Alert;
@@ -91,6 +92,13 @@ public class AlertsWS {
 		} catch (MalformedURLException e) {
 			throw new SharepointException("Malformed URL: "+siteName);
 		}
+		int iPort = 0;
+		//check if the def
+		if (-1 != siteURL.getPort()) {
+			iPort = siteURL.getPort();
+		}else{
+			iPort = siteURL.getDefaultPort();
+		}
 //		endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+siteURL.getPort()+enc.encode(siteURL.getPath())+ ALERTSENDPOINT;
 
 		/*if(siteName!=null){
@@ -106,10 +114,10 @@ public class AlertsWS {
 		}*/
 //		if(siteName.endsWith("/")){
 		if(siteURL.getPath().endsWith("/")){
-			endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+siteURL.getPort()+enc.encode(siteURL.getPath())+ ALERTSENDPOINT;
+			endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+iPort/*siteURL.getPort()*/+enc.encode(siteURL.getPath())+ ALERTSENDPOINT;
 //			endpoint = siteName+ALERTSENDPOINT;
 		}else{
-			endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+siteURL.getPort()+enc.encode(siteURL.getPath())+ "/"+ALERTSENDPOINT;
+			endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+iPort/*siteURL.getPort()*/+enc.encode(siteURL.getPath())+ "/"+ALERTSENDPOINT;
 //			endpoint = siteName+"/"+ALERTSENDPOINT;
 		}
 		try {

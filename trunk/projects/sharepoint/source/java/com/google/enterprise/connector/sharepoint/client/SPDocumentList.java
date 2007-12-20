@@ -119,6 +119,9 @@ public class SPDocumentList  implements DocumentList {
 					document.setUrl(strUrl);
 				}
 			}
+			if(document!=null){
+				LOGGER.info("nextDocument(): "+document.getUrl());
+			}
 			LOGGER.exiting(className, sFunctionName);
 			return document;
 		}

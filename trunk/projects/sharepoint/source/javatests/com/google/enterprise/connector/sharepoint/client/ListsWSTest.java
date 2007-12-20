@@ -2,11 +2,14 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import java.net.MalformedURLException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -66,6 +69,7 @@ public class ListsWSTest extends TestCase {
 	  final String inclURLs ="http://ps4312.persistent.co.in:43386,http://ps4312.persistent.co.in:23508,http://ps4312:43386,http://ps4312:23508";
 	  final String docLibLInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}"; 
 	  final String issuesInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}";
+	
 //	-------------END: PS4312---------------------------------
 
 //	-------------japanese(MOSS 2007)---------------------------------
@@ -108,13 +112,38 @@ public class ListsWSTest extends TestCase {
 
 //	-------------END: SSL---------------------------------
   
+	  
+	  private static ArrayList blackList;
+		static {
+			blackList = new ArrayList();
+			blackList.add(Pattern.compile(".*vti_cachedcustomprops$"));
+			blackList.add(Pattern.compile(".*vti_parserversion$"));
+			blackList.add(Pattern.compile(".*ContentType$"));
+			blackList.add(Pattern.compile(".*vti_cachedtitle$"));
+			blackList.add(Pattern.compile(".*ContentTypeId$"));
+			blackList.add(Pattern.compile(".*DocIcon$"));
+			blackList.add(Pattern.compile(".*vti_cachedhastheme$"));
+			blackList.add(Pattern.compile(".*vti_metatags$"));
+			blackList.add(Pattern.compile(".*vti_charset$"));
+			blackList.add(Pattern.compile(".*vti_cachedbodystyle$"));
+			blackList.add(Pattern.compile(".*vti_cachedneedsrewrite$"));
+		}
+		
+		private static ArrayList whiteList;
+		static {
+			whiteList = new ArrayList();
+			whiteList.add(Pattern.compile(".*vti_title$"));
+			whiteList.add(Pattern.compile(".*vti_author$"));
+		}
+	  
   private Map listInternalNames = new HashMap();       
   private ListsWS listsWS;
   
   protected void setUp() throws Exception {
 /*    SharepointClientContext sharepointClientContext = new 
     SharepointClientContext(sharepointUrl, domain, username, password, null,includeURL,null,null);*/
-    SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,sptype);
+    SharepointClientContext sharepointClientContext = new SharepointClientContext(sptype,sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,whiteList,blackList);
+    
 
     
     
@@ -131,6 +160,8 @@ public class ListsWSTest extends TestCase {
   public void testGetDocLibListItems() throws MalformedURLException {
     try {
       System.out.println("Items found (Document Libraries) - ");
+      String inInternalName, String inTitle, String inType,
+      Calendar inLastMod,String inBaseTemplate
       BaseList baseList = new BaseList(docLibLInternalName, "DocumentLibrary",docLibLInternalName, null);
       List listItemChanges = listsWS.getDocLibListItemChanges(baseList, null);
       for (int i=0 ; i<listItemChanges.size(); i++) {
@@ -146,6 +177,7 @@ public class ListsWSTest extends TestCase {
     int num = 0;
     try {
       System.out.println("Changed items found (Document Libraries) - ");
+      
       BaseList baseList = new BaseList(docLibLInternalName, "Shared Documents",docLibLInternalName,Util.listItemsStringToCalendar("2007-08-1 23:00:40"));
       List listItemChanges = listsWS.getDocLibListItemChanges(baseList, Util.listItemsStringToCalendar("2007-08-1 23:00:40"));
       for (int i=0 ; i<listItemChanges.size(); i++) {
