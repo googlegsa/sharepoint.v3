@@ -17,8 +17,8 @@ package com.google.enterprise.connector.sharepoint.client;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.ResourceBundle;
+//import java.util.Locale;
+//import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
@@ -59,7 +59,7 @@ public class SharepointClientContext implements Cloneable {
 	
 
 	//Default locale is en-US
-	static ResourceBundle resourcebundle =ResourceBundle.getBundle("SharepointConnectorResources",Locale.US);
+//	static ResourceBundle resourcebundle =ResourceBundle.getBundle("SharepointConnectorResources",Locale.US);
 
 	public Object clone() {
 		String sFunctionName ="clone()";
@@ -225,7 +225,7 @@ public class SharepointClientContext implements Cloneable {
 			}
 			this.siteName = url.getPath();      
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			LOGGER.warning(sFunctionName+":"+e.toString());
 		}
 
 		this.domain = inDomain;    
@@ -469,7 +469,7 @@ public class SharepointClientContext implements Cloneable {
 		}
 	}
 
-	public static ResourceBundle getResourcebundle() {
+	/*public static ResourceBundle getResourcebundle() {
 		return resourcebundle;
 	}
 
@@ -477,7 +477,7 @@ public class SharepointClientContext implements Cloneable {
 		if(resourcebundle1!=null){
 			SharepointClientContext.resourcebundle = resourcebundle1;
 		}
-	}
+	}*/
 //	SharePointType e.g. SP2007 or SP2003
 	public String getSharePointType() {
 		return strSharePointType;

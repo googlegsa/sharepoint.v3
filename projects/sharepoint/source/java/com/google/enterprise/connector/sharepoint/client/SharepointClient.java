@@ -478,9 +478,10 @@ public class SharepointClient {
 					LOGGER.info("creating new listState: " + baseList.getTitle());
 				} else {
 					LOGGER.info("revisiting old listState: " + listState.getUrl());
-					state.updateList(listState, Util.calendarToJoda(baseList.getLastMod()));
-
+					
+					//amit chnaged the order of the next 2 stmts
 					Calendar dateSince = listState.getDateForWSRefresh();
+					state.updateList(listState, Util.calendarToJoda(baseList.getLastMod()));
 					LOGGER.info("fetching changes since " + Util.formatDate(dateSince));
 					if (collator.equals(baseList.getType(),SiteDataWS.DOC_LIB)) {
 						listItems = listsWS.getDocLibListItemChanges(

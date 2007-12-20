@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.client;
 //import java.io.UnsupportedEncodingException;
 //import java.net.URLEncoder;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.Collator;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import javax.xml.rpc.ServiceException;
 import javax.xml.rpc.holders.StringHolder;
 
 import org.apache.axis.holders.UnsignedIntHolder;
-import org.apache.catalina.util.URL;
+//import org.apache.catalina.util.URL;
 import org.apache.catalina.util.URLEncoder;
 
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
@@ -139,10 +140,20 @@ public class SiteDataWS {
 				URL siteURL ;
 				try {
 					siteURL = new URL(siteName);
+					
 				} catch (MalformedURLException e) {
 					throw new SharepointException("Malformed URL: "+siteName);
 				}
-				endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+siteURL.getPort()+enc.encode(siteURL.getPath())+ SITEDATAENDPOINT;
+				int iPort = 0;
+				
+				//check if the def
+				if (-1 != siteURL.getPort()) {
+					iPort = siteURL.getPort();
+				}else{
+					iPort = siteURL.getDefaultPort();
+				}
+				
+				endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+iPort/*siteURL.getPort()*/+enc.encode(siteURL.getPath())+ SITEDATAENDPOINT;
 				/*if (siteName.startsWith(sHTTP+URL_SEP)) {
 					siteName = siteName.substring(7);
 						//endpoint = sHTTP+URL_SEP +siteName+ SITEDATAENDPOINT;
@@ -250,6 +261,9 @@ public class SiteDataWS {
 			LOGGER.finer(e.toString());
 			throw new SharepointException(e.toString());
 		}
+		if(sites!=null){
+			LOGGER.info("Total children web sites: "+sites.size());
+		}
 		LOGGER.exiting(className, sFunctionName);
 		return sites;      
 	}
@@ -352,6 +366,10 @@ public class SiteDataWS {
 		}catch (Throwable e) {
 			throw new SharepointException(e.toString());
 		} 
+		
+		if(listCollection!=null){
+			LOGGER.info("Total Lists returned: "+listCollection.size()+"for list of type: "+baseType);
+		}
 		LOGGER.exiting(className, sFunctionName);
 		return listCollection;
 	}
@@ -425,6 +443,10 @@ public class SiteDataWS {
 		}catch (Throwable e){
 			LOGGER.warning(sFunctionName+": "+e.getLocalizedMessage());
 		}
+		if(allLinks!=null){
+			LOGGER.info("Links returned: "+allLinks.size());
+		}
+		
 		LOGGER.exiting(className, sFunctionName);
 		return allLinks;
 	}

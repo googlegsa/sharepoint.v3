@@ -11,7 +11,7 @@
         <value>aliasPort</value>
         <value>domain</value>
         <value>username</value>
-        <value>password</value>
+        <value>Password</value>
         <value>mySiteBaseURL</value>
         <value>includedURls</value>
         <value>excludedURls</value>

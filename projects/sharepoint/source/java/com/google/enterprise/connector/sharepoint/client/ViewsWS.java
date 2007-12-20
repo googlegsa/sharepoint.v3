@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.message.MessageElement;
-import org.apache.catalina.util.URL;
+//import org.apache.catalina.util.URL;
 import org.apache.catalina.util.URLEncoder;
 
 import com.google.enterprise.connector.sharepoint.generated.views.GetViewResponseGetViewResult;
@@ -159,7 +160,14 @@ public class ViewsWS {
 			throw new SharepointException("Malformed URL: "+siteName);
 		}
 
-		endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+siteURL.getPort()+enc.encode(siteURL.getPath())+ VIEWSENDPOINT;
+		int iPort = 0;
+		//check if the def
+		if (-1 != siteURL.getPort()) {
+			iPort = siteURL.getPort();
+		}else{
+			iPort = siteURL.getDefaultPort();
+		}
+		endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+/*siteURL.getPort()*/iPort+enc.encode(siteURL.getPath())+ VIEWSENDPOINT;
 //		endpoint = siteName + VIEWSENDPOINT;
 		ViewsLocator loc = new ViewsLocator();
 		//loc.setViewsSoap12EndpointAddress(endpoint);

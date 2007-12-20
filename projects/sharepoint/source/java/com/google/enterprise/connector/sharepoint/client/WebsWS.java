@@ -14,11 +14,12 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
 
-import org.apache.catalina.util.URL;
+//import org.apache.catalina.util.URL;
 import org.apache.catalina.util.URLEncoder;
 
 import com.google.enterprise.connector.sharepoint.generated.webs.Webs;
@@ -88,7 +89,15 @@ public class WebsWS {
 		} catch (MalformedURLException e) {
 			throw new SharepointException("Malformed URL: "+siteName);
 		}
-		endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+siteURL.getPort()+enc.encode(siteURL.getPath())+ WEBSENDPOINT;
+		int iPort = 0;
+		
+		//check if the def
+		if (-1 != siteURL.getPort()) {
+			iPort = siteURL.getPort();
+		}else{
+			iPort = siteURL.getDefaultPort();
+		}
+		endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+/*siteURL.getPort()*/iPort+enc.encode(siteURL.getPath())+ WEBSENDPOINT;
 
 		WebsLocator loc = new WebsLocator();
 		loc.setWebsSoapEndpointAddress(endpoint);

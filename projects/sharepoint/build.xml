@@ -259,7 +259,7 @@
 		<jar jarfile="${jarfile}">
 			<fileset dir="${classes}" />
 			<fileset dir="${config}" >
-				<exclude name="**/logconfig.properties"/>
+				<exclude name="**/logging.properties"/>
 			</fileset>
 			<fileset dir="source">
 				<include name="**/*.properties" />

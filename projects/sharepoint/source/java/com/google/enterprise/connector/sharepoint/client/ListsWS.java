@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.message.MessageElement;
-import org.apache.catalina.util.URL;
+//import org.apache.catalina.util.URL;
 import org.apache.catalina.util.URLEncoder;
 
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
@@ -51,7 +52,7 @@ public class ListsWS {
 	private static final String LISTS_END_POINT = "/_vti_bin/Lists.asmx";
 	private static final Logger LOGGER = Logger.getLogger(ListsWS.class.getName());
 	private String className = ListsWS.class.getName();
-	final static String COLON = ":";
+	static final String COLON = ":";
 	//final String sUniqueID="ows_UniqueId";
 //	final String sUniqueID="ows_FileRef";
 	final String sModified="ows_Modified";
@@ -71,10 +72,10 @@ public class ListsWS {
 	final String sID = "ows_ID";
 	final String sDiscussionLastUpdated = "ows_DiscussionLastUpdated";
 	final String sDocument = "Document";
-	final String HASH = "#";
-	final String COMMA = ",";
+	static final String HASH = "#";
+	static final String COMMA = ",";
 	final String sURL = "ows_URL";
-	final String URL_SEP ="://";
+	static final String URL_SEP ="://";
 	public static URLEncoder enc  = new URLEncoder();
 	private SharepointClientContext sharepointClientContext;
 	private String endpoint;
@@ -82,6 +83,7 @@ public class ListsWS {
 	ListsSoap_BindingStub stub = null;
 	private ViewsWS viewsWS;
 	private WebsWS websWS;
+	static final String BT_DISCUSSIONBOARD = "DiscussionBoard";
 
 	static{
 		//set the URLEncoder safe characters
@@ -98,7 +100,7 @@ public class ListsWS {
 	 * Also note that these are just one person's opinion about the metadata you
 	 * probably don't want.  Feel free to add or remove items.
 	 */
-	private static ArrayList BLACK_LIST;
+	private static ArrayList blackList;
 	/*static {
 		BLACK_LIST = new ArrayList();
 		BLACK_LIST.add(Pattern.compile(".*vti_cachedcustomprops$"));
@@ -121,7 +123,7 @@ public class ListsWS {
 	 * There is no operational difference between blacklist and whitelist;
 	 * in both cases the attributes are not passed to the GSA.
 	 */
-	private static ArrayList WHITE_LIST;
+	private static ArrayList whiteList;
 	/*static {
 		WHITE_LIST = new ArrayList();
 		WHITE_LIST.add(Pattern.compile(".*vti_title$"));
@@ -130,7 +132,7 @@ public class ListsWS {
 
 
 	/**
-	 * set metadate white list and black list from SharepointClientContext
+	 * set metadate white list and black list from SharepointClientContext.
 	 */
 
 	private void setBlackListAndWhiteList(){
@@ -138,15 +140,15 @@ public class ListsWS {
 		LOGGER.entering(className, sFuncName);
 		ArrayList metaBlackList = null;
 		ArrayList metaWhiteList = null;
-		if(BLACK_LIST == null){
-			BLACK_LIST = new ArrayList();
+		if(blackList == null){
+			blackList = new ArrayList();
 		}
-		if(WHITE_LIST == null){
-			WHITE_LIST = new ArrayList();
+		if(whiteList == null){
+			whiteList = new ArrayList();
 		}
 
-		BLACK_LIST.clear();
-		WHITE_LIST.clear();
+		blackList.clear();
+		whiteList.clear();
 
 		// set metadata black list
 		if(sharepointClientContext!=null){
@@ -154,7 +156,7 @@ public class ListsWS {
 			if(metaBlackList != null){
 				int size = metaBlackList.size();
 				for(int index = 0; index < size ; index++){
-					BLACK_LIST.add(Pattern.compile((String)metaBlackList.get(index)));
+					blackList.add(Pattern.compile((String)metaBlackList.get(index)));
 				}
 			}
 
@@ -163,7 +165,7 @@ public class ListsWS {
 			if(metaWhiteList != null){
 				int size = metaWhiteList.size();
 				for(int index = 0; index < size ; index++){
-					WHITE_LIST.add(Pattern.compile((String)metaWhiteList.get(index)));
+					whiteList.add(Pattern.compile((String)metaWhiteList.get(index)));
 				}
 			}
 		}
@@ -215,7 +217,7 @@ public class ListsWS {
 				return "";
 			}
 			String name = parts[0].trim();
-			if (!listMatches(BLACK_LIST, name) && !listMatches(WHITE_LIST, name)) {
+			if (!listMatches(blackList, name) && !listMatches(whiteList, name)) {
 
 				String value = parts[1].trim();
 				int ix = value.indexOf('|');
@@ -293,7 +295,15 @@ public class ListsWS {
 			} catch (MalformedURLException e) {
 				throw new SharepointException("Malformed URL: "+siteName);
 			}
-			endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+siteURL.getPort()+enc.encode(siteURL.getPath())+ LISTS_END_POINT;
+			int iPort = 0;
+			
+			//check if the def
+			if (-1 != siteURL.getPort()) {
+				iPort = siteURL.getPort();
+			}else{
+				iPort = siteURL.getDefaultPort();
+			}
+			endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+iPort/*siteURL.getPort()*/+enc.encode(siteURL.getPath())+ LISTS_END_POINT;
 			/*if (siteName.startsWith(HTTP+URL_SEP)) {
 				siteName = siteName.substring(7);
 //				endpoint = HTTP+URL_SEP + Util.getEscapedSiteName(siteName) + LISTS_END_POINT;
@@ -360,9 +370,9 @@ public class ListsWS {
 			//iterate through the list of fields and construct the view fields structure
 			for (int iField=0;iField<viewFieldStrings.size();++iField) {
 				String fieldName = (String) viewFieldStrings.get(iField);
-				MessageElement me_attr = new MessageElement(sFieldRef,prefix,namespace);//localpart=nodename,prefix,ns
-				me_attr.addAttribute(prefix,namespace,sName,fieldName);
-				me2.addChild(me_attr);
+				MessageElement meAttr = new MessageElement(sFieldRef,prefix,namespace);//localpart=nodename,prefix,ns
+				meAttr.addAttribute(prefix,namespace,sName,fieldName);
+				me2.addChild(meAttr);
 			}
 		}catch(Exception e){
 			LOGGER.finer(e.toString());
@@ -395,7 +405,7 @@ public class ListsWS {
 	throws SharepointException, MalformedURLException {
 		String sFuncName = "getGenericListItemChanges(BaseList list, Calendar since)";
 		LOGGER.entering(className, sFuncName);
-		final String BT_DISCUSSIONBOARD = "DiscussionBoard";
+	//	final String BT_DISCUSSIONBOARD = "DiscussionBoard";
 		if(list==null){
 			throw new SharepointException("Unable to get List");
 		}
@@ -520,7 +530,7 @@ public class ListsWS {
 
 			if((strSharepointVersion.equals(SharepointConnectorType.SP2007)) && (listTemplate.equalsIgnoreCase(BT_DISCUSSIONBOARD))){
 				//get the discussion board items
-				GetListItemsResponseGetListItemsResult result = stub.getListItems(listName, null, null, null, "1000", null,null );
+				GetListItemsResponseGetListItemsResult result = stub.getListItems(listName, null, null, null, "1000", null,null);
 				//parse the result to extract the necessary attributes
 				if(result!=null){
 					MessageElement[] me = result.get_any();
@@ -687,6 +697,9 @@ public class ListsWS {
 			throw new SharepointException(e.toString());
 		}
 		//end:--------changes for making axis 1_4 compliant
+		if(listItems!=null){
+			LOGGER.info("found: "+listItems.size()+" Items in List ["+ list.getInternalName()+"]"); 
+		}
 		LOGGER.exiting(className, sFuncName);
 		return listItems;
 	}  
@@ -832,13 +845,13 @@ public class ListsWS {
 													Iterator itAttrs = listItem.getAllAttributes();
 													if(itAttrs!=null){
 														while(itAttrs.hasNext()){
-															Object one_attr =  itAttrs.next();
-															if(one_attr!=null){
-																String strAttrName =one_attr.toString();
+															Object oneAttr =  itAttrs.next();
+															if(oneAttr!=null){
+																String strAttrName =oneAttr.toString();
 																String strAttrValue = listItem.getAttribute(strAttrName);
 
 																//check if the attribute could be considered as metadata
-																if (!listMatches(BLACK_LIST, strAttrName) && !listMatches(WHITE_LIST, strAttrName)){
+																if (!listMatches(blackList, strAttrName) && !listMatches(whiteList, strAttrName)){
 																	doc.setAttribute(strAttrName, strAttrValue);
 //																	System.out.println("Attribute key="+strAttrName+": value="+strAttrValue);
 																}
@@ -874,6 +887,9 @@ public class ListsWS {
 			LOGGER.config("getDocLibListItemChanges: "+e.toString());
 		}
 		Collections.sort(listItems);
+		if(listItems!=null){
+			LOGGER.info("found: "+listItems.size()+" Items in DocumentLibrary ["+ list.getInternalName()+"]"); 
+		}
 		LOGGER.exiting(className,sFunctionName);
 		return listItems;
 	}
@@ -958,6 +974,9 @@ public class ListsWS {
 			}//end: if(me!=null){
 		}//end: if(res!=null){
 		//end: modification
+		if(listItems!=null){
+			LOGGER.info("found: "+listItems.size()+" Items in Links ["+ list.getInternalName()+"]"); 
+		}
 		LOGGER.exiting(className,sFunctionName);
 		return listItems;
 	}

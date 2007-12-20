@@ -6,7 +6,7 @@
       <constructor-arg index="0" value="${sharepointUrl}"/>
       <constructor-arg index="1" value="${domain}"/>
       <constructor-arg index="2" value="${username}"/>
-      <constructor-arg index="3" value="${password}"/>
+      <constructor-arg index="3" value="${Password}"/>
       <constructor-arg index="4" value="${googleConnectorWorkDir}"/>
       <constructor-arg index="5" value="${includedURls}"/>
       <constructor-arg index="6" value="${excludedURls}"/>
