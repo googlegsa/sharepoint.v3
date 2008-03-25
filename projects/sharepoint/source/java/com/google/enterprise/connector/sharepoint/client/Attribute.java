@@ -2,9 +2,8 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import java.io.Serializable;
 /**
- * 
- * @author Amit A
- *
+ * Attribute class.
+ * @author amit_kagrawal
  */
 public class Attribute implements Serializable
 {

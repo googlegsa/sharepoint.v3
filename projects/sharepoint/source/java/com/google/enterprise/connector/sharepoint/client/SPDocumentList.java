@@ -23,13 +23,14 @@ import com.google.enterprise.connector.spi.RepositoryException;
 public class SPDocumentList  implements DocumentList {
 
 	private static final String BLANK_STRING = "";
-	private static final int MINUS_ONE	 = -1;  
+	private static final int MINUS_ONE	 = -1;
 	private static final Logger LOGGER = Logger.getLogger(SPDocumentList.class.getName());
-	private String className = SPDocumentList.class.getName();
+	private static String className = SPDocumentList.class.getName();
 	private List  documents;
 	private Iterator iterator;
 	private SPDocument document;
 	private GlobalState globalState;//this is required for checkpointing
+	
 
 	// For aliasing
 	private String aliasHostName;
@@ -38,31 +39,12 @@ public class SPDocumentList  implements DocumentList {
 	// FQDN conversion flag
 	private boolean bFQDNConversion = false;
 
-	public boolean isFQDNConversion() {
-		return bFQDNConversion;
-	}
-
-
-	public void setFQDNConversion(boolean conversion) {
-		bFQDNConversion = conversion;
-//		System.out.println(className+": setFQDNConversion : "+conversion);
-		
-	}
-
-
-	public boolean addAll(SPDocumentList list2){
-		String sFunctionName = "getAllChildrenSites()";
-		LOGGER.entering(className, sFunctionName);
-		if(list2==null){
-			return false;
-		}
-		LOGGER.exiting(className, sFunctionName);
-		return documents.addAll(list2.documents);
-	}
-
-
+	/**
+	 * 
+	 * @param inDocuments
+	 * @param inState
+	 */
 	public SPDocumentList(List inDocuments,GlobalState inState) {
-//		LOGGER = LogFactory.getLog(SPDocumentList.class);
 		String sFunctionName = "SPDocumentList(List inDocuments,GlobalState inState)";
 		LOGGER.entering(className, sFunctionName);
 		if(inDocuments!=null){
@@ -73,7 +55,41 @@ public class SPDocumentList  implements DocumentList {
 		globalState = inState;
 		LOGGER.exiting(className, sFunctionName);
 	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isFQDNConversion() {
+		return bFQDNConversion;
+	}
 
+	/**
+	 * 
+	 * @param conversion
+	 */
+	public void setFQDNConversion(boolean conversion) {
+		bFQDNConversion = conversion;
+	}
+
+	/**
+	 * 
+	 * @param list2
+	 * @return
+	 */
+	public boolean addAll(SPDocumentList list2){
+		String sFunctionName = "getAllChildrenSites()";
+		LOGGER.entering(className, sFunctionName);
+		if(list2==null){
+			return false;
+		}
+		LOGGER.exiting(className, sFunctionName);
+		return documents.addAll(list2.documents);
+	}
+
+	/**
+	 * 
+	 */
 	public Document nextDocument() {
 		String sFunctionName = "nextDocument()";
 		LOGGER.entering(className, sFunctionName);
@@ -90,7 +106,7 @@ public class SPDocumentList  implements DocumentList {
 				try {
 					objURL = new URL(url.toString());
 				} catch (MalformedURLException e) {
-					LOGGER.warning(sFunctionName+ " : "+e.getMessage());
+					LOGGER.warning(className+":"+sFunctionName+ " : "+e.getMessage());
 				}
 				String strUrl = "";
 
@@ -114,13 +130,13 @@ public class SPDocumentList  implements DocumentList {
 						}
 					}
 					strUrl = strUrl + objURL.getFile();
-
-					LOGGER.fine(sFunctionName+": modified URL after aliasing :"+strUrl);
+					
+					LOGGER.fine(sFunctionName+": Document URL sending to CM :"+strUrl);
 					document.setUrl(strUrl);
 				}
 			}
 			if(document!=null){
-				LOGGER.info("nextDocument(): "+document.getUrl());
+				LOGGER.info(className+":"+sFunctionName+":Document URL  ["+document.getUrl()+"]");
 			}
 			LOGGER.exiting(className, sFunctionName);
 			return document;
@@ -129,22 +145,35 @@ public class SPDocumentList  implements DocumentList {
 		return null;
 	}
 
+	/**
+	 * 
+	 */
 	public String checkpoint() throws RepositoryException {
 		String sFunctionName = "checkpoint()";
 		LOGGER.entering(className, sFunctionName);
 		if (document == null) {
 			return null;
 		}
-
-		LOGGER.info(sFunctionName+": checkpoint received for " + document.getUrl() + " in list " +document.getListGuid() + " with date "+Util.formatDate(Util.calendarToJoda(document.getLastMod())));
+		
+		try{
+		LOGGER.info(className+":"+sFunctionName+": checkpoint received for " + document.getUrl() + " in list " +document.getListGuid() + " with date "+Util.formatDate(Util.calendarToJoda(document.getLastMod())));
 		implementCheckpoint();
-		LOGGER.info("checkpoint processed; saving GlobalState to disk.");
+		LOGGER.info(className+":"+sFunctionName+": checkpoint processed; saving GlobalState to disk.");
 		globalState.saveState(); // snapshot it all to disk
+		}catch (Exception e) {
+		LOGGER.warning(className+":"+sFunctionName+":Exception: Problem in checkpoint");
+		throw new SharepointException(e);
+		}
 		LOGGER.exiting(className, sFunctionName);
 		//return null, because in sharepoint system tere is no internal implementation of checkpoint
 		//we need to recrawl every time to get the documents  
 		return null;
 	}
+	
+	/**
+	 * 
+	 * @throws RepositoryException
+	 */
 	private void implementCheckpoint() throws RepositoryException {
 		String sFunctionName = "implementCheckpoint()";
 		LOGGER.entering(className, sFunctionName);
@@ -173,7 +202,8 @@ public class SPDocumentList  implements DocumentList {
 			}
 			return;
 		}*/
-		LOGGER.finer(sFunctionName+": looking for " + listGuid);
+		try{
+		LOGGER.finer(className+":"+sFunctionName+": looking for " + listGuid);
 		Iterator iterLists = globalState.getIterator();
 		boolean foundCheckpoint = false;
 		if(iterLists!=null){
@@ -181,7 +211,7 @@ public class SPDocumentList  implements DocumentList {
 				ListState listState = (ListState) iterLists.next();
 				List crawlQueue = listState.getCrawlQueue();
 				if (collator.equals(listState.getGuid(),listGuid)) {
-					LOGGER.finer("found it");
+					LOGGER.finer(className+":"+sFunctionName+":found "+ listGuid);
 					foundCheckpoint = true;
 					// take out everything up to this document's lastMod date
 					for (Iterator iterQueue = crawlQueue.iterator(); 
@@ -191,11 +221,11 @@ public class SPDocumentList  implements DocumentList {
 						// if this doc is later than the checkpoint, we're done:
 						//if (docQueue.getLastMod().compareTo(docCheckpoint.getLastMod()) >  0) {
 						if (docQueue.getLastMod().after(docCheckpoint.getLastMod())) {
-							//					if (docQueue.getLastMod().toString().compareTo(docCheckpoint.getLastMod().toString()) >  0) {
+							LOGGER.fine(className+":"+sFunctionName+": Crawl queue document is after the check point document....ignore check point");
 							break;
 						}
 						// otherwise remove it from the queue
-						LOGGER.info("removing " + docQueue.getUrl() + " from queue");
+						LOGGER.info(className+":"+sFunctionName+": removing " + docQueue.getUrl() + " from queue");
 						iterQueue.remove(); // it's safe to use the iterator's own remove()
 						listState.setLastDocCrawled(docQueue);
 						if (collator.equals(docQueue.getDocId(),docCheckpoint.getDocId())) {
@@ -203,7 +233,7 @@ public class SPDocumentList  implements DocumentList {
 						}    
 					}  
 				} else { // some other list. Assume CM got all the way through the queue
-					LOGGER.info("zeroing crawl queue for " + listState.getUrl());
+					LOGGER.info(className+":"+sFunctionName+": zeroing crawl queue for " + listState.getUrl());
 					if (crawlQueue != null && crawlQueue.size() > 0) {
 						listState.setLastDocCrawled((SPDocument) crawlQueue.get(crawlQueue.size() - 1));
 					}
@@ -215,10 +245,17 @@ public class SPDocumentList  implements DocumentList {
 		 * were. We can start at the earliest (by lastMod) List we have. 
 		 */
 		globalState.setCurrentList(null);
+		}catch(Exception e){
+			LOGGER.warning(className+":"+sFunctionName+"Exception :"+e.getMessage());
+			throw new SharepointException(e);
+		}
 		LOGGER.exiting(className, sFunctionName);
 	}
 
-	//adding methods to get the count of the documents in the list
+	/**
+	 * adding methods to get the count of the documents in the list. 
+	 * @return
+	 */
 	public int size(){
 		if(documents==null){
 			return 0;
@@ -228,35 +265,51 @@ public class SPDocumentList  implements DocumentList {
 
 	}
 
-
+	/**
+	 * 
+	 * @return
+	 */
 	public String getAliasHostName() {
 		return aliasHostName;
 	}
 
-
+	/**
+	 * 
+	 * @param inAliasHostName
+	 */
 	public void setAliasHostName(String inAliasHostName) {
 		if(inAliasHostName!=null){
 			this.aliasHostName = inAliasHostName;
 		}
 	}
 
-
+	/**
+	 * 
+	 * @return
+	 */
 	public String getAliasPort() {
 		return aliasPort;
 	}
 
-
+	/**
+	 * 
+	 * @param inAliasPort
+	 */
 	public void setAliasPort(String inAliasPort) {
 		if(inAliasPort!=null){
 			this.aliasPort = inAliasPort;
 		}
 	}
-
+	
+	/**
+	 * 
+	 * @param hostName
+	 * @return
+	 */
 	private String getFQDNHostName(String hostName){
 		String sFunctionName = "getFQDNHostName(String hostName)";
 		LOGGER.entering(className, sFunctionName);
 		if(isFQDNConversion()){
-//			System.out.println(className+": getFQDNHostName(String hostName) isFQDNConversion = true");
 			InetAddress ia = null;
 			try {
 				ia = InetAddress.getByName(hostName);
@@ -264,14 +317,9 @@ public class SPDocumentList  implements DocumentList {
 				LOGGER.warning("Exception occurred : "+e.toString());
 			}
 			if(ia!=null){
-//				System.out.println(className+": getFQDNHostName(String hostName)"+ia.getCanonicalHostName());
 				return ia.getCanonicalHostName();
-			}/*else{
-				System.out.println(className+": getFQDNHostName(String hostName) InetAddress object is null");
-			}*/
-		}/*else{
-			System.out.println(className+": getFQDNHostName(String hostName) isFQDNConversion = false");
-		}*/
+			}
+		}
 		LOGGER.exiting(className, sFunctionName);
 		return hostName;
 	}

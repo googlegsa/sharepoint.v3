@@ -14,11 +14,13 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
  * Class to hold data regarding a sharepoint list e.g. DocumentLibrary.
  * internalName is the GUID of the list and type is the type of the list 
+ * @author amit_kagrawal
  */
 public class BaseList implements Comparable {
   private String internalName;
@@ -26,9 +28,13 @@ public class BaseList implements Comparable {
   private String type;
   private Calendar lastMod;
   private String baseTemplate;
+  private ArrayList attrs = new ArrayList();
+  private String url;
+  
+  private String listConst = "/Lists";
   
   public BaseList(String inInternalName, String inTitle, String inType,
-      Calendar inLastMod,String inBaseTemplate) throws SharepointException {
+      Calendar inLastMod,String inBaseTemplate,String inUrl) throws SharepointException {
 	  
     if(inInternalName==null){
 	    throw new SharepointException("Unable to find Internal name");
@@ -48,6 +54,10 @@ public class BaseList implements Comparable {
     if(inBaseTemplate!=null){
     	this.baseTemplate = inBaseTemplate;
     }
+    
+    if(inUrl!=null){
+		this.url = inUrl;
+	}
   }
 
   public String getInternalName() {
@@ -89,6 +99,39 @@ public class BaseList implements Comparable {
 	public void setBaseTemplate(String inBaseTemplate) {
 		if(inBaseTemplate!=null){
 			this.baseTemplate = inBaseTemplate;
+		}
+	}
+
+	public ArrayList getAttrs() {
+		return attrs;
+	}
+
+	public void setAttribute(String key, String value) {
+		if(attrs==null){
+			attrs = new ArrayList();
+		}
+		if(key!=null){
+			attrs.add(new Attribute(key, value));
+		}
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String inUrl) {
+		if(inUrl!=null){
+			this.url = inUrl;
+		}
+	}
+
+	public String getListConst() {
+		return listConst;
+	}
+
+	public void setListConst(String inListConst) {
+		if(inListConst!=null){
+			this.listConst = inListConst;
 		}
 	}
 }

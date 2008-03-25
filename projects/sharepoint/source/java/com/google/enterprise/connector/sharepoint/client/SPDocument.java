@@ -14,11 +14,13 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import java.net.URLDecoder;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -63,7 +65,7 @@ public class SPDocument implements Document, Comparable{
 	 */
 	private static final int INITIALATTRLISTSIZE = 5;
 	private ArrayList attrs = new ArrayList(INITIALATTRLISTSIZE);
-	
+
 
 	public String getListGuid(){
 		return listguid;
@@ -126,7 +128,7 @@ public class SPDocument implements Document, Comparable{
 		if(attrs==null){
 			return;
 		}
-		
+
 		for (Iterator iter=attrs.iterator(); iter.hasNext();){
 			Attribute attr = (Attribute) iter.next();
 			System.out.println(attr.getName() + "=" + attr.getValue());
@@ -140,6 +142,13 @@ public class SPDocument implements Document, Comparable{
 	public void setAttribute(String key, String value) {
 		if(key!=null){
 			attrs.add(new Attribute(key, value));
+		}
+	}
+
+	//only from list
+	public void setAllAttributes(List lstAttributes) {
+		if(lstAttributes!=null){
+			attrs.addAll(lstAttributes);
 		}
 	}
 
@@ -164,16 +173,24 @@ public class SPDocument implements Document, Comparable{
 	}
 
 	public int compareTo(SPDocument doc) {
-		
+
 		if(doc==null){
 			return -1;
 		}
-		
+
 		int comparison = this.lastMod.getTime().compareTo(doc.lastMod.getTime());
 		if (0 == comparison) {
 			comparison = this.docId.compareTo(doc.docId);
 			if (0 == comparison) {
-				comparison = this.url.compareTo(doc.url);
+
+				String docURL1st = new String(this.url);
+				docURL1st = URLDecoder.decode(docURL1st);
+				String docURL2nd = new String(doc.url);
+				docURL2nd = URLDecoder.decode(docURL2nd);
+				if(docURL1st!=null){
+					comparison = docURL1st.compareTo(docURL2nd);
+				}
+
 			}
 		}    
 		return comparison;
@@ -184,51 +201,40 @@ public class SPDocument implements Document, Comparable{
 		String sFuncName = "findProperty(String strPropertyName)";
 		LOGGER.entering(SPDocument.class.getName(), sFuncName);
 		if(strPropertyName==null){
-			LOGGER.warning("findProperty: unable to find the property name");
+			LOGGER.warning(SPDocument.class.getName()+":"+sFuncName+"unable to find the property name");
 			return null;
 		}
-		
-//		System.out.print("Time: "+new Date().toString());
+
 		Collator collator = SharepointConnectorType.getCollator();
 		if(collator.equals(strPropertyName,SpiConstants.PROPNAME_CONTENTURL)){
-//			System.out.println(SpiConstants.PROPNAME_CONTENTURL+": "+ new StringValue(getUrl()));
 			return new SPProperty(SpiConstants.PROPNAME_CONTENTURL, new StringValue(getUrl()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_SEARCHURL)){
-//			System.out.println(SpiConstants.PROPNAME_SEARCHURL+": "+ new StringValue(getUrl()));
 			return new SPProperty(SpiConstants.PROPNAME_SEARCHURL, new StringValue(getUrl()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_DISPLAYURL)){
-//			System.out.println(SpiConstants.PROPNAME_DISPLAYURL+": "+ new StringValue(getUrl()));
 			return new SPProperty(SpiConstants.PROPNAME_DISPLAYURL, new StringValue(getUrl()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_DOCID)){
-//			System.out.println(SpiConstants.PROPNAME_DOCID+": "+ new StringValue(getDocId()));
 			return new SPProperty(SpiConstants.PROPNAME_DOCID, new StringValue(getDocId()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_LASTMODIFIED)){
-//			System.out.println(SpiConstants.PROPNAME_LASTMODIFIED+": "+ new DateValue(getLastMod()));
 			return new SPProperty(SpiConstants.PROPNAME_LASTMODIFIED, new DateValue(getLastMod()));
 		}else if(collator.equals(strPropertyName,LIST_GUID)){
-//			System.out.println(LIST_GUID+": "+ new StringValue(getListGuid()));
 			return new SPProperty(LIST_GUID, new StringValue(getListGuid()));
 		}else if(collator.equals(strPropertyName,AUTHOR)){
-//			System.out.println(AUTHOR+": "+ new StringValue(getAuthor()));
 			return new SPProperty(AUTHOR, new StringValue(getAuthor()));
 		}else if(strPropertyName.equals(OBJECT_TYPE)){
-//			System.out.println(OBJECT_TYPE+": "+ new StringValue(getObjType()));
 			return new SPProperty(OBJECT_TYPE, new StringValue(getObjType()));
 		}else if(strPropertyName.equals(SpiConstants.PROPNAME_ISPUBLIC)){
-//			System.out.println(SpiConstants.PROPNAME_ISPUBLIC+": "+ BooleanValue.makeBooleanValue(false));
 			return new SPProperty(SpiConstants.PROPNAME_ISPUBLIC, BooleanValue.makeBooleanValue(false));
 		}else{
 			//check if the property is in the name of the custom metadata
 			for (Iterator iter=this.getAllAttrs().iterator();iter.hasNext();){
 				Attribute attr = (Attribute) iter.next();
 				if(collator.equals(strPropertyName,attr.getName())){
-//					System.out.println(strPropertyName+": "+ new StringValue(attr.getValue().toString()));
 					return new SPProperty(strPropertyName, new StringValue(attr.getValue().toString()));
 				}
 			}	
 
 		}
-		LOGGER.finer("no matches found for["+strPropertyName+"]");
+		LOGGER.finer(SPDocument.class.getName()+":"+sFuncName+"no matches found for["+strPropertyName+"]");
 		LOGGER.exiting(SPDocument.class.getName(), sFuncName);
 		return null;//no matches found
 	}
@@ -254,13 +260,13 @@ public class SPDocument implements Document, Comparable{
 		return s;
 	}
 
-/*	private void dumpPropertyNames(HashSet s) {
+	/*	private void dumpPropertyNames(HashSet s) {
 		System.out.println("-----------{dumpPropertyNames(Set s)}------------------");
 		if(s==null){
 			System.out.println("NULLLLLLLLLLLLLLLLLLLLLLLL");
 		}else{
 			Iterator it = s.iterator();
-			
+
 			while(it.hasNext()){
 				System.out.println("Prop: "+it.next());
 			}
@@ -269,6 +275,9 @@ public class SPDocument implements Document, Comparable{
 	}*/
 
 	public int compareTo(Object arg0) {
+		if(arg0 != null && arg0 instanceof SPDocument){
+			return this.compareTo((SPDocument)arg0);
+		}
 		return -1;
 	}
 }
