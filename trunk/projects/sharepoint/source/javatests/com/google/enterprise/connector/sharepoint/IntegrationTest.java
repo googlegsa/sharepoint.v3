@@ -35,7 +35,9 @@ import com.google.enterprise.connector.traversal.Traverser;
 public class IntegrationTest extends TestCase {
 	static{
 //		set an external configuration file for controlling logging
-		System.setProperty("java.util.logging.config.file","logconfig.properties");
+//		System.setProperty("java.util.logging.config.file","logconfig.properties");
+		System.setProperty("java.util.logging.config.file","logging.properties");
+		//set the vm size -Xmx=512M
 	}
 /*  final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
   final String domain = "ent-qa-d3";
@@ -81,29 +83,19 @@ public class IntegrationTest extends TestCase {
 //  final String inclURLs =".*";
 //-------------END: v07ps45372k3---------------------------------
 //	-------------v-ecsc5(sps 2003)---------------------------------
-	final String sharepointType = SharepointConnectorType.SP2003;
-//  final String sharepointUrl = "http://v-ecsc5.persistent.co.in:30000/site";
-	final String sharepointUrl = "http://v-ecsc5.persistent.co.in:1234/";
-	
-//  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088/sites/amit/sub_amit_1";
-//  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088";
-//  final String sharepointUrl = "http://v07ps45372k3:8088";
-  final String domain = "v-ecsc5";
-  final String host = "v-ecsc5";
-  //final int port = 30000;
-  final int port =1234;
+  final String sharepointType = SharepointConnectorType.SP2007;
+//  final String sharepointUrl = "http://gsp05ps5264.persistent.co.in:5001/";
+//  final String sharepointUrl = "http://ps4312.persistent.co.in:2905/";
+  final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
+  final String domain = "ps4312";
   final String username = "Administrator";
   final String password = "pspl!@#";
-  final String mySiteBaseURL=null;
+  final String mySiteBaseURL="http://ps4312.persistent.co.in:30411";
   final String googleConnWorkDir = null;
   final String exclURLs =null;
   final String aliasHost = null;
   final String aliasPort = null;
-//  final String inclURLs =".*";
-//  final String inclURLs ="http://v-ecsc5.persistent.co.in:30000/site";
-  final String inclURLs =".*";
-//  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088";
-//  final String inclURLs =".*";
+  final String inclURLs ="^http://";
 //-------------END: v07ps45372k3---------------------------------
 //	-------------v-ecsc3(MOSS 2007)---------------------------------
 	  /*final String sharepointType = SharepointConnectorType.SP2007;
@@ -273,6 +265,7 @@ public class IntegrationTest extends TestCase {
     connector = new SharepointConnector(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,aliasHost,aliasPort,sharepointType);
     connector.setWhiteList(WHITE_LIST);
     connector.setBlackList(BLACK_LIST);
+    connector.setFQDNConversion(true);
     super.setUp();    
   }
   /**
@@ -306,16 +299,19 @@ public class IntegrationTest extends TestCase {
     int docsProcessed = -1;
     int totalDocsProcessed = 0;
     int batchNumber = 0;
-    while (docsProcessed != 0) {
-//    while (true) {
+//    while (docsProcessed != 0) {
+    while (true) {
       docsProcessed = traverser.runBatch(batchSize);//do the traversal
       totalDocsProcessed += docsProcessed;//do the checkpointing after the traversal
       System.out.println("Batch# " + batchNumber + " docs " + docsProcessed 
     		  +" checkpoint " + connectorStateStore.getConnectorState(connectorName));
       batchNumber++;
-     /* if(docsProcessed==0){
-    	  System.out.println("hi");
-      }*/
+      
+      //start recrawl cycle
+      if(docsProcessed==0){
+    	  System.out.println("fd");
+      }
+      
     }    
 //    Assert.assertEquals(TOTAL_DOCS,totalDocsProcessed);
   }
