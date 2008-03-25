@@ -35,26 +35,12 @@ public class SharepointConnector implements Connector {
     private ArrayList blackList=null;
     private boolean fqdnConversion = false;
     private String className = SharepointConnector.class.getName();
-
-	public boolean isFQDNConversion() {
-		String sFuncName = "isFQDNConversion()";
-		LOGGER.entering(className, sFuncName);
-		
-		LOGGER.exiting(className, sFuncName);
-		return fqdnConversion;
-	}
-
-	public void setFQDNConversion(boolean conversion) {
-		String sFuncName = "setFQDNConversion(boolean conversion)";
-		LOGGER.entering(className, sFuncName);
-		fqdnConversion = conversion;
-		sharepointClientContext.setFQDNConversion(conversion);
-//		System.out.println(className+ ": "+sFuncName+" : "+fqdnConversion);
-		LOGGER.exiting(className, sFuncName);
-		
-	}
-
-	public SharepointConnector(String sharepointUrl, String domain, 
+    
+    /**
+     * 
+     * constructor.
+     */
+    public SharepointConnector(String sharepointUrl, String domain, 
 			String username, String password, String googleConnectorWorkDir,String includedURls,String excludedURls,String mySiteBaseURL,String aliasHostName,String aliasPort,String spType) { 
 		
 		String sFunctionName = "SharepointConnector(String sharepointUrl, String domain,String username, String password, String googleConnectorWorkDir,String includedURls,String excludedURls,String mySiteBaseURLString aliasHostName,String aliasPort,String sharepointType)";
@@ -65,6 +51,39 @@ public class SharepointConnector implements Connector {
 		LOGGER.exiting(className, sFunctionName);
 	}
 
+    /**
+     * 
+     * @return
+     */
+	public boolean isFQDNConversion() {
+		String sFuncName = "isFQDNConversion()";
+		LOGGER.entering(className, sFuncName);
+		LOGGER.config("FQDNValue: "+fqdnConversion);
+		LOGGER.exiting(className, sFuncName);
+		return fqdnConversion;
+	}
+
+	/**
+	 * sets the FQDNConversion parameter.
+	 * @param conversion
+	 * If true: tries to convert the non-FQDN URLs to FQDN
+	 * If false: no conversion takes place   
+	 * */
+	public void setFQDNConversion(boolean conversion) {
+		String sFuncName = "setFQDNConversion(boolean conversion)";
+		LOGGER.entering(className , sFuncName);
+		LOGGER.config(className+":"+sFuncName+": FQDN Value Set to ["+conversion+"]");
+		
+		fqdnConversion = conversion;
+		sharepointClientContext.setFQDNConversion(conversion);
+		
+		LOGGER.exiting(className, sFuncName);
+	}
+
+	/**
+	 * 
+	 * @param domain
+	 */
 	public void setDomain(String domain) {
 		String sFuncName = "setDomain(String domain)";
 		LOGGER.entering(className, sFuncName);
@@ -74,20 +93,28 @@ public class SharepointConnector implements Connector {
 		LOGGER.exiting(className, sFuncName);
 	}
 
+	/**
+	 * 
+	 * @param host
+	 */
 	public void setHost(String host) {
 		String sFuncName = "setHost(String host)";
 		LOGGER.entering(className, sFuncName);
 		if(sharepointClientContext != null) {
-		sharepointClientContext.setHost(host);
+			sharepointClientContext.setHost(host);
 		}
 		LOGGER.exiting(className, sFuncName);
 	}
 
+	/**
+	 * 
+	 * @param port
+	 */
 	public void setPort(int port) {
 		String sFuncName = "setPort(int port)";
 		LOGGER.entering(className, sFuncName);
 		if(sharepointClientContext != null) {
-		sharepointClientContext.setPort(port);
+			sharepointClientContext.setPort(port);
 		}
 		LOGGER.exiting(className, sFuncName);
 	}
@@ -117,45 +144,61 @@ public class SharepointConnector implements Connector {
 		LOGGER.exiting(className, sFunctionName);
 	}
 
+	/**
+	 * 
+	 * @param username
+	 */
 	public void setUsername(String username) {
 		String sFunctionName = "setUsername(String username)";
 		LOGGER.entering(className, sFunctionName);
 		if(sharepointClientContext != null) {
-		sharepointClientContext.setUsername(username);
+			sharepointClientContext.setUsername(username);
 		}
 		LOGGER.exiting(className, sFunctionName);
 	}
 
+	/**
+	 * 
+	 * @param password
+	 */
 	public void setPassword(String password) {
 		String sFunctionName = "setPassword(String password)";
 		LOGGER.entering(className, sFunctionName);
 		if(sharepointClientContext != null) {
-		sharepointClientContext.setPassword(password);
+			sharepointClientContext.setPassword(password);
 		}
 		LOGGER.exiting(className, sFunctionName);
 	}  
 
+	/**
+	 * 
+	 * @param workDir
+	 */
 	public void setGoogleConnectorWorkDir(String workDir) {
 		String sFunctionName = "setGoogleConnectorWorkDir(String workDir)";
 		LOGGER.entering(className, sFunctionName);
 		if(sharepointClientContext != null) {
-		sharepointClientContext.setGoogleConnectorWorkDir(workDir);
+			sharepointClientContext.setGoogleConnectorWorkDir(workDir);
 		}
 		LOGGER.exiting(className, sFunctionName);
 	}
 
-	/* (non-Javadoc)
+	/** 
+	 * 
 	 * @see com.google.enterprise.connector.spi.Connector#login()
 	 */
 	public Session login() throws RepositoryException {
 		String sFunctionName = "login()";
 		LOGGER.entering(className, sFunctionName);
+		LOGGER.info(className+":"+sFunctionName);
 		LOGGER.exiting(className, sFunctionName);
 		return new SharepointSession(this, sharepointClientContext);
 	}
 
-	
-
+	/**
+	 * 
+	 * @return
+	 */
 	public ArrayList getBlackList() {
 		String sFunctionName = "getBlackList()";
 		LOGGER.entering(className, sFunctionName);
@@ -163,6 +206,10 @@ public class SharepointConnector implements Connector {
 		return blackList;
 	}
 
+	/**
+	 * 
+	 * @param inBlackList
+	 */
 	public void setBlackList(ArrayList inBlackList) {
 		String sFunctionName = "setBlackList(ArrayList blackList)";
 		LOGGER.entering(className, sFunctionName);
@@ -174,6 +221,10 @@ public class SharepointConnector implements Connector {
 		
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	public ArrayList getWhiteList() {
 		String sFunctionName = "getWhiteList()";
 		LOGGER.entering(className, sFunctionName);
@@ -181,6 +232,10 @@ public class SharepointConnector implements Connector {
 		return whiteList;
 	}
 
+	/**
+	 * 
+	 * @param inWhiteList
+	 */
 	public void setWhiteList(ArrayList inWhiteList) {
 		String sFunctionName = "setWhiteList(ArrayList whiteList)";
 		LOGGER.entering(className, sFunctionName);
