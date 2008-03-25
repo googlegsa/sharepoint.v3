@@ -55,7 +55,7 @@ public class SharepointClientContext implements Cloneable {
 	private static boolean bFQDNConversion = false;
 	private static final String SEPARATOR = " ";
 	private static final int SSL_DEFAULT_PORT = 443;
-	private static final String FRONT_SLASH = "/";
+//	private static final String FRONT_SLASH = "/";
 	
 
 	//Default locale is en-US
@@ -161,7 +161,8 @@ public class SharepointClientContext implements Cloneable {
 			LOGGER.exiting(className, sFunctionName);
 			return spCl;
 		} catch (Throwable e) {
-			e.printStackTrace();
+			LOGGER.warning(sFunctionName+": Unable to clone client context");
+			LOGGER.finest(e.toString());
 			return null;
 		}
 
@@ -203,7 +204,8 @@ public class SharepointClientContext implements Cloneable {
 			LOGGER.severe("SharepointClientContext: sharepoint URL is null");
 			return;
 		}
-
+		sharepointUrl = sharepointUrl.trim();
+	
 		//set the sharepointType
 		if(sharepointType!=null){
 			this.strSharePointType = sharepointType;
@@ -260,6 +262,8 @@ public class SharepointClientContext implements Cloneable {
 	public void setURL(String sharepointUrl){
 		String sFunctionName = "setURL(String sharepointUrl)";
 		LOGGER.entering(className, sFunctionName);
+		
+		
 		try {
 			URL url = new URL(sharepointUrl);
 			this.host = url.getHost();
@@ -396,7 +400,9 @@ public class SharepointClientContext implements Cloneable {
 	 */
 	public void setExcludedURlList(String excludedURls , String separator) {
 		if(excludedURls != null){
-			excludedURlList = removeFrontSlash(excludedURls.split(separator));
+			// with new gnu pattern matching not required to remove FrontSlash
+//			excludedURlList = removeFrontSlash(excludedURls.split(separator));
+			excludedURlList = excludedURls.split(separator);
 		}
 	}
 
@@ -407,7 +413,10 @@ public class SharepointClientContext implements Cloneable {
 
 	public void setExcludedURlList(String excludedURls){
 		if(excludedURls != null){
-			excludedURlList = removeFrontSlash(excludedURls.split(SEPARATOR));
+			
+			// with new gnu pattern matching not required to remove FrontSlash
+//			excludedURlList = removeFrontSlash(excludedURls.split(SEPARATOR));
+			excludedURlList = excludedURls.split(SEPARATOR);
 		}
 	}
 
@@ -420,7 +429,10 @@ public class SharepointClientContext implements Cloneable {
 
 	public void setIncludedURlList(String includedURls , String separator) {
 		if(includedURls != null){
-			includedURlList = removeFrontSlash(includedURls.split(separator));
+			
+			// with new gnu pattern matching not required to remove FrontSlash
+//			includedURlList = removeFrontSlash(includedURls.split(separator));
+			includedURlList = includedURls.split(separator);
 		}
 	}
 
@@ -431,7 +443,10 @@ public class SharepointClientContext implements Cloneable {
 
 	public void setIncludedURlList(String includedURls){
 		if(includedURls != null){
-			includedURlList = removeFrontSlash(includedURls.split(SEPARATOR));
+			
+			// with new gnu pattern matching not required to remove FrontSlash
+//			includedURlList = removeFrontSlash(includedURls.split(SEPARATOR));
+			includedURlList = includedURls.split(SEPARATOR);
 		}
 	}
 
@@ -507,7 +522,7 @@ public class SharepointClientContext implements Cloneable {
 //		System.out.println("SharepointClientContext : setFQDNConversion : "+bFQDNConversion);
 	}
 
-	private String[] removeFrontSlash(String[] patterns){
+	/*private String[] removeFrontSlash(String[] patterns){
 		String sFunctionName = "removeFrontSlash(String[] patterns)";
 		LOGGER.entering(className, sFunctionName);
 		if(patterns!=null){
@@ -527,5 +542,5 @@ public class SharepointClientContext implements Cloneable {
 		}
 		LOGGER.exiting(className, sFunctionName);
 		return patterns;
-	}
+	}*/
 }

@@ -21,16 +21,14 @@ import java.net.URL;
 import java.text.Collator;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
-import javax.xml.rpc.holders.StringHolder;
 
 import org.apache.axis.holders.UnsignedIntHolder;
-//import org.apache.catalina.util.URL;
 import org.apache.catalina.util.URLEncoder;
 
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
@@ -39,11 +37,7 @@ import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteData;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataLocator;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.sitedata._sList;
-import com.google.enterprise.connector.sharepoint.generated.sitedata._sWebWithTime;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOfStringHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sWebWithTimeHolder;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sSiteMetadataHolder;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 /**
@@ -58,22 +52,46 @@ public class SiteDataWS {
 	public static final String SURVEYS = "Survey"; //BaseType=4 (In SPS2003)
 	public static final String GENERIC_LIST = "GenericList";//BaseType=0 (In SPS2003)
 	public static final String ISSUE = "Issue";//BaseType=5 (In SPS2003)
+	private static final String BT_SLIDELIBRARY="SlideLibrary";
+	private static final String BT_FORMLIBRARY="FormLibrary";
+	private static final String BT_TRANSLATIONMANAGEMENTLIBRARY="TranslationManagementLibrary";
+	private static final String BT_REPORTLIBRARY="ReportLibrary";
+	private static final String BT_TRANSLATOR="Translator";
+	private static final String BT_PROJECTTASK ="ProjectTask";
+	private static final String BT_SITESLIST ="SitesList";
+	private static final String ORIGINAL_BT_SLIDELIBRARY="2100";
+	private static final String ORIGINAL_BT_FORMLIBRARY="XMLForm";
+	private static final String ORIGINAL_BT_TRANSLATIONMANAGEMENTLIBRARY="1300";
+	private static final String ORIGINAL_BT_REPORTLIBRARY="433";
+	private static final String ORIGINAL_BT_TRANSLATOR="1301";
+	private static final String ORIGINAL_BT_PROJECTTASK ="GanttTasks";
+	private static final String ORIGINAL_BT_SITESLIST ="300";
+	private static final String ORIGINAL_BT_LINKS="Links";
+	private static final String NO_TEMPLATE="No Template";
+	private static final String ATTR_DEFAULTVIEWURL = "DefaultViewUrl";
+	private static final String ATTR_DESCRIPTION = "Description";
+	private static final String ATTR_TITLE = "Title";
+	
 	public static URLEncoder enc  = new URLEncoder();
 	static final String URL_SEP ="://";
-
-//	private static Log logger = LogFactory.getLog(SiteDataWS.class);
+	
 	private static final Logger LOGGER = Logger.getLogger(SiteDataWS.class.getName());
 	private String className = SiteDataWS.class.getName();
 	private SharepointClientContext sharepointClientContext;
 	private String endpoint;
-//	SiteDataSoap12Stub stub = null;
 	SiteDataSoap_BindingStub stub = null;
+	
+	
+	private static final String ATTR_READSECURITY = "ReadSecurity";
+	
+	//url of the site
+	private String siteRelativeUrl ="";
+	
+
 
 	//set the content length of the HTTPResponse to a huge value
 	static{
 		//set getResponseHeaderGroup().getHeaders("Content-Length"); to Long.MAX_VALUE
-
-
 		//set the URLEncoder safe characters
 		enc.addSafeCharacter('/');
 		enc.addSafeCharacter(':');// required when endpoint is set using specified site
@@ -85,19 +103,17 @@ public class SiteDataWS {
 		LOGGER.entering(className, sFunctionName);
 		if(inSharepointClientContext!=null){
 			this.sharepointClientContext = inSharepointClientContext;
-//			String strsite =inSharepointClientContext.getsiteName().substring(1); 
 			endpoint = inSharepointClientContext.getProtocol()+URL_SEP + inSharepointClientContext.getHost() + ":" +inSharepointClientContext.getPort() +enc.encode(inSharepointClientContext.getsiteName())+ SITEDATAENDPOINT;
-//			endpoint= endpoint.replaceAll("%3A", ":");
-//			endpoint =endpoint.replaceAll("%2F", "/");
-			LOGGER.config(sFunctionName+" : End Point" +endpoint);
+			LOGGER.config(sFunctionName+" : End Point: " +endpoint);
 
+			//set the relativeURL
+			siteRelativeUrl = inSharepointClientContext.getsiteName();
+			
 			SiteDataLocator loc = new SiteDataLocator();
-//			loc.setSiteDataSoap12EndpointAddress(endpoint);
 			loc.setSiteDataSoapEndpointAddress(endpoint);
 			SiteData servInterface = loc;
 
 			try {
-//				stub = (SiteDataSoap_BindingStub) serv_interface.getSiteDataSoap12();
 				stub = (SiteDataSoap_BindingStub) servInterface.getSiteDataSoap();
 			} catch (ServiceException e) {
 				LOGGER.config("SiteDataWS: "+e.toString());
@@ -110,15 +126,6 @@ public class SiteDataWS {
 			String strPassword= inSharepointClientContext.getPassword();
 			strDomain+="\\"+strUser; // form domain/user 
 
-			/*//added by amit
-				final String namespace ="http://schemas.microsoft.com/sharepoint/soap/";
-//				final String prefix ="ms";
-				//s.setHeader("http://my.name.space/headers", "mysecurityheader", "This guy is OK");
-				String str = ""+Long.MAX_VALUE;
-//				stub.setHeader(namespace,"Content-Length", str );
-				stub.setHeader(namespace,"http.method.response.maximum.size", str );
-			 */
-
 			//set the user and pass
 			stub.setUsername(strDomain);
 			stub.setPassword(strPassword);
@@ -127,8 +134,6 @@ public class SiteDataWS {
 	}
 
 	public SiteDataWS(SharepointClientContext inSharepointClientContext,String siteName) throws RepositoryException {
-//		final String sHTTP= "http";
-//		final String sHTTPS= "https";
 		String sFunctionName = "SiteDataWS(SharepointClientContext sharepointClientContext,String siteName";
 		LOGGER.entering(className, sFunctionName);
 		if(inSharepointClientContext!=null){
@@ -142,6 +147,7 @@ public class SiteDataWS {
 					siteURL = new URL(siteName);
 					
 				} catch (MalformedURLException e) {
+					LOGGER.config(sFunctionName+": actual error:\n"+e.toString());
 					throw new SharepointException("Malformed URL: "+siteName);
 				}
 				int iPort = 0;
@@ -154,41 +160,19 @@ public class SiteDataWS {
 				}
 				
 				endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+iPort/*siteURL.getPort()*/+enc.encode(siteURL.getPath())+ SITEDATAENDPOINT;
-				/*if (siteName.startsWith(sHTTP+URL_SEP)) {
-					siteName = siteName.substring(7);
-						//endpoint = sHTTP+URL_SEP +siteName+ SITEDATAENDPOINT;
-						endpoint = sHTTP+URL_SEP +enc.encode(siteName)  + SITEDATAENDPOINT;
-
-						//note: we do not want ":" and "/" to be encoded
-						//so replace the equivalent encoding with ":" and "/" wherever applicable
-//						endpoint= endpoint.replaceAll("%3A", ":");
-//						endpoint =endpoint.replaceAll("%2F", "/");
-				}else if(siteName.startsWith(sHTTPS+URL_SEP)) {
-					siteName = siteName.substring(8);
-						endpoint = sHTTPS+URL_SEP + enc.encode(siteName) + SITEDATAENDPOINT;
-//						endpoint = sHTTPS+URL_SEP + siteName + SITEDATAENDPOINT;
-//						endpoint= endpoint.replaceAll("%3A", ":");
-//						endpoint =endpoint.replaceAll("%2F", "/");
-				}else {
-//					endpoint = Util.getEscapedSiteName(siteName) + SITEDATAENDPOINT;
-
-											endpoint = enc.encode(siteName)+ SITEDATAENDPOINT;
-//											endpoint = siteName+ SITEDATAENDPOINT;
-//										endpoint= endpoint.replaceAll("%3A", ":");
-//										endpoint =endpoint.replaceAll("%2F", "/");
-				}*/
+				//set the relativeURL
+				siteRelativeUrl = siteURL.getPath();
 			}
-			//System.out.println("sws2: "+endpoint);
-			LOGGER.config(sFunctionName+" : End Point" +endpoint);
+			
+			LOGGER.config(sFunctionName+" : End Point: " +endpoint);
 			SiteDataLocator loc = new SiteDataLocator();
-//			loc.setSiteDataSoap12EndpointAddress(endpoint);
 			loc.setSiteDataSoapEndpointAddress(endpoint);
 			SiteData servInterface = loc;
 
 			try {
 				stub = (SiteDataSoap_BindingStub) servInterface.getSiteDataSoap();
 			} catch (ServiceException e) {
-				LOGGER.config("SiteDataWS: "+e.toString());
+				LOGGER.config(sFunctionName+": Actual error: \n"+e.toString());
 				throw new SharepointException("Unable to create sitedata stub");
 			}
 //			set the user and pass
@@ -208,7 +192,7 @@ public class SiteDataWS {
 	 * Gets all the sites from the sharepoint server.
 	 * @return list of sharepoint documents corresponding to sites.
 	 */
-	public List getAllChildrenSites() throws SharepointException {
+	/*public List getAllChildrenSites() throws SharepointException {
 		String sFunctionName = "getAllChildrenSites()";
 		LOGGER.entering(className, sFunctionName);
 		if(stub==null){
@@ -224,8 +208,11 @@ public class SiteDataWS {
 			UnsignedIntHolder getSiteResult = new UnsignedIntHolder();
 			StringHolder strGroups = new StringHolder();
 			ArrayOf_sWebWithTimeHolder vWebs = new ArrayOf_sWebWithTimeHolder();
-			stub.getSite(getSiteResult, sSiteMetadata, vWebs, strUsers, strGroups, vGroups);
-
+			try{
+				stub.getSite(getSiteResult, sSiteMetadata, vWebs, strUsers, strGroups, vGroups);
+			}catch(Exception e){
+				throw new SharepointException(e);
+			}
 
 
 			_sWebWithTime[] els  =vWebs.value;
@@ -245,9 +232,6 @@ public class SiteDataWS {
 						//System.out.println(sFunctionName+" : include URL ["+url.toString()+"]");
 						LOGGER.config(sFunctionName+" : include URL ["+url.toString()+"]");
 						Calendar lastModified = els[i].getLastModified();   
-//						url = enc.encode(url);
-//						url= url.replaceAll("%3A", ":");
-//						url =url.replaceAll("%2F", "/");
 
 						SPDocument doc = new SPDocument(url, url, lastModified,SPDocument.OBJTYPE_WEB);
 						sites.add(doc);
@@ -259,14 +243,14 @@ public class SiteDataWS {
 		} catch (Throwable e) {
 			LOGGER.warning(sFunctionName+": Unable to access URL["+endpoint+"]");
 			LOGGER.finer(e.toString());
-			throw new SharepointException(e.toString());
+			throw new SharepointException(e);
 		}
 		if(sites!=null){
 			LOGGER.info("Total children web sites: "+sites.size());
 		}
 		LOGGER.exiting(className, sFunctionName);
 		return sites;      
-	}
+	}*/
 
 	/**
 	 * Gets the collection of all the SPDocument Libraries on the sharepoint 
@@ -304,6 +288,7 @@ public class SiteDataWS {
 	private List getNamedLists(String baseType) throws SharepointException {
 		String sFunctionName = "getNamedLists(String baseType)";
 		LOGGER.entering(className, sFunctionName);
+		
 		if(baseType==null){
 			throw new SharepointException("Unable to get the baseType");
 		}
@@ -340,7 +325,27 @@ public class SiteDataWS {
 						alterUrl =sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost()+ sl[i].getDefaultViewUrl();
 						strBaseTemplate = sl[i].getBaseTemplate();
 						if(strBaseTemplate==null){
-							strBaseTemplate = "No Template";
+							strBaseTemplate = NO_TEMPLATE;
+						}else{
+							//check for special type of illogical\numeric base templkates
+							if(collator.equals(strBaseTemplate, ORIGINAL_BT_SLIDELIBRARY)){//for SlideLibrary
+								strBaseTemplate=BT_SLIDELIBRARY;
+							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_FORMLIBRARY)){//for FormLibrary
+								strBaseTemplate=BT_FORMLIBRARY;
+							}else if(collator.equals(strBaseTemplate,ORIGINAL_BT_TRANSLATIONMANAGEMENTLIBRARY)){//for TranslationManagementLibrary
+								strBaseTemplate=BT_TRANSLATIONMANAGEMENTLIBRARY;
+							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_TRANSLATOR)){//for Translator
+								strBaseTemplate=BT_TRANSLATOR;
+							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_REPORTLIBRARY)){//for ReportLibrary
+								strBaseTemplate=BT_REPORTLIBRARY;
+							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_PROJECTTASK)){//for ReportLibrary
+								strBaseTemplate=BT_PROJECTTASK;
+							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_SITESLIST)){//for ReportLibrary
+								strBaseTemplate=BT_SITESLIST;
+							}
+							
+							//System.out.println("ObjectType: "+strBaseTemplate);
+							//System.out.println("");
 						}
 					}
 					LOGGER.config(sFunctionName +"  : URL :"+url);
@@ -350,15 +355,58 @@ public class SiteDataWS {
 							if (collator.equals(sl[i].getBaseType(),(baseType))) {
 								BaseList list = new BaseList(sl[i].getInternalName(), 
 										sl[i].getTitle(), sl[i].getBaseType(),
-										Util.siteDataStringToCalendar(sl[i].getLastModified()),strBaseTemplate);              
+										Util.siteDataStringToCalendar(sl[i].getLastModified()),strBaseTemplate,url);
+								
+								//Add attribute: ListsConst
+								//Note: It is Important for the baseType="Lists"
+								//For baseType="DocumentLibrary" do not care
+								if(collator.equals(sl[i].getBaseType(),GENERIC_LIST)){
+									String listUrl = sl[i].getDefaultViewUrl();//e.g. /sites/abc/Lists/Announcements/AllItems.aspx
+									//String relativeUrl = sharepointClientContext.getsiteName();
+									
+									if((listUrl!=null) && (siteRelativeUrl!=null)){
+										
+										//cancel out the relative url form the listurl
+										listUrl = listUrl.replaceFirst(siteRelativeUrl, "");
+										
+										
+										StringTokenizer strTokList = new StringTokenizer(listUrl,"/");
+										if(null!=strTokList){
+											String myNewListConst ="";
+
+											while((strTokList.hasMoreTokens())  &&  (strTokList.countTokens()>2)){
+												//int tokCnt= strTokList.countTokens();
+												
+												//if(tokCnt>2){
+													String listToken = strTokList.nextToken();
+													if(null!=listToken){
+														myNewListConst+="/"+listToken;
+													}	
+												//}//if(tokCnt>2){
+												
+											}//while(strTokList.hasMoreTokens()){
+											list.setListConst(myNewListConst);
+//											System.out.println("New Value(ListsConst): "+myNewListConst);
+										}
+									}
+									
+									
+								}
+																
+								
+								//add the attribute(Metadata to the list )
+								list = getListWithAllAttributes(list,sl[i]);
 								listCollection.add(list);
 							}
+							
 						} catch (ParseException e) {
 							throw new SharepointException(e.toString());
 						}
 					}else{
 						LOGGER.warning(sFunctionName+" : excluding "+url.toString());
 					}
+					
+					//Sort the base list
 					Collections.sort(listCollection);
 					dumpcollection(listCollection);
 				}
@@ -368,10 +416,39 @@ public class SiteDataWS {
 		} 
 		
 		if(listCollection!=null){
-			LOGGER.info("Total Lists returned: "+listCollection.size()+"for list of type: "+baseType);
+			LOGGER.info("Total Lists returned: "+listCollection.size()+" for list of type: "+baseType);
 		}
 		LOGGER.exiting(className, sFunctionName);
 		return listCollection;
+	}
+
+	private BaseList getListWithAllAttributes(BaseList list, _sList documentLibrary) {
+		if((list==null)||(documentLibrary==null)){
+			return list;
+		}
+		
+		String str = "";
+		str = documentLibrary.getDefaultViewUrl();
+		if((str!=null)&&(!str.trim().equals(""))){
+			list.setAttribute(ATTR_DEFAULTVIEWURL, str);
+		}
+		str = "";
+		str = documentLibrary.getDescription();
+		if((str!=null)&&(!str.trim().equals(""))){
+			list.setAttribute(ATTR_DESCRIPTION, str);
+		}
+		str = "";
+		str = documentLibrary.getTitle();
+		if((str!=null)&&(!str.trim().equals(""))){
+			list.setAttribute(ATTR_TITLE, str);
+		}
+		str = "";
+		str += documentLibrary.getReadSecurity();
+		if((str!=null)&&(!str.trim().equals(""))){
+			list.setAttribute(ATTR_READSECURITY, str);
+		}
+		
+		return list;
 	}
 
 	//for debugging purpose
@@ -393,18 +470,22 @@ public class SiteDataWS {
 	public List getAllLinks(SharepointClientContext inSharepointClientContext,String site) throws SharepointException{
 		String sFunctionName = "getAllLinks(SharepointClientContext sharepointClientContext,String site)";
 		LOGGER.entering(className, sFunctionName);
+		
 		if(stub==null){
 			throw new SharepointException(sFunctionName+": Unable to get the sitedata stub");
 		}
+		
 		ArrayList allLinks = new ArrayList();
 		Collator collator = SharepointConnectorType.getCollator();
-		LOGGER.config(sFunctionName+": site : "+site);
+		LOGGER.config(sFunctionName+": Getting all links for site ["+site+"]");
+		
 		try {
 			ListsWS listsWS = new ListsWS(inSharepointClientContext, site);
 
 			UnsignedIntHolder getListCollectionResult = new UnsignedIntHolder();
 			ArrayOf_sListHolder vLists = new ArrayOf_sListHolder();
 			stub.getListCollection(getListCollectionResult, vLists);
+			
 			if(vLists==null){
 				throw new SharepointException("Unable to get the lists");
 			}
@@ -412,7 +493,13 @@ public class SiteDataWS {
 
 			if (sl != null) {//check out the links from other list collection 
 				for(int i=0;i<sl.length;++i){
-					if (collator.equals(sl[i].getBaseTemplate(),"Links")) {
+//					System.out.println("BaseTemplate: "+sl[i].getBaseTemplate());
+					//if (collator.equals(sl[i].getBaseTemplate(),"Links")) {
+					/*if(collator.equals(sl[i].getBaseTemplate(),"300")){
+						System.out.println("The spl vcase");
+					}*/
+					
+					if ((collator.equals(sl[i].getBaseTemplate(),ORIGINAL_BT_LINKS)) || (collator.equals(sl[i].getBaseTemplate(),ORIGINAL_BT_SITESLIST))) {
 						String url = null;		
 						String alterUrl = null; 
 						SharepointClientUtils spUtils = new SharepointClientUtils();   
@@ -423,13 +510,14 @@ public class SiteDataWS {
 						+ ":" + inSharepointClientContext.getPort() +sl[i].getDefaultViewUrl();
 
 						alterUrl =inSharepointClientContext.getProtocol()+URL_SEP + inSharepointClientContext.getHost()+ sl[i].getDefaultViewUrl();
-						LOGGER.config(sFunctionName +"  : URL :"+url);
+						
+//						LOGGER.config(sFunctionName +"  : URL() :"+url);
 						if(spUtils.isIncludedUrl(includedURLs,excludedURLs, url) || spUtils.isIncludedUrl(includedURLs,excludedURLs, alterUrl)) {	  
 
 							LOGGER.config(sFunctionName+": included URL :["+url+"]");	
 							BaseList list = new BaseList(sl[i].getInternalName(), 
 									sl[i].getTitle(), sl[i].getBaseType(),
-									Util.siteDataStringToCalendar(sl[i].getLastModified()),"Links"); 
+									Util.siteDataStringToCalendar(sl[i].getLastModified()),"Links",url); 
 
 							//get all the items for the links
 							List listItems = listsWS.getLinkChanges(list);
@@ -469,6 +557,7 @@ public class SiteDataWS {
 	public List getSurveys() throws SharepointException {
 		return getNamedLists(SURVEYS);
 	}
+
 }
 
 

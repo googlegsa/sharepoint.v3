@@ -14,9 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.text.Collator;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -30,7 +33,6 @@ import java.util.regex.Pattern;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.message.MessageElement;
-//import org.apache.catalina.util.URL;
 import org.apache.catalina.util.URLEncoder;
 
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
@@ -68,7 +70,7 @@ public class ListsWS {
 	final String sQuery = "Query";
 	final String sOrderBy = "OrderBy";
 	final String sDispForm = "DispForm.aspx?ID=";
-	final String sLists = "Lists";
+//	final String sLists = "Lists";
 	final String sID = "ows_ID";
 	final String sDiscussionLastUpdated = "ows_DiscussionLastUpdated";
 	final String sDocument = "Document";
@@ -79,7 +81,6 @@ public class ListsWS {
 	public static URLEncoder enc  = new URLEncoder();
 	private SharepointClientContext sharepointClientContext;
 	private String endpoint;
-//	ListsSoap12Stub stub = null;
 	ListsSoap_BindingStub stub = null;
 	private ViewsWS viewsWS;
 	private WebsWS websWS;
@@ -87,9 +88,11 @@ public class ListsWS {
 
 	static{
 		//set the URLEncoder safe characters
+		//Adding safe characters will prevent them to encoded while encoding the URL
 		enc.addSafeCharacter('/');
 		enc.addSafeCharacter(':');// required when endpoint is set using specified site
 	}
+	
 	/**
 	 * The "blacklist" is the SharePoint meta attributes that we will NOT
 	 * pass to the GSA. (these all come from the ows_metaInfo attribute, which
@@ -169,7 +172,6 @@ public class ListsWS {
 				}
 			}
 		}
-//		System.out.println("setBlackListAndWhiteList ended");
 		LOGGER.exiting(className, sFuncName);
 	}
 	/**
@@ -179,8 +181,9 @@ public class ListsWS {
 	 * @return boolean
 	 */
 	private static boolean listMatches(List list, String input) {
-		String sFuncName = "setBlackListAndWhiteList()";
+		String sFuncName = "listMatches(List list, String input)";
 		LOGGER.entering(ListsWS.class.getName(), sFuncName);
+		
 		if(list!=null){
 			for (int iPattern=0;iPattern<list.size();++iPattern) {
 				Pattern pattern = (Pattern) list.get(iPattern);
@@ -240,22 +243,20 @@ public class ListsWS {
 	throws RepositoryException {
 		String sFuncName = "ListsWS(SharepointClientContext inSharepointClientContext)";
 		LOGGER.entering(className, sFuncName);
+		
 		if(inSharepointClientContext!=null){
 			this.sharepointClientContext = inSharepointClientContext;
 
+			//set black and white list patterns
 			setBlackListAndWhiteList();
-
-			/*endpoint = inSharepointClientContext.getProtocol()+URL_SEP + inSharepointClientContext.getHost() + COLON 
-			+inSharepointClientContext.getPort() 
-			+ Util.getEscapedSiteName(inSharepointClientContext.getsiteName()) + LISTS_END_POINT;*/
+	
 			endpoint = inSharepointClientContext.getProtocol()+URL_SEP + inSharepointClientContext.getHost() + COLON 
 			+inSharepointClientContext.getPort() 
 			+ enc.encode(inSharepointClientContext.getsiteName()) + LISTS_END_POINT;
 
-			//System.out.println("ListsEndPt: "+endpoint);
+			LOGGER.config("ListsEndPt: "+endpoint);
 			ListsLocator loc = new ListsLocator();
 			loc.setListsSoapEndpointAddress(endpoint);
-//			loc.setListsSoap12EndpointAddress(endpoint);
 
 			Lists listsService =loc;
 			try {
@@ -423,11 +424,22 @@ public class ListsWS {
 			throw new SharepointException("Unable to get the list template");
 		}
 
+		
+		///////////////REMOVE THE 
+		String sLists =list.getListConst();
+//		String sLists ="Lists";
+		/*String weburl = sharepointClientContext.getsiteName(); 
+		URL siteURL = new URL(weburl);
+		
+		weburl=siteURL.getPath();*/
+		
+		
 
 		ArrayList listItems = new ArrayList();
 		String urlPrefix = sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost() + COLON 
 		+ sharepointClientContext.getPort() 
-		+ sharepointClientContext.getsiteName() + "/" +sLists + "/" 
+		+ sharepointClientContext.getsiteName()
+		+ sLists + "/"   /*@@@ problem : need to get it dynamically */
 		+ list.getTitle() + "/" + sDispForm;
 
 		//--------changes for making axis 1_4 compliant
@@ -498,10 +510,33 @@ public class ListsWS {
 											author=author.substring(author.indexOf(HASH) + 1); //e.g.1073741823;#System Account
 										}
 
-
+										
 										doc = new SPDocument(docId, url.toString(), list.getLastMod(),author,strObjectType);
 										//for list items we require the ID.. this is required to get the announcements
 //										doc = new SPDocument(url.toString(), url.toString(), list.getLastMod(),author,strObjectType);
+										
+										////////////////add all the metadata
+										Iterator itAttrs = listItem.getAllAttributes();
+										if(itAttrs!=null){
+											while(itAttrs.hasNext()){
+												Object oneAttr =  itAttrs.next();
+												if(oneAttr!=null){
+													String strAttrName =oneAttr.toString();
+													if((strAttrName !=null)&&(!strAttrName.trim().equals(""))){
+														String strAttrValue = listItem.getAttribute(strAttrName);
+	
+														//check if the attribute could be considered as metadata
+														if (!listMatches(blackList, strAttrName) && !listMatches(whiteList, strAttrName)){
+															doc.setAttribute(strAttrName, strAttrValue);
+	//																	System.out.println("Attribute key="+strAttrName+": value="+strAttrValue);
+														}
+													}
+													
+												}//if(oneAttr!=null){
+											}
+										}
+										////////////////////
+										
 										listItems.add(doc);
 									}else{
 										LOGGER.warning(sFunctionName+" : excluding "+url.toString());
@@ -728,7 +763,7 @@ public class ListsWS {
 		}
 
 
-
+		Collator collator = SharepointConnectorType.getCollator();
 		String listName = list.getInternalName();
 		ArrayList listItems = new ArrayList();
 		String urlPrefix = sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost() + COLON 
@@ -759,14 +794,20 @@ public class ListsWS {
 								//get the child of child = files or folders
 								Iterator itChildFilesOrFolders = child.getChildElements();
 								while(itChildFilesOrFolders.hasNext()){
+									//list item = file
 									MessageElement listItem = (MessageElement) itChildFilesOrFolders.next();
 
+									
+									
+									//////////end: get all attributes///////////////
+									
 									//check if the fileref exists
 									if(listItem.getAttribute(sFileRef)!=null){
 
 										String lastModified = listItem.getAttribute(sModified);
 										String fileName =listItem.getAttribute(sFileRef); 
-
+										
+										
 										/////////////////print values of all the attributes of document /////
 										/*System.out.println("---------------DOCUMENT--------------");
 
@@ -805,6 +846,7 @@ public class ListsWS {
 										SharepointClientUtils spUtils = new SharepointClientUtils();   
 										if(spUtils.isIncludedUrl(includedURLs,excludedURLs, url.toString())) {	  
 											LOGGER.config(sFunctionName+" : included url : "+url.toString());
+											
 											try {
 												SPDocument doc;
 
@@ -813,8 +855,7 @@ public class ListsWS {
 													strObjectType = sDocument;
 												}
 
-
-												//								get the author
+												//get the author
 												String author = listItem.getAttribute(sEditor);
 												if(author==null){
 													author = listItem.getAttribute(sAuthor);
@@ -840,32 +881,44 @@ public class ListsWS {
 												if(strSharepointType==null){
 													throw new SharepointException(sFunctionName+": Unable to get the sharepoint type (sp2003/sp2007)");
 												}
-												if(strSharepointType.equals(SharepointConnectorType.SP2003)){
-													//iterate through all the attributes get the atribute name and value
-													Iterator itAttrs = listItem.getAllAttributes();
-													if(itAttrs!=null){
-														while(itAttrs.hasNext()){
-															Object oneAttr =  itAttrs.next();
-															if(oneAttr!=null){
-																String strAttrName =oneAttr.toString();
-																String strAttrValue = listItem.getAttribute(strAttrName);
-
-																//check if the attribute could be considered as metadata
-																if (!listMatches(blackList, strAttrName) && !listMatches(whiteList, strAttrName)){
-																	doc.setAttribute(strAttrName, strAttrValue);
-//																	System.out.println("Attribute key="+strAttrName+": value="+strAttrValue);
+												
+												if(strSharepointType.equals(SharepointConnectorType.SP2007)){
+													String[] arrayOfMetaInfo = metaInfo.split("\n|\r\n");
+													setDocLibMetadata(doc, arrayOfMetaInfo);	
+												}//end: if(strSharepointType.equals(SharepointConnectorType.SP2007)){
+												
+												
+//												if(strSharepointType.equals(SharepointConnectorType.SP2003)){
+												//iterate through all the attributes get the atribute name and value
+												Iterator itAttrs = listItem.getAllAttributes();
+												if(itAttrs!=null){
+													while(itAttrs.hasNext()){
+														Object oneAttr =  itAttrs.next();
+														if(oneAttr!=null){
+															String strAttrName =oneAttr.toString();
+															if((strAttrName !=null)&&(!strAttrName.trim().equals(""))){
+																if(!collator.equals(strAttrName, sMetaInfo)){
+																	String strAttrValue = listItem.getAttribute(strAttrName);
+		
+																	//check if the attribute could be considered as metadata
+																	if (!listMatches(blackList, strAttrName) && !listMatches(whiteList, strAttrName)){
+																		doc.setAttribute(strAttrName, strAttrValue);
+		//																	System.out.println("Attribute key="+strAttrName+": value="+strAttrValue);
+																	}
 																}
 															}
-														}
+															
+														}//if(oneAttr!=null){
 													}
+												}
 
 
-												}else if(strSharepointType.equals(SharepointConnectorType.SP2007)){
+												/*}else if(strSharepointType.equals(SharepointConnectorType.SP2007)){
 													String[] arrayOfMetaInfo = metaInfo.split("\n|\r\n");
 													setDocLibMetadata(doc, arrayOfMetaInfo);	
 												}else{
 													throw new SharepointException(sFunctionName+": Invalid sharepoint type, e.g. sharepoint type should be either sp2003/sp2007");
-												}
+												}*/
 
 												listItems.add(doc);
 											} catch (ParseException e) {

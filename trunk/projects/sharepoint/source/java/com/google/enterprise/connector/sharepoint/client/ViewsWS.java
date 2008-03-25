@@ -54,6 +54,105 @@ public class ViewsWS {
 	}
 
 	/**
+	 * 
+	 * @param inSharepointClientContext
+	 * @throws SharepointException
+	 */
+	public ViewsWS(SharepointClientContext inSharepointClientContext)
+	throws SharepointException {
+		String sFunctionName = "ViewsWS(SharepointClientContext inSharepointClientContext)";
+		LOGGER.entering(className, sFunctionName);
+		if(inSharepointClientContext!=null){
+			endpoint = inSharepointClientContext.getProtocol()+URL_SEP+ inSharepointClientContext.getHost() + ":"+inSharepointClientContext.getPort() +enc.encode(inSharepointClientContext.getsiteName()) + VIEWSENDPOINT;
+			try{
+				ViewsLocator loc = new ViewsLocator();
+				//System.out.println("viwsend: "+endpoint);
+				loc.setViewsSoapEndpointAddress(endpoint);
+				Views service = loc;
+
+				try {
+					stub = (ViewsSoap_BindingStub) service.getViewsSoap();
+				} catch (ServiceException e) {
+					LOGGER.warning(className+":"+sFunctionName+": "+e.toString());
+					throw new SharepointException("Unable to create views stub");
+				}
+
+				String strDomain = inSharepointClientContext.getDomain();
+				String strUser = inSharepointClientContext.getUsername();
+				String strPassword= inSharepointClientContext.getPassword();
+				strDomain+="\\"+strUser; // form domain/user 
+
+				//set the user and pass
+				stub.setUsername(strDomain);
+				stub.setPassword(strPassword);
+			}catch (Exception e) {
+				LOGGER.warning(className+":"+sFunctionName+": "+e.getMessage());
+				throw new SharepointException(e);
+			}
+		}
+		LOGGER.exiting(className, sFunctionName);
+	}
+
+	/**
+	 * 
+	 * @param inSharepointClientContext
+	 * @param siteName
+	 * @throws SharepointException
+	 */
+	public ViewsWS(SharepointClientContext inSharepointClientContext,
+			String siteName) throws SharepointException {
+		String sFunctionName = "ViewsWS(SharepointClientContext inSharepointClientContext,String siteName)";
+		LOGGER.entering(className, sFunctionName);
+		if(siteName==null){
+			throw new SharepointException("Unable to get the site name");
+		}
+		URL siteURL ;
+		try{
+			try {
+				siteURL = new URL(siteName);
+			} catch (MalformedURLException e) {
+				LOGGER.warning(className+":"+sFunctionName+": "+e.toString());
+				throw new SharepointException("Malformed URL: "+siteName);
+			}
+
+			int iPort = 0;
+			//check if the def
+			if (-1 != siteURL.getPort()) {
+				iPort = siteURL.getPort();
+			}else{
+				iPort = siteURL.getDefaultPort();
+			}
+			endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+/*siteURL.getPort()*/iPort+enc.encode(siteURL.getPath())+ VIEWSENDPOINT;
+//			endpoint = siteName + VIEWSENDPOINT;
+			ViewsLocator loc = new ViewsLocator();
+			//loc.setViewsSoap12EndpointAddress(endpoint);
+			loc.setViewsSoapEndpointAddress(endpoint);
+			Views service = loc;
+			//System.out.println("viwsend: "+endpoint);
+			try {
+//				stub = (ViewsSoap_BindingStub) service.getViewsSoap12();
+				stub = (ViewsSoap_BindingStub) service.getViewsSoap();
+			} catch (ServiceException e) {
+				LOGGER.finer("ViewsWS(SharepointClientContext inSharepointClientContext): "+e.toString());
+				throw new SharepointException("Unable to create views stub");
+			}
+
+			String strDomain = inSharepointClientContext.getDomain();
+			String strUser = inSharepointClientContext.getUsername();
+			String strPassword= inSharepointClientContext.getPassword();
+			strDomain+="\\"+strUser; // form domain/user 
+
+			//set the user and pass
+			stub.setUsername(strDomain);
+			stub.setPassword(strPassword);
+		}catch (Exception e) {
+			LOGGER.warning(className+":"+sFunctionName+": "+e.getMessage());
+			throw new SharepointException(e);
+		}
+		LOGGER.exiting(className, sFunctionName);
+	}
+
+	/**
 	 * cached list of available viewFields for each Sharepoint List.
 	 */ 
 	private static HashMap cachedViewFields = 
@@ -115,83 +214,7 @@ public class ViewsWS {
 		}
 	}
 
-	public ViewsWS(SharepointClientContext inSharepointClientContext)
-	throws SharepointException {
-		String sFunctionName = "ViewsWS(SharepointClientContext inSharepointClientContext)";
-		LOGGER.entering(className, sFunctionName);
-		if(inSharepointClientContext!=null){
-			endpoint = inSharepointClientContext.getProtocol()+URL_SEP+ inSharepointClientContext.getHost() + ":"+inSharepointClientContext.getPort() +enc.encode(inSharepointClientContext.getsiteName()) + VIEWSENDPOINT;
 
-			ViewsLocator loc = new ViewsLocator();
-			//System.out.println("viwsend: "+endpoint);
-			loc.setViewsSoapEndpointAddress(endpoint);
-			Views service = loc;
-
-			try {
-				stub = (ViewsSoap_BindingStub) service.getViewsSoap();
-			} catch (ServiceException e) {
-				LOGGER.finer("ViewsWS(SharepointClientContext inSharepointClientContext): "+e.toString());
-				throw new SharepointException("Unable to create views stub");
-			}
-
-			String strDomain = inSharepointClientContext.getDomain();
-			String strUser = inSharepointClientContext.getUsername();
-			String strPassword= inSharepointClientContext.getPassword();
-			strDomain+="\\"+strUser; // form domain/user 
-
-			//set the user and pass
-			stub.setUsername(strDomain);
-			stub.setPassword(strPassword);
-		}
-		LOGGER.exiting(className, sFunctionName);
-	}
-
-	public ViewsWS(SharepointClientContext inSharepointClientContext,
-			String siteName) throws SharepointException {
-		String sFunctionName = "ViewsWS(SharepointClientContext inSharepointClientContext,String siteName)";
-		LOGGER.entering(className, sFunctionName);
-		if(siteName==null){
-			throw new SharepointException("Unable to get the site name");
-		}
-		URL siteURL ;
-		try {
-			siteURL = new URL(siteName);
-		} catch (MalformedURLException e) {
-			throw new SharepointException("Malformed URL: "+siteName);
-		}
-
-		int iPort = 0;
-		//check if the def
-		if (-1 != siteURL.getPort()) {
-			iPort = siteURL.getPort();
-		}else{
-			iPort = siteURL.getDefaultPort();
-		}
-		endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+/*siteURL.getPort()*/iPort+enc.encode(siteURL.getPath())+ VIEWSENDPOINT;
-//		endpoint = siteName + VIEWSENDPOINT;
-		ViewsLocator loc = new ViewsLocator();
-		//loc.setViewsSoap12EndpointAddress(endpoint);
-		loc.setViewsSoapEndpointAddress(endpoint);
-		Views service = loc;
-		//System.out.println("viwsend: "+endpoint);
-		try {
-//			stub = (ViewsSoap_BindingStub) service.getViewsSoap12();
-			stub = (ViewsSoap_BindingStub) service.getViewsSoap();
-		} catch (ServiceException e) {
-			LOGGER.finer("ViewsWS(SharepointClientContext inSharepointClientContext): "+e.toString());
-			throw new SharepointException("Unable to create views stub");
-		}
-
-		String strDomain = inSharepointClientContext.getDomain();
-		String strUser = inSharepointClientContext.getUsername();
-		String strPassword= inSharepointClientContext.getPassword();
-		strDomain+="\\"+strUser; // form domain/user 
-
-		//set the user and pass
-		stub.setUsername(strDomain);
-		stub.setPassword(strPassword);
-		LOGGER.exiting(className, sFunctionName);
-	}
 
 	/**
 	 * Gets the viewFields for a given list. This is a partial (unfortunately!)
