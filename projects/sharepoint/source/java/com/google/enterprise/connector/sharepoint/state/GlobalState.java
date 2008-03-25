@@ -154,6 +154,7 @@ public class GlobalState {
 			LOGGER.exiting(className, sFunName);
 			return obj;
 		}else{
+			LOGGER.warning(className+":"+sFunName+": Unable to make ListState due to list key not found");
 			throw new SharepointException(sFunName+": Unable to make ListState due to list key not found");
 		}
 	}
@@ -173,6 +174,7 @@ public class GlobalState {
 			LOGGER.exiting(className, sFunName);
 			return makeListState(key, Util.calendarToJoda(lastModCal));
 		}else{
+			LOGGER.warning(className+":"+sFunName+": Unable to make ListState due to list key not found");
 			throw new SharepointException(sFunName+": Unable to make ListState due to list key not found");
 		}
 
@@ -315,7 +317,8 @@ public class GlobalState {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			doc = builder.newDocument();
 		} catch (ParserConfigurationException e) {
-			throw new SharepointException(e.toString());
+			LOGGER.warning(className+":"+sFunName+":"+e.toString());
+			throw new SharepointException("Unable to get state XML");
 		}
 		Element top = doc.createElement("state");
 		doc.appendChild(top);
@@ -340,7 +343,8 @@ public class GlobalState {
 		try {
 			t = tf.newTransformer();
 		} catch (TransformerConfigurationException e) {
-			throw new SharepointException(e.toString());
+			LOGGER.warning(className+":"+sFunName+":"+e.toString());
+			throw new SharepointException("Unable to get state XML");
 		}
 		t.setOutputProperty(OutputKeys.INDENT, "yes");
 		t.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -351,7 +355,8 @@ public class GlobalState {
 		try {
 			t.transform(doms, sr);
 		} catch (TransformerException e) {
-			throw new SharepointException(e.toString());
+			LOGGER.warning(className+":"+sFunName+":"+e.toString());
+			throw new SharepointException("Unable to get state XML");
 		}
 		LOGGER.exiting(className, sFunName);
 		return os.toString();
@@ -365,17 +370,21 @@ public class GlobalState {
 	public void saveState()  throws SharepointException {
 		String sFunName="saveState()";
 		LOGGER.entering(className, sFunName);
+		try{
 		String xml = getStateXML();
 		File f = getStateFileLocation();
-		try {
+		
 			FileOutputStream out = new FileOutputStream(f);
 			out.write(xml.getBytes());
 			out.close();
 			LOGGER.info("saving state to " + f.getCanonicalPath());
 		} catch (IOException e) {
-			throw new SharepointException(e.toString());
+			LOGGER.warning(className+":"+sFunName+":"+e.toString());
+			throw new SharepointException("Save state failed");
+			
 		}catch(Throwable e){
-			throw new SharepointException(e.toString());
+			LOGGER.warning(className+":"+sFunName+":"+e.toString());
+			throw new SharepointException("Save state failed");
 		}
 		LOGGER.exiting(className, sFunName);
 	}
@@ -466,17 +475,17 @@ public class GlobalState {
 				}
 			}//null check for children
 		} catch (IOException e) {
-			LOGGER.severe(e.toString());
-			throw new SharepointException(e.toString());
+			LOGGER.severe(className+":"+sFunctionName+":"+e.toString());
+			throw new SharepointException("Unable to load state XML file");
 		} catch (ParserConfigurationException e) {
-			LOGGER.severe(e.toString());
-			throw new SharepointException(e.toString());
+			LOGGER.severe(className+":"+sFunctionName+":"+e.toString());
+			throw new SharepointException("Unable to load state XML file");
 		} catch (SAXException e) {
-			LOGGER.severe(e.toString());
-			throw new SharepointException(e.toString());
+			LOGGER.severe(className+":"+sFunctionName+":"+e.toString());
+			throw new SharepointException("Unable to load state XML file");
 		}catch(Throwable e){
-			LOGGER.severe(e.toString());
-			throw new SharepointException(e.toString());
+			LOGGER.severe(className+":"+sFunctionName+":"+e.toString());
+			throw new SharepointException("Unable to load state XML file");
 		}
 		LOGGER.exiting(className, sFunctionName);
 	}
@@ -496,10 +505,11 @@ public class GlobalState {
 						+ "' does not exist");//amit changed this!!
 				return;
 			}
-			LOGGER.info("loading state from " + f.getCanonicalPath());
+			LOGGER.info(className+":"+sFunctionName+": loading state from " + f.getCanonicalPath());
 			loadStateXML(f);
 		} catch (IOException e) {
-			throw new SharepointException(e.toString());
+			LOGGER.severe(className+":"+sFunctionName+":"+e.getMessage());
+			throw new SharepointException(e.getMessage());
 		}
 		LOGGER.exiting(className, sFunctionName);
 	}
