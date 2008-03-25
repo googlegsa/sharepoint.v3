@@ -116,6 +116,17 @@
 					</classpath>
 		</java>
 		
+		<!--for usergroup.wsdl-->
+		<!-- This is required for checking the validity of the user -->
+		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+						 <arg line="${wsdl}/usergroup.wsdl -p com.google.enterprise.connector.sharepoint.generated.usergroup -o ${src}"/>
+					<classpath>
+						<fileset dir="${lib.jar.dir}">
+								<include name="**/*.jar" />
+						</fileset>
+					</classpath>
+		</java>
+		
 		<!--for UserProfileService.wsdl (SP2007)-->
 		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
 						 <arg line="${wsdl}/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.userprofileservice -o ${src}"/>
@@ -275,7 +286,7 @@
 			<!--creation of manifest file-->
 			<manifest>
 			    <attribute name="Implementation-Title" value="Microsoft SharePoint 2003,2007 Connector"/>
-  		        <attribute name="Implementation-Version" value="1.1.0"/>
+  		        <attribute name="Implementation-Version" value="1.1.2"/>
 			    <attribute name="Implementation-Vendor" value="Google Inc."/>
 			    <attribute name="Specification-Title" value="Connector Manager SPI"/>
 			    <attribute name="Specification-Version" value="1.0 r628"/>
