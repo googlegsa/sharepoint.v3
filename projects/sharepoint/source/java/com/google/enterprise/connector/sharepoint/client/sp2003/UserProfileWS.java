@@ -34,48 +34,54 @@ public class UserProfileWS {
 	private UserProfileServiceSoap_BindingStub stub;
 	static final String URL_SEP ="://";
 	private static final String SLASH = "/";
-	
+
 	public static String personalSpaceTag = "PersonalSpace";
 	public static URLEncoder enc  = new URLEncoder();
-	  
-	  static{
-			//set the URLEncoder safe characters
-			enc.addSafeCharacter('/');
-			enc.addSafeCharacter(':');// required when endpoint is set using specified site
-		}
-	public UserProfileWS(SharepointClientContext inSharepointClientContext){
+
+	static{
+		//set the URLEncoder safe characters
+		enc.addSafeCharacter('/');
+		enc.addSafeCharacter(':');// required when endpoint is set using specified site
+	}
+
+	/**
+	 * 
+	 * @param inSharepointClientContext
+	 */
+	public UserProfileWS(SharepointClientContext inSharepointClientContext) throws SharepointException{
 		String sFunctionName = "UserProfileWS(SharepointClientContext inSharepointClientContext)";
 		LOGGER.entering(className, sFunctionName);
 		if(inSharepointClientContext!=null){
 			this.sharepointClientContext = inSharepointClientContext;
 			String endpoint = inSharepointClientContext.getProtocol()+URL_SEP + inSharepointClientContext.getHost() + ":" +inSharepointClientContext.getPort() + /*Util.getEscapedSiteName(*/enc.encode(inSharepointClientContext.getsiteName())/*)*/
-    		+ SLASH+USERPROFILEENDPOINT;
-			
+			+ SLASH+USERPROFILEENDPOINT;
+
 //			System.out.println("UProfileEndPt: "+endpoint);
 			UserProfileServiceLocator loc = new UserProfileServiceLocator();
 			loc.setUserProfileServiceSoapEndpointAddress(endpoint);
-			
+
 			UserProfileService service = loc;
 			try {
 				stub = (UserProfileServiceSoap_BindingStub) service.getUserProfileServiceSoap();
 			} catch (ServiceException e) {
-				e.printStackTrace();
+				LOGGER.warning(className+":"+sFunctionName+":"+e.toString());
+				throw new SharepointException("Unable to create the userprofile stub");
 			}	
-			
+
 			//get the credentials
 			String strDomain = inSharepointClientContext.getDomain();
 			String strUserName = inSharepointClientContext.getUsername();
 			strDomain+="\\"+strUserName;
 			String strPassword = inSharepointClientContext.getPassword();
-			
+
 			//set authentication
 			stub.setUsername(strDomain);
 			stub.setPassword(strPassword);
 		}
 		LOGGER.exiting(className, sFunctionName);
 	}
-	
-	
+
+
 
 	public boolean isSPS() throws SharepointException{
 		String sFunctionName = "isSPS()";
@@ -84,82 +90,83 @@ public class UserProfileWS {
 			throw new SharepointException("UserProfile stub not found");
 		}
 		try{
-	        stub.getUserProfileByIndex(0);
-	        LOGGER.info("SPS site");
-	        LOGGER.exiting(className, sFunctionName);
-	        return true;
-        }catch(AxisFault fault){
-        	LOGGER.info("WSS site");
-        	LOGGER.exiting(className, sFunctionName);
-	        return false;
-        } catch (Exception e) {
-        	 LOGGER.warning(sFunctionName+" : "+e);
-        	 return false;
+			stub.getUserProfileByIndex(0);
+			LOGGER.info("SPS site");
+			LOGGER.exiting(className, sFunctionName);
+			return true;
+		}catch(AxisFault fault){
+			LOGGER.info("WSS site");
+			LOGGER.exiting(className, sFunctionName);
+			return false;
+		} catch (Exception e) {
+			LOGGER.warning(sFunctionName+" : "+e);
+			return false;
 		}
-        
+
 	}
-	
+
 	public List getPersonalSiteList() throws SharepointException {
 		final String sFunctionName ="getPersonalSiteList()";
 		LOGGER.entering(className, sFunctionName);
 		ArrayList lstAllPersonalSites = new ArrayList(); //list of personal sites and subsites
 		Collator collator = SharepointConnectorType.getCollator();
 		if(stub==null){
-	    	throw new SharepointException(sFunctionName+": Unable to get the userprofile stub");
-	    }
-
-	    int index = 0;
-	    while (index >= 0) {
-	     
-		 GetUserProfileByIndexResult result = null;
-		try {
-			
-			result = stub.getUserProfileByIndex(index);
-		} catch (RemoteException e) {
-			e.printStackTrace();
+			throw new SharepointException(sFunctionName+": Unable to get the userprofile stub");
 		}
-	      if (result == null || result.getUserProfile() == null) {
-	        break;
-	      }
-	      
-	      PropertyData[] data= result.getUserProfile();
-	      if (data == null) {
-	        break;
-	      }
-	      
-	      
-	      String /*acct = null,*/ space = null;
-	      for (int i = 0; i < data.length; ++i) {
-	        String name = data[i].getName();
-	        if (collator.equals(personalSpaceTag,name)) {
-	        	String PropVal = data[i].getValue();//e.g. /personal/administrator/
-	        	if (PropVal == null) {
-		            continue;
-		          }
-	        	String sharepointURL = sharepointClientContext.getProtocol()+URL_SEP+sharepointClientContext.getHost()+":"+sharepointClientContext.getPort()+sharepointClientContext.getsiteName();
-//		          System.out.println("BaseSite: "+sharepointURL);
-		          String strURL = sharepointURL+PropVal;
-		          
-//	          System.out.println("Personal: "+strURL);
-	          if (strURL.endsWith("/")) {
-	        	  strURL = strURL.substring(
-	  					0, strURL.lastIndexOf("/"));
-	  			}
-	          lstAllPersonalSites.add(strURL);
-	          
-	        }
-	      }
-	      if (space == null) {
-	        break;
-	      }
-	      String next = result.getNextValue();
-	      index = Integer.parseInt(next);
-	    }
-	    LOGGER.exiting(className, sFunctionName);
-	    if(lstAllPersonalSites!=null){
-	    	LOGGER.info("Total personal sites returned: "+lstAllPersonalSites.size());
-	    }
+
+		int index = 0;
+		while (index >= 0) {
+
+			GetUserProfileByIndexResult result = null;
+			try {
+
+				result = stub.getUserProfileByIndex(index);
+			} catch (RemoteException e) {
+				LOGGER.warning(className+":"+sFunctionName+":"+e.toString());
+				throw new SharepointException("Unable to get personal sites");
+			}
+			if (result == null || result.getUserProfile() == null) {
+				break;
+			}
+
+			PropertyData[] data= result.getUserProfile();
+			if (data == null) {
+				break;
+			}
+
+
+			String /*acct = null,*/ space = null;
+			for (int i = 0; i < data.length; ++i) {
+				String name = data[i].getName();
+				if (collator.equals(personalSpaceTag,name)) {
+					String propVal = data[i].getValue();//e.g. /personal/administrator/
+					if (propVal == null) {
+						continue;
+					}
+					String sharepointURL = sharepointClientContext.getProtocol()+URL_SEP+sharepointClientContext.getHost()+":"+sharepointClientContext.getPort()+sharepointClientContext.getsiteName();
+//					System.out.println("BaseSite: "+sharepointURL);
+					String strURL = sharepointURL+propVal;
+
+//					System.out.println("Personal: "+strURL);
+					if (strURL.endsWith("/")) {
+						strURL = strURL.substring(
+								0, strURL.lastIndexOf("/"));
+					}
+					lstAllPersonalSites.add(strURL);
+
+				}
+			}
+			if (space == null) {
+				break;
+			}
+			String next = result.getNextValue();
+			index = Integer.parseInt(next);
+		}
+		LOGGER.exiting(className, sFunctionName);
+		if(lstAllPersonalSites!=null){
+			LOGGER.info(className+":"+sFunctionName+": Total personal sites returned: "+lstAllPersonalSites.size());
+		}
 		return lstAllPersonalSites;
-	 }
-	
+	}
+
 }
