@@ -2,7 +2,10 @@
 =Advanced configuration for the !SharePoint connector=
 == Configure the connectorInstance.xml file ==
  
-The advanced configuration is done through the modification of the file connectorInstance.xml. After modification put connectorInstance.xml in the folder /connector-manager/WEB-INF/connectors/sharepoint-connector/instance_of_connector/ 
+The advanced configuration is done through the modification of the file "connectorInstance.xml". This file is available inside "connector-sharepoint.jar". You should extract this file and place it in the folder /connector-manager/WEB-INF/connectors/sharepoint-connector/`instance_of_connector`/ 
+
+By changing this file, you can change the metadata Blacklist and Whitelist for the sharepoint documents. You can also enable/disable FQDN (Fully Qualified Domain Name) resolution for host names.
+ 
 
  
 ==== Change !BlackList and !WhiteList ====
