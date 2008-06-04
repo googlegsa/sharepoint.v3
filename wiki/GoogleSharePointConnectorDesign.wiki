@@ -1,4 +1,3 @@
-#Google SharePoint Connector Design
 =Google SharePoint Connector Design=
 
 ==Introduction==
