@@ -118,7 +118,7 @@
 		
 		<!--for usergroup.wsdl-->
 		<!-- This is required for checking the validity of the user -->
-		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+	<!--	<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
 						 <arg line="${wsdl}/usergroup.wsdl -p com.google.enterprise.connector.sharepoint.generated.usergroup -o ${src}"/>
 					<classpath>
 						<fileset dir="${lib.jar.dir}">
@@ -126,7 +126,7 @@
 						</fileset>
 					</classpath>
 		</java>
-		
+	-->	
 		<!--for UserProfileService.wsdl (SP2007)-->
 		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
 						 <arg line="${wsdl}/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.userprofileservice -o ${src}"/>
@@ -202,7 +202,7 @@
 
 	<target name="compile" depends="init, stubs">
 		<!-- compile java source files -->
-		<javac srcdir="${src}" destdir="${classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}">
+		<javac srcdir="${src}" destdir="${classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" source="1.3" target="1.4">
 
 			<classpath>
 				<pathelement location="${spi.jarfile}" />
@@ -222,7 +222,7 @@
 	<target name="compile_tests" depends="init, compile">
 		<!-- compile java source files for tests -->
 
-		<javac srcdir="${tests.src}" destdir="${tests.classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}">
+		<javac srcdir="${tests.src}" destdir="${tests.classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" source="1.3" target="1.4">
 			<classpath>
 				<pathelement location="${spi.jar.dir}/connector.jar" />
 				<pathelement location="${tests.jarfile}" />
@@ -286,7 +286,7 @@
 			<!--creation of manifest file-->
 			<manifest>
 			    <attribute name="Implementation-Title" value="Microsoft SharePoint 2003,2007 Connector"/>
-  		        <attribute name="Implementation-Version" value="1.1.2"/>
+  		        <attribute name="Implementation-Version" value="1.2.2"/>
 			    <attribute name="Implementation-Vendor" value="Google Inc."/>
 			    <attribute name="Specification-Title" value="Connector Manager SPI"/>
 			    <attribute name="Specification-Version" value="1.0 r628"/>
