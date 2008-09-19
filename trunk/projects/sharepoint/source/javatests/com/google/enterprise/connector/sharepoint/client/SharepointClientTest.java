@@ -71,7 +71,7 @@ public class SharepointClientTest extends TestCase {
    * @see junit.framework.TestCase#setUp()
    */
   protected void setUp() throws Exception {
-	SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,SPType);
+	SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,SPType, null, null);
 	       
     sharepointClient = new SharepointClient(sharepointClientContext);
     globalState = new GlobalState(sharepointClientContext.getGoogleConnectorWorkDir());
@@ -85,7 +85,7 @@ public class SharepointClientTest extends TestCase {
   public void testTraverse() {
 	  final int iPageSizeHint = 100;
     sharepointClient.updateGlobalState(globalState);
-    SPDocumentList rs = sharepointClient.traverse(globalState,iPageSizeHint);
+    SPDocumentList rs = sharepointClient.traverse(globalState,null, iPageSizeHint);
     boolean found = false;
     int numDocs = 0;
     try {

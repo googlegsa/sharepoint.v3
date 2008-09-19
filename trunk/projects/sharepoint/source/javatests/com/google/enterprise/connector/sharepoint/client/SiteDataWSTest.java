@@ -1,214 +1,221 @@
-// Copyright 2007 Google Inc.  All Rights Reserved.
+//Copyright 2007 Google Inc.  All Rights Reserved.
 package com.google.enterprise.connector.sharepoint.client;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
-import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 
 /**
  *@author amit_kagrawal
  *This class contains test methods to check the functionality of {@link SiteDataWS}.
  */
 public class SiteDataWSTest extends TestCase {  
-  /*final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
-  final String sharepointUrlWithSpaces = 
-      "http://entpoint05.corp.google.com/site with spaces";
-  final String domain = "ent-qa-d3";
-  final String host = "entpoint05.corp.google.com";
-  final int port = 80;
-  final String username = "testing";
-  final String password = "g00gl3";
-  final String includeURL= "https://v-ecsc3:443/ssl";*/
-	
-// 	credentials of ps4312 site -- moss 2007
-//	--------------------------NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
-	  /*final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String domain = "persistent";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "amit_kagrawal";
-	  final String password = "Agrawal!@#";*/
-//	--------------------------END: NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
+	Logger logger= Logger.getLogger(AlertsWSTest.class.getName());
 
-//	-------------PS4312(MOSS 2007)---------------------------------
-	 /* final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String domain = "ps4312";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String mySiteBaseURL= "http://ps4312:23508";
-	  final String googleConnWorkDir = null;
-	  final String exclURLs =null ;
-	  final String inclURLs ="http://ps4312:43386,http://ps4312:23508";*/
+	//set the logging properties file
+	static{
+		System.setProperty("java.util.logging.config.file","logging.properties");
+	}
 
-//	-------------END: PS4312---------------------------------
-//	-------------PS4312(MOSS 2007)---------------------------------
-	 /* final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
-	  final String sharepointUrlWithSpaces ="http://ps4312.persistent.co.in:43386/amitsite  ";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String SPType = SharepointConnectorType.SP2007;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String domain = "ps4312";
-	
-	  final String mySiteBaseURL= "http://ps4312.persistent.co.in:23508";
-	  final String googleConnWorkDir = null;
-	  final String exclURLs ="" ;
-	  final String inclURLs ="http://ps4312.persistent.co.in:43386,http://ps4312.persistent.co.in:23508,http://ps4312:43386,http://ps4312:23508";
-	  final String docLibLInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}"; 
-	  final String issuesInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}";*/
-//	-------------END: PS4312---------------------------------
-//		-------------v07ps45372k3(sps 2003)---------------------------------
-	final String SPType = SharepointConnectorType.SP2003;
-	  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088/sites/amit";
-	  final String sharepointUrlWithSpaces ="http://v07ps45372k3.persistent.co.in:8088/sites/amit  ";
-//	  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088/sites/amit/sub_amit_1";
-//	  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088";
-//	  final String sharepointUrl = "http://v07ps45372k3:8088";
-	  final String domain = "v07ps45372k3";
-	  final String host = "v07ps45372k3";
-	  final int port = 8088;
-	  final String username = "Administrator";
-	  final String password = "Pspl!@#";
-	  final String mySiteBaseURL=null;
-	  final String googleConnWorkDir = null;
-	  final String exclURLs ="http://v07ps45372k3.persistent.co.in:8088/sites/amit/sub_amit_1" ;
-	  final String aliasHost = null;
-	  final String aliasPort = null;
-//	  final String inclURLs =".*";
-	  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088/sites/amit";
-	  final String docLibLInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}"; 
-	  final String issuesInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}";
-//	  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088";
-//	  final String inclURLs =".*";
-//	-------------END: v07ps45372k3---------------------------------
+	//set the connector configuration information
+//	-------------gsp02ps5265(sps 2007)---------------------------------
+	/*final String sharepointType = SharepointConnectorType.SP2007;
+	final String sharepointUrl = "http://gsp02ps5265.persistent.co.in:36022/VolTestLibs1/Sub4/";
+	final String domain = "gsp02ps5265";
+	final String username = "administrator";
+	final String password = "pspl!@#";
 
-  private SiteDataWS siteDataWS;
-  
-  /* (non-Javadoc)
-   * @see junit.framework.TestCase#setUp()
-   */
-  protected void setUp() throws Exception {
-	SharepointClientContext sharepointClientContext = new SharepointClientContext(SPType,sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null);
-    siteDataWS = new SiteDataWS(sharepointClientContext);   
-    super.setUp();
-  }
+	final String mySiteBaseURL=null;
+	final String googleConnWorkDir = null;
 
-  /**
-   * Test method for {@link 
-   * com.google.enterprise.connector.sharepoint.client.SiteDataWS#getSites()}.
-   */
-  public void testGetAllChildrenSites() {
-    try {
-      List sites = siteDataWS.getAllChildrenSites();
-      System.out.println("Sites found - "+((sites!=null)?sites.size():0));
-      if(sites!=null){
-	      for (int i = 0; i < sites.size(); i++) {
-	        SPDocument doc = (SPDocument) sites.get(i);
-	        System.out.println(doc.getUrl());
-	      }
-	      assertEquals(sites.size(), 2);
-      }
-      
-    } catch (SharepointException e) {      
-      e.printStackTrace();
-      fail();
-    }   
-  }
+	final String exclURLs =null;
+	final String aliasHost = null;
+	final String aliasPort = null;
+	final String inclURLs ="^http://";*/
+//	-------------END: gsp02ps5265---------------------------------
 
-  public void testSiteWithSpaces() {
-    
-    int numDocLib = 0;    
-    try {
-      SharepointClientContext sharepointClientContextSpaces =  new SharepointClientContext(SPType,sharepointUrlWithSpaces, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null); 
-      SiteDataWS siteDataWSSpaces =new SiteDataWS(sharepointClientContextSpaces);   
-      List listCollection = siteDataWSSpaces.getDocumentLibraries();
-      System.out.println("SPDocument Libraries found - ");
-      for (int i = 0; i < listCollection.size(); i++) {
-        BaseList baseList = (BaseList) listCollection.get(i);
-        System.out.println(baseList.getTitle());        
-        numDocLib++;        
-      }
-      assertEquals(2, numDocLib);
-    } catch (SharepointException e) {
-      e.printStackTrace();
-      fail();
-    } catch (RepositoryException e1) {
-      e1.printStackTrace();
-      fail();
-    }    
-  }
-  /**
-   * Test method for {@link 
-   * com.google.enterprise.connector.sharepoint.client.SiteDataWS
-   * #getDocumentLibraries()}.
-   */
-  public void testGetDocumentLibraries() {
-    int numDocLib = 0;
-    try {
-      List listCollection = siteDataWS.getDocumentLibraries();
-      System.out.println("SPDocument Libraries found - ");
-      for (int i = 0; i < listCollection.size(); i++) {
-        BaseList baseList = (BaseList) listCollection.get(i);
-        System.out.println(baseList.getTitle());    
-        System.out.println(baseList.getType());
-        System.out.println(baseList.getInternalName());    
-        System.out.println(baseList.getLastMod());
-        numDocLib++;        
-      }
-      assertEquals(2, numDocLib);//test the no: of document libraries returned
-    } catch (SharepointException e) {
-      e.printStackTrace();
-      fail();
-    }
-  }
-  
-  /**
-   * Test method for {@link 
-   * com.google.enterprise.connector.sharepoint.client.SiteDataWS
-   * #getGenericLists()}.
-   */
-  public void testGetGenericLists() {
-    int numGenList = 0;
-    try {
-      List listCollection = siteDataWS.getGenericLists();
-      System.out.println("Generic Lists found - ");
-      for (int i = 0; i < listCollection.size(); i++) {
-        BaseList baseList = (BaseList) listCollection.get(i);
-        System.out.println(baseList.getTitle());        
-        numGenList++;        
-      }
-      assertEquals(7, numGenList);//count no: of generic lists
-    } catch (SharepointException e) {      
-      e.printStackTrace();
-      fail();
-    }
-  }
-  
-  /**
-   * Test method for {@link 
-   * com.google.enterprise.connector.sharepoint.client.SiteDataWS
-   * #getIssues()}.
-   */
-  public void testIssues() {
-    int numIssues = 0;
-    try {
-      List listCollection = siteDataWS.getIssues();
-      System.out.println("Issues found - ");
-      for (int i = 0; i < listCollection.size(); i++) {
-        BaseList baseList = (BaseList) listCollection.get(i);
-        System.out.println(baseList.getTitle());         
-        numIssues++;        
-      }
-      assertEquals(1, numIssues);//to check the no: of issues returned
-    } catch (SharepointException e) {      
-      e.printStackTrace();
-      fail();
-    }
-  }
+
+//	-------------ps4312(sps 2007)---------------------------------
+	final String sharepointType = SharepointConnectorType.SP2007;
+//	final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
+	final String sharepointUrl = "http://ps4312.persistent.co.in:2905/xyz/subxyz/";
+	final String domain = "ps4312";
+	final String username = "administrator";
+	final String password = "pspl!@#";
+
+	final String mySiteBaseURL=null;
+	final String googleConnWorkDir = null;
+
+	final String exclURLs ="http://ps4312.persistent.co.in:2905/ECSCDemoData";
+	final String aliasHost = null;
+	final String aliasPort = null;
+//	final String inclURLs ="^http://";
+//	final String inclURLs ="http://ps4312.persistent.co.in:2905/Orangesite/";
+	final String inclURLs ="http://ps4312.persistent.co.in:2905/";
+//	-------------END: gsp02ps5265---------------------------------
+
+	//set the balck list and whitelist
+	private static ArrayList BLACK_LIST;
+	static {
+		BLACK_LIST = new ArrayList();
+		BLACK_LIST.add(".*vti_cachedcustomprops$");
+		BLACK_LIST.add(".*vti_parserversion$");
+		BLACK_LIST.add(".*ContentType$");
+		BLACK_LIST.add(".*vti_cachedtitle$");
+		BLACK_LIST.add(".*ContentTypeId$");
+		BLACK_LIST.add(".*DocIcon$");
+		BLACK_LIST.add(".*vti_cachedhastheme$");
+		BLACK_LIST.add(".*vti_metatags$");
+		BLACK_LIST.add(".*vti_charset$");
+		BLACK_LIST.add(".*vti_cachedbodystyle$");
+		BLACK_LIST.add(".*vti_cachedneedsrewrite$");
+	}
+
+	private static ArrayList WHITE_LIST;
+	static {
+		WHITE_LIST = new ArrayList();
+		WHITE_LIST.add(".*vti_title$");
+		WHITE_LIST.add(".*vti_author$");
+	}
+
+	// private SharepointConnector connector;  
+	//public static final int TOTAL_DOCS = 185;//set the total expected documents
+	SharepointClientContext sharepointClientContext =null;
+
+	private SiteDataWS siteDataWS;
+
+	/* (non-Javadoc)
+	 * @see junit.framework.TestCase#setUp()
+	 */
+	protected void setUp() throws Exception {
+		sharepointClientContext = new SharepointClientContext(sharepointType,sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,WHITE_LIST,BLACK_LIST);
+		siteDataWS = new SiteDataWS(sharepointClientContext);   
+		super.setUp();
+	}
+
+	/**
+	 * Test the linked sites
+	 * */
+	public void testLinks(){
+		String site = sharepointUrl;
+		SortedSet linkedWebs = null; 
+		try {
+			linkedWebs =  siteDataWS.getAllLinks(sharepointClientContext, site);
+		} catch (SharepointException e) {
+			e.printStackTrace();
+			fail();
+		}
+
+		assertNotNull(linkedWebs);
+		System.out.println("Links Returned - "+linkedWebs.size());
+
+		printList(linkedWebs);
+	}
+	private void printList(SortedSet personalSitesSet){
+		List personalSites = new ArrayList();
+		personalSites.addAll(personalSitesSet);
+
+		for(int iList=0;iList<personalSites.size();++iList){
+			WebState ws = (WebState) personalSites.get(iList);
+			assertNotNull(ws);
+			System.out.println("URL: "+ws.getWebUrl()+"|Title: "+ws.getTitle());
+		}//for(int iList=0;iList<personalSites.size();++iList){
+	}
+	/*public void testSiteWithSpaces() {
+		int numDocLib = 0;    
+		try {
+			SharepointClientContext sharepointClientContextSpaces =new SharepointClientContext(sharepointType,sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,WHITE_LIST,BLACK_LIST);  
+				//new SharepointClientContext(SPType,sharepointUrlWithSpaces, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null); 
+			SiteDataWS siteDataWSSpaces =new SiteDataWS(sharepointClientContextSpaces);   
+			List listCollection = siteDataWSSpaces.getDocumentLibraries();
+			System.out.println("SPDocument Libraries found - ");
+			for (int i = 0; i < listCollection.size(); i++) {
+				BaseList baseList = (BaseList) listCollection.get(i);
+				System.out.println(baseList.getTitle());        
+				numDocLib++;        
+			}
+			//assertEquals(2, numDocLib);
+		} catch (SharepointException e) {
+			e.printStackTrace();
+			fail();
+		} catch (RepositoryException e1) {
+			e1.printStackTrace();
+			fail();
+		}    
+	}*/
+	/**
+	 * Test method for {@link 
+	 * com.google.enterprise.connector.sharepoint.client.SiteDataWS
+	 * #getDocumentLibraries()}.
+	 */
+	public void testGetDocumentLibraries() {
+		int numDocLib = 0;
+		try {
+			List listCollection = siteDataWS.getDocumentLibraries();
+			System.out.println("SPDocument Libraries found - ");
+			for (int i = 0; i < listCollection.size(); i++) {
+				BaseList baseList = (BaseList) listCollection.get(i);
+				System.out.println(baseList.getTitle());    
+				System.out.println(baseList.getType());
+				System.out.println(baseList.getInternalName());    
+				System.out.println(baseList.getLastMod());
+				numDocLib++;        
+			}
+			//assertEquals(2, numDocLib);//test the no: of document libraries returned
+		} catch (SharepointException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	/**
+	 * Test method for {@link 
+	 * com.google.enterprise.connector.sharepoint.client.SiteDataWS
+	 * #getGenericLists()}.
+	 */
+	public void testGetGenericLists() {
+		int numGenList = 0;
+		try {
+			List listCollection = siteDataWS.getGenericLists();
+			System.out.println("Generic Lists found - ");
+			//for (int i = 0; i < listCollection.size(); i++) {
+			for (int i = 0; i < 1; i++) {
+				BaseList baseList = (BaseList) listCollection.get(i);
+				System.out.println(baseList.getTitle());        
+				numGenList++;        
+			}
+			//assertEquals(7, numGenList);//count no: of generic lists
+		} catch (SharepointException e) {      
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	/**
+	 * Test method for {@link 
+	 * com.google.enterprise.connector.sharepoint.client.SiteDataWS
+	 * #getIssues()}.
+	 */
+	public void testIssues() {
+		int numIssues = 0;
+		try {
+			List listCollection = siteDataWS.getIssues();
+			System.out.println("Issues found - ");
+			for (int i = 0; i < listCollection.size(); i++) {
+				BaseList baseList = (BaseList) listCollection.get(i);
+				System.out.println(baseList.getTitle());         
+				numIssues++;        
+			}
+			//assertEquals(1, numIssues);//to check the no: of issues returned
+		} catch (SharepointException e) {      
+			e.printStackTrace();
+			fail();
+		}
+	}
 }

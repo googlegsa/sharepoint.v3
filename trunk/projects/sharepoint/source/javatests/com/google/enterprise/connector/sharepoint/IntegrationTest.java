@@ -1,16 +1,16 @@
-// Copyright (C) 2006 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+//Copyright (C) 2006 Google Inc.
+
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+
+//http://www.apache.org/licenses/LICENSE-2.0
+
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
 
 package com.google.enterprise.connector.sharepoint;
 
@@ -34,96 +34,90 @@ import com.google.enterprise.connector.traversal.Traverser;
  */
 public class IntegrationTest extends TestCase {
 	static{
-//		set an external configuration file for controlling logging
-//		System.setProperty("java.util.logging.config.file","logconfig.properties");
-		System.setProperty("java.util.logging.config.file","logging.properties");
-		//set the vm size -Xmx=512M
+		System.setProperty("java.util.logging.config.file","logging.properties");//set an external configuration file for controlling logging
 	}
-/*  final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
-  final String domain = "ent-qa-d3";
-  final String host = "entpoint05.corp.google.com";
-  final int port = 80;
-  final String username = "testing";
-  final String password = "g00gl3";
-*/
-	
-// 	credentials of ps4312 site -- moss 2007
-//--------------------------NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
-  /*final String sharepointUrl = "http://ps4312:43386/amitsite";
-  final String domain = "persistent";
-  final String host = "ps4312";
-  final int port = 43386;
-  final String username = "amit_kagrawal";
-  final String password = "Agrawal!@#";*/
-//--------------------------END: NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
-	
-	
+
 //	-------------v07ps45372k3(sps 2003)---------------------------------
 	/*final String sharepointType = SharepointConnectorType.SP2003;
-//  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088/sites/amit";
-//  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088/sites/amit/sub_amit_1";
-  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8088";
-//  final String sharepointUrl = "http://v07ps45372k3:8088";
+  final String sharepointUrl = "http://v07ps45372k3.persistent.co.in:8081";
   final String domain = "v07ps45372k3";
   final String host = "v07ps45372k3";
-  final int port = 8088;
+  final int port = 8081;
   final String username = "Administrator";
   final String password = "Pspl!@#";
   final String mySiteBaseURL=null;
   final String googleConnWorkDir = null;
-//  final String exclURLs ="http://v07ps45372k3.persistent.co.in:8088/sites/amit/sub_amit_1" ;
   final String exclURLs =null ;
   final String aliasHost = null;
   final String aliasPort = null;
-//  final String inclURLs =".*";
-//  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088/sites/amit";
-//  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088";
-  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088/personal/administrator";*/
-//  final String inclURLs ="http://v07ps45372k3.persistent.co.in:8088/sites/amit/sub_amit_1";
-//  final String inclURLs =".*";
-//-------------END: v07ps45372k3---------------------------------
+  final String inclURLs ="^http";*/
+//	-------------END: v07ps45372k3---------------------------------
 //	-------------v-ecsc5(sps 2003)---------------------------------
-  final String sharepointType = SharepointConnectorType.SP2007;
-//  final String sharepointUrl = "http://gsp05ps5264.persistent.co.in:5001/";
-//  final String sharepointUrl = "http://ps4312.persistent.co.in:2905/";
-  final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
-  final String domain = "ps4312";
-  final String username = "Administrator";
+	/* final String sharepointType = SharepointConnectorType.SP2007;
+//  final String sharepointUrl = "http://gsp01ps5265.persistent.co.in:5001/C3/Services/";
+//  final String sharepointUrl = "http://ps4312.persistent.co.in:2905/xyz/subxyz/";
+//  final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
+  final String sharepointUrl = "http://gsp02ps5265.persistent.co.in:36022/VolTestLibs1/";
+  final String domain = "persistent";
+  final String username = "googlesp";
+  final String password = "Passw0rd@456"; 
+// final String mySiteBaseURL="http://ps4312.persistent.co.in:30411";
+  final String domain = "gsp02ps5265";
+  final String username = "administrator";
   final String password = "pspl!@#";
-  final String mySiteBaseURL="http://ps4312.persistent.co.in:30411";
+
+  final String mySiteBaseURL=null;
   final String googleConnWorkDir = null;
+  //final String exclURLs ="http://gsp02ps5265.persistent.co.in:36022/SubSiteLevel/ http://gsp02ps5265.persistent.co.in:36022/SiteTest http://gsp02ps5265.persistent.co.in:36022/OneMoreSite";
   final String exclURLs =null;
   final String aliasHost = null;
   final String aliasPort = null;
-  final String inclURLs ="^http://";
-//-------------END: v07ps45372k3---------------------------------
-//	-------------v-ecsc3(MOSS 2007)---------------------------------
-	  /*final String sharepointType = SharepointConnectorType.SP2007;
-//	  final String sharepointUrl = "http://v-ecsc3.persistent.co.in:8080/count";
-	  final String sharepointUrl = "http://v-ecsc3.persistent.co.in/personal/administrator";
-	  
-	  final String domain = "v-ecsc3";
-	  final String host = "ps4312";
-	  final int port = 8080;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String mySiteBaseURL= "http://v-ecsc3.persistent.co.in";//"http://ps4312:23508"
-	  final String googleConnWorkDir = null;
-	  final String exclURLs =null;
-	  final String aliasHost = null;
-	  final String aliasPort = null;
+  final String inclURLs ="^http://";*/
 
-//	  final String inclURLs ="http://v-ecsc3.persistent.co.in:8080/count";
-	  final String inclURLs =".*";*/
+//	-------------END: v07ps45372k3---------------------------------
+	/* final String sharepointType = SharepointConnectorType.SP2007;
+//  final String sharepointUrl = "https://ps4312.persistent.co.in/";
+//  final String sharepointUrl = "https://ps4312.persistent.co.in/Test/BlankSite/";
+  final String sharepointUrl = "http://ps4312.persistent.co.in:2905/xyz/subxyz/";
 
-//	-------------END: PS4312---------------------------------
-//-------------PS4312(MOSS 2007)---------------------------------
-  /*final String sharepointType = SharepointConnectorType.SP2007;
+  final String domain = "ps4312";
+  final String username = "administrator";
+  final String password = "pspl!@#";
+
+//  final String mySiteBaseURL="http://ps4312.persistent.co.in:30411";
+  final String mySiteBaseURL=null;
+  final String googleConnWorkDir = null;
+  final String exclURLs ="";
+//  final String exclURLs ="https://ps4312.persistent.co.in/Test/ https://ps4312.persistent.co.in:443/Test/";
+  final String aliasHost = null;
+  final String aliasPort = null;
+//  final String inclURLs ="http://gsp02ps5265.persistent.co.in:36022/VolTestLibs1/Sub4/";
+  final String inclURLs ="regexp:.*";*/
+//	final String inclURLs ="http://gsp02ps5265.persistent.co.in:36022/VolTestLibs1/Sub1/";
+
+	//-------------------sps2003 =gsp01ps5265
+
+	final String sharepointType = SharepointConnectorType.SP2003;
+	final String sharepointUrl = "http://gsp01ps5265.persistent.co.in:6500/voltest/";
+	final String domain = "gsp01ps5265";
+	final String username = "administrator";
+	final String password = "pspl!@#";
+	final String mySiteBaseURL=null;
+	final String googleConnWorkDir = null;
+	final String exclURLs ="";
+	final String aliasHost = null;
+	final String aliasPort = null;
+//	final String inclURLs ="regexp:.*";
+	final String inclURLs ="http://gsp01ps5265.persistent.co.in:6500/voltest/";
+	//end: ---------------------sps2003 =gsp01ps5265
+	
+//	-------------PS4312(MOSS 2007)---------------------------------
+	/*final String sharepointType = SharepointConnectorType.SP2007;
 //  final String sharepointUrl = "http://ps4312.persistent.co.in:30411/personal/ps4312_administrator";
 //  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/test/";
 //  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/am1";
   final String sharepointUrl = "https://ps4312.persistent.co.in:443";
-  
+
 //  final String sharepointUrl = "http://ps4312.persistent.co.in:23750/sites/abc/";
   final String domain = "ps4312";
 //  final String domain = "ps4312.persistent.co.in";
@@ -141,22 +135,22 @@ public class IntegrationTest extends TestCase {
 //  final String inclURLs ="http://ps4312.persistent.co.in:43386,http://ps4312.persistent.co.in:30411";
 //  final String inclURLs ="http://ps4312.persistent.co.in:30411/personal/ps4312_administrator";
   final String inclURLs =".*";*/
-//  final String inclURLs ="http://ps4312.persistent.co.in:30411/personal/ps4312_administrator";
-//  final String inclURLs ="http://ps4312.persistent.co.in:43386/,http://ps4312:43386";
+//	final String inclURLs ="http://ps4312.persistent.co.in:30411/personal/ps4312_administrator";
+//	final String inclURLs ="http://ps4312.persistent.co.in:43386/,http://ps4312:43386";
 
-//-------------END: PS4312---------------------------------
-//-------------PS4312(MOSS 2007)---------------------------------
-//  final String sharepointUrl = "http://ps4312:43386/amitsite";
-  /*final String sharepointUrl = "http://ps4312.persistent.co.in:43386/test";
+//	-------------END: PS4312---------------------------------
+//	-------------PS4312(MOSS 2007)---------------------------------
+//	final String sharepointUrl = "http://ps4312:43386/amitsite";
+	/*final String sharepointUrl = "http://ps4312.persistent.co.in:43386/test";
 //  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
-  
+
   final String host = "ps4312";
   final int port = 43386;
-  
+
   final String username = "amit_kagrawal";
   final String password = "Agrawal!@#";
   final String domain = "persistent";
-  
+
   final String username = "Administrator";
   final String password = "pspl!@#";
   final String domain = "ps4312";
@@ -167,23 +161,23 @@ public class IntegrationTest extends TestCase {
   final String exclURLs =null ;
 //  final String inclURLs ="http://ps4312.persistent.co.in:43386,http://ps4312.persistent.co.in:23508,http://ps4312:43386,http://ps4312:23508";
   final String inclURLs ="http://ps4312.persistent.co.in:43386/test";
-  
+
   final String aliasHost = "59.163.69.23";
   final String aliasPort = "5082";
   final String aliasHost = null;
   final String aliasPort = null;
 //  final String inclURLs ="http://ps4312.persistent.co.in:43386/amitsite";
-*/
-//-------------END: PS4312---------------------------------
+	 */
+//	-------------END: PS4312---------------------------------
 
-//-------------japanese(MOSS 2007)---------------------------------
-  
-//  final String sharepointUrl = "http://v-ecsc6:25000/Japanese/?????";
-//   String sharepointUrl =null ;
-//  final String sharepointUrl = "http://v-ecsc6.persistent.co.in:25000/\u0082\u00BB\u0082\u00CC\u0082\u00D9\u0082\u00A9\u0082\u00CD";
-  
-//  http\://v-ecsc6.persistent.co.in\:25000/\u0082\u00BB\u0082\u00CC\u0082\u00D9\u0082\u00A9\u0082\u00CD
-  /*final String sharepointUrl = "http://v-ecsc6.persistent.co.in:25000/%e3%81%9d%e3%81%ae%e3%81%bb%e3%81%8b%e3%81%af";
+//	-------------japanese(MOSS 2007)---------------------------------
+
+//	final String sharepointUrl = "http://v-ecsc6:25000/Japanese/?????";
+//	String sharepointUrl =null ;
+//	final String sharepointUrl = "http://v-ecsc6.persistent.co.in:25000/\u0082\u00BB\u0082\u00CC\u0082\u00D9\u0082\u00A9\u0082\u00CD";
+
+//	http\://v-ecsc6.persistent.co.in\:25000/\u0082\u00BB\u0082\u00CC\u0082\u00D9\u0082\u00A9\u0082\u00CD
+	/*final String sharepointUrl = "http://v-ecsc6.persistent.co.in:25000/%e3%81%9d%e3%81%ae%e3%81%bb%e3%81%8b%e3%81%af";
   final String domain = "v-ecsc6";
   final String host = "v-ecsc6";
   final int port = 25000;
@@ -195,11 +189,11 @@ public class IntegrationTest extends TestCase {
   final String googleConnWorkDir = null;
   final String exclURLs =null ;
   final String inclURLs ="http://v-ecsc6:25000/Japanese";*/
-//  final String inclURLs ="http://v-ecsc6.persistent.co.in:25000/%e3%81%9d%e3%81%ae%e3%81%bb%e3%81%8b%e3%81%af";
-//-------------END: japanese---------------------------------
-  
-//-------------PS2314(WSS 3.0)---------------------------------
-/*  final String sharepointUrl = "http://ps2314:43266/amitsite";
+//	final String inclURLs ="http://v-ecsc6.persistent.co.in:25000/%e3%81%9d%e3%81%ae%e3%81%bb%e3%81%8b%e3%81%af";
+//	-------------END: japanese---------------------------------
+
+//	-------------PS2314(WSS 3.0)---------------------------------
+	/*  final String sharepointUrl = "http://ps2314:43266/amitsite";
   final String domain = "ps2314";
   final String host = "ps2314";
   final int port = 43266;
@@ -209,11 +203,11 @@ public class IntegrationTest extends TestCase {
   final String googleConnWorkDir = null;
   final String exclURLs =null ;
   final String inclURLs ="http://ps4312:43386/amitsite,http://ps4312:23508,http://ps4312:43386";
-*/
-//-------------END: PS2314---------------------------------
-  
-//-------------v-ecsc3: SSL(ANOTHER MOSS 2007 with SSL)---------------------------------
-  /*final String sharepointUrl = "https://v-ecsc3.persistent.co.in:443/ssl";
+	 */
+//	-------------END: PS2314---------------------------------
+
+//	-------------v-ecsc3: SSL(ANOTHER MOSS 2007 with SSL)---------------------------------
+	/*final String sharepointUrl = "https://v-ecsc3.persistent.co.in:443/ssl";
   final String domain = "v-ecsc3";
   final String host = "v-ecsc3";
   final int port = 443;//default port is 443 for ssl
@@ -225,10 +219,10 @@ public class IntegrationTest extends TestCase {
   final String exclURLs =null ;
   final String inclURLs ="https://v-ecsc3.persistent.co.in:443/ssl";*/
 
-//-------------END: SSL---------------------------------
-  
-  private static ArrayList BLACK_LIST;
-  static {
+//	-------------END: SSL---------------------------------
+
+	private static ArrayList BLACK_LIST;
+	static {
 		BLACK_LIST = new ArrayList();
 		BLACK_LIST.add(".*vti_cachedcustomprops$");
 		BLACK_LIST.add(".*vti_parserversion$");
@@ -242,77 +236,74 @@ public class IntegrationTest extends TestCase {
 		BLACK_LIST.add(".*vti_cachedbodystyle$");
 		BLACK_LIST.add(".*vti_cachedneedsrewrite$");
 	}
-  
-  private static ArrayList WHITE_LIST;
+
+	private static ArrayList WHITE_LIST;
 	static {
 		WHITE_LIST = new ArrayList();
 		WHITE_LIST.add(".*vti_title$");
 		WHITE_LIST.add(".*vti_author$");
 	}
-  
-//  private SharepointClient sharepointClient;
-  private SharepointConnector connector;  
-  
-  public static final int TOTAL_DOCS = 185;//set the total expected documents
-  
-  public void setUp() throws Exception {
-//    SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null);
-//    sharepointClient = new SharepointClient(sharepointClientContext);
-	   /* Properties p = new Properties();
+
+//	private SharepointClient sharepointClient;
+	private SharepointConnector connector;  
+
+	public static final int TOTAL_DOCS = 185;//set the total expected documents
+
+	public void setUp() throws Exception {
+//		SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null);
+//		sharepointClient = new SharepointClient(sharepointClientContext);
+		/* Properties p = new Properties();
 	    p.load(new FileInputStream("source/javatests/amit.properties"));
 	    sharepointUrl = p.getProperty("url");*/
-	    
-    connector = new SharepointConnector(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,aliasHost,aliasPort,sharepointType);
-    connector.setWhiteList(WHITE_LIST);
-    connector.setBlackList(BLACK_LIST);
-    connector.setFQDNConversion(true);
-    super.setUp();    
-  }
-  /**
-   * Test method for
-   * {@link com.google.enterprise.connector.traversal.QueryTraverser
-   * #runBatch(int)}.
-   * @throws InterruptedException 
-   * @throws RepositoryException 
-   * @throws LoginException 
-   */
-  public final void testRunBatch() throws InterruptedException,RepositoryException {
-	  final int iBatch =1; 
-      runTestBatches(iBatch);
-  }
 
-  private void runTestBatches(int batchSize) throws InterruptedException,RepositoryException {
-    String connectorName = "sharepoint";
-    Session session = connector.login();
-    GlobalState.forgetState(null); //used to delete the connector state file.. testing purpose
-    SharepointTraversalManager manager = 
-        (SharepointTraversalManager) session.getTraversalManager(); 
-    MockPusher pusher = new MockPusher(System.out);
-    ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
+		connector = new SharepointConnector(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,aliasHost,aliasPort,sharepointType);
+		connector.setWhiteList(WHITE_LIST);
+		connector.setBlackList(BLACK_LIST);
+		connector.setFQDNConversion(true);
+		super.setUp();    
+	}
+	/**
+	 * Test method for
+	 * {@link com.google.enterprise.connector.traversal.QueryTraverser
+	 * #runBatch(int)}.
+	 * @throws InterruptedException 
+	 * @throws RepositoryException 
+	 * @throws LoginException 
+	 */
+	public final void testRunBatch() throws InterruptedException,RepositoryException {
+		final int iBatch =100; 
+		runTestBatches(iBatch);
+	}
 
-    Traverser traverser =
-        new QueryTraverser(/*doc_pusher*/pusher, manager, connectorStateStore, connectorName);
+	private void runTestBatches(int batchSize) throws InterruptedException,RepositoryException {
+		String connectorName = "sharepoint";
+		Session session = connector.login();
+		GlobalState.forgetState(null); //used to delete the connector state file.. testing purpose
+		SharepointTraversalManager manager = 
+			(SharepointTraversalManager) session.getTraversalManager(); 
+		MockPusher pusher = new MockPusher(System.out);
+		ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
 
-    System.out.println();
-    System.out.println("Running batch test batchsize " + batchSize);
-    
-    int docsProcessed = -1;
-    int totalDocsProcessed = 0;
-    int batchNumber = 0;
-//    while (docsProcessed != 0) {
-    while (true) {
-      docsProcessed = traverser.runBatch(batchSize);//do the traversal
-      totalDocsProcessed += docsProcessed;//do the checkpointing after the traversal
-      System.out.println("Batch# " + batchNumber + " docs " + docsProcessed 
-    		  +" checkpoint " + connectorStateStore.getConnectorState(connectorName));
-      batchNumber++;
-      
-      //start recrawl cycle
-      if(docsProcessed==0){
-    	  System.out.println("fd");
-      }
-      
-    }    
-//    Assert.assertEquals(TOTAL_DOCS,totalDocsProcessed);
-  }
+		Traverser traverser =new QueryTraverser(pusher, manager, connectorStateStore, connectorName);
+		System.out.println("\nRunning batch test batchsize " + batchSize);
+
+		int docsProcessed = -1;
+		int totalDocsProcessed = 0;
+		int batchNumber = 0;
+//		while (docsProcessed != 0) {
+		while (true) {
+			docsProcessed = traverser.runBatch(batchSize);//do the traversal
+			totalDocsProcessed += docsProcessed;//do the checkpointing after the traversal
+			System.out.println("Batch# " + batchNumber + " docs " + docsProcessed 
+					+" checkpoint " + connectorStateStore.getConnectorState(connectorName));
+			batchNumber++;
+
+			//start recrawl cycle
+			if(docsProcessed==0){
+				System.out.println("No new documents discovered");
+			}
+
+		}    
+//		Assert.assertEquals(TOTAL_DOCS,totalDocsProcessed);
+	}
 }
