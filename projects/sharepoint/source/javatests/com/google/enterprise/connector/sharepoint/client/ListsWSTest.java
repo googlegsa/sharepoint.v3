@@ -1,264 +1,246 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import java.net.MalformedURLException;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.logging.Logger;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import com.google.enterprise.connector.sharepoint.SharepointConnector;
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
-import com.google.enterprise.connector.sharepoint.Util;
+import com.google.enterprise.connector.spi.RepositoryException;
 
 /**
  * Test cases for {@link ListsWS}.
  * @author amit_kagrawal
  * */
 public class ListsWSTest extends TestCase {
-  /*final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
-  final String domain = "ent-qa-d3";
-  final String host = "entpoint05.corp.google.com";
-  final int port = 80;
-  final String username = "testing";
-  final String password = "g00gl3";
-  final String includeURL = "http://entpoint05.corp.google.com/unittest";
-  final String docLibLInternalName = "{8F2F5129-4380-4932-AE1C-E760C64F5D8F}"; 
-  final String issuesInternalName = "{2CCEF12F-A3C4-4921-98B6-E4334D1CFB9C}";*/
-	
-// 	credentials of ps4312 site -- moss 2007
-//	--------------------------NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
-	  /*final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String domain = "persistent";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "amit_kagrawal";
-	  final String password = "Agrawal!@#";*/
-//	--------------------------END: NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
+	Logger logger= Logger.getLogger(AlertsWSTest.class.getName());
 
-//	-------------PS4312(MOSS 2007)---------------------------------
-	 /* final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String domain = "ps4312";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String mySiteBaseURL= "http://ps4312:23508";
-	  final String googleConnWorkDir = null;
-	  final String exclURLs =null ;
-	  final String inclURLs ="http://ps4312:43386,http://ps4312:23508";*/
+	//set the logging properties file
+	static{
+		System.setProperty("java.util.logging.config.file","logging.properties");
+	}
 
-//	-------------END: PS4312---------------------------------
-//	-------------PS4312(MOSS 2007)---------------------------------
-	  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
-	  final String sptype = SharepointConnectorType.SP2007;
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "Administrator";
+	//set the connector configuration information
+//	-------------gsp02ps5265(sps 2007)---------------------------------
+	final String sharepointType = SharepointConnectorType.SP2007;
+	  final String sharepointUrl = "gsp02ps5265";
+	  final String domain = "gsp02ps5265";
+	  final String username = "administrator";
 	  final String password = "pspl!@#";
-	  final String domain = "ps4312";
-	  final String mySiteBaseURL= "http://ps4312.persistent.co.in:23508";
-	  final String googleConnWorkDir = null;
-	  final String exclURLs ="" ;
-	  final String inclURLs ="http://ps4312.persistent.co.in:43386,http://ps4312.persistent.co.in:23508,http://ps4312:43386,http://ps4312:23508";
-	  final String docLibLInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}"; 
-	  final String issuesInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}";
-	
-//	-------------END: PS4312---------------------------------
 
-//	-------------japanese(MOSS 2007)---------------------------------
-	  
-	 /* final String sharepointUrl = "http://v-ecsc6:25000/Japanese";
-	  final String domain = "v-ecsc6";
-	  final String host = "v-ecsc6";
-	  final int port = 25000;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	*/
-//	-------------END: japanese---------------------------------
-	  
-//	-------------PS2314(WSS 3.0)---------------------------------
-	/*  final String sharepointUrl = "http://ps2314:43266/amitsite";
-	  final String domain = "ps2314";
-	  final String host = "ps2314";
-	  final int port = 43266;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String mySiteBaseURL= "http://ps4312:23508";
+	  final String mySiteBaseURL=null;
 	  final String googleConnWorkDir = null;
-	  final String exclURLs =null ;
-	  final String inclURLs ="http://ps4312:43386/amitsite,http://ps4312:23508,http://ps4312:43386";
-	*/
-//	-------------END: PS2314---------------------------------
-	  
-//	-------------v-ecsc3: SSL(ANOTHER MOSS 2007 with SSL)---------------------------------
-	  /*final String sharepointUrl = "https://v-ecsc3.persistent.co.in:443/ssl";
-	  final String domain = "v-ecsc3";
-	  final String host = "v-ecsc3";
-	  final int port = 443;//default port is 443 for ssl
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  //final String mySiteBaseURL= "http://ps4312:23508";
-	  final String mySiteBaseURL= null;
-	  final String googleConnWorkDir = null;
-	  final String exclURLs =null ;
-	  final String inclURLs ="https://v-ecsc3.persistent.co.in:443/ssl";*/
 
-//	-------------END: SSL---------------------------------
-  
-	  
-	  private static ArrayList blackList;
-		static {
-			blackList = new ArrayList();
-			blackList.add(Pattern.compile(".*vti_cachedcustomprops$"));
-			blackList.add(Pattern.compile(".*vti_parserversion$"));
-			blackList.add(Pattern.compile(".*ContentType$"));
-			blackList.add(Pattern.compile(".*vti_cachedtitle$"));
-			blackList.add(Pattern.compile(".*ContentTypeId$"));
-			blackList.add(Pattern.compile(".*DocIcon$"));
-			blackList.add(Pattern.compile(".*vti_cachedhastheme$"));
-			blackList.add(Pattern.compile(".*vti_metatags$"));
-			blackList.add(Pattern.compile(".*vti_charset$"));
-			blackList.add(Pattern.compile(".*vti_cachedbodystyle$"));
-			blackList.add(Pattern.compile(".*vti_cachedneedsrewrite$"));
-		}
+	  final String exclURLs =null;
+	  final String aliasHost = null;
+	  final String aliasPort = null;
+	  final String inclURLs ="^http://";
+//	-------------END: gsp02ps5265---------------------------------
+
+
+//	-------------ps4312(sps 2007)---------------------------------
+	/*final String sharepointType = SharepointConnectorType.SP2007;
+	final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
+	final String domain = "ps4312";
+	final String username = "administrator";
+	final String password = "pspl!@#";
+
+	final String mySiteBaseURL=null;
+	final String googleConnWorkDir = null;
+
+	final String exclURLs =null;
+	final String aliasHost = null;
+	final String aliasPort = null;
+	final String inclURLs ="^http://";*/
+//	-------------END: gsp02ps5265---------------------------------
+
+	//set the balck list and whitelist
+	private static ArrayList BLACK_LIST;
+	static {
+		BLACK_LIST = new ArrayList();
+		BLACK_LIST.add(".*vti_cachedcustomprops$");
+		BLACK_LIST.add(".*vti_parserversion$");
+		BLACK_LIST.add(".*ContentType$");
+		BLACK_LIST.add(".*vti_cachedtitle$");
+		BLACK_LIST.add(".*ContentTypeId$");
+		BLACK_LIST.add(".*DocIcon$");
+		BLACK_LIST.add(".*vti_cachedhastheme$");
+		BLACK_LIST.add(".*vti_metatags$");
+		BLACK_LIST.add(".*vti_charset$");
+		BLACK_LIST.add(".*vti_cachedbodystyle$");
+		BLACK_LIST.add(".*vti_cachedneedsrewrite$");
+	}
+
+	private static ArrayList WHITE_LIST;
+	static {
+		WHITE_LIST = new ArrayList();
+		WHITE_LIST.add(".*vti_title$");
+		WHITE_LIST.add(".*vti_author$");
+	}
+
+	private SharepointConnector connector;  
+	//public static final int TOTAL_DOCS = 185;//set the total expected documents
+	SharepointClientContext sharepointClientContext =null;
+	private Map listInternalNames = new HashMap();       
+	private ListsWS listsWS;
+	private SiteDataWS sitedataWS;
+	protected void setUp() throws Exception {
+		logger.config("Inside Setup...");
+
+		sharepointClientContext = new SharepointClientContext(sharepointType,sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,WHITE_LIST,BLACK_LIST);
+		connector = new SharepointConnector(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,aliasHost,aliasPort,sharepointType);
+		connector.setWhiteList(WHITE_LIST);
+		connector.setBlackList(BLACK_LIST);
+		connector.setFQDNConversion(true);//do the FQDN conversion for non-FQDN URLs 
+
 		
-		private static ArrayList whiteList;
-		static {
-			whiteList = new ArrayList();
-			whiteList.add(Pattern.compile(".*vti_title$"));
-			whiteList.add(Pattern.compile(".*vti_author$"));
+
+		listInternalNames.put("{34EA4B8C-3663-41C7-A0EA-13E42D44D404}","Calendar");//
+		listInternalNames.put("{25C1E978-FA4B-4076-BA16-B125DEEA26C2}","Tasks");//
+		listInternalNames.put("{5D1BB107-7C38-446A-B5F6-FF94624390E9}","Announcements");//
+		listInternalNames.put("{6858021D-005E-4AEC-8AD4-D23B12D0170D}","Links");//
+		
+		
+		sitedataWS = new SiteDataWS(sharepointClientContext);
+		super.setUp();
+	}
+	/**
+	 * Test method for {@link 
+	 * com.google.enterprise.connector.sharepoint.client.SiteDataWS
+	 * #getDocumentLibraries()}.
+	 */
+	private BaseList getBaseList() {
+		String baselistID = "{9FD33EE3-FAEE-4C93-A799-119AD6398D19}";
+
+		try {
+			List listCollection = sitedataWS.getDocumentLibraries();
+			
+			for (int i = 0; i < listCollection.size(); i++) {
+				BaseList baseList = (BaseList) listCollection.get(i);
+				if(baseList.getInternalName().equals(baselistID)){
+					return baseList;
+				}
+			}
+
+		} catch (SharepointException e) {
+			e.printStackTrace();
 		}
-	  
-  private Map listInternalNames = new HashMap();       
-  private ListsWS listsWS;
-  
-  protected void setUp() throws Exception {
-/*    SharepointClientContext sharepointClientContext = new 
-    SharepointClientContext(sharepointUrl, domain, username, password, null,includeURL,null,null);*/
-    SharepointClientContext sharepointClientContext = new SharepointClientContext(sptype,sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,whiteList,blackList);
-    
+		return null;
+	}
+	/**
+	 * Get the Items for the document Library
+	 * @throws RepositoryException 
+	 * */
+	public void testGetDocLibListItems() throws MalformedURLException, RepositoryException {
+		try {
+//			System.out.println("Items found (Document Libraries) - ");
+//			String docLibLInternalName="{CBA3C548-D0CA-47EC-B91B-4885F86C23DE}";
+//
+//			BaseList baseList = new BaseList(docLibLInternalName, "aaa","DocumentLibrary","20080229 04:26:22","DocumentLibrary","/Lists/aaa/AllItems.aspx");
+			listsWS = new ListsWS(sharepointClientContext);
+			BaseList baseList = getBaseList();
+			List listItemChanges = listsWS.getDocLibListItems(baseList, null, null);
+			
+			for (int i=0 ; i<listItemChanges.size(); i++) {
+				SPDocument doc = (SPDocument) listItemChanges.get(i);
+				System.out.println(doc.getUrl());
+			}
+		} catch (SharepointException e) {
+			e.printStackTrace();
+		}  
+	}
 
-    
-    
-    listsWS = new ListsWS(sharepointClientContext);
-    
-    listInternalNames.put("{34EA4B8C-3663-41C7-A0EA-13E42D44D404}","Calendar");//
-    listInternalNames.put("{25C1E978-FA4B-4076-BA16-B125DEEA26C2}","Tasks");//
-    listInternalNames.put("{5D1BB107-7C38-446A-B5F6-FF94624390E9}","Announcements");//
-    listInternalNames.put("{6858021D-005E-4AEC-8AD4-D23B12D0170D}","Links");//
-    listInternalNames.put(issuesInternalName, "Issues");
-    super.setUp();
-  }
+	/*public void testGetDocLibListItemChanges() throws MalformedURLException {
+		int num = 0;
+		try {
+			System.out.println("Changed items found (Document Libraries) - ");
 
-  public void testGetDocLibListItems() throws MalformedURLException {
-    try {
-      System.out.println("Items found (Document Libraries) - ");
-      String inInternalName, String inTitle, String inType,
-      Calendar inLastMod,String inBaseTemplate
-      BaseList baseList = new BaseList(docLibLInternalName, "DocumentLibrary",docLibLInternalName, null);
-      List listItemChanges = listsWS.getDocLibListItemChanges(baseList, null);
-      for (int i=0 ; i<listItemChanges.size(); i++) {
-        SPDocument doc = (SPDocument) listItemChanges.get(i);
-        System.out.println(doc.getUrl());
-      }
-    } catch (SharepointException e) {
-      e.printStackTrace();
-    }  
-  }
-  
-  public void testGetDocLibListItemChanges() throws MalformedURLException {
-    int num = 0;
-    try {
-      System.out.println("Changed items found (Document Libraries) - ");
-      
-      BaseList baseList = new BaseList(docLibLInternalName, "Shared Documents",docLibLInternalName,Util.listItemsStringToCalendar("2007-08-1 23:00:40"));
-      List listItemChanges = listsWS.getDocLibListItemChanges(baseList, Util.listItemsStringToCalendar("2007-08-1 23:00:40"));
-      for (int i=0 ; i<listItemChanges.size(); i++) {
-        SPDocument doc = (SPDocument) listItemChanges.get(i);
-        System.out.println(doc.getUrl());
-        num++;
-      }
-    } catch (SharepointException e) {
-      e.printStackTrace();
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }    
-    
-    /*
+			BaseList baseList = new BaseList(docLibLInternalName, "Shared Documents",docLibLInternalName,Util.listItemsStringToCalendar("2007-08-1 23:00:40"));
+			List listItemChanges = listsWS.getDocLibListItemChanges(baseList, Util.listItemsStringToCalendar("2007-08-1 23:00:40"));
+			for (int i=0 ; i<listItemChanges.size(); i++) {
+				SPDocument doc = (SPDocument) listItemChanges.get(i);
+				System.out.println(doc.getUrl());
+				num++;
+			}
+		} catch (SharepointException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}    
+
+
      Total Docs: 13
      Changed Docs: 9 
-     */
-    
-    System.out.println("Totals Documents: "+num);
-    Assert.assertEquals(9, num);
-  }
-  
-  public void testGetGenericListItemChanges() throws MalformedURLException {
-    int num = 0;
-    final int iDoc=19;
-    Set ks = listInternalNames.keySet();
-    Iterator it = ks.iterator();
-	while(it.hasNext()) {
-		
-      try {
-    	  String listInternalName =(String) it.next();
-        BaseList baseList = new BaseList(listInternalName, (String) listInternalNames.get(listInternalName),"GenericList",
-            Util.listItemsStringToCalendar("2007-03-15 23:00:40"));
-        System.out.println("Changed items found (Generic Lists) - " 
-        		+listInternalNames.get(listInternalName));
-        List listItemChanges = listsWS.getGenericListItemChanges(baseList,Util.listItemsStringToCalendar("2006-03-15 22:00:40"));
-        for (int i=0 ; i<listItemChanges.size(); i++) {
-          SPDocument doc = (SPDocument) listItemChanges.get(i);
-          System.out.println(doc.getUrl());
-          num++;
-        }
-      } catch (SharepointException e) {
-        e.printStackTrace();
-      } catch (ParseException e) {
-        e.printStackTrace();
-      }    
-    }
-	System.out.println("Total: "+num);
-    Assert.assertEquals(iDoc, num);
-  }
-  
-  public void testGetAttachments() throws MalformedURLException {
-    int num = 0;
-    //for (String listInternalName : listInternalNames.keySet()) {
-    Set ks =listInternalNames.keySet();
-    Iterator it = ks.iterator();
-    while(it.hasNext()){
-    	String listInternalName = (String) it.next();
-      try {
-        BaseList baseList = new BaseList(
-            listInternalName, (String) listInternalNames.get(listInternalName),
-            "Test Type",
-            Util.listItemsStringToCalendar("2006-03-15 23:00:40"));
-        SPDocument listItem = new SPDocument(
-            "1;#{B686ADD8-0AF8-40E2-A997-0FDFD90E3CD7}", "http://ps4312.persistent.co.in:43386/amitsite/Lists/Announcements/DispForm.aspx?ID=1", 
-            Util.listItemsStringToCalendar("2006-03-15 23:00:40"), "author_foo",
-            "1");      
-        List attachments = listsWS.getAttachments(baseList, listItem);
-        System.out.println("Attachments found for " +listInternalNames.get(listInternalName));
-        for (int i = 0; i < attachments.size(); i++) {
-          SPDocument doc = (SPDocument) attachments.get(i);
-          System.out.println(doc.getUrl());
-          num++;
-        }
-      } catch (ParseException e1){
-        e1.printStackTrace();
-      } catch (SharepointException e){
-        e.printStackTrace();
-      }
-    }
-    System.out.println("Total: "+num);
-    Assert.assertEquals(0, num);
-  }
+
+
+		System.out.println("Totals Documents: "+num);
+		Assert.assertEquals(9, num);
+	}*/
+
+	/*public void testGetGenericListItemChanges() throws MalformedURLException {
+		int num = 0;
+		final int iDoc=19;
+		Set ks = listInternalNames.keySet();
+		Iterator it = ks.iterator();
+		while(it.hasNext()) {
+
+			try {
+				String listInternalName =(String) it.next();
+				BaseList baseList = new BaseList(listInternalName, (String) listInternalNames.get(listInternalName),"GenericList",
+						Util.listItemsStringToCalendar("2007-03-15 23:00:40"));
+				System.out.println("Changed items found (Generic Lists) - " 
+						+listInternalNames.get(listInternalName));
+				List listItemChanges = listsWS.getGenericListItemChanges(baseList,Util.listItemsStringToCalendar("2006-03-15 22:00:40"));
+				for (int i=0 ; i<listItemChanges.size(); i++) {
+					SPDocument doc = (SPDocument) listItemChanges.get(i);
+					System.out.println(doc.getUrl());
+					num++;
+				}
+			} catch (SharepointException e) {
+				e.printStackTrace();
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}    
+		}
+		System.out.println("Total: "+num);
+		Assert.assertEquals(iDoc, num);
+	}*/
+
+	/*public void testGetAttachments() throws MalformedURLException {
+		int num = 0;
+		//for (String listInternalName : listInternalNames.keySet()) {
+		Set ks =listInternalNames.keySet();
+		Iterator it = ks.iterator();
+		while(it.hasNext()){
+			String listInternalName = (String) it.next();
+			try {
+				BaseList baseList = new BaseList(
+						listInternalName, (String) listInternalNames.get(listInternalName),
+						"Test Type",
+						Util.listItemsStringToCalendar("2006-03-15 23:00:40"));
+				SPDocument listItem = new SPDocument(
+						"1;#{B686ADD8-0AF8-40E2-A997-0FDFD90E3CD7}", "http://ps4312.persistent.co.in:43386/amitsite/Lists/Announcements/DispForm.aspx?ID=1", 
+						Util.listItemsStringToCalendar("2006-03-15 23:00:40"), "author_foo",
+				"1");      
+				List attachments = listsWS.getAttachments(baseList, listItem);
+				System.out.println("Attachments found for " +listInternalNames.get(listInternalName));
+				for (int i = 0; i < attachments.size(); i++) {
+					SPDocument doc = (SPDocument) attachments.get(i);
+					System.out.println(doc.getUrl());
+					num++;
+				}
+			} catch (ParseException e1){
+				e1.printStackTrace();
+			} catch (SharepointException e){
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Total: "+num);
+		Assert.assertEquals(0, num);
+	}*/
 }
