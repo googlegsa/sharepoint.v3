@@ -2,8 +2,9 @@ package com.google.enterprise.connector.sharepoint.client.sp2003;
 
 import java.rmi.RemoteException;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
@@ -20,6 +21,7 @@ import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofilese
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileService;
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileServiceLocator;
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileServiceSoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 
 /**
  * @author amit_kagrawal
@@ -71,7 +73,11 @@ public class UserProfileWS {
 			//get the credentials
 			String strDomain = inSharepointClientContext.getDomain();
 			String strUserName = inSharepointClientContext.getUsername();
-			strDomain+="\\"+strUserName;
+			if((strDomain==null)||(strDomain.trim().equals(""))){
+				strDomain=strUserName; //for user
+			}else{
+				strDomain+="\\"+strUserName;
+			}
 			String strPassword = inSharepointClientContext.getPassword();
 
 			//set authentication
@@ -105,10 +111,11 @@ public class UserProfileWS {
 
 	}
 
-	public List getPersonalSiteList() throws SharepointException {
+	public SortedSet getPersonalSiteList() throws SharepointException {
 		final String sFunctionName ="getPersonalSiteList()";
 		LOGGER.entering(className, sFunctionName);
-		ArrayList lstAllPersonalSites = new ArrayList(); //list of personal sites and subsites
+		SortedSet personalSitesSet = new TreeSet(); //list of personal sites and subsites
+		
 		Collator collator = SharepointConnectorType.getCollator();
 		if(stub==null){
 			throw new SharepointException(sFunctionName+": Unable to get the userprofile stub");
@@ -119,7 +126,6 @@ public class UserProfileWS {
 
 			GetUserProfileByIndexResult result = null;
 			try {
-
 				result = stub.getUserProfileByIndex(index);
 			} catch (RemoteException e) {
 				LOGGER.warning(className+":"+sFunctionName+":"+e.toString());
@@ -143,16 +149,20 @@ public class UserProfileWS {
 					if (propVal == null) {
 						continue;
 					}
-					String sharepointURL = sharepointClientContext.getProtocol()+URL_SEP+sharepointClientContext.getHost()+":"+sharepointClientContext.getPort()+sharepointClientContext.getsiteName();
-//					System.out.println("BaseSite: "+sharepointURL);
+					String sharepointURL = sharepointClientContext.getProtocol()+URL_SEP+sharepointClientContext.getHost()+":"+sharepointClientContext.getPort();
 					String strURL = sharepointURL+propVal;
 
-//					System.out.println("Personal: "+strURL);
 					if (strURL.endsWith("/")) {
-						strURL = strURL.substring(
-								0, strURL.lastIndexOf("/"));
+						strURL = strURL.substring(0, strURL.lastIndexOf("/"));
 					}
-					lstAllPersonalSites.add(strURL);
+					try{
+						WebsWS webWs = new WebsWS(sharepointClientContext,strURL);
+						String title = webWs.getTitle(strURL);
+						WebState ws = new WebState(strURL,strURL,title);
+						personalSitesSet.add(ws);
+					}catch(Exception e){
+						LOGGER.log(Level.WARNING,"Problems while getting site ["+strURL+"]",e);
+					}
 
 				}
 			}
@@ -163,10 +173,10 @@ public class UserProfileWS {
 			index = Integer.parseInt(next);
 		}
 		LOGGER.exiting(className, sFunctionName);
-		if(lstAllPersonalSites!=null){
-			LOGGER.info(className+":"+sFunctionName+": Total personal sites returned: "+lstAllPersonalSites.size());
+		if(personalSitesSet!=null){
+			LOGGER.info(className+":"+sFunctionName+": Total personal sites returned: "+personalSitesSet.size());
 		}
-		return lstAllPersonalSites;
+		return personalSitesSet;
 	}
 
 }

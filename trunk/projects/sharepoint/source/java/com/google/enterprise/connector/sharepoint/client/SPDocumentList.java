@@ -5,14 +5,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -30,7 +33,7 @@ public class SPDocumentList  implements DocumentList {
 	private Iterator iterator;
 	private SPDocument document;
 	private GlobalState globalState;//this is required for checkpointing
-	
+//	private WebState lastWebState;//this is required for checkpointing
 
 	// For aliasing
 	private String aliasHostName;
@@ -44,7 +47,8 @@ public class SPDocumentList  implements DocumentList {
 	 * @param inDocuments
 	 * @param inState
 	 */
-	public SPDocumentList(List inDocuments,GlobalState inState) {
+	public SPDocumentList(List inDocuments,GlobalState inGlobalState) {
+//	public SPDocumentList(List inDocuments,WebState inWebState,GlobalState inGlobalState) {
 		String sFunctionName = "SPDocumentList(List inDocuments,GlobalState inState)";
 		LOGGER.entering(className, sFunctionName);
 		if(inDocuments!=null){
@@ -52,10 +56,13 @@ public class SPDocumentList  implements DocumentList {
 		}
 		this.iterator = null;
 		this.document = null;
-		globalState = inState;
+
+//		lastWebState = inWebState;
+		globalState = inGlobalState;
+
 		LOGGER.exiting(className, sFunctionName);
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -78,7 +85,7 @@ public class SPDocumentList  implements DocumentList {
 	 * @return
 	 */
 	public boolean addAll(SPDocumentList list2){
-		String sFunctionName = "getAllChildrenSites()";
+		String sFunctionName = "addAll()";
 		LOGGER.entering(className, sFunctionName);
 		if(list2==null){
 			return false;
@@ -102,6 +109,7 @@ public class SPDocumentList  implements DocumentList {
 			//Handling aliasing
 			if(document != null){
 				String url = document.getUrl();
+				//System.out.println("NextDoc(B): "+url);
 				URL objURL = null;
 				try {
 					objURL = new URL(url.toString());
@@ -109,7 +117,7 @@ public class SPDocumentList  implements DocumentList {
 					LOGGER.warning(className+":"+sFunctionName+ " : "+e.getMessage());
 				}
 				String strUrl = "";
-
+				//System.out.println("NextDoc(B) url.tostring: "+objURL);
 				if (objURL != null) {
 
 					strUrl = objURL.getProtocol() + "://";
@@ -130,8 +138,9 @@ public class SPDocumentList  implements DocumentList {
 						}
 					}
 					strUrl = strUrl + objURL.getFile();
-					
+
 					LOGGER.fine(sFunctionName+": Document URL sending to CM :"+strUrl);
+//					System.out.println(sFunctionName+": Document URL sending to CM :"+strUrl);
 					document.setUrl(strUrl);
 				}
 			}
@@ -152,24 +161,27 @@ public class SPDocumentList  implements DocumentList {
 		String sFunctionName = "checkpoint()";
 		LOGGER.entering(className, sFunctionName);
 		if (document == null) {
-			return null;
+			//return null;
+			return "SharePoint";//dummy string
 		}
-		
+
 		try{
-		LOGGER.info(className+":"+sFunctionName+": checkpoint received for " + document.getUrl() + " in list " +document.getListGuid() + " with date "+Util.formatDate(Util.calendarToJoda(document.getLastMod())));
-		implementCheckpoint();
-		LOGGER.info(className+":"+sFunctionName+": checkpoint processed; saving GlobalState to disk.");
-		globalState.saveState(); // snapshot it all to disk
+			LOGGER.info(className+":"+sFunctionName+": checkpoint received for " + document.getUrl() + " in list " +document.getListGuid() + " with date "+Util.formatDate(Util.calendarToJoda(document.getLastMod())));
+			implementCheckpoint();
+			LOGGER.info(className+":"+sFunctionName+": checkpoint processed; saving GlobalState to disk.");
+			globalState.saveState(); // snapshot it all to disk
 		}catch (Exception e) {
-		LOGGER.warning(className+":"+sFunctionName+":Exception: Problem in checkpoint");
-		throw new SharepointException(e);
+			LOGGER.warning(className+":"+sFunctionName+":Exception: Problem in checkpoint");
+			throw new SharepointException(e);
 		}
 		LOGGER.exiting(className, sFunctionName);
 		//return null, because in sharepoint system tere is no internal implementation of checkpoint
-		//we need to recrawl every time to get the documents  
-		return null;
+		//we need to recrawl every time to get the documents
+
+		//return null;
+		return "SharePoint";
 	}
-	
+
 	/**
 	 * 
 	 * @throws RepositoryException
@@ -203,54 +215,127 @@ public class SPDocumentList  implements DocumentList {
 			return;
 		}*/
 		try{
-		LOGGER.finer(className+":"+sFunctionName+": looking for " + listGuid);
-		Iterator iterLists = globalState.getIterator();
-		boolean foundCheckpoint = false;
-		if(iterLists!=null){
-			while (iterLists.hasNext() && !foundCheckpoint) {
-				ListState listState = (ListState) iterLists.next();
-				List crawlQueue = listState.getCrawlQueue();
-				if (collator.equals(listState.getGuid(),listGuid)) {
-					LOGGER.finer(className+":"+sFunctionName+":found "+ listGuid);
-					foundCheckpoint = true;
-					// take out everything up to this document's lastMod date
-					for (Iterator iterQueue = crawlQueue.iterator(); 
-					iterQueue.hasNext();){
-						SPDocument docQueue = (SPDocument) iterQueue.next();
+			LOGGER.config(className+":"+sFunctionName+": looking for " + listGuid);
+			Iterator webIterator = null;
 
-						// if this doc is later than the checkpoint, we're done:
-						//if (docQueue.getLastMod().compareTo(docCheckpoint.getLastMod()) >  0) {
-						if (docQueue.getLastMod().after(docCheckpoint.getLastMod())) {
-							LOGGER.fine(className+":"+sFunctionName+": Crawl queue document is after the check point document....ignore check point");
-							break;
+			String lastWeb = globalState.getLastCrawledWebID();
+			if(null==lastWeb){
+				webIterator = globalState.getIterator();
+			}else{
+				SortedSet dateMap = globalState.getAllWebStateSet();
+				WebState start = globalState.lookupList(lastWeb);
+
+//				one might think you could just do tail.addAll(head) here. But you can't.
+				ArrayList full = new ArrayList(dateMap.tailSet(start));
+				full.addAll(dateMap.headSet(start));
+				webIterator =  full.iterator();
+			}	
+
+
+			//iterate through the webs.. it could be possible that results may span multiple webs
+			if(webIterator!=null){
+			/*	//for logging
+				if(lastWebState!=null){
+					LOGGER.config("Checkpoint: last webstate is: "+lastWebState.getWebUrl());		
+				}else{
+					LOGGER.config("Checkpoint: last webstate is null");
+				}*/
+
+				boolean foundCheckpoint = false;
+				while(webIterator.hasNext()&& !foundCheckpoint){
+					WebState webState = (WebState) webIterator.next();
+					if(null==webState){
+						LOGGER.severe("Unable to get the web state while checkpointing..");
+						//throw new SharepointException("Unable to get the web state while checkpointing..");
+					}else{
+						/*//to make the chckpointing faster
+						if(!webState.equals(lastWebState)){
+							LOGGER.config("cleaning web sate: "+webState.getWebUrl());
+							cleanWebState(webState);
+							continue;//proceed with the next web
+						}*/
+
+						Iterator iterLists = webState.getIterator();// Iterate through the lists inside the web
+						
+						if(iterLists!=null){
+							while (iterLists.hasNext() && !foundCheckpoint) {
+								ListState listState = (ListState) iterLists.next();
+								List crawlQueue = listState.getCrawlQueue();
+								if (collator.equals(listState.getGuid(),listGuid)) {
+									LOGGER.finer(className+":"+sFunctionName+":found "+ listGuid);
+									foundCheckpoint = true;
+									// take out everything up to this document's lastMod date
+									for (Iterator iterQueue = crawlQueue.iterator();iterQueue.hasNext();){
+										SPDocument docQueue = (SPDocument) iterQueue.next();
+
+										// if this doc is later than the checkpoint, we're done:
+										if (docQueue.getLastMod().after(docCheckpoint.getLastMod())) {
+											LOGGER.config(className+":"+sFunctionName+": Crawl queue document is after the check point document....ignore check point");
+											break;
+										}
+
+										// otherwise remove it from the queue
+										LOGGER.info(className+":"+sFunctionName+": removing " + docQueue.getUrl() + " from queue");
+										iterQueue.remove(); // it's safe to use the iterator's own remove()
+										listState.setLastDocCrawled(docQueue);
+										if (collator.equals(docQueue.getDocId(),docCheckpoint.getDocId())) {
+											break;
+										}    
+									}  
+								} else { // some other list. Assume CM got all the way through the queue
+									LOGGER.info(className+":"+sFunctionName+": zeroing crawl queue for " + listState.getUrl());
+									if (crawlQueue != null && crawlQueue.size() > 0) {
+										listState.setLastDocCrawled((SPDocument) crawlQueue.get(crawlQueue.size() - 1));
+									}
+									listState.setCrawlQueue(null);
+								}
+							}
 						}
-						// otherwise remove it from the queue
-						LOGGER.info(className+":"+sFunctionName+": removing " + docQueue.getUrl() + " from queue");
-						iterQueue.remove(); // it's safe to use the iterator's own remove()
-						listState.setLastDocCrawled(docQueue);
-						if (collator.equals(docQueue.getDocId(),docCheckpoint.getDocId())) {
-							break;
-						}    
-					}  
-				} else { // some other list. Assume CM got all the way through the queue
-					LOGGER.info(className+":"+sFunctionName+": zeroing crawl queue for " + listState.getUrl());
-					if (crawlQueue != null && crawlQueue.size() > 0) {
-						listState.setLastDocCrawled((SPDocument) crawlQueue.get(crawlQueue.size() - 1));
+						/* once we've done this, there's no more need to remember where we
+						 * were. We can start at the earliest (by lastMod) List we have. 
+						 */
+						//globalState.setCurrentList(null);
+						webState.setCurrentList(null);
 					}
-					listState.setCrawlQueue(null);
-				}
-			}
-		}
-		/* once we've done this, there's no more need to remember where we
-		 * were. We can start at the earliest (by lastMod) List we have. 
-		 */
-		globalState.setCurrentList(null);
+				}//while(webIterator.hasNext()){
+			}//if(webIterator!=null){
+
+
+			//////////////////////////////////
+
+
+
 		}catch(Exception e){
 			LOGGER.warning(className+":"+sFunctionName+"Exception :"+e.getMessage());
 			throw new SharepointException(e);
 		}
 		LOGGER.exiting(className, sFunctionName);
 	}
+
+	//clean the web state .. i.e. make all the list crawl queue empty
+/*	private void cleanWebState(WebState webState) {
+		String sFunctionName= "cleanWebState";
+		Iterator iterLists = webState.getIterator();// Iterate through the lists inside the web
+
+		if(iterLists!=null){
+			while (iterLists.hasNext()) {
+				ListState listState = (ListState) iterLists.next();
+				List crawlQueue = listState.getCrawlQueue();
+
+				LOGGER.info(className+":"+sFunctionName+": zeroing crawl queue for " + listState.getUrl());
+				if (crawlQueue != null && crawlQueue.size() > 0) {
+					listState.setLastDocCrawled((SPDocument) crawlQueue.get(crawlQueue.size() - 1));
+				}
+				listState.setCrawlQueue(null);
+			}
+		}
+
+		 once we've done this, there's no more need to remember where we
+		 * were. We can start at the earliest (by lastMod) List we have. 
+		 
+		//globalState.setCurrentList(null);
+		webState.setCurrentList(null);
+	}*/
 
 	/**
 	 * adding methods to get the count of the documents in the list. 
@@ -300,7 +385,7 @@ public class SPDocumentList  implements DocumentList {
 			this.aliasPort = inAliasPort;
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param hostName

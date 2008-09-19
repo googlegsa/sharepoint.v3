@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.logging.Logger;
 
 /**
  * Class to hold data regarding a sharepoint list e.g. DocumentLibrary.
@@ -30,12 +31,22 @@ public class BaseList implements Comparable {
   private String baseTemplate;
   private ArrayList attrs = new ArrayList();
   private String url;
+  private String parentWebTitle;
+//  private String nextPageToken="";
+  
+  private final String className = BaseList.class.getName();
+  private static final Logger LOGGER = Logger.getLogger(BaseList.class.getName());
   
   private String listConst = "/Lists";
   
   public BaseList(String inInternalName, String inTitle, String inType,
-      Calendar inLastMod,String inBaseTemplate,String inUrl) throws SharepointException {
+      Calendar inLastMod,String inBaseTemplate,String inUrl,String inParentWebTitle) throws SharepointException {
 	  
+    // added by Nitendra
+	final String sFunName = "BaseList(String inInternalName, String inTitle, String inType, Calendar inLastMod,String inBaseTemplate,String inUrl,String inParentWebTitle)";
+	LOGGER.entering(className, sFunName);
+	LOGGER.config(sFunName+": inInternalName["+inInternalName+"], inTitle["+inTitle+"], inType["+inType+"], inLastMod["+inLastMod+"], inBaseTemplate["+inBaseTemplate+"], inUrl["+inUrl+"], inParentWebTitle["+inParentWebTitle+"]");
+      
     if(inInternalName==null){
 	    throw new SharepointException("Unable to find Internal name");
     }
@@ -43,6 +54,10 @@ public class BaseList implements Comparable {
     if(inTitle!=null){
     	this.title = inTitle;
     }
+    if(null!=inParentWebTitle){
+    	parentWebTitle = inParentWebTitle;
+    }
+    
     if(inType!=null){
     	this.type = inType;
     }
@@ -134,4 +149,26 @@ public class BaseList implements Comparable {
 			this.listConst = inListConst;
 		}
 	}
+
+	public String getParentWebTitle() {
+		return parentWebTitle;
+	}
+
+	public void setParentWebTitle(String inParentWebTitle) {
+		if(null!=inParentWebTitle){
+			this.parentWebTitle = inParentWebTitle;
+		}
+	}
+
+	/*public String getNextPageToken() {
+		return nextPageToken;
+	}
+
+	public void setNextPageToken(String inNextPageToken) {
+		if(inNextPageToken==null){
+			this.nextPageToken = "";
+		}else{
+			this.nextPageToken = inNextPageToken;	
+		}
+	}*/
 }

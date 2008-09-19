@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.Collator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -93,25 +95,25 @@ public class SharepointConnectorType implements ConnectorType {
 
 
 
-	private static final String REQ_FIELDS_MISSING = 
-		"Field_Is_Required";
-	private static final String REQ_FQDN_URL = 
-		"Url_Entered_Should_Be_Fully_Qualified";
-	private static final String REQ_FQDN_ALIAS_HOSTNAME = 
-		"AliasHostName_Entered_Should_Be_Fully_Qualified";
-	private static final String CANNOT_CONNECT ="Cannot_Connect";
+	private static final String REQ_FIELDS_MISSING ="Field_Is_Required";
+	private static final String REQ_FQDN_URL ="Url_Entered_Should_Be_Fully_Qualified";
+	private static final String REQ_FQDN_ALIAS_HOSTNAME ="AliasHostName_Entered_Should_Be_Fully_Qualified";
+	private static final String REQ_FQDN_ALIAS_PORT_NUMBER ="Invalid_Alias_Port";
+	private static final String CANNOT_CONNECT ="Cannot_Connect";		
+	private static final String CANNOT_CONNECT_MYSITE ="Invalid_mySiteBaseURL";
+	
 	private static final String BLANK_STRING = ""; 
 	private static Collator collator = null;
 	private static final String CRAWL_URL_PATTERN_MISMATCH = "CrawlURL_Pattern_Mismatch";
 
-	private String sharepointUrl = null;
+	private String sharepointUrl = null;	
 	private String domain = null ;
 	private String username = null;
 	private String password = null;
 	private String includeURL = null;
 	private String sharepointType = null;
 	private String excludeURL = null;
-
+	
 	private List keys = null;
 	private Set keySet = null;
 	private final HashMap configStrings = new HashMap();
@@ -298,7 +300,7 @@ public class SharepointConnectorType implements ConnectorType {
 		buf.append(START_BOLD);
 		buf.append(configStrings.get(MANDATORY_FIELDS));
 		buf.append(END_BOLD);
-		LOGGER.config(sFunctionName+" : configform ["+buf.toString()+"]");
+	//	LOGGER.config(sFunctionName+" : configform ["+buf.toString()+"]");
 		LOGGER.exiting(className, sFunctionName);
 		return buf.toString();
 	}
@@ -376,13 +378,14 @@ public class SharepointConnectorType implements ConnectorType {
 			}else{
 				sharepointUrl = val;
 			}
-		}else if (collator.equals(key,INCLUDED_URLS)) {  
+		}else if (collator.equals(key,INCLUDED_URLS)) {			
 			includeURL = val;
 		}else if (collator.equals(key,SP_CONNECTOR_TYPE)) {  
 			sharepointType= val;
 		}else if (collator.equals(key,EXCLUDED_URLS)) {  
 			excludeURL = val;
 		}
+	
 		LOGGER.exiting(className, sFunctionName);
 	}
 
@@ -401,7 +404,7 @@ public class SharepointConnectorType implements ConnectorType {
 
 			if(collator.equals(configKey,SHAREPOINT_URL)){
 				try {
-					URL url = new URL(val);
+					/*URL url = */new URL(val);
 				} catch (MalformedURLException e) {
 					LOGGER.warning(sFunctionName+":"+ e.toString());
 					return rb.getString(MALFORMED_URL);
@@ -414,17 +417,20 @@ public class SharepointConnectorType implements ConnectorType {
 		LOGGER.exiting(className, sFunctionName);
 		return null;    
 	}
-
+	
 	private String checkConnectivity() {
 		final String sFunctionName = "checkConnectivity()";
 		LOGGER.entering(className, sFunctionName);
-		final String URL_SEP ="://";
+		
+		//final String URL_SEP ="://";
+		
+		LOGGER.config("Checking connectivity for sharepointUrl["+sharepointUrl+"]");
 		try {
-			URL url = new URL(sharepointUrl);
+			/*URL url = */new URL(sharepointUrl);
 		} catch (MalformedURLException e) {
 			LOGGER.warning(sFunctionName+":"+ e.toString());
 			return MALFORMED_URL;
-		}
+		}		
 
 		final SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointType,sharepointUrl, domain, username, 
 				password, null,includeURL,null,null,null,null,null,null); // modified by A Mitra
@@ -470,13 +476,14 @@ public class SharepointConnectorType implements ConnectorType {
 		}
 		LOGGER.finer(sFunctionName+": after usergroup locator");*/
 		///////////////////////////////////////////////////////////////
+
 		try {
 //			final SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
 			final WebsWS websWS = new WebsWS(sharepointClientContext);
 			if(websWS==null){
 				throw new SharepointException(sFunctionName+": webs stub is not found");
 			}
-			websWS.getAllChildrenSites();			
+			websWS.getDirectChildsites();//just for validation			
 		} catch (final SharepointException e) {      
 			LOGGER.warning(sFunctionName+":"+ e.toString());
 			return CANNOT_CONNECT;
@@ -484,6 +491,7 @@ public class SharepointConnectorType implements ConnectorType {
 			LOGGER.warning(sFunctionName+":"+ e.toString());
 			return CANNOT_CONNECT;
 		}
+				
 		LOGGER.exiting(className, sFunctionName);
 		return null;
 	}
@@ -494,7 +502,7 @@ public class SharepointConnectorType implements ConnectorType {
 	 * @param configData Map of keys and values
 	 * @return message string depending on the validation.
 	 */
-	private boolean validateConfigMap(final Map configData, final ResourceBundle rb) {
+	private boolean validateConfigMap(Map configData, final ResourceBundle rb) { // configData cannot be final. comment added by Nitendra
 		final String sFunctionName="validateConfigMap(final Map configData, final ResourceBundle rb)";
 		LOGGER.entering(className, sFunctionName);
 		if(configData==null){
@@ -509,14 +517,41 @@ public class SharepointConnectorType implements ConnectorType {
 		String message = null;
 		for (final Iterator i = keys.iterator(); i.hasNext();) {
 			final String key = (String) i.next();
+			
+			/* Changed and Added by Nitendra.
+			 * To simulate the working of gsa when user enters repeated slasjes at the end of an url.
+			 * In this case we need to alter the input value by suppressing the repeated slashes.
+			 * 
+			 * */			
 			final String val = (String) configData.get(key);
+/* 
+ 			String val = (String) configData.get(key);
+			if(val!=null && val!=BLANK_STRING && (collator.equals(key, SHAREPOINT_URL) || collator.equals(key, MYSITE_BASE_URL))) {
+				val=SharepointClientUtils.trimmer(val);
+				configData.put(key,val);
+			}
+*/
 			setSharepointCredentials(key, val);
-			if (isRequired(key)){ 
+			if (isRequired(key)){
 				message = getErrorMessage(key, val , rb);
-
 			} else if((val != null && val != BLANK_STRING) && collator.equals(key,ALIAS_HOST_NAME)){
 				message = isFQDN(key, val, rb);
-			} else if (val ==null){  
+			} else if((val != null && val != BLANK_STRING) && collator.equals(key,ALIAS_PORT)){
+				try{
+					int aliasPort = Integer.parseInt(val);
+					LOGGER.info("aliasPort="+aliasPort);
+					if(aliasPort<=0){
+						message=rb.getString(REQ_FQDN_ALIAS_PORT_NUMBER);
+					}										
+				}catch(NumberFormatException e){
+					message=rb.getString(REQ_FQDN_ALIAS_PORT_NUMBER);
+				}catch(Exception e){
+					message=rb.getString(REQ_FQDN_ALIAS_PORT_NUMBER);
+					LOGGER.log(Level.WARNING,message,e);
+				}
+			}else if((val != null && val != BLANK_STRING) && collator.equals(key,MYSITE_BASE_URL)){				
+				message = validateURL(val, rb);
+			}else if (val==null){  
 				configData.put(key, BLANK_STRING);
 			}
 			if (message != null) {
@@ -597,7 +632,28 @@ public class SharepointConnectorType implements ConnectorType {
 					}else if((value != null && value != BLANK_STRING) && collator.equals(key,ALIAS_HOST_NAME)){
 						message = isFQDN(key, value, rb);
 						finalMessage = message;
-					}
+						LOGGER.warning(finalMessage);
+					}else if((value != null && value != BLANK_STRING) && collator.equals(key,ALIAS_PORT)){
+						try{
+							int aliasPort = Integer.parseInt(value);
+							if(aliasPort<=0){
+								message=rb.getString(REQ_FQDN_ALIAS_PORT_NUMBER);
+								finalMessage=message;
+								LOGGER.warning(finalMessage);
+							}
+						}catch(NumberFormatException e){
+							message=rb.getString(REQ_FQDN_ALIAS_PORT_NUMBER);
+							finalMessage=message;
+							LOGGER.warning(finalMessage);
+						}catch(Exception e){
+							message=rb.getString(REQ_FQDN_ALIAS_PORT_NUMBER);
+							finalMessage=message;
+							LOGGER.log(Level.WARNING,"Invalid alias port "+value,e);
+						}						
+					}else if((value != null && value != BLANK_STRING) && collator.equals(key,MYSITE_BASE_URL)){
+						message = validateURL(value, rb);
+						finalMessage=message;
+					}					
 				}      
 				setSharepointCredentials(key, value); 
 				if(!collator.equals(key,SP_CONNECTOR_TYPE)) {
@@ -979,7 +1035,7 @@ public class SharepointConnectorType implements ConnectorType {
 				buf.append("\"/>\r\n");
 			}
 		}  
-		LOGGER.config("makeValidatedForm:\n "+buf.toString());
+		//LOGGER.config("makeValidatedForm:\n "+buf.toString());
 		LOGGER.exiting(className, sFunName);
 		return new ConfigureResponse(finalMessage, buf.toString());
 	}
@@ -995,7 +1051,7 @@ public class SharepointConnectorType implements ConnectorType {
 		final ConfigureResponse result = new ConfigureResponse("",
 				getInitialConfigForm());
 
-		LOGGER.config(sFunctionName+" : getConfigForm form:\n" + result.getFormSnippet());
+	//	LOGGER.config(sFunctionName+" : getConfigForm form:\n" + result.getFormSnippet());
 		LOGGER.exiting(className, sFunctionName);
 		return result;
 	}
@@ -1011,7 +1067,7 @@ public class SharepointConnectorType implements ConnectorType {
 		final ConfigureResponse result = new ConfigureResponse("",
 				makeConfigForm(configMap));
 
-		LOGGER.config(sFunctionName+" : getConfigForm form:\n" + result.getFormSnippet());
+	//	LOGGER.config(sFunctionName+" : getConfigForm form:\n" + result.getFormSnippet());
 		LOGGER.exiting(className, sFunctionName);
 		return result;
 	}
@@ -1020,7 +1076,7 @@ public class SharepointConnectorType implements ConnectorType {
 		final String sFunctionName = "validateConfig(Map configData, Locale locale)";
 		LOGGER.entering(className, sFunctionName);
 		LOGGER.config(sFunctionName+": Locale "+locale);
-
+		
 		final ResourceBundle rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
 		setConfigStrings(rb);
 		if (validateConfigMap(configData, rb)) {
@@ -1030,7 +1086,7 @@ public class SharepointConnectorType implements ConnectorType {
 		final ConfigureResponse configureResponse =  makeValidatedForm(configData, rb);
 
 		LOGGER.config(sFunctionName+" :  message:\n" + configureResponse.getMessage());
-		LOGGER.config(sFunctionName+": new form:\n" + configureResponse.getFormSnippet());
+		//LOGGER.config(sFunctionName+": new form:\n" + configureResponse.getFormSnippet());
 		LOGGER.exiting(className, sFunctionName);
 		return configureResponse;
 	}
@@ -1045,7 +1101,9 @@ public class SharepointConnectorType implements ConnectorType {
 		final String sFunctionName = "isRequired(final String configKey)";
 		LOGGER.entering(className, sFunctionName);
 		final boolean bValue = true;
-		if(collator.equals(configKey,EXCLUDED_URLS) || collator.equals(configKey,MYSITE_BASE_URL) || collator.equals(configKey,ALIAS_HOST_NAME) || collator.equals(configKey,ALIAS_PORT)){
+		
+		//Added: do not make the domain as the required field
+		if(collator.equals(configKey,EXCLUDED_URLS) || collator.equals(configKey,MYSITE_BASE_URL) || collator.equals(configKey,ALIAS_HOST_NAME) || collator.equals(configKey,ALIAS_PORT)|| collator.equals(configKey,DOMAIN)){
 			return false;
 		}
 		LOGGER.exiting(className, sFunctionName);
@@ -1066,8 +1124,10 @@ public class SharepointConnectorType implements ConnectorType {
 	private static void setCollator(final Locale locale) {
 		final String sFunctionName = "setCollator(final Locale locale)";
 		LOGGER.entering(SharepointConnectorType.class.getName(), sFunctionName);
-		SharepointConnectorType.collator = Collator.getInstance(locale);
-		SharepointConnectorType.collator.setStrength(Collator.PRIMARY);
+		if(null!=locale){
+			SharepointConnectorType.collator = Collator.getInstance(locale);
+			SharepointConnectorType.collator.setStrength(Collator.PRIMARY);
+		}
 		LOGGER.exiting(SharepointConnectorType.class.getName(), sFunctionName);
 	}
 
@@ -1128,6 +1188,55 @@ public class SharepointConnectorType implements ConnectorType {
 
 		LOGGER.exiting(className, sFunctionName);
 		return null;    
+	}
+	
+	
+	/* By Nitendra
+	 * Added to validate the MySite, if not blank.
+	 */	
+	private String validateURL(String url,final ResourceBundle rb) { 
+		String sFunctionName = "validateURL(final String configKey, final String val,final ResourceBundle rb)";
+		LOGGER.entering(className, sFunctionName);
+		
+		LOGGER.config("Checking connectivity for MySiteURL["+url+"]");			
+			
+		if(url!=null && !collator.equals(url,BLANK_STRING)) {			
+			try {
+				new URL(url);
+			} catch (MalformedURLException e) {
+				LOGGER.warning(sFunctionName+":"+ e.toString());
+				return rb.getString(MALFORMED_URL);
+			}
+				
+			try {
+				final SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointType,sharepointUrl, domain, username, 
+						password, null,includeURL,null,null,null,null,null,null);
+				
+				final WebsWS websWS=new WebsWS(sharepointClientContext,url);
+				if(websWS==null){
+					throw new SharepointException(sFunctionName+": webs stub is not found");
+				}
+				websWS.getDirectChildsites();			
+			} catch (final SharepointException e) {      
+				LOGGER.warning(sFunctionName+":"+ e.toString());
+				return rb.getString(CANNOT_CONNECT_MYSITE);
+			} catch (final Throwable e) {              
+				LOGGER.warning(sFunctionName+":"+ e.toString());
+				return rb.getString(CANNOT_CONNECT_MYSITE);
+			}
+		}
+		
+		LOGGER.exiting(className, sFunctionName);
+		return null;    
+	}
+	
+	/* This function can be used for testing purpose */
+	public void printRB(final ResourceBundle rb) {
+		LOGGER.info("Printing the resource bundle...");
+		for(Enumeration keys=rb.getKeys();keys.hasMoreElements();){
+			String key=(String)keys.nextElement();
+			LOGGER.config("KEY:"+key+" Value:"+rb.getString(key));
+		}
 	}
 
 }

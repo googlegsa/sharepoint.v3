@@ -24,9 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-/*import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;*/
-
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.Property;
@@ -46,12 +43,14 @@ public class SPDocument implements Document, Comparable{
 	private Calendar lastMod;
 	private String author = NO_AUTHOR;
 	private String objType = NO_OBJTYPE;
+	private String parentWebTitle = "No Title";
 
 	//list guid
 	private String listguid;
 	private static final Logger LOGGER = Logger.getLogger(SPDocument.class.getName());
 	public static final String AUTHOR = "sharepoint:author";
 	public static final String LIST_GUID = "sharepoint:listguid";
+	public static final String PARENT_WEB_TITLE = "sharepoint:parentwebtitle";
 	public static final String OBJECT_TYPE = "google:objecttype";
 	public static final String NO_OBJTYPE = "No Object Type";
 	public static final String OBJTYPE_WEB = "Web";
@@ -77,28 +76,32 @@ public class SPDocument implements Document, Comparable{
 		}
 	}
 
-	public SPDocument(String inDocId, String inUrl, Calendar inLastMod,String inObjectType) {
-		final String sFunctionName ="SPDocument(String inDocId, String inUrl, Calendar inLastMod,String inObjectType)";
+	public SPDocument(String inDocId, String inUrl, Calendar inLastMod,String inObjectType,String inParentWebTitle) {
+		final String sFunctionName ="SPDocument(String inDocId, String inUrl, Calendar inLastMod,String inObjectType)";		
 		this.docId = inDocId;
 		this.url = inUrl;
 		this.lastMod = inLastMod;
 		this.objType = inObjectType;
 		this.author = NO_AUTHOR;
-		LOGGER.config(sFunctionName+": docid["+inDocId+"], URL["+inUrl+"], LastMod["+inLastMod+"], ObjectType["+inObjectType+"],author["+author+"]");
+		this.parentWebTitle =inParentWebTitle;
+		LOGGER.config(sFunctionName+": docid["+inDocId+"], URL["+inUrl+"], LastMod["+inLastMod+"], ObjectType["+inObjectType+"],author["+author+"],parentWebTitle["+parentWebTitle+"]");
 	}
 	public SPDocument(String inDocId, String inUrl, Calendar inLastMod){
+		final String sFunctionName ="SPDocument(String inDocId, String inUrl, Calendar inLastMod)"; //added by Nitendra
 		this.docId = inDocId;
 		this.url = inUrl;
 		this.lastMod = inLastMod;
+		LOGGER.config(sFunctionName+": docid["+inDocId+"], URL["+inUrl+"], LastMod["+inLastMod+"]"); //added by Nitendra
 	}
-	public SPDocument(String inDocId, String inUrl, Calendar inLastMod, String inAuthor,String inObjType) {
+	public SPDocument(String inDocId, String inUrl, Calendar inLastMod, String inAuthor,String inObjType,String inParentWebTitle) {
 		final String sFunctionName ="SPDocument(String inDocId, String inUrl, Calendar inLastMod, String inAuthor,String inObjType)";
 		this.docId = inDocId;
 		this.url = inUrl;
 		this.lastMod = inLastMod;
 		this.author = inAuthor;
 		this.objType = inObjType;
-		LOGGER.config(sFunctionName+": docid["+inDocId+"], URL["+inUrl+"], LastMod["+inLastMod+"], ObjectType["+inObjType+"],author["+inAuthor+"]");
+		this.parentWebTitle =inParentWebTitle;
+		LOGGER.config(sFunctionName+": docid["+inDocId+"], URL["+inUrl+"], LastMod["+inLastMod+"], ObjectType["+inObjType+"],author["+inAuthor+"],parentWebTitle["+parentWebTitle+"]");
 	}
 
 	public Calendar getLastMod() {
@@ -180,7 +183,7 @@ public class SPDocument implements Document, Comparable{
 
 		int comparison = this.lastMod.getTime().compareTo(doc.lastMod.getTime());
 		if (0 == comparison) {
-			comparison = this.docId.compareTo(doc.docId);
+			/*comparison = this.docId.compareTo(doc.docId);
 			if (0 == comparison) {
 
 				String docURL1st = new String(this.url);
@@ -191,7 +194,35 @@ public class SPDocument implements Document, Comparable{
 					comparison = docURL1st.compareTo(docURL2nd);
 				}
 
+			}*/
+			int id1 =0;
+			int id2 =0;
+			try{
+				id1 = Integer.parseInt(docId);
+			}catch(Exception e){
+				//List =old doc - so allow new item before 
+				return 1;
 			}
+			try{
+				id2 = Integer.parseInt(doc.docId);
+			}catch(Exception e){
+				//List= new doc  - so allow list after 
+				return -1;
+			}
+			int diff = id1-id2;
+			if(diff!=0){
+				return diff;	
+			}
+
+			//compare the URLs
+			String docURL1st = new String(this.url);
+			docURL1st = URLDecoder.decode(docURL1st);
+			String docURL2nd = new String(doc.url);
+			docURL2nd = URLDecoder.decode(docURL2nd);
+			if(docURL1st!=null){
+				comparison = docURL1st.compareTo(docURL2nd);
+			}
+			
 		}    
 		return comparison;
 	}
@@ -212,6 +243,8 @@ public class SPDocument implements Document, Comparable{
 			return new SPProperty(SpiConstants.PROPNAME_SEARCHURL, new StringValue(getUrl()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_DISPLAYURL)){
 			return new SPProperty(SpiConstants.PROPNAME_DISPLAYURL, new StringValue(getUrl()));
+		}else if(collator.equals(strPropertyName,PARENT_WEB_TITLE)){
+			return new SPProperty(PARENT_WEB_TITLE, new StringValue(getParentWebTitle()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_DOCID)){
 			return new SPProperty(SpiConstants.PROPNAME_DOCID, new StringValue(getDocId()));
 		}else if(collator.equals(strPropertyName,SpiConstants.PROPNAME_LASTMODIFIED)){
@@ -249,6 +282,7 @@ public class SPDocument implements Document, Comparable{
 		s.add(SpiConstants.PROPNAME_LASTMODIFIED);
 		s.add(LIST_GUID);
 		s.add(AUTHOR);
+		s.add(PARENT_WEB_TITLE);
 		s.add(SpiConstants.PROPNAME_ISPUBLIC);
 
 		// get the "extra" metadata fields, including those added by user:
@@ -279,5 +313,15 @@ public class SPDocument implements Document, Comparable{
 			return this.compareTo((SPDocument)arg0);
 		}
 		return -1;
+	}
+
+	public String getParentWebTitle() {
+		return parentWebTitle;
+	}
+
+	public void setParentWebTitle(String inParentWebTitle) {
+		if(null!=inParentWebTitle){
+			this.parentWebTitle = inParentWebTitle;
+		}
 	}
 }

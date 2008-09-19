@@ -21,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.Collator;
+import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
 
@@ -42,8 +43,7 @@ public class SharepointClientUtils {
 	private static final String REGEXP_CASE = "regexpCase:";
 	private static final String REGEXP_IGNORE_CASE = "regexpIgnoreCase:";
 	private Collator collator = SharepointConnectorType.getCollator();
-
-
+	
 
 	/**
 	 * Desc : Check if the String Value can be included or not .
@@ -210,7 +210,6 @@ public class SharepointClientUtils {
 
 
 	public boolean matcher(String pattern,String strValue){
-
 		// null check for the arguments
 		if(pattern==null|strValue==null){
 			return false;
@@ -388,7 +387,7 @@ public class SharepointClientUtils {
 		if(patternDecoded==null){
 			return false;
 		}
-
+		
 		boolean containProtocol = false;
 		try {
 			RE re = new RE("://");
@@ -475,9 +474,12 @@ public class SharepointClientUtils {
 					}
 				}
 
-			} catch (REException e) {
+			} catch (REException e) {				
+				return false;
+			}catch (Exception e) { // added by Nitendra for handling the case when Pattern= ":http://<any address>"
 				return false;
 			}
+			
 		}else{
 
 			String pat1 = null;
@@ -533,7 +535,7 @@ public class SharepointClientUtils {
 			}
 
 		}
-
+		
 		return false;
 
 	}
@@ -624,5 +626,4 @@ public class SharepointClientUtils {
 		}
 		return strValueList;
 	}*/
-
 }

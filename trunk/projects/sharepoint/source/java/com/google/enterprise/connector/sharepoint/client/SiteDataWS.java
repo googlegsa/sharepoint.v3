@@ -14,30 +14,35 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-//import java.io.UnsupportedEncodingException;
-//import java.net.URLEncoder;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.text.Collator;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.xml.rpc.ServiceException;
+import javax.xml.rpc.holders.StringHolder;
 
 import org.apache.axis.holders.UnsignedIntHolder;
 import org.apache.catalina.util.URLEncoder;
-
 import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
 import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteData;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataLocator;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.sitedata._sList;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOfStringHolder;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sFPUrlHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListWithTimeHolder;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sWebWithTimeHolder;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sWebMetadataHolder;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 /**
@@ -71,22 +76,22 @@ public class SiteDataWS {
 	private static final String ATTR_DEFAULTVIEWURL = "DefaultViewUrl";
 	private static final String ATTR_DESCRIPTION = "Description";
 	private static final String ATTR_TITLE = "Title";
-	
+
 	public static URLEncoder enc  = new URLEncoder();
 	static final String URL_SEP ="://";
-	
+
 	private static final Logger LOGGER = Logger.getLogger(SiteDataWS.class.getName());
 	private String className = SiteDataWS.class.getName();
 	private SharepointClientContext sharepointClientContext;
 	private String endpoint;
 	SiteDataSoap_BindingStub stub = null;
-	
-	
+
+
 	private static final String ATTR_READSECURITY = "ReadSecurity";
-	
+
 	//url of the site
-	private String siteRelativeUrl ="";
-	
+	//private String siteRelativeUrl ="";
+
 
 
 	//set the content length of the HTTPResponse to a huge value
@@ -107,8 +112,8 @@ public class SiteDataWS {
 			LOGGER.config(sFunctionName+" : End Point: " +endpoint);
 
 			//set the relativeURL
-			siteRelativeUrl = inSharepointClientContext.getsiteName();
-			
+//			siteRelativeUrl = inSharepointClientContext.getsiteName();
+
 			SiteDataLocator loc = new SiteDataLocator();
 			loc.setSiteDataSoapEndpointAddress(endpoint);
 			SiteData servInterface = loc;
@@ -124,7 +129,12 @@ public class SiteDataWS {
 			String strDomain = inSharepointClientContext.getDomain();
 			String strUser = inSharepointClientContext.getUsername();
 			String strPassword= inSharepointClientContext.getPassword();
-			strDomain+="\\"+strUser; // form domain/user 
+
+			if((strDomain==null)||(strDomain.trim().equals(""))){
+				strDomain=strUser; //for user
+			}else{
+				strDomain+="\\"+strUser; // form domain/user
+			}
 
 			//set the user and pass
 			stub.setUsername(strDomain);
@@ -137,7 +147,7 @@ public class SiteDataWS {
 		String sFunctionName = "SiteDataWS(SharepointClientContext sharepointClientContext,String siteName";
 		LOGGER.entering(className, sFunctionName);
 		if(inSharepointClientContext!=null){
-			this.sharepointClientContext = inSharepointClientContext;
+			
 			if(siteName!=null){
 				//extract the of path of the site and encode it
 				//to support internatational site URLs e.g. japanese 
@@ -145,25 +155,28 @@ public class SiteDataWS {
 				URL siteURL ;
 				try {
 					siteURL = new URL(siteName);
-					
+
 				} catch (MalformedURLException e) {
 					LOGGER.config(sFunctionName+": actual error:\n"+e.toString());
 					throw new SharepointException("Malformed URL: "+siteName);
 				}
-				int iPort = 0;
+				this.sharepointClientContext = inSharepointClientContext;
+				sharepointClientContext.setURL(siteName);
 				
+				int iPort = 0;
+
 				//check if the def
 				if (-1 != siteURL.getPort()) {
 					iPort = siteURL.getPort();
 				}else{
 					iPort = siteURL.getDefaultPort();
 				}
-				
+
 				endpoint = siteURL.getProtocol()+URL_SEP+ siteURL.getHost()+":"+iPort/*siteURL.getPort()*/+enc.encode(siteURL.getPath())+ SITEDATAENDPOINT;
 				//set the relativeURL
-				siteRelativeUrl = siteURL.getPath();
+//				siteRelativeUrl = siteURL.getPath();
 			}
-			
+
 			LOGGER.config(sFunctionName+" : End Point: " +endpoint);
 			SiteDataLocator loc = new SiteDataLocator();
 			loc.setSiteDataSoapEndpointAddress(endpoint);
@@ -179,7 +192,12 @@ public class SiteDataWS {
 			String strDomain = inSharepointClientContext.getDomain();
 			String strUser = inSharepointClientContext.getUsername();
 			String strPassword= inSharepointClientContext.getPassword();
-			strDomain+="\\"+strUser; // form domain/user 
+
+			if((strDomain==null)||(strDomain.trim().equals(""))){
+				strDomain=strUser; //for user
+			}else{
+				strDomain+="\\"+strUser; // form domain/user
+			}
 
 			//set the user and pass
 			stub.setUsername(strDomain);
@@ -189,77 +207,13 @@ public class SiteDataWS {
 	}  
 
 	/**
-	 * Gets all the sites from the sharepoint server.
-	 * @return list of sharepoint documents corresponding to sites.
-	 */
-	/*public List getAllChildrenSites() throws SharepointException {
-		String sFunctionName = "getAllChildrenSites()";
-		LOGGER.entering(className, sFunctionName);
-		if(stub==null){
-			throw new SharepointException(sFunctionName+": Unable to get the sitedata stub");
-		}
-
-		ArrayList sites = new ArrayList();
-		try {
-
-			ArrayOfStringHolder vGroups = new ArrayOfStringHolder();
-			_sSiteMetadataHolder sSiteMetadata = new _sSiteMetadataHolder();
-			StringHolder strUsers = new StringHolder();
-			UnsignedIntHolder getSiteResult = new UnsignedIntHolder();
-			StringHolder strGroups = new StringHolder();
-			ArrayOf_sWebWithTimeHolder vWebs = new ArrayOf_sWebWithTimeHolder();
-			try{
-				stub.getSite(getSiteResult, sSiteMetadata, vWebs, strUsers, strGroups, vGroups);
-			}catch(Exception e){
-				throw new SharepointException(e);
-			}
-
-
-			_sWebWithTime[] els  =vWebs.value;
-
-			if(els!=null){
-				for (int i = 0; i < els.length; ++i) {        
-					String url = els[i].getUrl(); 
-					LOGGER.config(sFunctionName+": URL :"+url);
-					String[] includedURLs = sharepointClientContext.getIncludedURlList(); 
-					String[] excludedURLs = sharepointClientContext.getExcludedURlList() ; 
-					SharepointClientUtils spUtils = new SharepointClientUtils();	
-
-					//two cases: with port and without port taken ... because if port 80 then the port no: may be skipped by sharepoint to get the contents
-					if ((url.startsWith(sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost()+ ":" + sharepointClientContext.getPort()+sharepointClientContext.getsiteName()) 
-							|| url.startsWith(sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost() 
-									+ sharepointClientContext.getsiteName())) && (spUtils.isIncludedUrl(includedURLs,excludedURLs, url))) { 
-						//System.out.println(sFunctionName+" : include URL ["+url.toString()+"]");
-						LOGGER.config(sFunctionName+" : include URL ["+url.toString()+"]");
-						Calendar lastModified = els[i].getLastModified();   
-
-						SPDocument doc = new SPDocument(url, url, lastModified,SPDocument.OBJTYPE_WEB);
-						sites.add(doc);
-					}else{
-						LOGGER.warning(sFunctionName+" : excluding "+url.toString());
-					}
-				}  
-			}
-		} catch (Throwable e) {
-			LOGGER.warning(sFunctionName+": Unable to access URL["+endpoint+"]");
-			LOGGER.finer(e.toString());
-			throw new SharepointException(e);
-		}
-		if(sites!=null){
-			LOGGER.info("Total children web sites: "+sites.size());
-		}
-		LOGGER.exiting(className, sFunctionName);
-		return sites;      
-	}*/
-
-	/**
 	 * Gets the collection of all the SPDocument Libraries on the sharepoint 
 	 * server.
 	 * @return list of BaseList objects.
 	 * @throws SharepointException
 	 */
-	public  List getDocumentLibraries() throws SharepointException {
-		return getNamedLists(DOC_LIB);
+	public  List getDocumentLibraries(String parentWebTitle) throws SharepointException {
+		return getNamedLists(DOC_LIB,parentWebTitle);
 	}
 
 	/**
@@ -267,8 +221,8 @@ public class SiteDataWS {
 	 * @return list of BaseList objects.
 	 * @throws SharepointException
 	 */
-	public  List getGenericLists() throws SharepointException {
-		return getNamedLists(GENERIC_LIST);
+	public  List getGenericLists(String parentWebTitle) throws SharepointException {
+		return getNamedLists(GENERIC_LIST,parentWebTitle);
 	}
 
 	/**
@@ -276,8 +230,8 @@ public class SiteDataWS {
 	 * @return list of BaseList objects.
 	 * @throws SharepointException
 	 */
-	public  List getIssues() throws SharepointException {
-		return getNamedLists(ISSUE);
+	public  List getIssues(String parentWebTitle) throws SharepointException {
+		return getNamedLists(ISSUE,parentWebTitle);
 	}
 
 	/**
@@ -285,10 +239,10 @@ public class SiteDataWS {
 	 * of a given type. E.g., DocumentLibrary
 	 * @return list of BaseList objects.
 	 */
-	private List getNamedLists(String baseType) throws SharepointException {
+	private List getNamedLists(String baseType,String parentWebTitle) throws SharepointException {
 		String sFunctionName = "getNamedLists(String baseType)";
 		LOGGER.entering(className, sFunctionName);
-		
+
 		if(baseType==null){
 			throw new SharepointException("Unable to get the baseType");
 		}
@@ -319,102 +273,95 @@ public class SiteDataWS {
 					String alterUrl = null;
 					String strBaseTemplate =null;
 //					two cases: with port and without port taken ... because if port 80 then the port no: may be skipped by sharepoint to get the contents
-					if(sl[i] != null){
-						url = sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost() 
-						+ ":" + sharepointClientContext.getPort() +sl[i].getDefaultViewUrl();
-						alterUrl =sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost()+ sl[i].getDefaultViewUrl();
-						strBaseTemplate = sl[i].getBaseTemplate();
-						if(strBaseTemplate==null){
-							strBaseTemplate = NO_TEMPLATE;
-						}else{
-							//check for special type of illogical\numeric base templkates
-							if(collator.equals(strBaseTemplate, ORIGINAL_BT_SLIDELIBRARY)){//for SlideLibrary
-								strBaseTemplate=BT_SLIDELIBRARY;
-							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_FORMLIBRARY)){//for FormLibrary
-								strBaseTemplate=BT_FORMLIBRARY;
-							}else if(collator.equals(strBaseTemplate,ORIGINAL_BT_TRANSLATIONMANAGEMENTLIBRARY)){//for TranslationManagementLibrary
-								strBaseTemplate=BT_TRANSLATIONMANAGEMENTLIBRARY;
-							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_TRANSLATOR)){//for Translator
-								strBaseTemplate=BT_TRANSLATOR;
-							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_REPORTLIBRARY)){//for ReportLibrary
-								strBaseTemplate=BT_REPORTLIBRARY;
-							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_PROJECTTASK)){//for ReportLibrary
-								strBaseTemplate=BT_PROJECTTASK;
-							}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_SITESLIST)){//for ReportLibrary
-								strBaseTemplate=BT_SITESLIST;
+					//Amit: check for the base type at the inital stage .. do not proceed further for non matching types
+					if((sl[i] != null)){
+						if((collator.equals(sl[i].getBaseType(),(baseType)))){
+							url = sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost() 
+							+ ":" + sharepointClientContext.getPort() +sl[i].getDefaultViewUrl();
+//							}
+							alterUrl =sharepointClientContext.getProtocol()+URL_SEP + sharepointClientContext.getHost()+ sl[i].getDefaultViewUrl();
+							strBaseTemplate = sl[i].getBaseTemplate();
+							if(strBaseTemplate==null){
+								strBaseTemplate = NO_TEMPLATE;
+							}else{
+								//check for special type of illogical\numeric base templkates
+								if(collator.equals(strBaseTemplate, ORIGINAL_BT_SLIDELIBRARY)){//for SlideLibrary
+									strBaseTemplate=BT_SLIDELIBRARY;
+								}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_FORMLIBRARY)){//for FormLibrary
+									strBaseTemplate=BT_FORMLIBRARY;
+								}else if(collator.equals(strBaseTemplate,ORIGINAL_BT_TRANSLATIONMANAGEMENTLIBRARY)){//for TranslationManagementLibrary
+									strBaseTemplate=BT_TRANSLATIONMANAGEMENTLIBRARY;
+								}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_TRANSLATOR)){//for Translator
+									strBaseTemplate=BT_TRANSLATOR;
+								}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_REPORTLIBRARY)){//for ReportLibrary
+									strBaseTemplate=BT_REPORTLIBRARY;
+								}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_PROJECTTASK)){//for ReportLibrary
+									strBaseTemplate=BT_PROJECTTASK;
+								}else if(collator.equals(strBaseTemplate, ORIGINAL_BT_SITESLIST)){//for ReportLibrary
+									strBaseTemplate=BT_SITESLIST;
+								}
 							}
-							
-							//System.out.println("ObjectType: "+strBaseTemplate);
-							//System.out.println("");
+						}else{
+							continue;
 						}
 					}
 					LOGGER.config(sFunctionName +"  : URL :"+url);
 					if(spUtils.isIncludedUrl(includedURLs,excludedURLs, url) || spUtils.isIncludedUrl(includedURLs,excludedURLs, alterUrl)) {	  
 						LOGGER.config(sFunctionName+": included URL :["+url+"]");
 						try { 
-							if (collator.equals(sl[i].getBaseType(),(baseType))) {
-								BaseList list = new BaseList(sl[i].getInternalName(), 
-										sl[i].getTitle(), sl[i].getBaseType(),
-										Util.siteDataStringToCalendar(sl[i].getLastModified()),strBaseTemplate,url);
-								
-								//Add attribute: ListsConst
-								//Note: It is Important for the baseType="Lists"
-								//For baseType="DocumentLibrary" do not care
-								if(collator.equals(sl[i].getBaseType(),GENERIC_LIST)){
-									String listUrl = sl[i].getDefaultViewUrl();//e.g. /sites/abc/Lists/Announcements/AllItems.aspx
-									//String relativeUrl = sharepointClientContext.getsiteName();
-									
-									if((listUrl!=null) && (siteRelativeUrl!=null)){
-										
-										//cancel out the relative url form the listurl
-										listUrl = listUrl.replaceFirst(siteRelativeUrl, "");
-										
-										
-										StringTokenizer strTokList = new StringTokenizer(listUrl,"/");
-										if(null!=strTokList){
-											String myNewListConst ="";
+							BaseList list = new BaseList(sl[i].getInternalName(), 
+									sl[i].getTitle(), sl[i].getBaseType(),
+									Util.siteDataStringToCalendar(sl[i].getLastModified()),strBaseTemplate,url,parentWebTitle);
 
-											while((strTokList.hasMoreTokens())  &&  (strTokList.countTokens()>2)){
-												//int tokCnt= strTokList.countTokens();
-												
-												//if(tokCnt>2){
-													String listToken = strTokList.nextToken();
-													if(null!=listToken){
-														myNewListConst+="/"+listToken;
-													}	
-												//}//if(tokCnt>2){
-												
-											}//while(strTokList.hasMoreTokens()){
-											list.setListConst(myNewListConst);
-//											System.out.println("New Value(ListsConst): "+myNewListConst);
-										}
+							//Add attribute: ListsConst
+							//Note: It is Important for the baseType="Lists"
+							//For baseType="DocumentLibrary" do not care
+							//if(collator.equals(sl[i].getBaseType(),GENERIC_LIST)){
+							if(collator.equals(sl[i].getBaseType(),GENERIC_LIST)
+									||collator.equals(sl[i].getBaseType(),ISSUE)
+									||collator.equals(sl[i].getBaseType(),SURVEYS)
+									||collator.equals(sl[i].getBaseType(),DISCUSSION_BOARD))									
+							{
+								String listUrl = sl[i].getDefaultViewUrl();//e.g. /sites/abc/Lists/Announcements/AllItems.aspx
+								if((listUrl!=null) /*&& (siteRelativeUrl!=null)*/){
+									StringTokenizer strTokList = new StringTokenizer(listUrl,"/");
+									if(null!=strTokList){
+										String myNewListConst ="";
+
+										while((strTokList.hasMoreTokens())  &&  (strTokList.countTokens()>1)){
+											String listToken = strTokList.nextToken();
+											if(null!=listToken){
+												myNewListConst+="/"+listToken;
+											}	
+										}//while(strTokList.hasMoreTokens()){
+										list.setListConst(myNewListConst);
 									}
-									
-									
 								}
-																
-								
-								//add the attribute(Metadata to the list )
-								list = getListWithAllAttributes(list,sl[i]);
-								listCollection.add(list);
 							}
-							
+
+							//add the attribute(Metadata to the list )
+							list = getListWithAllAttributes(list,sl[i]);
+							listCollection.add(list);
+//							}
+
 						} catch (ParseException e) {
+							LOGGER.log(Level.WARNING,className+":"+sFunctionName,e);
 							throw new SharepointException(e.toString());
 						}
 					}else{
 						LOGGER.warning(sFunctionName+" : excluding "+url.toString());
 					}
-					
+
 					//Sort the base list
 					Collections.sort(listCollection);
 					dumpcollection(listCollection);
 				}
 			}
 		}catch (Throwable e) {
+			LOGGER.log(Level.WARNING,className+":"+sFunctionName,e);
 			throw new SharepointException(e.toString());
 		} 
-		
+
 		if(listCollection!=null){
 			LOGGER.info("Total Lists returned: "+listCollection.size()+" for list of type: "+baseType);
 		}
@@ -426,7 +373,7 @@ public class SiteDataWS {
 		if((list==null)||(documentLibrary==null)){
 			return list;
 		}
-		
+
 		String str = "";
 		str = documentLibrary.getDefaultViewUrl();
 		if((str!=null)&&(!str.trim().equals(""))){
@@ -447,7 +394,7 @@ public class SiteDataWS {
 		if((str!=null)&&(!str.trim().equals(""))){
 			list.setAttribute(ATTR_READSECURITY, str);
 		}
-		
+
 		return list;
 	}
 
@@ -467,25 +414,26 @@ public class SiteDataWS {
 		LOGGER.config("-----------------------------------");
 	}
 
-	public List getAllLinks(SharepointClientContext inSharepointClientContext,String site) throws SharepointException{
+	public TreeSet getAllLinks(SharepointClientContext inSharepointClientContext,String site,String webTitle) throws SharepointException{
 		String sFunctionName = "getAllLinks(SharepointClientContext sharepointClientContext,String site)";
 		LOGGER.entering(className, sFunctionName);
-		
+
 		if(stub==null){
 			throw new SharepointException(sFunctionName+": Unable to get the sitedata stub");
 		}
-		
-		ArrayList allLinks = new ArrayList();
+
+		//ArrayList allLinks = new ArrayList();
+		TreeSet allLinks = new TreeSet();
 		Collator collator = SharepointConnectorType.getCollator();
 		LOGGER.config(sFunctionName+": Getting all links for site ["+site+"]");
-		
+
 		try {
-			ListsWS listsWS = new ListsWS(inSharepointClientContext, site);
+			ListsWS listsWS = null;
 
 			UnsignedIntHolder getListCollectionResult = new UnsignedIntHolder();
 			ArrayOf_sListHolder vLists = new ArrayOf_sListHolder();
 			stub.getListCollection(getListCollectionResult, vLists);
-			
+
 			if(vLists==null){
 				throw new SharepointException("Unable to get the lists");
 			}
@@ -493,12 +441,6 @@ public class SiteDataWS {
 
 			if (sl != null) {//check out the links from other list collection 
 				for(int i=0;i<sl.length;++i){
-//					System.out.println("BaseTemplate: "+sl[i].getBaseTemplate());
-					//if (collator.equals(sl[i].getBaseTemplate(),"Links")) {
-					/*if(collator.equals(sl[i].getBaseTemplate(),"300")){
-						System.out.println("The spl vcase");
-					}*/
-					
 					if ((collator.equals(sl[i].getBaseTemplate(),ORIGINAL_BT_LINKS)) || (collator.equals(sl[i].getBaseTemplate(),ORIGINAL_BT_SITESLIST))) {
 						String url = null;		
 						String alterUrl = null; 
@@ -510,17 +452,16 @@ public class SiteDataWS {
 						+ ":" + inSharepointClientContext.getPort() +sl[i].getDefaultViewUrl();
 
 						alterUrl =inSharepointClientContext.getProtocol()+URL_SEP + inSharepointClientContext.getHost()+ sl[i].getDefaultViewUrl();
-						
-//						LOGGER.config(sFunctionName +"  : URL() :"+url);
-						if(spUtils.isIncludedUrl(includedURLs,excludedURLs, url) || spUtils.isIncludedUrl(includedURLs,excludedURLs, alterUrl)) {	  
 
+						if(spUtils.isIncludedUrl(includedURLs,excludedURLs, url) || spUtils.isIncludedUrl(includedURLs,excludedURLs, alterUrl)) {	  
 							LOGGER.config(sFunctionName+": included URL :["+url+"]");	
 							BaseList list = new BaseList(sl[i].getInternalName(), 
 									sl[i].getTitle(), sl[i].getBaseType(),
-									Util.siteDataStringToCalendar(sl[i].getLastModified()),"Links",url); 
+									Util.siteDataStringToCalendar(sl[i].getLastModified()),"Links",url,webTitle); 
 
+							listsWS=new ListsWS(inSharepointClientContext, site);
 							//get all the items for the links
-							List listItems = listsWS.getLinkChanges(list);
+							TreeSet listItems = (TreeSet)listsWS.getLinkChanges(list);
 							allLinks.addAll(listItems);
 						}else{
 							LOGGER.warning(sFunctionName+" : excluding "+url.toString());
@@ -529,12 +470,12 @@ public class SiteDataWS {
 				}
 			}
 		}catch (Throwable e){
-			LOGGER.warning(sFunctionName+": "+e.getLocalizedMessage());
+			LOGGER.log(Level.WARNING,sFunctionName+": "+e.getLocalizedMessage(),e);
 		}
 		if(allLinks!=null){
 			LOGGER.info("Links returned: "+allLinks.size());
 		}
-		
+
 		LOGGER.exiting(className, sFunctionName);
 		return allLinks;
 	}
@@ -545,8 +486,8 @@ public class SiteDataWS {
 	 * @return list of BaseList objects.
 	 * @throws SharepointException
 	 */
-	public List getDiscussionBoards() throws SharepointException {
-		return getNamedLists(DISCUSSION_BOARD);
+	public List getDiscussionBoards(String parentWebTitle) throws SharepointException {
+		return getNamedLists(DISCUSSION_BOARD,parentWebTitle);
 	}
 
 	/**
@@ -554,8 +495,26 @@ public class SiteDataWS {
 	 * @return list of BaseList objects.
 	 * @throws SharepointException 
 	 */
-	public List getSurveys() throws SharepointException {
-		return getNamedLists(SURVEYS);
+	public List getSurveys(String parentWebTitle) throws SharepointException {
+		return getNamedLists(SURVEYS,parentWebTitle);
+	}
+	
+	/* Added By Nitendra
+	 * 
+	 * Retrieves the title of a Web Site.
+	 * Should only be used in case of SP2003 Top URL. For all other cases, WebWS.getTitle() is the preffered method. 
+	 */
+	public String getTitle() throws RemoteException {
+		UnsignedIntHolder getWebResult=new UnsignedIntHolder();
+		_sWebMetadataHolder sWebMetadata=new _sWebMetadataHolder();
+		ArrayOf_sWebWithTimeHolder vWebs=new ArrayOf_sWebWithTimeHolder();
+		ArrayOf_sListWithTimeHolder vLists=new ArrayOf_sListWithTimeHolder();
+		ArrayOf_sFPUrlHolder vFPUrls=new ArrayOf_sFPUrlHolder();
+		StringHolder strRoles=new StringHolder();
+		ArrayOfStringHolder vRolesUsers=new ArrayOfStringHolder();
+		ArrayOfStringHolder vRolesGroups=new ArrayOfStringHolder();
+		stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
+		return sWebMetadata.value.getTitle();
 	}
 
 }

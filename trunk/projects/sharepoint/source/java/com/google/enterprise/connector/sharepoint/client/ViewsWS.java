@@ -80,7 +80,12 @@ public class ViewsWS {
 				String strDomain = inSharepointClientContext.getDomain();
 				String strUser = inSharepointClientContext.getUsername();
 				String strPassword= inSharepointClientContext.getPassword();
-				strDomain+="\\"+strUser; // form domain/user 
+
+				if((strDomain==null)||(strDomain.trim().equals(""))){
+					strDomain=strUser; //for user
+				}else{
+					strDomain+="\\"+strUser; // form domain/user
+				}
 
 				//set the user and pass
 				stub.setUsername(strDomain);
@@ -140,7 +145,12 @@ public class ViewsWS {
 			String strDomain = inSharepointClientContext.getDomain();
 			String strUser = inSharepointClientContext.getUsername();
 			String strPassword= inSharepointClientContext.getPassword();
-			strDomain+="\\"+strUser; // form domain/user 
+
+			if((strDomain==null)||(strDomain.trim().equals(""))){
+				strDomain=strUser; //for user
+			}else{
+				strDomain+="\\"+strUser; // form domain/user
+			}
 
 			//set the user and pass
 			stub.setUsername(strDomain);

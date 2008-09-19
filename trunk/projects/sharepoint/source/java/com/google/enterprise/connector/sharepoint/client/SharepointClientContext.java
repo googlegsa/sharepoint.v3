@@ -29,6 +29,7 @@ import org.apache.commons.httpclient.protocol.Protocol;
 
 /**
  * Class to hold the context information for sharepoint client connection.
+ * @author amit_kagrawal
  */
 public class SharepointClientContext implements Cloneable {
 
@@ -55,11 +56,8 @@ public class SharepointClientContext implements Cloneable {
 	private static boolean bFQDNConversion = false;
 	private static final String SEPARATOR = " ";
 	private static final int SSL_DEFAULT_PORT = 443;
-//	private static final String FRONT_SLASH = "/";
-	
+	private int batchHint =-1; //the batch size in which the documents have to be submitted to Connector manager
 
-	//Default locale is en-US
-//	static ResourceBundle resourcebundle =ResourceBundle.getBundle("SharepointConnectorResources",Locale.US);
 
 	public Object clone() {
 		String sFunctionName ="clone()";
@@ -188,10 +186,10 @@ public class SharepointClientContext implements Cloneable {
 	}
 
 
-	//added by Amit for cloning
+	//for cloning
 	public SharepointClientContext() {
-		// TODO Auto-generated constructor stub
 	}
+	
 	public SharepointClientContext(String sharepointType,String sharepointUrl, String inDomain,
 			String inUsername, String inPassword,
 			String inGoogleConnectorWorkDir,String includedURls,String excludedURls,String inMySiteBaseURL,String inAliasHostName,String inAliasPort,ArrayList inWhiteList,ArrayList inBlackList){
@@ -205,7 +203,7 @@ public class SharepointClientContext implements Cloneable {
 			return;
 		}
 		sharepointUrl = sharepointUrl.trim();
-	
+		
 		//set the sharepointType
 		if(sharepointType!=null){
 			this.strSharePointType = sharepointType;
@@ -262,14 +260,16 @@ public class SharepointClientContext implements Cloneable {
 	public void setURL(String sharepointUrl){
 		String sFunctionName = "setURL(String sharepointUrl)";
 		LOGGER.entering(className, sFunctionName);
-		
-		
+
+
 		try {
 			URL url = new URL(sharepointUrl);
 			this.host = url.getHost();
 			this.protocol = url.getProtocol(); //to remove the hard-coded protocol
 			if (-1 != url.getPort()) {
 				this.port = url.getPort();
+			}else{
+				this.port = url.getDefaultPort();
 			}
 			this.siteName = url.getPath();      
 		} catch (MalformedURLException e) {
@@ -413,7 +413,7 @@ public class SharepointClientContext implements Cloneable {
 
 	public void setExcludedURlList(String excludedURls){
 		if(excludedURls != null){
-			
+
 			// with new gnu pattern matching not required to remove FrontSlash
 //			excludedURlList = removeFrontSlash(excludedURls.split(SEPARATOR));
 			excludedURlList = excludedURls.split(SEPARATOR);
@@ -429,7 +429,7 @@ public class SharepointClientContext implements Cloneable {
 
 	public void setIncludedURlList(String includedURls , String separator) {
 		if(includedURls != null){
-			
+
 			// with new gnu pattern matching not required to remove FrontSlash
 //			includedURlList = removeFrontSlash(includedURls.split(separator));
 			includedURlList = includedURls.split(separator);
@@ -443,7 +443,7 @@ public class SharepointClientContext implements Cloneable {
 
 	public void setIncludedURlList(String includedURls){
 		if(includedURls != null){
-			
+
 			// with new gnu pattern matching not required to remove FrontSlash
 //			includedURlList = removeFrontSlash(includedURls.split(SEPARATOR));
 			includedURlList = includedURls.split(SEPARATOR);
@@ -484,15 +484,7 @@ public class SharepointClientContext implements Cloneable {
 		}
 	}
 
-	/*public static ResourceBundle getResourcebundle() {
-		return resourcebundle;
-	}
 
-	public static void setResourcebundle(ResourceBundle resourcebundle1) {
-		if(resourcebundle1!=null){
-			SharepointClientContext.resourcebundle = resourcebundle1;
-		}
-	}*/
 //	SharePointType e.g. SP2007 or SP2003
 	public String getSharePointType() {
 		return strSharePointType;
@@ -502,45 +494,36 @@ public class SharepointClientContext implements Cloneable {
 			strSharePointType = inSharePointType;
 		}
 	}
+	
 	public ArrayList getBlackList() {
 		return blackList;
 	}
 	public void setBlackList(ArrayList inBlackList) {
 		this.blackList = inBlackList;
 	}
+	
 	public ArrayList getWhiteList() {
 		return whiteList;
 	}
 	public void setWhiteList(ArrayList inWhiteList) {
 		this.whiteList = inWhiteList;
 	}
+	
 	public boolean isFQDNConversion() {
 		return bFQDNConversion;
 	}
 	public void setFQDNConversion(boolean conversion) {
 		bFQDNConversion = conversion;
-//		System.out.println("SharepointClientContext : setFQDNConversion : "+bFQDNConversion);
 	}
-
-	/*private String[] removeFrontSlash(String[] patterns){
-		String sFunctionName = "removeFrontSlash(String[] patterns)";
-		LOGGER.entering(className, sFunctionName);
-		if(patterns!=null){
-			int length = patterns.length;
-			for(int i = 0 ; i<length ; i++) {
-				String strPtrn = patterns[i];
-				if(strPtrn != null){
-					if(strPtrn.endsWith(FRONT_SLASH)){
-						strPtrn = strPtrn.substring(0,(strPtrn.length()-FRONT_SLASH.length()));	
-						if(strPtrn!=null){
-							patterns[i] = strPtrn;
-						}
-					}
-
-				}
-			}
+	
+	public int getBatchHint() {
+		return batchHint;
+	}
+	public void setBatchHint(int batchHint) {
+		if(batchHint<=0){
+			LOGGER.warning("Batch hint set is invalid , value of batch hint = "+batchHint);
+		}else{
+			this.batchHint = batchHint;
 		}
-		LOGGER.exiting(className, sFunctionName);
-		return patterns;
-	}*/
+	}
 }

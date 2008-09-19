@@ -2,8 +2,8 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import java.rmi.RemoteException;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.generated.userprofileservice.U
 import com.google.enterprise.connector.sharepoint.generated.userprofileservice.UserProfileServiceLocator;
 import com.google.enterprise.connector.sharepoint.generated.userprofileservice.UserProfileServiceSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.userprofileservice.ValueData;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 
 
 /*import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
@@ -83,7 +84,13 @@ public class UserProfileWS {
 				//get the credentials
 				String strDomain = inSharepointClientContext.getDomain();
 				String strUserName = inSharepointClientContext.getUsername();
-				strDomain+="\\"+strUserName;
+				
+				if((strDomain==null)||(strDomain.trim().equals(""))){
+					strDomain=strUserName; //for user
+				}else{
+					strDomain+="\\"+strUserName;
+				}
+				
 				String strPassword = inSharepointClientContext.getPassword();
 
 				//set authentication
@@ -131,14 +138,14 @@ public class UserProfileWS {
 	 * @return
 	 * @throws SharepointException
 	 */
-	public List getPersonalSiteList() throws SharepointException {
+	public SortedSet getPersonalSiteList() throws SharepointException {
 		String sFunctionName = "getPersonalSiteList()";
 		LOGGER.entering(className, sFunctionName);
 		if(stub==null){
 			LOGGER.warning(className+":"+sFunctionName+": UserProfile stub not found");
 			throw new SharepointException("Unable to get the userprofile stub");
 		}
-		ArrayList lstAllPersonalSites = new ArrayList(); //list of personal sites and subsites
+		SortedSet lstAllPersonalSites = new TreeSet();
 		Collator collator = SharepointConnectorType.getCollator();
 
 		try{
@@ -195,13 +202,15 @@ public class UserProfileWS {
 
 						try {
 							if(spUtils.isIncludedUrl(includedURLs,excludedURLs, strURL)) {
-								//		System.out.println("--passed");
-								lstAllPersonalSites.add(strURL);
+								WebsWS webWs = new WebsWS(sharepointClientContext,strURL);
+								String title = webWs.getTitle(strURL);
+								WebState ws = new WebState(strURL,strURL,title);
+								lstAllPersonalSites.add(ws);
 							}else{
 								LOGGER.warning(sFunctionName+" : excluding "+strURL.toString());
 							}
 						} catch (Exception e) {
-							LOGGER.finer(e.toString());
+							LOGGER.warning(e.toString());
 						}
 
 					}
@@ -229,15 +238,15 @@ public class UserProfileWS {
 	 * @return
 	 * @throws SharepointException
 	 */
-	public List getMyLinks() throws SharepointException {
+	public SortedSet getMyLinks() throws SharepointException {
 		String sFunctionName = "getMyLinks()"; 
 		LOGGER.entering(className, sFunctionName);
 		if(stub==null){
 			LOGGER.warning(className+":"+sFunctionName+": UserProfile stub not found");
 			throw new SharepointException("Unable to get the userprofile stub");
 		}
-
-		ArrayList lstAllMyLinks = new ArrayList(); //list of personal sites and subsites
+		SortedSet myLinksSet = new TreeSet();
+		
 		int index = 0;
 		try{
 			while (index >= 0) {
@@ -254,13 +263,13 @@ public class UserProfileWS {
 					break;
 				}
 
-
 				QuickLinkData[] links = result.getQuickLinks();
 
 				if(links==null){
 					break;
 				}
 				String url=null;
+				
 				for(int iLink=0;iLink<links.length;++iLink){
 					url = links[iLink].getUrl();
 
@@ -271,11 +280,14 @@ public class UserProfileWS {
 					try {
 						if(spUtils.isIncludedUrl(includedURLs,excludedURLs, url)) {
 							try{
-								String strWebURL=websWS.getWebURLFromPageURL(url);
-								LOGGER.config(className+":"+sFunctionName+" :Web URL: "+strWebURL);
-								//lstAllMyLinks.add(url);
-								lstAllMyLinks.add(strWebURL);
-
+								WebState ws = websWS.getWebURLFromPageURL(url);
+								LOGGER.config(className+":"+sFunctionName+" :Web URL: "+ws.getWebUrl());
+								
+								myLinksSet.add(ws);
+								
+								//Add the web state instead or just web url
+								//ws = new WebState(strWebURL,strWebURL);
+								//lstAllMyLinks.add(ws);
 							}catch(Throwable e){
 								LOGGER.finer("getMyLinks(): "+e.toString());
 							}
@@ -292,15 +304,15 @@ public class UserProfileWS {
 				index = Integer.parseInt(next);
 			}
 
-			if(lstAllMyLinks!=null){
-				LOGGER.info(className+":"+sFunctionName+": Total MyLinks returned: "+lstAllMyLinks.size());
+			if(myLinksSet!=null){
+				LOGGER.info(className+":"+sFunctionName+": Total MyLinks returned: "+myLinksSet.size());
 			}
 		}catch (Exception e) {
 			LOGGER.warning(className+":"+sFunctionName+" Exception:"+e.getMessage());
 			throw new SharepointException(e);
 		}
 		LOGGER.exiting(className, sFunctionName);
-		return lstAllMyLinks;
+		return myLinksSet;
 	}
 
 
