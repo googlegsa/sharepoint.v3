@@ -31,99 +31,21 @@ import com.google.enterprise.connector.spi.SpiConstants;
  * @author amit_kagrawal
  * */
 public class SharepointQueryTraversalManagerTest extends TestCase {
-/*  final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
-  final String domain = "ent-qa-d3";
-  final String host = "entpoint05.corp.google.com";
-  final int port = 80;
-  final String username = "testing";
-  final String password = "g00gl3";*/
-// 	credentials of ps4312 site -- moss 2007
-//	--------------------------NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
-	  /*final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String domain = "persistent";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "amit_kagrawal";
-	  final String password = "Agrawal!@#";*/
-//	--------------------------END: NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
-
-//	-------------PS4312(MOSS 2007)---------------------------------
-	 /* final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String domain = "ps4312";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String mySiteBaseURL= "http://ps4312:23508";
-	  final String googleConnWorkDir = null;
-	  final String exclURLs =null ;
-	  final String inclURLs ="http://ps4312:43386,http://ps4312:23508";*/
-
-//	-------------END: PS4312---------------------------------
-//	-------------PS4312(MOSS 2007)---------------------------------
 	final String SPType = SharepointConnectorType.SP2007;
-//	  final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
+	  final String sharepointUrl = "http://";
 	  
-	  final String host = "ps4312";
+	  final String host = "host";
 	  final int port = 43386;
 	  
-	  final String username = "amit_kagrawal";
-	  final String password = "Agrawal!@#";
-	  final String domain = "persistent";
+	  final String username = "useraname";
+	  final String password = "password";
+	  final String domain = "domain";
 	  
-	/*  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String domain = "ps4312";
-	*/
-	  final String mySiteBaseURL= "http://ps4312.persistent.co.in:23508";
+	  final String mySiteBaseURL= "http://";
 	  final String googleConnWorkDir = null;
 	  final String exclURLs ="" ;
-	  final String inclURLs ="http://ps4312.persistent.co.in:43386,http://ps4312.persistent.co.in:23508,http://ps4312:43386,http://ps4312:23508";
+	  final String inclURLs ="http://";
 
-//	-------------END: PS4312---------------------------------
-
-//	-------------japanese(MOSS 2007)---------------------------------
-	  
-	 /* final String sharepointUrl = "http://v-ecsc6:25000/Japanese";
-	  final String domain = "v-ecsc6";
-	  final String host = "v-ecsc6";
-	  final int port = 25000;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	*/
-//	-------------END: japanese---------------------------------
-	  
-//	-------------PS2314(WSS 3.0)---------------------------------
-	/*  final String sharepointUrl = "http://ps2314:43266/amitsite";
-	  final String domain = "ps2314";
-	  final String host = "ps2314";
-	  final int port = 43266;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String mySiteBaseURL= "http://ps4312:23508";
-	  final String googleConnWorkDir = null;
-	  final String exclURLs =null ;
-	  final String inclURLs ="http://ps4312:43386/amitsite,http://ps4312:23508,http://ps4312:43386";
-	*/
-//	-------------END: PS2314---------------------------------
-	  
-//	-------------v-ecsc3: SSL(ANOTHER MOSS 2007 with SSL)---------------------------------
-	  /*final String sharepointUrl = "https://v-ecsc3.persistent.co.in:443/ssl";
-	  final String domain = "v-ecsc3";
-	  final String host = "v-ecsc3";
-	  final int port = 443;//default port is 443 for ssl
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  //final String mySiteBaseURL= "http://ps4312:23508";
-	  final String mySiteBaseURL= null;
-	  final String googleConnWorkDir = null;
-	  final String exclURLs =null ;
-	  final String inclURLs ="https://v-ecsc3.persistent.co.in:443/ssl";*/
-
-//	-------------END: SSL---------------------------------	
-	
-//  private SharepointClient sharepointClient;
   private SharepointConnector connector;
   private SharepointTraversalManager manager;
   private static ArrayList BLACK_LIST;
@@ -155,16 +77,10 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
     GlobalState.forgetState(null);
     
   SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,SPType,WHITE_LIST,BLACK_LIST);
-//  sharepointClient = new SharepointClient(sharepointClientContext);
   connector = new SharepointConnector(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,"","",SPType);
   connector.setWhiteList(WHITE_LIST);
   connector.setBlackList(BLACK_LIST);
   
-    /*SharepointClientContext sharepointClientContext = new 
-      SharepointClientContext(sharepointUrl, domain, username, password, null);
-    sharepointClient = new SharepointClient(sharepointClientContext);
-    connector = new SharepointConnector(sharepointUrl, 
-        domain, username, password, null);*/
     manager = new SharepointTraversalManager(connector, 
         sharepointClientContext);
     super.setUp();    
@@ -178,11 +94,8 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
       DocumentList docList = manager.startTraversal();
       boolean found = false;
       int numDocs = 0;
-//      for (Iterator it = rs.iterator(); it.hasNext(); ) {
-//      Iterator it = docList.nextDocument()
       SPDocument pm ;
       while((pm = (SPDocument) docList.nextDocument())!=null){
-//        SPDocument pm = (SPDocument) it.next();
         Property urlProp = pm.findProperty(SpiConstants.PROPNAME_SEARCHURL);
         String url = urlProp.nextValue().toString();
         if (url.equals("http://ps4312.persistent.co.in:43386/amitsite/Lists/Announcements/DispForm.aspx?ID=1")) {
@@ -205,8 +118,6 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
       DocumentList docList = manager.startTraversal();
       boolean found = false;
       int numDocs = 0;
-      /*for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {
-        PropertyMap pm = it.next();*/
       SPDocument pm ;
       while((pm = (SPDocument) docList.nextDocument())!=null){
         Property urlProp = pm.findProperty(SpiConstants.PROPNAME_SEARCHURL);
@@ -227,8 +138,6 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
       numDocs = 0;
       //SPDocument pm2 ;
       while((pm = (SPDocument) docList.nextDocument())!=null){
-//      for (Iterator<PropertyMap> it = docList.iterator(); it.hasNext(); ) {
-//        PropertyMap pm = it.next();
         Property urlProp = pm.findProperty(SpiConstants.PROPNAME_SEARCHURL);
         String url = urlProp.nextValue().toString();
         System.out.println(url + " from " 
@@ -259,11 +168,8 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
       boolean found = false;
       int numDocs = 0;
       
-//      PropertyMap pm = null;
-//      for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {
       SPDocument pm ;
       while((pm = (SPDocument) rs.nextDocument())!=null){
-//        pm = it.next();
         Property urlProp = pm.findProperty(SpiConstants.PROPNAME_SEARCHURL);
         String url = urlProp.nextValue().toString();
         System.out.println(url + " from " 
@@ -280,7 +186,6 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
       System.out.println("Before checkpoint: ");
       System.out.println(manager.globalState.getStateXML());
       rs.checkpoint();
-//      manager.checkpoint(pm);
       System.out.println("\n\nAfter checkpoint: ");
       System.out.println(manager.globalState.getStateXML());
       
@@ -288,9 +193,7 @@ public class SharepointQueryTraversalManagerTest extends TestCase {
       rs = manager.startTraversal();
       found = false;
       numDocs = 0;
-//      for (Iterator<PropertyMap> it = rs.iterator(); it.hasNext(); ) {
       while((pm = (SPDocument) rs.nextDocument())!=null){
-//        pm = it.next();
         Property urlProp = pm.findProperty(SpiConstants.PROPNAME_SEARCHURL);
         String url = urlProp.nextValue().toString();
         System.out.println(url + " from " 

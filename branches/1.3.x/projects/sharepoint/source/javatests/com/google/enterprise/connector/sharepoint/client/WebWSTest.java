@@ -22,12 +22,11 @@ public class WebWSTest extends TestCase{
 		System.setProperty("java.util.logging.config.file","logging.properties");
 	}
 	
-//	-------------ps4312(MOSS 2007)---------------------------------
 	final String sharepointType = SharepointConnectorType.SP2007;
-	final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
-	final String domain = "ps4312";
-	final String username = "administrator";
-	final String password = "pspl!@#";
+	final String sharepointUrl = "http://";
+	final String domain = "domain";
+	final String username = "username";
+	final String password = "password";
 
 	final String mySiteBaseURL=null;
 	final String googleConnWorkDir = null;
@@ -36,7 +35,6 @@ public class WebWSTest extends TestCase{
 	final String aliasHost = null;
 	final String aliasPort = null;
 	final String inclURLs ="^http://";
-//	-------------END: ps4312---------------------------------
 
 	//set the balck list and whitelist
 	private static ArrayList BLACK_LIST;
@@ -80,11 +78,8 @@ public class WebWSTest extends TestCase{
 	
 	//testCases
 	public void testChildWebs() throws SharepointException{
-//		String strURL = "http://ps4312.persistent.co.in:2905";
-		String strURL = "http://ps4312.persistent.co.in:2905/Orangesite";
-		//String strURL = "http://ps4312.persistent.co.in:2905/Orangesite/abc";
+		String strURL = "http://";
 		stub = new WebsWS(sharepointClientContext,strURL);
-//		stub = new WebsWS(sharepointClientContext);
 		Set tsChildWebs = stub.getDirectChildsites();
 		
 		Iterator itChild = tsChildWebs.iterator();
@@ -99,10 +94,10 @@ public class WebWSTest extends TestCase{
 	
 	public void testGetWebURLFromPageURL() throws Throwable{
 		stub = new WebsWS(sharepointClientContext);
-		String strPageURL ="http://ps4312.persistent.co.in:2905/kb/default.aspx";
+		String strPageURL ="http://";
 		WebState webState = stub.getWebURLFromPageURL(strPageURL);
 		String actual = webState.getWebUrl();
-		String expected = "http://ps4312.persistent.co.in:2905/kb";
+		String expected = "http://";
 		
 		System.out.println("WebUrl: "+webState.getWebUrl());
 		System.out.println("InsertionTimeString: "+webState.getInsertionTimeString());

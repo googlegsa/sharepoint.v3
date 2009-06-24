@@ -57,13 +57,10 @@ public class SharepointConnectorType implements ConnectorType {
 	private static final String PASSWORD = "password";
 	private static final String TR_END = "</tr>\r\n";
 	private static final String TD_END = "</td>\r\n";
-	private static final String TD_START = "<td style='white-space: nowrap'>";
-	private static final String TR_START = "<tr valign='top'>\r\n";
+	private static final String TD_START = "<td style=\"white-space: nowrap\">";
+	private static final String TR_START = "<tr valign=\"top\">\r\n";
 	private static final String READONLY = "readonly";
 	private static final String TRUE = "true";
-//	private static final String TR_START_FOR_SP2007_BLOCK = "<tr valign='top' id='sp2007' name='sp2007' style=\"display:block;\">\r\n";
-//	private static final String TR_START_FOR_SP2007_NONE = "<tr valign='top' id='sp2007' name='sp2007' style=\"display:none;\">\r\n";
-//	private static String trStartForSP2007 = TR_START_FOR_SP2007_BLOCK;
 
 	private static final String  ROWS= "rows";	
 	private static final String ROWS_VALUE = "5";	
@@ -78,8 +75,6 @@ public class SharepointConnectorType implements ConnectorType {
 
 	private static final char SPACE = ' ';     // SEPARATOR  
 	private static final char NEW_LINE = '\n';
-
-
 
 	private static final String USERNAME = "username";
 	private static final String DOMAIN = "domain";
@@ -199,10 +194,8 @@ public class SharepointConnectorType implements ConnectorType {
 		if (configMap != null) {
 			final String value = (String) configMap.get(SP_CONNECTOR_TYPE);
 			if(value != null && !collator.equals(SP2007, value)){
-				//	trStartForSP2007 = TR_START_FOR_SP2007_NONE;
 				isSP2007 = false;
 			}else{
-				//	trStartForSP2007 = TR_START_FOR_SP2007_BLOCK;
 				isSP2007 = true;
 			}
 		}
@@ -227,7 +220,7 @@ public class SharepointConnectorType implements ConnectorType {
 					}
 					if (collator.equals(key,PASSWORD)) {
 						appendAttribute(buf, TYPE, PASSWORD);
-					} if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
+					} else if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
 						appendAttribute(buf,ROWS , ROWS_VALUE);
 						appendAttribute(buf,COLS , COLS_VALUE);
 					}else {
@@ -253,7 +246,11 @@ public class SharepointConnectorType implements ConnectorType {
 							}else {
 								appendAttribute(buf, VALUE, value);
 							}
+						} else if((!collator.equals(key,EXCLUDED_URLS)) && (!collator.equals(key,INCLUDED_URLS))) {
+							appendAttribute(buf, VALUE, ""); // added because of the CM's regarding Transformations in filterSensitiveData
 						}
+					} else if((!collator.equals(key,EXCLUDED_URLS)) && (!collator.equals(key,INCLUDED_URLS))) {
+						appendAttribute(buf, VALUE, ""); // added because of the CM's regarding Transformations in filterSensitiveData
 					}
 
 					if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
@@ -270,15 +267,15 @@ public class SharepointConnectorType implements ConnectorType {
 					String strSP2007 = (String) configStrings.get(SP2007);
 					String strSPConnectorType = (String) configStrings.get(SP_CONNECTOR_TYPE);
 					if(isSP2007 == true){
-						buf.append("<tr> <td> <div style='float: left;'>"+strSPConnectorType+"</div> </td>");
-						buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected value=\""+SP2007+"\" >");
+						buf.append("<tr> <td> <div style=\"float: left;\">"+strSPConnectorType+"</div> </td>");
+						buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected = \"selected\" value=\""+SP2007+"\" >");
 						buf.append(strSP2007);
 						buf.append("</option><option value=\""+SP2003+"\">");
 						buf.append(strSP2003);
 						buf.append("</option></select> </td> </tr>");
 					}else {
-						buf.append("<tr> <td> <div style='float: left;'>"+strSPConnectorType+"</div> </td>");
-						buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected value=\""+SP2003+"\" >");
+						buf.append("<tr> <td> <div style=\"float: left;\">"+strSPConnectorType+"</div> </td>");
+						buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected = \"selected\" value=\""+SP2003+"\" >");
 						buf.append(strSP2003);
 						buf.append("</option><option value=\""+SP2007+"\">");
 						buf.append(strSP2007);
@@ -291,16 +288,10 @@ public class SharepointConnectorType implements ConnectorType {
 
 		}//end null check
 
-		buf.append("<tr valign='top' ><input type=\"hidden\" id='"+SP2003+"'/></tr>");
-//		if(isSP2007 == true){
-//		buf.append("<tr valign='top' id='"+SP2003+"' name='"+SP2003+"' style=\"display:none;\"><input type=\"hidden\" /></tr> \r\n");
-//		}else {
-//		buf.append("<tr valign='top' id='"+SP2003+"' name='"+SP2003+"' style=\"display:block;\"><input type=\"hidden\" /></tr> \r\n");
-//		}
+		buf.append("<tr valign=\"top\" ><input type=\"hidden\" id=\""+SP2003+"\"/></tr>");
 		buf.append(START_BOLD);
 		buf.append(configStrings.get(MANDATORY_FIELDS));
 		buf.append(END_BOLD);
-	//	LOGGER.config(sFunctionName+" : configform ["+buf.toString()+"]");
 		LOGGER.exiting(className, sFunctionName);
 		return buf.toString();
 	}
@@ -312,23 +303,22 @@ public class SharepointConnectorType implements ConnectorType {
 			buf.append(TR_START);
 		} else {
 			buf.append(TR_START);
-//			buf.append(trStartForSP2007);
 		}
 		buf.append(TD_START);
 		if (red) {
-			buf.append("<font color=red>");
+			buf.append("<font color=\"red\">");
 		}
 		if(isRequired(key)){
-			buf.append("<div style='float: left;'>");
+			buf.append("<div style=\"float: left;\">");
 			buf.append(START_BOLD);
 		}
 		buf.append(configKey);
 		if(isRequired(key)){
 
 			buf.append(END_BOLD);
-			buf.append("</div><div style='text-align: right; ").
+			buf.append("</div><div style=\"text-align: right; ").
 			append("color: red; font-weight: bold; ").
-			append("margin-right: 0.3em;\'>*</div>");
+			append("margin-right: 0.3em;\">*</div>");
 		}
 		if (red) {
 			buf.append("</font>");
@@ -435,50 +425,7 @@ public class SharepointConnectorType implements ConnectorType {
 		final SharepointClientContext sharepointClientContext = new SharepointClientContext(sharepointType,sharepointUrl, domain, username, 
 				password, null,includeURL,null,null,null,null,null,null); // modified by A Mitra
 
-		
-		/////////////// check for domain //////////////////////////////
-		/*try{
-			LOGGER.finer(sFunctionName+": before usergroup locator");
-			URLEncoder enc  = new URLEncoder();
-			//set the URLEncoder safe characters
-			enc.addSafeCharacter('/');
-			enc.addSafeCharacter(':');// required when endpoint is set using specified site
-
-			String endpoint = sharepointClientContext.getProtocol()+URL_SEP+ sharepointClientContext.getHost() + ":"+sharepointClientContext.getPort() +enc.encode(sharepointClientContext.getsiteName()) + "/_vti_bin/usergroup.asmx";
-			
-			UserGroupLocator ugloc = new UserGroupLocator();
-			ugloc.setUserGroupSoapEndpointAddress(endpoint);
-			UserGroup service = ugloc;
-			UserGroupSoap_BindingStub stub = null;
-			
-			try {
-				stub = (UserGroupSoap_BindingStub) service.getUserGroupSoap();
-			} catch (ServiceException e) {
-				LOGGER.warning(sFunctionName+":"+ e.toString());
-				return CANNOT_CONNECT;
-			}
-
-			String strDomain = sharepointClientContext.getDomain();
-			String strUser = sharepointClientContext.getUsername();
-			String strPassword= sharepointClientContext.getPassword();
-			strDomain+="\\"+strUser; // form domain/user 
-
-			//set the user and pass
-			stub.setUsername(strDomain);
-			stub.setPassword(strPassword);
-			
-			//call the method
-			stub.getUserInfo(strDomain);
-			
-		}catch(Throwable e){
-			LOGGER.warning(sFunctionName+":"+ e.toString());
-			return CANNOT_CONNECT;
-		}
-		LOGGER.finer(sFunctionName+": after usergroup locator");*/
-		///////////////////////////////////////////////////////////////
-
 		try {
-//			final SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
 			final WebsWS websWS = new WebsWS(sharepointClientContext);
 			if(websWS==null){
 				throw new SharepointException(sFunctionName+": webs stub is not found");
@@ -510,27 +457,11 @@ public class SharepointConnectorType implements ConnectorType {
 			return false;
 		}
 
-//		final String value = (String) configData.get(SP_CONNECTOR_TYPE);
-//		if((value != null && value != BLANK_STRING) && !collator.equals(SP2007, value)){
-//		configData.put(MYSITE_BASE_URL, BLANK_STRING);			
-//		}
 		String message = null;
 		for (final Iterator i = keys.iterator(); i.hasNext();) {
 			final String key = (String) i.next();
 			
-			/* Changed and Added by Nitendra.
-			 * To simulate the working of gsa when user enters repeated slasjes at the end of an url.
-			 * In this case we need to alter the input value by suppressing the repeated slashes.
-			 * 
-			 * */			
 			final String val = (String) configData.get(key);
-/* 
- 			String val = (String) configData.get(key);
-			if(val!=null && val!=BLANK_STRING && (collator.equals(key, SHAREPOINT_URL) || collator.equals(key, MYSITE_BASE_URL))) {
-				val=SharepointClientUtils.trimmer(val);
-				configData.put(key,val);
-			}
-*/
 			setSharepointCredentials(key, val);
 			if (isRequired(key)){
 				message = getErrorMessage(key, val , rb);
@@ -601,10 +532,8 @@ public class SharepointConnectorType implements ConnectorType {
 
 			String value = (String) configMap.get(SP_CONNECTOR_TYPE);
 			if(value != null && !collator.equals(SP2007, value)){
-//				trStartForSP2007 = TR_START_FOR_SP2007_NONE;
 				isSP2007 = false;
 			}else{
-//				trStartForSP2007 = TR_START_FOR_SP2007_BLOCK;
 				isSP2007 = true;
 			}
 
@@ -615,15 +544,6 @@ public class SharepointConnectorType implements ConnectorType {
 				final String key = (String) i.next();
 				final String configKey = (String) configStrings.get(key);
 				value = (String) configMap.get(key);
-
-
-				/*if(!collator.equals(SP2007, value)) {
-					TR_START_FOR_SP2007 = TR_START_FOR_SP2007_NONE;
-					isSP2007 = false;
-				}else{
-					TR_START_FOR_SP2007 = TR_START_FOR_SP2007_BLOCK;
-					isSP2007 = true;
-				}*/
 				message = null;
 				if (finalMessage == null) {
 					if (isRequired(key)){
@@ -667,7 +587,7 @@ public class SharepointConnectorType implements ConnectorType {
 						}
 						if (collator.equals(key,PASSWORD)) {
 							appendAttribute(buf, TYPE, PASSWORD);
-						}if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
+						}else if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
 							appendAttribute(buf,ROWS , ROWS_VALUE);
 							appendAttribute(buf,COLS , COLS_VALUE);
 
@@ -676,7 +596,7 @@ public class SharepointConnectorType implements ConnectorType {
 							if(!((collator.equals(key,USERNAME)) || (collator.equals(key,PASSWORD))||(collator.equals(key,ALIAS_PORT)))){
 								appendAttribute(buf, TEXTBOX_SIZE, TEXTBOX_SIZE_VALUE);
 							}
-							appendAttribute(buf, VALUE, value);
+//							appendAttribute(buf, VALUE, value);
 
 						}                
 					} else {
@@ -689,7 +609,7 @@ public class SharepointConnectorType implements ConnectorType {
 						}
 						if (collator.equals(key,PASSWORD)) {
 							appendAttribute(buf, TYPE, PASSWORD);
-						} if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
+						} else if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
 							appendAttribute(buf,ROWS , ROWS_VALUE);
 							appendAttribute(buf,COLS , COLS_VALUE);
 
@@ -700,17 +620,6 @@ public class SharepointConnectorType implements ConnectorType {
 							}
 						}
 					}
-					/*appendAttribute(buf, NAME, key);
-					if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
-						buf.append(CLOSE_ELEMENT);
-						buf.append(value);
-						buf.append(OPEN_ELEMENT);
-						buf.append(END_TEXTAREA);
-
-					}
-
-					appendEndRow(buf);
-					 */
 					appendAttribute(buf, NAME, key);
 					if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
 						buf.append(CLOSE_ELEMENT);
@@ -728,6 +637,8 @@ public class SharepointConnectorType implements ConnectorType {
 						}else {
 							appendAttribute(buf, VALUE, value);
 						}
+					} else if((!collator.equals(key,EXCLUDED_URLS)) && (!collator.equals(key,INCLUDED_URLS))) {
+						appendAttribute(buf, VALUE, ""); // added because of the CM's regarding Transformations in filterSensitiveData
 					}
 
 
@@ -746,16 +657,16 @@ public class SharepointConnectorType implements ConnectorType {
 					String strSPConnectorType = (String) configStrings.get(SP_CONNECTOR_TYPE);
 					if(isSP2007 == true) {
 
-						buf.append("<tr> <td> <div style='float: left;'>"+strSPConnectorType+"</div> </td>");
-						buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected value=\""+SP2007+"\" >");
+						buf.append("<tr> <td> <div style=\"float: left;\">"+strSPConnectorType+"</div> </td>");
+						buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected = \"selected\" value=\""+SP2007+"\" >");
 						buf.append(strSP2007);
 						buf.append("</option><option value=\""+SP2003+"\">");
 						buf.append(strSP2003);
 						buf.append("</option></select> </td> </tr>");
 					} else {
 
-						buf.append("<tr> <td> <div style='float: left;'>"+strSPConnectorType+"</div> </td>");
-						buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected value=\""+SP2003+"\" >");
+						buf.append("<tr> <td> <div style=\"float: left;\">"+strSPConnectorType+"</div> </td>");
+						buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected = \"selected\" value=\""+SP2003+"\" >");
 						buf.append(strSP2003);
 						buf.append("</option><option value=\""+SP2007+"\">");
 						buf.append(strSP2007);
@@ -764,15 +675,7 @@ public class SharepointConnectorType implements ConnectorType {
 				}
 			}
 
-			buf.append("<tr valign='top' ><input type=\"hidden\" id='"+SP2003+"'/></tr>");
-
-//			if(isSP2007 == true) {
-
-//			buf.append("<tr valign='top' id='"+SP2003+"' name='"+SP2003+"' style=\"display:none;\"><input type=\"hidden\" /></tr> \r\n");
-//			}else{
-
-//			buf.append("<tr valign='top' id='"+SP2003+"' name='"+SP2003+"' style=\"display:block;\"><input type=\"hidden\" /></tr> \r\n");
-//			}
+			buf.append("<tr valign=\"top\" ><input type=\"hidden\" id=\""+SP2003+"\"/></tr>");
 			buf.append(START_BOLD);
 			buf.append(configStrings.get(MANDATORY_FIELDS));
 			buf.append(END_BOLD);
@@ -807,7 +710,7 @@ public class SharepointConnectorType implements ConnectorType {
 								}
 								if (key.equalsIgnoreCase(PASSWORD)) {
 									appendAttribute(buf, TYPE, PASSWORD);
-								} if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
+								} else if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
 									appendAttribute(buf,ROWS , ROWS_VALUE);
 									appendAttribute(buf,COLS , COLS_VALUE);
 								}else {
@@ -817,15 +720,6 @@ public class SharepointConnectorType implements ConnectorType {
 										appendAttribute(buf, TEXTBOX_SIZE, TEXTBOX_SIZE_VALUE);
 									}
 								}
-
-								/*appendAttribute(buf, NAME, key);
-								if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
-									buf.append(CLOSE_ELEMENT);
-									buf.append(OPEN_ELEMENT);
-									buf.append(END_TEXTAREA);
-
-								}
-								appendEndRow(buf);*/
 
 								appendAttribute(buf, NAME, key);
 								if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
@@ -844,6 +738,8 @@ public class SharepointConnectorType implements ConnectorType {
 									}else {
 										appendAttribute(buf, VALUE, value);
 									}
+								} else if((!collator.equals(key,EXCLUDED_URLS)) && (!collator.equals(key,INCLUDED_URLS))) {
+									appendAttribute(buf, VALUE, ""); // added because of the CM's regarding Transformations in filterSensitiveData
 								}
 
 
@@ -863,16 +759,16 @@ public class SharepointConnectorType implements ConnectorType {
 								String strSPConnectorType = (String) configStrings.get(SP_CONNECTOR_TYPE);
 								if(isSP2007 == true) {
 
-									buf.append("<tr> <td> <div style='float: left;'>"+strSPConnectorType+"</div> </td>");
-									buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected value=\""+SP2007+"\" >");
+									buf.append("<tr> <td> <div style=\"float: left;\">"+strSPConnectorType+"</div> </td>");
+									buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected = \"selected\" value=\""+SP2007+"\" >");
 									buf.append(strSP2007);
 									buf.append("</option><option value=\""+SP2003+"\">");
 									buf.append(strSP2003);
 									buf.append("</option></select> </td> </tr>");
 								} else {
 
-									buf.append("<tr> <td> <div style='float: left;'>"+strSPConnectorType+"</div> </td>");
-									buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected value=\""+SP2003+"\" >");
+									buf.append("<tr> <td> <div style=\"float: left;\">"+strSPConnectorType+"</div> </td>");
+									buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected = \"selected\" value=\""+SP2003+"\" >");
 									buf.append(strSP2003);
 									buf.append("</option><option value=\""+SP2007+"\">");
 									buf.append(strSP2007);
@@ -886,16 +782,7 @@ public class SharepointConnectorType implements ConnectorType {
 
 					}//if condn
 
-					buf.append("<tr valign='top' ><input type=\"hidden\" id='"+SP2003+"'/></tr>");
-
-//					if(isSP2007 == true) {
-
-//					buf.append("<tr valign='top' id='"+SP2003+"' name='"+SP2003+"' style=\"display:none;\"><input type=\"hidden\" /></tr> \r\n");
-//					}else{
-
-//					buf.append("<tr valign='top' id='"+SP2003+"' name='"+SP2003+"' style=\"display:block;\"><input type=\"hidden\" /></tr> \r\n");
-//					}
-
+					buf.append("<tr valign=\"top\" ><input type=\"hidden\" id=\""+SP2003+"\"/></tr>");
 					buf.append(START_BOLD);
 					buf.append(configStrings.get(MANDATORY_FIELDS));
 					buf.append(END_BOLD);
@@ -926,7 +813,7 @@ public class SharepointConnectorType implements ConnectorType {
 								}
 								if (key.equalsIgnoreCase(PASSWORD)) {
 									appendAttribute(buf, TYPE, PASSWORD);
-								} if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
+								} else if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
 									appendAttribute(buf,ROWS , ROWS_VALUE);
 									appendAttribute(buf,COLS , COLS_VALUE);
 								}else {
@@ -936,15 +823,6 @@ public class SharepointConnectorType implements ConnectorType {
 										appendAttribute(buf, TEXTBOX_SIZE, TEXTBOX_SIZE_VALUE);
 									}
 								}
-
-								/*appendAttribute(buf, NAME, key);
-								if(((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS)))){ 
-									buf.append(CLOSE_ELEMENT);
-									buf.append(OPEN_ELEMENT);
-									buf.append(END_TEXTAREA);
-
-								}
-								appendEndRow(buf);*/
 
 								appendAttribute(buf, NAME, key);
 								if((collator.equals(key,EXCLUDED_URLS)) || (collator.equals(key,INCLUDED_URLS))){ 
@@ -963,6 +841,8 @@ public class SharepointConnectorType implements ConnectorType {
 									}else {
 										appendAttribute(buf, VALUE, value);
 									}
+								} else if((!collator.equals(key,EXCLUDED_URLS)) && (!collator.equals(key,INCLUDED_URLS))) {
+									appendAttribute(buf, VALUE, ""); // added because of the CM's regarding Transformations in filterSensitiveData
 								}
 
 
@@ -976,43 +856,28 @@ public class SharepointConnectorType implements ConnectorType {
 									appendEndRow(buf);
 								}
 
-
 							} else {
 
 								String strSPConnectorType = (String) configStrings.get(SP_CONNECTOR_TYPE);
 								if(isSP2007 == true) {
-
-									buf.append("<tr> <td> <div style='float: left;'>"+strSPConnectorType+"</div> </td>");
-									buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected value=\""+SP2007+"\" >");
+									buf.append("<tr> <td> <div style=\"float: left;\">"+strSPConnectorType+"</div> </td>");
+									buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected = \"selected\" value=\""+SP2007+"\" >");
 									buf.append(strSP2007);
 									buf.append("</option><option value=\""+SP2003+"\">");
 									buf.append(strSP2003);
 									buf.append("</option></select> </td> </tr>");
 								} else {
-
-									buf.append("<tr> <td> <div style='float: left;'>"+strSPConnectorType+"</div> </td>");
-									buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected value=\""+SP2003+"\" >");
+									buf.append("<tr> <td> <div style=\"float: left;\">"+strSPConnectorType+"</div> </td>");
+									buf.append("<td><select id=\""+key+"\" name=\""+key+"\" size=\"1\" onchange=\"loadChanged();\"><option selected = \"selected\" value=\""+SP2003+"\" >");
 									buf.append(strSP2003);
 									buf.append("</option><option value=\""+SP2007+"\">");
 									buf.append(strSP2007);
 									buf.append("</option></select> </td> </tr>");
 								}
-
 							}
 						}//end for
-
-
-
 					}//if condn
-					buf.append("<tr valign='top' ><input type=\"hidden\" id='"+SP2003+"'/></tr>");
-//					if(isSP2007 == true) {
-
-//					buf.append("<tr valign='top' id='"+SP2003+"' name='"+SP2003+"' style=\"display:none;\"><input type=\"hidden\" /></tr> \r\n");
-//					}else{
-
-//					buf.append("<tr valign='top' id='"+SP2003+"' name='"+SP2003+"' style=\"display:block;\"><input type=\"hidden\" /></tr> \r\n");
-//					}
-
+					buf.append("<tr valign=\"top\" ><input type=\"hidden\" id=\""+SP2003+"\"/></tr>");
 					buf.append(START_BOLD);
 					buf.append(configStrings.get(MANDATORY_FIELDS));
 					buf.append(END_BOLD);
@@ -1035,7 +900,6 @@ public class SharepointConnectorType implements ConnectorType {
 				buf.append("\"/>\r\n");
 			}
 		}  
-		//LOGGER.config("makeValidatedForm:\n "+buf.toString());
 		LOGGER.exiting(className, sFunName);
 		return new ConfigureResponse(finalMessage, buf.toString());
 	}
@@ -1051,7 +915,6 @@ public class SharepointConnectorType implements ConnectorType {
 		final ConfigureResponse result = new ConfigureResponse("",
 				getInitialConfigForm());
 
-	//	LOGGER.config(sFunctionName+" : getConfigForm form:\n" + result.getFormSnippet());
 		LOGGER.exiting(className, sFunctionName);
 		return result;
 	}
@@ -1067,7 +930,6 @@ public class SharepointConnectorType implements ConnectorType {
 		final ConfigureResponse result = new ConfigureResponse("",
 				makeConfigForm(configMap));
 
-	//	LOGGER.config(sFunctionName+" : getConfigForm form:\n" + result.getFormSnippet());
 		LOGGER.exiting(className, sFunctionName);
 		return result;
 	}
@@ -1086,7 +948,6 @@ public class SharepointConnectorType implements ConnectorType {
 		final ConfigureResponse configureResponse =  makeValidatedForm(configData, rb);
 
 		LOGGER.config(sFunctionName+" :  message:\n" + configureResponse.getMessage());
-		//LOGGER.config(sFunctionName+": new form:\n" + configureResponse.getFormSnippet());
 		LOGGER.exiting(className, sFunctionName);
 		return configureResponse;
 	}
@@ -1143,11 +1004,7 @@ public class SharepointConnectorType implements ConnectorType {
 		final String sFunctionName = "addJavaScript(final StringBuffer buf)";
 		LOGGER.entering(className, sFunctionName);
 		if(buf!=null){
-			//	buf.append("<script language=\"JavaScript\"> var ids=new Array('"+SP2007+"','"+SP2003+"'); function switchid(id){var strObj=id; hideallids(); showdiv(id);} function hideallids(){ for (var i=0;i<ids.length;i++){ hidediv(ids[i]); } } function hidediv(id) { if (document.getElementsByName) { document.getElementById(id).style.display = 'none'; } else { if (document.layers) { document.id.display = 'none'; } else { document.all.id.style.display = 'none'; } } } function showdiv(id) { if (document.getElementsByName) { document.getElementById(id).style.display = 'block'; }	else { if (document.layers) { document.id.display = 'block'; } else {	document.all.id.style.display = 'block'; } } } function loadChanged(){ var con = document.getElementById('"+SP_CONNECTOR_TYPE+"'); if(con != null){ switchid(con.value); } } </script>");
-			//buf.append("<script language=\"JavaScript\"> var ids=new Array('sp2007','sp2003'); function switchid(id){var strObj=id; hideallids(); showdiv(id);} function hideallids(){ for (var i=0;i<ids.length;i++){ hidediv(ids[i]); } } function hidediv(id) { if (document.getElementsByName) { document.getElementById(id).disabled=true; } else { if (document.layers) { document.id.disabled=true; } else { document.all.id.disabled=true; } } } function showdiv(id) { if (document.getElementsByName) { document.getElementById(id).disabled=false; }	else { if (document.layers) { document.id.disabled=false; } else {	document.all.id.style.disabled=false; } } } function loadChanged(){ var con = document.getElementById('SPType'); if(con != null){ switchid(con.value); } } </script>");
-			//buf.append("<script language=\"JavaScript\"> var ids=new Array('sp2007','sp2003'); function switchid(id){var strObj=id; hideallids(); showdiv(id);} function hideallids(){ for (var i=0;i<ids.length;i++){ hidediv(ids[i]); } } function hidediv(id) { if (document.getElementsByName) { document.getElementById(id).setAttribute('readonly', 'true'); } else { if (document.layers) { document.id.setAttribute('readonly', 'true'); } else { document.all.id.setAttribute('readonly', 'true'); } } } function showdiv(id) { if (document.getElementsByName) { document.getElementById(id).removeAttribute('readonly'); }	else { if (document.layers) { document.id.removeAttribute('readonly'); } else {	document.all.id.removeAttribute('readonly'); } } } function loadChanged(){ var con = document.getElementById('SPType'); if(con != null){ switchid(con.value); } } </script>");
-			buf.append("<script language=\"JavaScript\"> var ids=new Array('sp2007','sp2003'); function switchid(id){var strObj=id; hideallids(); showdiv(id);} function hideallids(){ for (var i=0;i<ids.length;i++){ hidediv(ids[i]); } } function hidediv(id) { if (document.getElementsByName) { document.getElementById(id).setAttribute('readonly', 'true');document.getElementById(id).readOnly=true; } else { if (document.layers) { document.id.setAttribute('readonly', 'true'); } else { document.all.id.setAttribute('readonly', 'true'); } } } function showdiv(id) { if (document.getElementsByName) { document.getElementById(id).removeAttribute('readonly');document.getElementById(id).readOnly=false; }	else { if (document.layers) { document.id.removeAttribute('readonly'); } else {	document.all.id.removeAttribute('readonly'); } } } function loadChanged(){ var con = document.getElementById('SPType'); if(con != null){ switchid(con.value); } } </script>");
-
+			buf.append("<script language=\"JavaScript\"> <![CDATA[ var ids=new Array('sp2007','sp2003'); function switchid(id){var strObj=id; hideallids(); showdiv(id);} function hideallids(){ for (var i=0;i<ids.length;i++){ hidediv(ids[i]); } } function hidediv(id) { if (document.getElementsByName) { document.getElementById(id).setAttribute('readonly', 'true');document.getElementById(id).readOnly=true; } else { if (document.layers) { document.id.setAttribute('readonly', 'true'); } else { document.all.id.setAttribute('readonly', 'true'); } } } function showdiv(id) { if (document.getElementsByName) { document.getElementById(id).removeAttribute('readonly');document.getElementById(id).readOnly=false; }	else { if (document.layers) { document.id.removeAttribute('readonly'); } else {	document.all.id.removeAttribute('readonly'); } } } function loadChanged(){ var con = document.getElementById('SPType'); if(con != null){ switchid(con.value); } } ]]> </script>");
 		}
 		LOGGER.exiting(className, sFunctionName);
 	}
@@ -1191,7 +1048,7 @@ public class SharepointConnectorType implements ConnectorType {
 	}
 	
 	
-	/* By Nitendra
+	/* 
 	 * Added to validate the MySite, if not blank.
 	 */	
 	private String validateURL(String url,final ResourceBundle rb) { 

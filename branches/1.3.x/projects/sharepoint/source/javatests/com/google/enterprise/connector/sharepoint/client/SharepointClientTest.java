@@ -17,52 +17,21 @@ import com.google.enterprise.connector.spi.SpiConstants;
  *This class contains test methods to check the functionality of {@link SharepointClient}.
  */
 public class SharepointClientTest extends TestCase {
-  /*final String sharepointUrl = "http://entpoint05.corp.google.com/unittest";
-  final String domain = "ent-qa-d3";
-  final String host = "entpoint05.corp.google.com";
-  final int port = 80;
-  final String username = "testing";
-  final String password = "g00gl3";*/
-//	credentials of ps4312 site -- moss 2007
-//	--------------------------NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
-	  /*final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String domain = "persistent";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "amit_kagrawal";
-	  final String password = "Agrawal!@#";*/
-//	--------------------------END: NON ADMIN CREDENTIALS WITH ALTERNATIVE DOMAIN------------------
-
-//	-------------PS4312(MOSS 2007)---------------------------------
-	 /* final String sharepointUrl = "http://ps4312:43386/amitsite";
-	  final String domain = "ps4312";
-	  final String host = "ps4312";
-	  final int port = 43386;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String mySiteBaseURL= "http://ps4312:23508";
-	  final String googleConnWorkDir = null;
-	  final String exclURLs =null ;
-	  final String inclURLs ="http://ps4312:43386,http://ps4312:23508";*/
-
-//	-------------END: PS4312---------------------------------
-//	-------------PS4312(MOSS 2007)---------------------------------
-	  final String sharepointUrl = "http://ps4312.persistent.co.in:43386/amitsite";
-	  final String sharepointUrlWithSpaces ="http://ps4312.persistent.co.in:43386/amitsite  ";
-	  final String host = "ps4312";
-	  final int port = 43386;
+	  final String sharepointUrl = "http://";
+	  final String sharepointUrlWithSpaces ="http://";
+	  final String host = "host";
+	  final int port = 8765;
 	  final String SPType = SharepointConnectorType.SP2007;
-	  final String username = "Administrator";
-	  final String password = "pspl!@#";
-	  final String domain = "ps4312";
+	  final String username = "username";
+	  final String password = "password";
+	  final String domain = "domain";
 	
-	  final String mySiteBaseURL= "http://ps4312.persistent.co.in:23508";
+	  final String mySiteBaseURL= "http://";
 	  final String googleConnWorkDir = null;
 	  final String exclURLs ="" ;
-	  final String inclURLs ="http://ps4312.persistent.co.in:43386,http://ps4312.persistent.co.in:23508,http://ps4312:43386,http://ps4312:23508";
+	  final String inclURLs ="http://";
 	  final String docLibLInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}"; 
 	  final String issuesInternalName = "{62305F35-71EB-4960-8C21-37A8A7ECD818}";
-//	-------------END: PS4312---------------------------------
 
   private SharepointClient sharepointClient;
   private GlobalState globalState;
@@ -119,7 +88,7 @@ public class SharepointClientTest extends TestCase {
     	        System.out.println("</document>");
     	        
     	        //check crawling coverage.. check if paticular document is found
-    	        if (url.equals("http://ps4312.persistent.co.in:43386/amitsite/Shared Documents/config.xml")){
+    	        if (url.equals("http://")){
     	          found = true;
     	        }
     	        numDocs++;

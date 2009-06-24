@@ -20,30 +20,11 @@ public class AlertsWSTest extends TestCase{
 		System.setProperty("java.util.logging.config.file","logging.properties");
 	}
 	
-	//set the connector configuration information
-//	-------------gsp02ps5265(sps 2007)---------------------------------
-	  /*final String sharepointType = SharepointConnectorType.SP2007;
-	  final String sharepointUrl = "http://gsp02ps5265.persistent.co.in:36022/";
-	  final String domain = "gsp02ps5265";
-	  final String username = "administrator";
-	  final String password = "pspl!@#";
-
-	  final String mySiteBaseURL=null;
-	  final String googleConnWorkDir = null;
-
-	  final String exclURLs =null;
-	  final String aliasHost = null;
-	  final String aliasPort = null;
-	  final String inclURLs ="^http://";*/
-//	-------------END: gsp02ps5265---------------------------------
-	
-	  
-//		-------------ps4312(sps 2007)---------------------------------
-	  final String sharepointType = SharepointConnectorType.SP2007;
-	  final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
-	  final String domain = "ps4312";
-	  final String username = "administrator";
-	  final String password = "pspl!@#";
+	final String sharepointType = SharepointConnectorType.SP2007;
+	  final String sharepointUrl = "http://";
+	  final String domain = "domain";
+	  final String username = "username";
+	  final String password = "password";
 
 	  final String mySiteBaseURL=null;
 	  final String googleConnWorkDir = null;
@@ -52,8 +33,7 @@ public class AlertsWSTest extends TestCase{
 	  final String aliasHost = null;
 	  final String aliasPort = null;
 	  final String inclURLs ="^http://";
-//	-------------END: gsp02ps5265---------------------------------
-	  
+
 	  //set the balck list and whitelist
 	  private static ArrayList BLACK_LIST;
 	  static {

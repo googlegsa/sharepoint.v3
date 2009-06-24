@@ -35,32 +35,20 @@ public class AuthenticationTest extends TestCase{
 		WHITE_LIST.add(".*vti_author$");
 	}
 	Logger logger= Logger.getLogger(UserProfileWSTest.class.getName());
-	//	-------------gsp06ps5264---------------------------------
 	final String sharepointType = SharepointConnectorType.SP2003;
-//	final String sharepointUrl = "http://gsp06ps5264.persistent.co.in:20568/QA/";
-//	final String sharepointUrl ="http://gsp06ps5264.persistent.co.in:20568/";
-//	final String sharepointUrl ="http://gsp06ps5264.persistent.co.in:20567/";//central admin-non sps
-//	final String sharepointUrl ="http://gsp06ps5264.persistent.co.in:44444/";//sps site
-	final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
+	final String sharepointUrl = "http://";
 	
-//	final String domain = "gsp06ps5264";
 	final String domain = null;//blank domain-for basic
-//	final String domain = "ps4312";//valid domain
 	
 	
 	final String username = "administrator";
-//	final String username = "administrator1";//invalid user
-//	final String username = "amit_kagrawal@persistent.co.in";
-	
-	final String password = "pspl!@#";
-//	final String password = "<password>";
+	final String password = "<password>";
 	final String mySiteBaseURL=null;
 	final String googleConnWorkDir = null;
 	final String exclURLs =null;
 	final String aliasHost = null;
 	final String aliasPort = null;
 	final String inclURLs ="^http";
-//	-------------END: gsp06ps5264---------------------------------
 
 	private SharepointConnector connector;  
 	SharepointClientContext sharepointClientContext =null;
