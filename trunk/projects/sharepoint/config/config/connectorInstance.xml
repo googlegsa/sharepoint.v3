@@ -2,39 +2,49 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 	<bean id="sharepoint-connector"
-		class="com.google.enterprise.connector.sharepoint.SharepointConnector">
-      <constructor-arg index="0" value="${sharepointUrl}"/>
-      <constructor-arg index="1" value="${domain}"/>
-      <constructor-arg index="2" value="${username}"/>
-      <constructor-arg index="3" value="${Password}"/>
-      <constructor-arg index="4" value="${googleConnectorWorkDir}"/>
-      <constructor-arg index="5" value="${includedURls}"/>
-      <constructor-arg index="6" value="${excludedURls}"/>
-      <constructor-arg index="7" value="${mySiteBaseURL}"/>
-      <constructor-arg index="8" value="${aliasHostName}"/>
-      <constructor-arg index="9" value="${aliasPort}"/>
-      <constructor-arg index="10" value="${SPType}"/>
-	  <property name="whiteList">
+		class="com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector"
+		parent="sharepoint-connector-defaults" singleton="false" init-method="init">
+		
+		<!-- THE FOLLOWING COMMENTED-SECTION SHOULD BE USED ONLY FOR ADVANCED CONFIGURATION OF THE SHAREPOINT CONNECTOR.
+			YOU MAY DELETE THE COMMENT TAGS AND MAKE NECESSARY CHANGES IN THE INCLUDED_METADATA, EXCLUDED_METADATA AND FQDN-CONVERSION PROPERTIES -->
+
+		<!-- INCLUDED_METADATA: 
+			If you want to index only specific metadata, put them inside <list> </list> node. Each such entry should be enclosed inside
+			<value> ... </value> tags just like excluded metadata are specified under EXCLUDED_METADATA section -->
+
+		<!-- 
+		<property name="included_metadata">
 			<list>
-				<value>.*vti_title$</value>
-				<value>.*vti_author$</value>
+				
 			</list>
 		</property>
-		<property name="blackList">
-			<list>
-				<value>.*vti_cachedcustomprops$</value>
-				<value>.*vti_parserversion$</value>
-				<value>.*ContentType$</value>
-				<value>.*vti_cachedtitle$</value>
+	  	-->
+	  	
+	  	<!-- EXCLUDED_METADATA: 
+	  		Remove any of the metadata entries specified as <value> ... </value> if you want them to be indexed in GSA. -->
+		<!-- 
+		<property name="excluded_metadata">
+	  		<list>
+	  	 		<value>.*cachedcustomprops$</value>
+				<value>.*parserversion$</value>
+				<value>.*cachedtitle$</value>
 				<value>.*ContentTypeId$</value>
 				<value>.*DocIcon$</value>
-				<value>.*vti_cachedhastheme$</value>
-				<value>.*vti_metatags$</value>
-				<value>.*vti_charset$</value>
-				<value>.*vti_cachedbodystyle$</value>
-				<value>.*vti_cachedneedsrewrite$</value>
+				<value>.*cachedhastheme$</value>
+				<value>.*metatags$</value>
+				<value>.*charset$</value>
+				<value>.*cachedbodystyle$</value>
+				<value>.*cachedneedsrewrite$</value>
 			</list>
 		</property>
-		<property name="FQDNConversion"><value>false</value></property>
+	  	-->
+	  	
+	  	<!-- FQDNCONVERSION: 
+	  		true: connector will try to resolve the host names of the document URLs in FQDN format.
+	  		false: docuemnt URLs are sent to GSA as discovered. -->
+		<!-- 
+		<property name="FQDNConversion"><value>false</value></property>	
+	   	-->
 	</bean>
+	
 </beans>

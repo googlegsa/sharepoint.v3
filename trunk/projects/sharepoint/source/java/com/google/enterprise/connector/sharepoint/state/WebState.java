@@ -1,3 +1,17 @@
+//Copyright 2007 Google Inc.
+
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+
+//http://www.apache.org/licenses/LICENSE-2.0
+
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+
 package com.google.enterprise.connector.sharepoint.state;
 
 import java.text.Collator;
@@ -5,8 +19,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.joda.time.DateTime;
@@ -14,34 +30,31 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
-import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
-import com.google.enterprise.connector.sharepoint.Util;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
 /**
- * 
- * @author amit_kagrawal
+ * Represents a SharePoint Web Site as a stateful object
+ * @author nitendra_thakur
  *
  */
-
 public class WebState implements StatefulObject{
-	private static final String ID = "id";
-	private static final String INSERT_TIME = "insertionTime";
 	private String webUrl = null;
 	private String webId = null;
-	//private String webTitle=null;
 	private String title = "No Title"; 
-	private static final String WEB_TITLE="WebTitle";
-	private DateTime lastMod = null;
+	private DateTime lastMod = null; // lastMod has no meaning for webs.
 	private DateTime insertionTime = null;
-	private boolean exists = true;
-	private TreeSet allListStateSet = new TreeSet();
-	private Map keyMap = new HashMap();
-	private Collator collator = SharepointConnectorType.getCollator();
+	private boolean exists = true; // By default mark all web state as exisitng when they are created.
+	private TreeSet<ListState> allListStateSet = new TreeSet<ListState>();
+	private final Map<String, ListState> keyMap = new HashMap<String, ListState>();
+	private final Collator collator = Util.getCollator();
 	private static final Logger LOGGER = Logger.getLogger(WebState.class.getName());
-	private String className = WebState.class.getName();
-//	private boolean bFullReCrawl = false;
 
 	/**
 	 * The "current" object for ListState. The current object may be null.
@@ -49,36 +62,44 @@ public class WebState implements StatefulObject{
 	private ListState currentList = null;
 	private String lastCrawledListID = null;
 
-	public WebState(){
-
-	}
-
+	private String spType;
+	private String feedType;
+		
 	/**
-	 * @param inWebID 
-	 * @param inWebURL 
 	 * 
-	 *
+	 * @param inFeedType
 	 */
-//	public WebState(String inWebID, String inWebURL){
-	public WebState(String inWebID, String inWebURL, String inTitle){
-		webId =inWebID;
-		webUrl=inWebURL;
-		title = inTitle;
-		exists =true; //While Creating webs state mark as existing
-	}
+	WebState(final String inFeedType) {
+		feedType = inFeedType;
+	}	
+	
 	/**
-	 * Constructor.
-	 * @param inKey The webId for this List.
-	 * @param inLastMod last-modified date for Web (from SharePoint)
+	 * 
+	 * @param spContext
+	 * @param spURL
+	 * @throws SharepointException
 	 */
-	/*public WebState(String inKey, DateTime inLastMod){
-		if(inKey!=null){
-			this.webId = inKey;
-			this.webUrl = inKey;
-			this.lastMod = inLastMod;
+	WebState(final SharepointClientContext spContext, final String spURL)throws SharepointException {		
+		LOGGER.config("Creating Web State for [ "+spURL+" ]");
+		spType = spContext.checkSharePointType(spURL);
+		if(!SPConstants.SP2003.equalsIgnoreCase(spType) && !SPConstants.SP2007.equalsIgnoreCase(spType)) {
+			LOGGER.log(Level.WARNING, "Unknown SharePoint version [ " + spType + " ] URL [ " + spURL + " ]. WebState creation failed. ");
+			spContext.logExcludedURL("[ " + spURL + " ] Unknown SharePoint version [ " + spType + " ]. ");
+			throw new SharepointException("Unknown SharePoint version.");
 		}
-	}*/
-
+		
+		webId = webUrl = spURL;
+		spContext.setSiteURL(webUrl);
+		final WebsWS websWS = new WebsWS(spContext);
+		title = websWS.getWebTitle(webUrl,spType);
+		feedType = spContext.getFeedType();
+		if(SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType) && SPConstants.SP2003.equalsIgnoreCase(spType)) {
+			LOGGER.warning("excluding "+spURL+" because it is a SP2003 site and the feedType being used is content. Content feed is not supported on SP2003. ");
+			spContext.logExcludedURL("[ " + spURL + " ] it is a SP2003 site and the feedType being used is content. Content feed is not supported on SP2003. ");
+			throw new SharepointException("Unsupported Shrepoint version for content feed being used. ");
+		}
+	}	
+	
 	/**
 	 * Get the lastMod time.
 	 * @return time the Web was last modified
@@ -91,8 +112,8 @@ public class WebState implements StatefulObject{
 	 * Set the lastMod time.
 	 * @param inLastMod time
 	 */
-	public void setLastMod(DateTime inLastMod) {
-		this.lastMod = inLastMod;
+	public void setLastMod(final DateTime inLastMod) {
+		lastMod = inLastMod;
 	}
 
 	/**
@@ -113,69 +134,81 @@ public class WebState implements StatefulObject{
 
 	/**
 	 * Sets the primary key.
-	 * @param key
+	 * @param newKey
 	 */
-	public void setPrimaryKey(String newKey) {
-		//primary key cannot be null
+	public void setPrimaryKey(final String newKey) {
 		if(newKey!=null){
-			this.webId = newKey;
+			webId = newKey;
 		}
 	}
 
 	/**
-	 * 
+	 * Checks of the Web is existing or deleted
 	 */
-	public boolean isExisting() {
+	public boolean isExisting() {		
 		return exists;
 	}
 
 	/**
-	 * 
+	 * Marks the Web as existing/non-existing
 	 */
-	public void setExisting(boolean existing) {
-		this.exists = existing;
-		if(this.exists == false){
+	public void setExisting(final boolean existing) {
+		exists = existing;
+		if(exists == false){
 			//	for each ListState, set "not existing" as the Webstate is not existing
-			Iterator it = allListStateSet.iterator();
+			final Iterator it = allListStateSet.iterator();
 			while(it.hasNext()){
-				StatefulObject obj = (StatefulObject) it.next();
-				obj.setExisting(false);
+				final ListState list = (ListState) it.next();
+				list.setExisting(false);
 			}
 		}
 	}
 
 	/**
 	 * Reload this WebState from a DOM tree.  The opposite of dumpToDOM().
-	 * @param Element the DOM element
+	 * @param element the DOM element
 	 * @throws SharepointException if the DOM tree is not a valid representation
 	 *     of a ListState 
 	 */
-	public void loadFromDOM(Element element) throws SharepointException {
-		String sFunctionName = "loadFromDOM(Element element)";
-		LOGGER.entering(className, sFunctionName);
+	public void loadFromDOM(final Element element) throws SharepointException {
 		if(element==null){
 			throw new SharepointException("element not found");
 		}
 
-		NodeList children = element.getChildNodes();
+		webId = element.getAttribute(SPConstants.STATE_ID);
+		if ((webId == null) || (webId.length() == 0)) {
+			throw new SharepointException("Invalid XML: no id attribute for the WebState");
+		}
+
+		webUrl = element.getAttribute(SPConstants.STATE_URL);
+		title = element.getAttribute(SPConstants.STATE_WEB_TITLE);
+		try {
+			final String insertTime = element.getAttribute(SPConstants.STATE_INSERT_TIME);
+			insertionTime = Util.parseDate(insertTime);			
+		} catch(final Exception e) {
+			LOGGER.log(Level.WARNING, "Unable to get insertion time for web state [ " + title + " ]. ", e);
+		}
+		
+		spType = element.getAttribute(SPConstants.STATE_SPTYPE);
+		
+		final NodeList children = element.getChildNodes();
 		if(children!=null){
 			for (int i = 0; i < children.getLength(); i++) {
-				Node node = children.item(i);
-				//modified by amit
+				final Node node = children.item(i);
+				
 				if ((node==null)||(node.getNodeType() != Node.ELEMENT_NODE)) {
 					continue;
 				}
-				Element childElement = (Element) children.item(i);
-
-				//added by amit
+				final Element childElement = (Element) children.item(i);
+				
 				if(childElement==null){
 					continue;
 				}
 
-				if (! collator.equals(childElement.getTagName(),ListState.class.getName())) {
+				if (! collator.equals(childElement.getTagName(),SPConstants.LIST_STATE)) {
 					continue; //no exception; ignore xml for things we don't understand
 				}
-				ListState subObject = new ListState(); 
+				final ListState subObject = new ListState(spType, feedType); 
 				subObject.loadFromDOM(childElement);
 				updateList(subObject, subObject.getLastMod());
 
@@ -183,80 +216,23 @@ public class WebState implements StatefulObject{
 				// actual object:
 
 				if (lastCrawledListID != null) {
-					currentList = (ListState) keyMap.get(lastCrawledListID);
+					currentList = keyMap.get(lastCrawledListID);
 				}
 			}
 		}
-
-		// get the Web ID
-		webId = element.getAttribute(ID);
-		if (webId == null || webId.length() == 0) {
-			throw new SharepointException("Invalid XML: no id attribute for the WebState");
-		}
-
-		/*
-		 * last modified not required for WebState
-		 * // lastMod
-		NodeList lastModNodeList = element.getElementsByTagName(LAST_MOD);
-		if ((lastModNodeList==null)||lastModNodeList.getLength() == 0) {
-			throw new SharepointException("Invalid XML: no lastMod attribute for the WebState");
-		}
-		String lastModString = null;
-		if(lastModNodeList.item(0) != null && lastModNodeList.item(0).getFirstChild() != null) {
-			lastModString = lastModNodeList.item(0).getFirstChild().getNodeValue();
-		}
-		lastMod = Util.parseDate(lastModString);
-		if (lastMod == null) {
-			throw new SharepointException("Invalid XML: bad date for the WebState" + lastModString);
-		}*/
-
-		// URL
-		NodeList urlNodeList = element.getElementsByTagName("URL");
-		if((urlNodeList!=null)&& (urlNodeList.getLength() > 0)){
-			if(urlNodeList.item(0) != null && urlNodeList.item(0).getFirstChild() != null) {
-				webUrl = urlNodeList.item(0).getFirstChild().getNodeValue();
-			}
-		}
-
-		
-		NodeList titleNodeList = element.getElementsByTagName(WEB_TITLE);
-		if((titleNodeList!=null)&& (titleNodeList.getLength() > 0)){
-			if(titleNodeList.item(0) != null && titleNodeList.item(0).getFirstChild() != null) {
-				title = titleNodeList.item(0).getFirstChild().getNodeValue();
-			}
-		}
-		
-		//	get insertion time for web state
-		NodeList insertTimeNodeList = element.getElementsByTagName(INSERT_TIME);
-		String insertTime = null;
-		if(insertTimeNodeList.item(0) != null && insertTimeNodeList.item(0).getFirstChild() != null) {
-			insertTime = insertTimeNodeList.item(0).getFirstChild().getNodeValue();
-		}
-		DateTime insertTimeTmp = Util.parseDate(insertTime);
-		if(insertTimeTmp==null){
-			throw new SharepointException("Unable to get insertion time for web state");
-		}
-		setInsertionTime(insertTimeTmp);
-
-
-		LOGGER.exiting(className, sFunctionName);
 	}
 
 	/**
 	 * For a single StatefulObject, update the two
 	 * data structures (url -> obj and time -> obj) and mark
 	 * it "Existing" (if bFullReCrawl is true).
-	 * @param ListState
+	 * @param state
 	 * @param time lastMod time for the List. If time is later than the existing
 	 *     lastMod, the List is reindexed in the allListStateSet.
 	 */
-
-	public void updateList(ListState state, DateTime time) {
-		String sFunctionName="updateList(ListState state, DateTime time)";
-		LOGGER.entering(className, sFunctionName);
-		//null check added by Amit
+	public void updateList(final ListState state, final DateTime time) {
 		if(state!=null){
-			ListState stateOld = (ListState) keyMap.get(state.getPrimaryKey());
+			final ListState stateOld = keyMap.get(state.getPrimaryKey());
 			if (stateOld != null) {
 				if (stateOld.getLastMod().compareTo(time) != 0) { // if new time differs
 					allListStateSet.remove(state);
@@ -266,63 +242,43 @@ public class WebState implements StatefulObject{
 				state.setLastMod(time);
 				keyMap.put(state.getPrimaryKey(), state);
 			}
-		//	if (bFullReCrawl) {
-				state.setExisting(true); // remember we saw this one!
-		//	}
 			allListStateSet.add(state);
-		}//end..null check
-		LOGGER.exiting(className, sFunctionName);
+		}
 	}
 
 	/**
-	 * 
+	 * dump the Web state into state file
 	 */
-	public Node dumpToDOM(Document domDoc) throws SharepointException {
-		String sFunctionName = "dumpToDOM(Document domDoc)";
-		LOGGER.entering(className, sFunctionName);
-//		Element element = domDoc.createElement(this.getClass().getSimpleName());
-		Element element = domDoc.createElement(this.getClass().getName());
-		element.setAttribute(ID, getPrimaryKey());
-
-		/*
-		 * last modified not required for WebState
-		 * // the lastMod
-		Element lastModTmp = domDoc.createElement(LAST_MOD);
-		Text text = domDoc.createTextNode(getLastModString());
-		lastModTmp.appendChild(text);
-		element.appendChild(lastModTmp);*/
-
-		// the URL
-		Element urlTmp = domDoc.createElement("URL");
-		Text urlText = domDoc.createTextNode(getWebUrl());
-		urlTmp.appendChild(urlText);
-		element.appendChild(urlTmp);
+	public Node dumpToDOM(final Document domDoc) throws SharepointException {
+		final Element element = domDoc.createElement(SPConstants.WEB_STATE);
+		if(webId != null) {
+			element.setAttribute(SPConstants.STATE_ID, webId);
+		}
+		if(webUrl != null) {
+			element.setAttribute(SPConstants.STATE_URL, webUrl);
+		}
+		if(title != null) {
+			element.setAttribute(SPConstants.STATE_WEB_TITLE, title);
+		}
+		final String strInsertionTime = getInsertionTimeString();
+		if(strInsertionTime != null) {
+			element.setAttribute(SPConstants.STATE_INSERT_TIME, strInsertionTime);
+		}
 		
-//		 the Title
-		Element titleTmp = domDoc.createElement(WEB_TITLE);
-		Text titleText = domDoc.createTextNode(getTitle());
-		urlTmp.appendChild(titleText);
-		element.appendChild(titleTmp);
-
-		//	the insertion time
-		Element insertTimeTmp = domDoc.createElement(INSERT_TIME);
-		Text text = domDoc.createTextNode(getInsertionTimeString());
-		insertTimeTmp.appendChild(text);
-		element.appendChild(insertTimeTmp);
+		if(spType != null) {
+			element.setAttribute(SPConstants.STATE_SPTYPE, spType);
+		}
 
 		if(allListStateSet != null){
-//			now dump the actual ListStates:
-			Iterator it = allListStateSet.iterator(); 
-//			for (StatefulObject obj : dateMap) {
+			// dump the actual ListStates:
+			final Iterator it = allListStateSet.iterator(); 
 			while(it.hasNext()){
-				StatefulObject obj = (StatefulObject) it.next();
+				final StatefulObject obj = (StatefulObject) it.next();
 				element.appendChild(obj.dumpToDOM(domDoc));
 			}
 		}
-		LOGGER.exiting(className, sFunctionName);
 		return element;
 	}	
-
 
 	/**
 	 * Compares this WebState to another (for the Comparable interface).
@@ -333,23 +289,39 @@ public class WebState implements StatefulObject{
 	 *     greater, 0 if equal (which should only happen for the identity
 	 *     comparison).
 	 */
-	public int compareTo(Object o) {
-		WebState other = (WebState) o;
+	public int compareTo(final StatefulObject o) {
+		if(equals(o)) {
+			return 0;
+		}
+		final WebState other = (WebState) o;
 		if (other == null) {  
 			return 1; // anything is greater than null
 		}
-		if(this.insertionTime != null && other.insertionTime != null){
-			int insertComparison = this.insertionTime.compareTo(other.insertionTime);
+		if((insertionTime != null) && (other.insertionTime != null)){
+			final int insertComparison = insertionTime.compareTo(other.insertionTime);
 			if (insertComparison != 0) {
 				return insertComparison;
 			}
 		}
-		return this.webId.compareTo(other.webId);
+		return webId.compareTo(other.webId);
 	}
 
 	/**
+	 * For Web Satate equality comparison
+	 */
+	public boolean equals(final Object obj) {
+		if((null != obj) && (obj instanceof WebState)) {
+			final WebState tmpWeb = (WebState) obj;
+			if((null != webId) && (null != tmpWeb) && webId.equals(tmpWeb.getPrimaryKey())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * 
-	 * @return
+	 * @return the web URL
 	 */
 	public String getWebUrl() {
 		return webUrl;
@@ -359,13 +331,13 @@ public class WebState implements StatefulObject{
 	 * 
 	 * @param inWebUrl
 	 */
-	public void setWebUrl(String inWebUrl) {
-		this.webUrl = inWebUrl;
+	public void setWebUrl(final String inWebUrl) {
+		webUrl = inWebUrl;
 	}
 
 	/**
 	 * 
-	 * @return
+	 * @return set of all list statesin this web
 	 */
 	public TreeSet getAllListStateSet() {
 		return allListStateSet;
@@ -375,84 +347,147 @@ public class WebState implements StatefulObject{
 	 * 
 	 * @param inAllListStateSet
 	 */
-	public void setAllListStateSet(TreeSet inAllListStateSet) {
-		this.allListStateSet = inAllListStateSet;
+	public void setAllListStateSet(final TreeSet<ListState> inAllListStateSet) {
+		allListStateSet = inAllListStateSet;
 	}
 
 	/**
 	 * Factory method for ListState.
-	 * @param key the "primary key" of the object. This would
-	 * probably be the GUID.
-	 * @param lastMod most recent time this object was modified.
-	 * @return new ListState which is already indexed in WebState's
-	 *     allListStateSet and keyMap
+	 * @param key the "primary key" of the object. This would probably be the GUID.
+	 * @param inLastMod most recent time this object was modified.
+	 * @return new {@link ListState} which is already indexed in WebState's allListStateSet and keyMap
 	 */
-	public ListState makeListState(String key, DateTime inLastMod) throws SharepointException {
-		String sFunName="makeListState(String key, DateTime lastMod)";
-		LOGGER.entering(className, sFunName);
-		LOGGER.config(sFunName+": List key["+key+"], lastmodified["+inLastMod+"]");
+	public ListState makeListState(final String key, final DateTime inLastMod) throws SharepointException {
+		LOGGER.config("Creating List State: List key["+key+"], lastmodified["+inLastMod+"]");
 		if(key!=null){
-			ListState obj = new ListState(); 
+			final ListState obj = new ListState(spType, feedType); 
 			obj.setLastMod(inLastMod);
 			obj.setPrimaryKey(key);
-			updateList(obj, inLastMod); // add to our maps
-			LOGGER.exiting(className, sFunName);
+			updateList(obj, inLastMod); // add to our maps			
 			return obj;
 		}else{
-			LOGGER.warning(className+":"+sFunName+": Unable to make ListState due to list key not found");
-			throw new SharepointException(sFunName+": Unable to make ListState due to list key not found");
+			LOGGER.warning("Unable to make ListState due to list key not found");
+			throw new SharepointException("Unable to make ListState due to list key not found");
 		}
 	}
 
 	/**
 	 * Convenience factory for clients who don't deal in Joda time.
-	 * @param key the "primary key" of the object. This would
-	 * probably be the GUID.
+	 * @param key the "primary key" of the object. This would probably be the GUID.
 	 * @param lastModCal (Calendar, not Joda time)
-	 * @return new ListState which is already indexed in WebState's
-	 *     allListStateSet and keyMap
+	 * @return new {@link ListState} which is already indexed in WebState's allListStateSet and keyMap
 	 */
-	public ListState makeListState(String key, Calendar lastModCal) throws SharepointException {
-		String sFunName="makeListState(String key, Calendar lastModCal)";
-		LOGGER.entering(className, sFunName);
-		if(key!=null){
-			LOGGER.exiting(className, sFunName);
-			return makeListState(key, Util.calendarToJoda(lastModCal));
-		}else{
-			LOGGER.warning(className+":"+sFunName+": Unable to make ListState due to list key not found");
-			throw new SharepointException(sFunName+": Unable to make ListState due to list key not found");
-		}
-
+	public ListState makeListState(final String key, final Calendar lastModCal) throws SharepointException {
+		return this.makeListState(key, Util.calendarToJoda(lastModCal));		
 	}
-
+	
 	/**
-	 * 
-	 * @param fullReCrawl
-	 *//*
-	public void setBFullReCrawl(boolean fullReCrawl) {
-		bFullReCrawl = fullReCrawl;
-	}
-*/
-	/**
-	 * 
-	 *
+	 * Signals that the recrawl cycle is over and any non-exisitng ListState can be deleted 
+	 * @param spContext
 	 */
-	public void cleanLists() {
-
-		for (Iterator iter = getIterator(); iter.hasNext();){
-			ListState obj = (ListState) iter.next(); 
-			if (!obj.isExisting()) {
-				iter.remove(); // we MUST use the iterator's own remove() here
-				keyMap.remove(obj.getPrimaryKey());
+	public void endRecrawl(final SharepointClientContext spContext) {
+		final Iterator iter = getIterator();
+		if(null != iter) {
+			while (iter.hasNext()){
+				final ListState list = (ListState) iter.next();
+				if (!list.isExisting()) {
+					if(SPConstants.CONTENT_FEED.equalsIgnoreCase(spContext.getFeedType())) {
+						int responseCode = 0;
+						try {
+							responseCode = spContext.checkConnectivity(Util.encodeURL(list.getListURL()), null);
+						} catch (final Exception e) {
+							LOGGER.log(Level.WARNING, "Connectivity failed! ", e);
+						}
+						LOGGER.log(Level.INFO, "responseCode:"+responseCode);
+						if(responseCode == 200) {
+							LOGGER.log(Level.INFO, "Marking the list as Existing as an HTTP response 200 is received for listURL ["+list.getListURL()+"]");
+							list.setExisting(true);
+							continue;
+						} else if(responseCode != 404) {
+							LOGGER.log(Level.INFO, "The list can not be considered as deleted because an HTTP response other then 404 is received for listURL ["+list.getListURL()+"]");
+							continue;					
+						}
+						
+						// Need to send delete feeds for all the documents that were inside this list. Not required for alerts.
+						final List<SPDocument> deletedDocs = new ArrayList<SPDocument>();
+						final int biggestID = list.getBiggestID();
+						int maxID = 1; // start from 1 because 0 is not a valid itemID. SharePoint starts allocating ID from 1.
+						
+						// If we have sent come delete feeds in previous cycle, start from the next ID. Use LastDoc for this.
+						if((list.getLastDocument() != null) && ActionType.DELETE.equals(list.getLastDocument().getAction())) {
+							try {
+								maxID = Integer.parseInt(Util.getOriginalDocId(list.getLastDocument().getDocId(), SPConstants.CONTENT_FEED));
+							} catch(final Exception e) {
+								/* If the list is deleted and the lastDoc crawled is the list itself then it means that we have not sent any delete feeds yet.
+								 * Hence, start from 0.
+								 * Remember that for deleted list, lastCrawledDoc is never set to the list itself.
+								 */
+							}
+						}
+						LOGGER.log(Level.INFO, "List [ " + list.getListURL() + " ] has been deleted. Using BiggestID [ " + biggestID + " ] to construct delete feeds.");
+						while((maxID <= biggestID) && (deletedDocs.size() < spContext.getBatchHint())) {
+							String docID = list.getListURL() + SPConstants.DOC_TOKEN + Integer.toString(maxID);
+							final SPDocument doc = new SPDocument(docID, list.getListURL(), list.getLastModCal(), SPConstants.NO_AUTHOR, SPConstants.OBJTYPE_LIST_ITEM, 
+									list.getParentWebTitle(), SPConstants.CONTENT_FEED, SPConstants.SP2007);
+							doc.setAction(ActionType.DELETE);					
+							deletedDocs.add(doc);
+							
+							// If this list can contain attachments, assume that each item had attachments and send delete feed for them.
+							if(list.canContainAttachments()) {
+								final List attachments = list.getAttachmntURLsFor(Util.getOriginalDocId(docID, SPConstants.CONTENT_FEED));
+								final String originalDocID = docID;
+								for(final Iterator itr = attachments.iterator(); itr.hasNext();) {
+									final String attchmnt_url = (String) itr.next();
+									docID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID + "[" + attchmnt_url + "]" + originalDocID;
+									final SPDocument attchmnt = new SPDocument(docID, list.getListURL(), list.getLastModCal(), SPConstants.NO_AUTHOR, 
+											SPConstants.OBJTYPE_LIST_ITEM, list.getParentWebTitle(), SPConstants.CONTENT_FEED, SPConstants.SP2007);
+									attchmnt.setAction(ActionType.DELETE);				
+									deletedDocs.add(attchmnt);
+								}
+							}						
+							++maxID;
+						}
+						
+						// If we have sent the complete delete feeds, send one more delete feed corresponding to the list itself. This is not required for alerts.
+						if(!SPConstants.ALERTS_TYPE.equals(list.getType()) && (maxID >= biggestID)) {
+							final SPDocument doc = new SPDocument(list.getListURL() + SPConstants.DOC_TOKEN + list.getPrimaryKey(), list.getListURL(), list.getLastModCal(), 
+									SPConstants.NO_AUTHOR, SPConstants.OBJTYPE_LIST_ITEM, list.getParentWebTitle(), SPConstants.CONTENT_FEED, SPConstants.SP2007);
+							doc.setAction(ActionType.DELETE);
+							deletedDocs.add(doc);
+						}
+						
+						list.setCrawlQueue(deletedDocs);
+						// Do not remove the list at this point of time. This will be removed after handleCrawlQueue will be called for this.
+						LOGGER.info("Sending #" + deletedDocs.size() + " documents to delete from the deleted List/Library [ "+ list.getListURL() +" ].");					
+					} else {
+						LOGGER.log(Level.INFO, "Deleting the state information for list/library [" + list.getListURL() + "]. ");
+						iter.remove();
+						keyMap.remove(list.getPrimaryKey());
+					}
+				}
 			}
-		}
-
-
+		}	
+	}
+	
+	/**
+	 * 
+	 * @param inlist
+	 */
+	public void removeListStateFromKeyMap(final ListState inlist) {
+		keyMap.remove(inlist.getPrimaryKey());
+	}
+	
+	/**
+	 * 
+	 * @param inlist
+	 */
+	public void removeListStateFromSet(final ListState inlist) {
+		allListStateSet.remove(inlist);
 	}
 
 	/**
 	 * 
-	 * @return
+	 * @return the the iterator for the list contained in this web
 	 */
 	public Iterator getIterator() {
 		return allListStateSet.iterator();
@@ -463,48 +498,45 @@ public class WebState implements StatefulObject{
 	 * @param key primary key
 	 * @return object handle, or null if none found
 	 */
-	public ListState lookupList(String key) {
-		ListState ls = (ListState) keyMap.get(key);
-		if(null!=ls){
-			ls.setExisting(true);
-		}
+	public ListState lookupList(final String key) {
+		final ListState ls = keyMap.get(key);
 		return ls;
 	}
 
 	/**
 	 * 
-	 * @return
+	 * @return the circular iterator for the set of lists. This iterator will start iterating for the current web.
 	 */
 	public Iterator getCircularIterator() {
-		ListState start = getCurrentList();
+		final ListState start = getCurrentList();
 		if (start == null) {
 			return getIterator();
 		}
 		// one might think you could just do tail.addAll(head) here. But you can't.
-		ArrayList full = new ArrayList(allListStateSet.tailSet(start));
+		final ArrayList<ListState> full = new ArrayList<ListState>(allListStateSet.tailSet(start));
 		full.addAll(allListStateSet.headSet(start));
 		return full.iterator();
 	}
 
 	/**
 	 * 
-	 * @return
+	 * @return the current {@link ListState}
 	 */
 	private ListState getCurrentList() {
-		return this.currentList;
+		return currentList;
 	}
 
 	/**
 	 * 
 	 * @param currentObj
 	 */
-	public void setCurrentList(ListState currentObj) {
-		this.currentList = currentObj;
+	public void setCurrentList(final ListState currentObj) {
+		currentList = currentObj;
 	}
 
 	/**
 	 * 
-	 * @return
+	 * @return the last crawled list ID
 	 */
 	public String getLastCrawledListID() {
 		if((lastCrawledListID==null) || (lastCrawledListID.trim().equals(""))){
@@ -517,13 +549,13 @@ public class WebState implements StatefulObject{
 	 * 
 	 * @param inLastCrawledListID
 	 */
-	public void setLastCrawledListID(String inLastCrawledListID) {
-		this.lastCrawledListID = inLastCrawledListID;
+	public void setLastCrawledListID(final String inLastCrawledListID) {
+		lastCrawledListID = inLastCrawledListID;
 	}
 
 	/**
 	 * 
-	 * @return
+	 * @return the insertion time of the web. This is the ime when this web has been discovered and added into the state
 	 */
 	public DateTime getInsertionTime() {
 		return insertionTime;
@@ -533,20 +565,39 @@ public class WebState implements StatefulObject{
 	 * 
 	 * @param inInsertionTime
 	 */
-	public void setInsertionTime(DateTime inInsertionTime) {
-		this.insertionTime = inInsertionTime;
+	public void setInsertionTime(final DateTime inInsertionTime) {
+		insertionTime = inInsertionTime;
 	}
 
+	/**
+	 * 
+	 * @return the insertion time as string
+	 */
 	public String getInsertionTimeString() {
 		return Util.formatDate(insertionTime);
 	}
 
+	/**
+	 * 
+	 * @return the web title
+	 */
 	public String getTitle() {
 		return title;
 	}
 
-	public void setTitle(String title) {
+	/**
+	 * 
+	 * @param title
+	 */
+	public void setTitle(final String title) {
 		this.title = title;
 	}
-
+	
+	/**
+	 * 
+	 * @return the sharepoint version for this web
+	 */
+	public String getSharePointType() {
+		return spType;
+	}
 }
