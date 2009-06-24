@@ -1,0 +1,15 @@
+com.google.enterprise.connector.sharepoint
+com.google.enterprise.connector.sharepoint.client
+com.google.enterprise.connector.sharepoint.generated.alerts
+com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization
+com.google.enterprise.connector.sharepoint.generated.gssitediscovery
+com.google.enterprise.connector.sharepoint.generated.lists
+com.google.enterprise.connector.sharepoint.generated.sitedata
+com.google.enterprise.connector.sharepoint.generated.sitedata.holders
+com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice
+com.google.enterprise.connector.sharepoint.generated.userprofileservice
+com.google.enterprise.connector.sharepoint.generated.webs
+com.google.enterprise.connector.sharepoint.spiimpl
+com.google.enterprise.connector.sharepoint.state
+com.google.enterprise.connector.sharepoint.wsclient
+com.google.enterprise.connector.sharepoint.wsclient.sp2003
