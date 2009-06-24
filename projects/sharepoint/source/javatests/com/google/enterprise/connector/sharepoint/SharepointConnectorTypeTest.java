@@ -136,10 +136,7 @@ public class SharepointConnectorTypeTest extends TestCase {
 		  +"<b>Fields with (*) are Manadatory</b>"; 
     
     Map configMap = new HashMap();
-    /*configMap.put("sharepointUrl", "http://entpoint05.corp.google.com/unittest");
-    configMap.put("domain", "ent-qa-d3");
-    configMap.put("username", "testing");*/
-    configMap.put("password", "amit_kagrawal");
+    configMap.put("password", "user");
     
     ConfigureResponse response = sharepointConnectorType.getPopulatedConfigForm(configMap, new Locale("test"));
     Assert.assertEquals(expected, response.getFormSnippet());    
@@ -286,10 +283,10 @@ public class SharepointConnectorTypeTest extends TestCase {
     	+"</tr>\r\n";
 
     Map configMap = new HashMap();
-    configMap.put("sharepointUrl", "http://ps4312:43386/amitsite");
-    configMap.put("domain", "ps4312");
-    configMap.put("username", "Administrator");
-    configMap.put("password", "pspl!@#");     
+    configMap.put("sharepointUrl", "http://");
+    configMap.put("domain", "domain");
+    configMap.put("username", "username");
+    configMap.put("password", "password");     
     ConfigureResponse response = 
       sharepointConnectorType.validateConfig(configMap, new Locale("test"));
     Assert.assertEquals(expectedMessage, response.getMessage());

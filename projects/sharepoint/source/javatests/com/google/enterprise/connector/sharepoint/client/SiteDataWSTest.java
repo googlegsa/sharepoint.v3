@@ -23,42 +23,19 @@ public class SiteDataWSTest extends TestCase {
 		System.setProperty("java.util.logging.config.file","logging.properties");
 	}
 
-	//set the connector configuration information
-//	-------------gsp02ps5265(sps 2007)---------------------------------
-	/*final String sharepointType = SharepointConnectorType.SP2007;
-	final String sharepointUrl = "http://gsp02ps5265.persistent.co.in:36022/VolTestLibs1/Sub4/";
-	final String domain = "gsp02ps5265";
-	final String username = "administrator";
-	final String password = "pspl!@#";
-
-	final String mySiteBaseURL=null;
-	final String googleConnWorkDir = null;
-
-	final String exclURLs =null;
-	final String aliasHost = null;
-	final String aliasPort = null;
-	final String inclURLs ="^http://";*/
-//	-------------END: gsp02ps5265---------------------------------
-
-
-//	-------------ps4312(sps 2007)---------------------------------
 	final String sharepointType = SharepointConnectorType.SP2007;
-//	final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
-	final String sharepointUrl = "http://ps4312.persistent.co.in:2905/xyz/subxyz/";
-	final String domain = "ps4312";
-	final String username = "administrator";
-	final String password = "pspl!@#";
+	final String sharepointUrl = "http://";
+	final String domain = "domain";
+	final String username = "username";
+	final String password = "password";
 
 	final String mySiteBaseURL=null;
 	final String googleConnWorkDir = null;
 
-	final String exclURLs ="http://ps4312.persistent.co.in:2905/ECSCDemoData";
+	final String exclURLs ="http://";
 	final String aliasHost = null;
 	final String aliasPort = null;
-//	final String inclURLs ="^http://";
-//	final String inclURLs ="http://ps4312.persistent.co.in:2905/Orangesite/";
-	final String inclURLs ="http://ps4312.persistent.co.in:2905/";
-//	-------------END: gsp02ps5265---------------------------------
+	final String inclURLs ="http://";
 
 	//set the balck list and whitelist
 	private static ArrayList BLACK_LIST;
@@ -106,7 +83,7 @@ public class SiteDataWSTest extends TestCase {
 		String site = sharepointUrl;
 		SortedSet linkedWebs = null; 
 		try {
-			linkedWebs =  siteDataWS.getAllLinks(sharepointClientContext, site);
+			linkedWebs =  siteDataWS.getAllLinks(sharepointClientContext, site,"");
 		} catch (SharepointException e) {
 			e.printStackTrace();
 			fail();
@@ -127,28 +104,7 @@ public class SiteDataWSTest extends TestCase {
 			System.out.println("URL: "+ws.getWebUrl()+"|Title: "+ws.getTitle());
 		}//for(int iList=0;iList<personalSites.size();++iList){
 	}
-	/*public void testSiteWithSpaces() {
-		int numDocLib = 0;    
-		try {
-			SharepointClientContext sharepointClientContextSpaces =new SharepointClientContext(sharepointType,sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null,WHITE_LIST,BLACK_LIST);  
-				//new SharepointClientContext(SPType,sharepointUrlWithSpaces, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,null,null); 
-			SiteDataWS siteDataWSSpaces =new SiteDataWS(sharepointClientContextSpaces);   
-			List listCollection = siteDataWSSpaces.getDocumentLibraries();
-			System.out.println("SPDocument Libraries found - ");
-			for (int i = 0; i < listCollection.size(); i++) {
-				BaseList baseList = (BaseList) listCollection.get(i);
-				System.out.println(baseList.getTitle());        
-				numDocLib++;        
-			}
-			//assertEquals(2, numDocLib);
-		} catch (SharepointException e) {
-			e.printStackTrace();
-			fail();
-		} catch (RepositoryException e1) {
-			e1.printStackTrace();
-			fail();
-		}    
-	}*/
+
 	/**
 	 * Test method for {@link 
 	 * com.google.enterprise.connector.sharepoint.client.SiteDataWS
@@ -157,7 +113,7 @@ public class SiteDataWSTest extends TestCase {
 	public void testGetDocumentLibraries() {
 		int numDocLib = 0;
 		try {
-			List listCollection = siteDataWS.getDocumentLibraries();
+			List listCollection = siteDataWS.getDocumentLibraries("");
 			System.out.println("SPDocument Libraries found - ");
 			for (int i = 0; i < listCollection.size(); i++) {
 				BaseList baseList = (BaseList) listCollection.get(i);
@@ -182,7 +138,7 @@ public class SiteDataWSTest extends TestCase {
 	public void testGetGenericLists() {
 		int numGenList = 0;
 		try {
-			List listCollection = siteDataWS.getGenericLists();
+			List listCollection = siteDataWS.getGenericLists("");
 			System.out.println("Generic Lists found - ");
 			//for (int i = 0; i < listCollection.size(); i++) {
 			for (int i = 0; i < 1; i++) {
@@ -205,7 +161,7 @@ public class SiteDataWSTest extends TestCase {
 	public void testIssues() {
 		int numIssues = 0;
 		try {
-			List listCollection = siteDataWS.getIssues();
+			List listCollection = siteDataWS.getIssues("");
 			System.out.println("Issues found - ");
 			for (int i = 0; i < listCollection.size(); i++) {
 				BaseList baseList = (BaseList) listCollection.get(i);
