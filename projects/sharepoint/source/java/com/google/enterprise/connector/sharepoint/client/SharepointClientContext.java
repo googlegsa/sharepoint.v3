@@ -14,409 +14,365 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-//import java.util.Locale;
-//import java.util.ResourceBundle;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.NTCredentials;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
+import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 
-
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 
 /**
  * Class to hold the context information for sharepoint client connection.
- * @author amit_kagrawal
+ * The information is per connector instance.
+ * @author nitendra_thakur
+ *
  */
 public class SharepointClientContext implements Cloneable {
 
-	private static final Logger LOGGER = Logger.getLogger(SharepointClientContext.class.getName());
-	private String className = SharepointClientContext.class.getName();
-	private String siteName;
+	private final Logger LOGGER = Logger.getLogger(SharepointClientContext.class.getName());
+	private String siteURL;
 	private String domain;
 	private String username;
 	private String password;
-	private int port = 0;
-	private String host;
-	private String protocol;
-	private String strSharePointType=null;//This denotes the sharepoint Type e.g SP2003 or SP2007
-	//Note: SP2003 covers SPS2003 and WSS 2.0
-	//Note: SP2007 covers MOSS2007 and WSS 3.0
+	
 	private String googleConnectorWorkDir = null;
 	private String [] excludedURlList = null; 
 	private String [] includedURlList = null; 
-	private String mySiteBaseURL = null; 
-	private String aliasHostName = null; 
-	private String aliasPort = null;
-	private ArrayList whiteList = null;
-	private ArrayList blackList = null;
-	private static boolean bFQDNConversion = false;
-	private static final String SEPARATOR = " ";
-	private static final int SSL_DEFAULT_PORT = 443;
+	private String mySiteBaseURL = null;
+	
+	private Map<String, String> aliasMap=null;
+	private String feedType = null;
+	
+	private final ArrayList<Pattern> included_metadata = new ArrayList<Pattern>();
+	private final ArrayList<Pattern> excluded_metadata = new ArrayList<Pattern>();
+	private boolean bFQDNConversion = false;
 	private int batchHint =-1; //the batch size in which the documents have to be submitted to Connector manager
 
-
+	private String excludedURL_ParentDir = null;
+	
+	/**
+	 * For cloning
+	 */
 	public Object clone() {
-		String sFunctionName ="clone()";
-		LOGGER.entering(className, sFunctionName);
 		try {
-			SharepointClientContext spCl = new SharepointClientContext();
-
-			//sharepoint type
-			if(this.strSharePointType==null){
-				spCl.setSharePointType(this.strSharePointType);
-			}else{
-				spCl.setSharePointType(new String(this.strSharePointType));
+			final SharepointClientContext spCl = new SharepointClientContext();
+			
+			if(null != aliasMap){								
+				spCl.setSiteAlias(new LinkedHashMap<String, String>(aliasMap));
+			}
+			
+			if(null != feedType) {				
+				spCl.setFeedType(new String(feedType));
+			}
+			
+			if(null != domain){				
+				spCl.setDomain(new String(domain));
 			}
 
-			if(this.aliasHostName==null){
-				spCl.setAliasHostName(this.aliasHostName);
-			}else{
-				spCl.setAliasHostName(new String(this.aliasHostName));
+			if(null != googleConnectorWorkDir){				
+				spCl.setGoogleConnectorWorkDir(new String(googleConnectorWorkDir));
 			}
 
-			//check for alias port
-			if(this.aliasPort==null){
-				spCl.setAliasPort(this.aliasPort);
-			}else{
-				spCl.setAliasPort(new String(this.aliasPort));
-			}
-			if(this.domain==null){
-				spCl.setDomain(this.domain);
-			}else{
-				spCl.setDomain(new String(this.domain));
+			if(null != mySiteBaseURL){				
+				spCl.setMySiteBaseURL(new String(mySiteBaseURL));
 			}
 
-			if(this.googleConnectorWorkDir==null){
-				spCl.setGoogleConnectorWorkDir(this.googleConnectorWorkDir);
-			}else{
-				spCl.setGoogleConnectorWorkDir(new String(this.googleConnectorWorkDir));
+			if(null != password){				
+				spCl.setPassword(new String(password));
 			}
 
-			if(this.host==null){
-				spCl.setHost(this.host);
-			}else{
-				spCl.setHost(new String(this.host));
+			if(null != siteURL){				
+				spCl.setSiteURL(new String(siteURL));
 			}
 
-			if(this.mySiteBaseURL==null){
-				spCl.setMySiteBaseURL(this.mySiteBaseURL);
-			}else{
-				spCl.setMySiteBaseURL(new String(this.mySiteBaseURL));
-			}
-
-			if(this.password==null){
-				spCl.setPassword(null);
-			}else{
-				spCl.setPassword(new String(this.password));
-			}
-
-
-			spCl.setPort(this.port);//primitive
-
-			if(this.protocol==null){
-				spCl.setProtocol(null);
-			}else{
-				spCl.setProtocol(new String(this.protocol));
-			}
-
-			if(this.siteName==null){
-				spCl.setsiteName(null);
-			}else{
-				spCl.setsiteName(new String(this.siteName));
-			}
-
-//			spCl.setIncludedURlList(this.includedURlList);
-
-			if(this.excludedURlList==null){
-				spCl.setExcludedURlList(this.excludedURlList);	
-			}else{
-				String [] newExcList = new String[excludedURlList.length] ;
-				for(int i=0;i<this.excludedURlList.length;++i){
+			if(null != excludedURlList){
+				final String [] newExcList = new String[excludedURlList.length] ;
+				for(int i=0;i<excludedURlList.length;++i){
 					newExcList[i] = new String(excludedURlList[i].toString());
 				}
 				spCl.setExcludedURlList(newExcList);
 			}
 
-			if(this.includedURlList==null){
-				spCl.setIncludedURlList(this.includedURlList);	
-			}else{
-				String [] newIncList = new String[includedURlList.length] ;
-				for(int i=0;i<this.includedURlList.length;++i){
+			if(null != includedURlList){
+				final String [] newIncList = new String[includedURlList.length] ;
+				for(int i=0;i<includedURlList.length;++i){
 					newIncList[i] = new String(includedURlList[i].toString());
 				}
 				spCl.setIncludedURlList(newIncList);
 			}
 
-			if(username==null){
-				spCl.setUsername(this.username);
-			}else{
-				spCl.setUsername(new String(this.username));
+			if(null != username){
+				spCl.setUsername(new String(username));
+			}			
+			
+			spCl.setFQDNConversion(bFQDNConversion);
+			spCl.setBatchHint(batchHint);
+			
+			if(null != included_metadata) {				
+				spCl.included_metadata.addAll(included_metadata);
 			}
-			LOGGER.exiting(className, sFunctionName);
+			if(null != excluded_metadata) {				
+				spCl.excluded_metadata.addAll(excluded_metadata);
+			}
+			
+			if(null != excludedURL_ParentDir) {
+				spCl.excludedURL_ParentDir = excludedURL_ParentDir;
+			}
+			
 			return spCl;
-		} catch (Throwable e) {
-			LOGGER.warning(sFunctionName+": Unable to clone client context");
-			LOGGER.finest(e.toString());
+		} catch (final Throwable e) {
+			LOGGER.log(Level.FINEST,"Unable to clone client context.",e);			
 			return null;
 		}
-
-	}
-	//added by Amit
-	private void setExcludedURlList(String[] excludedURlList2) {
-		String sFunctionName ="setExcludedURlList(String[] excludedURlList2)";
-		LOGGER.entering(className, sFunctionName);
-		if(excludedURlList2!=null){
-			this.excludedURlList = excludedURlList2;
-		}
-		LOGGER.exiting(className, sFunctionName);
-	}
-
-	//added by Amit
-	private void setIncludedURlList(String[] includedURlList2) {
-		String sFunctionName ="setIncludedURlList(String[] includedURlList2)";
-		LOGGER.entering(className, sFunctionName);
-		if(includedURlList2!=null){
-			this.includedURlList = includedURlList2;
-		}
-		LOGGER.exiting(className, sFunctionName);
-	}
-
-
-	//for cloning
-	public SharepointClientContext() {
 	}
 	
-	public SharepointClientContext(String sharepointType,String sharepointUrl, String inDomain,
-			String inUsername, String inPassword,
-			String inGoogleConnectorWorkDir,String includedURls,String excludedURls,String inMySiteBaseURL,String inAliasHostName,String inAliasPort,ArrayList inWhiteList,ArrayList inBlackList){
-		String sFunctionName ="SharepointClientContext(String sharepointType,String sharepointUrl, String inDomain,String inUsername, String inPassword,String inGoogleConnectorWorkDir,String includedURls,String excludedURls,String inMySiteBaseURL,String inAliasHostName,String inAliasPort,ArrayList whiteList, ArrayList blackList)";
-		LOGGER.entering(className, sFunctionName);
-//		System.out.println("SharepointClientContext: "+sharepointType+":::"+sharepointUrl+":::"+ inDomain+":::"+
-//		inUsername+":::"+ inPassword+":::"+inGoogleConnectorWorkDir+":::"+includedURls+":::"+excludedURls+":::"+inMySiteBaseURL+":::"+inAliasHostName+":::"+inAliasPort);
-		Protocol.registerProtocol("https", new Protocol("https",new EasySSLProtocolSocketFactory(), SSL_DEFAULT_PORT));
-		if(sharepointUrl==null){
-			LOGGER.severe("SharepointClientContext: sharepoint URL is null");
-			return;
-		}
-		sharepointUrl = sharepointUrl.trim();
-		
-		//set the sharepointType
-		if(sharepointType!=null){
-			this.strSharePointType = sharepointType;
-		}
-
-		if (sharepointUrl.endsWith("/")) {
-			sharepointUrl = sharepointUrl.substring(
-					0, sharepointUrl.lastIndexOf("/"));
-		}
-		try {
-//			System.out.println("clientcontext: url="+sharepointUrl);
-			URL url = new URL(sharepointUrl);
-			this.host = url.getHost();
-			this.protocol = url.getProtocol(); //to remove the hard-coded protocol
-			if (-1 != url.getPort()) {
-				this.port = url.getPort();
-			}else{
-				this.port = url.getDefaultPort();
-			}
-			this.siteName = url.getPath();      
-		} catch (MalformedURLException e) {
-			LOGGER.warning(sFunctionName+":"+e.toString());
-		}
-
-		this.domain = inDomain;    
-		if(domain==null){
-			LOGGER.warning("domain not set");
-		}
-		this.username = inUsername;
-		if(username==null){
-			LOGGER.warning("User Name not found");
-		}
-
-		this.password = inPassword;
-		if(password==null){
-			LOGGER.warning("password not found");
-		}
-
-		this.googleConnectorWorkDir = inGoogleConnectorWorkDir;
-
-		setExcludedURlList(excludedURls,SEPARATOR);  
-		setIncludedURlList(includedURls, SEPARATOR); 
-		this.mySiteBaseURL = inMySiteBaseURL;  
-		this.aliasHostName = inAliasHostName;  
-		this.aliasPort = inAliasPort;
-		this.whiteList = inWhiteList;
-		this.blackList = inBlackList;
-
-
-		LOGGER.config(" sharepointUrl = [" +sharepointUrl+"] , domain = ["+inDomain+"] , username = ["+inUsername+"] , googleConnectorWorkDir = ["+inGoogleConnectorWorkDir+"] , includedURls = ["+includedURls+"] , excludedURls = ["+excludedURls+"] , mySiteBaseURL = ["+inMySiteBaseURL+"], aliasHostName = ["+inAliasHostName+" ] ,aliasPort=["+inAliasPort+"]");
-		LOGGER.exiting(className, sFunctionName);
-	}
-
-	public void setURL(String sharepointUrl){
-		String sFunctionName = "setURL(String sharepointUrl)";
-		LOGGER.entering(className, sFunctionName);
-
-
-		try {
-			URL url = new URL(sharepointUrl);
-			this.host = url.getHost();
-			this.protocol = url.getProtocol(); //to remove the hard-coded protocol
-			if (-1 != url.getPort()) {
-				this.port = url.getPort();
-			}else{
-				this.port = url.getDefaultPort();
-			}
-			this.siteName = url.getPath();      
-		} catch (MalformedURLException e) {
-			LOGGER.warning(sFunctionName +": "+e.toString());
-		}
-		LOGGER.exiting(className, sFunctionName);
+	/**
+	 * 
+	 * @param excludedURlList2
+	 */
+	private void setExcludedURlList(final String[] excludedURlList2) {
+		if(excludedURlList2!=null){
+			excludedURlList = excludedURlList2;
+		}		
 	}
 
 	/**
-	 * @author amit_kagrawal
-	 * */
-	public String getProtocol(){
-		return protocol;
+	 * 
+	 * @param includedURlList2
+	 */
+	private void setIncludedURlList(final String[] includedURlList2) {
+		if(includedURlList2!=null){
+			includedURlList = includedURlList2;
+		}		
 	}
 
-	public String getDomain() {
+	/**
+	 * Default constructor
+	 *
+	 */
+	private SharepointClientContext() {}
+	
+	/**
+	 * 
+	 * @param sharepointUrl
+	 * @param inDomain
+	 * @param inUsername
+	 * @param inPassword
+	 * @param inGoogleConnectorWorkDir
+	 * @param includedURls
+	 * @param excludedURls
+	 * @param inMySiteBaseURL
+	 * @param inAliasMapString
+	 * @param inFeedType
+	 * @throws SharepointException
+	 */
+	public SharepointClientContext(String sharepointUrl, final String inDomain, final String inUsername, final String inPassword,
+			final String inGoogleConnectorWorkDir,final String includedURls,final String excludedURls,final String inMySiteBaseURL,
+			final String inAliasMapString, final String inFeedType) throws SharepointException {
+
+		Protocol.registerProtocol("https", new Protocol("https",new EasySSLProtocolSocketFactory(), SPConstants.SSL_DEFAULT_PORT));
+				
+		if(sharepointUrl==null){
+			throw new SharepointException("sharepoint URL is null");			
+		}
+		if(inUsername == null) {
+			throw new SharepointException("Username is null.");
+		}
+		if(inPassword == null) {
+			throw new SharepointException("Password is null.");
+		}
+		if(inGoogleConnectorWorkDir == null) {
+			throw new SharepointException("Working Directory is null.");
+		}
+		if(inFeedType == null) {
+			throw new SharepointException("Feed Type is null.");
+		}
+		
+		sharepointUrl = sharepointUrl.trim();
+				
+		if (sharepointUrl.endsWith(SPConstants.SLASH)) {
+			sharepointUrl = sharepointUrl.substring(
+					0, sharepointUrl.lastIndexOf(SPConstants.SLASH));
+		}
+		
+		try {
+			final URL url = new URL(sharepointUrl);
+			int port = url.getPort();
+			if (-1 == port) {
+				port = url.getDefaultPort();
+			}
+			siteURL = url.getProtocol() + SPConstants.URL_SEP + url.getHost() + SPConstants.COLON + port + url.getPath();      
+		} catch (final MalformedURLException e) {
+			throw new SharepointException("Failed to construct sharepoint URL...", e);
+		}	
+		
+		if((inDomain==null) || inDomain.trim().equals("")) {
+			LOGGER.log(Level.INFO, "Trying to get domain information from username specified [ " + inUsername + " ] because domain field has not been explicitly specified.");
+			domain = Util.getDomainFromUsername(inUsername);
+		} else {
+			domain = inDomain;
+		}	    		
+		
+		LOGGER.finest("domain set to "+domain);
+		
+		username = Util.getUserFromUsername(inUsername);
+		LOGGER.finest("username set to "+username);
+		
+		this.setExcludedURlList(excludedURls, SPConstants.SEPARATOR);  
+		this.setIncludedURlList(includedURls, SPConstants.SEPARATOR); 
+
+		password = inPassword;
+		googleConnectorWorkDir = inGoogleConnectorWorkDir;
+		LOGGER.finest("googleConnectorWorkDir set to "+googleConnectorWorkDir);
+		excludedURL_ParentDir = googleConnectorWorkDir + SPConstants.SLASH + SPConstants.EXCLUDED_URL_DIR;
+		mySiteBaseURL = inMySiteBaseURL;
+		LOGGER.finest("mySiteBaseURL set to "+mySiteBaseURL);
+		aliasMap=parseAlias(inAliasMapString);
+		
+		feedType = inFeedType;
+		LOGGER.finest("feedType set to "+feedType);
+		LOGGER.finest("bFQDNConversion set to "+bFQDNConversion);
+		
+		LOGGER.config(" sharepointUrl = [" +sharepointUrl+"] , domain = ["+inDomain+"] , username = ["+inUsername+
+				"] , googleConnectorWorkDir = ["+inGoogleConnectorWorkDir+"] , includedURls = ["+includedURls+
+				"] , excludedURls = ["+excludedURls+"] , mySiteBaseURL = ["+inMySiteBaseURL+
+				"], aliasMapString = ["+inAliasMapString+"], FeedType [" + inFeedType + "]. ");
+	}
+	
+	/**
+	 * 
+	 * @param sharepointUrl
+	 * @throws SharepointException
+	 */
+	public void setSiteURL(String sharepointUrl) throws SharepointException {
+		sharepointUrl = sharepointUrl.trim();
+		
+		if (sharepointUrl.endsWith(SPConstants.SLASH)) {
+			sharepointUrl = sharepointUrl.substring(
+					0, sharepointUrl.lastIndexOf(SPConstants.SLASH));
+		}
+
+		try {
+			final URL url = new URL(sharepointUrl);
+			int port = url.getPort();
+			if (-1 == port) {
+				port = url.getDefaultPort();
+			}
+			siteURL = url.getProtocol() + SPConstants.URL_SEP + url.getHost() + SPConstants.COLON + port + url.getPath();      
+		} catch (final MalformedURLException e) {
+			throw new SharepointException("Failed to construct sharepoint URL...", e);
+		}		
+	}
+	
+	/**
+	 * 
+	 * @return the domain
+	 */
+	public String getDomain() {		
 		return domain;
 	}
 
-	public String getHost() {
-		return host;
-	}
-
+	/**
+	 * 
+	 * @return the password
+	 */
 	public String getPassword() {
 		return password;
 	}
 
-	public int getPort() {
-		return port;
-	}
-
-	public String getsiteName() {
-		return siteName;
-	}
-
+	/**
+	 * 
+	 * @return the username
+	 */
 	public String getUsername() {
 		return username;
 	}
-
-	public String getGoogleConnectorWorkDir() {
-		return this.googleConnectorWorkDir;
-	}
-
-	public void setDomain(String indomain) {
-		if(indomain!=null){
-			this.domain = indomain;
-		}
-	}
-
-	public void setPassword(String inPassword) {
-		if(inPassword!=null){
-			this.password = inPassword;
-		}
-	}
-
+	
 	/**
-	 * @author amit_kagrawal
-	 * */
-	public void setProtocol(String inProtocol){
-		if(inProtocol!=null){
-			this.protocol = inProtocol;
-		}
-	}
-
-	public void setsiteName(String siteNameNew) {
-		if(siteNameNew!=null){
-			this.siteName = siteNameNew;
-		}
-	}
-
-	public void setUsername(String inUsername) {
-		if(inUsername!=null){
-			this.username = inUsername;
-		}
-	}
-
-	public void setHost(String inHost) {
-		if(inHost!=null){
-			this.host = inHost;
-		}
-	}
-
-	public void setPort(int inPort) {
-		this.port = inPort;
-	}
-
-	public void setGoogleConnectorWorkDir(String workDir) {
-		if(workDir!=null){
-			this.googleConnectorWorkDir = workDir;
-		}
-	}
-
-	/**
-	 * Sets the stub .
-	 * @param stub Axis Client Stub to call the webservices on 
-	 * Sharepoint server.
-	 * @param endpoint Suffix to the particular webservice to use.
+	 * 
+	 * @return the connector instance directory
 	 */
-	/*	public void setStubWithAuth(Stub stub, String endpoint) {
-		Options options = new Options();
-		EndpointReference target = new EndpointReference(endpoint);
-		options.setTo(target);
-		HttpTransportProperties.Authenticator auth = 
-			new HttpTransportProperties.Authenticator();
-		auth.setDomain(domain);
-		auth.setUsername(username);
-		auth.setPassword(password);
-		auth.setHost(host);
-		auth.setRealm(domain);
-		auth.setPort(port);    
-		options.setProperty(HTTPConstants.AUTHENTICATE, auth);    
-		stub._getServiceClient().setOptions(options);
-		return;
-	}*/
+	public String getGoogleConnectorWorkDir() {
+		return googleConnectorWorkDir;
+	}
 
 	/**
-	 * added by A Mitra.
-	 * @return
+	 * 
+	 * @param indomain
+	 */
+	public void setDomain(final String indomain) {
+		domain = indomain;				
+	}
+
+	/**
+	 * 
+	 * @param inPassword
+	 */
+	public void setPassword(final String inPassword) {
+		password = inPassword;
+	}
+
+	/**
+	 * 
+	 * @param inUsername
+	 */
+	public void setUsername(final String inUsername) {
+		username = inUsername;
+	}
+
+	/**
+	 * 
+	 * @param workDir
+	 */
+	public void setGoogleConnectorWorkDir(final String workDir) {
+		googleConnectorWorkDir = workDir;
+	}	
+
+	/**
+	 * 
+	 * @return the excluded URL list
 	 */
 	public String[] getExcludedURlList() {
 		return excludedURlList;
 	}
 
 	/**
-	 * added by A Mitra.
+	 * 
 	 * @param excludedURls
 	 * @param separator
 	 */
-	public void setExcludedURlList(String excludedURls , String separator) {
+	public void setExcludedURlList(final String excludedURls , final String separator) {
 		if(excludedURls != null){
-			// with new gnu pattern matching not required to remove FrontSlash
-//			excludedURlList = removeFrontSlash(excludedURls.split(separator));
 			excludedURlList = excludedURls.split(separator);
 		}
 	}
 
 	/**
-	 * added by A Mitra.
+	 * 
 	 * @param excludedURls
 	 */
-
-	public void setExcludedURlList(String excludedURls){
+	public void setExcludedURlList(final String excludedURls){
 		if(excludedURls != null){
-
-			// with new gnu pattern matching not required to remove FrontSlash
-//			excludedURlList = removeFrontSlash(excludedURls.split(SEPARATOR));
-			excludedURlList = excludedURls.split(SEPARATOR);
+			excludedURlList = excludedURls.split(SPConstants.SEPARATOR);
 		}
 	}
 
@@ -425,105 +381,422 @@ public class SharepointClientContext implements Cloneable {
 	 * @param includedURls
 	 * @param separator
 	 */
-
-
-	public void setIncludedURlList(String includedURls , String separator) {
+	public void setIncludedURlList(final String includedURls , final String separator) {
 		if(includedURls != null){
-
-			// with new gnu pattern matching not required to remove FrontSlash
-//			includedURlList = removeFrontSlash(includedURls.split(separator));
 			includedURlList = includedURls.split(separator);
 		}
 	}
 
 	/**
-	 * added by A Mitra.
+	 * 
 	 * @param includedURls
 	 */
-
-	public void setIncludedURlList(String includedURls){
+	public void setIncludedURlList(final String includedURls){
 		if(includedURls != null){
-
-			// with new gnu pattern matching not required to remove FrontSlash
-//			includedURlList = removeFrontSlash(includedURls.split(SEPARATOR));
-			includedURlList = includedURls.split(SEPARATOR);
+			includedURlList = includedURls.split(SPConstants.SEPARATOR);
 		}
 	}
 
+	/**
+	 * 
+	 * @return the included URL list
+	 */
 	public String[] getIncludedURlList() {
 		return includedURlList;
 	}
 
+	/**
+	 * 
+	 * @return the MySite Base URL
+	 */
 	public String getMySiteBaseURL() {
 		return mySiteBaseURL;
 	}
 
-	public void setMySiteBaseURL(String inMySiteBaseURL) {
-		if(inMySiteBaseURL!=null){
-			this.mySiteBaseURL = inMySiteBaseURL;
-		}
+	/**
+	 * 
+	 * @param inMySiteBaseURL
+	 */
+	public void setMySiteBaseURL(final String inMySiteBaseURL) {
+		mySiteBaseURL = inMySiteBaseURL;
 	}
 
-	public String getAliasHostName() {
-		return aliasHostName;
+	/**
+	 * 
+	 * @return the Site Alias MAp
+	 */
+	public Map getAliasMap() {
+		return aliasMap;
 	}
-
-	public void setAliasHostName(String inAliasHostName) {
-		if(inAliasHostName!=null){
-			this.aliasHostName = inAliasHostName;
-		}
+	
+	/**
+	 * 
+	 * @param inAliasMap
+	 */
+	public void setSiteAlias(final Map<String, String> inAliasMap) {
+		aliasMap = inAliasMap;
 	}
-
-	public String getAliasPort() {
-		return aliasPort;
+	
+	/**
+	 * 
+	 * @return excluded metadata list
+	 */
+	public ArrayList getExcluded_metadata() {
+		return excluded_metadata;
 	}
-
-	public void setAliasPort(String inAliasPort) {
-		if(inAliasPort!=null){
-			this.aliasPort = inAliasPort;
-		}
-	}
-
-
-//	SharePointType e.g. SP2007 or SP2003
-	public String getSharePointType() {
-		return strSharePointType;
-	}
-	public void setSharePointType(String inSharePointType) {
-		if(inSharePointType!=null){
-			strSharePointType = inSharePointType;
+	
+	/**
+	 * 
+	 * @param inExcluded_metadata
+	 */
+	public void setExcluded_metadata(final ArrayList inExcluded_metadata) {
+		if(inExcluded_metadata != null) {		
+			final int size = inExcluded_metadata.size();
+			for(int index = 0; index < size ; index++){
+				final String meta = (String)inExcluded_metadata.get(index);
+				try {
+					excluded_metadata.add(Pattern.compile(meta));
+				} catch(final Exception e) {
+					LOGGER.log(Level.WARNING, "One of the metadata under excluded_metadata is invalid as GNU Regexp. meta ["+ meta +"]. " );
+				}
+			}
 		}
 	}
 	
-	public ArrayList getBlackList() {
-		return blackList;
+	/**
+	 * 
+	 * @return included metadata list
+	 */
+	public ArrayList getIncluded_metadata() {
+		return included_metadata;
 	}
-	public void setBlackList(ArrayList inBlackList) {
-		this.blackList = inBlackList;
+		
+	/**
+	 * 
+	 * @param inIncluded_metadata
+	 */
+	public void setIncluded_metadata(final ArrayList inIncluded_metadata) {
+		if(inIncluded_metadata != null) {
+			final int size = inIncluded_metadata.size();
+			for(int index = 0; index < size ; index++){
+				final String meta = (String)inIncluded_metadata.get(index);
+				try {
+					included_metadata.add(Pattern.compile(meta));
+				} catch(final Exception e) {
+					LOGGER.log(Level.WARNING, "One of the metadata under included_metadata is invalid as GNU Regexp. meta ["+ meta +"]. " );
+				}
+			}
+		}		
 	}
 	
-	public ArrayList getWhiteList() {
-		return whiteList;
-	}
-	public void setWhiteList(ArrayList inWhiteList) {
-		this.whiteList = inWhiteList;
-	}
-	
+	/**
+	 * 
+	 * @return FQDN conversion value
+	 */
 	public boolean isFQDNConversion() {
 		return bFQDNConversion;
 	}
-	public void setFQDNConversion(boolean conversion) {
+	
+	/**
+	 * 
+	 * @param conversion
+	 */
+	public void setFQDNConversion(final boolean conversion) {
 		bFQDNConversion = conversion;
 	}
 	
+	/**
+	 * 
+	 * @return batch hint
+	 */
 	public int getBatchHint() {
 		return batchHint;
 	}
-	public void setBatchHint(int batchHint) {
-		if(batchHint<=0){
-			LOGGER.warning("Batch hint set is invalid , value of batch hint = "+batchHint);
-		}else{
-			this.batchHint = batchHint;
+	
+	/**
+	 * 
+	 * @param batchHint
+	 */
+	public void setBatchHint(final int batchHint) {
+		this.batchHint = batchHint;		
+	}
+	
+	/**
+	 * Parses the received value of Alias source pattern and values in a string and updates the map.
+	 * @param aliasMapString The comples string containg all the entries made on the configuration form. 
+	 * 	Entries of two consecutive rows are separated by /$$CRLF$$/
+	 * 	A Source pattern is separated by its corresponding Alias pattern by /$$EQUAL$$/   
+	 * @return A Map depicting the actual mapping specified by the user on the configuration page
+	*/
+	private Map<String, String> parseAlias(final String aliasMapString) {
+		LOGGER.config("parsing aliasString: "+aliasMapString);
+		if((aliasMapString==null) || aliasMapString.equals("")) {
+			return null;
+		}
+		final Map<String, String> aliasMap = new LinkedHashMap<String, String>();
+		final String[] aliasValues = aliasMapString.split(SPConstants.ALIAS_ENTRIES_SEPARATOR);
+		for (String element : aliasValues) {
+			String alias_url = "";
+			String source_url = "";
+			if(element!=null) {
+				final String[] alias_value = element.split(SPConstants.SOURCE_ALIAS_SEPARATOR);	
+				if(alias_value.length==2) {
+					source_url = alias_value[0];				
+					alias_url = alias_value[1];
+				} else {
+					continue;
+				}
+				LOGGER.config("updating AliasMap Key[alias_source="+source_url+"] Value[alias_host_port="+alias_url+"]");
+				aliasMap.put(source_url, alias_url);
+			}
+		}
+		return aliasMap;
+	}
+	
+	/**
+	 * @return the feedType
+	 */
+	public String getFeedType() {
+		return feedType;
+	}
+	
+	/**
+	 * @param inFeedType the feedType to set
+	 */
+	public void setFeedType(final String inFeedType) {
+		feedType = inFeedType;
+	}
+	
+	/**
+	 * Check the connectivity to a given URL by making HTTP head request.
+	 * @param strURL The URL to be checked
+	 * @return the HTTP response code
+	 */
+	public int checkConnectivity(final String strURL, HttpMethodBase method) throws Exception {
+		LOGGER.log(Level.CONFIG, "Requesting [ "+strURL+" ] ....");		
+		int responseCode = 0;
+		String username = this.username;
+		final String host = Util.getHost(strURL);
+		Credentials credentials =  null;
+		boolean ntlm = true; // We first try to use ntlm
+		if(null != domain && !domain.equals("")) {
+			credentials = new NTCredentials(username,password, host, domain);
+		} else {
+			credentials =  new UsernamePasswordCredentials(username,password);
+			ntlm = false;
+		}
+		final HttpClient httpClient = new HttpClient();
+		
+		httpClient.getState().setCredentials(AuthScope.ANY,credentials);
+		if(null == method) {
+			method = new HeadMethod(strURL);
+		}
+		responseCode = httpClient.executeMethod(method);
+		if(responseCode == 401 && ntlm) {
+			LOGGER.log(Level.FINE,"Trying with HTTP Basic.");
+			username = Util.getUserNameWithDomain(this.username, domain);
+			credentials =  new UsernamePasswordCredentials(username,password);
+			httpClient.getState().setCredentials(AuthScope.ANY,credentials);
+			responseCode = httpClient.executeMethod(method);				
+		}
+		if(responseCode != 200) {
+			LOGGER.log(Level.WARNING, "responseCode: "+responseCode);
+		}
+		return responseCode;
+	}
+		
+	/**
+	 * Detect SharePoint type from the URL
+	 * @param strURL
+	 * @return the SharePoint Type of the siteURL being passed
+	 */
+	public String checkSharePointType(String strURL) {
+		LOGGER.log(Level.CONFIG, "Checking [ "+strURL+" ] for the SharePoint version.");		
+		
+		strURL = Util.encodeURL(strURL);
+		HttpMethodBase method = null;				
+		try {
+			method = new HeadMethod(strURL);
+			checkConnectivity(strURL, method);
+			if(null == method) {
+				return SPConstants.CONNECTIVITY_FAIL;			
+			}
+		} catch (final Exception e) {
+			LOGGER.log(Level.WARNING,"Unable to connect " + strURL, e);
+			return e.getLocalizedMessage();
+		}
+		if(null == method) {
+			return SPConstants.CONNECTIVITY_FAIL;			
+		}
+		final Header contentType = method.getResponseHeader("MicrosoftSharePointTeamServices");
+		String version = null;
+		if(contentType!=null) {
+			version = contentType.getValue();
+		}
+		LOGGER.info("SharePoint Version: " + version);
+		if(version == null) {
+			LOGGER.warning("Sharepoint version not found for the site [ "+strURL+" ]");
+			return SPConstants.CONNECTIVITY_FAIL;
+		}			
+		if(version.trim().startsWith("12")) {
+			return SPConstants.SP2007;
+		}
+		else if(version.trim().startsWith("6")) {
+			return SPConstants.SP2003;
+		} else {
+			LOGGER.warning("Unknown sharepoint version found for the site [ "+strURL+" ]");
+			return SPConstants.CONNECTIVITY_FAIL;
 		}
 	}
+	
+	/**
+	 * Check if the String Value can be included or not
+	 * @param strValue The URL to be checked
+	 */
+	public boolean isIncludedUrl(final String strValue) {
+		if(includedURlList == null){
+			LOGGER.log(Level.WARNING,"Can not find include URLs");
+			return false;
+		}
+		try {
+			if ((strValue != null) || (strValue.length() != 0)){
+				if(Util.match(includedURlList, strValue, null)) {
+					final StringBuffer matchedPattern = new StringBuffer();
+					if(excludedURlList == null){
+						return true;
+					}else if(Util.match(excludedURlList, strValue, matchedPattern)) {
+						if(matchedPattern != null) {
+							logExcludedURL("[ " + strValue + " ] matched aginst the Excluded URL Pattern: " + matchedPattern.toString());
+						}
+						return false;
+					}
+					return true;
+				} else {
+					logExcludedURL("[ " + strValue + " ] did not match against the Included URL Pattern(s).");
+				}
+			}
+		} catch(Exception e) {
+			LOGGER.log(Level.WARNING, "Probelm while metadata filtering. strValue [ " + strValue + " ]. ");
+		}
+		return false;
+	}
+	
+	/**
+	 * Check if the Metadata can be included or not.
+	 * Applies two level filter:
+		Level1: Only those metadata which are specified under included_metadata should be included. If included_metadata is empty, include all.
+		Level2: exclude all metadata which are spcified under excluded_metadata.
+	 * @param metadata Metadata to be checked
+	 */
+	public boolean isIncludeMetadata(final String metadata) {
+		if(metadata == null) {
+			return false;
+		}
+		
+		boolean status = false;
+		Pattern pattern = null;
+		if((included_metadata != null) && (included_metadata.size() > 0)) {
+			for (int index = 0; index < included_metadata.size(); ++index) {
+				pattern = included_metadata.get(index);
+				try {
+					final Matcher match = pattern.matcher(metadata);
+					if (match.find()) {
+						status = true;
+						break;
+					}
+				} catch(final Exception e) {
+					LOGGER.log(Level.WARNING, "Unable to match the metadata [ " + metadata + " ] against one of the included_metadata. ", e);
+					continue;
+				}				
+			}
+		} else {
+			status = true;
+		}
+
+		if(status && (excluded_metadata != null)){
+			for (int index = 0; index < excluded_metadata.size(); ++index) {
+				pattern = excluded_metadata.get(index);
+				try {
+					final Matcher match = pattern.matcher(metadata);
+					if (match.find()) {
+						status = false;
+						break;
+					}
+				} catch(final Exception e) {
+					LOGGER.log(Level.WARNING, "Unable to match the metadata [ " + metadata + " ] against one of the excluded_metadata. ", e);
+					continue;
+				}				
+			}
+		}	
+		
+		return status;
+	}
+		
+	/**
+	 * Logs the excluded URL
+	 * @param info
+	 */
+	public void logExcludedURL(final String info) {
+		// If the parent directory does not exist, create one
+		File file = new File(excludedURL_ParentDir);
+		if((file == null) || !file.exists() || !file.isDirectory()) {
+			LOGGER.log(Level.WARNING, "Excluded URL parent directory not found! Creating one... status: " + file.mkdir());
+		}
+		
+		final String fileName = excludedURL_ParentDir + SPConstants.SLASH + SPConstants.EXCLUDED_URL_LOG + 0 + ".txt";
+		file = new File(fileName);
+		
+		try {
+			if(!file.exists()) {
+				LOGGER.log(Level.INFO, "creating " + fileName + " ... status: " + file.createNewFile());				
+			} else if(file.length() > SPConstants.EXCLUDED_URL_MAX_SIZE) { // rotate the logs
+				// Delete the oldest log file
+				final String tmpFileName = excludedURL_ParentDir + SPConstants.SLASH + SPConstants.EXCLUDED_URL_LOG + SPConstants.EXCLUDED_URL_MAX_COUNT + ".txt";
+				File tmpFile = new File(tmpFileName);
+				LOGGER.log(Level.INFO, "Deleting " + tmpFileName + " to rotate... status:" + tmpFile.delete());
+				
+				for(int i = SPConstants.EXCLUDED_URL_MAX_COUNT - 1; i >= 0; --i) {
+					tmpFile = new File(excludedURL_ParentDir + SPConstants.SLASH + SPConstants.EXCLUDED_URL_LOG + i + ".txt");
+					tmpFile.renameTo(new File(excludedURL_ParentDir + SPConstants.SLASH + SPConstants.EXCLUDED_URL_LOG + (i+1) + ".txt"));
+				}				
+				LOGGER.log(Level.INFO, "creating " + fileName + " ... status: " + file.createNewFile());
+			}			
+			Util.logInfo(fileName, info);
+		} catch (final IOException e) {
+			LOGGER.log(Level.WARNING, "Problem while logging excluded URLs", e);
+		}catch(final Throwable e){
+			LOGGER.log(Level.WARNING, "Problem while logging excluded URLs", e);
+		}
+	}	
+	
+	/**
+	 * Deletes all the excluded URL logs
+	 *
+	 */
+	public void clearExcludedURLLogs() {
+		LOGGER.log(Level.INFO, "Cleaning all the excluded URL logs...");
+		final File file = new File(excludedURL_ParentDir);
+		if((file == null) || !file.exists() || !file.isDirectory()) {
+			LOGGER.log(Level.WARNING, "Excluded URL parent directory not found! ");
+			return;
+		}
+		final File[] logs = file.listFiles();
+		if(logs == null) {
+			return;
+		}
+		for (File element : logs) {
+			if((element == null) || !element.exists()) {
+				continue;
+			}
+			LOGGER.log(Level.INFO, "Deleting " + element.getAbsolutePath() + " ... status:" + element.delete());
+		}
+		LOGGER.log(Level.INFO, "Deleting " + excludedURL_ParentDir + " ... status:" + file.delete());
+	}
+
+	/**
+	 * @return the siteURL
+	 */
+	public String getSiteURL() {
+		return siteURL;
+	}	
 }
