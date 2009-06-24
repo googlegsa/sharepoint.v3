@@ -1,44 +1,65 @@
-Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.3.2: Release Notes
+Release Notes:
+===============
 
-This document contains the release notes for Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.3.2.  
-The following sections describe the release in detail and provide
-information that supplements the main documentation.  See the Issues 
-Tab on the Code Site for the current list of known issues and
-workarounds.
+Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007
 
-Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+This document contains the release notes for Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007.
+The following sections describe the release in detail and provide information that supplements the main documentation.  
+See the Issues Tab on the Code Site for the current list of known issues and workarounds.
 
-Release 1.3.2, April 10, 2009
-=============================
-
-INTRODUCTION 
-=============
-This is a maintenance release that improves quality, reliability, and performance without adding any new functionality. All users of previous 1.3.x releases should upgrade to this release. See the product website for a complete description.
-
-Version compatibility
-=============================
-
-This connector release is compatible with Connector Manager v1.3.2 and above. Earlier versions of the Connector Manager will not work correctly with this version of the connector.
-It is suggested that customers using SharePoint Connector versions 1.0.0 through 1.3.0 and considering upgrading 1.3.2  should do a clean install of Connector Manager v1.3.2 and then install Google SharePoint Connector v1.3.2. This product is designed to function with Microsoft SharePoint 2003, SharePoint 2007, WSS 2.0, WSS 3.0
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-ISSUES FIXED IN THIS RELEASE:
-=============================
-- Issue 63: Connector does not support the various strict Windows security templates that come up with NTLM Version 2.
-- Issue 71: The connector configuration form should be XHTML compliant. Because of certain JavaScript dependecies introduced in this fix, this connector version will not support connector manager versions prior to 1.3.2.
+Release 2.0.0, June 22, 2009
+==========================
+
+Introduction
+------------
+This is a major release with new features. Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
 
 
-KNOWN ISSUES/LIMITATIONS:
-=========================
-Issue 51: Connector does not validate MySite against included/excluded URL patterns and connectivity on the connector configuration page.
-Issue 52: Crawl URL specified on the connector configuration page is not validated if it contains repeated slashes.
+Summary of Changes
+------------------
+New features:
+---------------
+1) Support for selecting the authorization mode: Google Search Appliance/SAML provider OR by the connector
+2) Per site version detection which allows multiple sites of different SharePoint versions to be crawled using a single connector instance
+3) Discovering multiple site collection from a SharePoint farm installation
+4) Support for various security templates of NTLM V2
+5) Improved metadata control and indexing
+6) Improved Site Alias Mapping support
+
+Issues fixed from last release:
+---------------------------------
+Issue 21: Can we combine alias host & port?
+Issue 43: Detect SharePoint Server version from Crawl URL
+Issue 51: Connector does not validate the URL patterns for MySite URL
+Issue 52: Connector accepts crawl URL with repeated slashes 
+Issue 53: connector should support SharePoint farm
+Issue 54: Does the connector configuration UI work in Chrome? 
+Issue 55: The custom metadata fetched by the connector contains ows_ as its prefix. 
+Issue 56: Connector accepts username in format user@domain for user when SharePoint site mentioned under crawl URL is a HTTP basic protected site 
+Issue 63: Connector does not support the various strict Windows security templates that come up with NTLM Version 2.
+Issue 64: Log excluded URLs in a separate file
+Issue 65: Metadata values not fully-indexed (values originating from the ows_MetaInfo state-bag field)
+Issue 67: Error message should be shown to indicate that the prefix is incorrect for includeURLs and excludeURLs
+Issue 68: Connector does not detect renamed folders and send feeds for the same
 Issue 69: NullPointerException seen in logs when SharePoint version is selected as 2007 and Crawl URL is of SPS 2003 while configuring the connector instance.
-Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme is HTTP Basic and the credentials used are of a local machine user.
+Issue 71: The connector configuration form should be XHTML compliant.
 
 
+Version Compatibility
+---------------------
+Connectors created with earlier versions of the connector will not work with this version. This version works with Connector Manager version 2.0.0. Earlier versions of the Connector Manager will not work correctly with this version of the connector.
 
 
-
-
-
-
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+2) In this release, following features are supported only on SharePoint 2007
+   - Fix for issue#53 (Connector should support SharePoint farm )
+   - Bulk Authorization by connector
+3) Issue#59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+   java.net.BindException: Address already in use: JVM_Bind
+   Workaround: Stop the connector and restart it after some time to avoid this issue.
+4) Issue#70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and the credentials used are of a local machine user.

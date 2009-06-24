@@ -1,8 +1,4 @@
 //Copyright 2007 Google Inc.
-
-package com.google.enterprise.connector.sharepoint.state;
-
-
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
 //You may obtain a copy of the License at
@@ -15,46 +11,41 @@ package com.google.enterprise.connector.sharepoint.state;
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
+package com.google.enterprise.connector.sharepoint.state;
+
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.joda.time.DateTime;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
-import com.google.enterprise.connector.sharepoint.SharepointConnectorType;
-import com.google.enterprise.connector.sharepoint.Util;
 import com.google.enterprise.connector.sharepoint.client.Attribute;
-import com.google.enterprise.connector.sharepoint.client.SPDocument;
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
- * Maintains the SharePoint connector's state with respect to a List (a
- * SharePoint container, e.g. Document Library).  In addition to the 
- * functionality required by the StatefulObject interface, ListState also keeps
- * 1) The "crawl queue", an ordered list of SPDocuments due to be fed
- * to the Connector Manager
- * 2) The "last crawled" SPDocument, i.e. the last one that was successfully
- * fed to Connector Manager
- * 3) the List "url", the trailing part of the URL for this List
- * It also determines, from at least (1) and (2), the date-time that the 
- * connector should pass to SharePoint in its GetListItemChanges web services
- * call.
+ * Represents a SharePoint List/Library as a stateful object
+ * @author nitendra_thakur
+ *
  */
 public class ListState implements StatefulObject {
 	protected String key = null;
-	protected DateTime lastMod = null;
 
 	/**
 	 * Whether the underlying SharePoint object that this object was created
@@ -62,69 +53,296 @@ public class ListState implements StatefulObject {
 	 * by GlobalState, and then set true if the underlying object is found to
 	 * be still there.
 	 */
-	private boolean exists = true;
+	private boolean exists = true; // By default mark all list state as exisitng when they are created.
 
+	private String listTitle = "";
+	private String listURL = "";
+	
 	/**
-	 * The URL of the List is more human-readable, which is good for debugging.
+	 * To store the the recent change token required to make the web service call next time.
 	 */
-	private String url = "";
+	private String changeToken;
+	/**
+	 * To store the the previous change token in memory. we might need to roll back.
+	 */
+	private String CachedPrevChangeToken;	
+	/**
+	 * To keep track of the latest change token value that we might lose during rolling back.
+	 */
+	private String LatestCachedChangeToken;
+	
+	/**
+	 * To store all the extraIDs for which delete feed has been sent. This is also kept in memory.
+	 */
+	private Set<String> cachedDeletedIDs = new HashSet<String>();
 
-//	private static Log logger = LogFactory.getLog(ListState.class);
 	private static final Logger LOGGER = Logger.getLogger(ListState.class.getName());
-	private String className = GlobalState.class.getName();
 
 	/**
 	 * this should be set by the main Sharepoint client every time it 
 	 * successfully crawls a SPDocument. For Lists that are NOT current,
 	 * this is maintained in the persistent state.
+	 */	
+	SPDocument lastDocument;
+	
+	/** 
+	 * an ordered list of SPDocuments due to be fed to the Connector Manager
 	 */
-	private SPDocument lastDocCrawled;
-	private List crawlQueue = null;
+	private List<SPDocument> crawlQueue = null;
 
-	private static final String ID = "id";
-	private static final String LAST_MOD = "lastMod";
-	private static final String ATTR_NAME = "name";
-	private static final String ATTR_VALUE = "value";
-	private static final String DOC_ATTR = "docAttr";
-	private Collator collator = SharepointConnectorType.getCollator();
-
+	private final Collator collator = Util.getCollator();
+	
+	private String type;
+	private Calendar lastMod;
+	private String baseTemplate;	
+	private String parentWebTitle;
+	private String parentWeb;
+	private ArrayList<Attribute> attrs = new ArrayList<Attribute>();
+	private String listConst = "/Lists";
+	
+	/**
+	 * To keep track of those IDs which can not be discovered by making any web service call.
+	 * For Example, it is not possible to track the documents if their parent folder is deleted. 
+	 */
+	private StringBuffer extraIDs = new StringBuffer();
+	private StringBuffer attchmnts = new StringBuffer();
+	/**
+	 * To keep track of the document with the biggest ID that has been discovered from this list
+	 */
+	private int biggestID = 0;
+	/**
+	 * Helps to make web service call which returns the results page by page
+	 */
+	private String nextPage = null;
+	/**
+	 * Indicates list level change. Decides whether the list should be sent as a separate doc.
+	 */
+	private boolean isNewList;
+		
+	private String spType;
+	private String feedType;
+		
 	/**
 	 * No-args constructor.
 	 */
-	public ListState() {}
+	public ListState(final String inSPType, final String inFeedType) {
+		spType = inSPType;
+		feedType = inFeedType;
+	}
+	
+	/**
+	 * 
+	 * @param inInternalName
+	 * @param inTitle
+	 * @param inType
+	 * @param inLastMod
+	 * @param inBaseTemplate
+	 * @param inUrl
+	 * @param inParentWeb
+	 * @param inParentWebTitle
+	 * @param inSPType
+	 * @param inFeedType
+	 * @throws SharepointException
+	 */
+	public ListState(final String inInternalName, final String inTitle, final String inType, final Calendar inLastMod,final String inBaseTemplate,
+			final String inUrl,final String inParentWeb, final String inParentWebTitle, final String inSPType, final String inFeedType) throws SharepointException {
+			  
+	    LOGGER.config("inInternalName["+inInternalName+"], inType["+inType+"], inLastMod["+inLastMod+"], inBaseTemplate["+inBaseTemplate+"], inUrl["+inUrl+"], inParentWebTitle["+inParentWebTitle+"]");
+	      
+	    if(inInternalName==null){
+		    throw new SharepointException("Unable to find Internal name");
+	    }
+	    key = inInternalName;
+	    listTitle = inTitle;
+	    parentWebTitle = inParentWebTitle;
+	    parentWeb = inParentWeb;
+	    type = inType;
+	    lastMod = inLastMod;
+	    baseTemplate = inBaseTemplate;
+	    listURL = inUrl;
+	    spType = inSPType;
+		feedType = inFeedType;
+	}
+		
+	/**
+	 * 
+	 * @return list type (generic / document libraries)
+	 */
+	public String getType() {
+		return type;
+	}
 
 	/**
-	 * Constructor.
-	 * @param inKey The GUID for this List.
-	 * @param inLastMod last-modified date for List (from SharePoint)
+	 * 
+	 * @return the base templete
 	 */
-	public ListState(String inKey, DateTime inLastMod){
-		if(inKey!=null){
-			this.key = inKey;
-			this.lastMod = inLastMod;
+	public String getBaseTemplate() {
+		return baseTemplate;
+	}
+	
+	/**
+	 * 
+	 * @param inBaseTemplate
+	 */
+	public void setBaseTemplate(final String inBaseTemplate) {
+		if(inBaseTemplate!=null){
+			baseTemplate = inBaseTemplate;
 		}
 	}
 
-	public ListState get() {
-		return new ListState();
+	/**
+	 * 
+	 * @return the list properties
+	 */
+	public ArrayList<Attribute> getAttrs() {
+		return attrs;
 	}
+
+	/**
+	 * 
+	 * @param attrs
+	 */
+	public void setAttrs(final ArrayList<Attribute> attrs) {
+		this.attrs = attrs;
+	}
+	
+	/**
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public void setAttribute(final String key, final String value) {
+		if(attrs==null){
+			attrs = new ArrayList<Attribute>();
+		}
+		if(key!=null){
+			attrs.add(new Attribute(key, value));
+		}
+	}
+
+	/**
+	 * 
+	 * @param inUrl
+	 */
+	public void setUrl(final String inUrl) {
+		if(inUrl!=null){
+			listURL = inUrl;
+		}
+	}
+
+	/**
+	 * 
+	 * @return the list constant which is typically used for constructing the document URLs from the list URL
+	 */
+	public String getListConst() {
+		return listConst;
+	}
+
+	/**
+	 * 
+	 * @param inListConst
+	 */
+	public void setListConst(final String inListConst) {
+		if(inListConst!=null){
+			listConst = inListConst;
+		}
+	}
+
+	/**
+	 * 
+	 * @return the parent web title
+	 */
+	public String getParentWebTitle() {
+		return parentWebTitle;
+	}
+
+	/**
+	 * 
+	 * @param inParentWebTitle
+	 */
+	public void setParentWebTitle(final String inParentWebTitle) {
+		if(null!=inParentWebTitle){
+			parentWebTitle = inParentWebTitle;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return the boolean value depicting if the list can contain folders
+	 */
+	public boolean canContainFolders() {
+		if (collator.equals(type,SPConstants.DOC_LIB)
+				|| collator.equals(type,SPConstants.GENERIC_LIST)
+				|| collator.equals(type,SPConstants.ISSUE)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return the boolean value depicting if the list a Document library
+	 */
+	public boolean isDocumentLibrary() {
+		if (collator.equals(type,SPConstants.DOC_LIB)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return the boolean value depicting if the items of this list contain attachments
+	 */
+	public boolean canContainAttachments() {
+		if (collator.equals(type,SPConstants.GENERIC_LIST) 
+				|| collator.equals(type,SPConstants.ISSUE)
+				|| collator.equals(type,SPConstants.DISCUSSION_BOARD)) {
+			return true;			
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return the boolean value depicting if the list can contain link sites
+	 */
+	public boolean isLinkSite() {
+		if ((collator.equals(baseTemplate,SPConstants.ORIGINAL_BT_LINKS)) 
+				|| (collator.equals(baseTemplate,SPConstants.BT_SITESLIST))) {
+			return true;
+		} else {
+			return false;
+		}
+	}	
 
 	/**
 	 * Get the lastMod time.
 	 * @return time the List was last modified
 	 */
 	public DateTime getLastMod() {
-		return lastMod;
+		return Util.calendarToJoda(lastMod);
 	}
 
 	/**
 	 * Set the lastMod time.
 	 * @param inLastMod time
 	 */
-	public void setLastMod(DateTime inLastMod) {
-		this.lastMod = inLastMod;
+	public void setLastMod(final DateTime inLastMod) {
+		lastMod = Util.jodaToCalendar(inLastMod);
 	}
-
+	
+	/**
+	 * 
+	 * @return the l;ast modified date
+	 */
+	public Calendar getLastModCal() {
+		return lastMod;		
+	}
+	
 	/**
 	 * Return lastMod in String form.
 	 * @return lastMod string-ified
@@ -143,21 +361,27 @@ public class ListState implements StatefulObject {
 
 	/**
 	 * Sets the primary key.
-	 * @param key
+	 * @param newKey
 	 */
-	public void setPrimaryKey(String newKey) {
+	public void setPrimaryKey(final String newKey) {
 		//primary key cannot be null
 		if(newKey!=null){
 			key = newKey;
 		}
 	}
 
-	public boolean isExisting() {
+	/**
+	 * Checks if the list is still existing
+	 */
+	public boolean isExisting() {		
 		return exists;
 	}
 
+	/**
+	 * mark the list as existing/non-existing
+	 */
 	public void setExisting(boolean existing) {
-		this.exists = existing;
+		exists = existing;
 	}
 
 	/**
@@ -169,20 +393,40 @@ public class ListState implements StatefulObject {
 	 *     greater, 0 if equal (which should only happen for the identity
 	 *     comparison).
 	 */
-	public int compareTo(Object o) {
+	public int compareTo(final StatefulObject o) {
 		ListState other = null;
 		if(o instanceof ListState){
 			other = (ListState) o;
 		}
-		if (other == null) {  
+		if ((other == null) || (other.lastMod == null)) {  
 			return 1; // anything is greater than null
 		}
-		int lastModComparison = this.lastMod.compareTo(other.lastMod);
+		if (lastMod == null) {
+			return -1;
+		}
+		final int lastModComparison = lastMod.getTime().compareTo(other.lastMod.getTime());
 		if (lastModComparison != 0) {
 			return lastModComparison;
 		} else {
-			return this.key.compareTo(other.key);
+			return key.compareTo(other.key);
 		}
+	}
+	
+	/**
+	 * For List equality comparison
+	 */
+	public boolean equals(final Object obj) {
+		if(obj == null) {
+			return false;
+		}
+		ListState other = null;
+		if(obj instanceof ListState){
+			other = (ListState) obj;
+			if(key.equals(other.getPrimaryKey())){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -200,31 +444,741 @@ public class ListState implements StatefulObject {
 	 * @return Calendar suitable for passing to WebServices
 	 */
 	public Calendar getDateForWSRefresh() {
-		String sFunctionName = "getDateForWSRefresh()";
-		LOGGER.entering(className, sFunctionName);
 		Calendar date = Util.jodaToCalendar(getLastMod()); // our default
 
-		//modified by amit
-		if ((date!=null)&&(lastDocCrawled != null)) {
-			Calendar lastDocDate = lastDocCrawled.getLastMod();
+		if ((date!=null)&&(lastDocument != null)) {
+			final Calendar lastDocDate = lastDocument.getLastMod();
 			if (lastDocDate.toString().compareTo(date.toString()) < 0) {
 				date = lastDocDate;
 			}
 		}
 		// now, if there's a crawl queue, we might take its last entry:
-		if (crawlQueue != null && crawlQueue.size() > 0) {
-			Calendar lastCrawlQueueDate = 
+		if ((crawlQueue != null) && (crawlQueue.size() > 0)) {
+			final Calendar lastCrawlQueueDate = 
 				((SPDocument) crawlQueue.get(crawlQueue.size() - 1)).getLastMod();
 			if (lastCrawlQueueDate.before(date)) {
 				date = lastCrawlQueueDate;
 			}
 		}
-		LOGGER.exiting(className, sFunctionName);
 		return date;
 	}
+	
+	/**
+	 * Return the most suitable DocID to start the crawl.
+	 * Used in case of SP2007.
+	 * Ideally we should start from the lastDoc. 
+	 * But if there is a crawl queue whose last entry is greater then the lastDoc, we'll start from the last doc of the crawl queue.
+	 * @return {@link SPDocument}
+	 */
+	public SPDocument getLastDocForWSRefresh() {
+		if ((crawlQueue != null) && (crawlQueue.size() > 0)) {
+			return (SPDocument) crawlQueue.get(crawlQueue.size() - 1);			
+		} else {
+			return lastDocument;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return the crawl queue containg the documents from this list
+	 */
+	public List getCrawlQueue() {
+		return crawlQueue;
+	}
+	
+	/**
+	 * Debug routine: dump the crawl queue to stdout. (this is deliberately
+	 * in preference to log messages, since it's much easier to follow in 
+	 * Eclipse.)
+	 */
+	public void dumpCrawlQueue() {
+		if ((crawlQueue != null) && (crawlQueue.size() > 0)) {
+			LOGGER.config("Crawl queue for " + getListURL());
+			for (int iDoc=0; iDoc<crawlQueue.size();++iDoc) {
+				final SPDocument doc =(SPDocument) crawlQueue.get(iDoc);
+				LOGGER.config(doc.getLastMod().getTime() + ", " + doc.getUrl());
+				doc.dumpAllAttrs();
+			}
+		} else {
+			LOGGER.config("Empty crawl queue for " + getListURL());
+		}
+	}
 
-	public SPDocument getLastDocCrawled() {
-		return lastDocCrawled;
+	/**
+	 * 
+	 * @param inCrawlQueue
+	 */
+	public void setCrawlQueue(final List<SPDocument> inCrawlQueue) {
+		crawlQueue = inCrawlQueue;		
+	}
+	
+	/**
+	 * 
+	 * @param doc : to be removed from the crawl queue
+	 */
+	public void removeDocFromCrawlQueue(final SPDocument doc) {
+		if(null == doc) {
+			LOGGER.log(Level.WARNING, "Requested document for removal is null. ");
+			return;
+		}
+		if(null == crawlQueue) {
+			LOGGER.log(Level.WARNING, "Request for document removal is received when Crawl Queue is empty. docID [ " + doc.getDocId() + " ], docURL [ " + doc.getUrl() + " ]. ");
+			return;
+		}
+		boolean status = crawlQueue.remove(doc);
+		LOGGER.log(Level.FINE, "Document Removed from Crawl Queue. docID [ " + doc.getDocId() + " ], docURL [ " + doc.getUrl() 
+				+ " ], Action [ " + doc.getAction() + " ], deleteStatus [ " + status + " ], currentCrawlQueueSize [ " + crawlQueue.size() + " ]. ");
+	}
+
+	/**
+	 * Create a DOM tree for the entire ListState object.
+	 * @param domDoc DOM node for the containing XML document, which is necessary
+	 *  for creating new DOM nodes
+	 * @return Node head of DOM tree
+	 * @throws SharepointException
+	 */
+	public Node dumpToDOM(final Document domDoc) throws SharepointException{
+		final Element element = domDoc.createElement(SPConstants.LIST_STATE);
+		element.setAttribute(SPConstants.STATE_ID, getPrimaryKey());
+		
+		if(listURL != null) {
+			element.setAttribute(SPConstants.STATE_URL, listURL);
+		}
+		
+		final String strLastMod = getLastModString();
+		if(strLastMod != null) {
+			element.setAttribute(SPConstants.STATE_LASTMODIFIED, strLastMod);
+		}
+		
+		if(null == type) {
+			type = "";
+		}
+		element.setAttribute(SPConstants.STATE_TYPE, type);
+		if(SPConstants.ALERTS_TYPE.equalsIgnoreCase(type)) {
+			if(getIDs() != null && getIDs().length() != 0) {
+				final Element IDsTmp = domDoc.createElement(SPConstants.STATE_EXTRAIDS_ALERTS);
+				final Text IDsText = domDoc.createTextNode(getIDs().toString());
+				IDsTmp.appendChild(IDsText);
+				element.appendChild(IDsTmp);
+			}
+		} else {
+			if(SPConstants.SP2007.equalsIgnoreCase(spType)) {
+				if((changeToken == null) || (changeToken.length() == 0)) { 
+					if((CachedPrevChangeToken == null) || (CachedPrevChangeToken.length() == 0)) {
+						element.setAttribute(SPConstants.STATE_CHANGETOKEN, "");
+					} else {
+						element.setAttribute(SPConstants.STATE_CACHED_CHANGETOKEN, CachedPrevChangeToken);
+					}
+				} else {
+					element.setAttribute(SPConstants.STATE_CHANGETOKEN, changeToken);
+				}
+				if(SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+					if(canContainFolders() && getIDs() != null && getIDs().length() != 0) {
+						Element IDsTmp = domDoc.createElement(SPConstants.STATE_EXTRAIDS_FOLDERS);
+						final Text IDsText = domDoc.createTextNode(getIDs().toString());
+						IDsTmp.appendChild(IDsText);
+						element.appendChild(IDsTmp);
+					}					
+			
+					if(canContainAttachments() && getAttchmnts() != null && getAttchmnts().length() != 0) {
+						Element attchmntsTmp = domDoc.createElement(SPConstants.STATE_EXTRAIDS_ATTACHMENTS);
+						final Text IDsText = domDoc.createTextNode(getAttchmnts().toString());
+						attchmntsTmp.appendChild(IDsText);
+						element.appendChild(attchmntsTmp);
+					}
+					
+					element.setAttribute(SPConstants.STATE_BIGGESTID, String.valueOf(biggestID));				
+				}
+			}
+			
+			// dump the "last doc crawled"
+			if(lastDocument != null) {
+				final Element elementLastDocCrawled = domDoc.createElement(SPConstants.STATE_LASTDOCCRAWLED);
+				element.appendChild(elementLastDocCrawled);
+				
+				if(lastDocument.getDocId() != null) {
+					elementLastDocCrawled.setAttribute(SPConstants.STATE_ID, lastDocument.getDocId());
+				}
+				
+				if(SPConstants.SP2007.equalsIgnoreCase(spType)) {
+					if(lastDocument.getFolderLevel() != null && lastDocument.getFolderLevel().length() != 0) {
+						elementLastDocCrawled.setAttribute(SPConstants.STATE_FOLDER_LEVEL, lastDocument.getFolderLevel());
+					}
+					if(SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+						if(lastDocument.getAction() != null) {
+							elementLastDocCrawled.setAttribute(SPConstants.STATE_ACTION, lastDocument.getAction().toString());
+						}
+					}
+				} 
+				if(lastDocument.getLastDocLastModString() != null) {
+					elementLastDocCrawled.setAttribute(SPConstants.STATE_LASTMODIFIED, lastDocument.getLastDocLastModString());
+				}		
+			}
+		}
+		
+		return element;
+	}
+
+	/**
+	 * Reload this ListState from a DOM tree.  The opposite of dumpToDOM().
+	 * @param element the DOM element
+	 * @throws SharepointException if the DOM tree is not a valid representation
+	 *     of a ListState 
+	 */
+	public void loadFromDOM(final Element element) throws SharepointException {
+		if(element==null){
+			throw new SharepointException("element not found");
+		}
+		key = element.getAttribute(SPConstants.STATE_ID);
+		if ((key == null) || (key.length() == 0)) {
+			throw new SharepointException("Invalid XML: no id attribute");
+		}
+		listURL = element.getAttribute(SPConstants.STATE_URL);
+		
+		try {
+			final String lastModString = element.getAttribute(SPConstants.STATE_LASTMODIFIED);
+			lastMod = Util.jodaToCalendar(Util.parseDate(lastModString));
+		} catch(final Exception e) {
+			LOGGER.log(Level.SEVERE, "Failed to load Last Modified for list [ " + listURL + " ]. ",e);
+		}
+		
+		type = element.getAttribute(SPConstants.STATE_TYPE);
+		if(null == type) {
+			type = "";
+		}
+		if(SPConstants.ALERTS_TYPE.equalsIgnoreCase(type)) {
+			final NodeList IDsNodeList = element.getElementsByTagName(SPConstants.STATE_EXTRAIDS_ALERTS);
+			if((IDsNodeList!=null)&& (IDsNodeList.item(0) != null) && (IDsNodeList.item(0).getFirstChild() != null)) {
+				extraIDs = new StringBuffer(IDsNodeList.item(0).getFirstChild().getNodeValue());					
+			}
+		} else { 
+			if(SPConstants.SP2007.equalsIgnoreCase(spType)) {
+				setChangeToken(element.getAttribute(SPConstants.STATE_CHANGETOKEN));
+				if((changeToken == null) || (changeToken.length() == 0)) {
+					CachedPrevChangeToken = element.getAttribute(SPConstants.STATE_CACHED_CHANGETOKEN);
+				}
+				if(SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+					if(type != null) {				
+						if(canContainFolders()) {
+							NodeList IDsNodeList = element.getElementsByTagName(SPConstants.STATE_EXTRAIDS_FOLDERS);
+							if((IDsNodeList!=null)&& !IDsNodeList.equals("")){
+								if((IDsNodeList.item(0) != null) && (IDsNodeList.item(0).getFirstChild() != null)) {
+									extraIDs = new StringBuffer(IDsNodeList.item(0).getFirstChild().getNodeValue());
+								}
+							}
+						} 
+						if(canContainAttachments()) {
+							NodeList attchmntsNodeList = element.getElementsByTagName(SPConstants.STATE_EXTRAIDS_ATTACHMENTS);
+							if((attchmntsNodeList!=null)&& !attchmntsNodeList.equals("")){
+								if((attchmntsNodeList.item(0) != null) && (attchmntsNodeList.item(0).getFirstChild() != null)) {
+									attchmnts = new StringBuffer(attchmntsNodeList.item(0).getFirstChild().getNodeValue());
+								}
+							}
+						}					
+					}
+					
+					try {
+						biggestID = Integer.parseInt(element.getAttribute(SPConstants.STATE_BIGGESTID));
+					} catch(final Exception e) {
+						LOGGER.log(Level.WARNING, "Failed to load Biggest ID for list [ " + listURL + " ]. ",e);
+					}
+				}
+			}
+			
+			// Last Doc Crawled
+			final NodeList lastDocCrawledNodeList = element.getElementsByTagName(SPConstants.STATE_LASTDOCCRAWLED);
+			if((lastDocCrawledNodeList != null) && (lastDocCrawledNodeList.item(0) != null)) {
+				final Element elemLastDoc = (Element)lastDocCrawledNodeList.item(0);
+				final String lastCrawledDocId = elemLastDoc.getAttribute(SPConstants.STATE_ID);
+				Calendar lastCrawledDocLastMod = null;
+				String lastCrawledDocFolderLevel = null;
+				ActionType lastCrawledDocAction = null;
+						
+				if(SPConstants.SP2007.equalsIgnoreCase(spType)) {
+					lastCrawledDocFolderLevel = elemLastDoc.getAttribute(SPConstants.STATE_FOLDER_LEVEL);
+					if(SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+						lastCrawledDocAction = ActionType.findActionType(elemLastDoc.getAttribute(SPConstants.STATE_ACTION));
+					}
+				} 
+				try {
+					final String strLastCrawledDocLastMod = elemLastDoc.getAttribute(SPConstants.STATE_LASTMODIFIED);
+					lastCrawledDocLastMod = Util.jodaToCalendar(Util.parseDate(strLastCrawledDocLastMod));					
+				} catch(final Exception e) {
+					LOGGER.log(Level.WARNING, "Failed to load lastCrawledDocLastModified for List [ " + listURL + " ]. ",e);
+				}
+			
+				lastDocument = new SPDocument(lastCrawledDocId,lastCrawledDocLastMod, lastCrawledDocFolderLevel, lastCrawledDocAction);
+			}
+		}
+	}
+
+	/**
+	 * @return the listURL
+	 */
+	public String getListURL() {
+		return listURL;
+	}
+
+	/**
+	 * @param listURL the listURL to set
+	 */
+	public void setListURL(final String listURL) {
+		this.listURL = listURL;
+	}
+
+	/**
+	 * @return the changeToken
+	 */
+	public String getChangeToken() {
+		return changeToken;
+	}
+
+	/**
+	 * @param inChangeToken the changeToken to set
+	 */
+	public void setChangeToken(final String inChangeToken) {
+		CachedPrevChangeToken = changeToken;
+		changeToken = inChangeToken;
+		LatestCachedChangeToken = changeToken;
+		LOGGER.log(Level.CONFIG, "changeToken [ " + changeToken + " ], CachedPrevChangeToken [ " + CachedPrevChangeToken + " ]. ");
+	}
+
+	/**
+	 *  rollback to the last used token; 
+	 */
+	public void rollbackToken() {
+		LOGGER.log(Level.CONFIG, "Rolling back changeToken [ " + changeToken + " ], to CachedPrevChangeToken [ " + CachedPrevChangeToken + " ] .... ");
+		LatestCachedChangeToken = changeToken;
+		changeToken = CachedPrevChangeToken;
+		LOGGER.log(Level.CONFIG, "changeToken [ " + changeToken + " ], CachedPrevChangeToken [ " + CachedPrevChangeToken + " ], LatestChangeToken [ " + LatestCachedChangeToken + " ]. ");
+	}
+
+	/**
+	 * Set the changeToken to its latest value which might have been rolled back to some older value
+	 */
+	public void usingLatestToken() {
+		LOGGER.log(Level.CONFIG, "Using latest cached token [ " + LatestCachedChangeToken + " ] as change token ..... ");
+		changeToken = LatestCachedChangeToken;		
+		LOGGER.log(Level.CONFIG, "changeToken [ " + changeToken + " ], CachedPrevChangeToken [ " + CachedPrevChangeToken + " ]. ");
+	}
+
+	/**
+	 * @return the extraIDs
+	 */
+	public StringBuffer getIDs() {
+		return extraIDs;
+	}
+
+	/**
+	 * @param ds the extraIDs to set
+	 */
+	public void setIDs(final StringBuffer ds) {
+		extraIDs = ds;
+	}
+	
+	/**
+	 * Used to store information about folders and items under them.
+	 * This info is stored in the form of #foldID~foldName#id1#id2/#foldID
+	 * @param docPath the document path as returned by the web service in the value of relativeURL field
+	 * @param docID document ID
+	 * @param isFolder is the document a folder?
+	 */
+	public void updateExtraIDs(final String docPath, final String docID, final boolean isFolder)  throws SharepointException {
+		if(!Util.isNumeric(docID)) {
+			// This must be a list itself. And, we do not bother about list here. We only need list items.
+			return;
+		}
+		if(!canContainFolders()) {
+			return;
+		}
+		if(docPath == null) {
+			LOGGER.log(Level.WARNING, "docPath is null. Returning..");
+		}
+		
+		int index = -1;
+		String parentPath = null;
+		String docTitle = null;
+		
+		index = docPath.indexOf(listConst);
+		if(index == -1) {
+			LOGGER.log(Level.WARNING,"The document path [ " + docPath + " ] does not match its parent list listConst [ " + listConst + " ], listURL [ " + listURL + "]. returning...");
+			return;
+		}
+		index += listConst.length();
+		parentPath = docPath.substring(index);
+		index = parentPath.lastIndexOf(SPConstants.SLASH);
+		if(index == -1) {
+			// this can be a top level folder. We need to update ExtraID, hence make index 0.
+			index = 0;
+			docTitle = parentPath.substring(index);
+		} else {
+			docTitle = parentPath.substring(index+1);
+		}
+		
+		
+		int idPos = -1;
+		
+		final String idPattern = "\\#" + docID + "[\\#|\\~|/]";
+		final Pattern pat = Pattern.compile(idPattern);
+		final Matcher match = pat.matcher(extraIDs);
+		if(match.find()) {
+			idPos = match.start();
+		}		
+		
+		if(idPos != -1) {
+//			 We already know about this ID.
+			if(isFolder) {
+				int startPos = idPos + 1 + docID.length() + 1;
+	        	int endPos = extraIDs.indexOf("#", startPos);
+	        	int tmp_endPos = extraIDs.indexOf("/", startPos);
+				if(tmp_endPos < endPos) {
+					endPos = tmp_endPos;					
+				}
+				extraIDs.replace(startPos, endPos, docTitle);
+	        	LOGGER.log(Level.INFO, "ExtraIDs updated for the folder " + docTitle);
+			}
+	    	return;
+		}
+		
+		parentPath = parentPath.substring(0,index);
+		if((parentPath == null) || parentPath.equals("")) {
+			// Case of an item which is not inside any folder. If it is a folder, update the complex string extraIDs. Otherwise, just return, we don't need to store the outer document extraIDs.
+			if(isFolder) {
+				extraIDs.append("#" + docID + "~" + docTitle + "/#" + docID);
+	        	LOGGER.log(Level.FINEST, "ExtraIDs updated for the folder " + docTitle);
+			} else {
+				LOGGER.log(Level.FINE, "A top level document is received with docPath [ " + docPath + " ]. ExtraID has not been updated.");
+			}
+			return;
+		}
+		
+		// Reach up to the place where the ID is should be inserted. This place will come after some folder entry e.g, #2~Folder__
+		final StringTokenizer strTok = new StringTokenizer(parentPath,SPConstants.SLASH);
+		if(strTok!=null){
+			index = 0;
+			while(strTok.hasMoreTokens()) {
+				final String folder = strTok.nextToken();
+				char chr = '#';
+				do {
+					index = extraIDs.indexOf("~" + folder, index);
+					if(index == -1) {
+			        	LOGGER.log(Level.FINE, "A docID [ " + docID + " ] has been found whose parent folder ID is not known. listURL [ " + listURL + " ]. returning...");
+			        	throw new SharepointException("extraIDs needs to be updated..");
+					} 
+					index += 1+folder.length();
+					chr = extraIDs.charAt(index);
+				} while (chr != '#' && chr != '/');	
+				
+			}			
+		}
+		
+        extraIDs.insert(index,"#" + docID);
+		index += 1 + docID.length();
+		if(isFolder) {
+			extraIDs.insert(index, "~" + docTitle + "/#" + docID);					
+		}
+    	LOGGER.log(Level.FINEST, "ExtraIDs updated for the docID #" + docID +" List URL [ " + listURL + " ]. ");
+	}
+	
+	/**
+	 * For a given ID, retrieves all the dependednt item extraIDs.
+	 * @param docID
+	 * @return the set of dependent extraIDs
+	 */
+	public Set<String> getExtraIDs(final String docID) {
+		LOGGER.log(Level.FINEST, "Request for getting all dependent extraIDs for docID #" + docID + " ] is received. List URL [ " + listURL + " ]. ");
+		final Set<String> depIds = new HashSet<String>();
+		if(!Util.isNumeric(docID)) {
+			// This must be a list itself. And, we do not bother about list here. We only need list items.
+			return depIds;
+		}
+		if(!canContainFolders() && Util.isNumeric(docID)) {
+			depIds.add(docID);
+			return depIds;
+		}
+		
+		int startPos = -1;
+		int endPos = -1;
+		
+		final String idPattern = "\\#" + docID + "[\\#|\\~|/]";
+		Pattern pat = Pattern.compile(idPattern);
+		Matcher match = pat.matcher(extraIDs);
+		if(match.find()) {
+			String idPart = match.group();
+			startPos = match.start();
+			if(idPart.endsWith("~")) {
+				// Case of folder
+				endPos = extraIDs.indexOf("/#"+docID);
+        		endPos += 2 + docID.length();
+        		idPart = extraIDs.substring(startPos, endPos);
+        		
+        		pat = Pattern.compile("\\#\\d+");
+			    match = pat.matcher(idPart);
+		        while(match.find()) {
+		        	String id = match.group();
+		        	startPos = match.start();
+		        	endPos = match.end();
+		        	if(((startPos > 0) && (idPart.charAt(startPos-1) == SPConstants.SLASH_CHAR)) 
+		        		|| ((endPos < idPart.length()) && (idPart.charAt(endPos) == '~'))) {
+		        		continue;
+		        		// This is a folder ID and we do not need send any feed for folders.						
+		        	}	
+		        	id = id.substring(1);
+       				if(Util.isNumeric(id)) {
+       					depIds.add(id);
+       				}
+		        }
+			} else if(Util.isNumeric(docID)) {
+				// This is an item inside some folder.
+				// Here we are checking certain conditions before adding the original ID as to be sent as the delete feeds.
+				// Because, this ID could be of a folder also, and we do not send folder as docs.
+				depIds.add(docID);
+			}
+		} else if(Util.isNumeric(docID)) {
+			// This would be a top level doc. We do not make entries in extraIDs for such docs. 
+			depIds.add(docID);						
+		}
+	    
+	    return depIds;
+	}
+	
+	/**
+	 * Removes the specified ID form the local store
+	 * @param docID
+	 */
+	public void removeExtraID(final String docID) {
+		LOGGER.log(Level.FINEST, "Request to delete docID #" + docID + " ] is received. List URL [ " + listURL + " ]. ");
+		if(!Util.isNumeric(docID)) {
+			// This must be a list itself. And, we do not bother about list here. We only need list items.
+			return;
+		}
+		if(!canContainFolders()) {
+			return;
+		}
+		final String idPattern = "\\#" + docID + "[\\#|\\~|/]";
+		final Pattern pat = Pattern.compile(idPattern);
+		final Matcher match = pat.matcher(extraIDs);
+		if(match.find()) {
+			final String idPart = match.group();
+			final int startPos = match.start();
+			if(!idPart.endsWith("~")) {
+				extraIDs.delete(startPos, startPos + 1 + docID.length());
+			}
+		}
+	}
+	
+	/**
+	 * Returns all the stored extraIDs.
+	 * Used for debugging purposes.
+	 * @return
+	 */
+/*	public Set getAllExtraIDs() {
+		Set idSet = new HashSet();
+		String idPattern = "\\#\\d+[\\#|\\~|/]";
+		Pattern pat = Pattern.compile(idPattern);
+		Matcher match = pat.matcher(extraIDs);
+		while(match.find()) {
+			String idPart = match.group();
+			Pattern pat2 = Pattern.compile("\\d+");
+			Matcher match2 = pat2.matcher(idPart);
+			if(match2.find()) {
+				String id = match2.group();
+				if(Util.isNumeric(id)) {
+					idSet.add(id);
+				}
+			}
+		}
+		return idSet;		
+	}
+*/		
+	/**
+	 * This is to keep track of total count of attachments that have been sent for a particular item ID.
+	 * this info is stored as #itemID|count
+	 */
+	public void updateExtraIDAsAttachment(final String itemID, final String attachmentURL) {
+		LOGGER.log(Level.FINEST, "Request to update attachment [ " + attachmentURL + " ] is received for item ID #" + itemID + ". List URL [ " + listURL + " ]. ");
+		if(!canContainAttachments() || (attachmentURL == null)) {
+			return;
+		}
+		final Pattern pat = Pattern.compile("\\#" + itemID + "\\|");
+		Matcher match = pat.matcher(attachmentURL);
+		if(match.find()) {
+			LOGGER.log(Level.SEVERE, "attachmentURL [ " + attachmentURL + " matches the pattern #| which is a reserved pattern. returning..");
+			return;			
+		}
+		match = pat.matcher(attchmnts);
+		if(match.find()) {
+			final String newIdPart = "#" + itemID + "|" + attachmentURL + "|";
+			attchmnts.replace(match.start(), match.end(), newIdPart);
+		} else {
+			attchmnts.append("#"+itemID+"|"+attachmentURL);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param itemID
+	 * @return set of attachments as SPDocuemnts
+	 */
+	public List<String> getAttachmntURLsFor(final String itemID) {
+		LOGGER.log(Level.FINEST, "Request for getting all attachments for item ID #" + itemID + " is received. List URL [ " + listURL + " ]. ");
+		final List<String> attachmnt_urls = new ArrayList<String>();
+		if(!canContainAttachments()) {
+			return attachmnt_urls;
+		}
+		
+		final Pattern delimPat = Pattern.compile("\\#\\d+\\|");
+		final Matcher delimMatch = delimPat.matcher(attchmnts);
+		
+		final Pattern pat = Pattern.compile("\\#" + itemID + "\\|");
+		final Matcher match = pat.matcher(attchmnts);
+		if(match.find()) {
+			int startPos = -1;
+			int endPos = -1;		
+			startPos = match.end();
+			if(delimMatch.find(startPos)) {
+				endPos = delimMatch.start();			
+			} else {
+				endPos = attchmnts.length();
+			}
+			final String urlPart = attchmnts.substring(startPos, endPos);
+			final StringTokenizer strTok = new StringTokenizer(urlPart, "|");
+			while(strTok.hasMoreTokens()) {
+				final String attchmnt = strTok.nextToken();
+				if(Util.isURL(attchmnt)) {
+					attachmnt_urls.add(attchmnt);
+				}
+			}
+		} 
+		return attachmnt_urls;		
+	}
+
+	/**
+	 * 
+	 * @param itemID
+	 * @param attachmentURL
+	 * @return status of removal
+	 */
+	public boolean removeAttachmntURLFor(final String itemID, final String attachmentURL) {
+		LOGGER.log(Level.FINEST, "Request for deletion of attachment [ " + attachmentURL + " ] is received for item ID #" + itemID + ". List URL [ " + listURL + " ]. ");
+		if(!canContainAttachments() || (attachmentURL == null)) {
+			return false;
+		}
+		final Pattern pat = Pattern.compile("\\#" + itemID + "\\|.*?" + attachmentURL);
+		final Matcher match = pat.matcher(attchmnts);
+		if(match.find()) {
+			final int endPos = match.end();		
+			final int startPos = endPos - attachmentURL.length();
+			attchmnts.delete(startPos, endPos);
+			return true;			
+		} 
+		return false;		
+	}
+	
+	/**
+	 * @return the biggestID
+	 */
+	public int getBiggestID() {
+		return biggestID;
+	}
+
+	/**
+	 * @param biggestID the biggestID to set
+	 */
+	public void setBiggestID(final int biggestID) {
+		this.biggestID = biggestID;
+	}
+	
+	/**
+	 * Update the list only if the primary key matches. A list should not be updated with any random list.
+	 * Update the current ListState with useful information from the coming list, which is the newly discovered version of the list. These information, we do not write into the state file.
+	 */
+	public void updateList(final ListState inList) {
+		if(key.equals(inList.getPrimaryKey())) {
+			attrs = inList.getAttrs();
+			baseTemplate = inList.getBaseTemplate();
+			listURL = inList.getListURL();
+			parentWebTitle = inList.getParentWebTitle();
+			parentWeb = inList.getParentWeb();
+			type = inList.getType();
+			listTitle = inList.getListTitle();
+			listConst = inList.getListConst();			
+		}
+	}
+
+	/**
+	 * @return the isNewList
+	 */
+	public boolean isNewList() {
+		return isNewList;
+	}
+
+	/**
+	 * @param isNewList the isNewList to set
+	 */
+	public void setNewList(final boolean isNewList) {
+		this.isNewList = isNewList;
+	}
+
+	/**
+	 * @return the nextPage
+	 */
+	public String getNextPage() {
+		return nextPage;
+	}
+
+	/**
+	 * @param nextPage the nextPage to set
+	 */
+	public void setNextPage(final String nextPage) {
+		this.nextPage = nextPage;
+	}
+	
+	/**
+	 * Checks an itemID if it exists in the local delete cache
+	 * @param deleteID
+	 */
+	public boolean isInDeleteCache(final String deleteID) {
+		if((cachedDeletedIDs != null) && cachedDeletedIDs.contains(deleteID)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Adds an item ID into the local delete cache
+	 * @param deleteID
+	 */
+	public void addToDeleteCache(final String deleteID) {
+		if((cachedDeletedIDs != null) && Util.isNumeric(deleteID)) {
+			cachedDeletedIDs.add(deleteID);
+		}
+	}
+	
+	/**
+	 * Removes an item ID from the locval delete cache
+	 * @param deleteID
+	 */
+	public void removeFromDeleteCache(final String deleteID) {
+		if((cachedDeletedIDs != null) && Util.isNumeric(deleteID)) {
+			cachedDeletedIDs.remove(deleteID);
+		}
+	}
+	
+	/**
+	 * Clears the local deleted cache store
+	 *
+	 */
+	public void clearDeleteCache() {
+		cachedDeletedIDs = new HashSet<String>();		
+	}
+
+	/**
+	 * @return the lastDocument
+	 */
+	public SPDocument getLastDocument() {
+		return lastDocument;
 	}
 
 	/**
@@ -247,315 +1201,78 @@ public class ListState implements StatefulObject {
 	 * even not be IN the queue. So the operation of this method is:
 	 * 1) make sure the doc is in the queue, and if so:
 	 * 2) remove everything up to and including the doc.
-	 * @param doc
+	 * @param lastDocument
+	 * 
+	 * Content Feed ->
+	 * If while discovering the docs we have not yet fetched all the docs duw to the batchhint, LastCrawlesDoc is set by the getListItemChangesSinceToken.
+	 * If we have fetched all the docs, LastCrawledDoc is set at the time of checkpointing. 
+	 * 
 	 */
-	public void setLastDocCrawled(SPDocument doc) {
-		String sFunctionName = "setLastDocCrawled(SPDocument doc)";
-		LOGGER.entering(className, sFunctionName);
-		//null check added by Amit
-		if(doc!=null){
-			lastDocCrawled = doc;
-			if (crawlQueue == null) {
-				return;
-			}
-			if (!crawlQueue.contains(doc)) {
-				// don't log. The caller may be removing through an iterator, which 
-				// we wouldn't see
-				return;
-			}
-			// "foreach" syntax not used because we need the iterator to remove()
-			Iterator iter = crawlQueue.iterator();
-			if(iter!=null){
-				while (iter.hasNext()){
-					SPDocument docQ = (SPDocument) iter.next();
-					iter.remove();
-					if (docQ.equals(doc)) {
-						break;
-					}
-				}
-			}
-		}//end null check
-		LOGGER.exiting(className, sFunctionName);
-	}
-
-	public List getCrawlQueue() {
-		return crawlQueue;
-	}
-
-	public void setUrl(String inUrl) {
-		if(inUrl!=null){
-			this.url = inUrl;
-		}
-	}
-
-	public String getUrl() {
-		return url;
+	public void setLastDocument(final SPDocument lastDocument) {
+		this.lastDocument = lastDocument;
 	}
 
 	/**
-	 * Debug routine: dump the crawl queue to stdout. (this is deliberately
-	 * in preference to log messages, since it's much easier to follow in 
-	 * Eclipse.)
+	 * @return the parentWeb
 	 */
-	public void dumpCrawlQueue() {
-		String sFunctionName = "dumpCrawlQueue()";
-		LOGGER.entering(className, sFunctionName);
-		if (crawlQueue != null && crawlQueue.size() > 0) {
-			LOGGER.config(sFunctionName+" : Crawl queue for " + getUrl());
-//			for (SPDocument doc : crawlQueue) {
-			for (int iDoc=0; iDoc<crawlQueue.size();++iDoc) {
-				SPDocument doc =(SPDocument) crawlQueue.get(iDoc);
-				LOGGER.config(sFunctionName+": "+ doc.getLastMod().getTime() + ", " + doc.getUrl());
-				doc.dumpAllAttrs();
-			}
-		} else {
-			LOGGER.config(sFunctionName+" : Empty crawl queue for " + getUrl());
-		}
-		LOGGER.exiting(className, sFunctionName);
-	}
-
-	public void setCrawlQueue(List inCrawlQueue) {
-		this.crawlQueue = inCrawlQueue;
+	public String getParentWeb() {
+		return parentWeb;
 	}
 
 	/**
-	 * Create a DOM tree for an SPDocument. "Attributes" of the SPDocument
-	 * are dumped as compactly as possible: a single element with two
-	 * XML attributes: name and value. 
-	 * @param domDoc the containing XML document (which is needed to create
-	 * new DOM nodes)
-	 * @param doc SPDocument
-	 * @return Node head of the DOM tree
-	 * @throws SharepointException
+	 * @param parentWeb the parentWeb to set
 	 */
-	private Node dumpDocToDOM(org.w3c.dom.Document domDoc, SPDocument doc)
-	throws SharepointException {
-		String sFunctionName = "dumpDocToDOM(org.w3c.dom.Document domDoc, SPDocument doc)";
-		LOGGER.entering(className, sFunctionName);
-		//added by amit
-		if(domDoc==null){
-			throw new SharepointException("Unable to get the DOM document");
-		}
-
-		Element element = domDoc.createElement("document");
-		//added by amit
-		if(element==null){
-			throw new SharepointException("Unable to get the documentt element");
-		}
-
-		element.setAttribute(ID, doc.getDocId());
-		Element lastModTmp = domDoc.createElement(LAST_MOD);
-		lastModTmp.appendChild(domDoc.createTextNode(
-				Util.formatDate(Util.calendarToJoda(doc.getLastMod()))));
-		element.appendChild(lastModTmp);
-		Element urlTmp = domDoc.createElement("url");
-		try {
-			urlTmp.appendChild(domDoc.createTextNode(
-					URLEncoder.encode(doc.getUrl(), "UTF-8")));
-		} catch (DOMException e) {
-			throw new SharepointException(e.toString());
-		} catch (UnsupportedEncodingException e) {
-			throw new SharepointException(e.toString());
-		}
-		element.appendChild(urlTmp);
-		for (Iterator iter = doc.getAllAttrs().iterator(); iter.hasNext();){
-			Attribute attr = (Attribute) iter.next();
-			Element docAttr = domDoc.createElement(DOC_ATTR);
-			docAttr.setAttribute(ATTR_NAME, attr.getName());
-			docAttr.setAttribute(ATTR_VALUE, attr.getValue().toString());
-			element.appendChild(docAttr);
-		}
-		LOGGER.exiting(className, sFunctionName);
-		return element;
+	public void setParentWeb(final String parentWeb) {
+		this.parentWeb = parentWeb;
 	}
 
 	/**
-	 * Create a DOM tree for the entire ListState object.
-	 * @param domDoc DOM node for the containing XML document, which is necessary
-	 *  for creating new DOM nodes
-	 * @return Node head of DOM tree
-	 * @throws SharepointException
+	 * @return the cachedPrevChangeToken
 	 */
-	public Node dumpToDOM(Document domDoc) throws SharepointException{
-		String sFunctionName = "dumpToDOM(Document domDoc)";
-		LOGGER.entering(className, sFunctionName);
-//		Element element = domDoc.createElement(this.getClass().getSimpleName());
-		Element element = domDoc.createElement(this.getClass().getName());
-		element.setAttribute(ID, getGuid());
-
-		// the lastMod
-		Element lastModTmp = domDoc.createElement(LAST_MOD);
-		Text text = domDoc.createTextNode(getLastModString());
-		lastModTmp.appendChild(text);
-		element.appendChild(lastModTmp);
-
-		// the URL
-		Element urlTmp = domDoc.createElement("URL");
-		Text urlText = domDoc.createTextNode(getUrl());
-		urlTmp.appendChild(urlText);
-		element.appendChild(urlTmp);
-
-		// dump the "last doc crawled"
-		if (lastDocCrawled != null) {
-			Element elementLastDocCrawled = domDoc.createElement("lastDocCrawled");
-			element.appendChild(elementLastDocCrawled);
-			elementLastDocCrawled.appendChild(dumpDocToDOM(domDoc, lastDocCrawled));
-		}
-//		if (crawlQueue != null) {
-//		Element queue = domDoc.createElement("crawlQueue");
-//		element.appendChild(queue);
-////		for (SPDocument docTmp : crawlQueue) {
-//		for (int iDoc=0;iDoc<crawlQueue.size();++iDoc) {
-//		SPDocument docTmp = (SPDocument) crawlQueue.get(iDoc);
-//		queue.appendChild(dumpDocToDOM(domDoc, docTmp));
-//		}
-//		}
-		LOGGER.exiting(className, sFunctionName);
-		return element;
+	public String getCachedPrevChangeToken() {
+		return CachedPrevChangeToken;
 	}
 
 	/**
-	 * Create an SPDocument from a DOM tree.
-	 * @param element DOM node representing the SPDocument
-	 * @return SPDocument
-	 * @throws SharepointException
+	 * @param cachedPrevChangeToken the cachedPrevChangeToken to set
 	 */
-	private SPDocument loadDocFromDOM(Element element) 
-	throws SharepointException {
-		String sFunctionName = "loadDocFromDOM(Element element)";
-		LOGGER.entering(className, sFunctionName);
-		//added by amit
-		if(element==null){
-			throw new SharepointException("element is not found");
-		}
-
-		if (! collator.equals(element.getTagName(),"document")) {
-			throw new SharepointException("should be 'document', was "+element.getTagName());
-		}
-		String id = element.getAttribute(ID);
-		NodeList lastModNodeList = element.getElementsByTagName(LAST_MOD);
-		NodeList urlNodeList = element.getElementsByTagName("url");
-
-		//modified by amit
-		if ((urlNodeList==null)||(lastModNodeList == null) || (id == null) || lastModNodeList.getLength() == 0 ||urlNodeList.getLength() == 0) {
-			throw new SharepointException("Invalid XML: " + element.toString());
-		}
-		String lastModString = null;
-		if(lastModNodeList.item(0) != null && lastModNodeList.item(0).getFirstChild() != null) {
-			lastModString = lastModNodeList.item(0).getFirstChild().getNodeValue();
-		}
-		DateTime lastModTmp = Util.parseDate(lastModString);
-		//added by amit
-		if(lastModTmp==null){
-			throw new SharepointException("Unable to get lastModTmp");
-		}
-
-		GregorianCalendar calDate = new GregorianCalendar();
-		calDate.setTimeInMillis(lastModTmp.getMillis());
-		String urlTmp = null;
-		if(urlNodeList.item(0) != null && urlNodeList.item(0).getFirstChild() != null) {
-			urlTmp = URLDecoder.decode(urlNodeList.item(0).getFirstChild().getNodeValue());
-		}
-		SPDocument doc = new SPDocument(id, urlTmp, calDate);
-
-		// pick up the other document attributes:
-		NodeList attrNodeList = element.getElementsByTagName(DOC_ATTR);
-		//null check added by amit
-		if(attrNodeList!=null){
-			for (int i = 0; i < attrNodeList.getLength(); i++) {
-				Element docAttr = (Element) attrNodeList.item(i);
-				String attrName = docAttr.getAttribute(ATTR_NAME);
-				String attrValue = docAttr.getAttribute(ATTR_VALUE);
-				if (attrName != null && attrValue != null) {
-					doc.setAttribute(attrName, attrValue);
-				}
-			}
-		}//end..null check
-		LOGGER.exiting(className, sFunctionName);
-		return doc;
+	public void setCachedPrevChangeToken(final String cachedPrevChangeToken) {
+		CachedPrevChangeToken = cachedPrevChangeToken;
 	}
 
 	/**
-	 * Reload this ListState from a DOM tree.  The opposite of dumpToDOM().
-	 * @param Element the DOM element
-	 * @throws SharepointException if the DOM tree is not a valid representation
-	 *     of a ListState 
+	 * @return the listTitle
 	 */
-	public void loadFromDOM(Element element) throws SharepointException {
-		String sFunctionName = "loadFromDOM(Element element)";
-		LOGGER.entering(className, sFunctionName);
-		if(element==null){
-			throw new SharepointException("element not found");
-		}
-
-		key = element.getAttribute(ID);
-		if (key == null || key.length() == 0) {
-			throw new SharepointException("Invalid XML: no id attribute");
-		}
-
-		// lastMod
-		NodeList lastModNodeList = element.getElementsByTagName(LAST_MOD);
-		if ((lastModNodeList==null)||lastModNodeList.getLength() == 0) {
-			throw new SharepointException("Invalid XML: no lastMod");
-		}
-		String lastModString = null;
-		if(lastModNodeList.item(0) != null && lastModNodeList.item(0).getFirstChild() != null) {
-			lastModString = lastModNodeList.item(0).getFirstChild().getNodeValue();
-		}
-		lastMod = Util.parseDate(lastModString);
-		if (lastMod == null) {
-			throw new SharepointException("Invalid XML: bad date " + lastModString);
-		}
-
-		// URL
-		NodeList urlNodeList = element.getElementsByTagName("URL");
-		//modified by amit
-		if((urlNodeList!=null)&& (urlNodeList.getLength() > 0)){
-			if(urlNodeList.item(0) != null && urlNodeList.item(0).getFirstChild() != null) {
-				url = urlNodeList.item(0).getFirstChild().getNodeValue();
-			}
-		}
-
-		// get the lastDocCrawled
-		NodeList lastDocCrawledNodeList = 
-			element.getElementsByTagName("lastDocCrawled");
-		if (lastDocCrawledNodeList != null && lastDocCrawledNodeList.getLength() > 0) {
-			Element lastDocCrawledNode = (Element) lastDocCrawledNodeList.item(0);
-			NodeList documentNodeList = 
-				lastDocCrawledNode.getElementsByTagName("document");
-			Node documentNode = documentNodeList.item(0);
-			if (documentNode.getNodeType() == Node.ELEMENT_NODE) {
-				lastDocCrawled = loadDocFromDOM((Element) documentNode);
-			}
-		}
-
-//		// get the crawlQueue
-//		NodeList crawlQueueNodeList = element.getElementsByTagName("crawlQueue");
-//		//modified by amit
-//		if((crawlQueueNodeList!=null)&& (crawlQueueNodeList.getLength() > 0)) {
-//		Node crawlQueueNode = crawlQueueNodeList.item(0);
-
-//		if(crawlQueueNode!=null){//added by amit
-//		NodeList docNodeList = crawlQueueNode.getChildNodes();
-//		if (docNodeList != null) {
-//		crawlQueue = new ArrayList();
-//		for (int i = 0; i < docNodeList.getLength(); i++) {
-//		Node node = docNodeList.item(i);
-//		if (node.getNodeType() != Node.ELEMENT_NODE) {
-//		continue;
-//		}
-//		SPDocument doc = loadDocFromDOM((Element) node);
-//		if (doc != null) {
-//		crawlQueue.add(doc);
-//		}
-//		}
-//		}
-//		}
-//		}
-		LOGGER.exiting(className, sFunctionName);
+	public String getListTitle() {
+		return listTitle;
 	}
 
-	public String getGuid() {
-		return key;
+	/**
+	 * @param type the type to set
+	 */
+	public void setType(final String type) {
+		this.type = type;
+	}	
+	
+	/**
+	 * 
+	 * @return the sahrepoint type of this list
+	 */
+	public String getSharePointType() {
+		return spType;
+	}
+
+	/**
+	 * @return the attchmnts
+	 */
+	public StringBuffer getAttchmnts() {
+		return attchmnts;
+	}
+
+	/**
+	 * @param attchmnts the attchmnts to set
+	 */
+	public void setAttchmnts(StringBuffer attchmnts) {
+		this.attchmnts = attchmnts;
 	}
 }

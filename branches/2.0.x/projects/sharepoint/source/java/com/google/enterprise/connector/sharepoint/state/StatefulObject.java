@@ -20,7 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.google.enterprise.connector.sharepoint.client.SharepointException;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 /**
  * StatefulObject is an interface which is implemented by any object which
@@ -39,7 +39,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointException;
  * it dumps to XML and restores from XML.
  *
  */
-public interface StatefulObject extends Comparable {
+public interface StatefulObject extends Comparable<StatefulObject> {
 
   Node dumpToDOM(Document doc) throws SharepointException;
   void loadFromDOM(Element element) throws SharepointException;

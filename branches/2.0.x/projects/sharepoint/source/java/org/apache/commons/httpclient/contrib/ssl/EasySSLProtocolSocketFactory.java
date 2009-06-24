@@ -97,7 +97,7 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
     /** Log object for this class. */
 //    private static final Log LOG = LogFactory.getLog(EasySSLProtocolSocketFactory.class);
     private static final Logger LOGGER = Logger.getLogger(EasySSLProtocolSocketFactory.class.getName());
-    private String className = EasySSLProtocolSocketFactory.class.getName();
+    private final String className = EasySSLProtocolSocketFactory.class.getName();
     private SSLContext sslcontext = null;
 
     /**
@@ -108,13 +108,13 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
     }
 
     private static SSLContext createEasySSLContext() {
-    	String sFunctionName = "createEasySSLContext()";
+    	final String sFunctionName = "createEasySSLContext()";
 		LOGGER.entering(EasySSLProtocolSocketFactory.class.getName(), sFunctionName);
     	try {
-            SSLContext context = SSLContext.getInstance("SSL");
+            final SSLContext context = SSLContext.getInstance("SSL");
             
 //          Create a trust manager that does not validate certificate chains
-            TrustManager[] trustmanagers = new TrustManager[]{
+            final TrustManager[] trustmanagers = new TrustManager[]{
                 new X509TrustManager() {
                     public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                         return null;
@@ -134,7 +134,7 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
               null);
             LOGGER.exiting(EasySSLProtocolSocketFactory.class.getName(), sFunctionName);
             return context;
-        } catch (Exception e) {
+        } catch (final Exception e) {
 //            LOGGER.severe(e.getMessage(), e);
         	LOGGER.severe(e.getMessage());
             throw new HttpClientError(e.toString());
@@ -142,12 +142,12 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
     }
 
     private SSLContext getSSLContext() {
-    	String sFunctionName = "getSSLContext()";
-		LOGGER.entering(className, sFunctionName);
+    	final String sFunctionName = "getSSLContext()";
+		LOGGER.entering(this.className, sFunctionName);
         if (this.sslcontext == null) {
             this.sslcontext = createEasySSLContext();
         }
-        LOGGER.exiting(className, sFunctionName);
+        LOGGER.exiting(this.className, sFunctionName);
         return this.sslcontext;
     }
 
@@ -155,13 +155,13 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
      * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int,java.net.InetAddress,int)
      */
     public Socket createSocket(
-        String host,
-        int port,
-        InetAddress clientHost,
-        int clientPort)
+        final String host,
+        final int port,
+        final InetAddress clientHost,
+        final int clientPort)
         throws IOException{
 
-        return getSSLContext().getSocketFactory().createSocket(
+        return this.getSSLContext().getSocketFactory().createSocket(
             host,
             port,
             clientHost,
@@ -199,14 +199,14 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
         if (params == null) {
             throw new IllegalArgumentException("Parameters may not be null");
         }
-        int timeout = params.getConnectionTimeout();
-        SocketFactory socketfactory = getSSLContext().getSocketFactory();
+        final int timeout = params.getConnectionTimeout();
+        final SocketFactory socketfactory = this.getSSLContext().getSocketFactory();
         if (timeout == 0) {
             return socketfactory.createSocket(host, port, localAddress, localPort);
         } else {
-            Socket socket = socketfactory.createSocket();
-            SocketAddress localaddr = new InetSocketAddress(localAddress, localPort);
-            SocketAddress remoteaddr = new InetSocketAddress(host, port);
+            final Socket socket = socketfactory.createSocket();
+            final SocketAddress localaddr = new InetSocketAddress(localAddress, localPort);
+            final SocketAddress remoteaddr = new InetSocketAddress(host, port);
             socket.bind(localaddr);
             socket.connect(remoteaddr, timeout);
             return socket;
@@ -216,9 +216,9 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
     /**
      * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int)
      */
-    public Socket createSocket(String host, int port)
+    public Socket createSocket(final String host, final int port)
         throws IOException{
-        return getSSLContext().getSocketFactory().createSocket(
+        return this.getSSLContext().getSocketFactory().createSocket(
             host,
             port
         );
@@ -228,12 +228,12 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
      * @see SecureProtocolSocketFactory#createSocket(java.net.Socket,java.lang.String,int,boolean)
      */
     public Socket createSocket(
-        Socket socket,
-        String host,
-        int port,
-        boolean autoClose)
+        final Socket socket,
+        final String host,
+        final int port,
+        final boolean autoClose)
         throws IOException{
-        return getSSLContext().getSocketFactory().createSocket(
+        return this.getSSLContext().getSocketFactory().createSocket(
             socket,
             host,
             port,
@@ -241,7 +241,7 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
         );
     }
 
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         return ((obj != null) && obj.getClass().equals(EasySSLProtocolSocketFactory.class));
     }
 
