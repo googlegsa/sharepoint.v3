@@ -46,17 +46,16 @@ public class UserProfileWSTest extends TestCase{
 	Logger logger= Logger.getLogger(UserProfileWSTest.class.getName());
 	//	-------------ps4312(MOSS 2007)---------------------------------
 	final String sharepointType = SharepointConnectorType.SP2007;
-	final String sharepointUrl = "http://ps4312.persistent.co.in:2905/Orangesite/abc/";
-	final String domain = "ps4312";
-	final String username = "administrator";
-	final String password = "pspl!@#";
-	final String mySiteBaseURL="http://ps4312.persistent.co.in:30411";
+	final String sharepointUrl = "http://";
+	final String domain = "domain";
+	final String username = "username";
+	final String password = "domain";
+	final String mySiteBaseURL="http://";
 	final String googleConnWorkDir = null;
 	final String exclURLs =null;
 	final String aliasHost = null;
 	final String aliasPort = null;
 	final String inclURLs ="^http://";
-//	-------------END: ps4312---------------------------------
 
 	private SharepointConnector connector;  
 	//public static final int TOTAL_DOCS = 185;//set the total expected documents
