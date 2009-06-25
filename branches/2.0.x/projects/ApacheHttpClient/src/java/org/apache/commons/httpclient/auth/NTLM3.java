@@ -37,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.IOException;
 
 import jcifs.Config;
+import jcifs.http.NtlmSsp;
 import jcifs.ntlmssp.Type1Message;
 import jcifs.ntlmssp.Type2Message;
 import jcifs.ntlmssp.Type3Message;
@@ -98,13 +99,35 @@ final class NTLM3 {
           Type1Message t1m = new Type1Message();
           t1m.setSuppliedDomain(domain);
           t1m.setSuppliedWorkstation(host);
+          
+          /*
+           * Following constants provided by JCIFS library has been added to support message integrity,
+           * confidentiality, session security and 128-bit encryption
+           */
+          t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
+          t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
+          t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
+          t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+          
           return EncodingUtil.getAsciiString(Base64.encodeBase64(t1m.toByteArray()));
 
         } else {
           try
           {
           Type2Message t2m = parseType2Message(message);
+          
+          t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
+          t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
+          t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
+          t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+
           Type3Message t3m = new Type3Message(t2m, password, domain, username, host);
+          
+          t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
+          t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
+          t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
+          t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+
           return EncodingUtil.getAsciiString(Base64.encodeBase64(t3m.toByteArray()));
           }catch(IOException e)
           {
@@ -119,6 +142,13 @@ final class NTLM3 {
       Type1Message t1m = new Type1Message();
       t1m.setSuppliedDomain(domain);
       t1m.setSuppliedWorkstation(host);
+      
+      t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
+      t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
+      t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
+      t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+
+      
       return EncodingUtil.getAsciiString(Base64.encodeBase64(t1m.toByteArray()));
     }
     
@@ -129,12 +159,31 @@ final class NTLM3 {
       Type1Message t1m = new Type1Message();
       t1m.setSuppliedDomain(domain);
       t1m.setSuppliedWorkstation(host);
+      
+      t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
+      t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
+      t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
+      t1m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+
+      
       return t1m.toString();
     } else {
       try
       {
       Type2Message t2m = parseType2Message(message);
+      
+      t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
+      t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
+      t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
+      t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+      
       Type3Message t3m = new Type3Message(t2m, password, domain, username, host);
+      
+      t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
+      t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
+      t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
+      t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+      
       return EncodingUtil.getAsciiString(Base64.encodeBase64(t3m.toByteArray()));
       }catch(IOException e)
       {
@@ -155,6 +204,12 @@ final class NTLM3 {
         // Decode the message first.
         byte[] msg = Base64.decodeBase64(EncodingUtil.getBytes(message, DEFAULT_CHARSET));
         Type2Message t2m = new Type2Message(msg); 
+        
+        t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
+        t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
+        t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
+        t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+
         return t2m;
     }
 
