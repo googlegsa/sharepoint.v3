@@ -597,10 +597,20 @@ class HttpMethodDirector {
 				method.getPath()
 			);
 			
-            String charset = method.getParams().getUriCharset();
-            redirectUri = new URI(location, true, charset);
-			
-            if (redirectUri.isRelativeURI()) {
+            try {
+            	String charset = method.getParams().getUriCharset();
+            	redirectUri = new URI(location, true, charset);
+            } catch(URIException ue) { // added to resolve org.apache.commons.httpclient.InvalidRedirectLocationException exception
+    			Object encoding = this.conn.getParams().getParameter("http.protocol.element-charset");
+    			if(encoding != null) {
+    				redirectUri = new URI(location, false, (String)encoding);
+    			} else {
+    				throw new InvalidRedirectLocationException(
+    	                    "Invalid redirect location: " + location, location, ue);
+    			}
+            }
+
+    		if (redirectUri.isRelativeURI()) {
 				if (this.params.isParameterTrue(HttpClientParams.REJECT_RELATIVE_REDIRECT)) {
 					LOG.warn("Relative redirect location '" + location + "' not allowed");
 					return false;
