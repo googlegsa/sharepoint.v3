@@ -1,4 +1,4 @@
-#summary Advanced configuration for the SharePoint connector
+#summary Advanced configuration for the SharePoint connector 2.x
 =Advanced configuration for the !SharePoint connector=
 The details mentioned in this document are applicable to connector version 2.0.0 and above.
 
