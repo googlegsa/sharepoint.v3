@@ -1,0 +1,452 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<link rel="stylesheet" type="text/css" href="http://code.google.com/css/dev_docs.css" />
+<link rel="stylesheet" type="text/css" href="local_extensions.css" />
+
+<!--[if IE 7]>
+  <link rel="stylesheet" type="text/css" href="http://code.google.com/css/ie7only.css" />
+<![endif]-->
+<!--[if lte IE 6]>
+  <link rel="stylesheet" type="text/css" href="http://code.google.com/css/ie6only.css" />
+<![endif]-->
+<!--[if IE]>
+  <link rel="stylesheet" type="text/css" href="http://code.google.com/css/ieonly.css" />
+<![endif]-->
+
+<!-- Add ECM product name to title -->
+<title>Google Enterprise Connector for Microsoft SharePoint Server 2007 </title></head>
+
+
+<body id="intro_page">
+<a name="top"></a>
+
+<!-- ########## PAGE HEADER ########## -->
+<div id="header">
+
+<div id="logo">
+<a href="index.html"><img src="../images/google_sm.gif" border="0" alt="Google Logo" /></a></div>
+
+<h1 id="doc_title">Google Search Appliance</h1>
+</div> 
+<!-- ########## END PAGE HEADER ########## -->
+
+
+<div id="wrapper">
+
+
+
+<!-- ########## PAGE CONTENT ########## -->
+
+<div id="pagecontent">
+
+<h1 id="page_title">Google Enterprise Connector for Microsoft SharePoint Server 2007</h1>
+<br>
+<p>This document is for search appliance administrators who want to set up and 
+manage connector for Microsoft SharePoint Server 2007. Refer this
+<span style="background-color: #FFFFFF">document</span> along 
+with the following related documents:</p>
+<ul><li><b><a href="http://code.google.com/enterprise/documentation/">Connector Administrator's Guide.</a> </b>This document gives an overview of how
+connectors work and describes the configuration steps common to all
+	the connectors. </li></ul>
+<ul><li><b>Search Appliance Help Topics.</b> These pages describe connector independent
+configuration parameters available in the Connector
+Administration pages of the admin console.</li></ul>
+<h1>Contents</h1>
+<ol class="toc">
+  <li><a href="#introanch">Introduction</a></li>
+  <li><a href="#versanch">Repository Product Version</a></li>
+  <li><a href="#schsuppanch">Search Support</a></li>
+  <li><a href="#secsuppanch">Security Support</a></li>
+  <li><a href="#instanch">Installation</a>
+  <ol class="toc">
+	<li><a href="#prerequisites">Prerequisites</a></li>
+	<li><a href="#installConnector">Installing the Connector</a></li>
+  </ol> </li>	
+  <li><a href="#confanch">Configuration</a>
+  
+  <ol class="toc"><li><a href="#confconanch">Configuring Connector Instances</a></li>
+  <li><a href="#confecmanch">Configuring Microsoft SharePoint Server for the Connector</a></li>
+  </ol></li>
+     <li><a href="#troubanch">Troubleshooting</a>
+	 <ol class="toc"><li><a href="#issueanch">Known Limitations</a></li>
+	   <li><a href="#erranch">Error Messages</a></li>
+	 </ol></li>
+	 <li><a href="#relatedanch">Related Documentation</a></li>
+  </ol>
+
+
+<h1><a id="introanch" name="introanch"></a>Introduction</h1>
+
+<p><code><font face="Arial">The Google Enterprise Connector for Microsoft SharePoint Server 2007
+</font> </code> <font face="Arial">enables the </font>Appliance to traverse  documents and attachments on SharePoint 
+sites. Instances of this connector fetch metadata and URLs for SharePoint 
+documents and attachments using SharePoint Web services and feed it to the 
+search appliance as metadata and URL.</p>
+<h1><a id="verssanch" name="versanch"></a>Repository Product Version</h1>
+<p>This connector supports Microsoft Office SharePoint Server 2007(MOSS 2007) and Microsoft Windows SharePoint Services 3.0 (WSS 3.0).  </p>
+
+<h1><a id="schsuppanch" name="schsuppanch"></a>Search Support</h1>
+<p> The Microsoft SharePoint connector can traverse the following types of 
+content:</p>
+<ul>
+	<li>Public and Personal Sites </li>
+	<li>Folder </li>
+	<li>File </li>
+	<li>Document Library </li>
+	<li>Discussion Boards </li>
+	<li>Site </li>
+	<li>Web </li>
+	<li>Attachment </li>
+	<li>Links </li>
+	<li>Wikipage Library </li>
+	<li>Tasks </li>
+	<li>Calendar </li>
+	<li>Contacts </li>
+	<li>Announcements </li>
+	<li>Issues </li>
+	<li>Events </li>
+</ul>
+<p>The connector supports search by metadata tag values. For example :</p>
+<ul>
+	<li>google:ispublic
+	</li>
+	<li>google:lastmodified </li>
+	<li>sharepoint:author </li>
+	<li>google:objecttype </li>
+	<li>google:displayurl </li>
+	<li>google:searchurl 
+	<p></p>&nbsp;</li>
+</ul>
+
+<h1><a id="secsuppanch" name="secsuppanch"></a>Security Support</h1>
+<p>During crawl and index, both the Microsoft SharePoint connector and the 
+search appliance require credentials for login:</p>
+<ul>
+  <li>The connector instance uses its credentials to get metadata and a list of 
+	URLs for SharePoint. This user account must have access to web services on 
+	the SharePoint site. For more information on user permissions, see <a href="#confecmanch">Configuring Microsoft SharePoint Server for the Connector</a>.</li>
+  <li>The search appliance uses credentials on the Admin Console's Crawler 
+	Access page to request content for each of the URLs in the feed provided by 
+	the connector instance. This user account must have &#8220;Read&#8221; access for all 
+	content on the SharePoint site, which you want to include in the search. You 
+	must provide a domain name or host name in order to enable NTLM or HTTP 
+	authentication.&nbsp; </li>
+  </ul>
+<p>During serve, the content from a SharePoint site can be served as public or 
+secure content, based on the <b>Make Public</b> checkbox on the <b>Crawler 
+Access</b> page.</p>
+<ul>
+  <li>When you select the <b>Make Public </b>checkbox, content from the 
+	specified URL is made available as public content. It is then possible for 
+	anyone to search this content. </li>
+  <li>When you clear the <b>Make Public </b>checkbox, content from the specified 
+	URL is made available as secure content. A user must enter a username and 
+	password, and have authorization in order to view the content in the search 
+	results. The search appliance uses NTLM or HTTP to verify the user's 
+	credentials..</li>
+</ul>
+
+<h1><a id="instanch" name="instanch"></a>Installation</h1>
+<p>This section describes the installation prerequisites and installation 
+process for the Google Enterprise Connector for Microsoft SharePoint Server 
+2007.&nbsp;  </p>
+<h2><a id="prerequisites" name="prerequisites"></a>Prerequisites</h2>
+<p> Before installing the connector, ensure the following: 
+<ul> <li> Install JDK 1.4.2 (or later) on the host. </li>
+	<li> Install Apache Tomcat 5.5 on the host.</li> </ul>
+<ul> <li> If you have JDK 1.4.2 installed, <a href="http://tomcat.apache.org/download-55.cgi">download <code>JDK 1.4 
+	Compatibility Package </code> </a>and unzip it in <code>$CATALINA_HOME/common</code> and <code>$CATALINA_HOME/bin</code>.</li> </ul>
+<ul> <li> Install connector manager on the Tomcat server.&nbsp; </li>
+	<li> Ensure that the following files are available during installation. 
+	These files are available for download in the source code site.<ul>
+		<li>activation-1.1.jar</li>
+		<li>annogen-0.1.0.jar</li>
+		<li>axiom-api-1.2.2.jar</li>
+		<li>axiom-dom-1.2.2.jar</li>
+		<li>axiom-impl-1.2.2.jar</li>
+		<li>axis2-adb-1.1.1.jar</li>
+		<li>axis2-adb-codegen-1.1.1.jar</li>
+		<li>axis2-codegen-1.1.1.jar</li>
+		<li>axis2-java2wsdl-1.1.1.jar</li>
+		<li>axis2-jaxbri-1.1.1.jar</li>
+		<li>axis2-jibx-1.1.1.jar</li>
+		<li>axis2-kernel-1.1.1.jar</li>
+		<li>axis2-saaj-1.1.1.jar</li>
+		<li>axis2-soapmonitor-1.1.1.jar</li>
+		<li>axis2-spring-1.1.1.jar</li>
+		<li>axis2-tools-1.1.1.jar</li>
+		<li>axis2-xmlbeans-1.1.1.jar</li>
+		<li>bundle.jar</li>
+		<li>commons-codec-1.3.jar</li>
+		<li>commons-collections-3.2.jar</li>
+		<li>commons-digester-1.8.jar</li>
+		<li>commons-discovery-0.2.jar</li>
+		<li>commons-fileupload-1.1.1.jar</li>
+		<li>commons-io-1.2.jar</li>
+		<li>commons-logging-1.0.4.jar</li>
+		<li>commons-logging-1.1.jar</li>
+		<li>commons-logging.jar</li>
+		<li>geronimo-spec-jms-1.1-rc4.jar</li>
+		<li>HttpClient-Modified.jar</li>
+		<li>jakarta-httpcore-4.0-alpha2.jar</li>
+		<li>jaxb-api-2.0.2.jar</li>
+		<li>jaxb-impl-2.0.2.jar</li>
+		<li>jaxb-xjc-2.0.2.jar</li>
+		<li>jaxen-1.1-beta-10.jar</li>
+		<li>jcifs-1.2.15.jar</li>
+		<li>jcr-1.0.jar</li>
+		<li>jibx-bind-1.1.3.jar</li>
+		<li>jibx-run-1.1.3.jar</li>
+		<li>joda-time-1.1.jar</li>
+		<li>junit.jar</li>
+		<li>mail-1.4.jar</li>
+		<li>neethi-2.0.jar</li>
+		<li>servletapi-2.3.jar</li>
+		<li>soap.jar</li>
+		<li>stax-api-1.0.1.jar</li>
+		<li>woden-1.0.0M6.jar</li>
+		<li>wsdl4j-1.6.2.jar</li>
+		<li>wstx-asl-3.2.0.jar</li>
+		<li>xalan-2.7.0.jar</li>
+		<li>xbean-2.2.0.jar</li>
+		<li>xercesImpl-2.8.1.jar</li>
+		<li>xml-apis-1.3.03.jar</li>
+		<li>XmlSchema-1.2.jar</li>
+	</ul>
+	<p>&nbsp;</li> </ul>
+
+<h2><a id="installConnector" name="installConnector"></a>Installing the Connector</h2>
+<p>To install the connector on external application servers follow the 
+instructions given below:</p>
+<ol>
+	<li>Download the <code>connector-sharepoint.jar </code>file and follow the instructions given bellow for installing .</li>
+	<li>On the Tomcat host, shut down Tomcat if running. </li>
+	<li>Copy the connector-sharepoint.jar file to the <font face="Courier New">$CATALINA_HOME/webapps/connector-manager/WEB-INF/lib 
+	</font> directory. </li>
+	<li>Copy all other jar files listed in the &#8220;Prerequisites&#8221; section to the
+	<font face="Courier New">$CATALINA_HOME/shared/lib 
+	</font>directory. 
+</li>
+	<li>Restart the Tomcat server. </li>
+	<li>To confirm whether the Tomcat server has restarted correctly and the 
+	connector is installed, navigate to the <font face="Courier New">$CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors
+	</font>directory, and verify that the <font face="Courier New">$CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector</font> 
+	directory exists.
+	</li>
+	</ol>
+<h1><a id="confanch" name="confanch"></a>Configuration</h1>
+<p>This section describes the configuration details for connector instances and 
+SharePoint Server.</p>
+<p>You can define a connector instance for each SharePoint subsite, or the main 
+top-level site. A Microsoft SharePoint connector instance traverses the site 
+specified in its SharePoint URL, including any subsites that are located under 
+that site. </p>
+<h2><a id="confconanch" name="confconanch"></a>Configuring Connector Instances</h2>
+<p>To configure an instance of a Microsoft SharePoint connector:</p>
+<ol>
+	<li>Open the <b>Admin Console</b>. </li>
+	<li>Select <b>Connector Administration</b> &gt; <b>Connectors</b>. </li>
+	<li>Select appropriate Connector Manager from the list. </li>
+	<li>Click <b>Add New Connector</b> to create a new SharePoint Connector 
+	instance. </li>
+	<li>Specify Connector Name and click <b>Get Configuration Form</b>. </li>
+</ol>
+<p>Following table describes the fields used to configure a Microsoft SharePoint 
+connector: </p>
+<table width="95%"  border="1" cellpadding="5">
+  <tr>
+    <th width="14%">Name</th>
+    <th width="17%">Description</th>
+    <th width="69%">Values and Usage </th>
+  </tr>
+  <tr>
+    <td>Crawl URL </td>
+    <td>The URL for the SharePoint site that you want to traverse. </td>
+    <td>The search appliance traverses this site and any subsites found under 
+	it.
+	<p>The URL must contain a fully qualified domain name, for example, http://server.domain.com/testsite. 
+	We recommend that you do not have two connector instances with the same 
+	SharePoint URL. </td>
+  </tr>
+   <tr>
+    <td>SharePoint Site Alias Host Name </td>
+    <td>If you have SharePoint hosted on an intranet host, alias host name and the gateway host name 
+	are the same. </td>
+    <td>The search appliance uses this for resolving the SharePoint URLs for 
+	SharePoint hosted inside an intranet. <br />
+      <br />
+	  This is an optional field.
+      </td>
+  </tr>
+   <tr>
+    <td>SharePoint Site Alias Port Number </td>
+    <td>If the SharePoint is hosted on an intranet host, the alias port number 
+	is the port number Server on the gateway for the internal SharePoint Server.</td>
+    <td>The search appliance uses this for resolving the SharePoint URLs from 
+	SharePoint hosted on the intranet. <br />
+      <br />
+	  This must be a numeric value. This is an optional field. 
+</td>
+  </tr>
+  <tr>
+    <td>Domain</td>
+    <td>A valid domain name. </td>
+    <td>
+	The Domain for the username to login. If login in using a local (machine) user, provide the machine name/IP address.</td>
+  </tr>
+  <tr>
+    <td>Username</td>
+    <td>A valid username on the SharePoint Server's domain. </td>
+    <td rowspan="2">The user name and password must have access to the Web 
+	services on the SharePoint site. The connector instance uses these 
+	credentials to traverse the site and construct a list of URLs and metadata. 
+	For more information on user permissions, see <a href="#confecmanch">
+	Configuring Microsoft SharePoint Server for the Connector</a>.</td>
+  </tr>
+  <tr>
+    <td>Password</td>
+    <td>A valid password for the specified user. </td>
+    </tr>
+	<tr>
+    <td>MySite URL </td>
+    <td> URL for the SharePoint MySite that you want to traverse with this connector instance. </td>
+    <td>The search appliance traverses the MySite provided by the user. <br />
+      <br />
+	   For example, if the MySite URL is: <font face="Courier New">http://server.domain/personal/administrator/default.aspx</font>, 
+	you need to specify only <font face="Courier New">http://server.domain</font>. 
+	This is an optional field.
+      </td>
+  </tr>
+  <tr>
+    <td>Include URLs Matching the Following Patterns</td>
+    <td>URL patterns, you want to traverse with this connector instance. </td>
+    <td>The search appliance traverses SharePoint URLs matching the specified 
+	URL patterns.
+	<p>The URL patterns must be provided as a comma (,) separated list. You 
+	should include the Sharepoint Site URL in the specified URL patterns. You 
+	should also include MySite URL if you have specified it. </p>
+&nbsp;</td>
+  </tr>
+  <tr>
+    <td>Do Not Include URLs Matching the Following Patterns </td>
+    <td>URL patterns, you don't want to traverse with this connector instance. </td>
+    <td>The search appliance traverses only the SharePoint URLs that do not 
+	match the specified URL patterns.. <br />
+      <br />
+      The URL patterns must be provided as comma (,) separated list.  This is an optional field.
+	  </td>
+  </tr>
+</table>
+
+<h2><a id="confecmanch" name="confecmanch"></a>Configuring Microsoft SharePoint Server for the Connector</h2>
+<p>In order to enable the search appliance to traverse a SharePoint site, you may create a robots.txt file that allows crawl and place it in the root directory of Internet Information Services (IIS) 
+Server. </p>
+<p>Each instance of this connector requires the following two sets of user 
+credentials:</p>
+<ul>
+	<li>The connector instance </li>
+	<li>Crawler Access on the search appliance. </li>
+</ul>
+<p>Depending on your security policy, you may choose to create a single user account that has permissions for both functions.</p>
+<ul>
+  <li>The user account for the connector instance (<strong>Connector Administration &gt; Add Connector</strong>) must have the following permissions on the SharePoint Site:
+    <ul>
+      <li>If you use server farms to host this content, the user must be a server farm administrator.</li>
+      <li>The user must have read access for the content database.</li>
+      <li>The user must be a site collection administrator.</li>
+      <li>The user   must have permission to access the Windows SharePoint site.<br /></li>
+      </ul>
+  </li>
+  <li>The user account for the search appliance (<strong>Crawl and Index &gt; Crawler Access</strong>) must have read access for all content on the SharePoint site.</li>
+  </ul>
+<h1><a id="troubanch" name="troubanch"></a>Troubleshooting</h1>
+<p>This section provides information on troubleshooting the Google Enterprise 
+Connector for Microsoft SharePoint Server 2007. This section includes the 
+following topics: </p>
+<ul>
+	<li>Known Limitations </li>
+	<li>Error Messages</li>
+</ul>
+
+<h2><a id="issueanch" name="issueanch"></a>Known Limitations </h2>
+<p>This section describes the known limitations of the Google Enterprise 
+Connector for Microsoft SharePoint Server 2007.</p>
+<p>
+<p><b>SharePoint MySite: </b></p>
+<p>If you specify the fully qualified domain name, for example,
+<font face="Courier New">http://server.domain:port number</font> in the
+<font face="Courier New">MySite</font> URL field, MySite crawling fails. </p>
+   <p>If you specify the MySite URL field without the fully qualified domain 
+	name, for example, <font face="Courier New">http://server: port number</font>, 
+	crawling works, but the Appliance requires a URL with the fully qualified 
+	domain name. </p>
+<p><b>Aliasing:</b></p>
+<p>Aliasing (SharePoint Site Alias Host Name, SharePoint Site Alias Port Number) 
+will not be supported for personal site(MySite) and Linked Sites when their 
+machine or port is different from that of the site specified under Crawl URL.</p> 
+  </p>
+<h2><a id="erranch" name="erranch"></a>Error Messages </h2>
+<p>This section describes some commonly encountered error messages and their 
+likely solutions.</p>
+<p>
+<h3><b>Required field not specified. </b></h3>
+<p>Fields marked with an asterisk (*) on the Configuring Connector Instances 
+form are mandatory. You must provide appropriate values for these fields. </p>
+  </p>
+<p>
+<h3><b>The SharePoint Site URL must contain a fully qualified domain name. Please check the SharePoint Site URL value.
+</b></h3>
+   <p> You must provide the appropriate SharePoint Site URL with a fully 
+	qualified domain name for SharePoint Site URL field on Configuring Connector 
+	Instances.    </p> 
+  </p>
+  <p>
+<h3><b>Cannot connect to the given SharePoint Site URL with the supplied Domain/Username/Password. Please re-enter.
+</b></h3>
+   <p>You must provide appropriate values for all the mandatory fields on 
+	configuring connector instances.  </p> 
+  </p>
+<br>
+<p class="note"><b> Note :</b> All other error messages are available in the log 
+file.</p>
+<h1><a name="relatedanch"></a>Related Documentation</h1>
+<ul>
+  <li><a href="../connector_dev/connector_framework.html">Google Search Appliance Connector Manager Admin Guide</a> </li>
+  <li><a href="../secure_search/secure_search_overview.html">Managing Search for Controlled Access Content</a></li>
+  <li><a href="../metadata.html">Google Search Appliance External Metadata Indexing Guide</a></li>
+  <li><a href="../xml_reference.html#request_meta">Google Search Appliance Search Protocol Reference</a></li>
+  <li>Bill English, The Microsoft SharePoint Community Experts (2007).<em> Microsoft Office SharePoint Server 2007 Administrator's Companion. </em>Microsoft Press. ISBN 0-7356-2282-5.</li>
+  </ul>
+<p class="backtotop"><a href="#top">Back to top</a></p>
+</div> 
+<!-- ########## END PAGE CONTENT ########## -->
+  
+</div><!-- end wrapper -->
+
+<!-- ########## PAGE FOOTER ########## -->
+<div id="footer">
+
+<div id="footerlogo"><img src="http://www.google.com/images/art.gif" alt="Google color balls" /></div>
+
+<div id="copyright">
+<p>&copy;2007 Google - <a href="http://www.google.com/privacy.html">Privacy Policy</a> - <a href="http://www.google.com/terms_of_service.html">Terms and Conditions</a> - <a href="http://www.google.com/about.html">About Google</a></p>
+</div> <!-- end copyright -->
+
+</div> 
+<!-- ########## END PAGE FOOTER ########## -->
+
+<p id="date">
+Updated on
+<!-- javascript to display the date this page was updated -->
+<script type="text/javascript">
+<!-- hide script from old browsers
+    var lm = new Date(document.lastModified);
+    document.write(lm.toDateString());
+//-->
+</script>
+<!-- end javascript -->
+</p>
+</body>
+</html>
