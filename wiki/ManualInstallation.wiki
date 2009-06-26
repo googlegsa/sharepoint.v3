@@ -1,4 +1,4 @@
-#Manual installation steps
+# Manual installation steps
 
 = Introduction =
 This document walks you through the steps to manually install a connector. The instructions mentioned here are applicable to connector version 2.x and above
