@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="sharepoint-connector" default="sharepoint-connector" basedir=".">
+	<!-- Set the reference to build.properties -->
+	<property file="build.properties" />
 	<!-- ========================= PROPERTIES ============================= -->
 	<property name="version" value="2.0.0_Build9" />
 	<property name="product" value="Google Enterprise Connector for Microsoft SharePoint 2003,2007" />
@@ -22,7 +24,7 @@
 	<property name="tests.todir" value="tests_outdir" />
 	<property name="jar.dir" value="${dist}/jarfile" />
 	<property name="jarfile" value="${jar.dir}/connector-sharepoint.jar" />
-	<property name="connector-manager.dir" value="${env.CONNECTOR_MANAGER_DIR}" />
+	<property name="connector-manager.dir" value="${CONNECTOR_MANAGER_DIR}" />
 	<property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
 	<property name="connector.jarfile" value="${connector-manager.dir}/${jar.dir}/connector.jar" />
 	<property name="lib.jar.dir" value="lib" />
@@ -30,29 +32,29 @@
 	<property name="junit.jarfile" value="${lib.jar.dir}/junit.jar" />
 	<property name="tests.jarfile" value="${connector-manager.dir}/../install/connector-manager/jarfile/connector-tests.jar" />
 	<property name="downloads.dir" value="downloads" />
-	
+
 	<condition property="wsdl2java" value="wsdl2java.sh">
 		<os family="unix" />
 	</condition>
 	<condition property="wsdl2java" value="wsdl2java.bat">
 		<os family="windows" />
 	</condition>
-	
+
 	<condition property="console" value="/bin/sh">
 		<os family="unix" />
 	</condition>
 	<condition property="console" value="cmd">
 		<os family="windows" />
 	</condition>
-	
+
 	<condition property="family" value="unix">
 		<os family="unix" />
 	</condition>
 	<condition property="family" value="windows">
 		<os family="windows" />
 	</condition>
-	
-		
+
+
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 	<!-- =========================== TASKS =============================== -->
 	<target name="sharepoint-connector" depends="clean,init, compile, jar,
@@ -83,7 +85,7 @@
 				</fileset>
 			</classpath>
 		 </java>
-		
+
 		<!--for GSBulkAuthorization.wsdl-->
 		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
 						 <arg line="${wsdl}/GSBulkAuthorization.wsdl -p com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization -o ${src}"/>
@@ -93,7 +95,7 @@
 						</fileset>
 					</classpath>
 		</java>
-		
+
 		<!--for Lists.wsdl-->
 		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
 						 <arg line="${wsdl}/Lists.wsdl -p com.google.enterprise.connector.sharepoint.generated.lists -o ${src}"/>
@@ -103,7 +105,7 @@
 						</fileset>
 					</classpath>
 		</java>
-		
+
 		<!--for Webs.wsdl-->
 		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
 						 <arg line="${wsdl}/Webs.wsdl -p com.google.enterprise.connector.sharepoint.generated.webs -o ${src}"/>
@@ -113,7 +115,7 @@
 						</fileset>
 					</classpath>
 		</java>
-		
+
 		<!--for GSSiteDiscovery.wsdl-->
 		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
 						 <arg line="${wsdl}/GSSiteDiscovery.wsdl -p com.google.enterprise.connector.sharepoint.generated.gssitediscovery -o ${src}"/>
@@ -123,7 +125,7 @@
 						</fileset>
 					</classpath>
 		</java>
-		
+
 		<!--for UserProfileService.wsdl (SP2007)-->
 		<java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
 						 <arg line="${wsdl}/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.userprofileservice -o ${src}"/>
@@ -243,7 +245,7 @@
 			    <attribute name="Implementation-Vendor" value="Google Inc."/>
 			    <attribute name="Specification-Title" value="Connector Manager SPI"/>
 			    <attribute name="Specification-Version" value="2.0.0"/>
-			    <attribute name="Specification-Vendor" value="Google Inc."/> 
+			    <attribute name="Specification-Vendor" value="Google Inc."/>
 				<attribute name="Main-Class" value="com.google.enterprise.connector.sharepoint.SharePointMain" />
 
 			</manifest>
@@ -255,11 +257,11 @@
 	</target>
 
 	<target name="download-sharepoint-connector" depends="jar,javadoc,make-downloads-dir">
-	
+
 		<zip destfile="${downloads.dir}/connector-sharepoint-${version}-src.zip" basedir="."
 			includes="javadoc/**/*, config/**/*, License/**/*, source/**/*, wsdl/**/*, source_net/**/*, build.xml, Build_ReadMe.txt, COPYING, README, RELEASE_NOTES" />
 		<checksum file="${downloads.dir}/connector-sharepoint-${version}-src.zip" />
-			
+
 		<zip destfile="${downloads.dir}/connector-sharepoint-${version}.zip">
 			<zipfileset dir="." includes="README,RELEASE_NOTES,License/**/*,Scripts" />
 			<zipfileset dir="." includes="COPYING" prefix="/License" />
@@ -268,10 +270,10 @@
 			<zipfileset dir="${jar.dir}" includes="connector-sharepoint.jar" fullpath="/connector-sharepoint.jar" />
 		</zip>
 		<checksum file="${downloads.dir}/connector-sharepoint-${version}.zip" />
-				
+
 	</target>
 
- 
+
 	<target name="clean" description="Deletes files produced by compile and test.">
 		<available file="${build}" property="exists"/>
 		<if>
@@ -280,7 +282,7 @@
 				<delete dir="${build}" />
 			</then>
 		</if>
-		
+
 		<available file="${dist}" property="exists"/>
 		<if>
 			<equals arg1="${exists}" arg2="true" />
@@ -288,7 +290,7 @@
 				<delete dir="${dist}" />
 			</then>
 		</if>
-		
+
 		<available file="${downloads.dir}" property="exists"/>
 		<if>
 			<equals arg1="${exists}" arg2="true" />
@@ -304,7 +306,7 @@
 			 	<delete dir="${tests.todir}" />
 			</then>
 		</if>
-		
+
 		<available file="${javadoc}" property="exists"/>
 			<if>
 			<equals arg1="${exists}" arg2="true" />
