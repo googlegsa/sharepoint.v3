@@ -1,4 +1,4 @@
-#summary Understanding SharePoint Connector Traversal
+#summary Understanding SharePoint Connector Traversal (2.x)
 
 This section will cover the following points in terms of the SharePoint connector Traversal: 
 
@@ -84,10 +84,11 @@ From the above reference, you can get a fair idea of the structure of the state 
     </WebState>
  }}}
  
- Save the file and restart the connector
+ 3. Save the file and restart the connector
   
 *Forcing re-crawl of a list*
  1. In the Sharepoint_state.xml, locate the WebSate node corresponding to the site in which the list exists. 
+
  2. Locate ListState node corresponding to the list that you want to re-crawl.
  {{{
 <WebState .......>
@@ -100,7 +101,7 @@ From the above reference, you can get a fair idea of the structure of the state 
 </WebState>
  }}}
  
- 2. Delete the ListState node and all its child nodes. The above entry after the change will look like:
+ 3. Delete the ListState node and all its child nodes. The above entry after the change will look like:
  {{{
 <WebState .......>
 
