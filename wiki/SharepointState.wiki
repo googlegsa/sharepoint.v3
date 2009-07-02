@@ -39,4 +39,5 @@ The above structure displays the names of all the nodes and attributes that may 
 
 Following table describes the purpose and availability of each node:
 
-||table||cells
+||Name||Description||Allowed Attributes||Availability||
+ 
