@@ -13,8 +13,7 @@ This section will cover the following points in terms of the SharePoint connecto
  * Details specific to content feed
  * How does connector handle the case when the number of site collection is quite large and the numbers of update are very few? 
  * Impact of batch hint and traversal batch timeout on connector traversal 
- 
-
+--------------------------------------
 == Glossary ==
 *Connector State:* The in-memory state information that connector maintains. A snapshot of this can be seen in the state file Sharepoint_state.xml
 
