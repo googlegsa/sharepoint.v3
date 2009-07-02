@@ -34,3 +34,9 @@ While traversing, connector needs to keep track of things it has traversed so th
 </State> 
 
  }}}
+
+The above structure displays the names of all the nodes and attributes that may appear in the state file. Also, some of the names might not be displayed depending on the SharePoint version and feed type being used.  
+
+Following table describes the purpose and availability of each node:
+
+||table||cells
