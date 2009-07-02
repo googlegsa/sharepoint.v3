@@ -15,8 +15,7 @@ This section will cover the following points in terms of the SharePoint connecto
  * Impact of batch hint and traversal batch timeout on connector traversal 
  
 
-= Glossary =
-
+== Glossary ==
 *Connector State:* The in-memory state information that connector maintains. A snapshot of this can be seen in the state file Sharepoint_state.xml
 
 *Traversal Cycle:* One complete Scan of all the SharePoint sites and lists known till the time have been done and there are no more documents to be sent. A complete traversal cycle is said to be complete if it satisfies all the following conditions
@@ -32,12 +31,10 @@ This section will cover the following points in terms of the SharePoint connecto
  2. Connector has visited all the sites and lists which are known to be existent and are there in the connector state
 
 
-=Discover all site collections, sites, lists, folders, attachments given the crawl URL=
- 
+==Discover all site collections, sites, lists, folders, attachments given the crawl URL== 
 Connector starts its traversal from the Crawl URL specified on the configuration page. The entire sites and lists discovered by the connector are stored in the connector state along with the last-crawled-site and last-crawled-list information. From the next batch traversals, connector picks the site URL to start crawling from the connector state itself. When a complete traversal cycle is completed, last-crawled-site and last-crawled-list info is reset and in the next batch traversal again starts from the Crawl URL specified on the configuration page.
 
 The completion of a traversal cycle is more conceptual and this info is maintained by the connector by resetting the last-crawled-site and last-crawled-list. As far as the connector is concerned, it always runs a batch traversal.
-
  
 The site URL that has been picked is processed for lists, child sites, link sites and Site Discovery sites. All discovered site URLs in a batch traversal are collected in a local store and gets updated into the connector state. These newly discovered sites are crawled in the next batch traversal(s). Each discovered list is crawled for documents. Discovery of documents are done per list and their sequence and checkpoint related information are also maintained at list level. All the discovered documents are stored in the crawl queue of the list. If the current list is able to contain attachments, connector tries to get attachments for all the discovered List Items. At the end of a list, connector constructs an extra document for the list itself which will be sent to the GSA along with other documents corresponding to the list items.
 
@@ -47,7 +44,6 @@ Every time a new traversal cycle is initiated from the top level site URL (that 
  
 In every batch traversal, connector crawls only those sites which are there in the connector state. Any new site discovered in the current batch traversal is a candidate for crawling in future traversals.
 
-
 Since, each traversal request initiated by the Connector Manager returns only when either (2*BatchHint) no. of documents are discovered or all the sites and lists are visited, this can be very time consuming when the no. of sites and lists are very large but the no. of documents added/updated are less. Such time delays are likely to occur more frequently in case of incremental crawl when the frequency of change in content is comparatively less.
  
 Let's say for example, there are a total of 500 sites in the connector state that is being crawled by the connector; the BatchHint for the current crawl cycle is 50 and, no. of document updates are only 10. Now in such case, connector will not return as soon as it discovers those ten document changes. Rather, it'll try visiting each of those 500 site URLs before returning. Hence, user should be patient till the time connector confirms that there are only ten changes and no other documents in other sites have been changed. Depending on the turnaround time taken while a single web service call and the amount of processing connector has to do, this user waiting time can vary.
@@ -55,8 +51,7 @@ Let's say for example, there are a total of 500 sites in the connector state tha
 This delay is a necessary evil for the connector because it needs to scan every site and list before returning the final list of documents that have changed or updated. There has been proposal to introduce timeouts based returns from the traversals in future release of connectors.
  
 
-=Applying inclusion/exclusion patterns for the discovered URLs=
- 
+==Applying inclusion/exclusion patterns for the discovered URLs==
 All the URLs discovered by connector are checked against the included/excluded URL patterns specified by the user during configuration. Following are a few well known reasons for URL exclusion:
  1. URL does not match any of the specified included URL patterns
  2. URL matches any of the pattern specified under excluded URL patterns
@@ -65,12 +60,10 @@ All the URLs discovered by connector are checked against the included/excluded U
  5. SharePoint version can not be determined from the given site URL
 
 
-=Adding/Modifying appropriate entries in Sharepoint_state.xml file=
- 
+==Adding/Modifying appropriate entries in Sharepoint_state.xml file==
 Connector always remembers its progress with the help of connector state. A snapshot of this state is stored in Sharepoint_state.xml every time a set of documents is sent to the connector manager and checkpoint is called. If the connector is stopped and restarted after sometime, this state file has all the required information for the connector to continue its traversal from the point where it had stopped last time. As long as the connector is running, it does not bother to read this file and rather uses the in-memory representation of the connector state info. The connector restart is one case when the state file is read by the connector. Technically, every time a new instance of SharePoint Traversal manager is created, connector reads this file to construct an in-memory connector state. For a complete description of the structure of state file, refer to https://sites.google.com/a/google.com/google-persistent-team-site/Home/sharepoint-connector/state-file-design-gsp2
  
 From the above reference, you can get a fair idea of the structure of the state file. Changing the state file is highly discouraged. Though, in certain cases where you want to force a re-crawl of only specific sites or list, changes in the state file is required. Be extra careful while doing any change and do ensure that you are not breaking the XML node hierarchy.
-
 
 *Forcing re-crawl of a site:*
  1. In the Sharepoint_state.xml, locate the WebSate node corresponding to the site that you want to re-crawl.
@@ -93,7 +86,6 @@ From the above reference, you can get a fair idea of the structure of the state 
  }}}
  
  Save the file and restart the connector
-
   
 *Forcing re-crawl of a list*
  1. In the Sharepoint_state.xml, locate the WebSate node corresponding to the site in which the list exists. 
@@ -129,13 +121,11 @@ Though, the above suggested changes will ensure that a full crawl is initiated f
 Please not the ListID. It's not List URL, but the GUID of the list. You can leave it blank
 
  
-=Fetching metadata for the documents and applying the included, excluded metadata list rules=
- 
+==Fetching metadata for the documents and applying the included, excluded metadata list rules==
 For each document that connector discovers and sends to the GSA, it parses the metadata information that is returned by the web service. It creates a name - value pair for each individual metadata attribute. Connector also does some relevant changes in the way these names and values are displayed to make better sense to user. This is required because SharePoint web service does some manipulations in these values. Connector passes all the metadata names through a two level filter of included_metadata and excluded_metadata respectively. These filters are explained in detail in the connector documentation. All those attributes which passes through both these filters are sent to GSA for indexing. Though, this filter applied by the connector makes no guarantee of those metadata that are discovered by the GSA itself. Hence, a user who is running the connector in Metadata-and-URL mode, may see some metadata indexed in the GSA which were filtered out by the connector.
  
  
-=Preparing the document list to be sent to the Connector Manager=
- 
+==Preparing the document list to be sent to the Connector Manager==
 Connector discovers and sends the documents in a pre-defined order. This sequence is ensured at each step of traversal. Documents are always discovered at list level, these lists are sorted in a pre-defined order; sites are the top level entities which contains list. Connector respects these ordering not only at the time of traversal but also while sending these documents to CM. Ordering of different type of entities are different:
  
  * Sites are ordered according to their time of discovery
@@ -148,10 +138,8 @@ The final list of documents that gets iterated when Connector Manager asks for t
  
 The sequence in which a connector sweeps through the ECM and sends the document to the GSA is a vital concept and is not specific to the SharePoint connector only. Though, the way this sequence is maintained is a bit complex in case of Google SharePoint Connector. The reason being, the actual documents that are sent to the GSA falls deep inside the hierarchy maintained in the connector state. This hierarchy can be very large and complicated. In absence of any well-known sequence, connector will loose the track of which document / list /site is to be crawled next. 
  
- 
 
-=Sending individual documents to Connector Manager=
- 
+==Sending individual documents to Connector Manager==
 Connector performs certain operations for each document that is sent to the Connector Manager and then to the GSA. These include:
  * FQDN resolution of document URL 
  * Applying Site Alias Mapping on the document URLs 
@@ -160,15 +148,11 @@ Connector performs certain operations for each document that is sent to the Conn
 Connector always remembers the last document sent to the Connector Manager and in the subsequent requests returns the document that comes next to the last document sent. There might be the case when the last document sent was the last document itself and there is no more documents to be sent. In such case, connector re-crawl the SharePoint repository to get more documents, new / updated. Every time a document is sent to the Connector Manager, it is dropped from the in memory crawl queue.
 
  
- 
-=Checkpointing in SharePoint Connector=
- 
+==Checkpointing in SharePoint Connector==
 Checkpointing is basically marking a cursor/pointer to identify till what point in the content reporsitory the documents have been sent to the GSA. It is an important event that is initiated by the Connector Manager when it's not ready to receive any more documents from the connector. In an ideal case, this happens when the Connector Manager has collected BatchHint no. of documents from the connector; but there might also be some other cases when the Connector Manager decides to checkpoint. For connector, the reason is immaterial. When checkpoint is called, the connector dumps all its state information onto the physical disk to the state file. 
 
  
- 
-=Details specific to content feed=
- 
+==Details specific to content feed==
 Connector, by default runs in the Metadata-and-URL feed mode but, it can be configured to run in the Content feed mode as well. The top level conceptual differences in these two modes are very clear:
  * Connector crawls and sends the document's content along with its URL and metadata in case of content feed. In M&U, content is crawled by the GSA. 
  * Document's security is being handled by the connector at serve time in case of Content feed. This includes search user authentication and authorization against the search results.
