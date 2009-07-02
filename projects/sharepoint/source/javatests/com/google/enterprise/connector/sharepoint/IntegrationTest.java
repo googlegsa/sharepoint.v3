@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint;
 
+import java.util.ArrayList;
+
 import javax.security.auth.login.LoginException;
 
 import junit.framework.TestCase;
@@ -23,31 +25,63 @@ import com.google.enterprise.connector.persist.ConnectorStateStore;
 import com.google.enterprise.connector.persist.MockConnectorStateStore;
 import com.google.enterprise.connector.persist.StoreContext;
 import com.google.enterprise.connector.pusher.MockPusher;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointTraversalManager;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
 import com.google.enterprise.connector.traversal.QueryTraverser;
 import com.google.enterprise.connector.traversal.Traverser;
 
+/**
+ * @author amit_kagrawal
+ */
 public class IntegrationTest extends TestCase {
-	
+	static{
+		System.setProperty("java.util.logging.config.file","logging.properties");//set an external configuration file for controlling logging
+	}
+
+	final String sharepointType = SharepointConnectorType.SP2003;
+	final String sharepointUrl = "http://";
+	final String domain = "domain";
+	final String username = "administrator";
+	final String password = "password";
+	final String mySiteBaseURL=null;
+	final String googleConnWorkDir = null;
+	final String exclURLs ="";
+	final String aliasHost = null;
+	final String aliasPort = null;
+	final String inclURLs ="regexp:.*";
+
+	private static ArrayList BLACK_LIST;
+	static {
+		BLACK_LIST = new ArrayList();
+		BLACK_LIST.add(".*vti_cachedcustomprops$");
+		BLACK_LIST.add(".*vti_parserversion$");
+		BLACK_LIST.add(".*ContentType$");
+		BLACK_LIST.add(".*vti_cachedtitle$");
+		BLACK_LIST.add(".*ContentTypeId$");
+		BLACK_LIST.add(".*DocIcon$");
+		BLACK_LIST.add(".*vti_cachedhastheme$");
+		BLACK_LIST.add(".*vti_metatags$");
+		BLACK_LIST.add(".*vti_charset$");
+		BLACK_LIST.add(".*vti_cachedbodystyle$");
+		BLACK_LIST.add(".*vti_cachedneedsrewrite$");
+	}
+
+	private static ArrayList WHITE_LIST;
+	static {
+		WHITE_LIST = new ArrayList();
+		WHITE_LIST.add(".*vti_title$");
+		WHITE_LIST.add(".*vti_author$");
+	}
+
 	private SharepointConnector connector;  
-
 	public static final int TOTAL_DOCS = 185;//set the total expected documents
-
 	public void setUp() throws Exception {
-		super.setUp();
-		System.out.println("\n...Setting Up...");
-		System.out.println("Initializing Sharepoint Connector Instance ...");
-		this.connector = new SharepointConnector(TestConfiguration.sharepointUrl, TestConfiguration.domain,
-				TestConfiguration.username, TestConfiguration.Password, 
-				  TestConfiguration.googleConnectorWorkDir, TestConfiguration.includedURls, 
-				  TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,TestConfiguration.feedType);
-		this.connector.setIncluded_metadata(TestConfiguration.whiteList);
-		this.connector.setExcluded_metadata(TestConfiguration.blackList);		
-		this.connector.setFQDNConversion(true);
+		connector = new SharepointConnector(sharepointUrl, domain, username, password, googleConnWorkDir,inclURLs,exclURLs,mySiteBaseURL,aliasHost,aliasPort,sharepointType);
+		connector.setWhiteList(WHITE_LIST);
+		connector.setBlackList(BLACK_LIST);
+		connector.setFQDNConversion(true);
+		super.setUp();    
 	}
 	/**
 	 * Test method for
@@ -59,21 +93,19 @@ public class IntegrationTest extends TestCase {
 	 */
 	public final void testRunBatch() throws InterruptedException,RepositoryException {
 		final int iBatch =100; 
-		this.runTestBatches(iBatch);
+		runTestBatches(iBatch);
 	}
 
-	private void runTestBatches(final int batchSize) throws InterruptedException,RepositoryException {
-		final String connectorName = "sharepoint";
-		final Session session = this.connector.login();
+	private void runTestBatches(int batchSize) throws InterruptedException,RepositoryException {
+		String connectorName = "sharepoint";
+		Session session = connector.login();
 		GlobalState.forgetState(null); //used to delete the connector state file.. testing purpose
-		final SharepointTraversalManager manager = 
+		SharepointTraversalManager manager = 
 			(SharepointTraversalManager) session.getTraversalManager(); 
-		final MockPusher pusher = new MockPusher(System.out);
-		final StoreContext storeContext = new StoreContext(connectorName);
-		final ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
-		final MockInstantiator instantiator = new MockInstantiator();		
-		final Traverser traverser =new QueryTraverser(pusher, manager, instantiator.getTraversalStateStore(connectorName), connectorName);
-		instantiator.setupTraverser(connectorName, traverser);		
+		MockPusher pusher = new MockPusher(System.out);
+		ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
+		MockInstantiator instantiator = new MockInstantiator();
+		Traverser traverser =new QueryTraverser(pusher, manager, instantiator.getTraversalStateStore(connectorName), connectorName);
 		System.out.println("\nRunning batch test batchsize " + batchSize);
 
 		int docsProcessed = -1;
@@ -83,7 +115,7 @@ public class IntegrationTest extends TestCase {
 			docsProcessed = traverser.runBatch(batchSize);//do the traversal
 			totalDocsProcessed += docsProcessed;//do the checkpointing after the traversal
 			System.out.println("Batch# " + batchNumber + " docs " + docsProcessed 
-					+" checkpoint " + connectorStateStore.getConnectorState(storeContext));
+					+" checkpoint " + connectorStateStore.getConnectorState(new StoreContext(connectorName)));
 			batchNumber++;
 
 			//start recrawl cycle
@@ -92,5 +124,6 @@ public class IntegrationTest extends TestCase {
 			}
 
 		}    
+//		Assert.assertEquals(TOTAL_DOCS,totalDocsProcessed);
 	}
 }
