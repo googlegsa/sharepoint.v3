@@ -43,11 +43,17 @@ Following table describes the purpose and availability of each node:
 ||State||Root node of the State file||Type||Always||
 ||FeedType||Contains information about feed type being used||ID||Always||
 ||FullRecrawlFlag||Indicates whether a complete crawl has been completed or not||ID||Always|| 
-||LastCrawledWebStateID||Contains pointer to the ListState from where the next crawl is started||ID||Always 
+||LastCrawledWebStateID||Contains pointer to the ListState from where the next crawl is started||ID||Always||
 ||LastCrawledListStateID||Contains pointer to the WebState from where the next crawl is started||ID||Always||
 ||WebState||Represents a SharePoint web site||ID, InsertionTime, SPType, URL, WebTitle||
 Always||
 ||ListState||Represents a SharePoint list/library||BiggestID, ChangeToken, ID, LastModified, Type, URL, FolderLevel||Always||
+||LastDocCrawled||Last Document that has been sent from the current list. This acts as a checkpoint per list/library||Action, ID, LastModified, FolderLevel||Mostly||
+||FolderItemIDs||Contains the IDs of documents which are inside some folders in a pre-defined format||-||Content Feed, Only for document libraries||
+||Attachments||Contains the attachment URLs for all the items in a pre-defined format||-||Content Feed,Only for those lists whose items can contain attachments||
+||Alerts||Contains the IDs of the discovered alerts||-||Only if the Web Site contains some alerts for the user whose credentials are specified on the connector configuration page||
+ 
+
  
  
  
