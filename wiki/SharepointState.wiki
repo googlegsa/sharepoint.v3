@@ -1,0 +1,36 @@
+#summary State File Design GSP2.0
+
+= What is the State File and How is it Useful? =
+
+While traversing, connector needs to keep track of things it has traversed so that, afterwards, it only crawls the new/updated entities. Since, there is no direct way of check pointing in SharePoint, connector maintains the state file which stores all the information that connector may require to resume its traversal in future.
+
+*Sharepoint_state.xml* created under the connector instance directory is always updated with the recent in-memory copy of the state info every time checkpoint is received. Following is the structure of _Sharepoint_state.xml_
+
+ {{{
+
+<State>   
+ <FeedType Type=""/>   
+ <FullRecrawlFlag ID=""/>   
+ <LastCrawledWebStateID ID=""/>   
+ <LastCrawledListStateID ID=""/>    
+
+ <WebState ID="" InsertionTime="" SPType="" URL="" WebTitle="">
+   <ListState BiggestID="" ChangeToken="" ID="" LastModified="" Type="" URL=""> 
+     <Attachments> </Attachments>               
+     <FolderItemIDs> </FolderItemIDs>
+     <LastDocCrawled Action="" ID="" LastModified="" FolderLevel=””/> 
+   </ListState>
+    ……   
+ </WebState>
+
+ <WebState ID="" InsertionTime="" SPType="" URL="" WebTitle="">
+   <ListState BiggestID="" ChangeToken="" ID="" LastModified="" Type="" URL="">
+     <Alerts> </Alerts>
+     <LastDocCrawled Action="" ID="" LastModified=""/>
+   </ListState>
+    ……
+ </WebState>
+ ……
+</State> 
+
+ }}}
