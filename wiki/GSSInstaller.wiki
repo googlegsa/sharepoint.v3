@@ -1,0 +1,21 @@
+#summary Building GSS Installer
+
+This document guides you through building your own version of Google Services for SharePoint Installer. This can be helpful especially when the existing installer binary does not support the hardware platform you are using or you want to do other customizations.
+
+Pre-requisite for building GSSInstaller.msi:
+* Visual Studio 2007 IDE
+
+*Following are the steps for building the installer:*
+
+1. Download the source from the following SVN URL:
+http://google-enterprise-connector-sharepoint.googlecode.com/svn/trunk/projects/GSSInstaller
+
+2. Open the downloaded project source in the Visual Studio IDE.
+File -> Open -> Project/Solution
+And select the path of the solution file GSSInstaller.sln
+
+3. Compile and build the project.
+Right click the solution in solution explorer and select "Build Solution"
+
+4. You can find the newly built installer at the path:
+\GSSInstaller\Setup\Release\GSS.msi
