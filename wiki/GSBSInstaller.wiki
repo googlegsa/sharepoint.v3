@@ -3,7 +3,8 @@
 This document guides you through building your own version of Google Search Box for SharePoint installer. This can be helpful especially when the existing binary does not support the hardware platform you are using or you want to do other customizations.
 
 *Pre-requisite:*
-* Visual Studio 2007 IDE
+
+ * Visual Studio 2007 IDE
 
 *Following are the steps for building the installer:*
 
