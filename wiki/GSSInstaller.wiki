@@ -1,9 +1,9 @@
-#summary Building GSS Installer
+#summary Building the Google Services for SharePoint Installer
 
 This document guides you through building your own version of Google Services for SharePoint Installer. This can be helpful especially when the existing installer binary does not support the hardware platform you are using or you want to do other customizations.
 
-Pre-requisite for building GSSInstaller.msi:
-* Visual Studio 2007 IDE
+*Pre-requisite:*
+ * Visual Studio 2007 IDE
 
 *Following are the steps for building the installer:*
 
