@@ -11,30 +11,35 @@
   # Place file google_custom_search_watermark.gif in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\IMAGES
   # Place Folder "GSAFeature" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\FEATURES
   # For installation and activatation of the "GSAFeature"
+     {{{
 	* Open Windows Command prompt.
 	* Go to directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\BIN
 	* Run following commands 
 		stsadm.exe -o installfeature -name GSAFeature -force
 		stsadm.exe -o activatefeature -name GSAFeature -force
+     }}}
   # To set GSA parameters for performing search using Google search control
+{{{
 	* In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened
 	* In the Windows Explorer, right click on web.config -> Edit
 	* Go to "<appSettings>" section (For MOSS 2007). In case of WSS 3.0 you need to create a new "<appSettings>" section
 	* Add following keys under it. (I have entered sample values for the reference)
-		
+	
 		<!--Beginning of GSA search control section -->
 	    <add key="GSALocation" value="http://gsa.mycompany.mydomain.com" />
-		<add key="siteCollection" value="default_collection" />
+	    <add key="siteCollection" value="default_collection" />
 	    <add key="frontEnd" value="SPS_frontend" />
 	    <add key="verbose" value="True" />
 	    <add key="GSAStyle" value="false" />
 	    <add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\GSA2SP.xsl" />
 	    <add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\SP_Actual.xsl" />
 		<!--End of GSA search control section -->
+}}}
   # To setup Sharepoint like frontend:
+{{{
 	* open GSA Admin page->Serving->FrontEnd
 	* create a new frontend "SPS_frontend"
 	* copy the contents of file "SPS_frontend.xslt"
 	* save it
-
+}}}
 That's All !! you can now open any web site under this web application and perform search.
