@@ -1,4 +1,4 @@
-==INSTRUCTIONS FOR MANUAL DEPLOYMENT OF THE GOOGLE SEARCH BOX FOR SHAREPOINT==
+==Instructions for manual deployment of Google Search Box for SharePoint==
 
   * The search Box can be deployed on machine with WSS 3.0 or MOSS 2007 installed.
   * The documents should be fed and indexed on appliance before doing search 
