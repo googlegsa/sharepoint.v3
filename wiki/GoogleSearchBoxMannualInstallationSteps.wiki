@@ -23,7 +23,7 @@
 	* In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened
 	* In the Windows Explorer, right click on web.config -> Edit
 	* Go to "<appSettings>" section (For MOSS 2007). In case of WSS 3.0 you need to create a new "<appSettings>" section
-	* Add following keys under it. (I have entered sample values for the reference)
+	* Add following keys under it. (Following are sample values for reference)
 	
 	    <!--Beginning of GSA search control section -->
 	    <add key="GSALocation" value="http://gsa.mycompany.mydomain.com" />
