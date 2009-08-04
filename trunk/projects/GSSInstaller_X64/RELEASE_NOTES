@@ -1,0 +1,41 @@
+Release Notes:
+===============
+
+Google Services for SharePoint Installer for 64-bit platform
+
+This document contains the release notes for Google Services for SharePoint Installer.
+The following sections describe the release in detail and provide information that supplements the main documentation.  
+See the Issues Tab on the Code Site for the current list of known issues and workarounds.
+
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
+
+
+Release 2.0.0, Aug 12, 2009
+===========================
+
+Introduction
+------------
+This is an early access release for wide evaluation and usage. Your feedback is important to us. Keep in mind that we are continuing to work on Google Services for SharePoint Installer and things may change in the future.
+
+Features
+---------
+GSS.msi is a Windows based installer to install Google Services for SharePoint on the SharePoint server.
+
+Pre-requisites
+---------------
+TODO
+
+Version Compatibility
+-----------------------
+The Google Services for SharePoint are supported on the following SharePoint versions:
+* Microsoft Office SharePoint Server 2007 (MOSS 2007) 
+* Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
+
+Note: This installer is certified for Intel 64-bit platform. You can use it on computers supporting the AMD64 and EM64T instruction sets.
+TODO: Add the exact OS details
+TODO: Add pointers to instructions on code wiki page for customizing the installer (Should include details for Itanium)
+
+Known Issues/Limitations
+------------------------
+1) "Verify Installation" dialog box is not a "Modal" dialog box
+2) User can not go back and change the installation folder after clicking "Next" on the "Select Installation Folder" panel.
