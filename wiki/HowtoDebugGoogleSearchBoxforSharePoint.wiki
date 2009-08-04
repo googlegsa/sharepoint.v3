@@ -1,8 +1,8 @@
-#summary One-sentence summary of this page.
+#How to debug Google Search Box using Microsoft Visual Studio (2005\2008).
 
 = Introduction =
 
-It is possible to debug Google Search Box for SharePoint. In order to debug Google Search Box for SharePoint, you need to be on the same machine where the Search Box is installed. Debugging is quite helpful especially when you want to check the workflow of the Search Box or want to troubleshoot Google Search Box for SharePoint. It is possible to debug flow of Search Box on one or multiple web applications simultaneously.
+It is possible to debug Google Search Box for SharePoint using Microsoft Visual Studio (2005\2008). In order to debug Google Search Box for SharePoint, you need to be on the same machine where the Search Box is installed. Debugging is quite helpful especially when you want to check the workflow of the Search Box or want to troubleshoot Google Search Box for SharePoint. It is possible to debug flow of Search Box on one or multiple web applications simultaneously.
 
 
 == To debug the Search Box, please follow the steps below: ==
