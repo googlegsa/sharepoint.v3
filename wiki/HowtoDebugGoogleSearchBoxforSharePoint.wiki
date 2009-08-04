@@ -1,4 +1,4 @@
-#How to debug Google Search Box using Microsoft Visual Studio (2005\2008).
+# How to debug Google Search Box using Microsoft Visual Studio (2005\2008).
 
 = Introduction =
 
