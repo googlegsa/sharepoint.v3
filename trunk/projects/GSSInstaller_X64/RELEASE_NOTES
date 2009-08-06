@@ -40,7 +40,7 @@ The Google Services for SharePoint are supported on the following SharePoint ver
 Note: This installer is certified for Intel 64-bit platform and has been tested on Windows 2003 server. 
 You can use it on computers supporting the AMD64 and EM64T instruction sets.
 
-You may customize the installer to get support for other platforms such as Itenium processors. Installer source is available at 
+You may customize the installer to get support for other platforms such as Intel Itanium processors. Installer source is available at 
 http://google-enterprise-connector-sharepoint.googlecode.com/svn/tags/2.0.0/GSSInstaller_X64
 
 The instructions for building the installer can be found at
