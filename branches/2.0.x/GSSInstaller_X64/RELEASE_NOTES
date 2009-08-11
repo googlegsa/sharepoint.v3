@@ -49,6 +49,11 @@ http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/GSSInstalle
 
 Known Issues/Limitations
 ------------------------
-1) "Verify Installation" dialog box is not a "Modal" dialog box
-2) User can not go back and change the installation folder after clicking "Next" on the "Select Installation Folder" panel
-3) The message on "Select Installation Folder" panel is misleading as it does not mention that the installer must be installed at SharePoint's 12 Hive's ISAPI directory only.
+issue 91: "Verify Installation" dialog box should be a "Modal" dialog box.
+issue 92: Validation for the 12 hive folder should be added on 'Select installation folder panel' or this field should be non-editable.
+issue 93: There is no way to navigate back and correct the path, if user has mistakenly provided incorrect path for the installation folder, after clicking "Next"
+issue 94: Installer is not launched if the logged in user is non-admin local/domain user.
+issue 95: Installation/un-installation summary panel text should be changed.
+issue 96: Verify installation shows success even for the local/domain users not having access to the SharePoint site.
+issue 97: Verify installation wizard does not accept full SharePoint URL (specified till default.aspx.)
+issue 98: Verify installation wizard shows success when invalid domain is specified NTLM SharePoint site and the credentials used are of a local machine user.
