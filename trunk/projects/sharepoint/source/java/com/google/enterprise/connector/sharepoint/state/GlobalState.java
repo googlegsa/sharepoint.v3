@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,35 +54,32 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 
 /**
- * Represents the state of a site. Can be persisted to XML and
- * loaded again from the XML. This would normally be done if the
- * connector wants to be restartable.
- * The state of SharePoint traversal is composed almost entirely of the 
- * state of other classes, which must implement the StatefulObject interface. 
- * As of May 2007, there is only one StatefulObject -- ListState.
- *
- * Classes:
- *     GlobalState.
- * related classes:
- *     StatefulObject (interface)
- *     ListState (implements StatefulObject)
- *
+ * Represents the state of a site. Can be persisted to XML and loaded again from
+ * the XML. This would normally be done if the connector wants to be
+ * restartable. The state of SharePoint traversal is composed almost entirely of
+ * the state of other classes, which must implement the StatefulObject
+ * interface. As of May 2007, there is only one StatefulObject -- ListState.
+ * 
+ * Classes: GlobalState. related classes: StatefulObject (interface) ListState
+ * (implements StatefulObject)
+ * 
  */
 public class GlobalState {
-	private static final Logger LOGGER = Logger.getLogger(GlobalState.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(GlobalState.class
+			.getName());
 	private boolean recrawling = false;
 	private String workDir = null;
 	private String feedType;
 	/**
-	 * To keep track of WebStates, we keep two data structures: a TreeSet relying
-	 * on the insertion time property of a StatefulObject, and a HashMap on the
-	 * primary key of the object (id for Webs).  The StatefulObject interface
-	 * is often used to reduce our dependency on peculiarities of WebState. (At
-	 * one time, it was thought that there would be other instances of 
-	 * StatefulObject, and in the future there could be again)
+	 * To keep track of WebStates, we keep two data structures: a TreeSet
+	 * relying on the insertion time property of a StatefulObject, and a HashMap
+	 * on the primary key of the object (id for Webs). The StatefulObject
+	 * interface is often used to reduce our dependency on peculiarities of
+	 * WebState. (At one time, it was thought that there would be other
+	 * instances of StatefulObject, and in the future there could be again)
 	 */
 	protected SortedSet<WebState> dateMap = new TreeSet<WebState>();
-	protected Map<String,WebState> keyMap =	new HashMap<String, WebState>();
+	protected Map<String, WebState> keyMap = new HashMap<String, WebState>();
 
 	/**
 	 * The "currentWeb" object for WebState. The current object may be null.
@@ -93,37 +91,44 @@ public class GlobalState {
 	private boolean bFullReCrawl = false;
 
 	/**
-	 * Delete our state file. This is for debugging purposes, so that unit
-	 * tests can start from a clean state.
-	 * @param workDir the googleConnectorWorkDir argument to the constructor
+	 * Delete our state file. This is for debugging purposes, so that unit tests
+	 * can start from a clean state.
+	 * 
+	 * @param workDir
+	 *            the googleConnectorWorkDir argument to the constructor
 	 */
 	public static void forgetState(final String workDir) {
 		File f1;
 		if (workDir == null) {
 			LOGGER.info("No working directory was given; using cwd");
-			f1 = new File(SPConstants.CONNECTOR_NAME + SPConstants.CONNECTOR_PREFIX);
+			f1 = new File(SPConstants.CONNECTOR_NAME
+					+ SPConstants.CONNECTOR_PREFIX);
 		} else {
-			LOGGER.info("Work Dir: "+workDir);
-			f1 = new File(workDir, SPConstants.CONNECTOR_NAME + SPConstants.CONNECTOR_PREFIX);
+			LOGGER.info("Work Dir: " + workDir);
+			f1 = new File(workDir, SPConstants.CONNECTOR_NAME
+					+ SPConstants.CONNECTOR_PREFIX);
 		}
-		LOGGER.info("deleting state file from location...."+f1.getAbsolutePath());
+		LOGGER.info("deleting state file from location...."
+				+ f1.getAbsolutePath());
 		if (f1.exists()) {
 			final boolean isDeleted = f1.delete();
-			LOGGER.info("deleted status :"+isDeleted);			
-		}		
+			LOGGER.info("deleted status :" + isDeleted);
+		}
 	}
 
 	/**
-	 * Constructor. 
-	 * @param inWorkDir the googleConnectorWorkDir (which we ask for
-	 *     in connectorInstance.xml).  The state file is saved in this
-	 *     directory.  If workDir is null, the current working directory is
-	 *     used instead.  (In either case, the location of the file is
-	 *     saved in the system preferences, so that environmental changes don't
-	 *     make us lose the file.)
+	 * Constructor.
+	 * 
+	 * @param inWorkDir
+	 *            the googleConnectorWorkDir (which we ask for in
+	 *            connectorInstance.xml). The state file is saved in this
+	 *            directory. If workDir is null, the current working directory
+	 *            is used instead. (In either case, the location of the file is
+	 *            saved in the system preferences, so that environmental changes
+	 *            don't make us lose the file.)
 	 */
-	public GlobalState(final String inWorkDir, final String inFeedType){
-		if(inWorkDir!=null){
+	public GlobalState(final String inWorkDir, final String inFeedType) {
+		if (inWorkDir != null) {
 			workDir = inWorkDir;
 		}
 		feedType = inFeedType;
@@ -131,85 +136,101 @@ public class GlobalState {
 
 	/**
 	 * Factory method for WebState.
-	 * @param spContext The connector context being used
-	 * @param key the "primary key" of the object. This would probably be the WebID
-	 * @return new {@link WebState} which is already indexed in GlobalState's dateMap and keyMap
+	 * 
+	 * @param spContext
+	 *            The connector context being used
+	 * @param key
+	 *            the "primary key" of the object. This would probably be the
+	 *            WebID
+	 * @return new {@link WebState} which is already indexed in GlobalState's
+	 *         dateMap and keyMap
 	 */
-	public WebState makeWebState(final SharepointClientContext spContext, final String key) throws SharepointException {
-		if(key != null){
-			final WebState obj = new WebState(spContext, key); 
+	public WebState makeWebState(final SharepointClientContext spContext,
+			final String key) throws SharepointException {
+		if (key != null) {
+			final WebState obj = new WebState(spContext, key);
 			final DateTime dt = new DateTime();
 			obj.setInsertionTime(dt);
 			updateList(obj);
 			return obj;
-		}else{
-			LOGGER.warning("Unable to make WebState because list key is not found");
+		} else {
+			LOGGER
+					.warning("Unable to make WebState because list key is not found");
 			return null;
 		}
 	}
 
 	/**
-	 * Signal that a complete "recrawl" cycle is beginning, where all lists
-	 * are being fetched from SharePoint.  This GlobalState will
-	 * keep track of which objects are still present.  At the endRecrawl()
-	 * call, objects no longer existing may be removed.
-	 */	
+	 * Signal that a complete "recrawl" cycle is beginning, where all lists are
+	 * being fetched from SharePoint. This GlobalState will keep track of which
+	 * objects are still present. At the endRecrawl() call, objects no longer
+	 * existing may be removed.
+	 */
 	public void startRecrawl() {
 		recrawling = true;
-		if(bFullReCrawl == true){
-			LOGGER.config("Recrawling... setting all web states is isExist flag to false for clean up purpose");
-			// mark all as non-existent	
+		if (bFullReCrawl == true) {
+			LOGGER
+					.config("Recrawling... setting all web states is isExist flag to false for clean up purpose");
+			// mark all as non-existent
 			final Iterator it = dateMap.iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				final WebState webs = (WebState) it.next();
 				webs.setExisting(false);
 			}
 		}
 	}
-	
+
 	/**
-	 * Signals that the recrawl cycle is over, and GlobalState may now
-	 * delete any ListState which did not appear in a 
-	 * updateList() call since the startRecrawl() call.
-	 */	
+	 * Signals that the recrawl cycle is over, and GlobalState may now delete
+	 * any ListState which did not appear in a updateList() call since the
+	 * startRecrawl() call.
+	 */
 	public void endRecrawl(final SharepointClientContext spContext) {
 		if (!recrawling) {
 			LOGGER.severe("called endRecrawl() when not in a recrawl state");
 			return;
 		}
 
-		if(bFullReCrawl == true){
-			LOGGER.config("ending recrawl ...bFullReCrawl true ... cleaning up WebStates");
+		if (bFullReCrawl == true) {
+			LOGGER
+					.config("ending recrawl ...bFullReCrawl true ... cleaning up WebStates");
 			final Iterator iter = getIterator();
-			if(null != iter) {
-				while (iter.hasNext()){
-					final WebState webs = (WebState) iter.next(); 
-					webs.endRecrawl(spContext);				
+			if (null != iter) {
+				while (iter.hasNext()) {
+					final WebState webs = (WebState) iter.next();
+					webs.endRecrawl(spContext);
 					if (!webs.isExisting()) {
 						// Case of web deletion
-						// Delete this web State only if does not contain any list State info.
-						if(webs.getAllListStateSet().size() == 0) {
-							if(SPConstants.CONTENT_FEED.equalsIgnoreCase(spContext.getFeedType())) {
+						// Delete this web State only if does not contain any
+						// list State info.
+						if (webs.getAllListStateSet().size() == 0) {
+							if (SPConstants.CONTENT_FEED
+									.equalsIgnoreCase(spContext.getFeedType())) {
 								int responseCode = 0;
 								try {
-									responseCode = spContext.checkConnectivity(Util.encodeURL(webs.getWebUrl()), null);
+									responseCode = spContext.checkConnectivity(
+											Util.encodeURL(webs.getWebUrl()),
+											null);
 								} catch (final Exception e) {
-									LOGGER.log(Level.WARNING, "Connectivity failed! ", e);
+									LOGGER.log(Level.WARNING,
+											"Connectivity failed! ", e);
 								}
-								if(responseCode == 200) {
+								if (responseCode == 200) {
 									webs.setExisting(true);
 									continue;
-								} else if(responseCode != 404) {
-									continue;					
+								} else if (responseCode != 404) {
+									continue;
 								}
 							}
-							LOGGER.log(Level.INFO, "Deleting the state information for web [" + webs.getWebUrl() + "]. ");
+							LOGGER.log(Level.INFO,
+									"Deleting the state information for web ["
+											+ webs.getWebUrl() + "]. ");
 							iter.remove();
-							keyMap.remove(webs.getPrimaryKey());						
-						}										
+							keyMap.remove(webs.getPrimaryKey());
+						}
 					}
 				}
-			}			
+			}
 		}
 		recrawling = false;
 	}
@@ -221,10 +242,11 @@ public class GlobalState {
 	public void removeWebStateFromKeyMap(final WebState inWebs) {
 		keyMap.remove(inWebs.getPrimaryKey());
 	}
-	
+
 	/**
 	 * Get an iterator which returns the objects in increasing order of their
 	 * lastModified dates.
+	 * 
 	 * @return Iterator on the objects by lastModified time
 	 */
 	public Iterator getIterator() {
@@ -232,10 +254,12 @@ public class GlobalState {
 	}
 
 	/**
-	 * Get dateMap iterator beginning at the current ListState and wrapping 
-	 * around to finish just before the current.  If there is no current,
-	 * you just get an ordinary iterator.
-	 * @return Iterator which begins at getCurrentList() and wraps around the end
+	 * Get dateMap iterator beginning at the current ListState and wrapping
+	 * around to finish just before the current. If there is no current, you
+	 * just get an ordinary iterator.
+	 * 
+	 * @return Iterator which begins at getCurrentList() and wraps around the
+	 *         end
 	 */
 
 	public Iterator getCircularIterator() {
@@ -243,58 +267,70 @@ public class GlobalState {
 		if (start == null) {
 			return getIterator();
 		}
-		// one might think you could just do tail.addAll(head) here. But you can't.
-		final ArrayList<WebState> full = new ArrayList<WebState>(dateMap.tailSet(start));
+		// one might think you could just do tail.addAll(head) here. But you
+		// can't.
+		final ArrayList<WebState> full = new ArrayList<WebState>(dateMap
+				.tailSet(start));
 		full.addAll(dateMap.headSet(start));
 		return full.iterator();
 	}
 
 	/**
 	 * Lookup a ListState by its key.
-	 * @param webid web state in which the list is to be searched
-	 * @param listid the list GUID to be searched
+	 * 
+	 * @param webid
+	 *            web state in which the list is to be searched
+	 * @param listid
+	 *            the list GUID to be searched
 	 * @return object handle, or null if none found
 	 */
 	public ListState lookupList(final String webid, final String listid) {
-		final WebState ws =keyMap.get(webid); 
-		if(null!=ws){
-			final ListState ls =ws.lookupList(listid); 
-			if(null!=ls){
+		final WebState ws = keyMap.get(webid);
+		if (null != ws) {
+			final ListState ls = ws.lookupList(listid);
+			if (null != ls) {
 				return ls;
 			}
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Lookup a WebState by its key.
-	 * @param key primary key
+	 * 
+	 * @param key
+	 *            primary key
 	 * @return object handle, or null if none found
 	 */
-	public WebState lookupWeb(final String key, final SharepointClientContext sharepointClientContext) {
-		WebState ws =keyMap.get(key);
-		if(null == sharepointClientContext) {
+	public WebState lookupWeb(final String key,
+			final SharepointClientContext sharepointClientContext) {
+		WebState ws = keyMap.get(key);
+		if (null == sharepointClientContext) {
 			return ws;
 		}
-		
+
 		/*
-		 * The incoming url might not always be exactly the web URL that is used while creation of web state and is required by Web Services as such. 
-		 * Hence, a second check is required. 
-		 */ 
-		final SharepointClientContext spContext = (SharepointClientContext) sharepointClientContext.clone();
-		if(null == ws) {
+		 * The incoming url might not always be exactly the web URL that is used
+		 * while creation of web state and is required by Web Services as such.
+		 * Hence, a second check is required.
+		 */
+		final SharepointClientContext spContext = (SharepointClientContext) sharepointClientContext
+				.clone();
+		if (null == ws) {
 			final String webAppURL = Util.getWebApp(key);
 			WebsWS websWS = null;
 			try {
 				spContext.setSiteURL(webAppURL);
-				websWS = new WebsWS(spContext);						
-			} catch(final Exception e) {
-				LOGGER.log(Level.WARNING, "webWS creation failed for URL [ " + key + " ]. ", e);
+				websWS = new WebsWS(spContext);
+			} catch (final Exception e) {
+				LOGGER.log(Level.WARNING, "webWS creation failed for URL [ "
+						+ key + " ]. ", e);
 			}
-			if(null != websWS) {
+			if (null != websWS) {
 				final String tmpKey = websWS.getWebURLFromPageURL(key);
-				if(!key.equals(tmpKey)) {
-					ws = keyMap.get(tmpKey);;						
+				if (!key.equals(tmpKey)) {
+					ws = keyMap.get(tmpKey);
+					;
 				}
 			}
 		}
@@ -302,54 +338,56 @@ public class GlobalState {
 	}
 
 	/**
-	 * Return an XML string representing the current state. Since our state
-	 * is comprised almost entirely of the state of the StatefulObjects
-	 * (i.e. ListState), this is largely done by calling an
-	 * analogous method on those classes. Here is an example (note that
-	 * the only state that belongs to GlobalState itself if the "current"
-	 * object for each dependent class).  Consult ListState for details on
-	 * its XML representation.
-	 * (we have to use &lt; and &gt; here so the javadocs will come out right.)
-<pre>
-        &lt;?xml version="1.0" encoding="UTF-8"?&gt;
-        &lt;state&gt;
-          &lt;current id="foo" type="ListState"/&gt;
-          &lt;ListState id="bar"&gt;
-            &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
-            &lt;URL/&gt;
-           &lt;lastDocCrawled&gt;
-              &lt;document id="id2"&gt;
-                &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
-                &lt;url&gt;url2&lt;/url&gt;
-              &lt;/document&gt;
-            &lt;/lastDocCrawled&gt;
-          &lt;/ListState&gt;
-          &lt;ListState id="foo"&gt;
-            &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
-            &lt;URL/&gt;
-            &lt;lastDocCrawled&gt;
-              &lt;document id="id1"&gt;
-                &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
-                &lt;url&gt;url1&lt;/url&gt;
-             &lt;/document&gt;
-            &lt;/lastDocCrawled&gt;
-            &lt;crawlQueue&gt;
-              &lt;document id="id3"&gt;
-                &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
-                &lt;url&gt;url3&lt;/url&gt;
-              &lt;/document&gt;
-              &lt;document id="id4"&gt;
-               &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
-                &lt;url&gt;url4&lt;/url&gt;
-              &lt;/document&gt;
-            &lt;/crawlQueue&gt;
-          &lt;/ListState&gt;
-        &lt;/state&gt;
-</pre>
+	 * Return an XML string representing the current state. Since our state is
+	 * comprised almost entirely of the state of the StatefulObjects (i.e.
+	 * ListState), this is largely done by calling an analogous method on those
+	 * classes. Here is an example (note that the only state that belongs to
+	 * GlobalState itself if the "current" object for each dependent class).
+	 * Consult ListState for details on its XML representation. (we have to use
+	 * &lt; and &gt; here so the javadocs will come out right.)
+	 * 
+	 * <pre>
+	 * &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+	 *         &lt;state&gt;
+	 *           &lt;current id=&quot;foo&quot; type=&quot;ListState&quot;/&gt;
+	 *           &lt;ListState id=&quot;bar&quot;&gt;
+	 *             &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+	 *             &lt;URL/&gt;
+	 *            &lt;lastDocCrawled&gt;
+	 *               &lt;document id=&quot;id2&quot;&gt;
+	 *                 &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+	 *                 &lt;url&gt;url2&lt;/url&gt;
+	 *               &lt;/document&gt;
+	 *             &lt;/lastDocCrawled&gt;
+	 *           &lt;/ListState&gt;
+	 *           &lt;ListState id=&quot;foo&quot;&gt;
+	 *             &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+	 *             &lt;URL/&gt;
+	 *             &lt;lastDocCrawled&gt;
+	 *               &lt;document id=&quot;id1&quot;&gt;
+	 *                 &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+	 *                 &lt;url&gt;url1&lt;/url&gt;
+	 *              &lt;/document&gt;
+	 *             &lt;/lastDocCrawled&gt;
+	 *             &lt;crawlQueue&gt;
+	 *               &lt;document id=&quot;id3&quot;&gt;
+	 *                 &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+	 *                 &lt;url&gt;url3&lt;/url&gt;
+	 *               &lt;/document&gt;
+	 *               &lt;document id=&quot;id4&quot;&gt;
+	 *                &lt;lastMod&gt;20070420T154348.133-0700&lt;/lastMod&gt;
+	 *                 &lt;url&gt;url4&lt;/url&gt;
+	 *               &lt;/document&gt;
+	 *             &lt;/crawlQueue&gt;
+	 *           &lt;/ListState&gt;
+	 *         &lt;/state&gt;
+	 * </pre>
+	 * 
 	 * @return XML string
 	 */
 	public String getStateXML() throws SharepointException {
-		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		final DocumentBuilderFactory factory = DocumentBuilderFactory
+				.newInstance();
 		org.w3c.dom.Document doc;
 		try {
 			final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -362,30 +400,45 @@ public class GlobalState {
 		doc.appendChild(top);
 
 		// Feed Type used
-		final Element elementFeedType = doc.createElement(SPConstants.STATE_FEEDTYPE);
+		final Element elementFeedType = doc
+				.createElement(SPConstants.STATE_FEEDTYPE);
 		elementFeedType.setAttribute(SPConstants.STATE_TYPE, feedType);
 		top.appendChild(elementFeedType);
-		
+
 		// FULL_RECRAWL_FLAG
-		final Element elementFlag = doc.createElement(SPConstants.FULL_RECRAWL_FLAG);
-		elementFlag.setAttribute(SPConstants.STATE_ID, bFullReCrawl+"");
+		final Element elementFlag = doc
+				.createElement(SPConstants.FULL_RECRAWL_FLAG);
+		elementFlag.setAttribute(SPConstants.STATE_ID, bFullReCrawl + "");
+
+		// If the flag is true it implies that the connector finished traversing
+		// the repository once and hence is done with a complete crawl cycle
+		if (bFullReCrawl) {
+			String dateTime = Util.formatDate(Calendar.getInstance());
+			// Log the date and time
+			elementFlag.setAttribute(SPConstants.LAST_FULL_CRAWL_DATETIME,
+					dateTime);
+			LOGGER
+					.info("Connector completed a full crawl cycle traversing the repository once at : "
+							+ dateTime);
+		}
 		top.appendChild(elementFlag);
 
 		// LAST_CRAWLED_WEB_ID
-		final Element element1 = doc.createElement(SPConstants.LAST_CRAWLED_WEB_ID);
+		final Element element1 = doc
+				.createElement(SPConstants.LAST_CRAWLED_WEB_ID);
 		element1.setAttribute(SPConstants.STATE_ID, lastCrawledWebID);
 		top.appendChild(element1);
-		
 
 		// LAST_CRAWLED_LIST_ID
-		final Element element2 = doc.createElement(SPConstants.LAST_CRAWLED_LIST_ID);
+		final Element element2 = doc
+				.createElement(SPConstants.LAST_CRAWLED_LIST_ID);
 		element2.setAttribute(SPConstants.STATE_ID, lastCrawledListID);
 		top.appendChild(element2);
 
 		// now dump the actual WebStates:
-		final Iterator it = dateMap.iterator(); 
-//		for (StatefulObject obj : dateMap) {
-		while(it.hasNext()){
+		final Iterator it = dateMap.iterator();
+		// for (StatefulObject obj : dateMap) {
+		while (it.hasNext()) {
 			final StatefulObject obj = (StatefulObject) it.next();
 			top.appendChild(obj.dumpToDOM(doc));
 		}
@@ -415,10 +468,11 @@ public class GlobalState {
 	/**
 	 * Creates an XML representation of our state, and saves it, using the
 	 * PrefsStore mechanism.
+	 * 
 	 * @throws SharepointException
 	 */
-	public void saveState()  throws SharepointException {
-		try{
+	public void saveState() throws SharepointException {
+		try {
 			final String xml = getStateXML();
 			final File f = getStateFileLocation();
 
@@ -430,7 +484,7 @@ public class GlobalState {
 			LOGGER.log(Level.WARNING, "Save State Failed", e);
 			throw new SharepointException("Save state failed");
 
-		}catch(final Throwable e){
+		} catch (final Throwable e) {
 			LOGGER.log(Level.WARNING, "Save State Failed", e);
 			throw new SharepointException("Save state failed");
 		}
@@ -438,161 +492,194 @@ public class GlobalState {
 
 	/**
 	 * Load from XML.
-	 * @param fileState - file name for the state file, which has already been
-	 *     checked as to its existence.
+	 * 
+	 * @param fileState
+	 *            - file name for the state file, which has already been checked
+	 *            as to its existence.
 	 */
 	private void loadStateXML(final File fileState) throws SharepointException {
-		if(fileState==null){
-			throw new SharepointException("Unable to get the file containing the state info");
+		if (fileState == null) {
+			throw new SharepointException(
+					"Unable to get the file containing the state info");
 		}
 		final Collator collator = Util.getCollator();
 		BufferedReader in = null;
 		ByteArrayInputStream b = null;
 		try {
-			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilderFactory factory = DocumentBuilderFactory
+					.newInstance();
 			final DocumentBuilder builder = factory.newDocumentBuilder();
 
-			//----------------start: UTF-16 problem ----------------
-			//problem: UTF-16 problem: Invalid byte 2 of 3-byte UTF-8 sequence
-			//help link: http://forum.java.sun.com/thread.jspa?threadID=508676&messageID=2414565
+			// ----------------start: UTF-16 problem ----------------
+			// problem: UTF-16 problem: Invalid byte 2 of 3-byte UTF-8 sequence
+			// help link:
+			// http://forum.java.sun.com/thread.jspa?threadID=508676&messageID=2414565
 			in = new BufferedReader(new FileReader(fileState));
 			final StringBuffer str = new StringBuffer();
 			String str1;
 			while ((str1 = in.readLine()) != null) {
 				str.append(str1);
-				str.append("\n");//easy to see when printed
+				str.append("\n");// easy to see when printed
 			}
 
 			str1 = str.toString();
-			b =  new java.io.ByteArrayInputStream(str1.getBytes("UTF8"));
-			//----------------end: UTF-16 problem ----------------
+			b = new java.io.ByteArrayInputStream(str1.getBytes("UTF8"));
+			// ----------------end: UTF-16 problem ----------------
 
-			final org.w3c.dom.Document doc = builder.parse(b);//this need to be changed
-			if(doc==null){
+			final org.w3c.dom.Document doc = builder.parse(b);// this need to be
+			// changed
+			if (doc == null) {
 				throw new SharepointException("Unable to get doc");
 			}
-			final NodeList nodeList = doc.getElementsByTagName(SPConstants.STATE);
-			if ((nodeList==null) || (nodeList.getLength() == 0)) {
+			final NodeList nodeList = doc
+					.getElementsByTagName(SPConstants.STATE);
+			if ((nodeList == null) || (nodeList.getLength() == 0)) {
 				throw new SharepointException("Invalid XML: no <state> element");
 			}
 
 			// Feed Type
-			if(nodeList.item(0)==null){
-				throw new SharepointException("Unable to get the item of the nodelist");
+			if (nodeList.item(0) == null) {
+				throw new SharepointException(
+						"Unable to get the item of the nodelist");
 			}
 
-			final NodeList nodeListFeedType = ((Element)nodeList.item(0)).getElementsByTagName(SPConstants.STATE_FEEDTYPE);
+			final NodeList nodeListFeedType = ((Element) nodeList.item(0))
+					.getElementsByTagName(SPConstants.STATE_FEEDTYPE);
 
-			if((nodeListFeedType == null) || (nodeListFeedType.getLength() == 0)){
-				throw new SharepointException("Unable to get feedType from nodelist");
+			if ((nodeListFeedType == null)
+					|| (nodeListFeedType.getLength() == 0)) {
+				throw new SharepointException(
+						"Unable to get feedType from nodelist");
 			}
 
-			if(nodeListFeedType.item(0)==null){
+			if (nodeListFeedType.item(0) == null) {
 				throw new SharepointException("Unable to get the feedType. ");
 			}
 
-			Element el  = (Element)nodeListFeedType.item(0);
-			
-			if(el == null){
+			Element el = (Element) nodeListFeedType.item(0);
+
+			if (el == null) {
 				throw new SharepointException("Unable to get the feedType. ");
 			}
-			feedType = el.getAttribute(SPConstants.STATE_TYPE);	
-			
+			feedType = el.getAttribute(SPConstants.STATE_TYPE);
+
 			el = null;
 
-			// Full Recrawl Flag			
-			final NodeList flagListFullRecrawl = ((Element)nodeList.item(0)).getElementsByTagName(SPConstants.FULL_RECRAWL_FLAG);
+			// Full Recrawl Flag
+			final NodeList flagListFullRecrawl = ((Element) nodeList.item(0))
+					.getElementsByTagName(SPConstants.FULL_RECRAWL_FLAG);
 
-			if((flagListFullRecrawl == null) || (flagListFullRecrawl.getLength() == 0)){
-				throw new SharepointException("Unable to get lastCrawledWebStateList from nodelist");
+			if ((flagListFullRecrawl == null)
+					|| (flagListFullRecrawl.getLength() == 0)) {
+				throw new SharepointException(
+						"Unable to get lastCrawledWebStateList from nodelist");
 			}
 
-			if(flagListFullRecrawl.item(0)==null){
-				throw new SharepointException("Unable to get the lastCrawledWebStateList item of the nodelist");
+			if (flagListFullRecrawl.item(0) == null) {
+				throw new SharepointException(
+						"Unable to get the lastCrawledWebStateList item of the nodelist");
 			}
 
-			el  = (Element)flagListFullRecrawl.item(0);
-			
-			if(el == null){
-				throw new SharepointException("Unable to get the lastCrawledWebStateList element");
+			el = (Element) flagListFullRecrawl.item(0);
+
+			if (el == null) {
+				throw new SharepointException(
+						"Unable to get the lastCrawledWebStateList element");
 			}
-			final String strFlagFullRecrawl = el.getAttribute(SPConstants.STATE_ID);
-			
-			if(strFlagFullRecrawl!= null){
-				if(strFlagFullRecrawl.equalsIgnoreCase("true")){
+			final String strFlagFullRecrawl = el
+					.getAttribute(SPConstants.STATE_ID);
+
+			if (strFlagFullRecrawl != null) {
+				if (strFlagFullRecrawl.equalsIgnoreCase("true")) {
 					bFullReCrawl = true;
-				}else{
+				} else {
 					bFullReCrawl = false;
 				}
 			}
 			el = null;
-			
+
 			// Last Crawled Web
-			final NodeList lastCrawledWebStateList = ((Element)nodeList.item(0)).getElementsByTagName(SPConstants.LAST_CRAWLED_WEB_ID);
+			final NodeList lastCrawledWebStateList = ((Element) nodeList
+					.item(0))
+					.getElementsByTagName(SPConstants.LAST_CRAWLED_WEB_ID);
 
-			if((lastCrawledWebStateList == null) || (lastCrawledWebStateList.getLength() == 0)){
-				throw new SharepointException("Unable to get lastCrawledWebStateList from nodelist");
+			if ((lastCrawledWebStateList == null)
+					|| (lastCrawledWebStateList.getLength() == 0)) {
+				throw new SharepointException(
+						"Unable to get lastCrawledWebStateList from nodelist");
 			}
 
-			if(lastCrawledWebStateList.item(0)==null){
-				throw new SharepointException("Unable to get the lastCrawledWebStateList item of the nodelist");
+			if (lastCrawledWebStateList.item(0) == null) {
+				throw new SharepointException(
+						"Unable to get the lastCrawledWebStateList item of the nodelist");
 			}
 
-			el  = (Element)lastCrawledWebStateList.item(0);
-			
-			if(el == null){
-				throw new SharepointException("Unable to get the lastCrawledWebStateList item of element");
+			el = (Element) lastCrawledWebStateList.item(0);
+
+			if (el == null) {
+				throw new SharepointException(
+						"Unable to get the lastCrawledWebStateList item of element");
 			}
 			lastCrawledWebID = el.getAttribute(SPConstants.STATE_ID);
 			el = null;
-			
+
 			// Last Crawled List
-			final NodeList lastCrawledListStateList = ((Element)nodeList.item(0)).getElementsByTagName(SPConstants.LAST_CRAWLED_LIST_ID);
+			final NodeList lastCrawledListStateList = ((Element) nodeList
+					.item(0))
+					.getElementsByTagName(SPConstants.LAST_CRAWLED_LIST_ID);
 
-			if((lastCrawledListStateList == null) || (lastCrawledListStateList.getLength() == 0)){
-				throw new SharepointException("Unable to get lastCrawledListStateList from nodelist");
+			if ((lastCrawledListStateList == null)
+					|| (lastCrawledListStateList.getLength() == 0)) {
+				throw new SharepointException(
+						"Unable to get lastCrawledListStateList from nodelist");
 			}
 
-			if(lastCrawledListStateList.item(0)==null){
-				throw new SharepointException("Unable to get the lastCrawledListStateList item of the nodelist");
+			if (lastCrawledListStateList.item(0) == null) {
+				throw new SharepointException(
+						"Unable to get the lastCrawledListStateList item of the nodelist");
 			}
 
-			el  = (Element)lastCrawledListStateList.item(0);
-			
-			if(el == null){
-				throw new SharepointException("Unable to get the lastCrawledListStateList item of element");
+			el = (Element) lastCrawledListStateList.item(0);
+
+			if (el == null) {
+				throw new SharepointException(
+						"Unable to get the lastCrawledListStateList item of element");
 			}
 			lastCrawledListID = el.getAttribute(SPConstants.STATE_ID);
-			
+
 			final NodeList children = nodeList.item(0).getChildNodes();
-			if(children!=null){
+			if (children != null) {
 				for (int i = 0; i < children.getLength(); i++) {
-					final Node node = children.item(i);					
-					if ((node==null)||(node.getNodeType() != Node.ELEMENT_NODE)) {
+					final Node node = children.item(i);
+					if ((node == null)
+							|| (node.getNodeType() != Node.ELEMENT_NODE)) {
 						continue;
 					}
 					final Element element = (Element) children.item(i);
 
-					if(element==null){
+					if (element == null) {
 						continue;
 					}
 
-					if (! collator.equals(element.getTagName(),SPConstants.WEB_STATE)) {
-						continue; //no exception; ignore xml for things we don't understand
+					if (!collator.equals(element.getTagName(),
+							SPConstants.WEB_STATE)) {
+						continue; // no exception; ignore xml for things we
+						// don't understand
 					}
-					final WebState subObject = new WebState(feedType); 
+					final WebState subObject = new WebState(feedType);
 					subObject.setLastCrawledListID(lastCrawledListID);
 					subObject.loadFromDOM(element);
 					updateList(subObject);
 
-					// now, for "currentWeb", for which so far we've only the key, find the
+					// now, for "currentWeb", for which so far we've only the
+					// key, find the
 					// actual object:
 					if (lastCrawledWebID != null) {
 						currentWeb = keyMap.get(lastCrawledWebID);
 					}
 				}
-			}//null check for children
-		} catch(final Throwable e){
+			}// null check for children
+		} catch (final Throwable e) {
 			LOGGER.severe(e.getMessage());
 			throw new SharepointException("Unable to load state XML file");
 		} finally {
@@ -600,16 +687,22 @@ public class GlobalState {
 				try {
 					in.close();
 				} catch (final IOException e) {
-					LOGGER.log(Level.SEVERE, "Unable to load state XML file", e);
-					throw new SharepointException("Unable to load state XML file");
+					LOGGER
+							.log(Level.SEVERE, "Unable to load state XML file",
+									e);
+					throw new SharepointException(
+							"Unable to load state XML file");
 				}
 			}
 			if (null != b) {
 				try {
 					b.close();
 				} catch (final IOException e) {
-					LOGGER.log(Level.SEVERE, "Unable to load state XML file", e);
-					throw new SharepointException("Unable to load state XML file");
+					LOGGER
+							.log(Level.SEVERE, "Unable to load state XML file",
+									e);
+					throw new SharepointException(
+							"Unable to load state XML file");
 				}
 			}
 		}
@@ -617,8 +710,9 @@ public class GlobalState {
 
 	/**
 	 * Load persistent state from our XML state.
-	 * @throws SharepointException if the XML file can't be found, or is
-	 *     invalid in any way.
+	 * 
+	 * @throws SharepointException
+	 *             if the XML file can't be found, or is invalid in any way.
 	 */
 	public void loadState() throws SharepointException {
 		final File f = getStateFileLocation();
@@ -637,9 +731,10 @@ public class GlobalState {
 	}
 
 	/**
-	 * Set the given List as "current"
-	 * This will be remembered in the XML state.
-	 * @param inCurrentWeb ListState
+	 * Set the given List as "current" This will be remembered in the XML state.
+	 * 
+	 * @param inCurrentWeb
+	 *            ListState
 	 */
 	public void setCurrentWeb(final WebState inCurrentWeb) {
 		currentWeb = inCurrentWeb;
@@ -647,6 +742,7 @@ public class GlobalState {
 
 	/**
 	 * Get the current ListState.
+	 * 
 	 * @return the current object, or null if none
 	 */
 	public WebState getCurrentWeb() {
@@ -654,31 +750,35 @@ public class GlobalState {
 	}
 
 	/**
-	 * For a single StatefulObject, update the two
-	 * data structures (url -> obj and time -> obj) and mark
-	 * it "Existing" (if between startRecrawl() and endRecrawl()).
-	 * @param state 
+	 * For a single StatefulObject, update the two data structures (url -> obj
+	 * and time -> obj) and mark it "Existing" (if between startRecrawl() and
+	 * endRecrawl()).
+	 * 
+	 * @param state
 	 */
 	public void updateList(final WebState state) {
-		if(state!=null){
+		if (state != null) {
 			keyMap.put(state.getPrimaryKey(), state);
 			dateMap.add(state);
 		}
 	}
 
 	/**
-	 * Return the location for our state file. If we were given a 
+	 * Return the location for our state file. If we were given a
 	 * googleConnectorWorkDir (the expected case), use that; else use the
 	 * current working directory and log an error.
+	 * 
 	 * @return File
 	 */
 	private File getStateFileLocation() {
 		File f;
 		if (workDir == null) {
 			LOGGER.warning("No working directory was given; using cwd");
-			f = new File(SPConstants.CONNECTOR_NAME + SPConstants.CONNECTOR_PREFIX);
+			f = new File(SPConstants.CONNECTOR_NAME
+					+ SPConstants.CONNECTOR_PREFIX);
 		} else {
-			f = new File(workDir, SPConstants.CONNECTOR_NAME + SPConstants.CONNECTOR_PREFIX);
+			f = new File(workDir, SPConstants.CONNECTOR_NAME
+					+ SPConstants.CONNECTOR_PREFIX);
 		}
 		return f;
 	}
@@ -690,7 +790,7 @@ public class GlobalState {
 	public SortedSet getAllWebStateSet() {
 		return dateMap;
 	}
-	
+
 	/**
 	 * 
 	 * @return the last crawled list ID
@@ -712,10 +812,10 @@ public class GlobalState {
 	 * @return the last crawled web ID
 	 */
 	public String getLastCrawledWebID() {
-		if((lastCrawledWebID==null) || (lastCrawledWebID.trim().equals(""))){
+		if ((lastCrawledWebID == null) || (lastCrawledWebID.trim().equals(""))) {
 			return null;
 		}
-		
+
 		return lastCrawledWebID;
 	}
 
@@ -729,7 +829,8 @@ public class GlobalState {
 
 	/**
 	 * 
-	 * @return the boolean balue depicting whther a complete crawl cycle has completed
+	 * @return the boolean balue depicting whther a complete crawl cycle has
+	 *         completed
 	 */
 	public boolean isBFullReCrawl() {
 		return bFullReCrawl;
