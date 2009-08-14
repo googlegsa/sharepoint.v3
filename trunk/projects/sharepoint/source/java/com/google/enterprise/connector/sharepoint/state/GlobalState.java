@@ -59,14 +59,11 @@ import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
  * restartable. The state of SharePoint traversal is composed almost entirely of
  * the state of other classes, which must implement the StatefulObject
  * interface. As of May 2007, there is only one StatefulObject -- ListState.
- * 
  * Classes: GlobalState. related classes: StatefulObject (interface) ListState
  * (implements StatefulObject)
- * 
  */
 public class GlobalState {
-	private static final Logger LOGGER = Logger.getLogger(GlobalState.class
-			.getName());
+	private static final Logger LOGGER = Logger.getLogger(GlobalState.class.getName());
 	private boolean recrawling = false;
 	private String workDir = null;
 	private String feedType;
@@ -89,13 +86,13 @@ public class GlobalState {
 	private String lastCrawledWebID = null;
 	private String lastCrawledListID = null;
 	private boolean bFullReCrawl = false;
+	private String lastFullCrawlDateTime = null;
 
 	/**
 	 * Delete our state file. This is for debugging purposes, so that unit tests
 	 * can start from a clean state.
 	 * 
-	 * @param workDir
-	 *            the googleConnectorWorkDir argument to the constructor
+	 * @param workDir the googleConnectorWorkDir argument to the constructor
 	 */
 	public static void forgetState(final String workDir) {
 		File f1;
@@ -119,8 +116,7 @@ public class GlobalState {
 	/**
 	 * Constructor.
 	 * 
-	 * @param inWorkDir
-	 *            the googleConnectorWorkDir (which we ask for in
+	 * @param inWorkDir the googleConnectorWorkDir (which we ask for in
 	 *            connectorInstance.xml). The state file is saved in this
 	 *            directory. If workDir is null, the current working directory
 	 *            is used instead. (In either case, the location of the file is
@@ -137,10 +133,8 @@ public class GlobalState {
 	/**
 	 * Factory method for WebState.
 	 * 
-	 * @param spContext
-	 *            The connector context being used
-	 * @param key
-	 *            the "primary key" of the object. This would probably be the
+	 * @param spContext The connector context being used
+	 * @param key the "primary key" of the object. This would probably be the
 	 *            WebID
 	 * @return new {@link WebState} which is already indexed in GlobalState's
 	 *         dateMap and keyMap
@@ -154,8 +148,7 @@ public class GlobalState {
 			updateList(obj);
 			return obj;
 		} else {
-			LOGGER
-					.warning("Unable to make WebState because list key is not found");
+			LOGGER.warning("Unable to make WebState because list key is not found");
 			return null;
 		}
 	}
@@ -169,8 +162,7 @@ public class GlobalState {
 	public void startRecrawl() {
 		recrawling = true;
 		if (bFullReCrawl == true) {
-			LOGGER
-					.config("Recrawling... setting all web states is isExist flag to false for clean up purpose");
+			LOGGER.config("Recrawling... setting all web states is isExist flag to false for clean up purpose");
 			// mark all as non-existent
 			final Iterator it = dateMap.iterator();
 			while (it.hasNext()) {
@@ -192,8 +184,7 @@ public class GlobalState {
 		}
 
 		if (bFullReCrawl == true) {
-			LOGGER
-					.config("ending recrawl ...bFullReCrawl true ... cleaning up WebStates");
+			LOGGER.config("ending recrawl ...bFullReCrawl true ... cleaning up WebStates");
 			final Iterator iter = getIterator();
 			if (null != iter) {
 				while (iter.hasNext()) {
@@ -204,16 +195,12 @@ public class GlobalState {
 						// Delete this web State only if does not contain any
 						// list State info.
 						if (webs.getAllListStateSet().size() == 0) {
-							if (SPConstants.CONTENT_FEED
-									.equalsIgnoreCase(spContext.getFeedType())) {
+							if (SPConstants.CONTENT_FEED.equalsIgnoreCase(spContext.getFeedType())) {
 								int responseCode = 0;
 								try {
-									responseCode = spContext.checkConnectivity(
-											Util.encodeURL(webs.getWebUrl()),
-											null);
+									responseCode = spContext.checkConnectivity(Util.encodeURL(webs.getWebUrl()), null);
 								} catch (final Exception e) {
-									LOGGER.log(Level.WARNING,
-											"Connectivity failed! ", e);
+									LOGGER.log(Level.WARNING, "Connectivity failed! ", e);
 								}
 								if (responseCode == 200) {
 									webs.setExisting(true);
@@ -222,9 +209,8 @@ public class GlobalState {
 									continue;
 								}
 							}
-							LOGGER.log(Level.INFO,
-									"Deleting the state information for web ["
-											+ webs.getWebUrl() + "]. ");
+							LOGGER.log(Level.INFO, "Deleting the state information for web ["
+									+ webs.getWebUrl() + "]. ");
 							iter.remove();
 							keyMap.remove(webs.getPrimaryKey());
 						}
@@ -236,7 +222,6 @@ public class GlobalState {
 	}
 
 	/**
-	 * 
 	 * @param inWebs
 	 */
 	public void removeWebStateFromKeyMap(final WebState inWebs) {
@@ -269,8 +254,8 @@ public class GlobalState {
 		}
 		// one might think you could just do tail.addAll(head) here. But you
 		// can't.
-		final ArrayList<WebState> full = new ArrayList<WebState>(dateMap
-				.tailSet(start));
+		final ArrayList<WebState> full = new ArrayList<WebState>(
+				dateMap.tailSet(start));
 		full.addAll(dateMap.headSet(start));
 		return full.iterator();
 	}
@@ -278,10 +263,8 @@ public class GlobalState {
 	/**
 	 * Lookup a ListState by its key.
 	 * 
-	 * @param webid
-	 *            web state in which the list is to be searched
-	 * @param listid
-	 *            the list GUID to be searched
+	 * @param webid web state in which the list is to be searched
+	 * @param listid the list GUID to be searched
 	 * @return object handle, or null if none found
 	 */
 	public ListState lookupList(final String webid, final String listid) {
@@ -298,8 +281,7 @@ public class GlobalState {
 	/**
 	 * Lookup a WebState by its key.
 	 * 
-	 * @param key
-	 *            primary key
+	 * @param key primary key
 	 * @return object handle, or null if none found
 	 */
 	public WebState lookupWeb(final String key,
@@ -314,8 +296,7 @@ public class GlobalState {
 		 * while creation of web state and is required by Web Services as such.
 		 * Hence, a second check is required.
 		 */
-		final SharepointClientContext spContext = (SharepointClientContext) sharepointClientContext
-				.clone();
+		final SharepointClientContext spContext = (SharepointClientContext) sharepointClientContext.clone();
 		if (null == ws) {
 			final String webAppURL = Util.getWebApp(key);
 			WebsWS websWS = null;
@@ -386,8 +367,7 @@ public class GlobalState {
 	 * @return XML string
 	 */
 	public String getStateXML() throws SharepointException {
-		final DocumentBuilderFactory factory = DocumentBuilderFactory
-				.newInstance();
+		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		org.w3c.dom.Document doc;
 		try {
 			final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -400,38 +380,31 @@ public class GlobalState {
 		doc.appendChild(top);
 
 		// Feed Type used
-		final Element elementFeedType = doc
-				.createElement(SPConstants.STATE_FEEDTYPE);
+		final Element elementFeedType = doc.createElement(SPConstants.STATE_FEEDTYPE);
 		elementFeedType.setAttribute(SPConstants.STATE_TYPE, feedType);
 		top.appendChild(elementFeedType);
 
 		// FULL_RECRAWL_FLAG
-		final Element elementFlag = doc
-				.createElement(SPConstants.FULL_RECRAWL_FLAG);
+		final Element elementFlag = doc.createElement(SPConstants.FULL_RECRAWL_FLAG);
 		elementFlag.setAttribute(SPConstants.STATE_ID, bFullReCrawl + "");
 
-		// If the flag is true it implies that the connector finished traversing
-		// the repository once and hence is done with a complete crawl cycle
-		if (bFullReCrawl) {
-			String dateTime = Util.formatDate(Calendar.getInstance());
+		// This check is for the first crawl cycle when there is no value set in
+		// the state file. Don't set the value in that case. Blank value does
+		// not make any sense.
+		if (lastFullCrawlDateTime != null) {
 			// Log the date and time
-			elementFlag.setAttribute(SPConstants.LAST_FULL_CRAWL_DATETIME,
-					dateTime);
-			LOGGER
-					.info("Connector completed a full crawl cycle traversing the repository once at : "
-							+ dateTime);
+			elementFlag.setAttribute(SPConstants.LAST_FULL_CRAWL_DATETIME, lastFullCrawlDateTime);
 		}
+
 		top.appendChild(elementFlag);
 
 		// LAST_CRAWLED_WEB_ID
-		final Element element1 = doc
-				.createElement(SPConstants.LAST_CRAWLED_WEB_ID);
+		final Element element1 = doc.createElement(SPConstants.LAST_CRAWLED_WEB_ID);
 		element1.setAttribute(SPConstants.STATE_ID, lastCrawledWebID);
 		top.appendChild(element1);
 
 		// LAST_CRAWLED_LIST_ID
-		final Element element2 = doc
-				.createElement(SPConstants.LAST_CRAWLED_LIST_ID);
+		final Element element2 = doc.createElement(SPConstants.LAST_CRAWLED_LIST_ID);
 		element2.setAttribute(SPConstants.STATE_ID, lastCrawledListID);
 		top.appendChild(element2);
 
@@ -493,9 +466,8 @@ public class GlobalState {
 	/**
 	 * Load from XML.
 	 * 
-	 * @param fileState
-	 *            - file name for the state file, which has already been checked
-	 *            as to its existence.
+	 * @param fileState - file name for the state file, which has already been
+	 *            checked as to its existence.
 	 */
 	private void loadStateXML(final File fileState) throws SharepointException {
 		if (fileState == null) {
@@ -506,8 +478,7 @@ public class GlobalState {
 		BufferedReader in = null;
 		ByteArrayInputStream b = null;
 		try {
-			final DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
+			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			final DocumentBuilder builder = factory.newDocumentBuilder();
 
 			// ----------------start: UTF-16 problem ----------------
@@ -531,8 +502,7 @@ public class GlobalState {
 			if (doc == null) {
 				throw new SharepointException("Unable to get doc");
 			}
-			final NodeList nodeList = doc
-					.getElementsByTagName(SPConstants.STATE);
+			final NodeList nodeList = doc.getElementsByTagName(SPConstants.STATE);
 			if ((nodeList == null) || (nodeList.getLength() == 0)) {
 				throw new SharepointException("Invalid XML: no <state> element");
 			}
@@ -543,8 +513,7 @@ public class GlobalState {
 						"Unable to get the item of the nodelist");
 			}
 
-			final NodeList nodeListFeedType = ((Element) nodeList.item(0))
-					.getElementsByTagName(SPConstants.STATE_FEEDTYPE);
+			final NodeList nodeListFeedType = ((Element) nodeList.item(0)).getElementsByTagName(SPConstants.STATE_FEEDTYPE);
 
 			if ((nodeListFeedType == null)
 					|| (nodeListFeedType.getLength() == 0)) {
@@ -566,8 +535,7 @@ public class GlobalState {
 			el = null;
 
 			// Full Recrawl Flag
-			final NodeList flagListFullRecrawl = ((Element) nodeList.item(0))
-					.getElementsByTagName(SPConstants.FULL_RECRAWL_FLAG);
+			final NodeList flagListFullRecrawl = ((Element) nodeList.item(0)).getElementsByTagName(SPConstants.FULL_RECRAWL_FLAG);
 
 			if ((flagListFullRecrawl == null)
 					|| (flagListFullRecrawl.getLength() == 0)) {
@@ -586,8 +554,23 @@ public class GlobalState {
 				throw new SharepointException(
 						"Unable to get the lastCrawledWebStateList element");
 			}
-			final String strFlagFullRecrawl = el
-					.getAttribute(SPConstants.STATE_ID);
+			final String strFlagFullRecrawl = el.getAttribute(SPConstants.STATE_ID);
+
+			lastFullCrawlDateTime = el.getAttribute(SPConstants.LAST_FULL_CRAWL_DATETIME);
+
+			// This check indicates that if the value is null or empty it
+			// implies the connector was restarted before completing the
+			// traversal cycle or it was modified outside of the connector
+			// traversal and hence is in inconsistent state. This value needs to
+			// be initialised or else it will be lost completely when the state
+			// file is overwritten during a checkpoint
+			if (lastFullCrawlDateTime == null
+					|| lastFullCrawlDateTime.equals("")) {
+				LOGGER.warning("The value for LastFullCrawlDateTime is null implying the connector was shutdown before the first crawl cycle was completed or the state file has been modified unexpectedly");
+			} else {
+				LOGGER.log(Level.CONFIG, "Loading the value of last time the crawl cycle was completed from the state file : "
+						+ lastFullCrawlDateTime);
+			}
 
 			if (strFlagFullRecrawl != null) {
 				if (strFlagFullRecrawl.equalsIgnoreCase("true")) {
@@ -599,9 +582,7 @@ public class GlobalState {
 			el = null;
 
 			// Last Crawled Web
-			final NodeList lastCrawledWebStateList = ((Element) nodeList
-					.item(0))
-					.getElementsByTagName(SPConstants.LAST_CRAWLED_WEB_ID);
+			final NodeList lastCrawledWebStateList = ((Element) nodeList.item(0)).getElementsByTagName(SPConstants.LAST_CRAWLED_WEB_ID);
 
 			if ((lastCrawledWebStateList == null)
 					|| (lastCrawledWebStateList.getLength() == 0)) {
@@ -624,9 +605,7 @@ public class GlobalState {
 			el = null;
 
 			// Last Crawled List
-			final NodeList lastCrawledListStateList = ((Element) nodeList
-					.item(0))
-					.getElementsByTagName(SPConstants.LAST_CRAWLED_LIST_ID);
+			final NodeList lastCrawledListStateList = ((Element) nodeList.item(0)).getElementsByTagName(SPConstants.LAST_CRAWLED_LIST_ID);
 
 			if ((lastCrawledListStateList == null)
 					|| (lastCrawledListStateList.getLength() == 0)) {
@@ -661,8 +640,7 @@ public class GlobalState {
 						continue;
 					}
 
-					if (!collator.equals(element.getTagName(),
-							SPConstants.WEB_STATE)) {
+					if (!collator.equals(element.getTagName(), SPConstants.WEB_STATE)) {
 						continue; // no exception; ignore xml for things we
 						// don't understand
 					}
@@ -687,9 +665,7 @@ public class GlobalState {
 				try {
 					in.close();
 				} catch (final IOException e) {
-					LOGGER
-							.log(Level.SEVERE, "Unable to load state XML file",
-									e);
+					LOGGER.log(Level.SEVERE, "Unable to load state XML file", e);
 					throw new SharepointException(
 							"Unable to load state XML file");
 				}
@@ -698,9 +674,7 @@ public class GlobalState {
 				try {
 					b.close();
 				} catch (final IOException e) {
-					LOGGER
-							.log(Level.SEVERE, "Unable to load state XML file",
-									e);
+					LOGGER.log(Level.SEVERE, "Unable to load state XML file", e);
 					throw new SharepointException(
 							"Unable to load state XML file");
 				}
@@ -711,8 +685,8 @@ public class GlobalState {
 	/**
 	 * Load persistent state from our XML state.
 	 * 
-	 * @throws SharepointException
-	 *             if the XML file can't be found, or is invalid in any way.
+	 * @throws SharepointException if the XML file can't be found, or is invalid
+	 *             in any way.
 	 */
 	public void loadState() throws SharepointException {
 		final File f = getStateFileLocation();
@@ -733,8 +707,7 @@ public class GlobalState {
 	/**
 	 * Set the given List as "current" This will be remembered in the XML state.
 	 * 
-	 * @param inCurrentWeb
-	 *            ListState
+	 * @param inCurrentWeb ListState
 	 */
 	public void setCurrentWeb(final WebState inCurrentWeb) {
 		currentWeb = inCurrentWeb;
@@ -784,7 +757,6 @@ public class GlobalState {
 	}
 
 	/**
-	 * 
 	 * @return the list sorted list of web states
 	 */
 	public SortedSet getAllWebStateSet() {
@@ -792,7 +764,6 @@ public class GlobalState {
 	}
 
 	/**
-	 * 
 	 * @return the last crawled list ID
 	 */
 	public String getLastCrawledListID() {
@@ -800,7 +771,6 @@ public class GlobalState {
 	}
 
 	/**
-	 * 
 	 * @param inLastCrawledListState
 	 */
 	public void setLastCrawledListID(final String inLastCrawledListState) {
@@ -808,7 +778,6 @@ public class GlobalState {
 	}
 
 	/**
-	 * 
 	 * @return the last crawled web ID
 	 */
 	public String getLastCrawledWebID() {
@@ -820,7 +789,6 @@ public class GlobalState {
 	}
 
 	/**
-	 * 
 	 * @param inLastCrawledWebID
 	 */
 	public void setLastCrawledWebID(final String inLastCrawledWebID) {
@@ -828,7 +796,6 @@ public class GlobalState {
 	}
 
 	/**
-	 * 
 	 * @return the boolean balue depicting whther a complete crawl cycle has
 	 *         completed
 	 */
@@ -837,11 +804,17 @@ public class GlobalState {
 	}
 
 	/**
-	 * 
 	 * @param fullReCrawl
 	 */
 	public void setBFullReCrawl(final boolean fullReCrawl) {
 		bFullReCrawl = fullReCrawl;
+		// If the flag is true it implies that the connector finished traversing
+		// the repository once and hence is done with a complete crawl cycle
+		if (bFullReCrawl) {
+			lastFullCrawlDateTime = Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE);
+			LOGGER.info("Connector completed a full crawl cycle traversing all the known site collections at time : "
+					+ lastFullCrawlDateTime);
+		}
 	}
 
 	/**

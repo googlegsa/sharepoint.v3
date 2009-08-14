@@ -27,20 +27,25 @@ import com.google.enterprise.connector.spi.RepositoryException;
 public class UtilTest extends TestCase {
 
 	protected void setUp() throws Exception {
-		System.out.println("\n--------------");		
+		System.out.println("\n--------------");
 	}
 
 	public final void testListItemsStringToCalendar() {
-		System.out.println("Testing listItemsStringToCalendar()...");		
-		final String listItemChangesString = "2008-07-16 5:30:35";  //Date in UTC format
+		System.out.println("Testing listItemsStringToCalendar()...");
+		final String listItemChangesString = "2008-07-16 5:30:35"; // Date in
+		// UTC
+		// format
 		Calendar cal = null;
 		try {
-			cal = Util.listItemsStringToCalendar(listItemChangesString);  //UTC format to Calender
-			System.out.println("Method Returned : "+cal);
+			cal = Util.listItemsStringToCalendar(listItemChangesString); // UTC
+			// format
+			// to
+			// Calender
+			System.out.println("Method Returned : " + cal);
 			assertNotNull(cal);
 			final Date dt = cal.getTime();
-			System.out.println("Date : "+dt);
-		} catch(final ParseException pe) {
+			System.out.println("Date : " + dt);
+		} catch (final ParseException pe) {
 			System.out.println(pe);
 			System.out.println("[ listItemsStringToCalendar() ] Test Failed.");
 			return;
@@ -49,34 +54,44 @@ public class UtilTest extends TestCase {
 	}
 
 	public final void testListItemChangesStringToCalendar() {
-		System.out.println("Testing listItemChangesStringToCalendar()...");		
-		final String listItemChangesString = "2008-07-16T05:30:35Z";  //Date in UTC format
+		System.out.println("Testing listItemChangesStringToCalendar()...");
+		final String listItemChangesString = "2008-07-16T05:30:35Z"; // Date in
+		// UTC
+		// format
 		Calendar cal = null;
-		try {			
-			cal = Util.listItemChangesStringToCalendar(listItemChangesString);  //UTC format to Calender
-			System.out.println("Method Returned : "+cal);
+		try {
+			cal = Util.listItemChangesStringToCalendar(listItemChangesString); // UTC
+			// format
+			// to
+			// Calender
+			System.out.println("Method Returned : " + cal);
 			assertNotNull(cal);
 			final Date dt = cal.getTime();
-			System.out.println("Date : "+dt);
-		} catch(final ParseException pe) {
+			System.out.println("Date : " + dt);
+		} catch (final ParseException pe) {
 			System.out.println(pe);
 			System.out.println("[ listItemChangesStringToCalendar() ] Test Failed.");
 			return;
-		}		
+		}
 		System.out.println("[ listItemChangesStringToCalendar() ] Test Passed");
 	}
 
 	public final void testSiteDataStringToCalendar() {
-		System.out.println("Testing siteDataStringToCalendar()...");		
-		final String listItemChangesString = "2008-07-16 5:30:35Z";  //Date in UTC format
+		System.out.println("Testing siteDataStringToCalendar()...");
+		final String listItemChangesString = "2008-07-16 5:30:35Z"; // Date in
+		// UTC
+		// format
 		Calendar cal = null;
 		try {
-			cal = Util.siteDataStringToCalendar(listItemChangesString);  //UTC format to Calender
-			System.out.println("Method Returned : "+cal);
+			cal = Util.siteDataStringToCalendar(listItemChangesString); // UTC
+			// format
+			// to
+			// Calender
+			System.out.println("Method Returned : " + cal);
 			assertNotNull(cal);
 			final Date dt = cal.getTime();
-			System.out.println("Date : "+dt);
-		} catch(final ParseException pe) {
+			System.out.println("Date : " + dt);
+		} catch (final ParseException pe) {
 			System.out.println(pe);
 			System.out.println("[ siteDataStringToCalendar() ] Test Failed.");
 			return;
@@ -85,44 +100,44 @@ public class UtilTest extends TestCase {
 	}
 
 	public final void testJodaToCalendar() {
-		System.out.println("Testing jodaToCalendar()...");		
+		System.out.println("Testing jodaToCalendar()...");
 		Calendar cal = null;
 		cal = Util.jodaToCalendar(new DateTime());
-		System.out.println("Method Returned : "+cal);
+		System.out.println("Method Returned : " + cal);
 		assertNotNull(cal);
 		final Date dt = cal.getTime();
-		System.out.println("Date : "+dt);
+		System.out.println("Date : " + dt);
 		System.out.println("[ jodaToCalendar() ] Test Passed");
 	}
 
 	public final void testCalendarToJoda() {
-		System.out.println("Testing calendarToJoda()...");		
+		System.out.println("Testing calendarToJoda()...");
 		final DateTime dt = Util.calendarToJoda(Calendar.getInstance());
-		System.out.println("Method Returned : "+dt);
+		System.out.println("Method Returned : " + dt);
 		assertNotNull(dt);
 		System.out.println("[ calendarToJoda() ] Test Passed");
 	}
 
 	public final void testFormatDateDateTime() {
-		System.out.println("Testing formatDate(DateTime)...");		
+		System.out.println("Testing formatDate(DateTime)...");
 		final String dt = Util.formatDate(new DateTime());
-		System.out.println("Method Returned : "+dt);
+		System.out.println("Method Returned : " + dt);
 		assertNotNull(dt);
 		System.out.println("[ formatDate() ] Test Passed");
 	}
 
 	public final void testFormatDateCalendar() {
-		System.out.println("Testing formatDate(Calendar)...");		
+		System.out.println("Testing formatDate(Calendar)...");
 		final String dt = Util.formatDate(Calendar.getInstance());
-		System.out.println("Method Returned : "+dt);
+		System.out.println("Method Returned : " + dt);
 		assertNotNull(dt);
 		System.out.println("[ formatDate() ] Test Passed");
 	}
 
 	public final void testParseDate() {
-		System.out.println("Testing parseDate(Calendar)...");		
+		System.out.println("Testing parseDate(Calendar)...");
 		final DateTime dt = Util.parseDate("20090116T205013.000+0530");
-		System.out.println("Method Returned : "+dt);
+		System.out.println("Method Returned : " + dt);
 		assertNotNull(dt);
 		System.out.println("[ parseDate() ] Test Passed");
 	}
@@ -130,36 +145,60 @@ public class UtilTest extends TestCase {
 	public final void testRemoveLineTerminators() {
 		System.out.println("Testing removeLineTerminators()...");
 		final CharSequence str = Util.removeLineTerminators("X\\rY\\nZ");
-		System.out.println("Method Returned : "+str);
+		System.out.println("Method Returned : " + str);
 		assertNotNull(str);
 		System.out.println("[ removeLineTerminators() ] Test Passed");
 	}
 
 	public final void testGetEscapedSiteName() {
-		System.out.println("Testing getEscapedSiteName()...");	
+		System.out.println("Testing getEscapedSiteName()...");
 		try {
 			final String str = Util.getEscapedSiteName("http://host.domain.co.in:20000/default.aspx");
-			System.out.println("Method Returned : "+str);
+			System.out.println("Method Returned : " + str);
 			assertNotNull(str);
 			System.out.println("[ getEscapedSiteName() ] Test Passed");
-		} catch(final RepositoryException re) {
+		} catch (final RepositoryException re) {
 			System.out.println(re);
 			System.out.println("[ getEscapedSiteName() ] Test Failed.");
 			return;
-		}		
+		}
 	}
 
 	public final void testMatcher() {
 		System.out.println("Testing matcher()..");
-		final boolean bl = Util.match(new String[] {"sp.intranet.teldta.com/"}, "https://sp.intranet.teldta.com", null);
+		final boolean bl = Util.match(new String[] { "sp.intranet.teldta.com/" }, "https://sp.intranet.teldta.com", null);
 		System.out.println(bl);
 		System.out.println("[ matcher() ] Test Completed");
 	}
-	
+
 	public final void testGetFolderPathForWSCall() {
 		System.out.println("Testing getFolderPathForWSCall()..");
-		final String foldPath = Util.getFolderPathForWSCall("http://host.mycomp.com/sanity","sanity/testLib/fold1");
+		final String foldPath = Util.getFolderPathForWSCall("http://host.mycomp.com/sanity", "sanity/testLib/fold1");
 		assertNotNull(foldPath);
 		System.out.println("[ getFolderPathForWSCall() ] Test Completed");
+	}
+
+	/**
+	 * @Test Tests {@link Util#formatDate(Calendar, String)}
+	 */
+	public void testFormatDate() {
+		Calendar calendar = Calendar.getInstance();
+
+		calendar.set(2009, Calendar.JUNE, 12, 11, 30, 30);
+
+		String expectedFormat = "2009-06-12 11:30:30";
+
+		String formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT1);
+
+		assertNotNull(formattedDate);
+		assertEquals(expectedFormat, formattedDate);
+
+		expectedFormat = "2009-06-12 11:30:30 PDT";
+
+		formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT_WITH_ZONE);
+
+		assertNotNull(formattedDate);
+		assertEquals(expectedFormat, formattedDate);
+
 	}
 }
