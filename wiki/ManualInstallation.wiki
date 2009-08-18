@@ -30,7 +30,7 @@ To install the connector manually, follow the instructions given below:
    
    Add the following lines just before "rem Set standard command for invoking Java":
    rem Google Enterpise Connector Logging
-   set CONNECTOR_LOGGING= %CATALINA_HOME%\webapps\connector-manager\WEB-INF\lib\connector-logging.jar
+   set CONNECTOR_LOGGING=%CATALINA_HOME%\webapps\connector-manager\WEB-INF\lib\connector-logging.jar
    if not exist "%CONNECTOR_LOGGING%" goto noConnectorLogging
    set CLASSPATH=%CLASSPATH%;%CONNECTOR_LOGGING%
    :noConnectorLogging
