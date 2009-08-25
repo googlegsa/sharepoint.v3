@@ -10,39 +10,14 @@ If not, create one.
 4. SharePoint Connector runs on top of Connector Manager. Hence, you must have Connector Manager binaries on your system.
 If not, you can get it from http://code.google.com/p/google-enterprise-connector-manager/downloads/list
 
-5. Create an environment variable on your system with the name CONNECTOR_MANAGER_DIR.
-Set its value to the Connector Manager home directory. Ensure that all the Connector Manager binaries are present at the following location:
+5. Set the value for CONNECTOR_MANAGER_DIR in build.properties. The value should be Connector Manager home directory. The required libraries should be in '/dist/jarfile/' folder which is set as CONNECTOR_MANAGER_DIR.
+If you have the Connector Manager source code, run the Connector Manager build so that the the Connector Manager binaries are present at the following location:
 {CONNECTOR_MANAGER_DIR}/dist/jarfile/
 
-Following are the least required Connector Manager libraries which are expected to be present:
+Following are the required Connector Manager libraries which are expected to be present:
 * connector-spi.jar
 * connector-util.jar
 * connector.jar
+* connector-logging.jar
 
-6. Create a directory with name "lib" at the current path (where the build.xml is existing after you have extracted connector-sharepoint-2.0.0-src).
-
-7. Copy the HttpClient-Modified.jar that comes with SharePoint Connector binary under "lib/"
-
-8. Copy the following libraries under lib/
-* activation-1.1.jar
-* axis.jar
-* commons-codec-1.3.jar
-* commons-discovery-0.2.jar
-* gnu-regexp-1.1.4.jar
-* HttpClient-Modified.jar
-* jaxrpc.jar
-* jcifs-1.2.15.jar
-* joda-time-1.1.jar
-* mail-1.4.jar
-* saaj.jar
-* wsdl4j-1.5.1.jar
-* xercesImpl-2.8.1.jar
-* xml-apis-1.3.03.jar
-* axis-ant.jar
-* commons-logging.jar
-* junit.jar
-
-9. From the command prompt, execute the build.xml using "ant" command.
-
-
-
+6. From the command prompt, execute the build.xml using "ant" command. The 'connector-sharepoint.jar' will be created in the dist/jarfile directory
