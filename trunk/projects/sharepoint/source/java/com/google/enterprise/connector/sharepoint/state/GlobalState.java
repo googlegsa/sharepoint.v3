@@ -556,21 +556,21 @@ public class GlobalState {
 			}
 			final String strFlagFullRecrawl = el.getAttribute(SPConstants.STATE_ID);
 
+			// This value needs to be initialized or else it will be lost
+			// completely when the state file is overwritten during a checkpoint
 			lastFullCrawlDateTime = el.getAttribute(SPConstants.LAST_FULL_CRAWL_DATETIME);
 
-			// This check indicates that if the value is null or empty it
-			// implies the connector was restarted before completing the
-			// traversal cycle or it was modified outside of the connector
-			// traversal and hence is in inconsistent state. This value needs to
-			// be initialised or else it will be lost completely when the state
-			// file is overwritten during a checkpoint
-			if (lastFullCrawlDateTime == null
-					|| lastFullCrawlDateTime.equals("")) {
-				LOGGER.warning("The value for LastFullCrawlDateTime is null implying the connector was shutdown before the first crawl cycle was completed or the state file has been modified unexpectedly");
-			} else {
-				LOGGER.log(Level.CONFIG, "Loading the value of last time the crawl cycle was completed from the state file : "
-						+ lastFullCrawlDateTime);
-			}
+			// If the value is null or empty it implies either of these:
+			// 1. The connector was restarted before completing the traversal
+			// cycle
+			// 2. The connector configuration was changed mid-way during its
+			// first traversal cycle. A new instance of
+			// SharePointTraversalManager will be created which will re-load the
+			// state file
+			// 3. It was modified outside of the connector traversal and hence
+			// is in inconsistent state.
+			LOGGER.log(Level.CONFIG, "Loading the value of last time the crawl cycle was completed from the state file : "
+					+ lastFullCrawlDateTime);
 
 			if (strFlagFullRecrawl != null) {
 				if (strFlagFullRecrawl.equalsIgnoreCase("true")) {
