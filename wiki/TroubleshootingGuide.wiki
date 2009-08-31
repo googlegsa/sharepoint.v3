@@ -1,0 +1,320 @@
+#summary Troubleshooting guide for SharePoint Connector 2.0
+= Troubleshooting guide for SharePoint Connector 2.0 =
+
+
+
+== Introduction ==
+This document has a list of FAQs and troubleshooting tips to quickly identify if connector has been configured correctly and is discovering & crawling as intended.
+
+All details will be applicable to both modes of authorization set for the connector: 
+ * Handling authorization by appliance or SAML provider (metadata-and-URL feed mode)
+ * Handling authorization by connector (conent feed mode)
+
+Each Section may further be divided into sub-sections depending on the feed type to which they are applicable:
+ # Common to Content and Metadata-and-URL Feed Mode
+ # Content Feed Mode
+ # Metadata-and-URL Feed Mode
+
+
+
+== Error Messages ==
+This section describes some commonly encountered error messages and their likely solutions.
+
+
+=== Commmon to Both Content and Metadata-and-URL Feed Mode ===
+ * *Crawl URL does not match against any 'Include URLs' patterns*
+ You see this message when a user-provided Crawl URL does not match patterns specified under "Include URLs Matching the Following Patterns"
+
+
+ * *Crawl URL matches against one of the patterns specified under 'Do Not Include URLs'*
+ You see this message when a user-provided Crawl URL matches patterns specified under "Do Not Include URLs Matching the Following Patterns".
+
+
+ * *Following URL Pattern provided under 'Include URLs' is invalid:*
+ Some of the patterns are not valid patterns
+
+
+ * *Following URL Pattern provided under 'Do Not Include URLs' is invalid:*
+ Some of the patterns are not valid patterns
+
+
+ * *Required field not specified.*
+ Fields marked with an asterisk (`*`) on the Configuring Connector Instances form are required. You must provide appropriate values for these fields. 
+
+
+ * *The Crawl URL must contain a fully qualified domain name. Please check the Crawl URL value.*
+ You must provide the appropriate SharePoint Site URL with a fully qualified domain name for SharePoint Site URL field on Configuring Connector Instances.
+
+
+ * *Cannot connect to the given SharePoint Site URL with the supplied Domain/Username/Password. Please re-enter.*
+ This occurs when the web service call fails for the given SharePoint URL. The exact reason for this is displayed along with the error message.
+ Possible reasons:
+  * 401 Unauthorized: Check the credential (domain/username/password) for the correctness and the privilege that is assigned to this on the SharePoint URL.
+  * 404 Not Found: The requested SharePoint URL could not be found but may be available again in the future.
+ For a complete listing of the response codes, refer to http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html 
+
+
+ * *Domain has been specified twice under Domain/Username. Please provide the credentials in right format.*
+ This message appears when domain has been specified twice under domain field as well as in the username. You should always enter domain as domain and username as username; i.e, for a user dom\user or user@dom username is user and domain is dom.
+
+
+=== Metadata-and-URL Feed Mode ===
+ * *Crawl Diagnostics Error Message
+ Retrying URL: Host unreachable while trying to fetch robots.txt.*
+ To correct the error:
+ Check the network settings and ensure that the SharePoint Server host can be reached by GSA. The GSA crawler checks for the presence of robots.txt at the root level of the site web application. In case the SharePoint server host is unreachable you will see the above error.
+ For more details refer to: http://code.google.com/apis/searchappliance/documentation/52/admin_crawl/Troubleshooting.html#statusmessh2
+
+
+ * *ProcessNode Error* 
+ You might see the following error message on the Crawl Diagnostics page in the Admin Console, where URL is the URL to a graphic file:
+ ProcessNode: Not match URL patterns, skipping record with URL: URL
+ Ensure that you have modified the crawl patterns to include graphic formats. For information on including graphic formats, see Configuring the Crawl Patterns.
+
+
+
+==Diagnosing the Connector Logs==
+Thsi section details some of the important log messages that are written into the connector’s log:
+
+
+=== Commmon to Both Content and Metadata-and-URL Feed Mode ===
+|| *Log Message* || * Description* || * Logging Level * ||
+|| startTraversal / resumeTraversal ||  A new / incremental crawl has begun. || INFO ||
+|| Getting the initial list of MySites ||  Connector is discovering the personal site / My Sites || INFO ||
+|| Web [Web_URL] is getting traversed for documents || Web with the URL Web_URL is getting traversed for documents. || INFO || 
+|| discovered new listState: List_URL  ||  Connector has just discovered the new SharePoint list and traversed the documents in it. || INFO || 
+|| revisiting old listState: List_URL  ||  Connector is checking for the list for any changes / updates. || INFO || 
+|| found #  items to crawl in List_URL || Connector has discovered # no. of documents from to be sent to GSA. || INFO || 
+|| found: # Items in List/Library [List_URL] for feed action=ADD || Connector has discovered # no. of documents for ADD feeds. || INFO || 
+|| Processing the renamed/restored folder ID[docId], relativeURL[relativeURL] || Connector is fetching the child documents under a folder which have been restored or renamed. || INFO || 
+|| document url[url] has been re-written to [Aliased_Url ] in respect to the aliasing. || Document URL has been re-written as per the Site Alias Mapping specified during the connector configuration. || INFO || 
+|| Document URL sending to CM : DocURL  || Connector has sent the document DocURL to the connector Manager from where it will be sent to GSA. || INFO || 
+|| Traversal returned [#count] documents  ||  Number of documents returned after the current traversal cycle. || INFO || 
+|| checkpoint received  ||  Connector has just received a check pointing request from the Connector Manager / GSA. || INFO || 
+|| checkpoint processed; saving GlobalState to disk  || Connector has saved the traversal status to the state file. || INFO || 
+|| 401: Unauthorized: Indicates invalid credentials || Connector can not call the SharePoint web service with the specified user credentials. Check the correctness of the credential and the user rights. || WARNING ||
+|| Call to the GSSiteDiscovery web service failed with the following exception: || Connector can not discover the sites outside the current site collection because GSSitediscovery has failed. || WARNING || 
+|| Unable to match the metadata_name1 [,metadata_name2] against one of the [Included/excluded] metadata. || Some problem occurred while matching the metadata against the included / excluded list of metadata. || WARNING ||  
+|| One of the metadata under [included/excluded] is invalid as GNU Regexp. metadata_name1 [,metadata_name2] || All the metadata entries under included / excluded metadata should be valid as per the GNU Regexp rules. || WARNING ||  
+|| Unable to match the metadata [metadata_name] against one of the [Included/excluded] metadata. || Some problem occurred while matching the metadata against the included / excluded list of metadata. || WARNING ||
+|| Getting child sites for web `[` siteCollectionURL `]` || Sub sites are being discovered for a given site collection || INFO ||
+|| global state has been updated with newly intermediate webs || Connector has discovered new sites to be crawled and have been added to the connector's state information || INFO ||
+|| Total MyLinks returned: `<# of MySite URLs>`|| The total # of MySites discovered by the connector from the MySite base URL provided with the connector configuration || INFO ||
+
+     
+=== Metadata-and-URL Feed Mode ===
+|| *Log Message* || * Description* || * Logging Level * ||
+|| Deleting the state information for list/library `[` listURL `]` || The list is being deleted from connector state as it does not exist anymore in SharePoint || INFO ||
+
+
+=== Content Feed Mode ===
+|| *Log Message* || * Description* || *Logging Level* ||
+|| Authenticating User: `<username>` || Authentication request received for user `<username>`. This happens in case of batch(bulk) authorization when the user search for some docs that was content-fed by the connector. || INFO ||
+|| Authorizing User: `<username>` || Connector is authorizing the user against a set of docs. This is required when the connector is set to handle authorization of search results. || INFO || 
+|| `[`status: `<true/false>``]`, Complex Document ID: `[` `the doc id` `]` || The docID against which the user is getting authorized along with the authorization status. This is required when the connector is set to handle authorization of search results. || WARNING if the authz fails ||
+|| Web Service has thrown the following error while authorizing. \n Error: `<error message>` || Any error encountered by the GSBulkAuthorization web service during authorization. This is required when the connector is set to handle authorization of search results. || SEVERE ||
+|| Web Service has thrown the following error while authorizing.  Error: Value does not fall within the expected range. || The document to be authorized is not found on the SharePoint. It might have been deleted. || SEVERE ||
+|| Web Service has thrown the following error while authorizing.  Error: User not found || The search user is not found on the SharePoint site. || SEVERE ||
+|| Sending # `<`document_count`>` documents to delete from the deleted List/Library `[` `<`listURL`>` `]`. || The # docs for which the connector is sending delete feeds for the given list as it has been deleted from SharePoint || INFO ||
+
+
+
+== Frequently Asked Questions - FAQs ==
+This section lists some of the most commonly asked questions:
+
+
+=== Commmon to Both Content and Metadata-and-URL Feed Mode ===
+*Q. I cannot register the Connector Manager on GSA. What should I do?*
+
+ You can test that the connector manager URL is valid and is running by typing the URL in a browser: {{{http://<connector_manager_host>:<tomcat_port>/connector-manager}}}
+ You will get an informative text displaying the connector manager version. You should see something like:
+ {{{
+<CmResponse>
+	<Info>Google Enterprise Connector Manager 1.3.0 (build 1504 January 23 2009); Sun Microsystems Inc. Java HotSpot(TM) Server VM 1.4.2_13; Windows 2003 5.2 (x86)</Info> 
+	<StatusId>0</StatusId> 
+</CmResponse>
+ }}}
+ If you see the above response and GSA is still unable to register the Connector Manager, you need to check the network settings between your GSA and the Connector Manager host.
+ If you do not see the above response, then please check that the Connector Manager host is reachable and it is running.
+
+
+*Q. How can I track the feeds that connector sends to the GSA?*
+
+ Set the {{{feedLoggingLevel}}} property to {{{ALL}}} in the {{{applicationContext.properties}}} found under {{{$CATALINA_HOME/webapps/connector-manager/WEB-INF/}}}. Restart the connector and let it run for some time. Check out the google-connectors.feed log files generated under {{{$CATALINA_HOME/logs/}}} folder.
+
+
+*Q. How can I change the log level so that only the relevant log messages are generated?*
+
+ Go to {{{$CATALINA_HOME/webapps/connector-manager/WEB-INF/classes}}}. Open {{{logging.properties}}} and change the log level(s) to the required level(s).
+
+
+*Q. Does connector maintain the list of excluded URLs?*
+
+ Yes. It stores the list of excluded URLs in {{{excluded-URLs/excluded_url%g.txt}}} under the connector instance directory. Please note that these URLs are excluded by the connector during the traversal and not by the GSA when the feed is sent.
+ Available since version 2.0
+
+
+*Q. Is it possible for a single connector to send feed to more then one GSA?*
+
+ No. You have to register a connector manager and create connector instances under this, on each individual GSA.
+
+
+*Q. Can I create multiple connector instances with the same name?*
+
+ No.
+
+
+*Q. Does connector run in an incremental mode, so that the changes done on the SharePoint site are reflected during search?*
+
+ Yes. Connector sends new feeds for the documents which are modified.
+
+
+*Q. Why should I not use consecutive ports while installing multiple connectors on the same machine?*
+
+ Because, the port next to the connector instance port is used as a shutdown port by the connector. For example , a connector running on port 8080, uses port 8081 as the shutdown port.
+
+
+*Q. What value should I enter for the My Site Base URL field in case of SharePoint 2003?*
+
+ No value is required. You can ignore this field. Even if you specify any value, connector will ignore this if the Crawl URL is of SharePoint 2003.
+
+
+*Q. Does connector discovers and crawl Personal Sites in SharePoint 2003?*
+
+ Yes. You need not specify it as part of connector configuration explicitly
+
+
+*Q. Why is it not needed to specify the Personal Site URLs just like for MySite in case of SharePoint 2007?*
+
+ You don't specify the complete MySite URL. Remember, what connector ask is for MySite Base URL. This information is required in case of SharePoint 2007 because, MySites can be hosted on different web application or even different SharePoint server. Connector needs the base URL where all the MySites are hosted using which it constructs the complete MySite URL dynamically. Since, in SharePoint 2003, personal sites are always created under the same Web Application, also called Virtual Server in SP2003.
+
+
+*Q. How can I search metadata for a document?*
+
+ Use inmeta search for this. For details, refer to http://code.google.com/apis/searchappliance/documentation/52/xml_reference.html#inmeta_filter
+
+
+*Q: Do I need to restart the connector service each time I modify the connector configuration?*
+
+ No
+
+
+*Q: Do I need to restart the connector service each time I modify the connectorInstance.xml?*
+
+ Yes
+
+
+*Q. I can’t get the connector to re-crawl using the 'Reset' feature. Is there any other way of forcing a re-crawl?*
+
+ The manual steps to force a re-crawl of the connector. 
+ # On the connector host, navigate to the location of the connector state file. 
+  ** On Windows, this is {{{<Installation Location>\Tomcat\webapps\connector-manager\WEB-INF\connectors\sharepoint-connector\Sharepoint Connector Instance Name\}}}. 
+  ** On Linux, this is {{{<Installation Location>/Tomcat/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/Sharepoint Connector Instance Name/}}}
+ # Delete the file Sharepoint_state.xml file. 
+ # Restart the SharePoint connector. 
+ The connector traverses the content again and generates new feeds. 
+
+
+*Q. Does the connector detect folder renames and folder restoration?*
+
+ Yes. In both the cases, connector recursively discovers all the documents which are under the concerned folder and sends new feeds for them.
+
+
+*Q. Can I install and run the Connector Manager and Connector on a different Tomcat or any another servlet container?*
+
+ Installer bundles Tomcat with the connector and it cannot use local Tomcat server
+ For installing the Connector Manager and Connector on a different Tomcat instance, you will have to follow the manual installation steps
+ The Connector Manager and Connector has only been tested and certified to work with Tomcat.
+
+
+*Q. How do I change the port on which the Connector Manager is running?*
+
+ Go to {{{<Installation Directory>/Tomcat/conf}}} and edit the server.xml file as follows:
+ Find: {{{<Connector port="<portNo>"}}}. Here replace the {{{<portNo>}}} with the port configured during initial installation.
+ Specify a new port value for 'port' attribute and restart Connector service.
+
+
+*Q. Can I restore a connector instances in case it has been deleted by mistake?*
+
+ No. Though, you can always create a new connector instance with the same name and same configuration details as of the deleted connector instance. This will serve the same purpose except the state information is lost. In that case, connector will re-crawl the whole SharePoint site again.
+
+*Q. I have many sites under multiple site collections each organized into multiple web applications. Will single connector instance be able to crawl all these?*
+
+No. One connector instance can crawl only one site collection. For discovering and crawling multiple site collections and web applications (possibly distributed across multiple SharePoint servers in a farm), deploy the Google Services for SharePoint on each of the SharePoint servers. You can then configure only connector instance for discovering and crawling  all content in the farm.
+
+
+*Q. What if I have a Site Directory listing all the site collections? Do I need to still install the Google Services for SharePoint?*
+
+If the deployment has a Site Directory where all the site collections are listed, only one connector instance will work. No need to deploy the Google Services for SharePoint
+
+
+*Q. I don't want to install Google Services for SharePoint on my SharePoint server. Is there any way I can create a single connector instance to crawl all site collections?*
+
+Yes, you can. Here are the options:
+
+Create a list of type Links, which can be discovered from the given crawl URL. The connector will then follow all the links and traverse all the site collections
+
+*OR*
+
+Create a Site Directory with links to all site collections. Give the site directory URL as crawl URL and the connector will crawl all site collections  listed under it.
+
+
+=== Metadata-and-URL Feed Mode ===
+*Q. Do I need to configure robots.txt on the SharePoint server and if so how do I do it?*
+
+ The robots.txt file tells crawlers which files and directories can or cannot be crawled, including various file types. If the search engine gets an error when getting this file, no content will be crawled on that server. The robots.txt file will be checked on a regular basis, but changes may not have immediate results. The configuration of robots.txt file is optional.
+ Here are the steps for the same.
+ # Open Internet Information Services (IIS) Manager
+ # On the left side Tree View, click the machine name, expand the node Web Sites, find the name of the SharePoint application (Web site). 
+ # Right click on the name of the SharePoint application, select Open. A Windows Explorer will open with the location of the root directory for this SharePoint application.
+ # Create a text file robots.txt, open it, and paste the follow content, then save the file.
+  {{{
+User-agent: *
+Disallow:
+  }}}
+  _The pattern mentioned above specifies to allow all content to be crawled. You can customize it to include/exclude specific content._
+
+ Once you create a `robots.txt` file, you must define a managed path for the file in SharePoint:
+
+ _*For SharePoint 2007:*_
+ # Log in to the SharePoint Central Administration site: from *Start menu > Administrative Tools  > SharePoint Central Administration* 
+ # On the top link bar of the Central Administration Web site, click *Application Management.* 
+ # On the Application Management page, in the *SharePoint Web Application Management* section, click *Define managed paths*. 
+ # On the *Define Managed Paths* page, select the correct web application. 
+ # On the *Select Web Application* page, click the web application for which you want to define managed paths. 
+ # Under *Add a New Path*, enter the following: `/robots.txt`
+ # In the *Type* list, select *Explicit inclusion* and click *OK*. 
+ # Browse the robots.txt file for the given SharePoint site from the browser. You should get either HTTP 404 or HTTP 200. If you get HTTP 401, you will have to check the security settings on the given SharePoint application (Web site)
+
+ _*For SharePoint 2003:*_
+ # Log in to the SharePoint Central Administration site: from *Start menu > Administrative Tools  > SharePoint Central Administration*
+ # Under *Virtual Server Configuration*, click *Configure virtual server settings*. 
+ # Select the correct virtual server, for example, *Default Web Site*. 
+ # Under *Virtual Server Management*, click *Define managed paths*. 
+ # Under *Add a New Path*, enter the following: `/robots.txt` 
+ # Click *Check URL*. A browser window appears and shows a 404 error. This is the correct behavior.
+ # *Select Excluded path* and click *OK*. The robots.txt file is added to the excluded paths.
+ # Under *Add a New Path*, enter the following again: `/robots.txt`
+ # Click Check URL again. The contents of the robots.txt file are now displayed.
+ # Exit from the Central Administration Site.
+
+
+=== Content Feed Mode ===
+*Q. What benefit do I get by making the connector content feed?*
+
+ Hits on the SharePoint server are reduced. Authorization is done in batches.
+
+
+*Q. Can I, at any time, may need functionality like restoring a deleted connector instance?*
+
+ Yes, you can. In case of content feed. Since, the authorization is done by the connector, if you delete the connector, the documents it has sent will not be searchable. To get rid of this, you should re-create a connector instance with the same name. Please note that GSBulkAuthorization has to be deployed on the SharePoint server for the authorization to be successful.
+
+
+*Q. I have configured the connector for content feed. Though, I’m not able to see the documents URLs that fed to GSA under Crawl Diagnostics. Rather, it shows only the List level URLs with some encoded characters appended to it.*
+
+ This is an expected behavior. In case of content feed, document ID that is shown under the crawl diagnostics Has the following format: `googleconnector://<connector_name>.localhost/doc/?docid=<ListURL>|<ItemID>`. These document IDs are shown in the encoded form. In case of metadata-and-URL feed, document URL is shown. 
+
+
+*Q. Does connector keep track of the deleted documents so that they are removed from the GSA’s index?*
+
+ Yes. Connector sends delete feeds for such documents. GSA, than removes all such documents and their contents from its index.
