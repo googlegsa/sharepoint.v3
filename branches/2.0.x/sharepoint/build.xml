@@ -3,8 +3,8 @@
     <!-- Set the reference to build.properties -->
     <property file="build.properties" />
     <!-- ========================= PROPERTIES ============================= -->
-    <property name="version" value="2.0.2_RC1" />
-    <property name="product" value="Google Enterprise Connector for Microsoft SharePoint 2003,2007" />
+    <property name="version" value="2.0.2" />
+    <property name="product" value="Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007" />
     <property name="projects.dir" value=".." />
     <property name="COMPILE_DEBUG_FLAG" value="true" />
     <property name="COMPILE_DEBUG_LEVEL" value="source,lines,vars" />
@@ -325,7 +325,7 @@
                  version      ="true"
                  doctitle     ="&lt;h2&gt;${product}&lt;/h2&gt;"
                  windowtitle  ="${product} (Version ${version})"
-                 bottom       ="Copyright 2007 Google Inc."
+                 bottom       ="Copyright 2009 Google Inc."
         >
             <classpath>
                 <pathelement location="${spi.jar.dir}/connector.jar" />
