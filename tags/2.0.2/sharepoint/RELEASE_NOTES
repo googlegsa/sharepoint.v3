@@ -1,0 +1,53 @@
+Release Notes:
+===============
+
+Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007
+
+This document contains the release notes for Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007.
+The following sections describe the release in detail and provide information that supplements the main documentation.
+See the Issues Tab on the Code Site for the current list of known issues and workarounds.
+
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
+
+
+Release 2.0.2, Sep 02, 2009
+==========================
+
+Introduction
+------------
+This is a maintenance release that improves quality, reliability, and performance without adding any new functionality.
+All users of previous 2.0.0 release should upgrade to this release
+
+
+Summary of Changes
+------------------
+
+Issues fixed from last release:
+---------------------------------
+Issue 102: Liststate entry is deleted from the connector state without checking if the list is deleted
+
+Version Compatibility
+---------------------
+Connectors created with 2.0.0 version of the connector will work with this version. This version works with Connector Manager version 2.0.0.
+Earlier versions of the Connector Manager will not work correctly with this version of the connector.
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+2) In this release, following features are supported only on SharePoint 2007
+   - Fix for issue#53 (Connector should support SharePoint farm )
+   - Bulk Authorization by connector
+3) Issue#70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and the credentials
+used are of a local machine user.
+
+STEPS TO DEPLOY THE PATCH RELEASE ON 2.0.0
+===========================================
+1. Stop the SharePoint Connector Service.
+2. Extract the downloaded connector-sharepoint-2.0.2.zip at some location on your machine.
+3. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+4. Replace the file "connector-sharepoint.jar" with the new jar found in the extracted connector-sharepoint-2.0.2 folder.
+   If you want to back-up the older jar file, please back-it up to a folder other than the Tomcat folder. Leaving a back-up in the same directory can create issues.
+5. Start the SharePoint Connector Service.
+
+Note: $CATALINA_HOME stands for the folder where the connector's Tomcat is deployed. It is usually :
+C:\Program Files\GoogleConnectors\<%Installation name%>\Tomcat
