@@ -126,7 +126,7 @@ This section lists some of the most commonly asked questions:
 === Commmon to Both Content and Metadata-and-URL Feed Mode ===
 *Q. I cannot register the Connector Manager on GSA. What should I do?*
 
- You can test that the connector manager URL is valid and is running by typing the URL in a browser: {{{http://<connector_manager_host>:<tomcat_port>/connector-manager}}}
+ You can test that the connector manager URL is valid and is running by typing the URL in a browser: {{{http://<localhost>:<tomcat_port>/connector-manager}}} on the machine that has the Connector Manager and connector installed on it
  You will get an informative text displaying the connector manager version. You should see something like:
  {{{
 <CmResponse>
@@ -137,6 +137,16 @@ This section lists some of the most commonly asked questions:
  If you see the above response and GSA is still unable to register the Connector Manager, you need to check the network settings between your GSA and the Connector Manager host.
  If you do not see the above response, then please check that the Connector Manager host is reachable and it is running.
 
+*Q. I get "403 Access Forbidden" errors if try the test connectivity page of Connector Manager using the machine hostname. It works with 'localhost' as the hostname. Why is it so?*
+
+It is because only GSA IP address (which you entered with the installer) and
+'localhost' are set to be allowed to connect to Tomcat (hosting connector
+manager and the connector) on connector host.
+
+Check this for a detailed explanation:
+http://code.google.com/p/google-enterprise-connector-manager/wiki/ChangeGSA
+
+In order to allow any other host to connect to the Connector Manager, you need to set the IP address of that particular host in the server.xml file of Tomcat as explained in the above link.
 
 *Q. How can I track the feeds that connector sends to the GSA?*
 
