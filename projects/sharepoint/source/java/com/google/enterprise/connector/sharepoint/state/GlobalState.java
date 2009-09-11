@@ -183,6 +183,7 @@ public class GlobalState {
 			return;
 		}
 
+		boolean configLogging = LOGGER.isLoggable(Level.CONFIG);
 		if (bFullReCrawl == true) {
 			LOGGER.config("ending recrawl ...bFullReCrawl true ... cleaning up WebStates");
 			final Iterator iter = getIterator();
@@ -195,22 +196,23 @@ public class GlobalState {
 						// Delete this web State only if does not contain any
 						// list State info.
 						if (webs.getAllListStateSet().size() == 0) {
-							if (SPConstants.CONTENT_FEED.equalsIgnoreCase(spContext.getFeedType())) {
-								int responseCode = 0;
-								try {
-									responseCode = spContext.checkConnectivity(Util.encodeURL(webs.getWebUrl()), null);
-								} catch (final Exception e) {
-									LOGGER.log(Level.WARNING, "Connectivity failed! ", e);
-								}
-								if (responseCode == 200) {
-									webs.setExisting(true);
-									continue;
-								} else if (responseCode != 404) {
-									continue;
-								}
+							int responseCode = 0;
+							try {
+								responseCode = spContext.checkConnectivity(Util.encodeURL(webs.getWebUrl()), null);
+							} catch (final Exception e) {
+								LOGGER.log(Level.WARNING, "Connectivity failed! ", e);
 							}
-							LOGGER.log(Level.INFO, "Deleting the state information for web ["
-									+ webs.getWebUrl() + "]. ");
+							if (responseCode == 200) {
+								webs.setExisting(true);
+								continue;
+							} else if (responseCode != 404) {
+								continue;
+							}
+
+							if (configLogging) {
+								LOGGER.log(Level.CONFIG, "Deleting the state information for web ["
+										+ webs.getWebUrl() + "]. ");
+							}
 							iter.remove();
 							keyMap.remove(webs.getPrimaryKey());
 						}
