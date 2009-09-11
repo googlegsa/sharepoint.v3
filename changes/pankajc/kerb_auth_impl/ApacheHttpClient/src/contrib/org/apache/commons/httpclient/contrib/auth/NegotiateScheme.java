@@ -78,12 +78,19 @@ public class NegotiateScheme implements AuthScheme {
      * 
      * @param server servername only (e.g: radar.it.su.se)
      */
-    protected void init(String server) throws GSSException {
+    protected void init(String server, int port) throws GSSException {
          LOG.debug("init " + server);
          /* Kerberos v5 GSS-API mechanism defined in RFC 1964. */
          Oid krb5Oid = new Oid("1.2.840.113554.1.2.2");
          GSSManager manager = GSSManager.getInstance();
-         GSSName serverName = manager.createName("HTTP/"+server, null); 
+         GSSName serverName = null;
+         
+         if(-1 == port) {
+        	 serverName = manager.createName("HTTP/" + server, null);
+         } else {
+        	 serverName = manager.createName("HTTP/" + server + ":" + port, null);
+         }
+         
          context = manager.createContext(serverName, krb5Oid, null,
                                     GSSContext.DEFAULT_LIFETIME);
          context.requestMutualAuth(true); 
@@ -260,7 +267,7 @@ public class NegotiateScheme implements AuthScheme {
             try {                
                 if(context==null) {
                     LOG.info("host: " + method.getURI().getHost());
-                    init( method.getURI().getHost() );
+                    init( method.getURI().getHost(), method.getURI().getPort() );
                 }
             } catch (org.apache.commons.httpclient.URIException urie) {
                 LOG.error(urie.getMessage());
