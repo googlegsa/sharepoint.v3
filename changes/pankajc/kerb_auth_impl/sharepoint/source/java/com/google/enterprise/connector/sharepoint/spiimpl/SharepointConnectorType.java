@@ -17,6 +17,8 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import gnu.regexp.RE;
 import gnu.regexp.REMatch;
 
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -51,7 +53,7 @@ import com.google.enterprise.connector.spi.ConnectorType;
  *
  */
 public class SharepointConnectorType implements ConnectorType {
-	private final Logger LOGGER = Logger.getLogger(SharepointConnectorType.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(SharepointConnectorType.class.getName());
 	private final String className = SharepointConnectorType.class.getName();
 	private Collator collator = Util.getCollator();
 
@@ -73,6 +75,23 @@ public class SharepointConnectorType implements ConnectorType {
 	
 	ResourceBundle rb = null;
 	
+	static{
+		URL loginConf =  SharepointConnectorType.class.getResource("/login.conf");
+		try{
+		if(null != loginConf){
+			System.setProperty("java.security.auth.login.config", URLDecoder.decode(loginConf.getPath(), "UTF-8"));
+		}
+		
+		URL krb5Conf =  SharepointConnectorType.class.getResource("/krb5.conf");
+		
+		if(null != krb5Conf){
+			System.setProperty("java.security.krb5.conf", URLDecoder.decode(krb5Conf.getPath(), "UTF-8"));
+		}
+		}catch(UnsupportedEncodingException e){
+			LOGGER.log(Level.SEVERE, "Configuration files not found");
+		}
+		System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
+	}
 	/**
 	 * Sets the keys that are required for configuration. These are the actual 
 	 * keys used by the class. 

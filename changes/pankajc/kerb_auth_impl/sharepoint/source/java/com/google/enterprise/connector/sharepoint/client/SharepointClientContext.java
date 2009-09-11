@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -25,6 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.security.auth.kerberos.KerberosPrincipal;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -577,14 +580,24 @@ public class SharepointClientContext implements Cloneable {
 		int responseCode = 0;
 		String username = this.username;
 		final String host = Util.getHost(strURL);
-		Credentials credentials =  null;
-		boolean ntlm = true; // We first try to use ntlm
+		Credentials credentials =  new Credentials() {
+			// @Override
+			public String getPassword() {
+				return SharepointClientContext.this.password;
+			}
+			// @Override
+			public Principal getUserPrincipal() {
+				return new KerberosPrincipal(SharepointClientContext.this.username);
+			}
+		};
+
+		/*boolean ntlm = true; // We first try to use ntlm
 		if(null != domain && !domain.equals("")) {
 			credentials = new NTCredentials(username,password, host, domain);
 		} else {
 			credentials =  new UsernamePasswordCredentials(username,password);
 			ntlm = false;
-		}
+		}*/
 		final HttpClient httpClient = new HttpClient();
 		
 		httpClient.getState().setCredentials(AuthScope.ANY,credentials);
@@ -592,7 +605,7 @@ public class SharepointClientContext implements Cloneable {
 			method = new HeadMethod(strURL);
 		}
 		responseCode = httpClient.executeMethod(method);
-		if(responseCode == 401 && ntlm) {
+		if(responseCode == 401 /*&& ntlm*/) {
 			LOGGER.log(Level.FINE,"Trying with HTTP Basic.");
 			username = Util.getUserNameWithDomain(this.username, domain);
 			credentials =  new UsernamePasswordCredentials(username,password);
