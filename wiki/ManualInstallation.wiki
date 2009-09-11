@@ -88,7 +88,7 @@ To install the connector manually, follow the instructions given below:
 
 12. Open the logging.properties file in a text editor and set the value of java.util.logging.FileHandler.pattern equal to the absolute path of the log file.
 
-    java.util.logging.FileHandler.pattern={{{<value of $CATALINA_HOME>}}}/logs/google-connectors%g.log
+    java.util.logging.FileHandler.pattern={{{<value of $CATALINA_HOME>}}}/logs/google-connectors.%g.log
 
 13. Start the Tomcat server. 
 
