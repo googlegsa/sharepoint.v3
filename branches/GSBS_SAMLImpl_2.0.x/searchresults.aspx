@@ -1,5 +1,7 @@
 <%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
-<%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage" MasterPageFile="/_layouts/application.master" EnableViewState="false" EnableViewStateMac="false" ValidateRequest="false" %>
+<%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
+    MasterPageFile="/_layouts/application.master" EnableViewState="false" EnableViewStateMac="false"
+    ValidateRequest="false" %>
 <%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
     Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
@@ -8,11 +10,11 @@
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
     Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+
 <%@ Import Namespace="Microsoft.SharePoint.ApplicationPages" %>
 <%@ Import Namespace="Microsoft.SharePoint" %>
 <%@ Import Namespace="System.Net" %>
 <%@ Import Namespace="System.IO" %>
-
 <%@ Import Namespace="System.Web.Configuration" %>
 <%@ Import Namespace="System.Security.Cryptography.X509Certificates" %>
 <%@ Import Namespace="System.Xml" %>
@@ -23,11 +25,12 @@
 <%@ Import Namespace="System.Web.Security" %>
 <%@ Import Namespace="System.Diagnostics" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="PlaceHolderPageTitle" runat="server">
+<asp:content id="Content1" contentplaceholderid="PlaceHolderPageTitle" runat="server">
     <SharePoint:EncodedLiteral ID="EncodedLiteral1" runat="server" Text="<%$Resources:wss,searchresults_pagetitle%>"
         EncodeMethod='HtmlEncode' />
-</asp:Content>
-<asp:Content ID="Content2" ContentPlaceHolderID="PlaceHolderAdditionalPageHead" runat="server">
+</asp:content>
+
+<asp:content id="Content2" contentplaceholderid="PlaceHolderAdditionalPageHead" runat="server">
     <style type="text/css">
 .ms-titlearea
 {
@@ -46,6 +49,10 @@ div.ms-areaseparatorright{
     <!--handling for google control -->
 
     <script runat="server">
+    /**
+     * Author: Amit Agrawal
+     * Email: amit.persistent@gmail.com
+     **/
         
         public const int num = 10;//page size
         public string myquery = "";
@@ -56,21 +63,14 @@ div.ms-areaseparatorright{
         public const string PREVSTMT = "";//initially prev should be hidden
         public const string NEXTSTMT = "";
         public bool isNext = true;
-        public int start = 0;
+        public int start = 0;/* E.g. start = 1 and num =5 (return 11-15 results)*/
         int endB = 0;
-        //NameValueCollection inquery = null;
-        //string searchtime = "0";
-        //int startB = 0;
         
-        /*
-         e.g. start = 1 and num =5 (return 11-15 results)
-         */
-        
-        
+        /*Google Search Box for SharePoint*/
         class GoogleSearchBox
         {
             public string GSALocation;
-            public string accessLevel="a";//always do a public and secured search
+            public string accessLevel="a";//Do a Public and Secured search
             public string siteCollection;
             public string frontEnd;
             public string enableInfoLogging;
@@ -80,11 +80,10 @@ div.ms-areaseparatorright{
             public string temp="true";
 			public const String PRODUCTNAME = "Google Search Box for SharePoint";
 
+            /*For Internal Transformations*/
             public XslTransform xslt1 = null;
             public XslTransform xslt2 = null;
             
-            //const int MSG_MAX_SIZE=300;
-			
             public GoogleSearchBox()
             {
                 GSALocation = "";
@@ -102,7 +101,6 @@ div.ms-areaseparatorright{
                 if((GSALocation==null) || (GSALocation.Trim().Equals("")))
                 {
                     log("Google Search Appliance location is not specified", EventLogEntryType.Error);//log error
-                    HttpContext.Current.Response.ContentType = "text/html";
                     HttpContext.Current.Response.Write("Google Search Appliance location is not specified");
                     HttpContext.Current.Response.End();
                 }
@@ -111,7 +109,6 @@ div.ms-areaseparatorright{
                 if((siteCollection==null) || (siteCollection.Trim().Equals("")))
                 {
                     log("Site collection value for Google Search Appliance is not specified", EventLogEntryType.Error);//log error
-                    HttpContext.Current.Response.ContentType = "text/html";
                     HttpContext.Current.Response.Write("Site collection value for Google Search Appliance is not specified");
                     HttpContext.Current.Response.End();
                 }
@@ -120,7 +117,6 @@ div.ms-areaseparatorright{
                 if((enableInfoLogging==null) || (enableInfoLogging.Trim().Equals("")))
                 {
                     log("Log level is not specified", EventLogEntryType.Error);//log error
-                    HttpContext.Current.Response.ContentType = "text/html";
                     HttpContext.Current.Response.Write("Log level is not specified");
                     HttpContext.Current.Response.End();
                 }
@@ -129,7 +125,6 @@ div.ms-areaseparatorright{
                 if((frontEnd==null) || (frontEnd.Trim().Equals("")))
                 {
                     log("Front end value for Google Search Appliance is not specified", EventLogEntryType.Error);//log error
-                    HttpContext.Current.Response.ContentType = "text/html";
                     HttpContext.Current.Response.Write("Front end value for Google Search Appliance is not specified");
                     HttpContext.Current.Response.End();
                 }
@@ -139,7 +134,6 @@ div.ms-areaseparatorright{
                 if((temp==null) || (temp.Trim().Equals("")))
                 {
                     log("Please specify value for GSA Style. Specify 'true' to use Front end's style for rendering search results. Specify 'False' to use the locally deployed stylesheet for rendering search results", EventLogEntryType.Error);//log error
-                    HttpContext.Current.Response.ContentType = "text/html";
                     HttpContext.Current.Response.Write("Please specify value for GSA Style. Specify 'true' to use Front end's style for rendering search results. Specify 'False' to use the locally deployed stylesheet for rendering search results");
                     HttpContext.Current.Response.End();
                 }
@@ -161,7 +155,6 @@ div.ms-areaseparatorright{
                     if((xslGSA2SP==null) || (xslGSA2SP.Trim().Equals("")))
                     {
                         log("Please specify the value for stylesheet to convert GSA results to SharePoint like results", EventLogEntryType.Error);//log error
-                        HttpContext.Current.Response.ContentType = "text/html";
                         HttpContext.Current.Response.Write("Please specify the value for stylesheet to convert GSA results to SharePoint like results");
                         HttpContext.Current.Response.End();
                     }
@@ -170,7 +163,6 @@ div.ms-areaseparatorright{
                     if((xslSP2result==null) || (xslSP2result.Trim().Equals("")))
                     {
                         log("Please specify the value for stylesheet to be applied on search  results", EventLogEntryType.Error);//log error
-                        HttpContext.Current.Response.ContentType = "text/html";
                         HttpContext.Current.Response.Write("Please specify the value for stylesheet to be applied on search  results");
                         HttpContext.Current.Response.End();
                     }
@@ -225,7 +217,6 @@ div.ms-areaseparatorright{
             
             public void log(String msg, EventLogEntryType logLevel)
             {
-                
                 if(null!=msg)
                 {
 						
@@ -245,9 +236,10 @@ div.ms-areaseparatorright{
                 
             }
             
-            
-            public void Impersonate(string userPrincipalName)
+            /*This function impersonates the user*/
+            public System.Security.Principal.WindowsImpersonationContext Impersonate(string userPrincipalName)
             {
+                System.Security.Principal.WindowsImpersonationContext impersonationContext = null;
                 try
                 {
                     log("Impersonating user " + userPrincipalName, EventLogEntryType.Information);
@@ -258,7 +250,8 @@ div.ms-areaseparatorright{
                             string currentuser = getCurrentUser();
                             log("CurrentUser(Before Impersonation):" + currentuser, EventLogEntryType.Information);
                             WindowsIdentity userId = new WindowsIdentity(userPrincipalName);// create new identity using new primary token
-                            userId.Impersonate();
+                            impersonationContext = userId.Impersonate();
+                            //impersonationContext.Undo();//undo the Impersonation
                             log("Impersonation succeeded: UserToken: " + userId.Token + ", AuthenticationType=" + userId.AuthenticationType + "Impersonation level= " + userId.ImpersonationLevel, EventLogEntryType.Information);
                         }
                         catch (Exception e)
@@ -275,6 +268,8 @@ div.ms-areaseparatorright{
                 {
                     log("Impersonation Failed"+e.Message+"\nStack Trace: "+e.StackTrace, EventLogEntryType.Error);
                 }
+                
+                return impersonationContext;
             }
             
 
@@ -382,13 +377,13 @@ else if(document.attachEvent)
 
     </script>
 
-</asp:Content>
-<asp:Content ID="Content3" ContentPlaceHolderID="PlaceHolderTitleAreaClass" runat="server">
+</asp:content>
+<asp:content id="Content3" contentplaceholderid="PlaceHolderTitleAreaClass" runat="server">
     ms-searchresultsareaSeparator
-</asp:Content>
-<asp:Content ID="Content4" ContentPlaceHolderID="PlaceHolderNavSpacer" runat="server">
-</asp:Content>
-<asp:Content ID="Content5" ContentPlaceHolderID="PlaceHolderTitleBreadcrumb" runat="server">
+</asp:content>
+<asp:content id="Content4" contentplaceholderid="PlaceHolderNavSpacer" runat="server">
+</asp:content>
+<asp:content id="Content5" contentplaceholderid="PlaceHolderTitleBreadcrumb" runat="server">
     <a name="mainContent"></a>
     <table width="100%" cellpadding="2" cellspacing="0" border="0">
         <tr>
@@ -443,8 +438,8 @@ else if(document.attachEvent)
         </tr>
        
     </table>
-</asp:Content>
-<asp:Content ID="Content6" ContentPlaceHolderID="PlaceHolderMain" runat="server">
+</asp:content>
+<asp:content id="Content6" contentplaceholderid="PlaceHolderMain" runat="server">
     <asp:PlaceHolder runat="server" ID="SearchSummary">
         
         <table id="TABLE1" width="100%" cellpadding="4" cellspacing="0" border="0">
@@ -454,17 +449,16 @@ else if(document.attachEvent)
             <td id="TD1" colspan="4" >
                 
                 <%
-        
                     GoogleSearchBox gProps = new GoogleSearchBox();
                     NameValueCollection inquery = HttpContext.Current.Request.QueryString;
-                    
                     string searchResp;
                     string sitelevel = "";
                     string searchReq = string.Empty;
                     string qQuery = string.Empty;
-
-                    gProps.initGoogleSearchBox();
+                    gProps.initGoogleSearchBox();//initialize the SearchBox parameters
                     
+                    ////////////////////////////CONSTRUCT THE SEARCH QUERY FOR GOOGLE SEARCH APPLIANCE ///////////////////////////////////
+                    //Amit: The search query comes in 'k' parameter
                     if (inquery["k"] != null)
                     {
                         qQuery = inquery["k"];
@@ -474,17 +468,17 @@ else if(document.attachEvent)
                         }
                         myquery = qQuery;//for paging in custom stylesheet
 
-                        //XenL:  using U parameter to create scoped searches on the GSA
+                        //XenL:Using U parameter to create scoped searches on the GSA
                         if ((inquery["u"] != null))
                         {
                             string port = "";
                             string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
-
                             temp = temp.ToLower();
                             temp = temp.Replace("http://", "");// Delete http from url
                             qQuery += " inurl:\"" + temp + "\"";//  Change functionality to use "&sitesearch="  - when GSA Bug 11882 has been closed
                         }
 
+                        /*Get the user suppiled parameters from the web.config file*/
                         searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")
                         {
@@ -496,23 +490,23 @@ else if(document.attachEvent)
                             searchReq += "&client=" + gProps.frontEnd;
                         }
 
-                        //this will work for GSA paging
+                        /*For supporting paging using GSA stylesheet on GSA search results*/
                         if (inquery["start1"] != null)
                         {
                             searchReq = searchReq + "&start=" + inquery["start1"] /*+ "&num=" + num*/ ;// XenL - fixing MH Paging solution
                         }
 
-                        //Sorting by date
+                        /*sorting of search results*/
                         if ((inquery["v1"] != null) && (inquery["v1"] == "date"))
                         {
-                            searchReq += "&sort=date%3AD%3AS%3Ad1";
+                            searchReq += "&sort=date%3AD%3AS%3Ad1";//Sorting by date
                         }
                         if ((inquery["v1"] != null) && (inquery["v1"] == "relevance"))
                         {
-                            searchReq += "&sort=relevance";
+                            searchReq += "&sort=relevance";//Sorting by relevance
                         }
 
-                        //only for custom stylesheet
+                        /*Handle paging for the custom stayle sheet which is deployed locally*/
                         if (gProps.bUseGSAStyling == false)
                         {
                             if (inquery["start"] != null)
@@ -526,72 +520,248 @@ else if(document.attachEvent)
                                     gProps.log("Unable to get value for start of page, Error= " + e.Message +"\n Trace="+e.StackTrace,EventLogEntryType.Error);
                                 }
                             }
-                                                        
                             searchReq += "&start=" + start  + "&num=" + num ;
                         }
-                        
                     }
                     else
                     {
                         searchReq = HttpContext.Current.Request.Url.Query;
                     }
-                    
+                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                    /////////////////////MAKING THE SEARCH REQUEST TO GOOGLE SEARCH APPLIANCE /////////////////////////////////////////////
                     try
                     {
                         HttpWebRequest objReq = null;
                         HttpWebResponse objResp = null;
                         Stream objStream = null;
                         StreamReader objSR = null;
-
-						gProps.log("Search Request to GSA:" + gProps.GSALocation + "/search" + searchReq,EventLogEntryType.Information);
-                        objReq = (HttpWebRequest)HttpWebRequest.Create(gProps.GSALocation + "/search" + searchReq);
-                        objReq.PreAuthenticate = true;//preauthenticate the request incase ifauthentication header is available with the request
-                        objReq.Credentials = System.Net.CredentialCache.DefaultCredentials;//set credentials
-                        ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(customXertificateValidation);//security certificate handler
-                        objReq.Method = "GET";//specify the request handler
-
-                        Cookie c = new Cookie();//add cookies available in current request to the GSA request
                         CookieContainer cc = new CookieContainer();
                         int i;
-                        for (i = 0; i < HttpContext.Current.Request.Cookies.Count - 1; i++)
-                        {
-                            c.Name = HttpContext.Current.Request.Cookies[i].Name;
-                            c.Value = HttpContext.Current.Request.Cookies[i].Value;
-                            c.Domain = objReq.RequestUri.Host;
-                            c.Expires = HttpContext.Current.Request.Cookies[i].Expires;
-                            cc.Add(c);
-                        }
+						gProps.log("Search Request to GSA:" + gProps.GSALocation + "/search" + searchReq,EventLogEntryType.Information);
+						String amitUrl= gProps.GSALocation + "/search" + searchReq;
+						
+                        objReq = (HttpWebRequest)HttpWebRequest.Create(amitUrl);
+                        objReq.KeepAlive =true;//objReq.KeepAlive =true;
+                        objReq.AllowAutoRedirect=false;//objReq.AllowAutoRedirect=true;
+                        objReq.MaximumAutomaticRedirections=100;
+                        objReq.Credentials = System.Net.CredentialCache.DefaultCredentials;//set credentials
+                        //objReq.PreAuthenticate = true;//preauthenticate the request incase ifauthentication header is available with the request
                         
-                        objReq.CookieContainer = cc;//Amit: Set GSA request cookiecontainer
-                        string[] requestHeaderKeys = HttpContext.Current.Request.Headers.AllKeys;//add headers available in current request to the GSA request
+                        /*handling for the certificates*/
+                        ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(customXertificateValidation);
+                        objReq.Method = "GET";//specify the request handler
                         
+                        
+                        //////////////////////COPYING THE CURRENT REQUEST PARAMETRS, HEADERS AND COOKIES ///////////////////////                        
+                        /*Amit: Copying all the current request headers to the new request to GSA. Some headers might not be copied .. skip those headers and copy the rest*/
+                        String[] requestHeaderKeys = HttpContext.Current.Request.Headers.AllKeys;//add headers available in current request to the GSA request
                         for (i = 0; i < HttpContext.Current.Request.Headers.Count - 1; i++)
                         {
                             try
                             {
-                                if (requestHeaderKeys[i] != "Authorization")
-                                    objReq.Headers.Add(requestHeaderKeys[i], HttpContext.Current.Request.Headers[requestHeaderKeys[i]]);
-                                else
-                                    objReq.Headers.Add("Authorization", HttpContext.Current.Request.Headers[requestHeaderKeys[i]]);
+                                objReq.Headers.Add(requestHeaderKeys[i], HttpContext.Current.Request.Headers[requestHeaderKeys[i]]);
+                                //gProps.log("AddingHeaders:" + requestHeaderKeys[i]+"::Value:"+HttpContext.Current.Request.Headers[requestHeaderKeys[i]], EventLogEntryType.Error);
                             }
                             catch (Exception HeaderEx)
-                            { //just skipping the heder information if any exception occures while adding to the GSA request
-                                //gProps.log("Exception while adding headers to request: " + HeaderEx.Message, "Stack Trace: " + HeaderEx.StackTrace, EventLogEntryType.Error);
+                            { //just skipping the header information if any exception occures while adding to the GSA request
+                                //gProps.log("Exception while adding headers to request: " + HeaderEx.Message+"::Stack Trace: " + HeaderEx.StackTrace, EventLogEntryType.Error);
                             }
                         }
-
+                        
+                        /*Amit: copying all the cookies from current request to the new request to GSA*/
+                        Cookie c = new Cookie();//add cookies available in current request to the GSA request
+                        for (i = 0; i < HttpContext.Current.Request.Cookies.Count - 1; i++)
+                        {
+                            string tempCookieName= HttpContext.Current.Request.Cookies[i].Name;
+                            
+                            /* skip GSA session..for SAML bridge.. This will do authN and AuthZ again.
+                            If we do not skip this cookie then it return garbage search results for the consecutive searches from SearchBox */
+                            
+                            //if(!tempCookieName.Equals("GSA_SESSION_ID")){
+                                c.Name = tempCookieName;
+                                Encoding utf8 = Encoding.GetEncoding("utf-8");
+                                string value = HttpContext.Current.Request.Cookies[i].Value;
+                                c.Value = HttpUtility.UrlEncode(value, utf8); 
+                                c.Domain = objReq.RequestUri.Host;
+                                c.Expires = HttpContext.Current.Request.Cookies[i].Expires;
+                                cc.Add(c);
+                            //}
+                            //gProps.log("name:"+c.Name+"::Value:"+c.Value+"::domain:"+c.Domain,EventLogEntryType.Error);
+                        }
+                        
+                        
+                        //////////////////////////////////////////////////////////////
+						//UserImpersonation
+						//System.Security.Principal.WindowsImpersonationContext impersonationContext = gProps.Impersonate("googlesp@gdc-psl.net");
+                        //impersonationContext.Undo();//undo the Impersonation
+						//gProps.Impersonate("farmadmin@gdc-psl.net");
+						////////////////////////////////////////////////////////////////
+						
+                        objReq.CookieContainer = cc;//Amit: Set GSA request cookiecontainer
                         requestHeaderKeys = null;
+                        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                    
+                        
+                        ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
                         objResp = (HttpWebResponse)objReq.GetResponse();//fire getresponse
                         objStream = objResp.GetResponseStream();//if the request is successful, get the results in returnstring
-                        objSR = new StreamReader(objStream, Encoding.UTF8);
-                        
-                        //objSR = new StreamReader(objStream, Encoding.Default);
-                        //objSR = new StreamReader(objStream, Encoding.Unicode);
-                        //objSR = new StreamReader(objStream, Encoding.ASCII);
-                        
-                        string returnstring = (objSR.ReadToEnd());
+                        objSR = new StreamReader(objStream, Encoding.UTF8);//we have set in the URL to get the result in the UTF-8 encoding format
+                        string returnstring = (objSR.ReadToEnd());// read the content from the stream
+                                         
+                        //impersonationContext.Undo();//undo the Impersonation
                         gProps.log("Return Status from GSA: " + objResp.StatusCode,EventLogEntryType.Information);
+                        int FirstResponseCode = (int)objResp.StatusCode;//check the response code from the reply from 
+                        
+                        //*********************************************************************
+                        //Manually handling the Redirect from SAML bridge. Need to extract the Location and the GSA session Cookie
+                        string newURL = objResp.Headers["Location"]; 
+                        gProps.log("Amit New Location: " + newURL,EventLogEntryType.Information);
+                        
+                        string GSASessionCookie = objResp.Headers["Set-Cookie"]; 
+                        gProps.log("GSA Session Cookie: " + GSASessionCookie,EventLogEntryType.Information);
+                        //*********************************************************************
 
+                        //gProps.log("We see the cookies.. "+objResp.Cookies.Count, EventLogEntryType.Information);
+                        CookieContainer newcc = new CookieContainer();//Amit: added for SAML
+                        
+                        if(GSASessionCookie!=null){
+                            Cookie responseCookies= new Cookie();;//add cookies in GSA response to current response
+                           
+                            int j;
+                            
+                            
+                            for (j = 0; j < objResp.Cookies.Count -1; j++)
+                            {
+                                responseCookies.Name = objResp.Cookies[j].Name;
+                                Encoding utf8 = Encoding.GetEncoding("utf-8");
+                                string value = objResp.Cookies[j].Value;
+                                responseCookies.Value = HttpUtility.UrlEncode(value, utf8); 
+                                responseCookies.Domain = objReq.RequestUri.Host;
+                                responseCookies.Expires = objResp.Cookies[j].Expires;
+                                newcc.Add(responseCookies);                            
+                                //gProps.log("Response Cookie:: Name:"+responseCookies.Name+"::Value:"+responseCookies.Value+"::Domain:"+responseCookies.Domain,EventLogEntryType.Error);
+                            }
+
+                            // ********************************************
+                            
+                            /*Amit: We need to check if there is a cookie or not. For the initial request to GSA in case of SAML it will be there. Forget it for afterwards*/
+                        
+                            Char[] seps = {'='};//Adding the session cookie
+                            String[] key_val = GSASessionCookie.Split(seps);
+                            
+                            if(key_val!=null)
+                            {
+                            
+                                if(key_val[0]!=null)
+                                {
+                                    responseCookies.Name = objResp.Cookies[j].Name;
+                                    responseCookies.Value = key_val[1];
+                                    responseCookies.Domain = objReq.RequestUri.Host;
+                                    responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
+                                    newcc.Add(responseCookies);
+                                    //gProps.log("Cookie"+key_val[0]+"::"+key_val[1]+"::"+objReq.RequestUri.Host+"::"+responseCookies.Expires, EventLogEntryType.Information);
+                                    
+                                }
+                              
+                            }
+                         }
+                         else
+                         {
+                            HttpCookie responseCookies;//add cookies in GSA response to current response
+
+                            //set the cookies in the current response
+                            for (int j = 0; j < objResp.Cookies.Count - 1; j++)
+                            {
+                                responseCookies = new HttpCookie(objResp.Cookies[j].Name);
+                                responseCookies.Value = objResp.Cookies[j].Value;
+                                responseCookies.Domain = objReq.RequestUri.Host;
+                                responseCookies.Expires = objResp.Cookies[j].Expires;
+                                HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                responseCookies = null;
+                            }                         
+                         }//end if condition for SAML
+                         
+                         
+                        // ********************************************
+
+                        // *********************** Now we make another request ************
+                        HttpWebRequest objNewReq = null;
+                        if(newURL!=null){
+                            objNewReq = (HttpWebRequest)HttpWebRequest.Create(newURL);
+                            objNewReq.KeepAlive =true;
+                            objNewReq.AllowAutoRedirect=true;
+                            objNewReq.MaximumAutomaticRedirections=100;
+                            objNewReq.Credentials = System.Net.CredentialCache.DefaultCredentials;//set credentials
+                            ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(customXertificateValidation);//security certificate handler
+                            objNewReq.Method = "GET";//specify the request handler
+                            objNewReq.CookieContainer = newcc;//Amit: Set GSA request cookiecontainer
+                         }
+                            
+                            // ******************************************
+
+
+                            //gProps.log("Now we see the Response Headers.. "+objResp.Headers.Count, EventLogEntryType.Information);
+                            string[] headerKeys = objResp.Headers.AllKeys;//add headers in GSA response to current response
+                            for (i = 0; i < objResp.Headers.Count; i++)
+                            {
+                                try
+                                {
+                                    //skip the Set-Cookie header
+                                    if((headerKeys[i]!="Set-Cookie")&&(headerKeys[i]!="Location"))
+                                    {
+                                        objNewReq.Headers.Add(headerKeys[i], objResp.Headers[headerKeys[i]]);//added for SAML
+                                    
+                                        //skipping the content-length
+                                        if (headerKeys[i] != "Content-Length")
+                                        {
+                                            HttpContext.Current.Response.AppendHeader(headerKeys[i], objResp.Headers[headerKeys[i]]);
+                                        }
+                                    }
+                                }
+                                catch (Exception e)//just skipping the header information if any exception occures while adding headers received from GSA response
+                                {
+                                    //gProps.log("Exception while appending headers to response: " + e.Message+ "\nStack Trace: " + e.StackTrace, EventLogEntryType.Error);    
+                                }
+                            }
+
+                            headerKeys = null;
+                            
+                            
+                            // ************************ making and checking the newResponse ********************************************
+                             
+                            if(GSASessionCookie!=null){
+                                HttpWebResponse objNewResp = (HttpWebResponse)objNewReq.GetResponse();//fire getresponse
+                                Stream objNewStream = objNewResp.GetResponseStream();//if the request is successful, get the results in returnstring
+                                StreamReader objNewSR = new StreamReader(objNewStream, Encoding.UTF8);//we have set in the URL to get the result in the UTF-8 encoding format
+                                //string returnstringNew = (objSR.ReadToEnd());// read the content from the stream                                              
+                                returnstring = (objNewSR.ReadToEnd());// read the content from the stream 
+                            }   
+                                                                
+                        // **********************************************************************
+                        
+                        int statusCode;// get the statusCode of the GSA response
+                        try
+                        {
+                            statusCode = (int)objResp.StatusCode;
+                            statusCode=200;//amit
+                        }
+                        catch (WebException ex)
+                        {
+                            isNext = false;//hide next
+                            if (ex.Response == null)
+                                throw;// nested throw
+
+                            statusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
+                            if (statusCode != 200)
+                            {
+                                gProps.log("Returning the result, Status code=" + statusCode, EventLogEntryType.Error);
+                                Response.Write(ex.Message);
+                            }
+                        }
+                        
+                        
                         ////////////////process results////////
                         if (gProps.bUseGSAStyling == false)
                         {
@@ -623,7 +793,6 @@ else if(document.attachEvent)
                                         try
                                         {
                                             endB = Int32.Parse(node.Attributes["EN"].Value);
-//                                            startB = Int32.Parse(node.Attributes["SN"].Value);
                                             if (endB < (start + num))
                                             {
                                                 isNext = false;//page is ended
@@ -644,7 +813,6 @@ else if(document.attachEvent)
                                     {
                                         isNext = false;//hide next
                                     }
-
                                     
                                 }
                                 catch (Exception e)
@@ -664,58 +832,10 @@ else if(document.attachEvent)
                             }
                         }
                         /////////////////////////////
-
-                        HttpCookie responseCookies;//add cookies in GSA response to current response
-                        CookieContainer responseCookieContainer = new CookieContainer();
-                        int j;
-                        for (j = 0; j < objResp.Cookies.Count - 1; j++)
-                        {
-                            responseCookies = new HttpCookie(objResp.Cookies[j].Name);
-                            responseCookies.Value = objResp.Cookies[j].Value;
-                            responseCookies.Domain = objReq.RequestUri.Host;
-                            responseCookies.Expires = objResp.Cookies[j].Expires;
-                            HttpContext.Current.Response.Cookies.Add(responseCookies);
-                            responseCookies = null;
-                        }
-
-                        string[] headerKeys = objResp.Headers.AllKeys;//add headers in GSA response to current response
-                        for (i = 0; i < objResp.Headers.Count; i++)
-                        {
-                            try
-                            {
-                                if (headerKeys[i] != "Content-Length")
-                                {
-                                    HttpContext.Current.Response.AppendHeader(headerKeys[i], objResp.Headers[headerKeys[i]]);
-                                }
-                            }
-                            catch (Exception e)//just skipping the heder information if any exception occures while adding headers received from GSA response
-                            {
-                                gProps.log("Exception while appending headers to response: " + e.Message+ "\nStack Trace: " + e.StackTrace, EventLogEntryType.Error);    
-                            }
-                        }
-
-                        headerKeys = null;
-                        int statusCode;// get the statusCode of the GSA response
-                        try
-                        {
-                            statusCode = (int)objResp.StatusCode;
-                        }
-                        catch (WebException ex)
-                        {
-                            isNext = false;//hide next
-                            if (ex.Response == null)
-                                throw;
-
-                            statusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
-                            if (statusCode != 200)
-                            {
-                                gProps.log("Returning the result, Status code=" + statusCode, EventLogEntryType.Error);
-                                Response.Write(ex.Message);
-                            }
-
-                        }
+                        
                         HttpContext.Current.Response.StatusCode = statusCode;//set the GSA response status code to current response
 
+                        /*close and dispose the stream*/
                         objResp.Close();
                         objStream.Close();
                         objStream.Dispose();
@@ -724,7 +844,6 @@ else if(document.attachEvent)
 
                         if (statusCode == 200)
                         {
-                            HttpContext.Current.Response.ContentType = "text/html";
                             HttpContext.Current.Response.Write(returnstring);
                         }
 
@@ -734,7 +853,6 @@ else if(document.attachEvent)
                         isNext = false;//hide next
                         gProps.log("Exception while searching on GSA: " + ex.Message+"\nException Trace: " + ex.StackTrace,EventLogEntryType.Error);
                         HttpContext.Current.Response.Write(ex.Message);
-                        HttpContext.Current.Response.ContentType = "text/html";
                     }
         
                 %>
@@ -777,7 +895,6 @@ else if(document.attachEvent)
                     else {
                         tempvar = "NextPage";//show next page tag
                     }
-                    
                 }
                 else
                 {
@@ -793,4 +910,4 @@ else if(document.attachEvent)
         </tr>
         </table>
     </asp:PlaceHolder>
-</asp:Content>
+</asp:content>
