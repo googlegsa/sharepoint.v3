@@ -46,8 +46,6 @@ div.ms-areaseparatorright{
 	border-left:0px !important;
 }
 </style>
-    <!--handling for google control -->
-
     <script runat="server">
     /**
      * Author: Amit Agrawal
@@ -65,6 +63,7 @@ div.ms-areaseparatorright{
         public bool isNext = true;
         public int start = 0;/* E.g. start = 1 and num =5 (return 11-15 results)*/
         int endB = 0;
+        
         
         /*Google Search Box for SharePoint*/
         class GoogleSearchBox
@@ -129,8 +128,7 @@ div.ms-areaseparatorright{
                     HttpContext.Current.Response.End();
                 }
                 
-                
-                string temp = WebConfigurationManager.AppSettings["GSAStyle"];
+                String temp = WebConfigurationManager.AppSettings["GSAStyle"];
                 if((temp==null) || (temp.Trim().Equals("")))
                 {
                     log("Please specify value for GSA Style. Specify 'true' to use Front end's style for rendering search results. Specify 'False' to use the locally deployed stylesheet for rendering search results", EventLogEntryType.Error);//log error
@@ -179,7 +177,7 @@ div.ms-areaseparatorright{
 
                 try
                 {
-                    //preload the stylesheet
+                    /*preload the stylesheet.. for performance reasons*/
                     xslt1 = new XslTransform();
                     xslt1.Load(xslGSA2SP);//read XSLT
 
@@ -194,32 +192,33 @@ div.ms-areaseparatorright{
             }
             
             /// <summary>
-            /// Transform the XML Page basing on the XSLStylesheet
+            /// Transform the XML Page basing on the XSLStylesheet.
             /// </summary>
             /// <param name="XMLPage">Raw search result page</param>
             /// <param name="XSLStylesheet">stylesheet file</param>
             /// <returns></returns>
             public static string transform(String XMLPage, XslTransform xslt)
             {
-                //read XML
-                TextReader tr1 = new StringReader(XMLPage);
+                TextReader tr1 = new StringReader(XMLPage);//read XML
                 XmlTextReader tr11 = new XmlTextReader(tr1);
                 XPathDocument xPathDocument = new XPathDocument(tr11);
 
                 //create the output stream
                 StringBuilder sb = new StringBuilder();
                 TextWriter tw = new StringWriter(sb);
-
-                //xsl.Transform (doc, null, Console.Out);
                 xslt.Transform(xPathDocument, null, tw);
                 return sb.ToString();//get result
             }
             
+            /// <summary>
+            /// For logging the search box messages.
+            /// </summary>
+            /// <param name="msg">The message to be logged</param>
+            /// <param name="logLevel">Log level</param>
             public void log(String msg, EventLogEntryType logLevel)
             {
                 if(null!=msg)
                 {
-						
 					//Non-error messages should be displayed only if verbose =true
 					if (logLevel != EventLogEntryType.Error)
 					{
@@ -233,10 +232,14 @@ div.ms-areaseparatorright{
 						System.Diagnostics.EventLog.WriteEntry(PRODUCTNAME,msg, logLevel);
 					}
 				}
-                
             }
+
             
-            /*This function impersonates the user*/
+            ///<summary>
+            ///Perform User Impersonation 
+            /// </summary>
+            /// <param name="userPrincipalName"></param>
+            /// <returns></returns>
             public System.Security.Principal.WindowsImpersonationContext Impersonate(string userPrincipalName)
             {
                 System.Security.Principal.WindowsImpersonationContext impersonationContext = null;
@@ -271,8 +274,11 @@ div.ms-areaseparatorright{
                 
                 return impersonationContext;
             }
-            
 
+            /// <summary>
+            /// Gets the currently logged-in user
+            /// </summary>
+            /// <returns></returns>
             public String getCurrentUser()
             {
                 return WindowsIdentity.GetCurrent().Name;
@@ -280,6 +286,14 @@ div.ms-areaseparatorright{
             
         }//end: class
 
+        /// <summary>
+        /// For X.509 certificate handling. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="cert"></param>
+        /// <param name="chain"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
         private static bool customXertificateValidation(object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors error)
         {
             return true;
@@ -294,12 +308,10 @@ div.ms-areaseparatorright{
    
   	function _spFormOnSubmit()
 	{
-	    //alert('going to search');
 		return GoSearch();
 	}
 	function SetPageTitle()
 	{
-	    //alert('SetPageTitle');
 	   var Query = "";
 	   if (window.top.location.search != 0)
 	   {
@@ -314,8 +326,6 @@ div.ms-areaseparatorright{
         	{
 		        myTextField.value=keywordQuery;
 		    }
-
-
 
 		    if(keywordQuery!="")
 		    {
@@ -357,9 +367,6 @@ div.ms-areaseparatorright{
 			    x.value="";//for cached result do not show the search string as it looks wierd
 			}
 			//alert(myindex);
-			
-			
-			
 			return decodeURIComponent(queryString.substring (begin, end));
 		 }
 	   }
@@ -427,7 +434,7 @@ else if(document.attachEvent)
                             <div class="ms-searchimage" style="padding-bottom: 3px">
                                 <asp:ImageButton ID="ImgGoSearch" BorderWidth="0" AlternateText="<%$Resources:wss,searchresults_AlternateText%>"
                                     ImageUrl="/_layouts/images/gosearch.gif" runat="server" /></div>
-                        </td>
+                        </td>\\F:\softwares
                     </tr>
                 </table>
             </td>
@@ -482,7 +489,7 @@ else if(document.attachEvent)
                         searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")
                         {
-                            //Amit: check for the flag whether to enable custom styling localy or use GSA style
+                            //Amit: check for the flag whether to enable custom styling locally or use GSA style
                             if (gProps.bUseGSAStyling == true)
                             {
                                 searchReq += "&proxystylesheet=" + gProps.frontEnd /*+ "&proxyreload=1"*/;
@@ -539,9 +546,9 @@ else if(document.attachEvent)
                         CookieContainer cc = new CookieContainer();
                         int i;
 						gProps.log("Search Request to GSA:" + gProps.GSALocation + "/search" + searchReq,EventLogEntryType.Information);
-						String amitUrl= gProps.GSALocation + "/search" + searchReq;
+						String GSASearchUrl= gProps.GSALocation + "/search" + searchReq;
 						
-                        objReq = (HttpWebRequest)HttpWebRequest.Create(amitUrl);
+                        objReq = (HttpWebRequest)HttpWebRequest.Create(GSASearchUrl);
                         objReq.KeepAlive =true;//objReq.KeepAlive =true;
                         objReq.AllowAutoRedirect=false;//objReq.AllowAutoRedirect=true;
                         objReq.MaximumAutomaticRedirections=100;
@@ -561,10 +568,10 @@ else if(document.attachEvent)
                             try
                             {
                                 objReq.Headers.Add(requestHeaderKeys[i], HttpContext.Current.Request.Headers[requestHeaderKeys[i]]);
-                                //gProps.log("AddingHeaders:" + requestHeaderKeys[i]+"::Value:"+HttpContext.Current.Request.Headers[requestHeaderKeys[i]], EventLogEntryType.Error);
                             }
                             catch (Exception HeaderEx)
-                            { //just skipping the header information if any exception occures while adding to the GSA request
+                            { 
+                                //just skipping the header information if any exception occures while adding to the GSA request
                                 //gProps.log("Exception while adding headers to request: " + HeaderEx.Message+"::Stack Trace: " + HeaderEx.StackTrace, EventLogEntryType.Error);
                             }
                         }
@@ -579,15 +586,14 @@ else if(document.attachEvent)
                             If we do not skip this cookie then it return garbage search results for the consecutive searches from SearchBox */
                             
                             //if(!tempCookieName.Equals("GSA_SESSION_ID")){
-                                c.Name = tempCookieName;
-                                Encoding utf8 = Encoding.GetEncoding("utf-8");
-                                string value = HttpContext.Current.Request.Cookies[i].Value;
-                                c.Value = HttpUtility.UrlEncode(value, utf8); 
-                                c.Domain = objReq.RequestUri.Host;
-                                c.Expires = HttpContext.Current.Request.Cookies[i].Expires;
-                                cc.Add(c);
+                            c.Name = tempCookieName;
+                            Encoding utf8 = Encoding.GetEncoding("utf-8");
+                            string value = HttpContext.Current.Request.Cookies[i].Value;
+                            c.Value = HttpUtility.UrlEncode(value, utf8); 
+                            c.Domain = objReq.RequestUri.Host;
+                            c.Expires = HttpContext.Current.Request.Cookies[i].Expires;
+                            cc.Add(c);
                             //}
-                            //gProps.log("name:"+c.Name+"::Value:"+c.Value+"::domain:"+c.Domain,EventLogEntryType.Error);
                         }
                         
                         
@@ -601,8 +607,6 @@ else if(document.attachEvent)
                         objReq.CookieContainer = cc;//Amit: Set GSA request cookiecontainer
                         requestHeaderKeys = null;
                         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                    
                         
                         ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
                         objResp = (HttpWebResponse)objReq.GetResponse();//fire getresponse
@@ -617,10 +621,8 @@ else if(document.attachEvent)
                         //*********************************************************************
                         //Manually handling the Redirect from SAML bridge. Need to extract the Location and the GSA session Cookie
                         string newURL = objResp.Headers["Location"]; 
-                        gProps.log("Amit New Location: " + newURL,EventLogEntryType.Information);
-                        
                         string GSASessionCookie = objResp.Headers["Set-Cookie"]; 
-                        gProps.log("GSA Session Cookie: " + GSASessionCookie,EventLogEntryType.Information);
+                        //gProps.log("GSA Session Cookie: " + GSASessionCookie,EventLogEntryType.Information);
                         //*********************************************************************
 
                         //gProps.log("We see the cookies.. "+objResp.Cookies.Count, EventLogEntryType.Information);
@@ -651,20 +653,14 @@ else if(document.attachEvent)
                             Char[] seps = {'='};//Adding the session cookie
                             String[] key_val = GSASessionCookie.Split(seps);
                             
-                            if(key_val!=null)
+                            if((key_val!=null)&& (key_val[0]!=null))
                             {
-                            
-                                if(key_val[0]!=null)
-                                {
                                     responseCookies.Name = objResp.Cookies[j].Name;
                                     responseCookies.Value = key_val[1];
                                     responseCookies.Domain = objReq.RequestUri.Host;
                                     responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
                                     newcc.Add(responseCookies);
                                     //gProps.log("Cookie"+key_val[0]+"::"+key_val[1]+"::"+objReq.RequestUri.Host+"::"+responseCookies.Expires, EventLogEntryType.Information);
-                                    
-                                }
-                              
                             }
                          }
                          else
