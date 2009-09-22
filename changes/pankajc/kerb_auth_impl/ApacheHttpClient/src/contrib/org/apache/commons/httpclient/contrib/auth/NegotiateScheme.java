@@ -85,12 +85,26 @@ public class NegotiateScheme implements AuthScheme {
          GSSManager manager = GSSManager.getInstance();
          GSSName serverName = null;
          
-         if(-1 == port) {
-        	 serverName = manager.createName("HTTP/" + server, null);
-         } else {
-        	 serverName = manager.createName("HTTP/" + server + ":" + port, null);
-         }
-         
+         serverName = manager.createName("HTTP/" + server, null);
+         serverName = manager.createName("HTTP/" + server, null);
+         // The above line, by default, is there in the HTTPClient code. Unfortunately, it doesn't
+			// work for calling IIS sites. We need to change this. There are three possibilities here:
+
+		// 1. For this to work, an explicit SPN with port (i.e, HTTP/hostname:port) must be set
+			/* GSSName serverName = manager.createName("HTTP/" + server + ":" + port, null); */
+
+		// 2. This can be used when the application pool identity is a domain user.
+		// The domain username should be passed in the format username@REALM. But, if it's the default realm
+		// as set in the krb5.conf, @REALM can be skipped. For example, googlesp or googlesp@GDC_PSL.NET
+			/* GSSName serverName = manager.createName("domainuser", null); */
+
+		// 3. This can be used when the application pool identity is set to the default network service.
+		// The server NetBios name should be passed in the format servername@REALM. But, if it's the default
+		// realm as set in the krb5.conf, @REALM can be skipped. For example, gdc04 or gdc04@GDC-PSL.NET
+		// GSSName serverName = manager.createName("servername", null);
+			/* GSSName serverName = manager.createName("server NetBios name", null); */
+
+		 serverName = serverName.canonicalize(krb5Oid);
          context = manager.createContext(serverName, krb5Oid, null,
                                     GSSContext.DEFAULT_LIFETIME);
          context.requestMutualAuth(true); 
