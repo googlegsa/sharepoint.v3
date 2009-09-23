@@ -57,6 +57,28 @@ This section describes some commonly encountered error messages and their likely
  * *Domain has been specified twice under Domain/Username. Please provide the credentials in right format.*
  This message appears when domain has been specified twice under domain field as well as in the username. You should always enter domain as domain and username as username; i.e, for a user dom\user or user@dom username is user and domain is dom.
 
+ * *java.lang.OutOfMemoryError: Java heap space*
+ This message appears when the connector does not have sufficient memory to perform the requested task. One of the cases when this can occur is when the connector's state file has grown too large and the connector is restarted. The connector will fail while parsing the state file due to memory shortage. 
+
+ To overcome this, increase the memory allocated to tomcat. By default the connector is configured to use only up to 1GB memory. In order to overcome this problem, we must allocate around 2GB memory to the connector.
+
+ This example below will allocate 2GB (i.e. 2048MB) of memory. You can tweak the memory allocation to fit your needs.
+
+ 
+ LINUX
+  # Open the file: <Connector Installation Path>/<Connector Name>/Tomcat/bin/catalina.sh
+  # Search for: JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx1024m
+  # Change it to: JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx2048m
+
+
+ WINDOWS
+  # Open the file: <Connector Installation Path>\<Connector Name>\Tomcat\bin\service.bat
+  # Search for (must be towards the end of the file) :  --JvmMs 256 --JvmMx 1024
+  # Change it to:  --JvmMs 256 --JvmMx 2048
+
+ _Note: To be able to allocate memory successfully, the system must have at least twice as much physical memory._
+
+
 
 === Metadata-and-URL Feed Mode ===
  * *Crawl Diagnostics Error Message
