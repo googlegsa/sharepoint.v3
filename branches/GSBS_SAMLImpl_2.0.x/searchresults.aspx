@@ -82,7 +82,7 @@ div.ms-areaseparatorright{
             /*For Internal Transformations*/
             public XslTransform xslt1 = null;
             public XslTransform xslt2 = null;
-
+            
             public GoogleSearchBox()
             {
                 GSALocation = "";
@@ -159,7 +159,6 @@ div.ms-areaseparatorright{
                         HttpContext.Current.Response.End();
                     }
                     
-                    
                     if((xslSP2result==null) || (xslSP2result.Trim().Equals("")))
                     {
                         log("Please specify the value for stylesheet to be applied on search  results", EventLogEntryType.Error);//log error
@@ -176,13 +175,10 @@ div.ms-areaseparatorright{
                         GSALocation = GSALocation.Substring(0, GSALocation.Length - 1);
                     }
                 }
-
                 try
                 {
-                    /*preload the stylesheet.. for performance reasons*/
-                    xslt1 = new XslTransform();
+                    xslt1 = new XslTransform();/*preload the stylesheet.. for performance reasons*/
                     xslt1.Load(xslGSA2SP);//read XSLT
-
                     xslt2 = new XslTransform();
                     xslt2.Load(xslSP2result);//read XSLT
                 }
@@ -191,32 +187,6 @@ div.ms-areaseparatorright{
                     log("problems while loading stylesheet, message=" + e.Message + "\nTrace: " + e.StackTrace, EventLogEntryType.Error);
                 }
                 
-            }
-
-
-            /// <summary>
-            /// This function is used to de-compress the zipped data
-            /// </summary>
-            /// <param name="compressedText">compressed text</param>
-            /// <returns>Uncompressed data</returns>
-            public string Decompress(string compressedText)
-            {
-                byte[] gzBuffer = Convert.FromBase64String(compressedText);
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    int msgLength = BitConverter.ToInt32(gzBuffer, 0);
-                    ms.Write(gzBuffer, 4, gzBuffer.Length - 4);
-
-                    byte[] buffer = new byte[msgLength];
-
-                    ms.Position = 0;
-                    using (GZipStream zip = new GZipStream(ms, CompressionMode.Decompress))
-                    {
-                        zip.Read(buffer, 0, buffer.Length);
-                    }
-
-                    return Encoding.UTF8.GetString(buffer);
-                }
             }
             
             
@@ -261,56 +231,6 @@ div.ms-areaseparatorright{
 						System.Diagnostics.EventLog.WriteEntry(PRODUCTNAME,msg, logLevel);
 					}
 				}
-            }
-
-            
-            ///<summary>
-            ///Perform User Impersonation 
-            /// </summary>
-            /// <param name="userPrincipalName"></param>
-            /// <returns></returns>
-            public System.Security.Principal.WindowsImpersonationContext Impersonate(string userPrincipalName)
-            {
-                System.Security.Principal.WindowsImpersonationContext impersonationContext = null;
-                try
-                {
-                    log("Impersonating user " + userPrincipalName, EventLogEntryType.Information);
-                    if ((userPrincipalName != null) && (!userPrincipalName.Trim().Equals("")))
-                    {
-                        try
-                        {
-                            string currentuser = getCurrentUser();
-                            log("CurrentUser(Before Impersonation):" + currentuser, EventLogEntryType.Information);
-                            WindowsIdentity userId = new WindowsIdentity(userPrincipalName);// create new identity using new primary token
-                            impersonationContext = userId.Impersonate();
-                            //impersonationContext.Undo();//undo the Impersonation
-                            log("Impersonation succeeded: UserToken: " + userId.Token + ", AuthenticationType=" + userId.AuthenticationType + "Impersonation level= " + userId.ImpersonationLevel, EventLogEntryType.Information);
-                        }
-                        catch (Exception e)
-                        {
-                            log("Impersonation exception: " + e.Message + "\nStack Trace=" + e.StackTrace, EventLogEntryType.Error);
-                        }
-                    }
-                    else
-                    {
-                        log("Impersonation Failed: Incorrect user name specified", EventLogEntryType.Error);
-                    }
-                }
-                catch (Exception e)
-                {
-                    log("Impersonation Failed"+e.Message+"\nStack Trace: "+e.StackTrace, EventLogEntryType.Error);
-                }
-                
-                return impersonationContext;
-            }
-
-            /// <summary>
-            /// Gets the currently logged-in user
-            /// </summary>
-            /// <returns></returns>
-            public String getCurrentUser()
-            {
-                return WindowsIdentity.GetCurrent().Name;
             }
             
         }//end: class
@@ -570,8 +490,13 @@ else if(document.attachEvent)
 						String GSASearchUrl= gProps.GSALocation + "/search" + searchReq;
                         objReq = (HttpWebRequest)HttpWebRequest.Create(GSASearchUrl);
                         objReq.KeepAlive =true;//objReq.KeepAlive =true;
-                        //objReq.AllowAutoRedirect=gProps.bAutoRedirect;//objReq.AllowAutoRedirect=true;
-                        objReq.AllowAutoRedirect = false;//objReq.AllowAutoRedirect=true;
+
+                        /**
+                        * For SAML bridge, if we make call to GSA with autoredirect set to false. We get HTTP 400 bad request. 
+                        * This is because the autoredirect in ASP.Net does not allow broser based cookie (through set-cookie header)
+                        * to be included in the subsequent request.
+                        **/
+                        objReq.AllowAutoRedirect = false;
                         objReq.MaximumAutomaticRedirections=100;
                         objReq.Credentials = System.Net.CredentialCache.DefaultCredentials;//set credentials
                         
@@ -580,10 +505,7 @@ else if(document.attachEvent)
                         objReq.Method = "GET";//specify the request handler
                         
                         //////////////////////COPYING THE CURRENT REQUEST PARAMETRS, HEADERS AND COOKIES ///////////////////////                        
-                        /**
-                         *Amit:Copying all the current request headers to the new request to GSA. 
-                         *Some headers might not be copied .. skip those headers and copy the rest
-                         **/
+                        /*Amit:Copying all the current request headers to the new request to GSA.Some headers might not be copied .. skip those headers and copy the rest*/
                         String[] requestHeaderKeys = HttpContext.Current.Request.Headers.AllKeys;//add headers available in current request to the GSA request
                         for (i = 0; i < HttpContext.Current.Request.Headers.Count - 1; i++)
                         {
@@ -611,24 +533,12 @@ else if(document.attachEvent)
                             c.Expires = HttpContext.Current.Request.Cookies[i].Expires;
                             cc.Add(c);
                         }
-                        
-                        
-                        //////////////////////////////////////////////////////////////
-						//UserImpersonation
-						//System.Security.Principal.WindowsImpersonationContext impersonationContext = gProps.Impersonate("googlesp@gdc-psl.net");
-                        //impersonationContext.Undo();//undo the Impersonation
-						//gProps.Impersonate("farmadmin@gdc-psl.net");
-						////////////////////////////////////////////////////////////////
-						
                         objReq.CookieContainer = cc;//Amit: Set GSA request cookiecontainer
                         requestHeaderKeys = null;
                         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         
                         ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
                         objResp = (HttpWebResponse)objReq.GetResponse();//fire getresponse
-                        
-                        ///////
-                        //string acceptEncoding = objResp.Headers["Accept-Encoding"];
                         string contentEncoding = objResp.Headers["Content-Encoding"];
                         string returnstring = "";//initialize the return string
                         objStream = objResp.GetResponseStream();//if the request is successful, get the results in returnstring
@@ -658,8 +568,6 @@ else if(document.attachEvent)
                         }
 
                         /////////////////////////////end: GZIP handling
-                        
-                        //impersonationContext.Undo();//undo the Impersonation
                         gProps.log("Return Status from GSA: " + objResp.StatusCode,EventLogEntryType.Information);
                         int FirstResponseCode = (int)objResp.StatusCode;//check the response code from the reply from 
                         
@@ -743,10 +651,6 @@ else if(document.attachEvent)
                                 if ((headerKeys[i] != "Set-Cookie") && (headerKeys[i] != "Location"))
                                 {
                                     objNewReq.Headers.Add(headerKeys[i], objResp.Headers[headerKeys[i]]);//added for SAML
-                                    if (headerKeys[i] != "Content-Length")
-                                    {
-                                        HttpContext.Current.Response.AppendHeader(headerKeys[i], objResp.Headers[headerKeys[i]]);//skipping the content-length
-                                    }
                                 }
                             }
                             catch (Exception e)//just skipping the header information if any exception occures while adding headers received from GSA response
