@@ -175,6 +175,14 @@ public class SPDocumentList  implements DocumentList {
 					listState.clearDeleteCache();
 				}				
 			}
+			
+			// Set the last crawled web and list states which can be used by the
+			// batch traversal to know from where to look for pending documents
+			// from last batch traversal in the crawl queue that are supposed to
+			// be sent to GSA
+			globalState.setLastCrawledWebID(document.getWebid());
+			globalState.setLastCrawledListID(document.getListGuid());
+			
 			return document;
 		}
 		return null;

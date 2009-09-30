@@ -1275,4 +1275,9 @@ public class ListState implements StatefulObject {
 	public void setAttchmnts(StringBuffer attchmnts) {
 		this.attchmnts = attchmnts;
 	}
+	
+	@Override
+    public String toString() {
+        return this.listURL;
+    }
 }

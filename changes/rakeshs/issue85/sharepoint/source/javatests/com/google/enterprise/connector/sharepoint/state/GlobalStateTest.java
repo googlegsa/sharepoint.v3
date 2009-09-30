@@ -1,4 +1,16 @@
-//Copyright 2007 Google Inc.
+//Copyright (C) 2006 Google Inc.
+
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+
+//http://www.apache.org/licenses/LICENSE-2.0
+
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.state;
 
@@ -195,4 +207,62 @@ public class GlobalStateTest extends TestCase {
 		this.verifyIterator(this.state.getCircularIterator(), arr3);
 		System.out.println("[ getCircularIterator() ] Test Passed.");
 	}
+	
+	/**
+     * Test to check that web states are ordered in the descending order of
+     * insertion time
+     */
+    public void testUpdateListState() {
+        WebState ws = new WebState("metadata-and-URL");
+        ws.setPrimaryKey("http://contentvm1.corp.google.com:12084/sites/testissue85");
+        DateTime dt = new DateTime();
+        ws.setInsertionTime(dt);
+
+
+        WebState ws2 = new WebState("metadata-and-URL");
+        ws2.setPrimaryKey("http://testcase.com:12084/sites/testissue85/abc");
+        DateTime dt2 = new DateTime(2009, 9, 06, 10, 25, 36, 100);
+        ws2.setInsertionTime(dt2);
+
+
+        WebState ws3 = new WebState("metadata-and-URL");
+        ws3.setPrimaryKey("http://testcase.com:12084/sites/testissue85");
+        DateTime dt3 = new DateTime(2009, 9, 07, 10, 25, 36, 100);
+        ws3.setInsertionTime(dt3);
+
+        WebState ws4 = new WebState("metadata-and-URL");
+        ws4.setPrimaryKey("http://testcase.com:12084/sites/testissue859");
+        DateTime dt4 = new DateTime(2009, 9, 8, 11, 26, 38, 100);
+        ws4.setInsertionTime(dt4);
+
+        GlobalState gs = new GlobalState("c:\\", "metadata-and-URL");
+
+        gs.updateList(ws);
+        gs.updateList(ws3);
+        gs.updateList(ws4);
+        gs.updateList(ws2);
+
+        assertEquals(3, gs.getAllWebStateSet().size());
+
+        int count = 0;
+
+        for (WebState webstate : gs.dateMap) {
+            if (count == 0) {
+                assertEquals(ws4.getPrimaryKey(), webstate.getPrimaryKey());
+            }
+            count++;
+        }
+
+        count = 0;
+
+        Iterator<WebState> wsiT = gs.dateMap.iterator();
+
+        while (wsiT.hasNext()) {
+            WebState webstate = wsiT.next();
+            if (count == 0) {
+                assertEquals(ws4.getPrimaryKey(), webstate.getPrimaryKey());
+            }
+            count++;
+        }
+    }
 }

@@ -69,7 +69,7 @@ public class WebState implements StatefulObject{
 	 * 
 	 * @param inFeedType
 	 */
-	WebState(final String inFeedType) {
+	public WebState(final String inFeedType) {
 		feedType = inFeedType;
 	}	
 	
@@ -280,31 +280,34 @@ public class WebState implements StatefulObject{
 		return element;
 	}	
 
-	/**
-	 * Compares this WebState to another (for the Comparable interface).
-	 * Comparison is first on the insertion date. If that produces a tie, the
-	 * primary key (the WebID) is used as tie-breaker.
-	 * @param o other WebState.  If null, returns 1.
-	 * @return the usual integer result: -1 if this object is less, 1 if it's
-	 *     greater, 0 if equal (which should only happen for the identity
-	 *     comparison).
-	 */
-	public int compareTo(final StatefulObject o) {
-		if(equals(o)) {
-			return 0;
-		}
-		final WebState other = (WebState) o;
-		if (other == null) {  
-			return 1; // anything is greater than null
-		}
-		if((insertionTime != null) && (other.insertionTime != null)){
-			final int insertComparison = insertionTime.compareTo(other.insertionTime);
-			if (insertComparison != 0) {
-				return insertComparison;
-			}
-		}
-		return webId.compareTo(other.webId);
-	}
+	 /**
+     * Compares this WebState to another (for the Comparable interface).
+     * Comparison is first on the insertion date. If that produces a tie, the
+     * primary key (the WebID) is used as tie-breaker. The comparison is flipped
+     * to achieve descending ordering based on insertionTime
+     *
+     * @param o other WebState. If null, returns 1.
+     * @return the usual integer result: -1 if other object is less than
+     *         current, 1 if other is greater than current, 0 if equal (which
+     *         should only happen for the identity comparison).
+     */
+    public int compareTo(final StatefulObject o) {
+        if (equals(o)) {
+            return 0;
+        }
+        final WebState other = (WebState) o;
+        if (other == null) {
+            return 1; // anything is greater than null
+        }
+        if ((insertionTime != null) && (other.insertionTime != null)) {
+            // Flipping the way comparison is being done in order to achieve
+            // descending ordering of webstates. The
+            // TreeSet.descendingIterator() is in JDK 1.6
+            final int insertComparison = other.insertionTime.compareTo(this.insertionTime);
+            return insertComparison;
+        }
+        return webId.compareTo(other.webId);
+    }
 
 	/**
 	 * For Web Satate equality comparison
@@ -514,7 +517,7 @@ public class WebState implements StatefulObject{
 		}
 		// one might think you could just do tail.addAll(head) here. But you can't.
 		final ArrayList<ListState> full = new ArrayList<ListState>(allListStateSet.tailSet(start));
-		full.addAll(allListStateSet.headSet(start));
+		//full.addAll(allListStateSet.headSet(start));
 		return full.iterator();
 	}
 
@@ -600,4 +603,9 @@ public class WebState implements StatefulObject{
 	public String getSharePointType() {
 		return spType;
 	}
+	
+	 @Override
+    public String toString() {
+        return this.webUrl;
+    }
 }

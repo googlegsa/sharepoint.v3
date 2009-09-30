@@ -55,6 +55,10 @@ public class SharepointClient {
     private int nDocuments = 0;
     private boolean doCrawl;// true, when threshhold is not reached and all webs
 
+    // This is mainly for test cases. It gives the count of liststates that are
+    // checked for any docs pending from previous crawl cycle
+    private int noOfVisitedListStates = 0;
+
     // all lists all documents are done. false, when a
     // partial cycle is completed i.e, threashold is
     // reached before processing all the documents.
@@ -72,7 +76,7 @@ public class SharepointClient {
      * @param globalState The recent snapshot of the whole in-memory state file.
      * @param web Represets the current web state
      * @param list Represents the current list state
-     * @return {@link SPDocumentList} conatining the crawled documents.
+     * @return {@link SPDocumentList} containing the crawled documents.
      */
     private SPDocumentList handleCrawlQueueForList(
             final GlobalState globalState, final WebState web,
@@ -135,6 +139,9 @@ public class SharepointClient {
      */
     public SPDocumentList traverse(final GlobalState globalState,
             final WebState webState, final int sizeHint) {
+
+        noOfVisitedListStates = 0;
+
         if (webState == null) {
             LOGGER.warning("global state is null");
             return null;
@@ -157,6 +164,7 @@ public class SharepointClient {
                 LOGGER.log(Level.INFO, "Handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ");
                 resultsList = handleCrawlQueueForList(globalState, webState, list);
+                noOfVisitedListStates++;
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Problem in handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ");
@@ -185,6 +193,13 @@ public class SharepointClient {
                         + " has been reached");
                 break;
             }
+        }
+
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.config("No. of listStates scanned from site : "
+                    + webState.getWebUrl()
+                    + " for pending docs from previous crawl cycle : "
+                    + noOfVisitedListStates);
         }
         return resultSet;
     }
@@ -364,8 +379,7 @@ public class SharepointClient {
             LOGGER.warning("sharepointClientContext is not found");
             return;
         }
-        final SharepointClientContext tempCtx = (SharepointClientContext) sharepointClientContext.clone();
-        final ArrayList<String> lstLookupForWebs = new ArrayList<String>();
+        SharepointClientContext tempCtx = (SharepointClientContext) sharepointClientContext.clone();
 
         nDocuments = 0;
         doCrawl = true;
@@ -384,10 +398,11 @@ public class SharepointClient {
             sharepointClientContext.setSiteURL(nextLastWebID);
         }
 
-        LOGGER.info("Starting crawl cycle. initiating from the web [ "
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.config("Starting crawl cycle. initiating from the web [ "
                 + nextLastWebID + " ]. ");
+        }
 
-        WebsWS websWS = new WebsWS(sharepointClientContext);
         globalState.startRecrawl();// start and end recrawl is used for garbage
         // collection...removing the non existant
         // lists
@@ -405,8 +420,12 @@ public class SharepointClient {
         // To store the intermediate webs discovered during crawl
         Set<String> allSites = new TreeSet<String>();
 
-        // Traverse sites and lists under them to fetch batch hint # of docs
-        traverseSites(globalState, allSites, tempCtx, nextLastWebID, nextLastListID);
+        ArrayList<String> lstLookupForWebs = new ArrayList<String>();
+
+
+        // Traverse sites and lists from the last crawled site and list to fetch
+		// batch hint # of docs
+        traverseSites(globalState, allSites, tempCtx, nextLastWebID, nextLastListID, lstLookupForWebs);
 
         // Update all the web info into the globalstate. Try and discover some
         // intermediate webs e.g, linked sites. These will be processed in the
@@ -428,22 +447,42 @@ public class SharepointClient {
             // will be Case 2
             if (!isGSupdated) {
                 // If this check passed, it means Case 2
-                LOGGER.log(Level.INFO, "Discovering Extra webs");
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "Discovering new sites");
+                }
+
+                // Empty the current set of sites that have been traversed
+				// before discovering the new ones. This is important in case
+				// the current batch traversal has not discovered batch-hint no.
+				// of docs. In such cases the connector should not traverse the
+				// sites already traversed in the same batch traversal.
+                allSites.clear();
+
+                // Initiate the discovery of new sites
                 discoverExtraWebs(allSites, spType);
                 isGSupdated = updateGlobalState(globalState, allSites);
             }
 
-            // The following does not care if the sites are discoevered for Case
+            // The following does not care if the sites are discovered for Case
             // 1 or Case 2. It will simply go ahead and crawl batch hint no. of
             // docs from the new sites
             if (isGSupdated) {
-                LOGGER.log(Level.INFO, "global state has been updated with newly discovered webs");
-                // TODO : Need to test if the nextLastWebID, nextLastListID are
-                // updated correctly so that the earlier webstates and
-                // liststates are not crawled once again
+                LOGGER.log(Level.INFO, "global state has been updated with newly discovered sites. About to traverse them for docs");
                 // Traverse sites and lists under them to fetch batch hint # of
                 // docs
-                traverseSites(globalState, allSites, tempCtx, nextLastWebID, nextLastListID);
+                traverseSites(globalState, allSites, tempCtx, nextLastWebID, nextLastListID, lstLookupForWebs);
+
+                // There are chances that new sites are discovered (child sites
+                // OR linked sites) during the traversal of sites discovered as
+                // linked sites themselves OR as child sites OR through GSS. In
+                // such cases, the connector should just create webstates and
+                // add them to the global state. The next batch traversal will
+                // take them up for traversal
+                isGSupdated = updateGlobalState(globalState, allSites);
+                if (isGSupdated) {
+                    doCrawl = false;
+                }
+
             }
         }
 
@@ -539,7 +578,7 @@ public class SharepointClient {
      *            sites/Site directory.
      */
     private void updateWebStateFromSite(final SharepointClientContext tempCtx,
-            final WebState webState, final String nextLastListID,
+            final WebState webState, String nextLastListID,
             final Set<String> allWebs) throws SharepointException {
         List<SPDocument> listItems = new ArrayList<SPDocument>();
 
@@ -629,6 +668,8 @@ public class SharepointClient {
                     }
                 }
             } else {
+                // This check is necessary to avoid traversing previously
+                // traversed lists for the same web state
                 LOGGER.info("revisiting old listState [ "
                         + listState.getListURL() + " ]. ");
                 listState.setExisting(true);
@@ -725,7 +766,8 @@ public class SharepointClient {
                 }
             }
 
-            // Get the attachments for each discovered items, if the list allows
+            // Get the attachments for each discovered items, if the list
+            // allows
             // attachments
             if (listState.canContainAttachments() && (listItems != null)) {
                 final List<SPDocument> attachmentItems = new ArrayList<SPDocument>();
@@ -770,7 +812,8 @@ public class SharepointClient {
                     listState.setNewList(false);
                 }
             } else {
-                // If any of the list has not been traversed completely, doCrawl
+                // If any of the list has not been traversed completely,
+                // doCrawl
                 // must not be set true.
                 doCrawl = false;
             }
@@ -786,16 +829,27 @@ public class SharepointClient {
                     break;
                 }
             }
+
+            // Keeps track of which list is being traversed and crawled for
+            // docs. This will help in case this current traversal is going to
+            // discover new sites and traverse them in the same batch.
+            nextLastListID = listState.getPrimaryKey();
+
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("Crawled list with ID : " + listState.getListURL()
+                        + " for new/modified docs. Total : " + listItems.size());
+            }
         }// end:; for Lists
     }
 
     /**
-     * Traverses list of sites (webstates) which have not yet been crawled
+     * Traverses list of sites (webstates) which have not yet been crawled and
+     * discovers new docs to be sent to GSA
      *
      * @param globalState The global state which has the list of sites
      *            (webstates) that need to be crawled for documents
      * @param allSites The list of sites
-     * @param sharePointClientContext The instance of
+     * @param sharePointClientContext The current connector context. Instance of
      *            {@link SharepointClientContext}
      * @param nextLastWebID The id of the last site (webstate) that was crawled
      * @param nextLastListID The id of the last liststate that as crawled
@@ -803,10 +857,10 @@ public class SharepointClient {
      */
     private void traverseSites(GlobalState globalState, Set<String> allSites,
             SharepointClientContext sharePointClientContext,
-            String nextLastWebID, String nextLastListID)
+            String nextLastWebID, String nextLastListID,
+            ArrayList<String> lstLookupForWebs)
             throws SharepointException {
-        final Iterator itWebs = globalState.getCircularIterator();
-        final ArrayList<String> lstLookupForWebs = new ArrayList<String>();
+        final Iterator<WebState> itWebs = (Iterator<WebState>) globalState.getCircularIterator();
         while (itWebs.hasNext()) {
             WebState ws = (WebState) itWebs.next();// Get the first web
             if (ws == null) {
@@ -828,11 +882,15 @@ public class SharepointClient {
                 lstLookupForWebs.add(webURL);
             }
 
+
             try {
                 final int currDocCount = nDocuments;
                 final String siteName = ws.getPrimaryKey();
-                LOGGER.info("Web [ " + siteName
+
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Web [ " + siteName
                         + " ] is getting crawled for documents....");
+                }
                 sharePointClientContext.setSiteURL(siteName);
 
                 // Process the web site, and add the link site info to allSites.
@@ -858,7 +916,8 @@ public class SharepointClient {
             // Check if the threshhold (i.e. 2*batchHint is reached)
             final int batchHint = sharepointClientContext.getBatchHint();
             if (nDocuments >= (2 * batchHint)) {
-                LOGGER.info("Stopping crawl cycle because batch hint has been reached");
+                LOGGER.info("Stopping crawl cycle as connector has discovered (2 * batch hint) no. of docs. In total : "
+                        + nDocuments + " docs");
                 doCrawl = false;
                 break;
             }
@@ -876,5 +935,15 @@ public class SharepointClient {
                         + webURL, e);
             }
         }
+    }
+
+    /**
+     * Returns the no of visited list states to check for pending docs from
+     * previous batch traversal for a given web state (site)
+     *
+     * @return The no of visited list states
+     */
+    public int getNoOfVisitedListStates() {
+        return noOfVisitedListStates;
     }
 }

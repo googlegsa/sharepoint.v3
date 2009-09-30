@@ -26,6 +26,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalManager;
+import com.google.enterprise.connector.sharepoint.state.ListState;
 
 /**
  * This class is an implementation of the TraversalManager from the spi.
@@ -201,10 +202,15 @@ public class SharepointTraversalManager implements TraversalManager {
 	 */
 	private SPDocumentList traverse(final SharepointClient sharepointClient) {
 		final String lastWeb = globalState.getLastCrawledWebID();
-		if(null==lastWeb){
+		if (null == lastWeb) {
 			globalState.setCurrentWeb(null);
-		}else{
-			final WebState ws = globalState.lookupWeb(lastWeb,sharepointClientContext);
+		} else {
+			final WebState ws = globalState.lookupWeb(lastWeb, sharepointClientContext);
+			// Get the last crawled list id and initiate the traversing from
+			// that state instead of searching for all liststates
+			String lastList = globalState.getLastCrawledListID();
+			ListState listState = ws.lookupList(lastList);
+			ws.setCurrentList(listState);
 			globalState.setCurrentWeb(ws);
 		}
 		SPDocumentList rsAll = null;
