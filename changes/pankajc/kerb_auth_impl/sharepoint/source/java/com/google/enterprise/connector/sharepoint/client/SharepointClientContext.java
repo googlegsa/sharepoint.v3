@@ -20,10 +20,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,6 +73,7 @@ public class SharepointClientContext implements Cloneable {
 	private int batchHint =-1; //the batch size in which the documents have to be submitted to Connector manager
 
 	private String excludedURL_ParentDir = null;
+	public static HashMap<String, String> credentials = new HashMap<String, String>();
 	
 	/**
 	 * For cloning
@@ -578,26 +581,30 @@ public class SharepointClientContext implements Cloneable {
 	public int checkConnectivity(final String strURL, HttpMethodBase method) throws Exception {
 		LOGGER.log(Level.CONFIG, "Requesting [ "+strURL+" ] ....");		
 		int responseCode = 0;
-		String username = this.username;
+		final String username = this.username;
 		final String host = Util.getHost(strURL);
+		
+//		credentials.put("Username", this.username);
+//		credentials.put("Password", this.password);
+		System.out.println("reached here");
 		Credentials credentials =  new Credentials() {
-			// @Override
+//			 @Override
 			public String getPassword() {
 				return SharepointClientContext.this.password;
 			}
 			// @Override
 			public Principal getUserPrincipal() {
-				return new KerberosPrincipal(SharepointClientContext.this.username);
+				return new KerberosPrincipal(username);
 			}
 		};
-
-		/*boolean ntlm = true; // We first try to use ntlm
-		if(null != domain && !domain.equals("")) {
-			credentials = new NTCredentials(username,password, host, domain);
-		} else {
-			credentials =  new UsernamePasswordCredentials(username,password);
-			ntlm = false;
-		}*/
+//		boolean ntlm = true; // We first try to use ntlm
+//		if(null != domain && !domain.equals("")) {
+//			credentials = new NTCredentials(username,password, host, domain);
+//		} else {
+//			credentials =  new UsernamePasswordCredentials(username,password);
+//			ntlm = false;
+//		}
+		
 		final HttpClient httpClient = new HttpClient();
 		
 		httpClient.getState().setCredentials(AuthScope.ANY,credentials);
@@ -605,13 +612,13 @@ public class SharepointClientContext implements Cloneable {
 			method = new HeadMethod(strURL);
 		}
 		responseCode = httpClient.executeMethod(method);
-		if(responseCode == 401 /*&& ntlm*/) {
-			LOGGER.log(Level.FINE,"Trying with HTTP Basic.");
-			username = Util.getUserNameWithDomain(this.username, domain);
-			credentials =  new UsernamePasswordCredentials(username,password);
-			httpClient.getState().setCredentials(AuthScope.ANY,credentials);
-			responseCode = httpClient.executeMethod(method);				
-		}
+//		if(responseCode == 401 && ntlm) {
+//			LOGGER.log(Level.FINE,"Trying with HTTP Basic.");
+//			username = Util.getUserNameWithDomain(this.username, domain);
+//			credentials =  new UsernamePasswordCredentials(username,password);
+//			httpClient.getState().setCredentials(AuthScope.ANY,credentials);
+//			responseCode = httpClient.executeMethod(method);				
+//		}
 		if(responseCode != 200) {
 			LOGGER.log(Level.WARNING, "responseCode: "+responseCode);
 		}
