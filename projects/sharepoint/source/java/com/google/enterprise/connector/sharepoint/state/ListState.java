@@ -121,6 +121,11 @@ public class ListState implements StatefulObject {
 		
 	private String spType;
 	private String feedType;
+	
+	/**
+	 * The timestamp of when was the list crawled last time by the connector
+	 */
+	private String lastCrawledDateTime;
 		
 	/**
 	 * No-args constructor.
@@ -550,6 +555,10 @@ public class ListState implements StatefulObject {
 			element.setAttribute(SPConstants.STATE_LASTMODIFIED, strLastMod);
 		}
 		
+			if (getLastCrawledDateTime() != null) {
+			element.setAttribute(SPConstants.LAST_CRAWLED_DATETIME, getLastCrawledDateTime());
+		}
+		
 		if(null == type) {
 			type = "";
 		}
@@ -640,6 +649,11 @@ public class ListState implements StatefulObject {
 			lastMod = Util.jodaToCalendar(Util.parseDate(lastModString));
 		} catch(final Exception e) {
 			LOGGER.log(Level.SEVERE, "Failed to load Last Modified for list [ " + listURL + " ]. ",e);
+		}
+		
+					String lstCrawleddateTime = element.getAttribute(SPConstants.LAST_CRAWLED_DATETIME);
+		if (lstCrawleddateTime != null) {
+			setLastCrawledDateTime(lstCrawleddateTime);
 		}
 		
 		type = element.getAttribute(SPConstants.STATE_TYPE);
@@ -1274,5 +1288,19 @@ public class ListState implements StatefulObject {
 	 */
 	public void setAttchmnts(StringBuffer attchmnts) {
 		this.attchmnts = attchmnts;
+	}
+	
+		/**
+	 * @return the lastCrawledDateTime
+	 */
+	public String getLastCrawledDateTime() {
+		return lastCrawledDateTime;
+	}
+
+	/**
+	 * @param lastCrawledDateTime the lastCrawledDateTime to set
+	 */
+	public void setLastCrawledDateTime(String lastCrawledDateTime) {
+		this.lastCrawledDateTime = lastCrawledDateTime;
 	}
 }
