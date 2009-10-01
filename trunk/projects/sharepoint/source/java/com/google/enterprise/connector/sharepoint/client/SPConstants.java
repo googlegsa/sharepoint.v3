@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
  * Used to store constants
  * 
  * @author nitendra_thakur
- * 
  */
 public class SPConstants {
 	// used while parsing the alias string
@@ -54,8 +53,7 @@ public class SPConstants {
 	public static final String METAINFO = "MetaInfo_";
 	public static final String VTI = "vti_";
 	public static final String ENCODED_SPACE = "_x0020_";
-	public static final Pattern ATTRIBUTE_VALUE_PATTERN = Pattern
-			.compile("^\\d+;\\#");
+	public static final Pattern ATTRIBUTE_VALUE_PATTERN = Pattern.compile("^\\d+;\\#");
 
 	public static final String UNAUTHORIZED = "(401)Unauthorized";
 
@@ -73,8 +71,7 @@ public class SPConstants {
 	public static final String INVALID_TOKEN = "ERROR";
 
 	public static final String ATTACHMENT_SUFFIX_IN_DOCID = "[ATTACHMENT]";
-	public static final Pattern ATTACHMENT_SUFFIX_PATTERN = Pattern
-			.compile("^\\[ATTACHMENT\\]\\[.+\\]");
+	public static final Pattern ATTACHMENT_SUFFIX_PATTERN = Pattern.compile("^\\[ATTACHMENT\\]\\[.+\\]");
 	public static final String ALERT_SUFFIX_IN_DOCID = "[ALERT]";
 
 	// End Point constants
@@ -133,13 +130,13 @@ public class SPConstants {
 	// Constants used by SiteDataWS while processing the list data as returned
 	// by the Web Service.
 	public static final String DOC_LIB = "DocumentLibrary";// BaseType=1 (In
-															// SPS2003)
+	// SPS2003)
 	public static final String DISCUSSION_BOARD = "DiscussionBoard";// BaseType=3
-																	// (In
-																	// SPS2003)
+	// (In
+	// SPS2003)
 	public static final String SURVEYS = "Survey"; // BaseType=4 (In SPS2003)
 	public static final String GENERIC_LIST = "GenericList";// BaseType=0 (In
-															// SPS2003)
+	// SPS2003)
 	public static final String ISSUE = "Issue";// BaseType=5 (In SPS2003)
 	public static final String BT_SLIDELIBRARY = "SlideLibrary";
 	public static final String BT_FORMLIBRARY = "FormLibrary";
@@ -172,8 +169,8 @@ public class SPConstants {
 	public static final String OBJTYPE_WEB = "Web";
 	public static final String OBJTYPE_ATTACHMENT = "Attachment";
 	public static final String OBJTYPE_LIST_ITEM = "ListItem";// when no type is
-																// recv through
-																// ws call
+	// recv through
+	// ws call
 	public static final String NO_AUTHOR = "No author";
 	public static final String DOC_TOKEN = "|";
 
@@ -222,6 +219,7 @@ public class SPConstants {
 	public static final String WEB_STATE = "WebState";
 	public static final String STATE = "State";
 	public static final String LAST_FULL_CRAWL_DATETIME = "LastFullCrawlDateTime";
+	public static final String LAST_CRAWLED_DATETIME = "LastCrawledDateTime";
 
 	public static final String CONNECTOR_NAME = "Sharepoint";
 	public static final String CONNECTOR_PREFIX = "_state.xml";

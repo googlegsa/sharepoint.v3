@@ -392,6 +392,11 @@ public class SharepointClient {
 			} catch(final Exception e){
 				LOGGER.log(Level.WARNING,"Unable to get the Child sites for site "+webURL,e);
 			}
+			
+			 // Set the last crawled date time. This is informative value for the
+		// user viewing the state file
+		ws.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
+		
 		}
 
 		LOGGER.log(Level.INFO, "All the webs known till last crawl cycle have been crawled");
@@ -670,6 +675,12 @@ public class SharepointClient {
 					break;
 				}		
 			}
-		}//end:; for Lists			
+			
+			// Set the last crawled date time. This is informative value for the
+		// user viewing the state file
+		listState.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
+			
+		}//end:; for Lists
+          			
 	}
 }

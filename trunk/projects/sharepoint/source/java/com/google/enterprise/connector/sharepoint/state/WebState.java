@@ -67,6 +67,11 @@ public class WebState implements StatefulObject {
 	private String feedType;
 
 	/**
+	 * The timestamp of when was the site crawled last time by the connector
+	 */
+	private String lastCrawledDateTime;
+
+	/**
 	 * @param inFeedType
 	 */
 	WebState(final String inFeedType) {
@@ -207,6 +212,11 @@ public class WebState implements StatefulObject {
 					+ title + " ]. ", e);
 		}
 
+		String lstCrawleddateTime = element.getAttribute(SPConstants.LAST_CRAWLED_DATETIME);
+		if (lstCrawleddateTime != null) {
+			setLastCrawledDateTime(lstCrawleddateTime);
+		}
+
 		spType = element.getAttribute(SPConstants.STATE_SPTYPE);
 
 		final NodeList children = element.getChildNodes();
@@ -278,6 +288,11 @@ public class WebState implements StatefulObject {
 		if (webUrl != null) {
 			element.setAttribute(SPConstants.STATE_URL, webUrl);
 		}
+
+		if (getLastCrawledDateTime() != null) {
+			element.setAttribute(SPConstants.LAST_CRAWLED_DATETIME, getLastCrawledDateTime());
+		}
+
 		if (title != null) {
 			element.setAttribute(SPConstants.STATE_WEB_TITLE, title);
 		}
@@ -671,5 +686,19 @@ public class WebState implements StatefulObject {
 	 */
 	public String getSharePointType() {
 		return spType;
+	}
+
+	/**
+	 * @return the lastCrawledDateTime
+	 */
+	public String getLastCrawledDateTime() {
+		return lastCrawledDateTime;
+	}
+
+	/**
+	 * @param lastCrawledDateTime the lastCrawledDateTime to set
+	 */
+	public void setLastCrawledDateTime(String lastCrawledDateTime) {
+		this.lastCrawledDateTime = lastCrawledDateTime;
 	}
 }
