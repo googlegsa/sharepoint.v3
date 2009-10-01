@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.httpclient.contrib.auth.NegotiateScheme;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -96,7 +97,10 @@ public abstract class AuthPolicy {
      */
     public static final String BASIC = "Basic";
     
+    public static final String NEGOTIATE = "Negotiate";
+    
     static {
+    	AuthPolicy.registerAuthScheme(NEGOTIATE, NegotiateScheme.class);
         AuthPolicy.registerAuthScheme(NTLM,   NTLMScheme.class);
         AuthPolicy.registerAuthScheme(DIGEST, DigestScheme.class);
         AuthPolicy.registerAuthScheme(BASIC,  BasicScheme.class);
