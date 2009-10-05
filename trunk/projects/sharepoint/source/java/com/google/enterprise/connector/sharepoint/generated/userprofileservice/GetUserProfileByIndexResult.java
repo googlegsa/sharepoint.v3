@@ -41,7 +41,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Gets the nextValue value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @return nextValue
      */
     public java.lang.String getNextValue() {
@@ -51,7 +51,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Sets the nextValue value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @param nextValue
      */
     public void setNextValue(java.lang.String nextValue) {
@@ -61,7 +61,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Gets the userProfile value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @return userProfile
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.PropertyData[] getUserProfile() {
@@ -71,7 +71,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Sets the userProfile value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @param userProfile
      */
     public void setUserProfile(com.google.enterprise.connector.sharepoint.generated.userprofileservice.PropertyData[] userProfile) {
@@ -81,7 +81,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Gets the colleagues value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @return colleagues
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.ContactData[] getColleagues() {
@@ -91,7 +91,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Sets the colleagues value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @param colleagues
      */
     public void setColleagues(com.google.enterprise.connector.sharepoint.generated.userprofileservice.ContactData[] colleagues) {
@@ -101,7 +101,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Gets the quickLinks value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @return quickLinks
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.QuickLinkData[] getQuickLinks() {
@@ -111,7 +111,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Sets the quickLinks value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @param quickLinks
      */
     public void setQuickLinks(com.google.enterprise.connector.sharepoint.generated.userprofileservice.QuickLinkData[] quickLinks) {
@@ -121,7 +121,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Gets the pinnedLinks value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @return pinnedLinks
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.PinnedLinkData[] getPinnedLinks() {
@@ -131,7 +131,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Sets the pinnedLinks value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @param pinnedLinks
      */
     public void setPinnedLinks(com.google.enterprise.connector.sharepoint.generated.userprofileservice.PinnedLinkData[] pinnedLinks) {
@@ -141,7 +141,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Gets the memberships value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @return memberships
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipData[] getMemberships() {
@@ -151,7 +151,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Sets the memberships value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @param memberships
      */
     public void setMemberships(com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipData[] memberships) {
@@ -169,23 +169,23 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.nextValue==null && other.getNextValue()==null) || 
+        _equals = true &&
+            ((this.nextValue==null && other.getNextValue()==null) ||
              (this.nextValue!=null &&
               this.nextValue.equals(other.getNextValue()))) &&
-            ((this.userProfile==null && other.getUserProfile()==null) || 
+            ((this.userProfile==null && other.getUserProfile()==null) ||
              (this.userProfile!=null &&
               java.util.Arrays.equals(this.userProfile, other.getUserProfile()))) &&
-            ((this.colleagues==null && other.getColleagues()==null) || 
+            ((this.colleagues==null && other.getColleagues()==null) ||
              (this.colleagues!=null &&
               java.util.Arrays.equals(this.colleagues, other.getColleagues()))) &&
-            ((this.quickLinks==null && other.getQuickLinks()==null) || 
+            ((this.quickLinks==null && other.getQuickLinks()==null) ||
              (this.quickLinks!=null &&
               java.util.Arrays.equals(this.quickLinks, other.getQuickLinks()))) &&
-            ((this.pinnedLinks==null && other.getPinnedLinks()==null) || 
+            ((this.pinnedLinks==null && other.getPinnedLinks()==null) ||
              (this.pinnedLinks!=null &&
               java.util.Arrays.equals(this.pinnedLinks, other.getPinnedLinks()))) &&
-            ((this.memberships==null && other.getMemberships()==null) || 
+            ((this.memberships==null && other.getMemberships()==null) ||
              (this.memberships!=null &&
               java.util.Arrays.equals(this.memberships, other.getMemberships())));
         __equalsCalc = null;
@@ -327,10 +327,10 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -339,10 +339,10 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

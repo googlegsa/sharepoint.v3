@@ -53,7 +53,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the currentUser value for this AlertInfo.
-     * 
+     *
      * @return currentUser
      */
     public java.lang.String getCurrentUser() {
@@ -63,7 +63,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the currentUser value for this AlertInfo.
-     * 
+     *
      * @param currentUser
      */
     public void setCurrentUser(java.lang.String currentUser) {
@@ -73,7 +73,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the alertServerName value for this AlertInfo.
-     * 
+     *
      * @return alertServerName
      */
     public java.lang.String getAlertServerName() {
@@ -83,7 +83,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the alertServerName value for this AlertInfo.
-     * 
+     *
      * @param alertServerName
      */
     public void setAlertServerName(java.lang.String alertServerName) {
@@ -93,7 +93,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the alertServerUrl value for this AlertInfo.
-     * 
+     *
      * @return alertServerUrl
      */
     public java.lang.String getAlertServerUrl() {
@@ -103,7 +103,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the alertServerUrl value for this AlertInfo.
-     * 
+     *
      * @param alertServerUrl
      */
     public void setAlertServerUrl(java.lang.String alertServerUrl) {
@@ -113,7 +113,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the alertServerType value for this AlertInfo.
-     * 
+     *
      * @return alertServerType
      */
     public java.lang.String getAlertServerType() {
@@ -123,7 +123,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the alertServerType value for this AlertInfo.
-     * 
+     *
      * @param alertServerType
      */
     public void setAlertServerType(java.lang.String alertServerType) {
@@ -133,7 +133,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the alertsManagementUrl value for this AlertInfo.
-     * 
+     *
      * @return alertsManagementUrl
      */
     public java.lang.String getAlertsManagementUrl() {
@@ -143,7 +143,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the alertsManagementUrl value for this AlertInfo.
-     * 
+     *
      * @param alertsManagementUrl
      */
     public void setAlertsManagementUrl(java.lang.String alertsManagementUrl) {
@@ -153,7 +153,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the alertWebTitle value for this AlertInfo.
-     * 
+     *
      * @return alertWebTitle
      */
     public java.lang.String getAlertWebTitle() {
@@ -163,7 +163,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the alertWebTitle value for this AlertInfo.
-     * 
+     *
      * @param alertWebTitle
      */
     public void setAlertWebTitle(java.lang.String alertWebTitle) {
@@ -173,7 +173,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the newAlertUrl value for this AlertInfo.
-     * 
+     *
      * @return newAlertUrl
      */
     public java.lang.String getNewAlertUrl() {
@@ -183,7 +183,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the newAlertUrl value for this AlertInfo.
-     * 
+     *
      * @param newAlertUrl
      */
     public void setNewAlertUrl(java.lang.String newAlertUrl) {
@@ -193,7 +193,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the alertWebId value for this AlertInfo.
-     * 
+     *
      * @return alertWebId
      */
     public java.lang.String getAlertWebId() {
@@ -203,7 +203,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the alertWebId value for this AlertInfo.
-     * 
+     *
      * @param alertWebId
      */
     public void setAlertWebId(java.lang.String alertWebId) {
@@ -213,7 +213,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Gets the alerts value for this AlertInfo.
-     * 
+     *
      * @return alerts
      */
     public com.google.enterprise.connector.sharepoint.generated.alerts.Alert[] getAlerts() {
@@ -223,7 +223,7 @@ public class AlertInfo  implements java.io.Serializable {
 
     /**
      * Sets the alerts value for this AlertInfo.
-     * 
+     *
      * @param alerts
      */
     public void setAlerts(com.google.enterprise.connector.sharepoint.generated.alerts.Alert[] alerts) {
@@ -241,32 +241,32 @@ public class AlertInfo  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.currentUser==null && other.getCurrentUser()==null) || 
+        _equals = true &&
+            ((this.currentUser==null && other.getCurrentUser()==null) ||
              (this.currentUser!=null &&
               this.currentUser.equals(other.getCurrentUser()))) &&
-            ((this.alertServerName==null && other.getAlertServerName()==null) || 
+            ((this.alertServerName==null && other.getAlertServerName()==null) ||
              (this.alertServerName!=null &&
               this.alertServerName.equals(other.getAlertServerName()))) &&
-            ((this.alertServerUrl==null && other.getAlertServerUrl()==null) || 
+            ((this.alertServerUrl==null && other.getAlertServerUrl()==null) ||
              (this.alertServerUrl!=null &&
               this.alertServerUrl.equals(other.getAlertServerUrl()))) &&
-            ((this.alertServerType==null && other.getAlertServerType()==null) || 
+            ((this.alertServerType==null && other.getAlertServerType()==null) ||
              (this.alertServerType!=null &&
               this.alertServerType.equals(other.getAlertServerType()))) &&
-            ((this.alertsManagementUrl==null && other.getAlertsManagementUrl()==null) || 
+            ((this.alertsManagementUrl==null && other.getAlertsManagementUrl()==null) ||
              (this.alertsManagementUrl!=null &&
               this.alertsManagementUrl.equals(other.getAlertsManagementUrl()))) &&
-            ((this.alertWebTitle==null && other.getAlertWebTitle()==null) || 
+            ((this.alertWebTitle==null && other.getAlertWebTitle()==null) ||
              (this.alertWebTitle!=null &&
               this.alertWebTitle.equals(other.getAlertWebTitle()))) &&
-            ((this.newAlertUrl==null && other.getNewAlertUrl()==null) || 
+            ((this.newAlertUrl==null && other.getNewAlertUrl()==null) ||
              (this.newAlertUrl!=null &&
               this.newAlertUrl.equals(other.getNewAlertUrl()))) &&
-            ((this.alertWebId==null && other.getAlertWebId()==null) || 
+            ((this.alertWebId==null && other.getAlertWebId()==null) ||
              (this.alertWebId!=null &&
               this.alertWebId.equals(other.getAlertWebId()))) &&
-            ((this.alerts==null && other.getAlerts()==null) || 
+            ((this.alerts==null && other.getAlerts()==null) ||
              (this.alerts!=null &&
               java.util.Arrays.equals(this.alerts, other.getAlerts())));
         __equalsCalc = null;
@@ -402,10 +402,10 @@ public class AlertInfo  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -414,10 +414,10 @@ public class AlertInfo  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

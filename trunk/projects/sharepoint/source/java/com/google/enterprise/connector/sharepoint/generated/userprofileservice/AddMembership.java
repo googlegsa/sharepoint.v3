@@ -33,7 +33,7 @@ public class AddMembership  implements java.io.Serializable {
 
     /**
      * Gets the accountName value for this AddMembership.
-     * 
+     *
      * @return accountName
      */
     public java.lang.String getAccountName() {
@@ -43,7 +43,7 @@ public class AddMembership  implements java.io.Serializable {
 
     /**
      * Sets the accountName value for this AddMembership.
-     * 
+     *
      * @param accountName
      */
     public void setAccountName(java.lang.String accountName) {
@@ -53,7 +53,7 @@ public class AddMembership  implements java.io.Serializable {
 
     /**
      * Gets the membershipInfo value for this AddMembership.
-     * 
+     *
      * @return membershipInfo
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipData getMembershipInfo() {
@@ -63,7 +63,7 @@ public class AddMembership  implements java.io.Serializable {
 
     /**
      * Sets the membershipInfo value for this AddMembership.
-     * 
+     *
      * @param membershipInfo
      */
     public void setMembershipInfo(com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipData membershipInfo) {
@@ -73,7 +73,7 @@ public class AddMembership  implements java.io.Serializable {
 
     /**
      * Gets the group value for this AddMembership.
-     * 
+     *
      * @return group
      */
     public java.lang.String getGroup() {
@@ -83,7 +83,7 @@ public class AddMembership  implements java.io.Serializable {
 
     /**
      * Sets the group value for this AddMembership.
-     * 
+     *
      * @param group
      */
     public void setGroup(java.lang.String group) {
@@ -93,7 +93,7 @@ public class AddMembership  implements java.io.Serializable {
 
     /**
      * Gets the privacy value for this AddMembership.
-     * 
+     *
      * @return privacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getPrivacy() {
@@ -103,7 +103,7 @@ public class AddMembership  implements java.io.Serializable {
 
     /**
      * Sets the privacy value for this AddMembership.
-     * 
+     *
      * @param privacy
      */
     public void setPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy privacy) {
@@ -121,17 +121,17 @@ public class AddMembership  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.accountName==null && other.getAccountName()==null) || 
+        _equals = true &&
+            ((this.accountName==null && other.getAccountName()==null) ||
              (this.accountName!=null &&
               this.accountName.equals(other.getAccountName()))) &&
-            ((this.membershipInfo==null && other.getMembershipInfo()==null) || 
+            ((this.membershipInfo==null && other.getMembershipInfo()==null) ||
              (this.membershipInfo!=null &&
               this.membershipInfo.equals(other.getMembershipInfo()))) &&
-            ((this.group==null && other.getGroup()==null) || 
+            ((this.group==null && other.getGroup()==null) ||
              (this.group!=null &&
               this.group.equals(other.getGroup()))) &&
-            ((this.privacy==null && other.getPrivacy()==null) || 
+            ((this.privacy==null && other.getPrivacy()==null) ||
              (this.privacy!=null &&
               this.privacy.equals(other.getPrivacy())));
         __equalsCalc = null;
@@ -207,10 +207,10 @@ public class AddMembership  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -219,10 +219,10 @@ public class AddMembership  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

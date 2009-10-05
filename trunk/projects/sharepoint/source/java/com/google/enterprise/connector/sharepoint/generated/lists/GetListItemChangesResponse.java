@@ -21,7 +21,7 @@ public class GetListItemChangesResponse  implements java.io.Serializable {
 
     /**
      * Gets the getListItemChangesResult value for this GetListItemChangesResponse.
-     * 
+     *
      * @return getListItemChangesResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesResponseGetListItemChangesResult getGetListItemChangesResult() {
@@ -31,7 +31,7 @@ public class GetListItemChangesResponse  implements java.io.Serializable {
 
     /**
      * Sets the getListItemChangesResult value for this GetListItemChangesResponse.
-     * 
+     *
      * @param getListItemChangesResult
      */
     public void setGetListItemChangesResult(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesResponseGetListItemChangesResult getListItemChangesResult) {
@@ -49,8 +49,8 @@ public class GetListItemChangesResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getListItemChangesResult==null && other.getGetListItemChangesResult()==null) || 
+        _equals = true &&
+            ((this.getListItemChangesResult==null && other.getGetListItemChangesResult()==null) ||
              (this.getListItemChangesResult!=null &&
               this.getListItemChangesResult.equals(other.getGetListItemChangesResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class GetListItemChangesResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class GetListItemChangesResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

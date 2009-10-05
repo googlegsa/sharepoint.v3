@@ -25,7 +25,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Gets the nextValue value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @return nextValue
      */
     public java.lang.String getNextValue() {
@@ -35,7 +35,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Sets the nextValue value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @param nextValue
      */
     public void setNextValue(java.lang.String nextValue) {
@@ -45,7 +45,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Gets the userProfile value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @return userProfile
      */
     public com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.PropertyData[] getUserProfile() {
@@ -55,7 +55,7 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
 
     /**
      * Sets the userProfile value for this GetUserProfileByIndexResult.
-     * 
+     *
      * @param userProfile
      */
     public void setUserProfile(com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.PropertyData[] userProfile) {
@@ -73,11 +73,11 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.nextValue==null && other.getNextValue()==null) || 
+        _equals = true &&
+            ((this.nextValue==null && other.getNextValue()==null) ||
              (this.nextValue!=null &&
               this.nextValue.equals(other.getNextValue()))) &&
-            ((this.userProfile==null && other.getUserProfile()==null) || 
+            ((this.userProfile==null && other.getUserProfile()==null) ||
              (this.userProfile!=null &&
               java.util.Arrays.equals(this.userProfile, other.getUserProfile())));
         __equalsCalc = null;
@@ -143,10 +143,10 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -155,10 +155,10 @@ public class GetUserProfileByIndexResult  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -33,7 +33,7 @@ public class AddListFromFeature  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this AddListFromFeature.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -43,7 +43,7 @@ public class AddListFromFeature  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this AddListFromFeature.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -53,7 +53,7 @@ public class AddListFromFeature  implements java.io.Serializable {
 
     /**
      * Gets the description value for this AddListFromFeature.
-     * 
+     *
      * @return description
      */
     public java.lang.String getDescription() {
@@ -63,7 +63,7 @@ public class AddListFromFeature  implements java.io.Serializable {
 
     /**
      * Sets the description value for this AddListFromFeature.
-     * 
+     *
      * @param description
      */
     public void setDescription(java.lang.String description) {
@@ -73,7 +73,7 @@ public class AddListFromFeature  implements java.io.Serializable {
 
     /**
      * Gets the featureID value for this AddListFromFeature.
-     * 
+     *
      * @return featureID
      */
     public java.lang.String getFeatureID() {
@@ -83,7 +83,7 @@ public class AddListFromFeature  implements java.io.Serializable {
 
     /**
      * Sets the featureID value for this AddListFromFeature.
-     * 
+     *
      * @param featureID
      */
     public void setFeatureID(java.lang.String featureID) {
@@ -93,7 +93,7 @@ public class AddListFromFeature  implements java.io.Serializable {
 
     /**
      * Gets the templateID value for this AddListFromFeature.
-     * 
+     *
      * @return templateID
      */
     public int getTemplateID() {
@@ -103,7 +103,7 @@ public class AddListFromFeature  implements java.io.Serializable {
 
     /**
      * Sets the templateID value for this AddListFromFeature.
-     * 
+     *
      * @param templateID
      */
     public void setTemplateID(int templateID) {
@@ -121,14 +121,14 @@ public class AddListFromFeature  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.description==null && other.getDescription()==null) || 
+            ((this.description==null && other.getDescription()==null) ||
              (this.description!=null &&
               this.description.equals(other.getDescription()))) &&
-            ((this.featureID==null && other.getFeatureID()==null) || 
+            ((this.featureID==null && other.getFeatureID()==null) ||
              (this.featureID!=null &&
               this.featureID.equals(other.getFeatureID()))) &&
             this.templateID == other.getTemplateID();
@@ -202,10 +202,10 @@ public class AddListFromFeature  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -214,10 +214,10 @@ public class AddListFromFeature  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

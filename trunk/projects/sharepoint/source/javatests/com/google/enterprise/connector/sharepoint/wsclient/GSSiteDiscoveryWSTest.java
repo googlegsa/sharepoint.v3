@@ -23,38 +23,42 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 
 public class GSSiteDiscoveryWSTest extends TestCase {
 
-	SharepointClientContext sharepointClientContext;
-	GSSiteDiscoveryWS siteDisc;
-	
-	protected void setUp() throws Exception {
-		super.setUp();
-		System.out.println("\n...Setting Up...");		
-		System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
-		assertNotNull(this.sharepointClientContext);
-		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);		
-		
-		System.out.println("Initializing GSSiteDiscoveryWS ...");
-		this.siteDisc = new GSSiteDiscoveryWS(this.sharepointClientContext);	
-	}
+    SharepointClientContext sharepointClientContext;
+    GSSiteDiscoveryWS siteDisc;
 
-	public final void testGetMatchingSiteCollections() {
-		System.out.println("Testing getMatchingSiteCollections()");
-		final Set siteCol = this.siteDisc.getMatchingSiteCollections();
-		assertNotNull(siteCol);
-		System.out.println("Total site colllections discovered: "+siteCol.size());
-		System.out.println("[ getMatchingSiteCollections() ] Test Completed.");
-	}
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SharepointClientContext ...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+        assertNotNull(this.sharepointClientContext);
+        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-	public final void testGetFQDNHost() {
-		System.out.println("Testing getFQDNHost()");
-		final String domain_fqdn = this.siteDisc.getFQDNHost(TestConfiguration.domain);
-		assertNotNull(domain_fqdn);
-		System.out.println("[ getFQDNHost() ] Test Completed.");
-	}
+        System.out.println("Initializing GSSiteDiscoveryWS ...");
+        this.siteDisc = new GSSiteDiscoveryWS(this.sharepointClientContext);
+    }
+
+    public final void testGetMatchingSiteCollections() {
+        System.out.println("Testing getMatchingSiteCollections()");
+        final Set siteCol = this.siteDisc.getMatchingSiteCollections();
+        assertNotNull(siteCol);
+        System.out.println("Total site colllections discovered: "
+                + siteCol.size());
+        System.out.println("[ getMatchingSiteCollections() ] Test Completed.");
+    }
+
+    public final void testGetFQDNHost() {
+        System.out.println("Testing getFQDNHost()");
+        final String domain_fqdn = this.siteDisc.getFQDNHost(TestConfiguration.domain);
+        assertNotNull(domain_fqdn);
+        System.out.println("[ getFQDNHost() ] Test Completed.");
+    }
 
 }

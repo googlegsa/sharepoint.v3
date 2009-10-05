@@ -33,7 +33,7 @@ public class GetListItemChanges  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this GetListItemChanges.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -43,7 +43,7 @@ public class GetListItemChanges  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this GetListItemChanges.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -53,7 +53,7 @@ public class GetListItemChanges  implements java.io.Serializable {
 
     /**
      * Gets the viewFields value for this GetListItemChanges.
-     * 
+     *
      * @return viewFields
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesViewFields getViewFields() {
@@ -63,7 +63,7 @@ public class GetListItemChanges  implements java.io.Serializable {
 
     /**
      * Sets the viewFields value for this GetListItemChanges.
-     * 
+     *
      * @param viewFields
      */
     public void setViewFields(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesViewFields viewFields) {
@@ -73,7 +73,7 @@ public class GetListItemChanges  implements java.io.Serializable {
 
     /**
      * Gets the since value for this GetListItemChanges.
-     * 
+     *
      * @return since
      */
     public java.lang.String getSince() {
@@ -83,7 +83,7 @@ public class GetListItemChanges  implements java.io.Serializable {
 
     /**
      * Sets the since value for this GetListItemChanges.
-     * 
+     *
      * @param since
      */
     public void setSince(java.lang.String since) {
@@ -93,7 +93,7 @@ public class GetListItemChanges  implements java.io.Serializable {
 
     /**
      * Gets the contains value for this GetListItemChanges.
-     * 
+     *
      * @return contains
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesContains getContains() {
@@ -103,7 +103,7 @@ public class GetListItemChanges  implements java.io.Serializable {
 
     /**
      * Sets the contains value for this GetListItemChanges.
-     * 
+     *
      * @param contains
      */
     public void setContains(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesContains contains) {
@@ -121,17 +121,17 @@ public class GetListItemChanges  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.viewFields==null && other.getViewFields()==null) || 
+            ((this.viewFields==null && other.getViewFields()==null) ||
              (this.viewFields!=null &&
               this.viewFields.equals(other.getViewFields()))) &&
-            ((this.since==null && other.getSince()==null) || 
+            ((this.since==null && other.getSince()==null) ||
              (this.since!=null &&
               this.since.equals(other.getSince()))) &&
-            ((this.contains==null && other.getContains()==null) || 
+            ((this.contains==null && other.getContains()==null) ||
              (this.contains!=null &&
               this.contains.equals(other.getContains())));
         __equalsCalc = null;
@@ -208,10 +208,10 @@ public class GetListItemChanges  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -220,10 +220,10 @@ public class GetListItemChanges  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

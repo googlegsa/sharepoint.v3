@@ -21,7 +21,7 @@ public class GetUserProfileByGuid  implements java.io.Serializable {
 
     /**
      * Gets the guid value for this GetUserProfileByGuid.
-     * 
+     *
      * @return guid
      */
     public java.lang.String getGuid() {
@@ -31,7 +31,7 @@ public class GetUserProfileByGuid  implements java.io.Serializable {
 
     /**
      * Sets the guid value for this GetUserProfileByGuid.
-     * 
+     *
      * @param guid
      */
     public void setGuid(java.lang.String guid) {
@@ -49,8 +49,8 @@ public class GetUserProfileByGuid  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.guid==null && other.getGuid()==null) || 
+        _equals = true &&
+            ((this.guid==null && other.getGuid()==null) ||
              (this.guid!=null &&
               this.guid.equals(other.getGuid())));
         __equalsCalc = null;
@@ -96,10 +96,10 @@ public class GetUserProfileByGuid  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -108,10 +108,10 @@ public class GetUserProfileByGuid  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

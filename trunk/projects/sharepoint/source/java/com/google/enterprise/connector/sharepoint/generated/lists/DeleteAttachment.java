@@ -29,7 +29,7 @@ public class DeleteAttachment  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this DeleteAttachment.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -39,7 +39,7 @@ public class DeleteAttachment  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this DeleteAttachment.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -49,7 +49,7 @@ public class DeleteAttachment  implements java.io.Serializable {
 
     /**
      * Gets the listItemID value for this DeleteAttachment.
-     * 
+     *
      * @return listItemID
      */
     public java.lang.String getListItemID() {
@@ -59,7 +59,7 @@ public class DeleteAttachment  implements java.io.Serializable {
 
     /**
      * Sets the listItemID value for this DeleteAttachment.
-     * 
+     *
      * @param listItemID
      */
     public void setListItemID(java.lang.String listItemID) {
@@ -69,7 +69,7 @@ public class DeleteAttachment  implements java.io.Serializable {
 
     /**
      * Gets the url value for this DeleteAttachment.
-     * 
+     *
      * @return url
      */
     public java.lang.String getUrl() {
@@ -79,7 +79,7 @@ public class DeleteAttachment  implements java.io.Serializable {
 
     /**
      * Sets the url value for this DeleteAttachment.
-     * 
+     *
      * @param url
      */
     public void setUrl(java.lang.String url) {
@@ -97,14 +97,14 @@ public class DeleteAttachment  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.listItemID==null && other.getListItemID()==null) || 
+            ((this.listItemID==null && other.getListItemID()==null) ||
              (this.listItemID!=null &&
               this.listItemID.equals(other.getListItemID()))) &&
-            ((this.url==null && other.getUrl()==null) || 
+            ((this.url==null && other.getUrl()==null) ||
              (this.url!=null &&
               this.url.equals(other.getUrl())));
         __equalsCalc = null;
@@ -171,10 +171,10 @@ public class DeleteAttachment  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -183,10 +183,10 @@ public class DeleteAttachment  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

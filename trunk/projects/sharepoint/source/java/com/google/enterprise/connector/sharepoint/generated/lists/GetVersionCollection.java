@@ -29,7 +29,7 @@ public class GetVersionCollection  implements java.io.Serializable {
 
     /**
      * Gets the strlistID value for this GetVersionCollection.
-     * 
+     *
      * @return strlistID
      */
     public java.lang.String getStrlistID() {
@@ -39,7 +39,7 @@ public class GetVersionCollection  implements java.io.Serializable {
 
     /**
      * Sets the strlistID value for this GetVersionCollection.
-     * 
+     *
      * @param strlistID
      */
     public void setStrlistID(java.lang.String strlistID) {
@@ -49,7 +49,7 @@ public class GetVersionCollection  implements java.io.Serializable {
 
     /**
      * Gets the strlistItemID value for this GetVersionCollection.
-     * 
+     *
      * @return strlistItemID
      */
     public java.lang.String getStrlistItemID() {
@@ -59,7 +59,7 @@ public class GetVersionCollection  implements java.io.Serializable {
 
     /**
      * Sets the strlistItemID value for this GetVersionCollection.
-     * 
+     *
      * @param strlistItemID
      */
     public void setStrlistItemID(java.lang.String strlistItemID) {
@@ -69,7 +69,7 @@ public class GetVersionCollection  implements java.io.Serializable {
 
     /**
      * Gets the strFieldName value for this GetVersionCollection.
-     * 
+     *
      * @return strFieldName
      */
     public java.lang.String getStrFieldName() {
@@ -79,7 +79,7 @@ public class GetVersionCollection  implements java.io.Serializable {
 
     /**
      * Sets the strFieldName value for this GetVersionCollection.
-     * 
+     *
      * @param strFieldName
      */
     public void setStrFieldName(java.lang.String strFieldName) {
@@ -97,14 +97,14 @@ public class GetVersionCollection  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.strlistID==null && other.getStrlistID()==null) || 
+        _equals = true &&
+            ((this.strlistID==null && other.getStrlistID()==null) ||
              (this.strlistID!=null &&
               this.strlistID.equals(other.getStrlistID()))) &&
-            ((this.strlistItemID==null && other.getStrlistItemID()==null) || 
+            ((this.strlistItemID==null && other.getStrlistItemID()==null) ||
              (this.strlistItemID!=null &&
               this.strlistItemID.equals(other.getStrlistItemID()))) &&
-            ((this.strFieldName==null && other.getStrFieldName()==null) || 
+            ((this.strFieldName==null && other.getStrFieldName()==null) ||
              (this.strFieldName!=null &&
               this.strFieldName.equals(other.getStrFieldName())));
         __equalsCalc = null;
@@ -171,10 +171,10 @@ public class GetVersionCollection  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -183,10 +183,10 @@ public class GetVersionCollection  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

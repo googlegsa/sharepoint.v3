@@ -21,7 +21,7 @@ public class DeleteContentTypeXmlDocumentResponse  implements java.io.Serializab
 
     /**
      * Gets the deleteContentTypeXmlDocumentResult value for this DeleteContentTypeXmlDocumentResponse.
-     * 
+     *
      * @return deleteContentTypeXmlDocumentResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.DeleteContentTypeXmlDocumentResponseDeleteContentTypeXmlDocumentResult getDeleteContentTypeXmlDocumentResult() {
@@ -31,7 +31,7 @@ public class DeleteContentTypeXmlDocumentResponse  implements java.io.Serializab
 
     /**
      * Sets the deleteContentTypeXmlDocumentResult value for this DeleteContentTypeXmlDocumentResponse.
-     * 
+     *
      * @param deleteContentTypeXmlDocumentResult
      */
     public void setDeleteContentTypeXmlDocumentResult(com.google.enterprise.connector.sharepoint.generated.lists.DeleteContentTypeXmlDocumentResponseDeleteContentTypeXmlDocumentResult deleteContentTypeXmlDocumentResult) {
@@ -49,8 +49,8 @@ public class DeleteContentTypeXmlDocumentResponse  implements java.io.Serializab
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.deleteContentTypeXmlDocumentResult==null && other.getDeleteContentTypeXmlDocumentResult()==null) || 
+        _equals = true &&
+            ((this.deleteContentTypeXmlDocumentResult==null && other.getDeleteContentTypeXmlDocumentResult()==null) ||
              (this.deleteContentTypeXmlDocumentResult!=null &&
               this.deleteContentTypeXmlDocumentResult.equals(other.getDeleteContentTypeXmlDocumentResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class DeleteContentTypeXmlDocumentResponse  implements java.io.Serializab
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class DeleteContentTypeXmlDocumentResponse  implements java.io.Serializab
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

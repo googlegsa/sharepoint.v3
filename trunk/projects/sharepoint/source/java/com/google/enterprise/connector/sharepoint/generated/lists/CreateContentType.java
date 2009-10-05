@@ -41,7 +41,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this CreateContentType.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -51,7 +51,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this CreateContentType.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -61,7 +61,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the displayName value for this CreateContentType.
-     * 
+     *
      * @return displayName
      */
     public java.lang.String getDisplayName() {
@@ -71,7 +71,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the displayName value for this CreateContentType.
-     * 
+     *
      * @param displayName
      */
     public void setDisplayName(java.lang.String displayName) {
@@ -81,7 +81,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the parentType value for this CreateContentType.
-     * 
+     *
      * @return parentType
      */
     public java.lang.String getParentType() {
@@ -91,7 +91,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the parentType value for this CreateContentType.
-     * 
+     *
      * @param parentType
      */
     public void setParentType(java.lang.String parentType) {
@@ -101,7 +101,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the fields value for this CreateContentType.
-     * 
+     *
      * @return fields
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.CreateContentTypeFields getFields() {
@@ -111,7 +111,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the fields value for this CreateContentType.
-     * 
+     *
      * @param fields
      */
     public void setFields(com.google.enterprise.connector.sharepoint.generated.lists.CreateContentTypeFields fields) {
@@ -121,7 +121,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the contentTypeProperties value for this CreateContentType.
-     * 
+     *
      * @return contentTypeProperties
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.CreateContentTypeContentTypeProperties getContentTypeProperties() {
@@ -131,7 +131,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the contentTypeProperties value for this CreateContentType.
-     * 
+     *
      * @param contentTypeProperties
      */
     public void setContentTypeProperties(com.google.enterprise.connector.sharepoint.generated.lists.CreateContentTypeContentTypeProperties contentTypeProperties) {
@@ -141,7 +141,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the addToView value for this CreateContentType.
-     * 
+     *
      * @return addToView
      */
     public java.lang.String getAddToView() {
@@ -151,7 +151,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the addToView value for this CreateContentType.
-     * 
+     *
      * @param addToView
      */
     public void setAddToView(java.lang.String addToView) {
@@ -169,23 +169,23 @@ public class CreateContentType  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.displayName==null && other.getDisplayName()==null) || 
+            ((this.displayName==null && other.getDisplayName()==null) ||
              (this.displayName!=null &&
               this.displayName.equals(other.getDisplayName()))) &&
-            ((this.parentType==null && other.getParentType()==null) || 
+            ((this.parentType==null && other.getParentType()==null) ||
              (this.parentType!=null &&
               this.parentType.equals(other.getParentType()))) &&
-            ((this.fields==null && other.getFields()==null) || 
+            ((this.fields==null && other.getFields()==null) ||
              (this.fields!=null &&
               this.fields.equals(other.getFields()))) &&
-            ((this.contentTypeProperties==null && other.getContentTypeProperties()==null) || 
+            ((this.contentTypeProperties==null && other.getContentTypeProperties()==null) ||
              (this.contentTypeProperties!=null &&
               this.contentTypeProperties.equals(other.getContentTypeProperties()))) &&
-            ((this.addToView==null && other.getAddToView()==null) || 
+            ((this.addToView==null && other.getAddToView()==null) ||
              (this.addToView!=null &&
               this.addToView.equals(other.getAddToView())));
         __equalsCalc = null;
@@ -282,10 +282,10 @@ public class CreateContentType  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -294,10 +294,10 @@ public class CreateContentType  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

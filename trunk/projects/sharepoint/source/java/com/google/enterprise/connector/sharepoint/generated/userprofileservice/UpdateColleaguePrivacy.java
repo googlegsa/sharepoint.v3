@@ -29,7 +29,7 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
 
     /**
      * Gets the accountName value for this UpdateColleaguePrivacy.
-     * 
+     *
      * @return accountName
      */
     public java.lang.String getAccountName() {
@@ -39,7 +39,7 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
 
     /**
      * Sets the accountName value for this UpdateColleaguePrivacy.
-     * 
+     *
      * @param accountName
      */
     public void setAccountName(java.lang.String accountName) {
@@ -49,7 +49,7 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
 
     /**
      * Gets the colleagueAccountName value for this UpdateColleaguePrivacy.
-     * 
+     *
      * @return colleagueAccountName
      */
     public java.lang.String getColleagueAccountName() {
@@ -59,7 +59,7 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
 
     /**
      * Sets the colleagueAccountName value for this UpdateColleaguePrivacy.
-     * 
+     *
      * @param colleagueAccountName
      */
     public void setColleagueAccountName(java.lang.String colleagueAccountName) {
@@ -69,7 +69,7 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
 
     /**
      * Gets the newPrivacy value for this UpdateColleaguePrivacy.
-     * 
+     *
      * @return newPrivacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getNewPrivacy() {
@@ -79,7 +79,7 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
 
     /**
      * Sets the newPrivacy value for this UpdateColleaguePrivacy.
-     * 
+     *
      * @param newPrivacy
      */
     public void setNewPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy newPrivacy) {
@@ -97,14 +97,14 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.accountName==null && other.getAccountName()==null) || 
+        _equals = true &&
+            ((this.accountName==null && other.getAccountName()==null) ||
              (this.accountName!=null &&
               this.accountName.equals(other.getAccountName()))) &&
-            ((this.colleagueAccountName==null && other.getColleagueAccountName()==null) || 
+            ((this.colleagueAccountName==null && other.getColleagueAccountName()==null) ||
              (this.colleagueAccountName!=null &&
               this.colleagueAccountName.equals(other.getColleagueAccountName()))) &&
-            ((this.newPrivacy==null && other.getNewPrivacy()==null) || 
+            ((this.newPrivacy==null && other.getNewPrivacy()==null) ||
              (this.newPrivacy!=null &&
               this.newPrivacy.equals(other.getNewPrivacy())));
         __equalsCalc = null;
@@ -169,10 +169,10 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -181,10 +181,10 @@ public class UpdateColleaguePrivacy  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

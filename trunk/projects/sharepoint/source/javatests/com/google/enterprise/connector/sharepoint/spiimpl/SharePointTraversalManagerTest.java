@@ -25,51 +25,60 @@ import junit.framework.TestCase;
 
 public class SharePointTraversalManagerTest extends TestCase {
 
-	SharepointClientContext sharepointClientContext;
-	SharepointTraversalManager travMan;
-	
-	protected void setUp() throws Exception {
-		System.out.println("\n...Setting Up...");
-		System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
+    SharepointClientContext sharepointClientContext;
+    SharepointTraversalManager travMan;
 
-		assertNotNull(this.sharepointClientContext);
-		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);		
-		
-		System.out.println("Initializing SharepointConnector ...");
-		final SharepointConnector connector = new SharepointConnector(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,TestConfiguration.feedType);
-		connector.setFQDNConversion(TestConfiguration.FQDNflag);
-		System.out.println("Initializing SharepointTraversalManager ...");				
-		this.travMan = new SharepointTraversalManager(connector,this.sharepointClientContext);
-		this.travMan.setBatchHint(100);		
-	}
-	
-	public void testStartTraversal() {
-		System.out.println("Testing startTraversal()...");
-		try {
-			final DocumentList docList = this.travMan.startTraversal();
-			assertNotNull(docList);
-			System.out.println("[ startTraversal() ] Test Passed.");
-		} catch(final RepositoryException re) {
-			System.out.println(re);
-			System.out.println("[ startTraversal() ] Test Failed.");
-		}
-	}
-	
-	public void testResumeTraversal() {
-		System.out.println("Testing resumeTraversal()...");
-		try {
-			final DocumentList docList = this.travMan.resumeTraversal("SharePoint");
-			assertNotNull(docList);
-			System.out.println("[ resumeTraversal() ] Test Passed.");
-		} catch(final RepositoryException re) {
-			System.out.println(re);
-			System.out.println("[ resumeTraversal() ] Test Failed.");
-		}
-	}
+    protected void setUp() throws Exception {
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SharepointClientContext ...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+
+        assertNotNull(this.sharepointClientContext);
+        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+
+        System.out.println("Initializing SharepointConnector ...");
+        final SharepointConnector connector = new SharepointConnector(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+        connector.setFQDNConversion(TestConfiguration.FQDNflag);
+        System.out.println("Initializing SharepointTraversalManager ...");
+        this.travMan = new SharepointTraversalManager(connector,
+                this.sharepointClientContext);
+        this.travMan.setBatchHint(100);
+    }
+
+    public void testStartTraversal() {
+        System.out.println("Testing startTraversal()...");
+        try {
+            final DocumentList docList = this.travMan.startTraversal();
+            assertNotNull(docList);
+            System.out.println("[ startTraversal() ] Test Passed.");
+        } catch (final RepositoryException re) {
+            System.out.println(re);
+            System.out.println("[ startTraversal() ] Test Failed.");
+        }
+    }
+
+    public void testResumeTraversal() {
+        System.out.println("Testing resumeTraversal()...");
+        try {
+            final DocumentList docList = this.travMan.resumeTraversal("SharePoint");
+            assertNotNull(docList);
+            System.out.println("[ resumeTraversal() ] Test Passed.");
+        } catch (final RepositoryException re) {
+            System.out.println(re);
+            System.out.println("[ resumeTraversal() ] Test Failed.");
+        }
+    }
 }

@@ -25,7 +25,7 @@ public class ModifyUserPropertyByAccountName  implements java.io.Serializable {
 
     /**
      * Gets the accountName value for this ModifyUserPropertyByAccountName.
-     * 
+     *
      * @return accountName
      */
     public java.lang.String getAccountName() {
@@ -35,7 +35,7 @@ public class ModifyUserPropertyByAccountName  implements java.io.Serializable {
 
     /**
      * Sets the accountName value for this ModifyUserPropertyByAccountName.
-     * 
+     *
      * @param accountName
      */
     public void setAccountName(java.lang.String accountName) {
@@ -45,7 +45,7 @@ public class ModifyUserPropertyByAccountName  implements java.io.Serializable {
 
     /**
      * Gets the newData value for this ModifyUserPropertyByAccountName.
-     * 
+     *
      * @return newData
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.PropertyData[] getNewData() {
@@ -55,7 +55,7 @@ public class ModifyUserPropertyByAccountName  implements java.io.Serializable {
 
     /**
      * Sets the newData value for this ModifyUserPropertyByAccountName.
-     * 
+     *
      * @param newData
      */
     public void setNewData(com.google.enterprise.connector.sharepoint.generated.userprofileservice.PropertyData[] newData) {
@@ -73,11 +73,11 @@ public class ModifyUserPropertyByAccountName  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.accountName==null && other.getAccountName()==null) || 
+        _equals = true &&
+            ((this.accountName==null && other.getAccountName()==null) ||
              (this.accountName!=null &&
               this.accountName.equals(other.getAccountName()))) &&
-            ((this.newData==null && other.getNewData()==null) || 
+            ((this.newData==null && other.getNewData()==null) ||
              (this.newData!=null &&
               java.util.Arrays.equals(this.newData, other.getNewData())));
         __equalsCalc = null;
@@ -143,10 +143,10 @@ public class ModifyUserPropertyByAccountName  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -155,10 +155,10 @@ public class ModifyUserPropertyByAccountName  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -73,7 +73,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the title value for this _sListMetadata.
-     * 
+     *
      * @return title
      */
     public java.lang.String getTitle() {
@@ -83,7 +83,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the title value for this _sListMetadata.
-     * 
+     *
      * @param title
      */
     public void setTitle(java.lang.String title) {
@@ -93,7 +93,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the description value for this _sListMetadata.
-     * 
+     *
      * @return description
      */
     public java.lang.String getDescription() {
@@ -103,7 +103,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the description value for this _sListMetadata.
-     * 
+     *
      * @param description
      */
     public void setDescription(java.lang.String description) {
@@ -113,7 +113,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the baseType value for this _sListMetadata.
-     * 
+     *
      * @return baseType
      */
     public java.lang.String getBaseType() {
@@ -123,7 +123,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the baseType value for this _sListMetadata.
-     * 
+     *
      * @param baseType
      */
     public void setBaseType(java.lang.String baseType) {
@@ -133,7 +133,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the baseTemplate value for this _sListMetadata.
-     * 
+     *
      * @return baseTemplate
      */
     public java.lang.String getBaseTemplate() {
@@ -143,7 +143,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the baseTemplate value for this _sListMetadata.
-     * 
+     *
      * @param baseTemplate
      */
     public void setBaseTemplate(java.lang.String baseTemplate) {
@@ -153,7 +153,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the defaultViewUrl value for this _sListMetadata.
-     * 
+     *
      * @return defaultViewUrl
      */
     public java.lang.String getDefaultViewUrl() {
@@ -163,7 +163,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the defaultViewUrl value for this _sListMetadata.
-     * 
+     *
      * @param defaultViewUrl
      */
     public void setDefaultViewUrl(java.lang.String defaultViewUrl) {
@@ -173,7 +173,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the lastModified value for this _sListMetadata.
-     * 
+     *
      * @return lastModified
      */
     public java.util.Calendar getLastModified() {
@@ -183,7 +183,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the lastModified value for this _sListMetadata.
-     * 
+     *
      * @param lastModified
      */
     public void setLastModified(java.util.Calendar lastModified) {
@@ -193,7 +193,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the lastModifiedForceRecrawl value for this _sListMetadata.
-     * 
+     *
      * @return lastModifiedForceRecrawl
      */
     public java.util.Calendar getLastModifiedForceRecrawl() {
@@ -203,7 +203,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the lastModifiedForceRecrawl value for this _sListMetadata.
-     * 
+     *
      * @param lastModifiedForceRecrawl
      */
     public void setLastModifiedForceRecrawl(java.util.Calendar lastModifiedForceRecrawl) {
@@ -213,7 +213,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the author value for this _sListMetadata.
-     * 
+     *
      * @return author
      */
     public java.lang.String getAuthor() {
@@ -223,7 +223,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the author value for this _sListMetadata.
-     * 
+     *
      * @param author
      */
     public void setAuthor(java.lang.String author) {
@@ -233,7 +233,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the validSecurityInfo value for this _sListMetadata.
-     * 
+     *
      * @return validSecurityInfo
      */
     public boolean isValidSecurityInfo() {
@@ -243,7 +243,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the validSecurityInfo value for this _sListMetadata.
-     * 
+     *
      * @param validSecurityInfo
      */
     public void setValidSecurityInfo(boolean validSecurityInfo) {
@@ -253,7 +253,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the inheritedSecurity value for this _sListMetadata.
-     * 
+     *
      * @return inheritedSecurity
      */
     public boolean isInheritedSecurity() {
@@ -263,7 +263,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the inheritedSecurity value for this _sListMetadata.
-     * 
+     *
      * @param inheritedSecurity
      */
     public void setInheritedSecurity(boolean inheritedSecurity) {
@@ -273,7 +273,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the allowAnonymousAccess value for this _sListMetadata.
-     * 
+     *
      * @return allowAnonymousAccess
      */
     public boolean isAllowAnonymousAccess() {
@@ -283,7 +283,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the allowAnonymousAccess value for this _sListMetadata.
-     * 
+     *
      * @param allowAnonymousAccess
      */
     public void setAllowAnonymousAccess(boolean allowAnonymousAccess) {
@@ -293,7 +293,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the anonymousViewListItems value for this _sListMetadata.
-     * 
+     *
      * @return anonymousViewListItems
      */
     public boolean isAnonymousViewListItems() {
@@ -303,7 +303,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the anonymousViewListItems value for this _sListMetadata.
-     * 
+     *
      * @param anonymousViewListItems
      */
     public void setAnonymousViewListItems(boolean anonymousViewListItems) {
@@ -313,7 +313,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the readSecurity value for this _sListMetadata.
-     * 
+     *
      * @return readSecurity
      */
     public int getReadSecurity() {
@@ -323,7 +323,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the readSecurity value for this _sListMetadata.
-     * 
+     *
      * @param readSecurity
      */
     public void setReadSecurity(int readSecurity) {
@@ -333,7 +333,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Gets the permissions value for this _sListMetadata.
-     * 
+     *
      * @return permissions
      */
     public java.lang.String getPermissions() {
@@ -343,7 +343,7 @@ public class _sListMetadata  implements java.io.Serializable {
 
     /**
      * Sets the permissions value for this _sListMetadata.
-     * 
+     *
      * @param permissions
      */
     public void setPermissions(java.lang.String permissions) {
@@ -361,29 +361,29 @@ public class _sListMetadata  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.title==null && other.getTitle()==null) || 
+        _equals = true &&
+            ((this.title==null && other.getTitle()==null) ||
              (this.title!=null &&
               this.title.equals(other.getTitle()))) &&
-            ((this.description==null && other.getDescription()==null) || 
+            ((this.description==null && other.getDescription()==null) ||
              (this.description!=null &&
               this.description.equals(other.getDescription()))) &&
-            ((this.baseType==null && other.getBaseType()==null) || 
+            ((this.baseType==null && other.getBaseType()==null) ||
              (this.baseType!=null &&
               this.baseType.equals(other.getBaseType()))) &&
-            ((this.baseTemplate==null && other.getBaseTemplate()==null) || 
+            ((this.baseTemplate==null && other.getBaseTemplate()==null) ||
              (this.baseTemplate!=null &&
               this.baseTemplate.equals(other.getBaseTemplate()))) &&
-            ((this.defaultViewUrl==null && other.getDefaultViewUrl()==null) || 
+            ((this.defaultViewUrl==null && other.getDefaultViewUrl()==null) ||
              (this.defaultViewUrl!=null &&
               this.defaultViewUrl.equals(other.getDefaultViewUrl()))) &&
-            ((this.lastModified==null && other.getLastModified()==null) || 
+            ((this.lastModified==null && other.getLastModified()==null) ||
              (this.lastModified!=null &&
               this.lastModified.equals(other.getLastModified()))) &&
-            ((this.lastModifiedForceRecrawl==null && other.getLastModifiedForceRecrawl()==null) || 
+            ((this.lastModifiedForceRecrawl==null && other.getLastModifiedForceRecrawl()==null) ||
              (this.lastModifiedForceRecrawl!=null &&
               this.lastModifiedForceRecrawl.equals(other.getLastModifiedForceRecrawl()))) &&
-            ((this.author==null && other.getAuthor()==null) || 
+            ((this.author==null && other.getAuthor()==null) ||
              (this.author!=null &&
               this.author.equals(other.getAuthor()))) &&
             this.validSecurityInfo == other.isValidSecurityInfo() &&
@@ -391,7 +391,7 @@ public class _sListMetadata  implements java.io.Serializable {
             this.allowAnonymousAccess == other.isAllowAnonymousAccess() &&
             this.anonymousViewListItems == other.isAnonymousViewListItems() &&
             this.readSecurity == other.getReadSecurity() &&
-            ((this.permissions==null && other.getPermissions()==null) || 
+            ((this.permissions==null && other.getPermissions()==null) ||
              (this.permissions!=null &&
               this.permissions.equals(other.getPermissions())));
         __equalsCalc = null;
@@ -551,10 +551,10 @@ public class _sListMetadata  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -563,10 +563,10 @@ public class _sListMetadata  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

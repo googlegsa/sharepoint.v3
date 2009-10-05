@@ -21,7 +21,7 @@ public class GetUserProfileByGuidResponse  implements java.io.Serializable {
 
     /**
      * Gets the getUserProfileByGuidResult value for this GetUserProfileByGuidResponse.
-     * 
+     *
      * @return getUserProfileByGuidResult
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.PropertyData[] getGetUserProfileByGuidResult() {
@@ -31,7 +31,7 @@ public class GetUserProfileByGuidResponse  implements java.io.Serializable {
 
     /**
      * Sets the getUserProfileByGuidResult value for this GetUserProfileByGuidResponse.
-     * 
+     *
      * @param getUserProfileByGuidResult
      */
     public void setGetUserProfileByGuidResult(com.google.enterprise.connector.sharepoint.generated.userprofileservice.PropertyData[] getUserProfileByGuidResult) {
@@ -49,8 +49,8 @@ public class GetUserProfileByGuidResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getUserProfileByGuidResult==null && other.getGetUserProfileByGuidResult()==null) || 
+        _equals = true &&
+            ((this.getUserProfileByGuidResult==null && other.getGetUserProfileByGuidResult()==null) ||
              (this.getUserProfileByGuidResult!=null &&
               java.util.Arrays.equals(this.getUserProfileByGuidResult, other.getGetUserProfileByGuidResult())));
         __equalsCalc = null;
@@ -106,10 +106,10 @@ public class GetUserProfileByGuidResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -118,10 +118,10 @@ public class GetUserProfileByGuidResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

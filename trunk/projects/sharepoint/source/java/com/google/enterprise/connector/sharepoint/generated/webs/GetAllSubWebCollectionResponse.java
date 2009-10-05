@@ -21,7 +21,7 @@ public class GetAllSubWebCollectionResponse  implements java.io.Serializable {
 
     /**
      * Gets the getAllSubWebCollectionResult value for this GetAllSubWebCollectionResponse.
-     * 
+     *
      * @return getAllSubWebCollectionResult
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.GetAllSubWebCollectionResponseGetAllSubWebCollectionResult getGetAllSubWebCollectionResult() {
@@ -31,7 +31,7 @@ public class GetAllSubWebCollectionResponse  implements java.io.Serializable {
 
     /**
      * Sets the getAllSubWebCollectionResult value for this GetAllSubWebCollectionResponse.
-     * 
+     *
      * @param getAllSubWebCollectionResult
      */
     public void setGetAllSubWebCollectionResult(com.google.enterprise.connector.sharepoint.generated.webs.GetAllSubWebCollectionResponseGetAllSubWebCollectionResult getAllSubWebCollectionResult) {
@@ -49,8 +49,8 @@ public class GetAllSubWebCollectionResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getAllSubWebCollectionResult==null && other.getGetAllSubWebCollectionResult()==null) || 
+        _equals = true &&
+            ((this.getAllSubWebCollectionResult==null && other.getGetAllSubWebCollectionResult()==null) ||
              (this.getAllSubWebCollectionResult!=null &&
               this.getAllSubWebCollectionResult.equals(other.getGetAllSubWebCollectionResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class GetAllSubWebCollectionResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class GetAllSubWebCollectionResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

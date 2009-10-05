@@ -37,7 +37,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Gets the contentTypeId value for this UpdateContentType.
-     * 
+     *
      * @return contentTypeId
      */
     public java.lang.String getContentTypeId() {
@@ -47,7 +47,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Sets the contentTypeId value for this UpdateContentType.
-     * 
+     *
      * @param contentTypeId
      */
     public void setContentTypeId(java.lang.String contentTypeId) {
@@ -57,7 +57,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Gets the contentTypeProperties value for this UpdateContentType.
-     * 
+     *
      * @return contentTypeProperties
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.UpdateContentTypeContentTypeProperties getContentTypeProperties() {
@@ -67,7 +67,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Sets the contentTypeProperties value for this UpdateContentType.
-     * 
+     *
      * @param contentTypeProperties
      */
     public void setContentTypeProperties(com.google.enterprise.connector.sharepoint.generated.webs.UpdateContentTypeContentTypeProperties contentTypeProperties) {
@@ -77,7 +77,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Gets the newFields value for this UpdateContentType.
-     * 
+     *
      * @return newFields
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.UpdateContentTypeNewFields getNewFields() {
@@ -87,7 +87,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Sets the newFields value for this UpdateContentType.
-     * 
+     *
      * @param newFields
      */
     public void setNewFields(com.google.enterprise.connector.sharepoint.generated.webs.UpdateContentTypeNewFields newFields) {
@@ -97,7 +97,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Gets the updateFields value for this UpdateContentType.
-     * 
+     *
      * @return updateFields
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.UpdateContentTypeUpdateFields getUpdateFields() {
@@ -107,7 +107,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Sets the updateFields value for this UpdateContentType.
-     * 
+     *
      * @param updateFields
      */
     public void setUpdateFields(com.google.enterprise.connector.sharepoint.generated.webs.UpdateContentTypeUpdateFields updateFields) {
@@ -117,7 +117,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Gets the deleteFields value for this UpdateContentType.
-     * 
+     *
      * @return deleteFields
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.UpdateContentTypeDeleteFields getDeleteFields() {
@@ -127,7 +127,7 @@ public class UpdateContentType  implements java.io.Serializable {
 
     /**
      * Sets the deleteFields value for this UpdateContentType.
-     * 
+     *
      * @param deleteFields
      */
     public void setDeleteFields(com.google.enterprise.connector.sharepoint.generated.webs.UpdateContentTypeDeleteFields deleteFields) {
@@ -145,20 +145,20 @@ public class UpdateContentType  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.contentTypeId==null && other.getContentTypeId()==null) || 
+        _equals = true &&
+            ((this.contentTypeId==null && other.getContentTypeId()==null) ||
              (this.contentTypeId!=null &&
               this.contentTypeId.equals(other.getContentTypeId()))) &&
-            ((this.contentTypeProperties==null && other.getContentTypeProperties()==null) || 
+            ((this.contentTypeProperties==null && other.getContentTypeProperties()==null) ||
              (this.contentTypeProperties!=null &&
               this.contentTypeProperties.equals(other.getContentTypeProperties()))) &&
-            ((this.newFields==null && other.getNewFields()==null) || 
+            ((this.newFields==null && other.getNewFields()==null) ||
              (this.newFields!=null &&
               this.newFields.equals(other.getNewFields()))) &&
-            ((this.updateFields==null && other.getUpdateFields()==null) || 
+            ((this.updateFields==null && other.getUpdateFields()==null) ||
              (this.updateFields!=null &&
               this.updateFields.equals(other.getUpdateFields()))) &&
-            ((this.deleteFields==null && other.getDeleteFields()==null) || 
+            ((this.deleteFields==null && other.getDeleteFields()==null) ||
              (this.deleteFields!=null &&
               this.deleteFields.equals(other.getDeleteFields())));
         __equalsCalc = null;
@@ -245,10 +245,10 @@ public class UpdateContentType  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -257,10 +257,10 @@ public class UpdateContentType  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -25,7 +25,7 @@ public class UpdateContentTypesXmlDocument  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this UpdateContentTypesXmlDocument.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -35,7 +35,7 @@ public class UpdateContentTypesXmlDocument  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this UpdateContentTypesXmlDocument.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -45,7 +45,7 @@ public class UpdateContentTypesXmlDocument  implements java.io.Serializable {
 
     /**
      * Gets the newDocument value for this UpdateContentTypesXmlDocument.
-     * 
+     *
      * @return newDocument
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.UpdateContentTypesXmlDocumentNewDocument getNewDocument() {
@@ -55,7 +55,7 @@ public class UpdateContentTypesXmlDocument  implements java.io.Serializable {
 
     /**
      * Sets the newDocument value for this UpdateContentTypesXmlDocument.
-     * 
+     *
      * @param newDocument
      */
     public void setNewDocument(com.google.enterprise.connector.sharepoint.generated.lists.UpdateContentTypesXmlDocumentNewDocument newDocument) {
@@ -73,11 +73,11 @@ public class UpdateContentTypesXmlDocument  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.newDocument==null && other.getNewDocument()==null) || 
+            ((this.newDocument==null && other.getNewDocument()==null) ||
              (this.newDocument!=null &&
               this.newDocument.equals(other.getNewDocument())));
         __equalsCalc = null;
@@ -134,10 +134,10 @@ public class UpdateContentTypesXmlDocument  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -146,10 +146,10 @@ public class UpdateContentTypesXmlDocument  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

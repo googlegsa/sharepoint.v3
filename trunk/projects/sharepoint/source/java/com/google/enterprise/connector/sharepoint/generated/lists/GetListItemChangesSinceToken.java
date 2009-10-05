@@ -49,7 +49,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -59,7 +59,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -69,7 +69,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Gets the viewName value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @return viewName
      */
     public java.lang.String getViewName() {
@@ -79,7 +79,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Sets the viewName value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @param viewName
      */
     public void setViewName(java.lang.String viewName) {
@@ -89,7 +89,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Gets the query value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @return query
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQuery getQuery() {
@@ -99,7 +99,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Sets the query value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @param query
      */
     public void setQuery(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQuery query) {
@@ -109,7 +109,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Gets the viewFields value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @return viewFields
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenViewFields getViewFields() {
@@ -119,7 +119,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Sets the viewFields value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @param viewFields
      */
     public void setViewFields(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenViewFields viewFields) {
@@ -129,7 +129,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Gets the rowLimit value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @return rowLimit
      */
     public java.lang.String getRowLimit() {
@@ -139,7 +139,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Sets the rowLimit value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @param rowLimit
      */
     public void setRowLimit(java.lang.String rowLimit) {
@@ -149,7 +149,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Gets the queryOptions value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @return queryOptions
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQueryOptions getQueryOptions() {
@@ -159,7 +159,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Sets the queryOptions value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @param queryOptions
      */
     public void setQueryOptions(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQueryOptions queryOptions) {
@@ -169,7 +169,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Gets the changeToken value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @return changeToken
      */
     public java.lang.String getChangeToken() {
@@ -179,7 +179,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Sets the changeToken value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @param changeToken
      */
     public void setChangeToken(java.lang.String changeToken) {
@@ -189,7 +189,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Gets the contains value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @return contains
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenContains getContains() {
@@ -199,7 +199,7 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
 
     /**
      * Sets the contains value for this GetListItemChangesSinceToken.
-     * 
+     *
      * @param contains
      */
     public void setContains(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenContains contains) {
@@ -217,29 +217,29 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.viewName==null && other.getViewName()==null) || 
+            ((this.viewName==null && other.getViewName()==null) ||
              (this.viewName!=null &&
               this.viewName.equals(other.getViewName()))) &&
-            ((this.query==null && other.getQuery()==null) || 
+            ((this.query==null && other.getQuery()==null) ||
              (this.query!=null &&
               this.query.equals(other.getQuery()))) &&
-            ((this.viewFields==null && other.getViewFields()==null) || 
+            ((this.viewFields==null && other.getViewFields()==null) ||
              (this.viewFields!=null &&
               this.viewFields.equals(other.getViewFields()))) &&
-            ((this.rowLimit==null && other.getRowLimit()==null) || 
+            ((this.rowLimit==null && other.getRowLimit()==null) ||
              (this.rowLimit!=null &&
               this.rowLimit.equals(other.getRowLimit()))) &&
-            ((this.queryOptions==null && other.getQueryOptions()==null) || 
+            ((this.queryOptions==null && other.getQueryOptions()==null) ||
              (this.queryOptions!=null &&
               this.queryOptions.equals(other.getQueryOptions()))) &&
-            ((this.changeToken==null && other.getChangeToken()==null) || 
+            ((this.changeToken==null && other.getChangeToken()==null) ||
              (this.changeToken!=null &&
               this.changeToken.equals(other.getChangeToken()))) &&
-            ((this.contains==null && other.getContains()==null) || 
+            ((this.contains==null && other.getContains()==null) ||
              (this.contains!=null &&
               this.contains.equals(other.getContains())));
         __equalsCalc = null;
@@ -356,10 +356,10 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -368,10 +368,10 @@ public class GetListItemChangesSinceToken  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

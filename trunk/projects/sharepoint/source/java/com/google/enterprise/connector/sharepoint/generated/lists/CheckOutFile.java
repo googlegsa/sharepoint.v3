@@ -29,7 +29,7 @@ public class CheckOutFile  implements java.io.Serializable {
 
     /**
      * Gets the pageUrl value for this CheckOutFile.
-     * 
+     *
      * @return pageUrl
      */
     public java.lang.String getPageUrl() {
@@ -39,7 +39,7 @@ public class CheckOutFile  implements java.io.Serializable {
 
     /**
      * Sets the pageUrl value for this CheckOutFile.
-     * 
+     *
      * @param pageUrl
      */
     public void setPageUrl(java.lang.String pageUrl) {
@@ -49,7 +49,7 @@ public class CheckOutFile  implements java.io.Serializable {
 
     /**
      * Gets the checkoutToLocal value for this CheckOutFile.
-     * 
+     *
      * @return checkoutToLocal
      */
     public java.lang.String getCheckoutToLocal() {
@@ -59,7 +59,7 @@ public class CheckOutFile  implements java.io.Serializable {
 
     /**
      * Sets the checkoutToLocal value for this CheckOutFile.
-     * 
+     *
      * @param checkoutToLocal
      */
     public void setCheckoutToLocal(java.lang.String checkoutToLocal) {
@@ -69,7 +69,7 @@ public class CheckOutFile  implements java.io.Serializable {
 
     /**
      * Gets the lastmodified value for this CheckOutFile.
-     * 
+     *
      * @return lastmodified
      */
     public java.lang.String getLastmodified() {
@@ -79,7 +79,7 @@ public class CheckOutFile  implements java.io.Serializable {
 
     /**
      * Sets the lastmodified value for this CheckOutFile.
-     * 
+     *
      * @param lastmodified
      */
     public void setLastmodified(java.lang.String lastmodified) {
@@ -97,14 +97,14 @@ public class CheckOutFile  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.pageUrl==null && other.getPageUrl()==null) || 
+        _equals = true &&
+            ((this.pageUrl==null && other.getPageUrl()==null) ||
              (this.pageUrl!=null &&
               this.pageUrl.equals(other.getPageUrl()))) &&
-            ((this.checkoutToLocal==null && other.getCheckoutToLocal()==null) || 
+            ((this.checkoutToLocal==null && other.getCheckoutToLocal()==null) ||
              (this.checkoutToLocal!=null &&
               this.checkoutToLocal.equals(other.getCheckoutToLocal()))) &&
-            ((this.lastmodified==null && other.getLastmodified()==null) || 
+            ((this.lastmodified==null && other.getLastmodified()==null) ||
              (this.lastmodified!=null &&
               this.lastmodified.equals(other.getLastmodified())));
         __equalsCalc = null;
@@ -171,10 +171,10 @@ public class CheckOutFile  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -183,10 +183,10 @@ public class CheckOutFile  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

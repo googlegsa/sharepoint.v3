@@ -32,57 +32,68 @@ import com.sun.jndi.toolkit.url.UrlUtil;
 
 public class SPDocumentTest extends TestCase {
 
-	SPDocument doc;
-	
-	protected void setUp() throws Exception {
-		super.setUp();
-		final String docURL = "http://myHost.myDomain:port/path/";
-		this.doc = new SPDocument("docID", docURL, Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE, SPConstants.CONTENT_FEED,SPConstants.SP2007);
-		try {
-			String str = UrlUtil.encode(docURL, "UTF-8");
-			String charset = new GetMethod(str).getParams().getUriCharset();
-			URI uri = new URI(docURL, true, charset);
-			System.out.println(str);
-			System.out.println(uri.toString());
-		} catch(Exception e) {
-			System.out.println(e);
-		}
-	}
+    SPDocument doc;
 
-	public void testCompare() {
-		final SPDocument tmpdoc1 = new SPDocument("1", "HTTP://MYCOMP.COM", Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE, SPConstants.CONTENT_FEED,SPConstants.SP2007);
-		final SPDocument tmpdoc2 = new SPDocument("2", "HTTP://MYCOMP.COM", Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE, SPConstants.CONTENT_FEED,SPConstants.SP2007);
-		final List<SPDocument> testSet = new ArrayList<SPDocument>();
-		testSet.add(tmpdoc1);
-		testSet.add(tmpdoc2);
-		Collections.sort(testSet);
-		System.out.println(testSet);
-	}
-	
-	public final void testFindProperty() {
-		System.out.println("Testing findProperty()..");
-		try {
-			final Property prop = this.doc.findProperty("docID");
-			assertNotNull(prop);
-			System.out.println("[ findProperty(() ] Test passd");
-		} catch(final Exception e) {
-			System.out.println("[ findProperty(() ] Test failed");
-		}			
-	}
+    protected void setUp() throws Exception {
+        super.setUp();
+        final String docURL = "http://myHost.myDomain:port/path/";
+        this.doc = new SPDocument("docID", docURL, Calendar.getInstance(),
+                SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
+                SPConstants.PARENT_WEB_TITLE, SPConstants.CONTENT_FEED,
+                SPConstants.SP2007);
+        try {
+            String str = UrlUtil.encode(docURL, "UTF-8");
+            String charset = new GetMethod(str).getParams().getUriCharset();
+            URI uri = new URI(docURL, true, charset);
+            System.out.println(str);
+            System.out.println(uri.toString());
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
 
-	/*public final void testDownloadContents() {
-		System.out.println("Testing downloadContents()..");
-		try {
-			final SharepointClientContext sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-					  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-					  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-					  TestConfiguration.AliasMap, TestConfiguration.feedType);		
-			
-			final String responseCode = this.doc.downloadContents(sharepointClientContext);
-			assertEquals(responseCode, "200");
-		} catch (final Exception e) {
-			assertTrue(false);
-		}
-		System.out.println("[ downloadContents(() ] Test passd");		
-	}*/
+    public void testCompare() {
+        final SPDocument tmpdoc1 = new SPDocument("1", "HTTP://MYCOMP.COM",
+                Calendar.getInstance(), SPConstants.NO_AUTHOR,
+                SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
+                SPConstants.CONTENT_FEED, SPConstants.SP2007);
+        final SPDocument tmpdoc2 = new SPDocument("2", "HTTP://MYCOMP.COM",
+                Calendar.getInstance(), SPConstants.NO_AUTHOR,
+                SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
+                SPConstants.CONTENT_FEED, SPConstants.SP2007);
+        final List<SPDocument> testSet = new ArrayList<SPDocument>();
+        testSet.add(tmpdoc1);
+        testSet.add(tmpdoc2);
+        Collections.sort(testSet);
+        System.out.println(testSet);
+    }
+
+    public final void testFindProperty() {
+        System.out.println("Testing findProperty()..");
+        try {
+            final Property prop = this.doc.findProperty("docID");
+            assertNotNull(prop);
+            System.out.println("[ findProperty(() ] Test passd");
+        } catch (final Exception e) {
+            System.out.println("[ findProperty(() ] Test failed");
+        }
+    }
+
+    /*
+     * public final void testDownloadContents() {
+     * System.out.println("Testing downloadContents().."); try { final
+     * SharepointClientContext sharepointClientContext = new
+     * SharepointClientContext(TestConfiguration.sharepointUrl,
+     * TestConfiguration.domain, TestConfiguration.username,
+     * TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+     * TestConfiguration.includedURls, TestConfiguration.excludedURls,
+     * TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+     * TestConfiguration.feedType);
+     *
+     * final String responseCode =
+     * this.doc.downloadContents(sharepointClientContext);
+     * assertEquals(responseCode, "200"); } catch (final Exception e) {
+     * assertTrue(false); }
+     * System.out.println("[ downloadContents(() ] Test passd"); }
+     */
 }

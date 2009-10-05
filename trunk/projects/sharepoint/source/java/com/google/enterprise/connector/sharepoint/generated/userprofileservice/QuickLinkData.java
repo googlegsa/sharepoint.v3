@@ -37,7 +37,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Gets the name value for this QuickLinkData.
-     * 
+     *
      * @return name
      */
     public java.lang.String getName() {
@@ -47,7 +47,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Sets the name value for this QuickLinkData.
-     * 
+     *
      * @param name
      */
     public void setName(java.lang.String name) {
@@ -57,7 +57,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Gets the group value for this QuickLinkData.
-     * 
+     *
      * @return group
      */
     public java.lang.String getGroup() {
@@ -67,7 +67,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Sets the group value for this QuickLinkData.
-     * 
+     *
      * @param group
      */
     public void setGroup(java.lang.String group) {
@@ -77,7 +77,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Gets the privacy value for this QuickLinkData.
-     * 
+     *
      * @return privacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getPrivacy() {
@@ -87,7 +87,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Sets the privacy value for this QuickLinkData.
-     * 
+     *
      * @param privacy
      */
     public void setPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy privacy) {
@@ -97,7 +97,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Gets the url value for this QuickLinkData.
-     * 
+     *
      * @return url
      */
     public java.lang.String getUrl() {
@@ -107,7 +107,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Sets the url value for this QuickLinkData.
-     * 
+     *
      * @param url
      */
     public void setUrl(java.lang.String url) {
@@ -117,7 +117,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Gets the ID value for this QuickLinkData.
-     * 
+     *
      * @return ID
      */
     public long getID() {
@@ -127,7 +127,7 @@ public class QuickLinkData  implements java.io.Serializable {
 
     /**
      * Sets the ID value for this QuickLinkData.
-     * 
+     *
      * @param ID
      */
     public void setID(long ID) {
@@ -145,17 +145,17 @@ public class QuickLinkData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.name==null && other.getName()==null) || 
+        _equals = true &&
+            ((this.name==null && other.getName()==null) ||
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
-            ((this.group==null && other.getGroup()==null) || 
+            ((this.group==null && other.getGroup()==null) ||
              (this.group!=null &&
               this.group.equals(other.getGroup()))) &&
-            ((this.privacy==null && other.getPrivacy()==null) || 
+            ((this.privacy==null && other.getPrivacy()==null) ||
              (this.privacy!=null &&
               this.privacy.equals(other.getPrivacy()))) &&
-            ((this.url==null && other.getUrl()==null) || 
+            ((this.url==null && other.getUrl()==null) ||
              (this.url!=null &&
               this.url.equals(other.getUrl()))) &&
             this.ID == other.getID();
@@ -239,10 +239,10 @@ public class QuickLinkData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -251,10 +251,10 @@ public class QuickLinkData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

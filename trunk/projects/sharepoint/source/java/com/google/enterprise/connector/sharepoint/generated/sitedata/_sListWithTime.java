@@ -29,7 +29,7 @@ public class _sListWithTime  implements java.io.Serializable {
 
     /**
      * Gets the internalName value for this _sListWithTime.
-     * 
+     *
      * @return internalName
      */
     public java.lang.String getInternalName() {
@@ -39,7 +39,7 @@ public class _sListWithTime  implements java.io.Serializable {
 
     /**
      * Sets the internalName value for this _sListWithTime.
-     * 
+     *
      * @param internalName
      */
     public void setInternalName(java.lang.String internalName) {
@@ -49,7 +49,7 @@ public class _sListWithTime  implements java.io.Serializable {
 
     /**
      * Gets the lastModified value for this _sListWithTime.
-     * 
+     *
      * @return lastModified
      */
     public java.util.Calendar getLastModified() {
@@ -59,7 +59,7 @@ public class _sListWithTime  implements java.io.Serializable {
 
     /**
      * Sets the lastModified value for this _sListWithTime.
-     * 
+     *
      * @param lastModified
      */
     public void setLastModified(java.util.Calendar lastModified) {
@@ -69,7 +69,7 @@ public class _sListWithTime  implements java.io.Serializable {
 
     /**
      * Gets the isEmpty value for this _sListWithTime.
-     * 
+     *
      * @return isEmpty
      */
     public boolean isIsEmpty() {
@@ -79,7 +79,7 @@ public class _sListWithTime  implements java.io.Serializable {
 
     /**
      * Sets the isEmpty value for this _sListWithTime.
-     * 
+     *
      * @param isEmpty
      */
     public void setIsEmpty(boolean isEmpty) {
@@ -97,11 +97,11 @@ public class _sListWithTime  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.internalName==null && other.getInternalName()==null) || 
+        _equals = true &&
+            ((this.internalName==null && other.getInternalName()==null) ||
              (this.internalName!=null &&
               this.internalName.equals(other.getInternalName()))) &&
-            ((this.lastModified==null && other.getLastModified()==null) || 
+            ((this.lastModified==null && other.getLastModified()==null) ||
              (this.lastModified!=null &&
               this.lastModified.equals(other.getLastModified()))) &&
             this.isEmpty == other.isIsEmpty();
@@ -165,10 +165,10 @@ public class _sListWithTime  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -177,10 +177,10 @@ public class _sListWithTime  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

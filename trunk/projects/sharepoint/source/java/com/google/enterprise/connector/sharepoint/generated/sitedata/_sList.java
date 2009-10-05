@@ -65,7 +65,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the internalName value for this _sList.
-     * 
+     *
      * @return internalName
      */
     public java.lang.String getInternalName() {
@@ -75,7 +75,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the internalName value for this _sList.
-     * 
+     *
      * @param internalName
      */
     public void setInternalName(java.lang.String internalName) {
@@ -85,7 +85,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the title value for this _sList.
-     * 
+     *
      * @return title
      */
     public java.lang.String getTitle() {
@@ -95,7 +95,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the title value for this _sList.
-     * 
+     *
      * @param title
      */
     public void setTitle(java.lang.String title) {
@@ -105,7 +105,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the description value for this _sList.
-     * 
+     *
      * @return description
      */
     public java.lang.String getDescription() {
@@ -115,7 +115,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the description value for this _sList.
-     * 
+     *
      * @param description
      */
     public void setDescription(java.lang.String description) {
@@ -125,7 +125,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the baseType value for this _sList.
-     * 
+     *
      * @return baseType
      */
     public java.lang.String getBaseType() {
@@ -135,7 +135,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the baseType value for this _sList.
-     * 
+     *
      * @param baseType
      */
     public void setBaseType(java.lang.String baseType) {
@@ -145,7 +145,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the baseTemplate value for this _sList.
-     * 
+     *
      * @return baseTemplate
      */
     public java.lang.String getBaseTemplate() {
@@ -155,7 +155,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the baseTemplate value for this _sList.
-     * 
+     *
      * @param baseTemplate
      */
     public void setBaseTemplate(java.lang.String baseTemplate) {
@@ -165,7 +165,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the defaultViewUrl value for this _sList.
-     * 
+     *
      * @return defaultViewUrl
      */
     public java.lang.String getDefaultViewUrl() {
@@ -175,7 +175,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the defaultViewUrl value for this _sList.
-     * 
+     *
      * @param defaultViewUrl
      */
     public void setDefaultViewUrl(java.lang.String defaultViewUrl) {
@@ -185,7 +185,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the lastModified value for this _sList.
-     * 
+     *
      * @return lastModified
      */
     public java.lang.String getLastModified() {
@@ -195,7 +195,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the lastModified value for this _sList.
-     * 
+     *
      * @param lastModified
      */
     public void setLastModified(java.lang.String lastModified) {
@@ -205,7 +205,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the permId value for this _sList.
-     * 
+     *
      * @return permId
      */
     public java.lang.String getPermId() {
@@ -215,7 +215,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the permId value for this _sList.
-     * 
+     *
      * @param permId
      */
     public void setPermId(java.lang.String permId) {
@@ -225,7 +225,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the inheritedSecurity value for this _sList.
-     * 
+     *
      * @return inheritedSecurity
      */
     public boolean isInheritedSecurity() {
@@ -235,7 +235,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the inheritedSecurity value for this _sList.
-     * 
+     *
      * @param inheritedSecurity
      */
     public void setInheritedSecurity(boolean inheritedSecurity) {
@@ -245,7 +245,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the allowAnonymousAccess value for this _sList.
-     * 
+     *
      * @return allowAnonymousAccess
      */
     public boolean isAllowAnonymousAccess() {
@@ -255,7 +255,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the allowAnonymousAccess value for this _sList.
-     * 
+     *
      * @param allowAnonymousAccess
      */
     public void setAllowAnonymousAccess(boolean allowAnonymousAccess) {
@@ -265,7 +265,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the anonymousViewListItems value for this _sList.
-     * 
+     *
      * @return anonymousViewListItems
      */
     public boolean isAnonymousViewListItems() {
@@ -275,7 +275,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the anonymousViewListItems value for this _sList.
-     * 
+     *
      * @param anonymousViewListItems
      */
     public void setAnonymousViewListItems(boolean anonymousViewListItems) {
@@ -285,7 +285,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Gets the readSecurity value for this _sList.
-     * 
+     *
      * @return readSecurity
      */
     public int getReadSecurity() {
@@ -295,7 +295,7 @@ public class _sList  implements java.io.Serializable {
 
     /**
      * Sets the readSecurity value for this _sList.
-     * 
+     *
      * @param readSecurity
      */
     public void setReadSecurity(int readSecurity) {
@@ -313,29 +313,29 @@ public class _sList  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.internalName==null && other.getInternalName()==null) || 
+        _equals = true &&
+            ((this.internalName==null && other.getInternalName()==null) ||
              (this.internalName!=null &&
               this.internalName.equals(other.getInternalName()))) &&
-            ((this.title==null && other.getTitle()==null) || 
+            ((this.title==null && other.getTitle()==null) ||
              (this.title!=null &&
               this.title.equals(other.getTitle()))) &&
-            ((this.description==null && other.getDescription()==null) || 
+            ((this.description==null && other.getDescription()==null) ||
              (this.description!=null &&
               this.description.equals(other.getDescription()))) &&
-            ((this.baseType==null && other.getBaseType()==null) || 
+            ((this.baseType==null && other.getBaseType()==null) ||
              (this.baseType!=null &&
               this.baseType.equals(other.getBaseType()))) &&
-            ((this.baseTemplate==null && other.getBaseTemplate()==null) || 
+            ((this.baseTemplate==null && other.getBaseTemplate()==null) ||
              (this.baseTemplate!=null &&
               this.baseTemplate.equals(other.getBaseTemplate()))) &&
-            ((this.defaultViewUrl==null && other.getDefaultViewUrl()==null) || 
+            ((this.defaultViewUrl==null && other.getDefaultViewUrl()==null) ||
              (this.defaultViewUrl!=null &&
               this.defaultViewUrl.equals(other.getDefaultViewUrl()))) &&
-            ((this.lastModified==null && other.getLastModified()==null) || 
+            ((this.lastModified==null && other.getLastModified()==null) ||
              (this.lastModified!=null &&
               this.lastModified.equals(other.getLastModified()))) &&
-            ((this.permId==null && other.getPermId()==null) || 
+            ((this.permId==null && other.getPermId()==null) ||
              (this.permId!=null &&
               this.permId.equals(other.getPermId()))) &&
             this.inheritedSecurity == other.isInheritedSecurity() &&
@@ -484,10 +484,10 @@ public class _sList  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -496,10 +496,10 @@ public class _sList  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -25,7 +25,7 @@ public class DeleteFailure  implements java.io.Serializable {
 
     /**
      * Gets the ID value for this DeleteFailure.
-     * 
+     *
      * @return ID
      */
     public java.lang.String getID() {
@@ -35,7 +35,7 @@ public class DeleteFailure  implements java.io.Serializable {
 
     /**
      * Sets the ID value for this DeleteFailure.
-     * 
+     *
      * @param ID
      */
     public void setID(java.lang.String ID) {
@@ -45,7 +45,7 @@ public class DeleteFailure  implements java.io.Serializable {
 
     /**
      * Gets the error value for this DeleteFailure.
-     * 
+     *
      * @return error
      */
     public com.google.enterprise.connector.sharepoint.generated.alerts.ErrorType getError() {
@@ -55,7 +55,7 @@ public class DeleteFailure  implements java.io.Serializable {
 
     /**
      * Sets the error value for this DeleteFailure.
-     * 
+     *
      * @param error
      */
     public void setError(com.google.enterprise.connector.sharepoint.generated.alerts.ErrorType error) {
@@ -73,11 +73,11 @@ public class DeleteFailure  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.ID==null && other.getID()==null) || 
+        _equals = true &&
+            ((this.ID==null && other.getID()==null) ||
              (this.ID!=null &&
               this.ID.equals(other.getID()))) &&
-            ((this.error==null && other.getError()==null) || 
+            ((this.error==null && other.getError()==null) ||
              (this.error!=null &&
               this.error.equals(other.getError())));
         __equalsCalc = null;
@@ -133,10 +133,10 @@ public class DeleteFailure  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -145,10 +145,10 @@ public class DeleteFailure  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

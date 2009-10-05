@@ -57,7 +57,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the accountName value for this ContactData.
-     * 
+     *
      * @return accountName
      */
     public java.lang.String getAccountName() {
@@ -67,7 +67,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the accountName value for this ContactData.
-     * 
+     *
      * @param accountName
      */
     public void setAccountName(java.lang.String accountName) {
@@ -77,7 +77,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the name value for this ContactData.
-     * 
+     *
      * @return name
      */
     public java.lang.String getName() {
@@ -87,7 +87,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the name value for this ContactData.
-     * 
+     *
      * @param name
      */
     public void setName(java.lang.String name) {
@@ -97,7 +97,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the group value for this ContactData.
-     * 
+     *
      * @return group
      */
     public java.lang.String getGroup() {
@@ -107,7 +107,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the group value for this ContactData.
-     * 
+     *
      * @param group
      */
     public void setGroup(java.lang.String group) {
@@ -117,7 +117,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the email value for this ContactData.
-     * 
+     *
      * @return email
      */
     public java.lang.String getEmail() {
@@ -127,7 +127,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the email value for this ContactData.
-     * 
+     *
      * @param email
      */
     public void setEmail(java.lang.String email) {
@@ -137,7 +137,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the title value for this ContactData.
-     * 
+     *
      * @return title
      */
     public java.lang.String getTitle() {
@@ -147,7 +147,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the title value for this ContactData.
-     * 
+     *
      * @param title
      */
     public void setTitle(java.lang.String title) {
@@ -157,7 +157,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the url value for this ContactData.
-     * 
+     *
      * @return url
      */
     public java.lang.String getUrl() {
@@ -167,7 +167,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the url value for this ContactData.
-     * 
+     *
      * @param url
      */
     public void setUrl(java.lang.String url) {
@@ -177,7 +177,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the isInWorkGroup value for this ContactData.
-     * 
+     *
      * @return isInWorkGroup
      */
     public boolean isIsInWorkGroup() {
@@ -187,7 +187,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the isInWorkGroup value for this ContactData.
-     * 
+     *
      * @param isInWorkGroup
      */
     public void setIsInWorkGroup(boolean isInWorkGroup) {
@@ -197,7 +197,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the userProfileID value for this ContactData.
-     * 
+     *
      * @return userProfileID
      */
     public java.lang.String getUserProfileID() {
@@ -207,7 +207,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the userProfileID value for this ContactData.
-     * 
+     *
      * @param userProfileID
      */
     public void setUserProfileID(java.lang.String userProfileID) {
@@ -217,7 +217,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the ID value for this ContactData.
-     * 
+     *
      * @return ID
      */
     public long getID() {
@@ -227,7 +227,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the ID value for this ContactData.
-     * 
+     *
      * @param ID
      */
     public void setID(long ID) {
@@ -237,7 +237,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Gets the privacy value for this ContactData.
-     * 
+     *
      * @return privacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getPrivacy() {
@@ -247,7 +247,7 @@ public class ContactData  implements java.io.Serializable {
 
     /**
      * Sets the privacy value for this ContactData.
-     * 
+     *
      * @param privacy
      */
     public void setPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy privacy) {
@@ -265,31 +265,31 @@ public class ContactData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.accountName==null && other.getAccountName()==null) || 
+        _equals = true &&
+            ((this.accountName==null && other.getAccountName()==null) ||
              (this.accountName!=null &&
               this.accountName.equals(other.getAccountName()))) &&
-            ((this.name==null && other.getName()==null) || 
+            ((this.name==null && other.getName()==null) ||
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
-            ((this.group==null && other.getGroup()==null) || 
+            ((this.group==null && other.getGroup()==null) ||
              (this.group!=null &&
               this.group.equals(other.getGroup()))) &&
-            ((this.email==null && other.getEmail()==null) || 
+            ((this.email==null && other.getEmail()==null) ||
              (this.email!=null &&
               this.email.equals(other.getEmail()))) &&
-            ((this.title==null && other.getTitle()==null) || 
+            ((this.title==null && other.getTitle()==null) ||
              (this.title!=null &&
               this.title.equals(other.getTitle()))) &&
-            ((this.url==null && other.getUrl()==null) || 
+            ((this.url==null && other.getUrl()==null) ||
              (this.url!=null &&
               this.url.equals(other.getUrl()))) &&
             this.isInWorkGroup == other.isIsInWorkGroup() &&
-            ((this.userProfileID==null && other.getUserProfileID()==null) || 
+            ((this.userProfileID==null && other.getUserProfileID()==null) ||
              (this.userProfileID!=null &&
               this.userProfileID.equals(other.getUserProfileID()))) &&
             this.ID == other.getID() &&
-            ((this.privacy==null && other.getPrivacy()==null) || 
+            ((this.privacy==null && other.getPrivacy()==null) ||
              (this.privacy!=null &&
               this.privacy.equals(other.getPrivacy())));
         __equalsCalc = null;
@@ -419,10 +419,10 @@ public class ContactData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -431,10 +431,10 @@ public class ContactData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

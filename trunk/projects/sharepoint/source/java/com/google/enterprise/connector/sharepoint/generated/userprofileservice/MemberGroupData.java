@@ -25,7 +25,7 @@ public class MemberGroupData  implements java.io.Serializable {
 
     /**
      * Gets the sourceInternal value for this MemberGroupData.
-     * 
+     *
      * @return sourceInternal
      */
     public java.lang.String getSourceInternal() {
@@ -35,7 +35,7 @@ public class MemberGroupData  implements java.io.Serializable {
 
     /**
      * Sets the sourceInternal value for this MemberGroupData.
-     * 
+     *
      * @param sourceInternal
      */
     public void setSourceInternal(java.lang.String sourceInternal) {
@@ -45,7 +45,7 @@ public class MemberGroupData  implements java.io.Serializable {
 
     /**
      * Gets the sourceReference value for this MemberGroupData.
-     * 
+     *
      * @return sourceReference
      */
     public java.lang.String getSourceReference() {
@@ -55,7 +55,7 @@ public class MemberGroupData  implements java.io.Serializable {
 
     /**
      * Sets the sourceReference value for this MemberGroupData.
-     * 
+     *
      * @param sourceReference
      */
     public void setSourceReference(java.lang.String sourceReference) {
@@ -73,11 +73,11 @@ public class MemberGroupData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.sourceInternal==null && other.getSourceInternal()==null) || 
+        _equals = true &&
+            ((this.sourceInternal==null && other.getSourceInternal()==null) ||
              (this.sourceInternal!=null &&
               this.sourceInternal.equals(other.getSourceInternal()))) &&
-            ((this.sourceReference==null && other.getSourceReference()==null) || 
+            ((this.sourceReference==null && other.getSourceReference()==null) ||
              (this.sourceReference!=null &&
               this.sourceReference.equals(other.getSourceReference())));
         __equalsCalc = null;
@@ -132,10 +132,10 @@ public class MemberGroupData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -144,10 +144,10 @@ public class MemberGroupData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

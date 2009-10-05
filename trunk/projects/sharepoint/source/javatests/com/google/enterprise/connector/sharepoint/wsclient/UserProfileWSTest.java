@@ -25,45 +25,51 @@ import com.google.enterprise.connector.spi.RepositoryException;
 
 /**
  * Test the functionaltily of UserProfile web service (SP2007).
+ *
  * @author amit_kagrawal
- * */
-public class UserProfileWSTest extends TestCase{
-	SharepointClientContext sharepointClientContext;
-	UserProfileWS userProfileWS;
-			
-	protected void setUp() throws Exception {
-		System.out.println("\n...Setting Up...");		
-		System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
-		
-		assertNotNull(this.sharepointClientContext);
-		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);		
-		
-		System.out.println("Initializing UserProfileWS ...");
-		this.userProfileWS = new UserProfileWS(this.sharepointClientContext);		
-	}
-	
-	public void testIsSPS() throws MalformedURLException, RepositoryException {
-		System.out.println("Testing isSPS()...");		
-		this.userProfileWS.isSPS();
-		System.out.println("[ isSPS() ] Test Completed.");		
-	}
-	
-	public void testGetPersonalSiteList() throws MalformedURLException, RepositoryException {
-		System.out.println("Testing getPersonalSiteList()...");		
-		final Set items = this.userProfileWS.getPersonalSiteList();
-		assertNotNull(items);
-		System.out.println("[ getPersonalSiteList() ] Test Passed.");		
-	}
+ */
+public class UserProfileWSTest extends TestCase {
+    SharepointClientContext sharepointClientContext;
+    UserProfileWS userProfileWS;
 
-	public void testGetMyLinks() throws MalformedURLException, RepositoryException {
-		System.out.println("Testing getMyLinks()...");		
-		final Set items = this.userProfileWS.getMyLinks();
-		assertNotNull(items);
-		System.out.println("[ getMyLinks() ] Test Passed.");		
-	}
+    protected void setUp() throws Exception {
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SharepointClientContext ...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+
+        assertNotNull(this.sharepointClientContext);
+        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+
+        System.out.println("Initializing UserProfileWS ...");
+        this.userProfileWS = new UserProfileWS(this.sharepointClientContext);
+    }
+
+    public void testIsSPS() throws MalformedURLException, RepositoryException {
+        System.out.println("Testing isSPS()...");
+        this.userProfileWS.isSPS();
+        System.out.println("[ isSPS() ] Test Completed.");
+    }
+
+    public void testGetPersonalSiteList() throws MalformedURLException,
+            RepositoryException {
+        System.out.println("Testing getPersonalSiteList()...");
+        final Set items = this.userProfileWS.getPersonalSiteList();
+        assertNotNull(items);
+        System.out.println("[ getPersonalSiteList() ] Test Passed.");
+    }
+
+    public void testGetMyLinks() throws MalformedURLException,
+            RepositoryException {
+        System.out.println("Testing getMyLinks()...");
+        final Set items = this.userProfileWS.getMyLinks();
+        assertNotNull(items);
+        System.out.println("[ getMyLinks() ] Test Passed.");
+    }
 }

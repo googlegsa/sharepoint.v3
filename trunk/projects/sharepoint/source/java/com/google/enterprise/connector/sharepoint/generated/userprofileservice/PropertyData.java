@@ -37,7 +37,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Gets the name value for this PropertyData.
-     * 
+     *
      * @return name
      */
     public java.lang.String getName() {
@@ -47,7 +47,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Sets the name value for this PropertyData.
-     * 
+     *
      * @param name
      */
     public void setName(java.lang.String name) {
@@ -57,7 +57,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Gets the privacy value for this PropertyData.
-     * 
+     *
      * @return privacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getPrivacy() {
@@ -67,7 +67,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Sets the privacy value for this PropertyData.
-     * 
+     *
      * @param privacy
      */
     public void setPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy privacy) {
@@ -77,7 +77,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Gets the values value for this PropertyData.
-     * 
+     *
      * @return values
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.ValueData[] getValues() {
@@ -87,7 +87,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Sets the values value for this PropertyData.
-     * 
+     *
      * @param values
      */
     public void setValues(com.google.enterprise.connector.sharepoint.generated.userprofileservice.ValueData[] values) {
@@ -97,7 +97,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Gets the isPrivacyChanged value for this PropertyData.
-     * 
+     *
      * @return isPrivacyChanged
      */
     public boolean isIsPrivacyChanged() {
@@ -107,7 +107,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Sets the isPrivacyChanged value for this PropertyData.
-     * 
+     *
      * @param isPrivacyChanged
      */
     public void setIsPrivacyChanged(boolean isPrivacyChanged) {
@@ -117,7 +117,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Gets the isValueChanged value for this PropertyData.
-     * 
+     *
      * @return isValueChanged
      */
     public boolean isIsValueChanged() {
@@ -127,7 +127,7 @@ public class PropertyData  implements java.io.Serializable {
 
     /**
      * Sets the isValueChanged value for this PropertyData.
-     * 
+     *
      * @param isValueChanged
      */
     public void setIsValueChanged(boolean isValueChanged) {
@@ -145,14 +145,14 @@ public class PropertyData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.name==null && other.getName()==null) || 
+        _equals = true &&
+            ((this.name==null && other.getName()==null) ||
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
-            ((this.privacy==null && other.getPrivacy()==null) || 
+            ((this.privacy==null && other.getPrivacy()==null) ||
              (this.privacy!=null &&
               this.privacy.equals(other.getPrivacy()))) &&
-            ((this.values==null && other.getValues()==null) || 
+            ((this.values==null && other.getValues()==null) ||
              (this.values!=null &&
               java.util.Arrays.equals(this.values, other.getValues()))) &&
             this.isPrivacyChanged == other.isIsPrivacyChanged() &&
@@ -243,10 +243,10 @@ public class PropertyData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -255,10 +255,10 @@ public class PropertyData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

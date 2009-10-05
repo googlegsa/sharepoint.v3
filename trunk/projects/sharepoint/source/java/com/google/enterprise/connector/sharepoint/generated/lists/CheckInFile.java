@@ -29,7 +29,7 @@ public class CheckInFile  implements java.io.Serializable {
 
     /**
      * Gets the pageUrl value for this CheckInFile.
-     * 
+     *
      * @return pageUrl
      */
     public java.lang.String getPageUrl() {
@@ -39,7 +39,7 @@ public class CheckInFile  implements java.io.Serializable {
 
     /**
      * Sets the pageUrl value for this CheckInFile.
-     * 
+     *
      * @param pageUrl
      */
     public void setPageUrl(java.lang.String pageUrl) {
@@ -49,7 +49,7 @@ public class CheckInFile  implements java.io.Serializable {
 
     /**
      * Gets the comment value for this CheckInFile.
-     * 
+     *
      * @return comment
      */
     public java.lang.String getComment() {
@@ -59,7 +59,7 @@ public class CheckInFile  implements java.io.Serializable {
 
     /**
      * Sets the comment value for this CheckInFile.
-     * 
+     *
      * @param comment
      */
     public void setComment(java.lang.String comment) {
@@ -69,7 +69,7 @@ public class CheckInFile  implements java.io.Serializable {
 
     /**
      * Gets the checkinType value for this CheckInFile.
-     * 
+     *
      * @return checkinType
      */
     public java.lang.String getCheckinType() {
@@ -79,7 +79,7 @@ public class CheckInFile  implements java.io.Serializable {
 
     /**
      * Sets the checkinType value for this CheckInFile.
-     * 
+     *
      * @param checkinType
      */
     public void setCheckinType(java.lang.String checkinType) {
@@ -97,14 +97,14 @@ public class CheckInFile  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.pageUrl==null && other.getPageUrl()==null) || 
+        _equals = true &&
+            ((this.pageUrl==null && other.getPageUrl()==null) ||
              (this.pageUrl!=null &&
               this.pageUrl.equals(other.getPageUrl()))) &&
-            ((this.comment==null && other.getComment()==null) || 
+            ((this.comment==null && other.getComment()==null) ||
              (this.comment!=null &&
               this.comment.equals(other.getComment()))) &&
-            ((this.checkinType==null && other.getCheckinType()==null) || 
+            ((this.checkinType==null && other.getCheckinType()==null) ||
              (this.checkinType!=null &&
               this.checkinType.equals(other.getCheckinType())));
         __equalsCalc = null;
@@ -171,10 +171,10 @@ public class CheckInFile  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -183,10 +183,10 @@ public class CheckInFile  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

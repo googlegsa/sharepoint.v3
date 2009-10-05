@@ -29,7 +29,7 @@ public class AddList  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this AddList.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -39,7 +39,7 @@ public class AddList  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this AddList.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -49,7 +49,7 @@ public class AddList  implements java.io.Serializable {
 
     /**
      * Gets the description value for this AddList.
-     * 
+     *
      * @return description
      */
     public java.lang.String getDescription() {
@@ -59,7 +59,7 @@ public class AddList  implements java.io.Serializable {
 
     /**
      * Sets the description value for this AddList.
-     * 
+     *
      * @param description
      */
     public void setDescription(java.lang.String description) {
@@ -69,7 +69,7 @@ public class AddList  implements java.io.Serializable {
 
     /**
      * Gets the templateID value for this AddList.
-     * 
+     *
      * @return templateID
      */
     public int getTemplateID() {
@@ -79,7 +79,7 @@ public class AddList  implements java.io.Serializable {
 
     /**
      * Sets the templateID value for this AddList.
-     * 
+     *
      * @param templateID
      */
     public void setTemplateID(int templateID) {
@@ -97,11 +97,11 @@ public class AddList  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.description==null && other.getDescription()==null) || 
+            ((this.description==null && other.getDescription()==null) ||
              (this.description!=null &&
               this.description.equals(other.getDescription()))) &&
             this.templateID == other.getTemplateID();
@@ -166,10 +166,10 @@ public class AddList  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -178,10 +178,10 @@ public class AddList  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

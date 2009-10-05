@@ -41,7 +41,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this UpdateList.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -51,7 +51,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this UpdateList.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -61,7 +61,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Gets the listProperties value for this UpdateList.
-     * 
+     *
      * @return listProperties
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.UpdateListListProperties getListProperties() {
@@ -71,7 +71,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Sets the listProperties value for this UpdateList.
-     * 
+     *
      * @param listProperties
      */
     public void setListProperties(com.google.enterprise.connector.sharepoint.generated.lists.UpdateListListProperties listProperties) {
@@ -81,7 +81,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Gets the newFields value for this UpdateList.
-     * 
+     *
      * @return newFields
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.UpdateListNewFields getNewFields() {
@@ -91,7 +91,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Sets the newFields value for this UpdateList.
-     * 
+     *
      * @param newFields
      */
     public void setNewFields(com.google.enterprise.connector.sharepoint.generated.lists.UpdateListNewFields newFields) {
@@ -101,7 +101,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Gets the updateFields value for this UpdateList.
-     * 
+     *
      * @return updateFields
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.UpdateListUpdateFields getUpdateFields() {
@@ -111,7 +111,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Sets the updateFields value for this UpdateList.
-     * 
+     *
      * @param updateFields
      */
     public void setUpdateFields(com.google.enterprise.connector.sharepoint.generated.lists.UpdateListUpdateFields updateFields) {
@@ -121,7 +121,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Gets the deleteFields value for this UpdateList.
-     * 
+     *
      * @return deleteFields
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.UpdateListDeleteFields getDeleteFields() {
@@ -131,7 +131,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Sets the deleteFields value for this UpdateList.
-     * 
+     *
      * @param deleteFields
      */
     public void setDeleteFields(com.google.enterprise.connector.sharepoint.generated.lists.UpdateListDeleteFields deleteFields) {
@@ -141,7 +141,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Gets the listVersion value for this UpdateList.
-     * 
+     *
      * @return listVersion
      */
     public java.lang.String getListVersion() {
@@ -151,7 +151,7 @@ public class UpdateList  implements java.io.Serializable {
 
     /**
      * Sets the listVersion value for this UpdateList.
-     * 
+     *
      * @param listVersion
      */
     public void setListVersion(java.lang.String listVersion) {
@@ -169,23 +169,23 @@ public class UpdateList  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.listProperties==null && other.getListProperties()==null) || 
+            ((this.listProperties==null && other.getListProperties()==null) ||
              (this.listProperties!=null &&
               this.listProperties.equals(other.getListProperties()))) &&
-            ((this.newFields==null && other.getNewFields()==null) || 
+            ((this.newFields==null && other.getNewFields()==null) ||
              (this.newFields!=null &&
               this.newFields.equals(other.getNewFields()))) &&
-            ((this.updateFields==null && other.getUpdateFields()==null) || 
+            ((this.updateFields==null && other.getUpdateFields()==null) ||
              (this.updateFields!=null &&
               this.updateFields.equals(other.getUpdateFields()))) &&
-            ((this.deleteFields==null && other.getDeleteFields()==null) || 
+            ((this.deleteFields==null && other.getDeleteFields()==null) ||
              (this.deleteFields!=null &&
               this.deleteFields.equals(other.getDeleteFields()))) &&
-            ((this.listVersion==null && other.getListVersion()==null) || 
+            ((this.listVersion==null && other.getListVersion()==null) ||
              (this.listVersion!=null &&
               this.listVersion.equals(other.getListVersion())));
         __equalsCalc = null;
@@ -282,10 +282,10 @@ public class UpdateList  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -294,10 +294,10 @@ public class UpdateList  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

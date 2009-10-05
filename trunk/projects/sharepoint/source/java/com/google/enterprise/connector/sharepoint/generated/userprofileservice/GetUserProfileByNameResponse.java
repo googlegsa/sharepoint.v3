@@ -21,7 +21,7 @@ public class GetUserProfileByNameResponse  implements java.io.Serializable {
 
     /**
      * Gets the getUserProfileByNameResult value for this GetUserProfileByNameResponse.
-     * 
+     *
      * @return getUserProfileByNameResult
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.PropertyData[] getGetUserProfileByNameResult() {
@@ -31,7 +31,7 @@ public class GetUserProfileByNameResponse  implements java.io.Serializable {
 
     /**
      * Sets the getUserProfileByNameResult value for this GetUserProfileByNameResponse.
-     * 
+     *
      * @param getUserProfileByNameResult
      */
     public void setGetUserProfileByNameResult(com.google.enterprise.connector.sharepoint.generated.userprofileservice.PropertyData[] getUserProfileByNameResult) {
@@ -49,8 +49,8 @@ public class GetUserProfileByNameResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getUserProfileByNameResult==null && other.getGetUserProfileByNameResult()==null) || 
+        _equals = true &&
+            ((this.getUserProfileByNameResult==null && other.getGetUserProfileByNameResult()==null) ||
              (this.getUserProfileByNameResult!=null &&
               java.util.Arrays.equals(this.getUserProfileByNameResult, other.getGetUserProfileByNameResult())));
         __equalsCalc = null;
@@ -106,10 +106,10 @@ public class GetUserProfileByNameResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -118,10 +118,10 @@ public class GetUserProfileByNameResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -25,7 +25,7 @@ public class UpdatePinnedLink  implements java.io.Serializable {
 
     /**
      * Gets the accountName value for this UpdatePinnedLink.
-     * 
+     *
      * @return accountName
      */
     public java.lang.String getAccountName() {
@@ -35,7 +35,7 @@ public class UpdatePinnedLink  implements java.io.Serializable {
 
     /**
      * Sets the accountName value for this UpdatePinnedLink.
-     * 
+     *
      * @param accountName
      */
     public void setAccountName(java.lang.String accountName) {
@@ -45,7 +45,7 @@ public class UpdatePinnedLink  implements java.io.Serializable {
 
     /**
      * Gets the data value for this UpdatePinnedLink.
-     * 
+     *
      * @return data
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.PinnedLinkData getData() {
@@ -55,7 +55,7 @@ public class UpdatePinnedLink  implements java.io.Serializable {
 
     /**
      * Sets the data value for this UpdatePinnedLink.
-     * 
+     *
      * @param data
      */
     public void setData(com.google.enterprise.connector.sharepoint.generated.userprofileservice.PinnedLinkData data) {
@@ -73,11 +73,11 @@ public class UpdatePinnedLink  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.accountName==null && other.getAccountName()==null) || 
+        _equals = true &&
+            ((this.accountName==null && other.getAccountName()==null) ||
              (this.accountName!=null &&
               this.accountName.equals(other.getAccountName()))) &&
-            ((this.data==null && other.getData()==null) || 
+            ((this.data==null && other.getData()==null) ||
              (this.data!=null &&
               this.data.equals(other.getData())));
         __equalsCalc = null;
@@ -134,10 +134,10 @@ public class UpdatePinnedLink  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -146,10 +146,10 @@ public class UpdatePinnedLink  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

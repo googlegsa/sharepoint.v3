@@ -178,15 +178,15 @@ public class SiteDataLocator extends org.apache.axis.client.Service implements c
     * Set the endpoint address for the specified port name.
     */
     public void setEndpointAddress(java.lang.String portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
-        
+
 if ("SiteDataSoap12".equals(portName)) {
             setSiteDataSoap12EndpointAddress(address);
         }
-        else 
+        else
 if ("SiteDataSoap".equals(portName)) {
             setSiteDataSoapEndpointAddress(address);
         }
-        else 
+        else
 { // Unknown Port Name
             throw new javax.xml.rpc.ServiceException(" Cannot set Endpoint Address for Unknown Port" + portName);
         }

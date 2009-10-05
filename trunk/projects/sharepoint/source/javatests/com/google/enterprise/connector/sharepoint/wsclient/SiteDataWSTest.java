@@ -27,51 +27,58 @@ import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.RepositoryException;
 
-public class SiteDataWSTest extends TestCase {  
-	SharepointClientContext sharepointClientContext;
-	SiteDataWS siteDataWS;
-			
-	protected void setUp() throws Exception {
-		System.out.println("\n...Setting Up...");		
-		System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
+public class SiteDataWSTest extends TestCase {
+    SharepointClientContext sharepointClientContext;
+    SiteDataWS siteDataWS;
 
-		assertNotNull(this.sharepointClientContext);
-		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);		
-		  
-		System.out.println("Initializing SiteDataWS ...");
-		this.siteDataWS = new SiteDataWS(this.sharepointClientContext);		
-	}
+    protected void setUp() throws Exception {
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SharepointClientContext ...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
 
-	public final void testSiteDataWS() throws Throwable {
-		System.out.println("Testing SiteDataWS(SharepointClientContext, siteName)...");
-		sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
-		this.siteDataWS = new SiteDataWS(this.sharepointClientContext);
-		assertNotNull(this.siteDataWS);
-		System.out.println("[ SiteDataWS(SharepointClientContext, siteName) ] Test Passed");
-	}
-	
-	public void testGetNamedList() throws MalformedURLException, RepositoryException {
-		System.out.println("Testing getNamedLists()...");		
-		final GlobalState state = new GlobalState(TestConfiguration.googleConnectorWorkDir, SPConstants.CONTENT_FEED);
-		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
-		final List items = this.siteDataWS.getNamedLists(ws);
-		assertNotNull(items);
-		System.out.println("[ getNamedLists() ] Test Passed.");		
-	}
-	
-	public void testGetTitle() throws MalformedURLException, RepositoryException {
-		System.out.println("Testing getTitle()...");
-		try {
-			final String webTitle = this.siteDataWS.getTitle();
-			assertNotNull(webTitle);
-			System.out.println("[ getTitle() ] Test Passed.");
-		} catch(final Exception e) {
-			System.out.println("[ getTitle() ] Test Failed.");
-		}
-	}
+        assertNotNull(this.sharepointClientContext);
+        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+
+        System.out.println("Initializing SiteDataWS ...");
+        this.siteDataWS = new SiteDataWS(this.sharepointClientContext);
+    }
+
+    public final void testSiteDataWS() throws Throwable {
+        System.out.println("Testing SiteDataWS(SharepointClientContext, siteName)...");
+        sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
+        this.siteDataWS = new SiteDataWS(this.sharepointClientContext);
+        assertNotNull(this.siteDataWS);
+        System.out.println("[ SiteDataWS(SharepointClientContext, siteName) ] Test Passed");
+    }
+
+    public void testGetNamedList() throws MalformedURLException,
+            RepositoryException {
+        System.out.println("Testing getNamedLists()...");
+        final GlobalState state = new GlobalState(
+                TestConfiguration.googleConnectorWorkDir,
+                SPConstants.CONTENT_FEED);
+        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
+        final List items = this.siteDataWS.getNamedLists(ws);
+        assertNotNull(items);
+        System.out.println("[ getNamedLists() ] Test Passed.");
+    }
+
+    public void testGetTitle() throws MalformedURLException,
+            RepositoryException {
+        System.out.println("Testing getTitle()...");
+        try {
+            final String webTitle = this.siteDataWS.getTitle();
+            assertNotNull(webTitle);
+            System.out.println("[ getTitle() ] Test Passed.");
+        } catch (final Exception e) {
+            System.out.println("[ getTitle() ] Test Failed.");
+        }
+    }
 }

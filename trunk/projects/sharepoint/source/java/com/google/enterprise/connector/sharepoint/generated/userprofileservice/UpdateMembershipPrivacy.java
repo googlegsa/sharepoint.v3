@@ -33,7 +33,7 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
 
     /**
      * Gets the accountName value for this UpdateMembershipPrivacy.
-     * 
+     *
      * @return accountName
      */
     public java.lang.String getAccountName() {
@@ -43,7 +43,7 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
 
     /**
      * Sets the accountName value for this UpdateMembershipPrivacy.
-     * 
+     *
      * @param accountName
      */
     public void setAccountName(java.lang.String accountName) {
@@ -53,7 +53,7 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
 
     /**
      * Gets the sourceInternal value for this UpdateMembershipPrivacy.
-     * 
+     *
      * @return sourceInternal
      */
     public java.lang.String getSourceInternal() {
@@ -63,7 +63,7 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
 
     /**
      * Sets the sourceInternal value for this UpdateMembershipPrivacy.
-     * 
+     *
      * @param sourceInternal
      */
     public void setSourceInternal(java.lang.String sourceInternal) {
@@ -73,7 +73,7 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
 
     /**
      * Gets the sourceReference value for this UpdateMembershipPrivacy.
-     * 
+     *
      * @return sourceReference
      */
     public java.lang.String getSourceReference() {
@@ -83,7 +83,7 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
 
     /**
      * Sets the sourceReference value for this UpdateMembershipPrivacy.
-     * 
+     *
      * @param sourceReference
      */
     public void setSourceReference(java.lang.String sourceReference) {
@@ -93,7 +93,7 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
 
     /**
      * Gets the newPrivacy value for this UpdateMembershipPrivacy.
-     * 
+     *
      * @return newPrivacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getNewPrivacy() {
@@ -103,7 +103,7 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
 
     /**
      * Sets the newPrivacy value for this UpdateMembershipPrivacy.
-     * 
+     *
      * @param newPrivacy
      */
     public void setNewPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy newPrivacy) {
@@ -121,17 +121,17 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.accountName==null && other.getAccountName()==null) || 
+        _equals = true &&
+            ((this.accountName==null && other.getAccountName()==null) ||
              (this.accountName!=null &&
               this.accountName.equals(other.getAccountName()))) &&
-            ((this.sourceInternal==null && other.getSourceInternal()==null) || 
+            ((this.sourceInternal==null && other.getSourceInternal()==null) ||
              (this.sourceInternal!=null &&
               this.sourceInternal.equals(other.getSourceInternal()))) &&
-            ((this.sourceReference==null && other.getSourceReference()==null) || 
+            ((this.sourceReference==null && other.getSourceReference()==null) ||
              (this.sourceReference!=null &&
               this.sourceReference.equals(other.getSourceReference()))) &&
-            ((this.newPrivacy==null && other.getNewPrivacy()==null) || 
+            ((this.newPrivacy==null && other.getNewPrivacy()==null) ||
              (this.newPrivacy!=null &&
               this.newPrivacy.equals(other.getNewPrivacy())));
         __equalsCalc = null;
@@ -205,10 +205,10 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -217,10 +217,10 @@ public class UpdateMembershipPrivacy  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

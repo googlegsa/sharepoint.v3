@@ -29,7 +29,7 @@ public class _sFPUrl  implements java.io.Serializable {
 
     /**
      * Gets the url value for this _sFPUrl.
-     * 
+     *
      * @return url
      */
     public java.lang.String getUrl() {
@@ -39,7 +39,7 @@ public class _sFPUrl  implements java.io.Serializable {
 
     /**
      * Sets the url value for this _sFPUrl.
-     * 
+     *
      * @param url
      */
     public void setUrl(java.lang.String url) {
@@ -49,7 +49,7 @@ public class _sFPUrl  implements java.io.Serializable {
 
     /**
      * Gets the lastModified value for this _sFPUrl.
-     * 
+     *
      * @return lastModified
      */
     public java.util.Calendar getLastModified() {
@@ -59,7 +59,7 @@ public class _sFPUrl  implements java.io.Serializable {
 
     /**
      * Sets the lastModified value for this _sFPUrl.
-     * 
+     *
      * @param lastModified
      */
     public void setLastModified(java.util.Calendar lastModified) {
@@ -69,7 +69,7 @@ public class _sFPUrl  implements java.io.Serializable {
 
     /**
      * Gets the isFolder value for this _sFPUrl.
-     * 
+     *
      * @return isFolder
      */
     public boolean isIsFolder() {
@@ -79,7 +79,7 @@ public class _sFPUrl  implements java.io.Serializable {
 
     /**
      * Sets the isFolder value for this _sFPUrl.
-     * 
+     *
      * @param isFolder
      */
     public void setIsFolder(boolean isFolder) {
@@ -97,11 +97,11 @@ public class _sFPUrl  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.url==null && other.getUrl()==null) || 
+        _equals = true &&
+            ((this.url==null && other.getUrl()==null) ||
              (this.url!=null &&
               this.url.equals(other.getUrl()))) &&
-            ((this.lastModified==null && other.getLastModified()==null) || 
+            ((this.lastModified==null && other.getLastModified()==null) ||
              (this.lastModified!=null &&
               this.lastModified.equals(other.getLastModified()))) &&
             this.isFolder == other.isIsFolder();
@@ -165,10 +165,10 @@ public class _sFPUrl  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -177,10 +177,10 @@ public class _sFPUrl  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

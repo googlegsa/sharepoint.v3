@@ -178,15 +178,15 @@ public class AlertsLocator extends org.apache.axis.client.Service implements com
     * Set the endpoint address for the specified port name.
     */
     public void setEndpointAddress(java.lang.String portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
-        
+
 if ("AlertsSoap12".equals(portName)) {
             setAlertsSoap12EndpointAddress(address);
         }
-        else 
+        else
 if ("AlertsSoap".equals(portName)) {
             setAlertsSoapEndpointAddress(address);
         }
-        else 
+        else
 { // Unknown Port Name
             throw new javax.xml.rpc.ServiceException(" Cannot set Endpoint Address for Unknown Port" + portName);
         }

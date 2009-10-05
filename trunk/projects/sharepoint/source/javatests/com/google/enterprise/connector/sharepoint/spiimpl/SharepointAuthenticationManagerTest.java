@@ -22,34 +22,36 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticati
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
 
-public class SharepointAuthenticationManagerTest extends TestCase{
+public class SharepointAuthenticationManagerTest extends TestCase {
 
-	SharepointClientContext sharepointClientContext;
-	SharepointAuthenticationManager authMan;
-	AuthenticationIdentity authID;
-	
-	protected void setUp() throws Exception {
-		System.out.println("\n...Setting Up...");
-		System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
-		assertNotNull(this.sharepointClientContext);
-		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);		
-		System.out.println("Initializing SharepointAuthenticationManager ...");
-		this.authMan = new SharepointAuthenticationManager(this.sharepointClientContext);
-		System.out.println("Initializing SharepointAuthenticationIdentity ...");
-		this.authID = new SimpleAuthenticationIdentity(TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);		
-	}
+    SharepointClientContext sharepointClientContext;
+    SharepointAuthenticationManager authMan;
+    AuthenticationIdentity authID;
 
-	public void testAuthenticate() throws Throwable{		
-		System.out.println("Testing authenticate()...");		
-		this.authMan.authenticate(this.authID);		
-		System.out.println("[ authenticate() ] Test Completed.");
-	}	
+    protected void setUp() throws Exception {
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SharepointClientContext ...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+        assertNotNull(this.sharepointClientContext);
+        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+        System.out.println("Initializing SharepointAuthenticationManager ...");
+        this.authMan = new SharepointAuthenticationManager(
+                this.sharepointClientContext);
+        System.out.println("Initializing SharepointAuthenticationIdentity ...");
+        this.authID = new SimpleAuthenticationIdentity(
+                TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
+    }
+
+    public void testAuthenticate() throws Throwable {
+        System.out.println("Testing authenticate()...");
+        this.authMan.authenticate(this.authID);
+        System.out.println("[ authenticate() ] Test Completed.");
+    }
 }
-
-
-

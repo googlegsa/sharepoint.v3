@@ -21,7 +21,7 @@ public class GetPropertyChoiceListResponse  implements java.io.Serializable {
 
     /**
      * Gets the getPropertyChoiceListResult value for this GetPropertyChoiceListResponse.
-     * 
+     *
      * @return getPropertyChoiceListResult
      */
     public java.lang.String[] getGetPropertyChoiceListResult() {
@@ -31,7 +31,7 @@ public class GetPropertyChoiceListResponse  implements java.io.Serializable {
 
     /**
      * Sets the getPropertyChoiceListResult value for this GetPropertyChoiceListResponse.
-     * 
+     *
      * @param getPropertyChoiceListResult
      */
     public void setGetPropertyChoiceListResult(java.lang.String[] getPropertyChoiceListResult) {
@@ -49,8 +49,8 @@ public class GetPropertyChoiceListResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getPropertyChoiceListResult==null && other.getGetPropertyChoiceListResult()==null) || 
+        _equals = true &&
+            ((this.getPropertyChoiceListResult==null && other.getGetPropertyChoiceListResult()==null) ||
              (this.getPropertyChoiceListResult!=null &&
               java.util.Arrays.equals(this.getPropertyChoiceListResult, other.getGetPropertyChoiceListResult())));
         __equalsCalc = null;
@@ -106,10 +106,10 @@ public class GetPropertyChoiceListResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -118,10 +118,10 @@ public class GetPropertyChoiceListResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

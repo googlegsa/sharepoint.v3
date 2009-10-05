@@ -29,7 +29,7 @@ public class UpdateColumns  implements java.io.Serializable {
 
     /**
      * Gets the newFields value for this UpdateColumns.
-     * 
+     *
      * @return newFields
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.UpdateColumnsNewFields getNewFields() {
@@ -39,7 +39,7 @@ public class UpdateColumns  implements java.io.Serializable {
 
     /**
      * Sets the newFields value for this UpdateColumns.
-     * 
+     *
      * @param newFields
      */
     public void setNewFields(com.google.enterprise.connector.sharepoint.generated.webs.UpdateColumnsNewFields newFields) {
@@ -49,7 +49,7 @@ public class UpdateColumns  implements java.io.Serializable {
 
     /**
      * Gets the updateFields value for this UpdateColumns.
-     * 
+     *
      * @return updateFields
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.UpdateColumnsUpdateFields getUpdateFields() {
@@ -59,7 +59,7 @@ public class UpdateColumns  implements java.io.Serializable {
 
     /**
      * Sets the updateFields value for this UpdateColumns.
-     * 
+     *
      * @param updateFields
      */
     public void setUpdateFields(com.google.enterprise.connector.sharepoint.generated.webs.UpdateColumnsUpdateFields updateFields) {
@@ -69,7 +69,7 @@ public class UpdateColumns  implements java.io.Serializable {
 
     /**
      * Gets the deleteFields value for this UpdateColumns.
-     * 
+     *
      * @return deleteFields
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.UpdateColumnsDeleteFields getDeleteFields() {
@@ -79,7 +79,7 @@ public class UpdateColumns  implements java.io.Serializable {
 
     /**
      * Sets the deleteFields value for this UpdateColumns.
-     * 
+     *
      * @param deleteFields
      */
     public void setDeleteFields(com.google.enterprise.connector.sharepoint.generated.webs.UpdateColumnsDeleteFields deleteFields) {
@@ -97,14 +97,14 @@ public class UpdateColumns  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.newFields==null && other.getNewFields()==null) || 
+        _equals = true &&
+            ((this.newFields==null && other.getNewFields()==null) ||
              (this.newFields!=null &&
               this.newFields.equals(other.getNewFields()))) &&
-            ((this.updateFields==null && other.getUpdateFields()==null) || 
+            ((this.updateFields==null && other.getUpdateFields()==null) ||
              (this.updateFields!=null &&
               this.updateFields.equals(other.getUpdateFields()))) &&
-            ((this.deleteFields==null && other.getDeleteFields()==null) || 
+            ((this.deleteFields==null && other.getDeleteFields()==null) ||
              (this.deleteFields!=null &&
               this.deleteFields.equals(other.getDeleteFields())));
         __equalsCalc = null;
@@ -171,10 +171,10 @@ public class UpdateColumns  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -183,10 +183,10 @@ public class UpdateColumns  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

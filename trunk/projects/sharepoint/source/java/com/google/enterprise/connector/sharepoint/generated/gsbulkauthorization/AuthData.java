@@ -37,7 +37,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the listURL value for this AuthData.
-     * 
+     *
      * @return listURL
      */
     public java.lang.String getListURL() {
@@ -47,7 +47,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the listURL value for this AuthData.
-     * 
+     *
      * @param listURL
      */
     public void setListURL(java.lang.String listURL) {
@@ -57,7 +57,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the listItemId value for this AuthData.
-     * 
+     *
      * @return listItemId
      */
     public java.lang.String getListItemId() {
@@ -67,7 +67,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the listItemId value for this AuthData.
-     * 
+     *
      * @param listItemId
      */
     public void setListItemId(java.lang.String listItemId) {
@@ -77,7 +77,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the isAllowed value for this AuthData.
-     * 
+     *
      * @return isAllowed
      */
     public boolean isIsAllowed() {
@@ -87,7 +87,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the isAllowed value for this AuthData.
-     * 
+     *
      * @param isAllowed
      */
     public void setIsAllowed(boolean isAllowed) {
@@ -97,7 +97,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the error value for this AuthData.
-     * 
+     *
      * @return error
      */
     public java.lang.String getError() {
@@ -107,7 +107,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the error value for this AuthData.
-     * 
+     *
      * @param error
      */
     public void setError(java.lang.String error) {
@@ -117,7 +117,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the complexDocId value for this AuthData.
-     * 
+     *
      * @return complexDocId
      */
     public java.lang.String getComplexDocId() {
@@ -127,7 +127,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the complexDocId value for this AuthData.
-     * 
+     *
      * @param complexDocId
      */
     public void setComplexDocId(java.lang.String complexDocId) {
@@ -145,18 +145,18 @@ public class AuthData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listURL==null && other.getListURL()==null) || 
+        _equals = true &&
+            ((this.listURL==null && other.getListURL()==null) ||
              (this.listURL!=null &&
               this.listURL.equals(other.getListURL()))) &&
-            ((this.listItemId==null && other.getListItemId()==null) || 
+            ((this.listItemId==null && other.getListItemId()==null) ||
              (this.listItemId!=null &&
               this.listItemId.equals(other.getListItemId()))) &&
             this.isAllowed == other.isIsAllowed() &&
-            ((this.error==null && other.getError()==null) || 
+            ((this.error==null && other.getError()==null) ||
              (this.error!=null &&
               this.error.equals(other.getError()))) &&
-            ((this.complexDocId==null && other.getComplexDocId()==null) || 
+            ((this.complexDocId==null && other.getComplexDocId()==null) ||
              (this.complexDocId!=null &&
               this.complexDocId.equals(other.getComplexDocId())));
         __equalsCalc = null;
@@ -240,10 +240,10 @@ public class AuthData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -252,10 +252,10 @@ public class AuthData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -41,7 +41,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Gets the lastModified value for this _sSiteMetadata.
-     * 
+     *
      * @return lastModified
      */
     public java.util.Calendar getLastModified() {
@@ -51,7 +51,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Sets the lastModified value for this _sSiteMetadata.
-     * 
+     *
      * @param lastModified
      */
     public void setLastModified(java.util.Calendar lastModified) {
@@ -61,7 +61,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Gets the lastModifiedForceRecrawl value for this _sSiteMetadata.
-     * 
+     *
      * @return lastModifiedForceRecrawl
      */
     public java.util.Calendar getLastModifiedForceRecrawl() {
@@ -71,7 +71,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Sets the lastModifiedForceRecrawl value for this _sSiteMetadata.
-     * 
+     *
      * @param lastModifiedForceRecrawl
      */
     public void setLastModifiedForceRecrawl(java.util.Calendar lastModifiedForceRecrawl) {
@@ -81,7 +81,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Gets the smallSite value for this _sSiteMetadata.
-     * 
+     *
      * @return smallSite
      */
     public boolean isSmallSite() {
@@ -91,7 +91,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Sets the smallSite value for this _sSiteMetadata.
-     * 
+     *
      * @param smallSite
      */
     public void setSmallSite(boolean smallSite) {
@@ -101,7 +101,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Gets the portalUrl value for this _sSiteMetadata.
-     * 
+     *
      * @return portalUrl
      */
     public java.lang.String getPortalUrl() {
@@ -111,7 +111,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Sets the portalUrl value for this _sSiteMetadata.
-     * 
+     *
      * @param portalUrl
      */
     public void setPortalUrl(java.lang.String portalUrl) {
@@ -121,7 +121,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Gets the userProfileGUID value for this _sSiteMetadata.
-     * 
+     *
      * @return userProfileGUID
      */
     public java.lang.String getUserProfileGUID() {
@@ -131,7 +131,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Sets the userProfileGUID value for this _sSiteMetadata.
-     * 
+     *
      * @param userProfileGUID
      */
     public void setUserProfileGUID(java.lang.String userProfileGUID) {
@@ -141,7 +141,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Gets the validSecurityInfo value for this _sSiteMetadata.
-     * 
+     *
      * @return validSecurityInfo
      */
     public boolean isValidSecurityInfo() {
@@ -151,7 +151,7 @@ public class _sSiteMetadata  implements java.io.Serializable {
 
     /**
      * Sets the validSecurityInfo value for this _sSiteMetadata.
-     * 
+     *
      * @param validSecurityInfo
      */
     public void setValidSecurityInfo(boolean validSecurityInfo) {
@@ -169,18 +169,18 @@ public class _sSiteMetadata  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.lastModified==null && other.getLastModified()==null) || 
+        _equals = true &&
+            ((this.lastModified==null && other.getLastModified()==null) ||
              (this.lastModified!=null &&
               this.lastModified.equals(other.getLastModified()))) &&
-            ((this.lastModifiedForceRecrawl==null && other.getLastModifiedForceRecrawl()==null) || 
+            ((this.lastModifiedForceRecrawl==null && other.getLastModifiedForceRecrawl()==null) ||
              (this.lastModifiedForceRecrawl!=null &&
               this.lastModifiedForceRecrawl.equals(other.getLastModifiedForceRecrawl()))) &&
             this.smallSite == other.isSmallSite() &&
-            ((this.portalUrl==null && other.getPortalUrl()==null) || 
+            ((this.portalUrl==null && other.getPortalUrl()==null) ||
              (this.portalUrl!=null &&
               this.portalUrl.equals(other.getPortalUrl()))) &&
-            ((this.userProfileGUID==null && other.getUserProfileGUID()==null) || 
+            ((this.userProfileGUID==null && other.getUserProfileGUID()==null) ||
              (this.userProfileGUID!=null &&
               this.userProfileGUID.equals(other.getUserProfileGUID()))) &&
             this.validSecurityInfo == other.isValidSecurityInfo();
@@ -270,10 +270,10 @@ public class _sSiteMetadata  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -282,10 +282,10 @@ public class _sSiteMetadata  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }
