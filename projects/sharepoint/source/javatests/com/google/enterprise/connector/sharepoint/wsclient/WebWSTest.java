@@ -24,59 +24,63 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 
 /**
  * Test the functionality of webs web service.
+ *
  * @author amit_kagrawal
- * */
-public class WebWSTest extends TestCase{
-	SharepointClientContext sharepointClientContext;
-	WebsWS websWS;	
-	
-	protected void setUp() throws Exception {
-		System.out.println("\n...Setting Up...");
-		System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
-		assertNotNull(this.sharepointClientContext);
-		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);		
-		
-		System.out.println("Initializing WebsWS ...");
-		this.websWS = new WebsWS(this.sharepointClientContext);
-	}
-	
-	public final void testWebsWS() throws Throwable {
-		System.out.println("Testing WebsWS(SharepointClientContext, siteName)...");
-		sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
-		this.websWS = new WebsWS(this.sharepointClientContext);
-		assertNotNull(this.websWS);
-		System.out.println("[ WebsWS(SharepointClientContext, siteName) ] Test Passed");
-	}
-	
-	public final void testGetDirectChildsites() throws Throwable {
-		System.out.println("Testing getDirectChildsites()...");
-		final Set sites = this.websWS.getDirectChildsites();
-		assertNotNull(sites);
-		System.out.println("[ getDirectChildsites() ] Test Passed");
-	}
-		
-	public final void testGetWebURLFromPageURL() throws Throwable {
-		System.out.println("Testing getWebURLFromPageURL()...");
-		final String siteURL = this.websWS.getWebURLFromPageURL(TestConfiguration.DocID1);
-		assertNotNull(siteURL);
-		System.out.println("[ getWebURLFromPageURL() ] Test Passed");
-	}
-	
-	public final void testGetWebTitle() throws Throwable {
-		System.out.println("Testing getWebTitle()...");
-		final String siteURL = this.websWS.getWebTitle(TestConfiguration.sharepointUrl,SPConstants.SP2007);
-		assertNotNull(siteURL);
-		System.out.println("[ getWebTitle() ] Test Passed");
-	}
-	
-	public final void testCheckConnectivity() throws Throwable {
-		System.out.println("Testing checkConnectivity()...");
-		this.websWS.checkConnectivity();
-		System.out.println("[ checkConnectivity() ] Test Completed.");
-	}
+ */
+public class WebWSTest extends TestCase {
+    SharepointClientContext sharepointClientContext;
+    WebsWS websWS;
+
+    protected void setUp() throws Exception {
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SharepointClientContext ...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+        assertNotNull(this.sharepointClientContext);
+        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+
+        System.out.println("Initializing WebsWS ...");
+        this.websWS = new WebsWS(this.sharepointClientContext);
+    }
+
+    public final void testWebsWS() throws Throwable {
+        System.out.println("Testing WebsWS(SharepointClientContext, siteName)...");
+        sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
+        this.websWS = new WebsWS(this.sharepointClientContext);
+        assertNotNull(this.websWS);
+        System.out.println("[ WebsWS(SharepointClientContext, siteName) ] Test Passed");
+    }
+
+    public final void testGetDirectChildsites() throws Throwable {
+        System.out.println("Testing getDirectChildsites()...");
+        final Set sites = this.websWS.getDirectChildsites();
+        assertNotNull(sites);
+        System.out.println("[ getDirectChildsites() ] Test Passed");
+    }
+
+    public final void testGetWebURLFromPageURL() throws Throwable {
+        System.out.println("Testing getWebURLFromPageURL()...");
+        final String siteURL = this.websWS.getWebURLFromPageURL(TestConfiguration.DocID1);
+        assertNotNull(siteURL);
+        System.out.println("[ getWebURLFromPageURL() ] Test Passed");
+    }
+
+    public final void testGetWebTitle() throws Throwable {
+        System.out.println("Testing getWebTitle()...");
+        final String siteURL = this.websWS.getWebTitle(TestConfiguration.sharepointUrl, SPConstants.SP2007);
+        assertNotNull(siteURL);
+        System.out.println("[ getWebTitle() ] Test Passed");
+    }
+
+    public final void testCheckConnectivity() throws Throwable {
+        System.out.println("Testing checkConnectivity()...");
+        this.websWS.checkConnectivity();
+        System.out.println("[ checkConnectivity() ] Test Completed.");
+    }
 }

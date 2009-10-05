@@ -57,7 +57,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the groupType value for this MembershipData.
-     * 
+     *
      * @return groupType
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipGroupType getGroupType() {
@@ -67,7 +67,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the groupType value for this MembershipData.
-     * 
+     *
      * @param groupType
      */
     public void setGroupType(com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipGroupType groupType) {
@@ -77,7 +77,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the source value for this MembershipData.
-     * 
+     *
      * @return source
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipSource getSource() {
@@ -87,7 +87,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the source value for this MembershipData.
-     * 
+     *
      * @param source
      */
     public void setSource(com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipSource source) {
@@ -97,7 +97,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the privacy value for this MembershipData.
-     * 
+     *
      * @return privacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getPrivacy() {
@@ -107,7 +107,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the privacy value for this MembershipData.
-     * 
+     *
      * @param privacy
      */
     public void setPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy privacy) {
@@ -117,7 +117,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the memberGroup value for this MembershipData.
-     * 
+     *
      * @return memberGroup
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.MemberGroupData getMemberGroup() {
@@ -127,7 +127,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the memberGroup value for this MembershipData.
-     * 
+     *
      * @param memberGroup
      */
     public void setMemberGroup(com.google.enterprise.connector.sharepoint.generated.userprofileservice.MemberGroupData memberGroup) {
@@ -137,7 +137,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the displayName value for this MembershipData.
-     * 
+     *
      * @return displayName
      */
     public java.lang.String getDisplayName() {
@@ -147,7 +147,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the displayName value for this MembershipData.
-     * 
+     *
      * @param displayName
      */
     public void setDisplayName(java.lang.String displayName) {
@@ -157,7 +157,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the mailNickname value for this MembershipData.
-     * 
+     *
      * @return mailNickname
      */
     public java.lang.String getMailNickname() {
@@ -167,7 +167,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the mailNickname value for this MembershipData.
-     * 
+     *
      * @param mailNickname
      */
     public void setMailNickname(java.lang.String mailNickname) {
@@ -177,7 +177,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the url value for this MembershipData.
-     * 
+     *
      * @return url
      */
     public java.lang.String getUrl() {
@@ -187,7 +187,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the url value for this MembershipData.
-     * 
+     *
      * @param url
      */
     public void setUrl(java.lang.String url) {
@@ -197,7 +197,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the ID value for this MembershipData.
-     * 
+     *
      * @return ID
      */
     public long getID() {
@@ -207,7 +207,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the ID value for this MembershipData.
-     * 
+     *
      * @param ID
      */
     public void setID(long ID) {
@@ -217,7 +217,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the memberGroupID value for this MembershipData.
-     * 
+     *
      * @return memberGroupID
      */
     public long getMemberGroupID() {
@@ -227,7 +227,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the memberGroupID value for this MembershipData.
-     * 
+     *
      * @param memberGroupID
      */
     public void setMemberGroupID(long memberGroupID) {
@@ -237,7 +237,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Gets the group value for this MembershipData.
-     * 
+     *
      * @return group
      */
     public java.lang.String getGroup() {
@@ -247,7 +247,7 @@ public class MembershipData  implements java.io.Serializable {
 
     /**
      * Sets the group value for this MembershipData.
-     * 
+     *
      * @param group
      */
     public void setGroup(java.lang.String group) {
@@ -265,31 +265,31 @@ public class MembershipData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.groupType==null && other.getGroupType()==null) || 
+        _equals = true &&
+            ((this.groupType==null && other.getGroupType()==null) ||
              (this.groupType!=null &&
               this.groupType.equals(other.getGroupType()))) &&
-            ((this.source==null && other.getSource()==null) || 
+            ((this.source==null && other.getSource()==null) ||
              (this.source!=null &&
               this.source.equals(other.getSource()))) &&
-            ((this.privacy==null && other.getPrivacy()==null) || 
+            ((this.privacy==null && other.getPrivacy()==null) ||
              (this.privacy!=null &&
               this.privacy.equals(other.getPrivacy()))) &&
-            ((this.memberGroup==null && other.getMemberGroup()==null) || 
+            ((this.memberGroup==null && other.getMemberGroup()==null) ||
              (this.memberGroup!=null &&
               this.memberGroup.equals(other.getMemberGroup()))) &&
-            ((this.displayName==null && other.getDisplayName()==null) || 
+            ((this.displayName==null && other.getDisplayName()==null) ||
              (this.displayName!=null &&
               this.displayName.equals(other.getDisplayName()))) &&
-            ((this.mailNickname==null && other.getMailNickname()==null) || 
+            ((this.mailNickname==null && other.getMailNickname()==null) ||
              (this.mailNickname!=null &&
               this.mailNickname.equals(other.getMailNickname()))) &&
-            ((this.url==null && other.getUrl()==null) || 
+            ((this.url==null && other.getUrl()==null) ||
              (this.url!=null &&
               this.url.equals(other.getUrl()))) &&
             this.ID == other.getID() &&
             this.memberGroupID == other.getMemberGroupID() &&
-            ((this.group==null && other.getGroup()==null) || 
+            ((this.group==null && other.getGroup()==null) ||
              (this.group!=null &&
               this.group.equals(other.getGroup())));
         __equalsCalc = null;
@@ -416,10 +416,10 @@ public class MembershipData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -428,10 +428,10 @@ public class MembershipData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

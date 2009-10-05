@@ -21,7 +21,7 @@ public class GetListItemChangesSinceTokenResponse  implements java.io.Serializab
 
     /**
      * Gets the getListItemChangesSinceTokenResult value for this GetListItemChangesSinceTokenResponse.
-     * 
+     *
      * @return getListItemChangesSinceTokenResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult getGetListItemChangesSinceTokenResult() {
@@ -31,7 +31,7 @@ public class GetListItemChangesSinceTokenResponse  implements java.io.Serializab
 
     /**
      * Sets the getListItemChangesSinceTokenResult value for this GetListItemChangesSinceTokenResponse.
-     * 
+     *
      * @param getListItemChangesSinceTokenResult
      */
     public void setGetListItemChangesSinceTokenResult(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult getListItemChangesSinceTokenResult) {
@@ -49,8 +49,8 @@ public class GetListItemChangesSinceTokenResponse  implements java.io.Serializab
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getListItemChangesSinceTokenResult==null && other.getGetListItemChangesSinceTokenResult()==null) || 
+        _equals = true &&
+            ((this.getListItemChangesSinceTokenResult==null && other.getGetListItemChangesSinceTokenResult()==null) ||
              (this.getListItemChangesSinceTokenResult!=null &&
               this.getListItemChangesSinceTokenResult.equals(other.getGetListItemChangesSinceTokenResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class GetListItemChangesSinceTokenResponse  implements java.io.Serializab
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class GetListItemChangesSinceTokenResponse  implements java.io.Serializab
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -12,7 +12,6 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import java.util.logging.Logger;
@@ -25,63 +24,69 @@ import com.google.enterprise.connector.spi.Session;
 import com.google.enterprise.connector.spi.TraversalManager;
 
 /**
- * Implements the Session interface from the spi.
- * It implements methods to return AuthenticationManager, AuthorizationManager
- * and the QueryTraversalManager for the Sharepoint connector to the caller.
+ * Implements the Session interface from the spi. It implements methods to
+ * return AuthenticationManager, AuthorizationManager and the
+ * QueryTraversalManager for the Sharepoint connector to the caller.
+ *
  * @author amit_kagrawal
  */
 public class SharepointSession implements Session {
 
-	private SharepointConnector connector=null;
-	private SharepointClientContext sharepointClientContext=null;
-	private final Logger LOGGER =  Logger.getLogger(SharepointSession.class.getName());
+    private SharepointConnector connector = null;
+    private SharepointClientContext sharepointClientContext = null;
+    private final Logger LOGGER = Logger.getLogger(SharepointSession.class.getName());
 
-	/**
-	 * 
-	 * @param inConnector
-	 * @param inSharepointClientContext
-	 */
-	public SharepointSession(final SharepointConnector inConnector,final SharepointClientContext inSharepointClientContext)/* throws RepositoryException*/ {
-		if(inConnector!=null){  
-			connector = inConnector;
-		}
+    /**
+     * @param inConnector
+     * @param inSharepointClientContext
+     */
+    public SharepointSession(final SharepointConnector inConnector,
+            final SharepointClientContext inSharepointClientContext)/*
+                                                                     * throws
+                                                                     * RepositoryException
+                                                                     */{
+        if (inConnector != null) {
+            connector = inConnector;
+        }
 
-		if(inSharepointClientContext!=null){
-			sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
-		}
-		LOGGER.info("SharepointSession(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext)");    
-	}
+        if (inSharepointClientContext != null) {
+            sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
+        }
+        LOGGER.info("SharepointSession(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext)");
+    }
 
-	/**
-	 * For getting the Authentication Manager using the current connector context
-	 */
-	public AuthenticationManager getAuthenticationManager()
-	throws RepositoryException {
-		LOGGER.info("getAuthenticationManager()");
-		if(SPConstants.METADATA_URL_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
-			return null;
-		}
-		return new SharepointAuthenticationManager(sharepointClientContext);
-	}
+    /**
+     * For getting the Authentication Manager using the current connector
+     * context
+     */
+    public AuthenticationManager getAuthenticationManager()
+            throws RepositoryException {
+        LOGGER.info("getAuthenticationManager()");
+        if (SPConstants.METADATA_URL_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+            return null;
+        }
+        return new SharepointAuthenticationManager(sharepointClientContext);
+    }
 
-	/**
-	 * For getting the Authorization manager form the current connector context
-	 */
-	public AuthorizationManager getAuthorizationManager()
-	throws RepositoryException {
-		LOGGER.info("getAuthorizationManager()");
-		if(SPConstants.METADATA_URL_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
-			return null;
-		}
-		return new SharepointAuthorizationManager(sharepointClientContext);
-	}
+    /**
+     * For getting the Authorization manager form the current connector context
+     */
+    public AuthorizationManager getAuthorizationManager()
+            throws RepositoryException {
+        LOGGER.info("getAuthorizationManager()");
+        if (SPConstants.METADATA_URL_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+            return null;
+        }
+        return new SharepointAuthorizationManager(sharepointClientContext);
+    }
 
-	/**
-	 * For getting the Traversal manager form the current connector context
-	 */
-	public TraversalManager getTraversalManager() throws RepositoryException {
-		LOGGER.info("getTraversalManager()");
-		return new SharepointTraversalManager(connector,sharepointClientContext);
-	}
+    /**
+     * For getting the Traversal manager form the current connector context
+     */
+    public TraversalManager getTraversalManager() throws RepositoryException {
+        LOGGER.info("getTraversalManager()");
+        return new SharepointTraversalManager(connector,
+                sharepointClientContext);
+    }
 
 }

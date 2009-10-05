@@ -37,7 +37,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Gets the accountName value for this AddLink.
-     * 
+     *
      * @return accountName
      */
     public java.lang.String getAccountName() {
@@ -47,7 +47,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Sets the accountName value for this AddLink.
-     * 
+     *
      * @param accountName
      */
     public void setAccountName(java.lang.String accountName) {
@@ -57,7 +57,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Gets the name value for this AddLink.
-     * 
+     *
      * @return name
      */
     public java.lang.String getName() {
@@ -67,7 +67,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Sets the name value for this AddLink.
-     * 
+     *
      * @param name
      */
     public void setName(java.lang.String name) {
@@ -77,7 +77,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Gets the url value for this AddLink.
-     * 
+     *
      * @return url
      */
     public java.lang.String getUrl() {
@@ -87,7 +87,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Sets the url value for this AddLink.
-     * 
+     *
      * @param url
      */
     public void setUrl(java.lang.String url) {
@@ -97,7 +97,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Gets the group value for this AddLink.
-     * 
+     *
      * @return group
      */
     public java.lang.String getGroup() {
@@ -107,7 +107,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Sets the group value for this AddLink.
-     * 
+     *
      * @param group
      */
     public void setGroup(java.lang.String group) {
@@ -117,7 +117,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Gets the privacy value for this AddLink.
-     * 
+     *
      * @return privacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getPrivacy() {
@@ -127,7 +127,7 @@ public class AddLink  implements java.io.Serializable {
 
     /**
      * Sets the privacy value for this AddLink.
-     * 
+     *
      * @param privacy
      */
     public void setPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy privacy) {
@@ -145,20 +145,20 @@ public class AddLink  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.accountName==null && other.getAccountName()==null) || 
+        _equals = true &&
+            ((this.accountName==null && other.getAccountName()==null) ||
              (this.accountName!=null &&
               this.accountName.equals(other.getAccountName()))) &&
-            ((this.name==null && other.getName()==null) || 
+            ((this.name==null && other.getName()==null) ||
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
-            ((this.url==null && other.getUrl()==null) || 
+            ((this.url==null && other.getUrl()==null) ||
              (this.url!=null &&
               this.url.equals(other.getUrl()))) &&
-            ((this.group==null && other.getGroup()==null) || 
+            ((this.group==null && other.getGroup()==null) ||
              (this.group!=null &&
               this.group.equals(other.getGroup()))) &&
-            ((this.privacy==null && other.getPrivacy()==null) || 
+            ((this.privacy==null && other.getPrivacy()==null) ||
              (this.privacy!=null &&
               this.privacy.equals(other.getPrivacy())));
         __equalsCalc = null;
@@ -244,10 +244,10 @@ public class AddLink  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -256,10 +256,10 @@ public class AddLink  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

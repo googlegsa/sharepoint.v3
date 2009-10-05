@@ -21,7 +21,7 @@ public class GetWeb  implements java.io.Serializable {
 
     /**
      * Gets the webUrl value for this GetWeb.
-     * 
+     *
      * @return webUrl
      */
     public java.lang.String getWebUrl() {
@@ -31,7 +31,7 @@ public class GetWeb  implements java.io.Serializable {
 
     /**
      * Sets the webUrl value for this GetWeb.
-     * 
+     *
      * @param webUrl
      */
     public void setWebUrl(java.lang.String webUrl) {
@@ -49,8 +49,8 @@ public class GetWeb  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.webUrl==null && other.getWebUrl()==null) || 
+        _equals = true &&
+            ((this.webUrl==null && other.getWebUrl()==null) ||
              (this.webUrl!=null &&
               this.webUrl.equals(other.getWebUrl())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class GetWeb  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class GetWeb  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

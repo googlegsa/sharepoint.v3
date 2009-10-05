@@ -21,7 +21,7 @@ public class UpdateContentTypesXmlDocumentResponse  implements java.io.Serializa
 
     /**
      * Gets the updateContentTypesXmlDocumentResult value for this UpdateContentTypesXmlDocumentResponse.
-     * 
+     *
      * @return updateContentTypesXmlDocumentResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.UpdateContentTypesXmlDocumentResponseUpdateContentTypesXmlDocumentResult getUpdateContentTypesXmlDocumentResult() {
@@ -31,7 +31,7 @@ public class UpdateContentTypesXmlDocumentResponse  implements java.io.Serializa
 
     /**
      * Sets the updateContentTypesXmlDocumentResult value for this UpdateContentTypesXmlDocumentResponse.
-     * 
+     *
      * @param updateContentTypesXmlDocumentResult
      */
     public void setUpdateContentTypesXmlDocumentResult(com.google.enterprise.connector.sharepoint.generated.lists.UpdateContentTypesXmlDocumentResponseUpdateContentTypesXmlDocumentResult updateContentTypesXmlDocumentResult) {
@@ -49,8 +49,8 @@ public class UpdateContentTypesXmlDocumentResponse  implements java.io.Serializa
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.updateContentTypesXmlDocumentResult==null && other.getUpdateContentTypesXmlDocumentResult()==null) || 
+        _equals = true &&
+            ((this.updateContentTypesXmlDocumentResult==null && other.getUpdateContentTypesXmlDocumentResult()==null) ||
              (this.updateContentTypesXmlDocumentResult!=null &&
               this.updateContentTypesXmlDocumentResult.equals(other.getUpdateContentTypesXmlDocumentResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class UpdateContentTypesXmlDocumentResponse  implements java.io.Serializa
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class UpdateContentTypesXmlDocumentResponse  implements java.io.Serializa
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

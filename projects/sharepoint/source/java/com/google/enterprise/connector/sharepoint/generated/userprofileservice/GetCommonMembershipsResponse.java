@@ -21,7 +21,7 @@ public class GetCommonMembershipsResponse  implements java.io.Serializable {
 
     /**
      * Gets the getCommonMembershipsResult value for this GetCommonMembershipsResponse.
-     * 
+     *
      * @return getCommonMembershipsResult
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipData[] getGetCommonMembershipsResult() {
@@ -31,7 +31,7 @@ public class GetCommonMembershipsResponse  implements java.io.Serializable {
 
     /**
      * Sets the getCommonMembershipsResult value for this GetCommonMembershipsResponse.
-     * 
+     *
      * @param getCommonMembershipsResult
      */
     public void setGetCommonMembershipsResult(com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipData[] getCommonMembershipsResult) {
@@ -49,8 +49,8 @@ public class GetCommonMembershipsResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getCommonMembershipsResult==null && other.getGetCommonMembershipsResult()==null) || 
+        _equals = true &&
+            ((this.getCommonMembershipsResult==null && other.getGetCommonMembershipsResult()==null) ||
              (this.getCommonMembershipsResult!=null &&
               java.util.Arrays.equals(this.getCommonMembershipsResult, other.getGetCommonMembershipsResult())));
         __equalsCalc = null;
@@ -106,10 +106,10 @@ public class GetCommonMembershipsResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -118,10 +118,10 @@ public class GetCommonMembershipsResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

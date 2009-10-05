@@ -33,7 +33,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the displayName value for this CreateContentType.
-     * 
+     *
      * @return displayName
      */
     public java.lang.String getDisplayName() {
@@ -43,7 +43,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the displayName value for this CreateContentType.
-     * 
+     *
      * @param displayName
      */
     public void setDisplayName(java.lang.String displayName) {
@@ -53,7 +53,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the parentType value for this CreateContentType.
-     * 
+     *
      * @return parentType
      */
     public java.lang.String getParentType() {
@@ -63,7 +63,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the parentType value for this CreateContentType.
-     * 
+     *
      * @param parentType
      */
     public void setParentType(java.lang.String parentType) {
@@ -73,7 +73,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the newFields value for this CreateContentType.
-     * 
+     *
      * @return newFields
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.CreateContentTypeNewFields getNewFields() {
@@ -83,7 +83,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the newFields value for this CreateContentType.
-     * 
+     *
      * @param newFields
      */
     public void setNewFields(com.google.enterprise.connector.sharepoint.generated.webs.CreateContentTypeNewFields newFields) {
@@ -93,7 +93,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Gets the contentTypeProperties value for this CreateContentType.
-     * 
+     *
      * @return contentTypeProperties
      */
     public com.google.enterprise.connector.sharepoint.generated.webs.CreateContentTypeContentTypeProperties getContentTypeProperties() {
@@ -103,7 +103,7 @@ public class CreateContentType  implements java.io.Serializable {
 
     /**
      * Sets the contentTypeProperties value for this CreateContentType.
-     * 
+     *
      * @param contentTypeProperties
      */
     public void setContentTypeProperties(com.google.enterprise.connector.sharepoint.generated.webs.CreateContentTypeContentTypeProperties contentTypeProperties) {
@@ -121,17 +121,17 @@ public class CreateContentType  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.displayName==null && other.getDisplayName()==null) || 
+        _equals = true &&
+            ((this.displayName==null && other.getDisplayName()==null) ||
              (this.displayName!=null &&
               this.displayName.equals(other.getDisplayName()))) &&
-            ((this.parentType==null && other.getParentType()==null) || 
+            ((this.parentType==null && other.getParentType()==null) ||
              (this.parentType!=null &&
               this.parentType.equals(other.getParentType()))) &&
-            ((this.newFields==null && other.getNewFields()==null) || 
+            ((this.newFields==null && other.getNewFields()==null) ||
              (this.newFields!=null &&
               this.newFields.equals(other.getNewFields()))) &&
-            ((this.contentTypeProperties==null && other.getContentTypeProperties()==null) || 
+            ((this.contentTypeProperties==null && other.getContentTypeProperties()==null) ||
              (this.contentTypeProperties!=null &&
               this.contentTypeProperties.equals(other.getContentTypeProperties())));
         __equalsCalc = null;
@@ -208,10 +208,10 @@ public class CreateContentType  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -220,10 +220,10 @@ public class CreateContentType  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

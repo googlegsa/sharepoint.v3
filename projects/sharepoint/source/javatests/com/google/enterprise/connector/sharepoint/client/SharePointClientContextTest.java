@@ -20,75 +20,78 @@ import com.google.enterprise.connector.sharepoint.TestConfiguration;
 
 public class SharePointClientContextTest extends TestCase {
 
-	SharepointClientContext sharepointClientContext;
-		
-	protected void setUp() throws Exception {
-		System.out.println("Setting Up...");
-		this.sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
+    SharepointClientContext sharepointClientContext;
+
+    protected void setUp() throws Exception {
+        System.out.println("Setting Up...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);		
-		
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+
         System.out.println("SharepointClientContext has been initialized successfully.");
-	}
-	
-	public void testClone() {
-		System.out.println("Testing clone()...");
-		final SharepointClientContext spc = (SharepointClientContext) this.sharepointClientContext.clone();
-		assertNotSame(this.sharepointClientContext, spc);
-		System.out.println("[ clone() ] Test Passed");
-	}
-	
-	public void testCheckConnectivity() {
-		System.out.println("Testing checkConnectivity()...");
-		try {
-			final int responseCode = this.sharepointClientContext.checkConnectivity(TestConfiguration.sharepointUrl, null);
-			assertEquals(responseCode, 200);
-		} catch (Exception e) {
-			System.out.println(e);
-			assertFalse(false);
-		}
-		System.out.println("[ checkConnectivity() ] Test Completed");
-	}
-	
-	public void testCheckSharePointType() {
-		System.out.println("Testing checkSharePointVersion()...");
-		try {
-			final String spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.ParentWebURL);
-			assertEquals(spType, SPConstants.CONNECTIVITY_SUCCESS);
-		} catch (Exception e) {
-			System.out.println(e);
-			assertFalse(false);
-		}
-		System.out.println("[ checkConnectivity() ] Test Completed");
-	}
-	
-	public void testIsIncludeMetadata() {
-		System.out.println("Testing isIncludeMetadata()...");
-		final boolean include = this.sharepointClientContext.isIncludeMetadata("file type");
-		assertTrue(include);
-		System.out.println("[ isIncludeMetadata() ] Test Completed");
-	}
-	
-	public void testIsIncludedUrl() {
-		System.out.println("Testing isIncludedUrl()...");
-		final boolean include = this.sharepointClientContext.isIncludedUrl(TestConfiguration.sharepointUrl);
-		assertTrue(include);
-		System.out.println("[ isIncludedUrl() ] Test Completed");
-	}
-	
-	public void testLogExcludedURL() {
-		System.out.println("Testing logExcludedURL()...");
-		this.sharepointClientContext.logExcludedURL("testLog");
-		System.out.println("[ logExcludedURL() ] Test Completed");
-	}
-	
-	public void testRemoveExcludedURLLogs() {
-		System.out.println("Testing removeExcludedURLLogs()...");
-		this.sharepointClientContext.clearExcludedURLLogs();
-		System.out.println("[ removeExcludedURLLogs() ] Test Completed");
-	}
+    }
+
+    public void testClone() {
+        System.out.println("Testing clone()...");
+        final SharepointClientContext spc = (SharepointClientContext) this.sharepointClientContext.clone();
+        assertNotSame(this.sharepointClientContext, spc);
+        System.out.println("[ clone() ] Test Passed");
+    }
+
+    public void testCheckConnectivity() {
+        System.out.println("Testing checkConnectivity()...");
+        try {
+            final int responseCode = this.sharepointClientContext.checkConnectivity(TestConfiguration.sharepointUrl, null);
+            assertEquals(responseCode, 200);
+        } catch (Exception e) {
+            System.out.println(e);
+            assertFalse(false);
+        }
+        System.out.println("[ checkConnectivity() ] Test Completed");
+    }
+
+    public void testCheckSharePointType() {
+        System.out.println("Testing checkSharePointVersion()...");
+        try {
+            final String spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.ParentWebURL);
+            assertEquals(spType, SPConstants.CONNECTIVITY_SUCCESS);
+        } catch (Exception e) {
+            System.out.println(e);
+            assertFalse(false);
+        }
+        System.out.println("[ checkConnectivity() ] Test Completed");
+    }
+
+    public void testIsIncludeMetadata() {
+        System.out.println("Testing isIncludeMetadata()...");
+        final boolean include = this.sharepointClientContext.isIncludeMetadata("file type");
+        assertTrue(include);
+        System.out.println("[ isIncludeMetadata() ] Test Completed");
+    }
+
+    public void testIsIncludedUrl() {
+        System.out.println("Testing isIncludedUrl()...");
+        final boolean include = this.sharepointClientContext.isIncludedUrl(TestConfiguration.sharepointUrl);
+        assertTrue(include);
+        System.out.println("[ isIncludedUrl() ] Test Completed");
+    }
+
+    public void testLogExcludedURL() {
+        System.out.println("Testing logExcludedURL()...");
+        this.sharepointClientContext.logExcludedURL("testLog");
+        System.out.println("[ logExcludedURL() ] Test Completed");
+    }
+
+    public void testRemoveExcludedURLLogs() {
+        System.out.println("Testing removeExcludedURLLogs()...");
+        this.sharepointClientContext.clearExcludedURLLogs();
+        System.out.println("[ removeExcludedURLLogs() ] Test Completed");
+    }
 }

@@ -25,7 +25,7 @@ public class EmailChannel  extends com.google.enterprise.connector.sharepoint.ge
 
     /**
      * Gets the frequency value for this EmailChannel.
-     * 
+     *
      * @return frequency
      */
     public java.lang.String getFrequency() {
@@ -35,7 +35,7 @@ public class EmailChannel  extends com.google.enterprise.connector.sharepoint.ge
 
     /**
      * Sets the frequency value for this EmailChannel.
-     * 
+     *
      * @param frequency
      */
     public void setFrequency(java.lang.String frequency) {
@@ -45,7 +45,7 @@ public class EmailChannel  extends com.google.enterprise.connector.sharepoint.ge
 
     /**
      * Gets the address value for this EmailChannel.
-     * 
+     *
      * @return address
      */
     public java.lang.String getAddress() {
@@ -55,7 +55,7 @@ public class EmailChannel  extends com.google.enterprise.connector.sharepoint.ge
 
     /**
      * Sets the address value for this EmailChannel.
-     * 
+     *
      * @param address
      */
     public void setAddress(java.lang.String address) {
@@ -73,11 +73,11 @@ public class EmailChannel  extends com.google.enterprise.connector.sharepoint.ge
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = super.equals(obj) && 
-            ((this.frequency==null && other.getFrequency()==null) || 
+        _equals = super.equals(obj) &&
+            ((this.frequency==null && other.getFrequency()==null) ||
              (this.frequency!=null &&
               this.frequency.equals(other.getFrequency()))) &&
-            ((this.address==null && other.getAddress()==null) || 
+            ((this.address==null && other.getAddress()==null) ||
              (this.address!=null &&
               this.address.equals(other.getAddress())));
         __equalsCalc = null;
@@ -134,10 +134,10 @@ public class EmailChannel  extends com.google.enterprise.connector.sharepoint.ge
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -146,10 +146,10 @@ public class EmailChannel  extends com.google.enterprise.connector.sharepoint.ge
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

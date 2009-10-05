@@ -21,7 +21,7 @@ public class GetAllSiteCollectionFromAllWebAppsResponse  implements java.io.Seri
 
     /**
      * Gets the getAllSiteCollectionFromAllWebAppsResult value for this GetAllSiteCollectionFromAllWebAppsResponse.
-     * 
+     *
      * @return getAllSiteCollectionFromAllWebAppsResult
      */
     public java.lang.Object[] getGetAllSiteCollectionFromAllWebAppsResult() {
@@ -31,7 +31,7 @@ public class GetAllSiteCollectionFromAllWebAppsResponse  implements java.io.Seri
 
     /**
      * Sets the getAllSiteCollectionFromAllWebAppsResult value for this GetAllSiteCollectionFromAllWebAppsResponse.
-     * 
+     *
      * @param getAllSiteCollectionFromAllWebAppsResult
      */
     public void setGetAllSiteCollectionFromAllWebAppsResult(java.lang.Object[] getAllSiteCollectionFromAllWebAppsResult) {
@@ -49,8 +49,8 @@ public class GetAllSiteCollectionFromAllWebAppsResponse  implements java.io.Seri
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getAllSiteCollectionFromAllWebAppsResult==null && other.getGetAllSiteCollectionFromAllWebAppsResult()==null) || 
+        _equals = true &&
+            ((this.getAllSiteCollectionFromAllWebAppsResult==null && other.getGetAllSiteCollectionFromAllWebAppsResult()==null) ||
              (this.getAllSiteCollectionFromAllWebAppsResult!=null &&
               java.util.Arrays.equals(this.getAllSiteCollectionFromAllWebAppsResult, other.getGetAllSiteCollectionFromAllWebAppsResult())));
         __equalsCalc = null;
@@ -106,10 +106,10 @@ public class GetAllSiteCollectionFromAllWebAppsResponse  implements java.io.Seri
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -118,10 +118,10 @@ public class GetAllSiteCollectionFromAllWebAppsResponse  implements java.io.Seri
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

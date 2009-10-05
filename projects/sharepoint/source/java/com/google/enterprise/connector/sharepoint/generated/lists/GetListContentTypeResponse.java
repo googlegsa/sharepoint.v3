@@ -21,7 +21,7 @@ public class GetListContentTypeResponse  implements java.io.Serializable {
 
     /**
      * Gets the getListContentTypeResult value for this GetListContentTypeResponse.
-     * 
+     *
      * @return getListContentTypeResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListContentTypeResponseGetListContentTypeResult getGetListContentTypeResult() {
@@ -31,7 +31,7 @@ public class GetListContentTypeResponse  implements java.io.Serializable {
 
     /**
      * Sets the getListContentTypeResult value for this GetListContentTypeResponse.
-     * 
+     *
      * @param getListContentTypeResult
      */
     public void setGetListContentTypeResult(com.google.enterprise.connector.sharepoint.generated.lists.GetListContentTypeResponseGetListContentTypeResult getListContentTypeResult) {
@@ -49,8 +49,8 @@ public class GetListContentTypeResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getListContentTypeResult==null && other.getGetListContentTypeResult()==null) || 
+        _equals = true &&
+            ((this.getListContentTypeResult==null && other.getGetListContentTypeResult()==null) ||
              (this.getListContentTypeResult!=null &&
               this.getListContentTypeResult.equals(other.getGetListContentTypeResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class GetListContentTypeResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class GetListContentTypeResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

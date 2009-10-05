@@ -30,61 +30,68 @@ import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.spi.Document;
 
 public class SPDocumentListTest extends TestCase {
-	SPDocumentList docs;
-	SharepointClientContext sharepointClientContext;
-	
-	protected void setUp() throws Exception {
-		System.out.println("\n...Setting Up...");		
-		System.out.println("Initializing SPDocumentList ...");
-		
-		sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
-		
-		final GlobalState state = new GlobalState(TestConfiguration.googleConnectorWorkDir, SPConstants.CONTENT_FEED);
-		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
-		
-		final SiteDataWS siteDataWS = new SiteDataWS(this.sharepointClientContext);
-		final List listCollection = siteDataWS.getNamedLists(ws);
-		assertNotNull(listCollection);
-		for (int i = 0; i < listCollection.size(); i++) {
-			final ListState baseList = (ListState) listCollection.get(i);
-			ListsWS listws = new ListsWS(this.sharepointClientContext);
-			List<SPDocument> listItems = listws.getListItems(baseList, null, null, null);
-			if(listItems.size() > 0) {
-				for(Iterator itr = listItems.iterator(); itr.hasNext();) {
-					SPDocument spdoc = (SPDocument) itr.next();
-					spdoc.setWebid(ws.getPrimaryKey());
-					spdoc.setListGuid(baseList.getPrimaryKey());
-				}
-				System.out.println("Using " + baseList.getListURL() + " as test list...");
-				this.docs = new SPDocumentList(listItems,state);
-				ws.updateList(baseList, baseList.getLastMod());
-				break;
-			}
-		}
-		
-		this.docs.setAliasMap(sharepointClientContext.getAliasMap());		
-	}
-	
-	public void testNextDocument() {
-		System.out.println("Testing nextDocument()...");
-		this.docs.setFQDNConversion(true);
-		final Document doc = this.docs.nextDocument();
-		assertNotNull(doc);
-		System.out.println("[ nextDocument() ] Test Passed.");
-	}
+    SPDocumentList docs;
+    SharepointClientContext sharepointClientContext;
 
-	public void testCheckpoint() {
-		System.out.println("Testing checkpoint()...");
-		this.docs.setAliasMap(sharepointClientContext.getAliasMap());
-		try {
-			final String chk = this.docs.checkpoint();
-			assertNotNull(chk);
-			System.out.println("[ checkpoint() ] Test Completed.");
-		} catch(final Exception e) {
-			System.out.println("[ checkpoint() ] Test Failed.");
-		}
-	}
+    protected void setUp() throws Exception {
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SPDocumentList ...");
+
+        sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+
+        final GlobalState state = new GlobalState(
+                TestConfiguration.googleConnectorWorkDir,
+                SPConstants.CONTENT_FEED);
+        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
+
+        final SiteDataWS siteDataWS = new SiteDataWS(
+                this.sharepointClientContext);
+        final List listCollection = siteDataWS.getNamedLists(ws);
+        assertNotNull(listCollection);
+        for (int i = 0; i < listCollection.size(); i++) {
+            final ListState baseList = (ListState) listCollection.get(i);
+            ListsWS listws = new ListsWS(this.sharepointClientContext);
+            List<SPDocument> listItems = listws.getListItems(baseList, null, null, null);
+            if (listItems.size() > 0) {
+                for (Iterator itr = listItems.iterator(); itr.hasNext();) {
+                    SPDocument spdoc = (SPDocument) itr.next();
+                    spdoc.setWebid(ws.getPrimaryKey());
+                    spdoc.setListGuid(baseList.getPrimaryKey());
+                }
+                System.out.println("Using " + baseList.getListURL()
+                        + " as test list...");
+                this.docs = new SPDocumentList(listItems, state);
+                ws.updateList(baseList, baseList.getLastMod());
+                break;
+            }
+        }
+
+        this.docs.setAliasMap(sharepointClientContext.getAliasMap());
+    }
+
+    public void testNextDocument() {
+        System.out.println("Testing nextDocument()...");
+        this.docs.setFQDNConversion(true);
+        final Document doc = this.docs.nextDocument();
+        assertNotNull(doc);
+        System.out.println("[ nextDocument() ] Test Passed.");
+    }
+
+    public void testCheckpoint() {
+        System.out.println("Testing checkpoint()...");
+        this.docs.setAliasMap(sharepointClientContext.getAliasMap());
+        try {
+            final String chk = this.docs.checkpoint();
+            assertNotNull(chk);
+            System.out.println("[ checkpoint() ] Test Completed.");
+        } catch (final Exception e) {
+            System.out.println("[ checkpoint() ] Test Failed.");
+        }
+    }
 }

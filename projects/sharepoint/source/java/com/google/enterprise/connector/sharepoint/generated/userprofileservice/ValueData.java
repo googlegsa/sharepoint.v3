@@ -21,7 +21,7 @@ public class ValueData  implements java.io.Serializable {
 
     /**
      * Gets the value value for this ValueData.
-     * 
+     *
      * @return value
      */
     public java.lang.Object getValue() {
@@ -31,7 +31,7 @@ public class ValueData  implements java.io.Serializable {
 
     /**
      * Sets the value value for this ValueData.
-     * 
+     *
      * @param value
      */
     public void setValue(java.lang.Object value) {
@@ -49,8 +49,8 @@ public class ValueData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.value==null && other.getValue()==null) || 
+        _equals = true &&
+            ((this.value==null && other.getValue()==null) ||
              (this.value!=null &&
               this.value.equals(other.getValue())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class ValueData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class ValueData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

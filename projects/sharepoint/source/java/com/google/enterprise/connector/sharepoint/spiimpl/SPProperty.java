@@ -19,43 +19,41 @@ import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Value;
 
 /**
- * @author amit_kagrawal
- * SharePoint implementation for {@link com.google.enterprise.connector.spi.Property}.
- * */
-public class SPProperty  implements Property{
+ * @author amit_kagrawal SharePoint implementation for
+ *         {@link com.google.enterprise.connector.spi.Property}.
+ */
+public class SPProperty implements Property {
 
-	private String name;
-	private Value value;
-	private boolean repeating=false;
-	
-	/**
-	 * 
-	 * @param strName
-	 * @param inValue
-	 */
-	public SPProperty(final String strName,final Value inValue){
-		name = strName;
-		value = inValue;
-	}
-	
-	/**
-	 * Returns the next value of the property
-	 */
-	public Value nextValue() throws RepositoryException {
-		if(repeating){
-			return null;
-		}else{
-			repeating=true;
-			return value;
-		}
-	}
-	
-	/**
-	 * 
-	 * @return the property name
-	 */
-	public String getName(){
-		return name;
-	}
+    private String name;
+    private Value value;
+    private boolean repeating = false;
+
+    /**
+     * @param strName
+     * @param inValue
+     */
+    public SPProperty(final String strName, final Value inValue) {
+        name = strName;
+        value = inValue;
+    }
+
+    /**
+     * Returns the next value of the property
+     */
+    public Value nextValue() throws RepositoryException {
+        if (repeating) {
+            return null;
+        } else {
+            repeating = true;
+            return value;
+        }
+    }
+
+    /**
+     * @return the property name
+     */
+    public String getName() {
+        return name;
+    }
 
 }

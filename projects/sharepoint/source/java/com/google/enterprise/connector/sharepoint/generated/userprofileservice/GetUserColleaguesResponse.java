@@ -21,7 +21,7 @@ public class GetUserColleaguesResponse  implements java.io.Serializable {
 
     /**
      * Gets the getUserColleaguesResult value for this GetUserColleaguesResponse.
-     * 
+     *
      * @return getUserColleaguesResult
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.ContactData[] getGetUserColleaguesResult() {
@@ -31,7 +31,7 @@ public class GetUserColleaguesResponse  implements java.io.Serializable {
 
     /**
      * Sets the getUserColleaguesResult value for this GetUserColleaguesResponse.
-     * 
+     *
      * @param getUserColleaguesResult
      */
     public void setGetUserColleaguesResult(com.google.enterprise.connector.sharepoint.generated.userprofileservice.ContactData[] getUserColleaguesResult) {
@@ -49,8 +49,8 @@ public class GetUserColleaguesResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getUserColleaguesResult==null && other.getGetUserColleaguesResult()==null) || 
+        _equals = true &&
+            ((this.getUserColleaguesResult==null && other.getGetUserColleaguesResult()==null) ||
              (this.getUserColleaguesResult!=null &&
               java.util.Arrays.equals(this.getUserColleaguesResult, other.getGetUserColleaguesResult())));
         __equalsCalc = null;
@@ -106,10 +106,10 @@ public class GetUserColleaguesResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -118,10 +118,10 @@ public class GetUserColleaguesResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

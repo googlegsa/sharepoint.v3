@@ -29,7 +29,7 @@ public class InCommonData  implements java.io.Serializable {
 
     /**
      * Gets the manager value for this InCommonData.
-     * 
+     *
      * @return manager
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.ContactData getManager() {
@@ -39,7 +39,7 @@ public class InCommonData  implements java.io.Serializable {
 
     /**
      * Sets the manager value for this InCommonData.
-     * 
+     *
      * @param manager
      */
     public void setManager(com.google.enterprise.connector.sharepoint.generated.userprofileservice.ContactData manager) {
@@ -49,7 +49,7 @@ public class InCommonData  implements java.io.Serializable {
 
     /**
      * Gets the colleagues value for this InCommonData.
-     * 
+     *
      * @return colleagues
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.ContactData[] getColleagues() {
@@ -59,7 +59,7 @@ public class InCommonData  implements java.io.Serializable {
 
     /**
      * Sets the colleagues value for this InCommonData.
-     * 
+     *
      * @param colleagues
      */
     public void setColleagues(com.google.enterprise.connector.sharepoint.generated.userprofileservice.ContactData[] colleagues) {
@@ -69,7 +69,7 @@ public class InCommonData  implements java.io.Serializable {
 
     /**
      * Gets the memberships value for this InCommonData.
-     * 
+     *
      * @return memberships
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipData[] getMemberships() {
@@ -79,7 +79,7 @@ public class InCommonData  implements java.io.Serializable {
 
     /**
      * Sets the memberships value for this InCommonData.
-     * 
+     *
      * @param memberships
      */
     public void setMemberships(com.google.enterprise.connector.sharepoint.generated.userprofileservice.MembershipData[] memberships) {
@@ -97,14 +97,14 @@ public class InCommonData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.manager==null && other.getManager()==null) || 
+        _equals = true &&
+            ((this.manager==null && other.getManager()==null) ||
              (this.manager!=null &&
               this.manager.equals(other.getManager()))) &&
-            ((this.colleagues==null && other.getColleagues()==null) || 
+            ((this.colleagues==null && other.getColleagues()==null) ||
              (this.colleagues!=null &&
               java.util.Arrays.equals(this.colleagues, other.getColleagues()))) &&
-            ((this.memberships==null && other.getMemberships()==null) || 
+            ((this.memberships==null && other.getMemberships()==null) ||
              (this.memberships!=null &&
               java.util.Arrays.equals(this.memberships, other.getMemberships())));
         __equalsCalc = null;
@@ -189,10 +189,10 @@ public class InCommonData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -201,10 +201,10 @@ public class InCommonData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

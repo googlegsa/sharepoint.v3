@@ -21,7 +21,7 @@ public class UpdateContentTypeResponseUpdateContentTypeResult  implements java.i
 
     /**
      * Gets the _any value for this UpdateContentTypeResponseUpdateContentTypeResult.
-     * 
+     *
      * @return _any
      */
     public org.apache.axis.message.MessageElement [] get_any() {
@@ -31,7 +31,7 @@ public class UpdateContentTypeResponseUpdateContentTypeResult  implements java.i
 
     /**
      * Sets the _any value for this UpdateContentTypeResponseUpdateContentTypeResult.
-     * 
+     *
      * @param _any
      */
     public void set_any(org.apache.axis.message.MessageElement [] _any) {
@@ -49,8 +49,8 @@ public class UpdateContentTypeResponseUpdateContentTypeResult  implements java.i
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this._any==null && other.get_any()==null) || 
+        _equals = true &&
+            ((this._any==null && other.get_any()==null) ||
              (this._any!=null &&
               java.util.Arrays.equals(this._any, other.get_any())));
         __equalsCalc = null;
@@ -98,10 +98,10 @@ public class UpdateContentTypeResponseUpdateContentTypeResult  implements java.i
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -110,10 +110,10 @@ public class UpdateContentTypeResponseUpdateContentTypeResult  implements java.i
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

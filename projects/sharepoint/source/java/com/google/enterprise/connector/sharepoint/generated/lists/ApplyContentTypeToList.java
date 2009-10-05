@@ -29,7 +29,7 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
 
     /**
      * Gets the webUrl value for this ApplyContentTypeToList.
-     * 
+     *
      * @return webUrl
      */
     public java.lang.String getWebUrl() {
@@ -39,7 +39,7 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
 
     /**
      * Sets the webUrl value for this ApplyContentTypeToList.
-     * 
+     *
      * @param webUrl
      */
     public void setWebUrl(java.lang.String webUrl) {
@@ -49,7 +49,7 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
 
     /**
      * Gets the contentTypeId value for this ApplyContentTypeToList.
-     * 
+     *
      * @return contentTypeId
      */
     public java.lang.String getContentTypeId() {
@@ -59,7 +59,7 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
 
     /**
      * Sets the contentTypeId value for this ApplyContentTypeToList.
-     * 
+     *
      * @param contentTypeId
      */
     public void setContentTypeId(java.lang.String contentTypeId) {
@@ -69,7 +69,7 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this ApplyContentTypeToList.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -79,7 +79,7 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this ApplyContentTypeToList.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -97,14 +97,14 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.webUrl==null && other.getWebUrl()==null) || 
+        _equals = true &&
+            ((this.webUrl==null && other.getWebUrl()==null) ||
              (this.webUrl!=null &&
               this.webUrl.equals(other.getWebUrl()))) &&
-            ((this.contentTypeId==null && other.getContentTypeId()==null) || 
+            ((this.contentTypeId==null && other.getContentTypeId()==null) ||
              (this.contentTypeId!=null &&
               this.contentTypeId.equals(other.getContentTypeId()))) &&
-            ((this.listName==null && other.getListName()==null) || 
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName())));
         __equalsCalc = null;
@@ -171,10 +171,10 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -183,10 +183,10 @@ public class ApplyContentTypeToList  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

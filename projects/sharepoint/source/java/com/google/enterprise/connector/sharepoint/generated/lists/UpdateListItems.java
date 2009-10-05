@@ -25,7 +25,7 @@ public class UpdateListItems  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this UpdateListItems.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -35,7 +35,7 @@ public class UpdateListItems  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this UpdateListItems.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -45,7 +45,7 @@ public class UpdateListItems  implements java.io.Serializable {
 
     /**
      * Gets the updates value for this UpdateListItems.
-     * 
+     *
      * @return updates
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.UpdateListItemsUpdates getUpdates() {
@@ -55,7 +55,7 @@ public class UpdateListItems  implements java.io.Serializable {
 
     /**
      * Sets the updates value for this UpdateListItems.
-     * 
+     *
      * @param updates
      */
     public void setUpdates(com.google.enterprise.connector.sharepoint.generated.lists.UpdateListItemsUpdates updates) {
@@ -73,11 +73,11 @@ public class UpdateListItems  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.updates==null && other.getUpdates()==null) || 
+            ((this.updates==null && other.getUpdates()==null) ||
              (this.updates!=null &&
               this.updates.equals(other.getUpdates())));
         __equalsCalc = null;
@@ -134,10 +134,10 @@ public class UpdateListItems  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -146,10 +146,10 @@ public class UpdateListItems  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

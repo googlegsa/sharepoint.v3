@@ -21,7 +21,7 @@ public class GetAttachmentCollectionResponse  implements java.io.Serializable {
 
     /**
      * Gets the getAttachmentCollectionResult value for this GetAttachmentCollectionResponse.
-     * 
+     *
      * @return getAttachmentCollectionResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetAttachmentCollectionResponseGetAttachmentCollectionResult getGetAttachmentCollectionResult() {
@@ -31,7 +31,7 @@ public class GetAttachmentCollectionResponse  implements java.io.Serializable {
 
     /**
      * Sets the getAttachmentCollectionResult value for this GetAttachmentCollectionResponse.
-     * 
+     *
      * @param getAttachmentCollectionResult
      */
     public void setGetAttachmentCollectionResult(com.google.enterprise.connector.sharepoint.generated.lists.GetAttachmentCollectionResponseGetAttachmentCollectionResult getAttachmentCollectionResult) {
@@ -49,8 +49,8 @@ public class GetAttachmentCollectionResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.getAttachmentCollectionResult==null && other.getGetAttachmentCollectionResult()==null) || 
+        _equals = true &&
+            ((this.getAttachmentCollectionResult==null && other.getGetAttachmentCollectionResult()==null) ||
              (this.getAttachmentCollectionResult!=null &&
               this.getAttachmentCollectionResult.equals(other.getGetAttachmentCollectionResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class GetAttachmentCollectionResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class GetAttachmentCollectionResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -22,18 +22,20 @@ import java.util.jar.Manifest;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 
 /**
- * Dump the Version info from the Manifest for the Connector's JAR file.
- * This is set as the default main() for the JAR if running the jar 
- * stand-alone.  This makes it easy to dump the Connector's JAR Manifest
- * (including version and build info) simply by running the command:
- *   java -jar /path/to/connector-sharepoint.jar
+ * Dump the Version info from the Manifest for the Connector's JAR file. This is
+ * set as the default main() for the JAR if running the jar stand-alone. This
+ * makes it easy to dump the Connector's JAR Manifest (including version and
+ * build info) simply by running the command: java -jar
+ * /path/to/connector-sharepoint.jar
  */
 public class SharePointMain {
     public static void main(final String[] args) throws Exception {
         // From our class, get the jar file URL to this class file, and
         // make our way to the the Manifest located in that jar file.
         final Class thisClass = SharePointMain.class;
-        final String resName = SPConstants.SLASH + thisClass.getName().replace('.', SPConstants.SLASH_CHAR) + ".class";
+        final String resName = SPConstants.SLASH
+                + thisClass.getName().replace('.', SPConstants.SLASH_CHAR)
+                + ".class";
 
         // Locate the Jar file containing our class.
         final URL url = thisClass.getResource(resName);

@@ -21,7 +21,7 @@ public class RevertFileContentStream  implements java.io.Serializable {
 
     /**
      * Gets the fileUrl value for this RevertFileContentStream.
-     * 
+     *
      * @return fileUrl
      */
     public java.lang.String getFileUrl() {
@@ -31,7 +31,7 @@ public class RevertFileContentStream  implements java.io.Serializable {
 
     /**
      * Sets the fileUrl value for this RevertFileContentStream.
-     * 
+     *
      * @param fileUrl
      */
     public void setFileUrl(java.lang.String fileUrl) {
@@ -49,8 +49,8 @@ public class RevertFileContentStream  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.fileUrl==null && other.getFileUrl()==null) || 
+        _equals = true &&
+            ((this.fileUrl==null && other.getFileUrl()==null) ||
              (this.fileUrl!=null &&
               this.fileUrl.equals(other.getFileUrl())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class RevertFileContentStream  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class RevertFileContentStream  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

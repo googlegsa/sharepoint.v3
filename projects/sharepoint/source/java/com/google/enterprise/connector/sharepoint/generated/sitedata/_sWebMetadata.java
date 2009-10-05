@@ -97,7 +97,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the webID value for this _sWebMetadata.
-     * 
+     *
      * @return webID
      */
     public java.lang.String getWebID() {
@@ -107,7 +107,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the webID value for this _sWebMetadata.
-     * 
+     *
      * @param webID
      */
     public void setWebID(java.lang.String webID) {
@@ -117,7 +117,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the title value for this _sWebMetadata.
-     * 
+     *
      * @return title
      */
     public java.lang.String getTitle() {
@@ -127,7 +127,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the title value for this _sWebMetadata.
-     * 
+     *
      * @param title
      */
     public void setTitle(java.lang.String title) {
@@ -137,7 +137,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the description value for this _sWebMetadata.
-     * 
+     *
      * @return description
      */
     public java.lang.String getDescription() {
@@ -147,7 +147,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the description value for this _sWebMetadata.
-     * 
+     *
      * @param description
      */
     public void setDescription(java.lang.String description) {
@@ -157,7 +157,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the author value for this _sWebMetadata.
-     * 
+     *
      * @return author
      */
     public java.lang.String getAuthor() {
@@ -167,7 +167,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the author value for this _sWebMetadata.
-     * 
+     *
      * @param author
      */
     public void setAuthor(java.lang.String author) {
@@ -177,7 +177,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the language value for this _sWebMetadata.
-     * 
+     *
      * @return language
      */
     public org.apache.axis.types.UnsignedInt getLanguage() {
@@ -187,7 +187,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the language value for this _sWebMetadata.
-     * 
+     *
      * @param language
      */
     public void setLanguage(org.apache.axis.types.UnsignedInt language) {
@@ -197,7 +197,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the lastModified value for this _sWebMetadata.
-     * 
+     *
      * @return lastModified
      */
     public java.util.Calendar getLastModified() {
@@ -207,7 +207,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the lastModified value for this _sWebMetadata.
-     * 
+     *
      * @param lastModified
      */
     public void setLastModified(java.util.Calendar lastModified) {
@@ -217,7 +217,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the lastModifiedForceRecrawl value for this _sWebMetadata.
-     * 
+     *
      * @return lastModifiedForceRecrawl
      */
     public java.util.Calendar getLastModifiedForceRecrawl() {
@@ -227,7 +227,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the lastModifiedForceRecrawl value for this _sWebMetadata.
-     * 
+     *
      * @param lastModifiedForceRecrawl
      */
     public void setLastModifiedForceRecrawl(java.util.Calendar lastModifiedForceRecrawl) {
@@ -237,7 +237,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the noIndex value for this _sWebMetadata.
-     * 
+     *
      * @return noIndex
      */
     public java.lang.String getNoIndex() {
@@ -247,7 +247,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the noIndex value for this _sWebMetadata.
-     * 
+     *
      * @param noIndex
      */
     public void setNoIndex(java.lang.String noIndex) {
@@ -257,7 +257,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the validSecurityInfo value for this _sWebMetadata.
-     * 
+     *
      * @return validSecurityInfo
      */
     public boolean isValidSecurityInfo() {
@@ -267,7 +267,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the validSecurityInfo value for this _sWebMetadata.
-     * 
+     *
      * @param validSecurityInfo
      */
     public void setValidSecurityInfo(boolean validSecurityInfo) {
@@ -277,7 +277,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the inheritedSecurity value for this _sWebMetadata.
-     * 
+     *
      * @return inheritedSecurity
      */
     public boolean isInheritedSecurity() {
@@ -287,7 +287,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the inheritedSecurity value for this _sWebMetadata.
-     * 
+     *
      * @param inheritedSecurity
      */
     public void setInheritedSecurity(boolean inheritedSecurity) {
@@ -297,7 +297,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the allowAnonymousAccess value for this _sWebMetadata.
-     * 
+     *
      * @return allowAnonymousAccess
      */
     public boolean isAllowAnonymousAccess() {
@@ -307,7 +307,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the allowAnonymousAccess value for this _sWebMetadata.
-     * 
+     *
      * @param allowAnonymousAccess
      */
     public void setAllowAnonymousAccess(boolean allowAnonymousAccess) {
@@ -317,7 +317,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the anonymousViewListItems value for this _sWebMetadata.
-     * 
+     *
      * @return anonymousViewListItems
      */
     public boolean isAnonymousViewListItems() {
@@ -327,7 +327,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the anonymousViewListItems value for this _sWebMetadata.
-     * 
+     *
      * @param anonymousViewListItems
      */
     public void setAnonymousViewListItems(boolean anonymousViewListItems) {
@@ -337,7 +337,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the permissions value for this _sWebMetadata.
-     * 
+     *
      * @return permissions
      */
     public java.lang.String getPermissions() {
@@ -347,7 +347,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the permissions value for this _sWebMetadata.
-     * 
+     *
      * @param permissions
      */
     public void setPermissions(java.lang.String permissions) {
@@ -357,7 +357,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the externalSecurity value for this _sWebMetadata.
-     * 
+     *
      * @return externalSecurity
      */
     public boolean isExternalSecurity() {
@@ -367,7 +367,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the externalSecurity value for this _sWebMetadata.
-     * 
+     *
      * @param externalSecurity
      */
     public void setExternalSecurity(boolean externalSecurity) {
@@ -377,7 +377,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the categoryId value for this _sWebMetadata.
-     * 
+     *
      * @return categoryId
      */
     public java.lang.String getCategoryId() {
@@ -387,7 +387,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the categoryId value for this _sWebMetadata.
-     * 
+     *
      * @param categoryId
      */
     public void setCategoryId(java.lang.String categoryId) {
@@ -397,7 +397,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the categoryName value for this _sWebMetadata.
-     * 
+     *
      * @return categoryName
      */
     public java.lang.String getCategoryName() {
@@ -407,7 +407,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the categoryName value for this _sWebMetadata.
-     * 
+     *
      * @param categoryName
      */
     public void setCategoryName(java.lang.String categoryName) {
@@ -417,7 +417,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the categoryIdPath value for this _sWebMetadata.
-     * 
+     *
      * @return categoryIdPath
      */
     public java.lang.String getCategoryIdPath() {
@@ -427,7 +427,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the categoryIdPath value for this _sWebMetadata.
-     * 
+     *
      * @param categoryIdPath
      */
     public void setCategoryIdPath(java.lang.String categoryIdPath) {
@@ -437,7 +437,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the isBucketWeb value for this _sWebMetadata.
-     * 
+     *
      * @return isBucketWeb
      */
     public boolean isIsBucketWeb() {
@@ -447,7 +447,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the isBucketWeb value for this _sWebMetadata.
-     * 
+     *
      * @param isBucketWeb
      */
     public void setIsBucketWeb(boolean isBucketWeb) {
@@ -457,7 +457,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the usedInAutocat value for this _sWebMetadata.
-     * 
+     *
      * @return usedInAutocat
      */
     public boolean isUsedInAutocat() {
@@ -467,7 +467,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the usedInAutocat value for this _sWebMetadata.
-     * 
+     *
      * @param usedInAutocat
      */
     public void setUsedInAutocat(boolean usedInAutocat) {
@@ -477,7 +477,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Gets the categoryBucketID value for this _sWebMetadata.
-     * 
+     *
      * @return categoryBucketID
      */
     public java.lang.String getCategoryBucketID() {
@@ -487,7 +487,7 @@ public class _sWebMetadata  implements java.io.Serializable {
 
     /**
      * Sets the categoryBucketID value for this _sWebMetadata.
-     * 
+     *
      * @param categoryBucketID
      */
     public void setCategoryBucketID(java.lang.String categoryBucketID) {
@@ -505,51 +505,51 @@ public class _sWebMetadata  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.webID==null && other.getWebID()==null) || 
+        _equals = true &&
+            ((this.webID==null && other.getWebID()==null) ||
              (this.webID!=null &&
               this.webID.equals(other.getWebID()))) &&
-            ((this.title==null && other.getTitle()==null) || 
+            ((this.title==null && other.getTitle()==null) ||
              (this.title!=null &&
               this.title.equals(other.getTitle()))) &&
-            ((this.description==null && other.getDescription()==null) || 
+            ((this.description==null && other.getDescription()==null) ||
              (this.description!=null &&
               this.description.equals(other.getDescription()))) &&
-            ((this.author==null && other.getAuthor()==null) || 
+            ((this.author==null && other.getAuthor()==null) ||
              (this.author!=null &&
               this.author.equals(other.getAuthor()))) &&
-            ((this.language==null && other.getLanguage()==null) || 
+            ((this.language==null && other.getLanguage()==null) ||
              (this.language!=null &&
               this.language.equals(other.getLanguage()))) &&
-            ((this.lastModified==null && other.getLastModified()==null) || 
+            ((this.lastModified==null && other.getLastModified()==null) ||
              (this.lastModified!=null &&
               this.lastModified.equals(other.getLastModified()))) &&
-            ((this.lastModifiedForceRecrawl==null && other.getLastModifiedForceRecrawl()==null) || 
+            ((this.lastModifiedForceRecrawl==null && other.getLastModifiedForceRecrawl()==null) ||
              (this.lastModifiedForceRecrawl!=null &&
               this.lastModifiedForceRecrawl.equals(other.getLastModifiedForceRecrawl()))) &&
-            ((this.noIndex==null && other.getNoIndex()==null) || 
+            ((this.noIndex==null && other.getNoIndex()==null) ||
              (this.noIndex!=null &&
               this.noIndex.equals(other.getNoIndex()))) &&
             this.validSecurityInfo == other.isValidSecurityInfo() &&
             this.inheritedSecurity == other.isInheritedSecurity() &&
             this.allowAnonymousAccess == other.isAllowAnonymousAccess() &&
             this.anonymousViewListItems == other.isAnonymousViewListItems() &&
-            ((this.permissions==null && other.getPermissions()==null) || 
+            ((this.permissions==null && other.getPermissions()==null) ||
              (this.permissions!=null &&
               this.permissions.equals(other.getPermissions()))) &&
             this.externalSecurity == other.isExternalSecurity() &&
-            ((this.categoryId==null && other.getCategoryId()==null) || 
+            ((this.categoryId==null && other.getCategoryId()==null) ||
              (this.categoryId!=null &&
               this.categoryId.equals(other.getCategoryId()))) &&
-            ((this.categoryName==null && other.getCategoryName()==null) || 
+            ((this.categoryName==null && other.getCategoryName()==null) ||
              (this.categoryName!=null &&
               this.categoryName.equals(other.getCategoryName()))) &&
-            ((this.categoryIdPath==null && other.getCategoryIdPath()==null) || 
+            ((this.categoryIdPath==null && other.getCategoryIdPath()==null) ||
              (this.categoryIdPath!=null &&
               this.categoryIdPath.equals(other.getCategoryIdPath()))) &&
             this.isBucketWeb == other.isIsBucketWeb() &&
             this.usedInAutocat == other.isUsedInAutocat() &&
-            ((this.categoryBucketID==null && other.getCategoryBucketID()==null) || 
+            ((this.categoryBucketID==null && other.getCategoryBucketID()==null) ||
              (this.categoryBucketID!=null &&
               this.categoryBucketID.equals(other.getCategoryBucketID())));
         __equalsCalc = null;
@@ -762,10 +762,10 @@ public class _sWebMetadata  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -774,10 +774,10 @@ public class _sWebMetadata  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

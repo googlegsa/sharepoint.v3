@@ -32,65 +32,76 @@ import com.google.enterprise.connector.traversal.QueryTraverser;
 import com.google.enterprise.connector.traversal.Traverser;
 
 public class IntegrationTest extends TestCase {
-	
-	private SharepointConnector connector;  
 
-	public static final int TOTAL_DOCS = 185;//set the total expected documents
+    private SharepointConnector connector;
 
-	public void setUp() throws Exception {
-		super.setUp();
-		System.out.println("\n...Setting Up...");
-		System.out.println("Initializing Sharepoint Connector Instance ...");
-		this.connector = new SharepointConnector(TestConfiguration.sharepointUrl, TestConfiguration.domain,
-				TestConfiguration.username, TestConfiguration.Password, 
-				  TestConfiguration.googleConnectorWorkDir, TestConfiguration.includedURls, 
-				  TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,TestConfiguration.feedType);
-		this.connector.setIncluded_metadata(TestConfiguration.whiteList);
-		this.connector.setExcluded_metadata(TestConfiguration.blackList);		
-		this.connector.setFQDNConversion(true);
-	}
-	/**
-	 * Test method for
-	 * {@link com.google.enterprise.connector.traversal.QueryTraverser
-	 * #runBatch(int)}.
-	 * @throws InterruptedException 
-	 * @throws RepositoryException 
-	 * @throws LoginException 
-	 */
-	public final void testRunBatch() throws InterruptedException,RepositoryException {
-		final int iBatch =100; 
-		this.runTestBatches(iBatch);
-	}
+    public static final int TOTAL_DOCS = 185;// set the total expected documents
 
-	private void runTestBatches(final int batchSize) throws InterruptedException,RepositoryException {
-		final String connectorName = "sharepoint";
-		final Session session = this.connector.login();
-		GlobalState.forgetState(null); //used to delete the connector state file.. testing purpose
-		final SharepointTraversalManager manager = 
-			(SharepointTraversalManager) session.getTraversalManager(); 
-		final MockPusher pusher = new MockPusher(System.out);
-		final StoreContext storeContext = new StoreContext(connectorName);
-		final ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
-		final MockInstantiator instantiator = new MockInstantiator();		
-		final Traverser traverser =new QueryTraverser(pusher, manager, instantiator.getTraversalStateStore(connectorName), connectorName);
-		instantiator.setupTraverser(connectorName, traverser);		
-		System.out.println("\nRunning batch test batchsize " + batchSize);
+    public void setUp() throws Exception {
+        super.setUp();
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing Sharepoint Connector Instance ...");
+        this.connector = new SharepointConnector(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+        this.connector.setIncluded_metadata(TestConfiguration.whiteList);
+        this.connector.setExcluded_metadata(TestConfiguration.blackList);
+        this.connector.setFQDNConversion(true);
+    }
 
-		int docsProcessed = -1;
-		int totalDocsProcessed = 0;
-		int batchNumber = 0;
-		while (true) {
-			docsProcessed = traverser.runBatch(batchSize);//do the traversal
-			totalDocsProcessed += docsProcessed;//do the checkpointing after the traversal
-			System.out.println("Batch# " + batchNumber + " docs " + docsProcessed 
-					+" checkpoint " + connectorStateStore.getConnectorState(storeContext));
-			batchNumber++;
+    /**
+     * Test method for
+     * {@link com.google.enterprise.connector.traversal.QueryTraverser #runBatch(int)}
+     * .
+     *
+     * @throws InterruptedException
+     * @throws RepositoryException
+     * @throws LoginException
+     */
+    public final void testRunBatch() throws InterruptedException,
+            RepositoryException {
+        final int iBatch = 100;
+        this.runTestBatches(iBatch);
+    }
 
-			//start recrawl cycle
-			if(docsProcessed==0){
-				System.out.println("No new documents discovered");
-			}
+    private void runTestBatches(final int batchSize)
+            throws InterruptedException, RepositoryException {
+        final String connectorName = "sharepoint";
+        final Session session = this.connector.login();
+        GlobalState.forgetState(null); // used to delete the connector state
+                                        // file.. testing purpose
+        final SharepointTraversalManager manager = (SharepointTraversalManager) session.getTraversalManager();
+        final MockPusher pusher = new MockPusher(System.out);
+        final StoreContext storeContext = new StoreContext(connectorName);
+        final ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
+        final MockInstantiator instantiator = new MockInstantiator();
+        final Traverser traverser = new QueryTraverser(pusher, manager,
+                instantiator.getTraversalStateStore(connectorName),
+                connectorName);
+        instantiator.setupTraverser(connectorName, traverser);
+        System.out.println("\nRunning batch test batchsize " + batchSize);
 
-		}    
-	}
+        int docsProcessed = -1;
+        int totalDocsProcessed = 0;
+        int batchNumber = 0;
+        while (true) {
+            docsProcessed = traverser.runBatch(batchSize);// do the traversal
+            totalDocsProcessed += docsProcessed;// do the checkpointing after
+                                                // the traversal
+            System.out.println("Batch# " + batchNumber + " docs "
+                    + docsProcessed + " checkpoint "
+                    + connectorStateStore.getConnectorState(storeContext));
+            batchNumber++;
+
+            // start recrawl cycle
+            if (docsProcessed == 0) {
+                System.out.println("No new documents discovered");
+            }
+
+        }
+    }
 }

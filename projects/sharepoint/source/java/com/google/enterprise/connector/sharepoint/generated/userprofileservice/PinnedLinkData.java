@@ -29,7 +29,7 @@ public class PinnedLinkData  implements java.io.Serializable {
 
     /**
      * Gets the name value for this PinnedLinkData.
-     * 
+     *
      * @return name
      */
     public java.lang.String getName() {
@@ -39,7 +39,7 @@ public class PinnedLinkData  implements java.io.Serializable {
 
     /**
      * Sets the name value for this PinnedLinkData.
-     * 
+     *
      * @param name
      */
     public void setName(java.lang.String name) {
@@ -49,7 +49,7 @@ public class PinnedLinkData  implements java.io.Serializable {
 
     /**
      * Gets the url value for this PinnedLinkData.
-     * 
+     *
      * @return url
      */
     public java.lang.String getUrl() {
@@ -59,7 +59,7 @@ public class PinnedLinkData  implements java.io.Serializable {
 
     /**
      * Sets the url value for this PinnedLinkData.
-     * 
+     *
      * @param url
      */
     public void setUrl(java.lang.String url) {
@@ -69,7 +69,7 @@ public class PinnedLinkData  implements java.io.Serializable {
 
     /**
      * Gets the ID value for this PinnedLinkData.
-     * 
+     *
      * @return ID
      */
     public long getID() {
@@ -79,7 +79,7 @@ public class PinnedLinkData  implements java.io.Serializable {
 
     /**
      * Sets the ID value for this PinnedLinkData.
-     * 
+     *
      * @param ID
      */
     public void setID(long ID) {
@@ -97,11 +97,11 @@ public class PinnedLinkData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.name==null && other.getName()==null) || 
+        _equals = true &&
+            ((this.name==null && other.getName()==null) ||
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
-            ((this.url==null && other.getUrl()==null) || 
+            ((this.url==null && other.getUrl()==null) ||
              (this.url!=null &&
               this.url.equals(other.getUrl()))) &&
             this.ID == other.getID();
@@ -166,10 +166,10 @@ public class PinnedLinkData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -178,10 +178,10 @@ public class PinnedLinkData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

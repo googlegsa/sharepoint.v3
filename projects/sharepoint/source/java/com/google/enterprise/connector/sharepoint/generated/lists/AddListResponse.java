@@ -21,7 +21,7 @@ public class AddListResponse  implements java.io.Serializable {
 
     /**
      * Gets the addListResult value for this AddListResponse.
-     * 
+     *
      * @return addListResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.AddListResponseAddListResult getAddListResult() {
@@ -31,7 +31,7 @@ public class AddListResponse  implements java.io.Serializable {
 
     /**
      * Sets the addListResult value for this AddListResponse.
-     * 
+     *
      * @param addListResult
      */
     public void setAddListResult(com.google.enterprise.connector.sharepoint.generated.lists.AddListResponseAddListResult addListResult) {
@@ -49,8 +49,8 @@ public class AddListResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.addListResult==null && other.getAddListResult()==null) || 
+        _equals = true &&
+            ((this.addListResult==null && other.getAddListResult()==null) ||
              (this.addListResult!=null &&
               this.addListResult.equals(other.getAddListResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class AddListResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class AddListResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

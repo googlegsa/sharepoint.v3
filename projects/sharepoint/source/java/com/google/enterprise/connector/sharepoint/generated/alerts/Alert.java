@@ -49,7 +49,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Gets the id value for this Alert.
-     * 
+     *
      * @return id
      */
     public java.lang.String getId() {
@@ -59,7 +59,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Sets the id value for this Alert.
-     * 
+     *
      * @param id
      */
     public void setId(java.lang.String id) {
@@ -69,7 +69,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Gets the title value for this Alert.
-     * 
+     *
      * @return title
      */
     public java.lang.String getTitle() {
@@ -79,7 +79,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Sets the title value for this Alert.
-     * 
+     *
      * @param title
      */
     public void setTitle(java.lang.String title) {
@@ -89,7 +89,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Gets the active value for this Alert.
-     * 
+     *
      * @return active
      */
     public boolean isActive() {
@@ -99,7 +99,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Sets the active value for this Alert.
-     * 
+     *
      * @param active
      */
     public void setActive(boolean active) {
@@ -109,7 +109,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Gets the eventType value for this Alert.
-     * 
+     *
      * @return eventType
      */
     public java.lang.String getEventType() {
@@ -119,7 +119,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Sets the eventType value for this Alert.
-     * 
+     *
      * @param eventType
      */
     public void setEventType(java.lang.String eventType) {
@@ -129,7 +129,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Gets the alertForTitle value for this Alert.
-     * 
+     *
      * @return alertForTitle
      */
     public java.lang.String getAlertForTitle() {
@@ -139,7 +139,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Sets the alertForTitle value for this Alert.
-     * 
+     *
      * @param alertForTitle
      */
     public void setAlertForTitle(java.lang.String alertForTitle) {
@@ -149,7 +149,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Gets the alertForUrl value for this Alert.
-     * 
+     *
      * @return alertForUrl
      */
     public java.lang.String getAlertForUrl() {
@@ -159,7 +159,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Sets the alertForUrl value for this Alert.
-     * 
+     *
      * @param alertForUrl
      */
     public void setAlertForUrl(java.lang.String alertForUrl) {
@@ -169,7 +169,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Gets the editAlertUrl value for this Alert.
-     * 
+     *
      * @return editAlertUrl
      */
     public java.lang.String getEditAlertUrl() {
@@ -179,7 +179,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Sets the editAlertUrl value for this Alert.
-     * 
+     *
      * @param editAlertUrl
      */
     public void setEditAlertUrl(java.lang.String editAlertUrl) {
@@ -189,7 +189,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Gets the deliveryChannels value for this Alert.
-     * 
+     *
      * @return deliveryChannels
      */
     public com.google.enterprise.connector.sharepoint.generated.alerts.DeliveryChannel[] getDeliveryChannels() {
@@ -199,7 +199,7 @@ public class Alert  implements java.io.Serializable {
 
     /**
      * Sets the deliveryChannels value for this Alert.
-     * 
+     *
      * @param deliveryChannels
      */
     public void setDeliveryChannels(com.google.enterprise.connector.sharepoint.generated.alerts.DeliveryChannel[] deliveryChannels) {
@@ -217,27 +217,27 @@ public class Alert  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.id==null && other.getId()==null) || 
+        _equals = true &&
+            ((this.id==null && other.getId()==null) ||
              (this.id!=null &&
               this.id.equals(other.getId()))) &&
-            ((this.title==null && other.getTitle()==null) || 
+            ((this.title==null && other.getTitle()==null) ||
              (this.title!=null &&
               this.title.equals(other.getTitle()))) &&
             this.active == other.isActive() &&
-            ((this.eventType==null && other.getEventType()==null) || 
+            ((this.eventType==null && other.getEventType()==null) ||
              (this.eventType!=null &&
               this.eventType.equals(other.getEventType()))) &&
-            ((this.alertForTitle==null && other.getAlertForTitle()==null) || 
+            ((this.alertForTitle==null && other.getAlertForTitle()==null) ||
              (this.alertForTitle!=null &&
               this.alertForTitle.equals(other.getAlertForTitle()))) &&
-            ((this.alertForUrl==null && other.getAlertForUrl()==null) || 
+            ((this.alertForUrl==null && other.getAlertForUrl()==null) ||
              (this.alertForUrl!=null &&
               this.alertForUrl.equals(other.getAlertForUrl()))) &&
-            ((this.editAlertUrl==null && other.getEditAlertUrl()==null) || 
+            ((this.editAlertUrl==null && other.getEditAlertUrl()==null) ||
              (this.editAlertUrl!=null &&
               this.editAlertUrl.equals(other.getEditAlertUrl()))) &&
-            ((this.deliveryChannels==null && other.getDeliveryChannels()==null) || 
+            ((this.deliveryChannels==null && other.getDeliveryChannels()==null) ||
              (this.deliveryChannels!=null &&
               java.util.Arrays.equals(this.deliveryChannels, other.getDeliveryChannels())));
         __equalsCalc = null;
@@ -360,10 +360,10 @@ public class Alert  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -372,10 +372,10 @@ public class Alert  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

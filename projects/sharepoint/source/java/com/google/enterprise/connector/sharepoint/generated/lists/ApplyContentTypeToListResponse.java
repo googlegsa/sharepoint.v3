@@ -21,7 +21,7 @@ public class ApplyContentTypeToListResponse  implements java.io.Serializable {
 
     /**
      * Gets the applyContentTypeToListResult value for this ApplyContentTypeToListResponse.
-     * 
+     *
      * @return applyContentTypeToListResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.ApplyContentTypeToListResponseApplyContentTypeToListResult getApplyContentTypeToListResult() {
@@ -31,7 +31,7 @@ public class ApplyContentTypeToListResponse  implements java.io.Serializable {
 
     /**
      * Sets the applyContentTypeToListResult value for this ApplyContentTypeToListResponse.
-     * 
+     *
      * @param applyContentTypeToListResult
      */
     public void setApplyContentTypeToListResult(com.google.enterprise.connector.sharepoint.generated.lists.ApplyContentTypeToListResponseApplyContentTypeToListResult applyContentTypeToListResult) {
@@ -49,8 +49,8 @@ public class ApplyContentTypeToListResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.applyContentTypeToListResult==null && other.getApplyContentTypeToListResult()==null) || 
+        _equals = true &&
+            ((this.applyContentTypeToListResult==null && other.getApplyContentTypeToListResult()==null) ||
              (this.applyContentTypeToListResult!=null &&
               this.applyContentTypeToListResult.equals(other.getApplyContentTypeToListResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class ApplyContentTypeToListResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class ApplyContentTypeToListResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

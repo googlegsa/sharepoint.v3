@@ -37,7 +37,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Gets the accountName value for this AddColleague.
-     * 
+     *
      * @return accountName
      */
     public java.lang.String getAccountName() {
@@ -47,7 +47,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Sets the accountName value for this AddColleague.
-     * 
+     *
      * @param accountName
      */
     public void setAccountName(java.lang.String accountName) {
@@ -57,7 +57,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Gets the colleagueAccountName value for this AddColleague.
-     * 
+     *
      * @return colleagueAccountName
      */
     public java.lang.String getColleagueAccountName() {
@@ -67,7 +67,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Sets the colleagueAccountName value for this AddColleague.
-     * 
+     *
      * @param colleagueAccountName
      */
     public void setColleagueAccountName(java.lang.String colleagueAccountName) {
@@ -77,7 +77,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Gets the group value for this AddColleague.
-     * 
+     *
      * @return group
      */
     public java.lang.String getGroup() {
@@ -87,7 +87,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Sets the group value for this AddColleague.
-     * 
+     *
      * @param group
      */
     public void setGroup(java.lang.String group) {
@@ -97,7 +97,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Gets the privacy value for this AddColleague.
-     * 
+     *
      * @return privacy
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy getPrivacy() {
@@ -107,7 +107,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Sets the privacy value for this AddColleague.
-     * 
+     *
      * @param privacy
      */
     public void setPrivacy(com.google.enterprise.connector.sharepoint.generated.userprofileservice.Privacy privacy) {
@@ -117,7 +117,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Gets the isInWorkGroup value for this AddColleague.
-     * 
+     *
      * @return isInWorkGroup
      */
     public boolean isIsInWorkGroup() {
@@ -127,7 +127,7 @@ public class AddColleague  implements java.io.Serializable {
 
     /**
      * Sets the isInWorkGroup value for this AddColleague.
-     * 
+     *
      * @param isInWorkGroup
      */
     public void setIsInWorkGroup(boolean isInWorkGroup) {
@@ -145,17 +145,17 @@ public class AddColleague  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.accountName==null && other.getAccountName()==null) || 
+        _equals = true &&
+            ((this.accountName==null && other.getAccountName()==null) ||
              (this.accountName!=null &&
               this.accountName.equals(other.getAccountName()))) &&
-            ((this.colleagueAccountName==null && other.getColleagueAccountName()==null) || 
+            ((this.colleagueAccountName==null && other.getColleagueAccountName()==null) ||
              (this.colleagueAccountName!=null &&
               this.colleagueAccountName.equals(other.getColleagueAccountName()))) &&
-            ((this.group==null && other.getGroup()==null) || 
+            ((this.group==null && other.getGroup()==null) ||
              (this.group!=null &&
               this.group.equals(other.getGroup()))) &&
-            ((this.privacy==null && other.getPrivacy()==null) || 
+            ((this.privacy==null && other.getPrivacy()==null) ||
              (this.privacy!=null &&
               this.privacy.equals(other.getPrivacy()))) &&
             this.isInWorkGroup == other.isIsInWorkGroup();
@@ -239,10 +239,10 @@ public class AddColleague  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -251,10 +251,10 @@ public class AddColleague  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

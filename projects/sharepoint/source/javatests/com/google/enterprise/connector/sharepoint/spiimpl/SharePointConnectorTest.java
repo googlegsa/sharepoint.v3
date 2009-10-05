@@ -22,25 +22,33 @@ import junit.framework.TestCase;
 
 public class SharePointConnectorTest extends TestCase {
 
-	SharepointClientContext sharepointClientContext;
-	SharepointConnector connector;
-		
-	protected void setUp() throws Exception {
-		System.out.println("\n...Setting Up...");
-		System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = new SharepointClientContext(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				  TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, 
-				  TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, 
-				  TestConfiguration.AliasMap, TestConfiguration.feedType);		
-		assertNotNull(this.sharepointClientContext);
-		this.connector.setIncluded_metadata(TestConfiguration.whiteList);
-		this.connector.setExcluded_metadata(TestConfiguration.blackList);		
-		
-		System.out.println("initializing SharepointConnector ...");
-		this.connector = new SharepointConnector(TestConfiguration.sharepointUrl, TestConfiguration.domain, 
-				TestConfiguration.username, TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir, TestConfiguration.includedURls, TestConfiguration.excludedURls, TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,TestConfiguration.feedType);
-		this.connector.setFQDNConversion(TestConfiguration.FQDNflag);					
-	}
-	
-	// The class under test contains only getters/setters
+    SharepointClientContext sharepointClientContext;
+    SharepointConnector connector;
+
+    protected void setUp() throws Exception {
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SharepointClientContext ...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+        assertNotNull(this.sharepointClientContext);
+        this.connector.setIncluded_metadata(TestConfiguration.whiteList);
+        this.connector.setExcluded_metadata(TestConfiguration.blackList);
+
+        System.out.println("initializing SharepointConnector ...");
+        this.connector = new SharepointConnector(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+        this.connector.setFQDNConversion(TestConfiguration.FQDNflag);
+    }
+
+    // The class under test contains only getters/setters
 }

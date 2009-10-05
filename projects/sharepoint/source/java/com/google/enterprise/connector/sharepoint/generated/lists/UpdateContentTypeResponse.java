@@ -21,7 +21,7 @@ public class UpdateContentTypeResponse  implements java.io.Serializable {
 
     /**
      * Gets the updateContentTypeResult value for this UpdateContentTypeResponse.
-     * 
+     *
      * @return updateContentTypeResult
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.UpdateContentTypeResponseUpdateContentTypeResult getUpdateContentTypeResult() {
@@ -31,7 +31,7 @@ public class UpdateContentTypeResponse  implements java.io.Serializable {
 
     /**
      * Sets the updateContentTypeResult value for this UpdateContentTypeResponse.
-     * 
+     *
      * @param updateContentTypeResult
      */
     public void setUpdateContentTypeResult(com.google.enterprise.connector.sharepoint.generated.lists.UpdateContentTypeResponseUpdateContentTypeResult updateContentTypeResult) {
@@ -49,8 +49,8 @@ public class UpdateContentTypeResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.updateContentTypeResult==null && other.getUpdateContentTypeResult()==null) || 
+        _equals = true &&
+            ((this.updateContentTypeResult==null && other.getUpdateContentTypeResult()==null) ||
              (this.updateContentTypeResult!=null &&
               this.updateContentTypeResult.equals(other.getUpdateContentTypeResult())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class UpdateContentTypeResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class UpdateContentTypeResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

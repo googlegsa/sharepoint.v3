@@ -37,7 +37,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Gets the name value for this PropertyInfo.
-     * 
+     *
      * @return name
      */
     public java.lang.String getName() {
@@ -47,7 +47,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Sets the name value for this PropertyInfo.
-     * 
+     *
      * @param name
      */
     public void setName(java.lang.String name) {
@@ -57,7 +57,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Gets the displayName value for this PropertyInfo.
-     * 
+     *
      * @return displayName
      */
     public java.lang.String getDisplayName() {
@@ -67,7 +67,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Sets the displayName value for this PropertyInfo.
-     * 
+     *
      * @param displayName
      */
     public void setDisplayName(java.lang.String displayName) {
@@ -77,7 +77,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Gets the type value for this PropertyInfo.
-     * 
+     *
      * @return type
      */
     public java.lang.String getType() {
@@ -87,7 +87,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Sets the type value for this PropertyInfo.
-     * 
+     *
      * @param type
      */
     public void setType(java.lang.String type) {
@@ -97,7 +97,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Gets the isMultiValue value for this PropertyInfo.
-     * 
+     *
      * @return isMultiValue
      */
     public boolean isIsMultiValue() {
@@ -107,7 +107,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Sets the isMultiValue value for this PropertyInfo.
-     * 
+     *
      * @param isMultiValue
      */
     public void setIsMultiValue(boolean isMultiValue) {
@@ -117,7 +117,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Gets the choiceType value for this PropertyInfo.
-     * 
+     *
      * @return choiceType
      */
     public com.google.enterprise.connector.sharepoint.generated.userprofileservice.ChoiceTypes getChoiceType() {
@@ -127,7 +127,7 @@ public class PropertyInfo  implements java.io.Serializable {
 
     /**
      * Sets the choiceType value for this PropertyInfo.
-     * 
+     *
      * @param choiceType
      */
     public void setChoiceType(com.google.enterprise.connector.sharepoint.generated.userprofileservice.ChoiceTypes choiceType) {
@@ -145,18 +145,18 @@ public class PropertyInfo  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.name==null && other.getName()==null) || 
+        _equals = true &&
+            ((this.name==null && other.getName()==null) ||
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
-            ((this.displayName==null && other.getDisplayName()==null) || 
+            ((this.displayName==null && other.getDisplayName()==null) ||
              (this.displayName!=null &&
               this.displayName.equals(other.getDisplayName()))) &&
-            ((this.type==null && other.getType()==null) || 
+            ((this.type==null && other.getType()==null) ||
              (this.type!=null &&
               this.type.equals(other.getType()))) &&
             this.isMultiValue == other.isIsMultiValue() &&
-            ((this.choiceType==null && other.getChoiceType()==null) || 
+            ((this.choiceType==null && other.getChoiceType()==null) ||
              (this.choiceType!=null &&
               this.choiceType.equals(other.getChoiceType())));
         __equalsCalc = null;
@@ -239,10 +239,10 @@ public class PropertyInfo  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -251,10 +251,10 @@ public class PropertyInfo  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

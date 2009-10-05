@@ -45,7 +45,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Gets the listName value for this GetListItems.
-     * 
+     *
      * @return listName
      */
     public java.lang.String getListName() {
@@ -55,7 +55,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Sets the listName value for this GetListItems.
-     * 
+     *
      * @param listName
      */
     public void setListName(java.lang.String listName) {
@@ -65,7 +65,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Gets the viewName value for this GetListItems.
-     * 
+     *
      * @return viewName
      */
     public java.lang.String getViewName() {
@@ -75,7 +75,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Sets the viewName value for this GetListItems.
-     * 
+     *
      * @param viewName
      */
     public void setViewName(java.lang.String viewName) {
@@ -85,7 +85,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Gets the query value for this GetListItems.
-     * 
+     *
      * @return query
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsQuery getQuery() {
@@ -95,7 +95,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Sets the query value for this GetListItems.
-     * 
+     *
      * @param query
      */
     public void setQuery(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsQuery query) {
@@ -105,7 +105,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Gets the viewFields value for this GetListItems.
-     * 
+     *
      * @return viewFields
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsViewFields getViewFields() {
@@ -115,7 +115,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Sets the viewFields value for this GetListItems.
-     * 
+     *
      * @param viewFields
      */
     public void setViewFields(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsViewFields viewFields) {
@@ -125,7 +125,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Gets the rowLimit value for this GetListItems.
-     * 
+     *
      * @return rowLimit
      */
     public java.lang.String getRowLimit() {
@@ -135,7 +135,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Sets the rowLimit value for this GetListItems.
-     * 
+     *
      * @param rowLimit
      */
     public void setRowLimit(java.lang.String rowLimit) {
@@ -145,7 +145,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Gets the queryOptions value for this GetListItems.
-     * 
+     *
      * @return queryOptions
      */
     public com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsQueryOptions getQueryOptions() {
@@ -155,7 +155,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Sets the queryOptions value for this GetListItems.
-     * 
+     *
      * @param queryOptions
      */
     public void setQueryOptions(com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsQueryOptions queryOptions) {
@@ -165,7 +165,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Gets the webID value for this GetListItems.
-     * 
+     *
      * @return webID
      */
     public java.lang.String getWebID() {
@@ -175,7 +175,7 @@ public class GetListItems  implements java.io.Serializable {
 
     /**
      * Sets the webID value for this GetListItems.
-     * 
+     *
      * @param webID
      */
     public void setWebID(java.lang.String webID) {
@@ -193,26 +193,26 @@ public class GetListItems  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true && 
-            ((this.listName==null && other.getListName()==null) || 
+        _equals = true &&
+            ((this.listName==null && other.getListName()==null) ||
              (this.listName!=null &&
               this.listName.equals(other.getListName()))) &&
-            ((this.viewName==null && other.getViewName()==null) || 
+            ((this.viewName==null && other.getViewName()==null) ||
              (this.viewName!=null &&
               this.viewName.equals(other.getViewName()))) &&
-            ((this.query==null && other.getQuery()==null) || 
+            ((this.query==null && other.getQuery()==null) ||
              (this.query!=null &&
               this.query.equals(other.getQuery()))) &&
-            ((this.viewFields==null && other.getViewFields()==null) || 
+            ((this.viewFields==null && other.getViewFields()==null) ||
              (this.viewFields!=null &&
               this.viewFields.equals(other.getViewFields()))) &&
-            ((this.rowLimit==null && other.getRowLimit()==null) || 
+            ((this.rowLimit==null && other.getRowLimit()==null) ||
              (this.rowLimit!=null &&
               this.rowLimit.equals(other.getRowLimit()))) &&
-            ((this.queryOptions==null && other.getQueryOptions()==null) || 
+            ((this.queryOptions==null && other.getQueryOptions()==null) ||
              (this.queryOptions!=null &&
               this.queryOptions.equals(other.getQueryOptions()))) &&
-            ((this.webID==null && other.getWebID()==null) || 
+            ((this.webID==null && other.getWebID()==null) ||
              (this.webID!=null &&
               this.webID.equals(other.getWebID())));
         __equalsCalc = null;
@@ -319,10 +319,10 @@ public class GetListItems  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -331,10 +331,10 @@ public class GetListItems  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
+           java.lang.String mechType,
+           java.lang.Class _javaType,
            javax.xml.namespace.QName _xmlType) {
-        return 
+        return
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

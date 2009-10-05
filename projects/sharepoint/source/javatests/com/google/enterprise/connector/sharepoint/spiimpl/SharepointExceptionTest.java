@@ -20,13 +20,14 @@ import junit.framework.TestCase;
 
 public class SharepointExceptionTest extends TestCase {
 
-	SharepointException gspExcep;
-	protected void setUp() throws Exception {
-		super.setUp();
-		this.gspExcep = new SharepointException();
-	}
-	
-	public final void testCase() {
-		System.out.println("Methods are toovague!");
-	}
+    SharepointException gspExcep;
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.gspExcep = new SharepointException();
+    }
+
+    public final void testCase() {
+        System.out.println("Methods are toovague!");
+    }
 }
