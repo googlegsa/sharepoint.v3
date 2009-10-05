@@ -54,9 +54,10 @@ public class SharepointClient {
     private SharepointClientContext sharepointClientContext;
     private int nDocuments = 0;
     private boolean doCrawl;// true, when threshhold is not reached and all webs
-                            // all lists all documents are done. false, when a
-                            // partial cycle is completed i.e, threashold is
-                            // reached before processing all the documents.
+
+    // all lists all documents are done. false, when a
+    // partial cycle is completed i.e, threashold is
+    // reached before processing all the documents.
 
     public SharepointClient(
             final SharepointClientContext inSharepointClientContext)
@@ -86,8 +87,8 @@ public class SharepointClient {
         }
 
         final List crawlQueue = list.getCrawlQueue();// return the list of
-                                                        // documents for the
-                                                        // crawl queue
+        // documents for the
+        // crawl queue
         if (null == crawlQueue) {
             LOGGER.log(Level.FINE, "No CrawlQueue..");
             return null;
@@ -111,8 +112,8 @@ public class SharepointClient {
         if (null != sharepointClientContext) {
             docList.setAliasMap(sharepointClientContext.getAliasMap());
             docList.setFQDNConversion(sharepointClientContext.isFQDNConversion());// FQDN
-                                                                                    // Conversion
-                                                                                    // flag
+            // Conversion
+            // flag
         } else {
             LOGGER.log(Level.SEVERE, "sharepointClientContext not found!");
         }
@@ -206,12 +207,12 @@ public class SharepointClient {
             if (userProfileWS.isSPS()) {// Check if SPS2003 or WSS 2.0
                 try {
                     final Set<String> personalSites = userProfileWS.getPersonalSiteList();// Get
-                                                                                            // the
-                                                                                            // list
-                                                                                            // of
-                                                                                            // my
-                                                                                            // sites/personal
-                                                                                            // sites
+                    // the
+                    // list
+                    // of
+                    // my
+                    // sites/personal
+                    // sites
                     allSites.addAll(personalSites);
                 } catch (final Exception e) {
                     LOGGER.log(Level.WARNING, "Unable to get MySites for the Context URL [ "
@@ -220,9 +221,9 @@ public class SharepointClient {
             }
         } else if (SPConstants.SP2007.equalsIgnoreCase(spType)) {
             final String strMySiteURL = sharepointClientContext.getMySiteBaseURL(); // --GET
-                                                                                    // THE
-                                                                                    // MYSITE
-                                                                                    // URL
+            // THE
+            // MYSITE
+            // URL
             if ((strMySiteURL != null) && (!strMySiteURL.trim().equals(""))) {
                 LOGGER.log(Level.INFO, "Getting the initial list of MySites for SharePoint type SP2007 from MySiteBaseURL [ "
                         + strMySiteURL + " ]");
@@ -296,7 +297,7 @@ public class SharepointClient {
         }
         String webUrl = url;
         WebState wsGS = globalState.lookupWeb(url, null);// find the web in the
-                                                            // Web state
+        // Web state
 
         /*
          * The incoming url might not always be exactly the web URL that is used
@@ -317,8 +318,8 @@ public class SharepointClient {
                 webUrl = websWS.getWebURLFromPageURL(url);
                 if (!url.equals(webUrl)) {
                     wsGS = globalState.lookupWeb(webUrl, null);// find the web
-                                                                // in the Web
-                                                                // state
+                    // in the Web
+                    // state
                 }
             }
         }
@@ -327,12 +328,12 @@ public class SharepointClient {
             LOGGER.info("Making WebState for : " + webUrl);
             try {
                 web = globalState.makeWebState(sharepointClientContext, webUrl);// webs
-                                                                                // do
-                                                                                // not
-                                                                                // require
-                                                                                // last
-                                                                                // modified
-                                                                                // date
+                // do
+                // not
+                // require
+                // last
+                // modified
+                // date
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Problem while creating web state for url [ "
                         + webUrl + " ]. ", e);
@@ -388,8 +389,8 @@ public class SharepointClient {
 
         WebsWS websWS = new WebsWS(sharepointClientContext);
         globalState.startRecrawl();// start and end recrawl is used for garbage
-                                    // collection...removing the non existant
-                                    // lists
+        // collection...removing the non existant
+        // lists
 
         if (null == ws) {
             ws = updateGlobalState(globalState, nextLastWebID);
@@ -431,19 +432,19 @@ public class SharepointClient {
                         + " ] is getting crawled for documents....");
                 tempCtx.setSiteURL(siteName);
                 updateWebStateFromSite(tempCtx, ws, nextLastListID, allSites); // Process
-                                                                                // the
-                                                                                // web
-                                                                                // site,
-                                                                                // and
-                                                                                // add
-                                                                                // the
-                                                                                // link
-                                                                                // site
-                                                                                // info
-                                                                                // to
-                                                                                // allSites.
+                // the
+                // web
+                // site,
+                // and
+                // add
+                // the
+                // link
+                // site
+                // info
+                // to
+                // allSites.
                 globalState.updateList(ws);// update global state with the
-                                            // updated web state
+                // updated web state
                 if (currDocCount == nDocuments) {
                     // get Alerts for the web and update webState. The above
                     // check is added to reduce the frequency with which
@@ -504,7 +505,7 @@ public class SharepointClient {
         }
 
         globalState.setBFullReCrawl(doCrawl); // indicate if complete\Partial
-                                                // crawlcycle
+        // crawlcycle
         globalState.endRecrawl(sharepointClientContext);
 
         LOGGER.log(Level.INFO, "Returning after crawl cycle.. ");
@@ -552,12 +553,12 @@ public class SharepointClient {
         }
 
         ListState dummyAlertListState = webState.lookupList(currentDummyAlertList.getPrimaryKey());// find
-                                                                                                    // the
-                                                                                                    // list
-                                                                                                    // in
-                                                                                                    // the
-                                                                                                    // Web
-                                                                                                    // state
+        // the
+        // list
+        // in
+        // the
+        // Web
+        // state
         if (dummyAlertListState == null) {
             dummyAlertListState = currentDummyAlertList;
         }
@@ -602,9 +603,9 @@ public class SharepointClient {
         // get all the lists for the given web
         final SiteDataWS siteDataWS = new SiteDataWS(tempCtx);
         List<ListState> listCollection = siteDataWS.getNamedLists(webState);// e.g.
-                                                                            // picture,wiki,document
-                                                                            // libraries
-                                                                            // etc.
+        // picture,wiki,document
+        // libraries
+        // etc.
 
         // Remove duplicate lists, if any.
         listCollection = new ArrayList<ListState>(new TreeSet<ListState>(
@@ -630,12 +631,12 @@ public class SharepointClient {
         for (int i = 0; i < listCollection.size(); i++) {
             final ListState currentList = listCollection.get(i);
             ListState listState = webState.lookupList(currentList.getPrimaryKey());// find
-                                                                                    // the
-                                                                                    // list
-                                                                                    // in
-                                                                                    // the
-                                                                                    // global
-                                                                                    // state
+            // the
+            // list
+            // in
+            // the
+            // global
+            // state
 
             /*
              * If we already knew about this list, then only fetch docs that
