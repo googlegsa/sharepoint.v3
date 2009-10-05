@@ -189,6 +189,42 @@ div.ms-areaseparatorright{
             }
 
             /// <summary>
+            /// Add the cookie from the cookie collection to the container. Your container may have some existing cookies
+            /// </summary>
+            /// <param name="CookieCollection">Cookie to be copied into the cookie container</param>
+            /// <returns> Cookie container after cookies are added</returns>
+            public CookieContainer SetCookies(CookieContainer cc ,HttpCookieCollection CookieCollection, String domain)
+            {
+                if (null != CookieCollection)
+                {
+                    if (null == cc)
+                    {
+                        cc = new CookieContainer();
+                    }
+                    
+                    Cookie c = new Cookie();//add cookies available in current request to the GSA request
+                    for (int i = 0; i < CookieCollection.Count - 1; i++)
+                    {
+                        string tempCookieName = CookieCollection[i].Name;
+                        c.Name = tempCookieName;
+                        Encoding utf8 = Encoding.GetEncoding("utf-8");
+                        String value = CookieCollection[i].Value;
+                        c.Value = HttpUtility.UrlEncode(value, utf8);//Encoding the cookie value
+                        c.Domain = domain;
+                        c.Expires = CookieCollection[i].Expires;
+                        cc.Add(c);
+                    }
+                }
+                else 
+                {
+                    log("No cookies found in cookie collection", EventLogEntryType.Information);
+                    return null;
+                }
+                return cc;
+            }
+            
+            
+            /// <summary>
             /// Takes out the content from the Stream. Also, handles the ZIP output from GSA. 
             /// Typically when kerberos is enabled on GSA, we get the encoding as "GZIP". 
             /// This creates problem while displaying the results in IE 6 and we need to handle it differently
@@ -221,6 +257,7 @@ div.ms-areaseparatorright{
                     objSR = new StreamReader(objStream, Encoding.UTF8);//we have set in the URL to get the result in the UTF-8 encoding format
                     returnstring = (objSR.ReadToEnd());// read the content from the stream
                 }
+
                 return returnstring;
             }
             
@@ -253,6 +290,7 @@ div.ms-areaseparatorright{
 
                 ////////////////////////COPYING THE CURRENT REQUEST PARAMETRS, HEADERS AND COOKIES ///////////////////////                        
                 /*Copying all the current request headers to the new request to GSA.Some headers might not be copied .. skip those headers and copy the rest*/
+
                 String[] requestHeaderKeys = null;
                 if (ResponseForCopyingHeaders != null)
                 {
@@ -288,30 +326,10 @@ div.ms-areaseparatorright{
                     }
                     catch (Exception HeaderEx)
                     {
-                        /*There are some headers which cannot be copied directly and cause exceptions. We need to ignore them for now. 
-                          For e.g. Headers [Connection ,Content-Length,Referer,Host,Accept etc.] do not get copied directly
-                          If we log exceptions then it will show too many exceptions which may unnecessary confuse end users. 
-                          Please note that we use eventviewer (not file) for logging messages so we should display only relevant messages*/
+                        //just skipping the header information if any exception occures while adding to the GSA request
                     }
                 }
-                
-                /*copying all the cookies from current request to the new request to GSA*/
-                if (null == cc)
-                {
-                    cc = new CookieContainer();
-                    Cookie c = new Cookie();//add cookies available in current request to the GSA request
-                    for (int i = 0; i < HttpContext.Current.Request.Cookies.Count - 1; i++)
-                    {
-                        string tempCookieName = HttpContext.Current.Request.Cookies[i].Name;
-                        c.Name = tempCookieName;
-                        Encoding utf8 = Encoding.GetEncoding("utf-8");
-                        string value = HttpContext.Current.Request.Cookies[i].Value;
-                        c.Value = HttpUtility.UrlEncode(value, utf8);
-                        c.Domain = objReq.RequestUri.Host;
-                        c.Expires = HttpContext.Current.Request.Cookies[i].Expires;
-                        cc.Add(c);
-                    }
-                }
+                cc = SetCookies(cc,HttpContext.Current.Request.Cookies, objReq.RequestUri.Host);
                 objReq.CookieContainer = cc;//Set GSA request cookiecontainer
                 requestHeaderKeys = null;
                 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -537,7 +555,7 @@ else if(document.attachEvent)
                     gProps.initGoogleSearchBox();//initialize the SearchBox parameters
                     
                     ////////////////////////////CONSTRUCT THE SEARCH QUERY FOR GOOGLE SEARCH APPLIANCE ///////////////////////////////////
-                    //The search query comes in 'k' parameter
+                    //Amit: The search query comes in 'k' parameter
                     if (inquery["k"] != null)
                     {
                         qQuery = inquery["k"];
@@ -547,7 +565,7 @@ else if(document.attachEvent)
                         }
                         myquery = qQuery;//for paging in custom stylesheet
 
-                        //Using U parameter to create scoped searches on the GSA
+                        //XenL:Using U parameter to create scoped searches on the GSA
                         if ((inquery["u"] != null))
                         {
                             string port = "";
@@ -561,7 +579,7 @@ else if(document.attachEvent)
                         searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")
                         {
-                            // check for the flag whether to enable custom styling locally or use GSA style
+                            //Amit: check for the flag whether to enable custom styling locally or use GSA style
                             if (gProps.bUseGSAStyling == true)
                             {
                                 searchReq += "&proxystylesheet=" + gProps.frontEnd /*+ "&proxyreload=1"*/;
@@ -617,7 +635,6 @@ else if(document.attachEvent)
                         StreamReader objSR = null;
                         CookieContainer cc = new CookieContainer();
                         int i;
-						gProps.log("Search Request to GSA:" + gProps.GSALocation + "/search" + searchReq,EventLogEntryType.Information);
 						String GSASearchUrl= gProps.GSALocation + "/search" + searchReq;
 						
                         ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
@@ -635,8 +652,12 @@ else if(document.attachEvent)
                         string GSASessionCookie = objResp.Headers["Set-Cookie"]; 
                         //*********************************************************************
 
-                        CookieContainer newcc = new CookieContainer();// Added for SAML
-                        if(GSASessionCookie!=null){
+                        CookieContainer newcc = new CookieContainer();//Amit: Added for SAML
+                        //if(GSASessionCookie!=null){
+                        /*handling for redirect*/
+                        if (FirstResponseCode==302)
+                        {
+                            gProps.log("The Response is being redirected to location " + newURL, EventLogEntryType.Information);
                             Cookie responseCookies= new Cookie();;//add cookies in GSA response to current response
                             int j;
                             for (j = 0; j < objResp.Cookies.Count -1; j++)
@@ -644,37 +665,51 @@ else if(document.attachEvent)
                                 responseCookies.Name = objResp.Cookies[j].Name;
                                 Encoding utf8 = Encoding.GetEncoding("utf-8");
                                 string value = objResp.Cookies[j].Value;
+                                
+                                    
                                 responseCookies.Value = HttpUtility.UrlEncode(value, utf8); 
                                 responseCookies.Domain = objReq.RequestUri.Host;
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
                                 newcc.Add(responseCookies);                            
                             }
                             
+                            
                             /**
                              * We need to check if there is a cookie or not. 
                              * For the initial request to GSA in case of SAML it will be there. Forget it for afterwards
                              **/
-                            Char[] seps = {'='};//Adding the session cookie
-                            String[] key_val = GSASessionCookie.Split(seps);
                             
-                            if((key_val!=null)&& (key_val[0]!=null))
-                            {
-                                responseCookies.Name = objResp.Cookies[j].Name;
-                                responseCookies.Value = key_val[1];
-                                //responseCookies.Domain = objReq.RequestUri.Host;
+                            Char[] seps = {'='};//Adding the session cookie
 
-                                Uri GoogleUri = new Uri(GSASearchUrl);
-                                responseCookies.Domain = GoogleUri.Host;
-                                
-                                responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
-                                newcc.Add(responseCookies);
+                            if (GSASessionCookie != null)
+                            {
+                                gProps.log("GSA Session cookie is: " + GSASessionCookie, EventLogEntryType.Information);
+                                String[] key_val = GSASessionCookie.Split(seps);
+
+                                if ((key_val != null) && (key_val[0] != null))
+                                {
+                                    responseCookies.Name = objResp.Cookies[j].Name;
+                                    responseCookies.Value = key_val[1];
+                                    //responseCookies.Domain = objReq.RequestUri.Host;
+
+                                    Uri GoogleUri = new Uri(GSASearchUrl);
+                                    responseCookies.Domain = GoogleUri.Host;
+
+                                    responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
+                                    newcc.Add(responseCookies);
+                                }
                             }
 
                             HttpWebResponse objNewResp =  (HttpWebResponse)gProps.GetResponse(true, GSASearchUrl, newcc, objResp);//fire getresponse
+
                             contentEncoding = objResp.Headers["Content-Encoding"];
                             returnstring = "";//initialize the return string
                             Stream objNewStream = objNewResp.GetResponseStream();//if the request is successful, get the results in returnstring
                             returnstring = gProps.GetContentFromStream(contentEncoding, objNewStream);
+                            
+                            
+                            //StreamReader objNewSR = new StreamReader(objNewStream, Encoding.UTF8);//we have set in the URL to get the result in the UTF-8 encoding format
+                            //returnstring = (objNewSR.ReadToEnd());// read the content from the stream 
                          }
                          else
                          {
@@ -731,7 +766,6 @@ else if(document.attachEvent)
                                 }
                                 
                                 ////////////////start and end boundaries/////////////////////////
-                                
                                 try
                                 {
                                     //for getting search time                                    
@@ -792,7 +826,6 @@ else if(document.attachEvent)
                         objResp.Close();
                         objStream.Close();
                         objStream.Dispose();
-                        
                         
                         if(null!=objSR)
                         {
