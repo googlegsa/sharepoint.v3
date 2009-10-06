@@ -94,7 +94,7 @@ public class SharepointClient {
             return null;
         }
         final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
-        for (final Iterator iter = crawlQueue.iterator(); iter.hasNext();) {
+        for (final Iterator iter = list.getCurrentCrawlQueueIterator(); iter.hasNext();) {
             final SPDocument doc = (SPDocument) iter.next();
             doc.setListGuid(list.getPrimaryKey());
             doc.setWebid(web.getPrimaryKey());

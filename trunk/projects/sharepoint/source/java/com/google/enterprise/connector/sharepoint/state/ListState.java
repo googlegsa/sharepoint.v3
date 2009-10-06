@@ -17,6 +17,7 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -54,7 +55,7 @@ public class ListState implements StatefulObject {
      * still there.
      */
     private boolean exists = true; // By default mark all list state as exisitng
-                                    // when they are created.
+    // when they are created.
 
     private String listTitle = "";
     private String listURL = "";
@@ -490,7 +491,7 @@ public class ListState implements StatefulObject {
     /**
      * @return the crawl queue containg the documents from this list
      */
-    public List getCrawlQueue() {
+    public List<SPDocument> getCrawlQueue() {
         return crawlQueue;
     }
 
@@ -1358,5 +1359,61 @@ public class ListState implements StatefulObject {
      */
     public void setLastCrawledDateTime(String lastCrawledDateTime) {
         this.lastCrawledDateTime = lastCrawledDateTime;
+    }
+
+    /**
+     * Checks if all the docs from the crawlqueue have been successfully pulled
+     * by CM using nextDocument().
+     * <p>
+     * Basically it ensures that the last document sent from this list is also
+     * the last document in the crawlqueue
+     * </p>
+     *
+     * @return True if the last document sent from this list and the last
+     *         document in the list are the same and false otherwise
+     */
+    public boolean allDocsFed() {
+        if (lastDocument != null) {
+            return lastDocument.equals(crawlQueue.get(crawlQueue.size() - 1));
+        }
+        return false;
+    }
+
+    /**
+     * Clears all the docs in the crawl queue and also sets lastDocument to null
+     * since it has no reference in the crawl queue.
+     */
+    public void emptyCrawlQueue() {
+        crawlQueue.clear();
+        // This is important. A state where you have a valid lastDocument and
+        // null or empty crawlqueue is invalid
+        lastDocument = null;
+    }
+
+    /**
+     * Returns an iterator to the crawl queue starting from the next position of
+     * the index of last document sent to CM. This is required when the list has
+     * discovered more docs than the batchhint and hence the CM will fetch them
+     * in next batch traversal. Need to point to the correct sublist
+     *
+     * @return Iterator to the sublist which was not pulled by CM during last
+     *         batch traversal
+     */
+    public Iterator<SPDocument> getCurrentCrawlQueueIterator() {
+        if (crawlQueue != null) {
+            int currentDocPos = crawlQueue.indexOf(lastDocument) + 1;
+            if (currentDocPos < 0) {
+                // This is the case when no docs from this list have been sent
+                // even though discovered in some previous batch traversals. So
+                // set the current position to be 0. Basically this implies
+                // returning an iterator for the entire queue rather than a sub
+                // list
+                currentDocPos = 0;
+            }
+            List<SPDocument> docList = crawlQueue.subList(currentDocPos, crawlQueue.size());
+            return docList.iterator();
+        }
+
+        return null;
     }
 }
