@@ -46,11 +46,12 @@ public class SPDocumentList implements DocumentList {
 
     private final Logger LOGGER = Logger.getLogger(SPDocumentList.class.getName());
     private List<SPDocument> documents;
-    private Iterator iterator;
-    private SPDocument document;
     private GlobalState globalState;// this is required for checkpointing
-    private Map aliasMap = null;
     private boolean bFQDNConversion = false;// FQDN conversion flag
+
+    private Map<String, String> aliasMap = null;
+    // Holds the index position of the doc last sent to CM
+    private int docsFedIndexPosition = 0;
 
     /**
      * @param inDocuments List of {@link SPDocument} to be sent to GSA
@@ -61,8 +62,6 @@ public class SPDocumentList implements DocumentList {
         if (inDocuments != null) {
             documents = inDocuments;
         }
-        iterator = null;
-        document = null;
 
         globalState = inGlobalState;
     }
@@ -105,136 +104,106 @@ public class SPDocumentList implements DocumentList {
 
     /**
      * The processing that are done when the document is actually sent to CM.
-     * Site Alias mapping defined during connectro configuration are used at
+     * Site Alias mapping defined during connector configuration are used at
      * this point only.
+     * <p>
+     * <ul>
+     * <li>Updates the index position of the document in the document list
+     * maintained here</li>
+     * <li>Sets the current document as the last document sent from its parent
+     * list represented by the ListState.</li>
+     * <li>Applies alias mapping rules for ADD action only. For DELETE action no
+     * alias mapping is done as the docId never contains the aliased URL</li>
+     * <li>Does not remove the document from the crawl queue of the list</li>
+     * </ul>
+     * </p>
      */
     public Document nextDocument() {
-        if (iterator == null) {
-            iterator = documents.iterator();
-        }
-        if (iterator.hasNext()) {
-            document = (SPDocument) iterator.next();// this will save the state
-                                                    // of the last document
-                                                    // returned
-            if (document == null) {
+        if (docsFedIndexPosition < documents.size()) {
+            SPDocument spDocument = (SPDocument) documents.get(docsFedIndexPosition);
+            // this will save the state of the last document returned
+            if (spDocument == null) {
                 LOGGER.log(Level.SEVERE, "No document found! ");
-                return document;
+                return null;
             }
 
-            final ListState listState = globalState.lookupList(document.getWebid(), document.getListGuid());
-            final String currentID = Util.getOriginalDocId(document.getDocId(), document.getFeedType());
+            final ListState listState = globalState.lookupList(spDocument.getWebid(), spDocument.getListGuid());
+            final String currentID = Util.getOriginalDocId(spDocument.getDocId(), spDocument.getFeedType());
 
             // for deleted documents, no need to use alias mapping. Only DocID
             // is sufficient.
-            if (ActionType.DELETE.equals(document.getAction())) {
-                LOGGER.log(Level.INFO, "Sending DocID [ " + document.getDocId()
-                        + " ] from List URL [ " + listState.getListURL()
-                        + " ] to CM for DELETE");
-                if (listState == null) {
-                    LOGGER.log(Level.WARNING, "Parent list for the document not found!");
-                    return document;
-                }
+            // This is because only documentURL and displayURL have the aliased
+            // URLs and not the list URL included in the docId.
+            if (ActionType.DELETE.equals(spDocument.getAction())) {
+                LOGGER.log(Level.INFO, "Sending DocID [ "
+                        + spDocument.getDocId() + " ] from List URL [ "
+                        + listState.getListURL() + " ] to CM for DELETE");
 
-                listState.removeExtraID(currentID);
-                if (listState.isExisting()) { // CASE 1: A delete feed is being
-                                                // sent from an existing list
-                    // ListState.cachedDeletedIDs is used only for exisitng
+                if (listState.isExisting()) {
+                    // A delete feed is being sent from an existing list
+                    // ListState.cachedDeletedIDs is used only for existing
                     // lists.
                     listState.addToDeleteCache(currentID);
-                } else if (Util.getCollator().equals(listState.getPrimaryKey(), currentID)) { // CASE
-                                                                                                // 2:
-                                                                                                // Last
-                                                                                                // delete
-                                                                                                // feed
-                                                                                                // of
-                                                                                                // a
-                                                                                                // non-existent
-                                                                                                // list
-                                                                                                // is
-                                                                                                // being
-                                                                                                // sent
-                    // Since list are sent at last and the list is non-exisitng,
-                    // we can now delete this list state.
-                    LOGGER.log(Level.INFO, "Removing List State info List URL [ "
-                            + listState.getListURL() + " ].");
-                    final WebState parentWeb = globalState.lookupWeb(document.getWebid(), null);
-                    if (parentWeb != null) {
-                        parentWeb.removeListStateFromKeyMap(listState);
-                        parentWeb.removeListStateFromSet(listState);
-                    }
-                } else { // CASE 1: A delete feed is being sent from an
-                            // non-existing list
-                    /*
-                     * We set Deleted document as lastDoc only if list has been
-                     * deleted. Setting a deleted doc as lastDoc when the paremt
-                     * list is existent and is to be recrawled, may mislead us
-                     * while tracking the changes. Look at the description /
-                     * behavior of getListItemChnagesSinceToken. for deleted
-                     * docuemnts whose parent list is existing, we use
-                     * deleteCache for further crawl; lastDoc is not updated for
-                     * such docuemnts.
-                     */
-                    listState.setLastDocument(document);
                 }
+            } else if (ActionType.ADD.equals(spDocument.getAction())) {
+                // Alias mapping and updating the change token is important in
+                // cases where either a new/modified doc was returned by the web
+                // service
+                doAliasMapping(spDocument);
 
-                // for deleted documents, no need to use alias mapping. Only
-                // DocID is sufficient.
-                listState.removeDocFromCrawlQueue(document);
-                return document;
+                LOGGER.log(Level.INFO, "Sending DocID [ "
+                        + spDocument.getDocId() + " ], docURL [ "
+                        + spDocument.getUrl() + " ] to CM for ADD.");
+
             }
 
-            listState.setLastDocument(document);
-            doAliasMapping();
+            // Set the current doc as the last doc sent to CM. This will mark
+            // the current doc and its position in the crawlQueue. This info
+            // will be important when checkPoint() is called.
+            listState.setLastDocument(spDocument);
 
-            LOGGER.log(Level.INFO, "Sending DocID [ " + document.getDocId()
-                    + " ], docURL [ " + document.getUrl() + " ] to CM for ADD.");
-
-            listState.removeDocFromCrawlQueue(document);
-
-            if ((listState.isExisting())
-                    && ((listState.getCrawlQueue() == null) || (listState.getCrawlQueue().size() == 0))) {
-                LOGGER.log(Level.INFO, "Setting the change token to its latest cached value. All the documents from the list's crawl queue is sent. listURL [ "
-                        + listState.getListURL() + " ]. ");
-                listState.usingLatestToken();
-                if (listState.getNextPage() == null) {
-                    LOGGER.log(Level.INFO, "Cleaning delete cache...");
-                    listState.clearDeleteCache();
-                }
-            }
-            return document;
+            // The document should not be deleted from the crawl queue. A
+            // call to checkPoint() confirms that the docs have been fed
+            // successfully and hence safe to drop them. So the docs will be
+            // removed from crawlQueue in the call to checkPoint() and not
+            // here
+            // Increment the index position by one so that next time
+            // nextDocument() is called, the connector knows the index
+            // position of the next document to be sent to CM. This is as
+            // per the checkPoint semantics defined in Issue 106
+            docsFedIndexPosition++;
+            return spDocument;
         }
         return null;
     }
 
     /**
-     * Tasks that are to be performed when checkpoint is received.
+     * Marks a pointer in the state info maintained by the connector and saves
+     * it to the disk.
+     * <p>
+     * <ul>
+     * <li>Processes the list to which the document belong to update the change
+     * token value and removes the doc from the crawl queue</li>
+     * <li>Saves the current in-memory state to the disk</li>
+     * </ul>
+     * </p>
      */
     public String checkpoint() throws RepositoryException {
-        if (document == null) {
-            return SPConstants.CHECKPOINT_VALUE;
-        }
 
+        SPDocument spDoc = documents.get(docsFedIndexPosition - 1);
         LOGGER.log(Level.INFO, "Checkpoint received at document docID [ "
-                + document.getDocId() + " ], docURL [ " + document.getUrl()
-                + " ], Action [ " + document.getAction() + " ]. ");
+                + spDoc.getDocId() + " ], docURL [ " + spDoc.getUrl()
+                + " ], Action [ " + spDoc.getAction() + " ]. ");
 
-        final ListState listState = globalState.lookupList(document.getWebid(), document.getListGuid());
-        if (null == listState) { // This list would have been deleted
-            return SPConstants.CHECKPOINT_VALUE;
+        // FIXME: Delete this once Issue 85 fix is merged
+        globalState.setLastCrawledWebID(spDoc.getWebid());
+        globalState.setLastCrawledListID(spDoc.getListGuid());
+
+        for (int i = 0; i < docsFedIndexPosition; i++) {
+            // Process the liststate and its crawl queue for the given doc which
+            // has been sent to CM and fed to GSA successfully
+            processListStateforCheckPoint(documents.get(i));
         }
-
-        if ((listState.isExisting()) && (listState.getCrawlQueue() != null)
-                && (listState.getCrawlQueue().size() > 0)
-                && (listState.getNextPage() == null)
-                && (listState.getChangeToken() != null)) {
-            LOGGER.log(Level.INFO, "There are some docs left in the crawl queue of list [ "
-                    + listState.getListURL()
-                    + " ] at the time of checkpointing. rolling back the change token to its previous value.");
-            listState.rollbackToken();
-        }
-
-        globalState.setLastCrawledWebID(document.getWebid());
-        globalState.setLastCrawledListID(document.getListGuid());
 
         LOGGER.info("checkpoint processed; saving GlobalState to disk.");
         globalState.saveState(); // snapshot it all to disk
@@ -259,7 +228,7 @@ public class SPDocumentList implements DocumentList {
     /**
      * @param inAliasMap
      */
-    public void setAliasMap(final Map inAliasMap) {
+    public void setAliasMap(final Map<String, String> inAliasMap) {
         if (inAliasMap != null) {
             aliasMap = inAliasMap;
         }
@@ -268,19 +237,22 @@ public class SPDocumentList implements DocumentList {
     /**
      * @return Site Alias Map
      */
-    public Map getAliasMap() {
+    public Map<String, String> getAliasMap() {
         return aliasMap;
     }
 
     /**
      * Re-writes the current document's URL in respect to the Alias mapping
      * specified.
+     *
+     * @param spDocument The document whose documentURL and displayURL need to
+     *            be set with aliased URL
      */
-    private void doAliasMapping() {
-        if ((null == document) || (null == document.getUrl())) {
+    private void doAliasMapping(SPDocument spDocument) {
+        if ((null == spDocument) || (null == spDocument.getUrl())) {
             return;
         }
-        final String url = document.getUrl();
+        final String url = spDocument.getUrl();
         URL objURL = null;
         try {
             objURL = new URL(url);
@@ -295,7 +267,7 @@ public class SPDocumentList implements DocumentList {
         boolean matched = false;
         // processing of alias values
         if ((null != aliasMap) && (null != aliasMap.keySet())) {
-            for (final Iterator aliasItr = aliasMap.keySet().iterator(); aliasItr.hasNext();) {
+            for (final Iterator<String> aliasItr = aliasMap.keySet().iterator(); aliasItr.hasNext();) {
 
                 String aliasPattern = (String) aliasItr.next();
                 String aliasValue = (String) aliasMap.get(aliasPattern);
@@ -392,7 +364,7 @@ public class SPDocumentList implements DocumentList {
             strUrl += objURL.getFile();
         }
 
-        document.setUrl(strUrl);
+        spDocument.setUrl(strUrl);
     }
 
     /**
@@ -417,4 +389,97 @@ public class SPDocumentList implements DocumentList {
         }
         return hostName;
     }
+
+    /**
+     * Processes and updates the liststate of the list for the given document
+     * during checkpoint
+     * <p>
+     * <ul>
+     * <li>If the current document is the last document sent from its list, it
+     * checks if any more docs are pending
+     * <ul>
+     * <li>In case docs are pending, the change token in rolled back</li>
+     * <li>In case all docs are done, change token is updated to the latest
+     * value</li>
+     * </ul>
+     * </li>
+     * <li>The document is removed from the list's crawl queue</li>
+     * <li>In case delete feed is being sent for a deleted list, it is removed
+     * from the in memory state of the connector</li>
+     * </ul>
+     * </p>
+     *
+     * @param spDocument The document being processed. This document is the one
+     *            from the list maintained here and not the one from crawlqueue
+     *            of individual lists
+     */
+    private void processListStateforCheckPoint(SPDocument spDocument) {
+        final ListState listState = globalState.lookupList(spDocument.getWebid(), spDocument.getListGuid());
+        final String currentID = Util.getOriginalDocId(spDocument.getDocId(), spDocument.getFeedType());
+
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Document with DocID [ "
+                    + spDocument.getDocId() + " ] from List URL [ "
+                    + listState.getListURL()
+                    + " ] is being removed from crawl queue");
+        }
+
+        // The basic idea here is to rollback the change token in case there are
+        // still docs pending to be pulled by CM or update to the latest one if
+        // all docs have been sent. But this has to be done only
+        // once. It cannot be done for every document as it might overwrite the
+        // token with some invalid value and make the connector start to look
+        // for any updates in future from some invalid state. So, the best way
+        // to address this is to do this check only when the current document
+        // from the document list is the last document sent from this liststate.
+        // There cannot be the case where last document sent to CM from this
+        // document list is after the last document sent for this list. If there
+        // is such state, then something is wrong and is an invalid state.
+        if (spDocument.equals(listState.getLastDocument())) {
+            // Check if there are docs pending in this list before the token is
+            // rolled back
+            if ((listState.isExisting()) && (!listState.allDocsFed())
+                    && (listState.getNextPage() == null)
+                    && (listState.getChangeToken() != null)) {
+                LOGGER.log(Level.INFO, "There are some docs left in the crawl queue of list [ "
+                        + listState.getListURL()
+                        + " ] at the time of checkpointing. rolling back the change token to its previous value.");
+                listState.rollbackToken();
+            } else if ((listState.isExisting()) && listState.allDocsFed()) {
+                // The condition here ensures that we are done with all docs
+                // from the crawlqueue of the list and hence need to update the
+                // change token
+                LOGGER.log(Level.INFO, "Setting the change token to its latest cached value. All the documents from the list's crawl queue is sent. listURL [ "
+                        + listState.getListURL() + " ]. ");
+                listState.usingLatestToken();
+                if (listState.getNextPage() == null) {
+                    LOGGER.log(Level.INFO, "Cleaning delete cache...");
+                    listState.clearDeleteCache();
+                }
+            }
+        }
+
+        // Remove the document from the crawl queue
+        listState.removeDocFromCrawlQueue(spDocument);
+
+        // for deleted documents, no need to use alias mapping. Only DocID
+        // is sufficient.
+        if (ActionType.DELETE.equals(spDocument.getAction())) {
+            listState.removeExtraID(currentID);
+            if (Util.getCollator().equals(listState.getPrimaryKey(), currentID)) {
+                // Last delete feed of a non-existent list is being sent
+                // Since list are sent at last and the list is non-exisitng, we
+                // can now delete this list state.
+                LOGGER.log(Level.INFO, "Removing List State info List URL [ "
+                        + listState.getListURL() + " ].");
+                final WebState parentWeb = globalState.lookupWeb(spDocument.getWebid(), null);
+                if (parentWeb != null) {
+                    parentWeb.removeListStateFromKeyMap(listState);
+                    parentWeb.removeListStateFromSet(listState);
+                }
+            }
+        }
+
+    }
+
 }
