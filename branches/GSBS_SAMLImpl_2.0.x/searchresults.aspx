@@ -555,7 +555,7 @@ else if(document.attachEvent)
                     gProps.initGoogleSearchBox();//initialize the SearchBox parameters
                     
                     ////////////////////////////CONSTRUCT THE SEARCH QUERY FOR GOOGLE SEARCH APPLIANCE ///////////////////////////////////
-                    //Amit: The search query comes in 'k' parameter
+                    //The search query comes in 'k' parameter
                     if (inquery["k"] != null)
                     {
                         qQuery = inquery["k"];
@@ -565,7 +565,7 @@ else if(document.attachEvent)
                         }
                         myquery = qQuery;//for paging in custom stylesheet
 
-                        //XenL:Using U parameter to create scoped searches on the GSA
+                        //Using U parameter to create scoped searches on the GSA
                         if ((inquery["u"] != null))
                         {
                             string port = "";
@@ -579,7 +579,7 @@ else if(document.attachEvent)
                         searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")
                         {
-                            //Amit: check for the flag whether to enable custom styling locally or use GSA style
+                            //check for the flag whether to enable custom styling locally or use GSA style
                             if (gProps.bUseGSAStyling == true)
                             {
                                 searchReq += "&proxystylesheet=" + gProps.frontEnd /*+ "&proxyreload=1"*/;
@@ -652,7 +652,7 @@ else if(document.attachEvent)
                         string GSASessionCookie = objResp.Headers["Set-Cookie"]; 
                         //*********************************************************************
 
-                        CookieContainer newcc = new CookieContainer();//Amit: Added for SAML
+                        CookieContainer newcc = new CookieContainer();//Added for SAML
                         //if(GSASessionCookie!=null){
                         /*handling for redirect*/
                         if (FirstResponseCode==302)
@@ -688,7 +688,7 @@ else if(document.attachEvent)
 
                                 if ((key_val != null) && (key_val[0] != null))
                                 {
-                                    responseCookies.Name = objResp.Cookies[j].Name;
+                                    responseCookies.Name = objResp.Cookies[0].Name;
                                     responseCookies.Value = key_val[1];
                                     //responseCookies.Domain = objReq.RequestUri.Host;
 
@@ -706,10 +706,6 @@ else if(document.attachEvent)
                             returnstring = "";//initialize the return string
                             Stream objNewStream = objNewResp.GetResponseStream();//if the request is successful, get the results in returnstring
                             returnstring = gProps.GetContentFromStream(contentEncoding, objNewStream);
-                            
-                            
-                            //StreamReader objNewSR = new StreamReader(objNewStream, Encoding.UTF8);//we have set in the URL to get the result in the UTF-8 encoding format
-                            //returnstring = (objNewSR.ReadToEnd());// read the content from the stream 
                          }
                          else
                          {
@@ -733,7 +729,8 @@ else if(document.attachEvent)
                         try
                         {
                             statusCode = (int)objResp.StatusCode;
-                            statusCode=200;
+                            statusCode=200; //Set the status code as OK. 
+                                            //In case of error from call to GSA, just display the error message to user
                         }
                         catch (WebException ex)
                         {
