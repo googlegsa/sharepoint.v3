@@ -26,12 +26,15 @@ public class TestConfiguration {
 
 	public static String sharepointUrl;
 	public static String AliasMap;
-	public static String domain; 
+	public static String domain;
+	public static String kdcserver;
+	public static String realm; 
 	public static String username;
 	public static String Password;
 	public static String mySiteBaseURL;
 	public static String includedURls; 
 	public static String excludedURls;
+	public static String authorization;
 	
 	public static String searchUserID;
 	public static String searchUserPwd;
@@ -67,6 +70,8 @@ public class TestConfiguration {
         sharepointUrl = properties.getProperty("sharepointUrl");
         AliasMap = properties.getProperty("AliasMap");
         domain = properties.getProperty("domain");
+        kdcserver = properties.getProperty("kdcserver");
+        realm = properties.getProperty("realm");
         username = properties.getProperty("username");
         Password = properties.getProperty("Password");
         mySiteBaseURL = properties.getProperty("mySiteBaseURL");
@@ -107,7 +112,8 @@ public class TestConfiguration {
 		whiteList.add(".*vti_author$");
 */        
 		FQDNflag = false;
-		feedType = "metadata-and-url";		
+		feedType = "content";	
+		authorization="metadata-and-url";
 	}
 	
 	public static Map<String, String> getConfigMap() {
@@ -115,12 +121,16 @@ public class TestConfiguration {
 		
 		configMap.put("sharepointUrl", sharepointUrl);
 		configMap.put("AliasMap", AliasMap);
+		configMap.put("kdcserver", kdcserver);
 		configMap.put("domain", domain);
+		configMap.put("realm", realm);
 		configMap.put("username", username);
 		configMap.put("Password", Password);
 		configMap.put("mySiteBaseURL", mySiteBaseURL);
 		configMap.put("includedURls", includedURls);
 		configMap.put("excludedURls", excludedURls);
+		configMap.put("authorization", authorization);
+		configMap.put("googleConnectorWorkDir", googleConnectorWorkDir);
 		
 		return configMap;
 	}

@@ -34,6 +34,8 @@ public class SharepointConnector implements Connector {
 	private SharepointClientContext sharepointClientContext = null;
 	
 	private String sharepointUrl;
+	private String kdcserver;
+	private String realm;
 	private String domain;
 	private String username;
 	private String password;
@@ -275,5 +277,21 @@ public class SharepointConnector implements Connector {
 	 */
 	public ArrayList getExcluded_metadata() {
 		return excluded_metadata;
+	}
+
+	public String getKdcserver() {
+		return kdcserver;
+	}
+
+	public void setKdcserver(String kdcserver) {
+		this.kdcserver = kdcserver;
+	}
+
+	public String getRealm() {
+		return realm;
+	}
+
+	public void setRealm(String realm) {
+		this.realm = realm;
 	}
 }

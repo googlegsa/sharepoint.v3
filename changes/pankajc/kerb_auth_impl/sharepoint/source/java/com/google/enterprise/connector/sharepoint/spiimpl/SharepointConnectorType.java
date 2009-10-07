@@ -18,11 +18,9 @@ import gnu.regexp.RE;
 import gnu.regexp.REMatch;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -39,14 +37,10 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
-
+import com.google.enterprise.connector.common.StringUtils;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.TestCallbackHandler;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
@@ -83,7 +77,7 @@ public class SharepointConnectorType implements ConnectorType {
 	private String initialConfigForm = null;
 	
 	ResourceBundle rb = null;
-	public static final String GOOGLE_WORK_DIR = "googleWorkDir";	
+	public static final String GOOGLE_CONN_WORK_DIR = "googleConnectorWorkDir";	
 	/**
 	 * Sets the keys that are required for configuration. These are the actual 
 	 * keys used by the class. 
@@ -290,7 +284,6 @@ public class SharepointConnectorType implements ConnectorType {
 		buf.append(SPConstants.END_BOLD);
 		
 		addJavaScript(buf);
-		
 		return buf.toString();
 	}
 
@@ -450,19 +443,47 @@ public class SharepointConnectorType implements ConnectorType {
 			return false;
 		}
 
+		String krb5ConfPath = "config/krb5.conf";
+		String loginConfPath = "config/login.conf";
 		
-		System.setProperty("java.security.auth.login.config", configData.get(GOOGLE_WORK_DIR) + "\\classes\\login.conf");
-//		System.setProperty("java.security.krb5.realm", "GDC-PSL.NET");
-//		System.setProperty("java.security.krb5.kdc", "gdc03.GDC-PSL.NET");
-		System.setProperty("java.security.krb5.conf", configData.get(GOOGLE_WORK_DIR) + "\\classes\\krb5.conf");
+		InputStream krb5In = SharepointConnectorType.class.getClassLoader().getResourceAsStream(krb5ConfPath);
+		if(krb5In != null){
+			try {
+				File krb5File = new File(configData.get(GOOGLE_CONN_WORK_DIR).toString()+"\\krb5.conf"); 
+				String krb5Config = StringUtils.streamToStringAndThrow(krb5In);
+				krb5Config = krb5Config.replace("{REALM}", configData.get("realm").toString().toUpperCase());
+				krb5Config = krb5Config.replace("{realm}", configData.get("realm").toString().toLowerCase());
+				krb5Config = krb5Config.replace("{kdcserver}", configData.get("kdcserver").toString().toUpperCase());
+				FileOutputStream out = new FileOutputStream(krb5File);
+		        out.write(krb5Config.getBytes("UTF-8"));
+		        out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		InputStream loginIn = SharepointConnectorType.class.getClassLoader().getResourceAsStream(loginConfPath);
+		if(loginIn != null){
+			try {
+				File loginFile = new File(configData.get(GOOGLE_CONN_WORK_DIR).toString()+"\\login.conf"); 
+				String loginConfig = StringUtils.streamToStringAndThrow(loginIn);
+				FileOutputStream out = new FileOutputStream(loginFile);
+		        out.write(loginConfig.getBytes("UTF-8"));
+		        out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		System.setProperty("java.security.auth.login.config", configData.get(GOOGLE_CONN_WORK_DIR).toString() + "\\login.conf");
+		System.setProperty("java.security.krb5.conf", configData.get(GOOGLE_CONN_WORK_DIR).toString() + "\\krb5.conf");
 		System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
-		java.security.Security.setProperty("auth.login.defaultCallbackHandler", "com.google.enterprise.connector.sharepoint.client.TestCallbackHandler");
+//		System.setProperty("java.security.krb5.realm", configData.get("realm").toString().toUpperCase());
+//		System.setProperty("java.security.krb5.kdc", configData.get("kdcserver").toString());
+//		java.security.Security.setProperty("auth.login.defaultCallbackHandler", "com.google.enterprise.connector.sharepoint.client.TestCallbackHandler");
 		
-		/*System.out.println(System.getProperty("java.security.auth.login.config"));
-		System.out.println(System.getProperty("java.security.krb5.realm"));
-		System.out.println(System.getProperty("java.security.krb5.kdc"));
-		System.out.println(System.getProperty("java.security.krb5.conf"));
-		System.out.println(System.getProperty("javax.security.auth.useSubjectCredsOnly"));*/
 		
 		String feedType = null;
 		
@@ -517,12 +538,6 @@ public class SharepointConnectorType implements ConnectorType {
 		try {
 			sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, 
 				password, "",includeURL,excludeURL,mySiteUrl,"",feedType);
-			
-			/*SharepointClientContext.credentials.put("Username", configData.get("username").toString());
-			SharepointClientContext.credentials.put("Password", configData.get("Password").toString());*/
-			SharepointClientContext.credentials.put("Username", configData.get("username").toString());
-			SharepointClientContext.credentials.put("Password", configData.get("Password").toString());
-			System.out.println();
 		} catch(final Exception e) {
 			LOGGER.log(Level.SEVERE, "Failed to create SharePointClientContext with the received configuration values. ");
 		}

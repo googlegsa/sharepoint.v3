@@ -6,7 +6,9 @@
 		<property name="configKeys">
 			<list>
 		<value>sharepointUrl</value>
+		<value>kdcserver</value>
         <value>domain</value>
+        <value>realm</value>
         <value>username</value>
         <value>password</value>
         <value>mySiteBaseURL</value>

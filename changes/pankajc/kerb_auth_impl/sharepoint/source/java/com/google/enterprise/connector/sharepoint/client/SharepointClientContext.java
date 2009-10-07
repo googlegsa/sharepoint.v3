@@ -18,30 +18,22 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.Principal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.security.auth.kerberos.KerberosPrincipal;
-
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NTCredentials;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
-
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 
@@ -73,7 +65,6 @@ public class SharepointClientContext implements Cloneable {
 	private int batchHint =-1; //the batch size in which the documents have to be submitted to Connector manager
 
 	private String excludedURL_ParentDir = null;
-	public static HashMap<String, String> credentials = new HashMap<String, String>();
 	
 	/**
 	 * For cloning
@@ -587,7 +578,7 @@ public class SharepointClientContext implements Cloneable {
 //		credentials.put("Username", this.username);
 //		credentials.put("Password", this.password);
 		System.out.println("reached here");
-		Credentials credentials =  new Credentials() {
+		/*Credentials credentials =  new Credentials() {
 //			 @Override
 			public String getPassword() {
 				return SharepointClientContext.this.password;
@@ -596,10 +587,12 @@ public class SharepointClientContext implements Cloneable {
 			public Principal getUserPrincipal() {
 				return new KerberosPrincipal(username);
 			}
-		};
+		};*/
+		
+		Credentials credentials =  null;
 //		boolean ntlm = true; // We first try to use ntlm
 //		if(null != domain && !domain.equals("")) {
-//			credentials = new NTCredentials(username,password, host, domain);
+			credentials = new NTCredentials(username,password, host, domain);
 //		} else {
 //			credentials =  new UsernamePasswordCredentials(username,password);
 //			ntlm = false;
