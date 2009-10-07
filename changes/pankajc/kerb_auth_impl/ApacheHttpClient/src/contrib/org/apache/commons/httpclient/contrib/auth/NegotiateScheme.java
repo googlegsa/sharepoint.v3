@@ -30,9 +30,16 @@
 
 package org.apache.commons.httpclient.contrib.auth;
 
+import java.security.PrivilegedAction;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.auth.AuthChallengeException;
 import org.apache.commons.httpclient.auth.AuthScheme;
 import org.apache.commons.httpclient.auth.AuthenticationException;
@@ -51,7 +58,7 @@ import org.ietf.jgss.Oid;
  * @author <a href="mailto:mikael.wikstrom@it.su.se">Mikael Wilstrom</a>
  * @author Mikael Wikstrom
  */
-public class NegotiateScheme implements AuthScheme {
+public class NegotiateScheme implements AuthScheme, PrivilegedAction {
 
     /** Log object for this class. */
     private static final Log LOG = LogFactory.getLog(NegotiateScheme.class);
@@ -81,7 +88,8 @@ public class NegotiateScheme implements AuthScheme {
     protected void init(String server) throws GSSException {
          LOG.debug("init " + server);
          /* Kerberos v5 GSS-API mechanism defined in RFC 1964. */
-         Oid krb5Oid = new Oid("1.2.840.113554.1.2.2");
+         Oid krb5Oid = new Oid("1.2.840.113554.1.2.2");         
+ 		
          GSSManager manager = GSSManager.getInstance();
          GSSName serverName = manager.createName("HTTP/"+server, null); 
          context = manager.createContext(serverName, krb5Oid, null,
@@ -268,12 +276,21 @@ public class NegotiateScheme implements AuthScheme {
                 throw new AuthenticationException(urie.getMessage());
             }
         
+            Subject subject = null;
+            try {
+     			LoginContext lc = new LoginContext("com.sun.security.jgss.login", new TestCallbackHandler(((NTCredentials)credentials).getUserName(), ((NTCredentials)credentials).getPassword()));
+     			lc.login();
+     			subject = lc.getSubject();
+     		} catch (LoginException e1) {
+     			LOG.error(e1.getMessage());
+     		}
+     		Subject.doAs(subject, this);
             // HTTP 1.1 issue:
             // Mutual auth will never complete do to 200 insted of 401 in 
             // return from server. "state" will never reach ESTABLISHED
             // but it works anyway
-            token = context.initSecContext(token, 0, token.length);
-            LOG.info("got token, sending " + token.length + " to server");
+            //token = context.initSecContext(token, 0, token.length);
+            //LOG.info("got token, sending " + token.length + " to server");
         } catch (GSSException gsse) {
             LOG.fatal(gsse.getMessage());
             state = FAILED;
@@ -291,4 +308,15 @@ public class NegotiateScheme implements AuthScheme {
         }
         return "Negotiate " + new String(new Base64().encode(token));
     }
+
+	public Object run() {
+		try {
+			token = context.initSecContext(token, 0, token.length);
+	        LOG.info("got token, sending " + token.length + " to server");
+	        return token;
+		} catch (GSSException gsse) {
+			return null;
+        }
+		
+	}
 }
