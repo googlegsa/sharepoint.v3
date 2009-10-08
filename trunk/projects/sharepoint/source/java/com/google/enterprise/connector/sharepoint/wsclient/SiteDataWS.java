@@ -126,7 +126,7 @@ public class SiteDataWS {
         try {
             stub.getListCollection(getListCollectionResult, vLists);
         } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+            // different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
@@ -185,76 +185,84 @@ public class SiteDataWS {
                     if (strBaseTemplate == null) {
                         strBaseTemplate = SPConstants.NO_TEMPLATE;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_SLIDELIBRARY)) {// for
-                                                                                                        // SlideLibrary
+                        // SlideLibrary
                         strBaseTemplate = SPConstants.BT_SLIDELIBRARY;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_FORMLIBRARY)) {// for
-                                                                                                        // FormLibrary
+                        // FormLibrary
                         strBaseTemplate = SPConstants.BT_FORMLIBRARY;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_TRANSLATIONMANAGEMENTLIBRARY)) {// for
-                                                                                                                        // TranslationManagementLibrary
+                        // TranslationManagementLibrary
                         strBaseTemplate = SPConstants.BT_TRANSLATIONMANAGEMENTLIBRARY;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_TRANSLATOR)) {// for
-                                                                                                        // Translator
+                        // Translator
                         strBaseTemplate = SPConstants.BT_TRANSLATOR;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_REPORTLIBRARY)) {// for
-                                                                                                            // ReportLibrary
+                        // ReportLibrary
                         strBaseTemplate = SPConstants.BT_REPORTLIBRARY;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_PROJECTTASK)) {// for
-                                                                                                        // ReportLibrary
+                        // ReportLibrary
                         strBaseTemplate = SPConstants.BT_PROJECTTASK;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_SITESLIST)) {// for
-                                                                                                        // ReportLibrary
+                        // ReportLibrary
                         strBaseTemplate = SPConstants.BT_SITESLIST;
                     }
 
                     LOGGER.config("URL :" + url);
-                    if (sharepointClientContext.isIncludedUrl(url)) {
-                        LOGGER.config("included URL :[" + url + "]");
-                        ListState list = new ListState(
-                                element.getInternalName(),
-                                element.getTitle(),
-                                element.getBaseType(),
-                                Util.siteDataStringToCalendar(element.getLastModified()),
-                                strBaseTemplate, url, parentWeb,
-                                parentWebTitle, webstate.getSharePointType(),
-                                sharepointClientContext.getFeedType());
 
-                        String myNewListConst = "";
-                        final String listUrl = element.getDefaultViewUrl();// e.g.
-                                                                            // /sites/abc/Lists/Announcements/AllItems.aspx
-                        LOGGER.log(Level.INFO, "getting listConst for list URL [ "
-                                + listUrl + " ] ");
-                        if ((listUrl != null) /* && (siteRelativeUrl!=null) */) {
-                            final StringTokenizer strTokList = new StringTokenizer(
-                                    listUrl, SPConstants.SLASH);
-                            if (null != strTokList) {
-                                while ((strTokList.hasMoreTokens())
-                                        && (strTokList.countTokens() > 1)) {
-                                    final String listToken = strTokList.nextToken();
-                                    if (list.isDocumentLibrary()
-                                            && listToken.equals(SPConstants.FORMS_LIST_URL_SUFFIX)
-                                            && (strTokList.countTokens() == 1)) {
-                                        break;
-                                    }
-                                    if (null != listToken) {
-                                        myNewListConst += listToken
-                                                + SPConstants.SLASH;
-                                    }
+                    // Children of all URLs are discovered
+                    ListState list = new ListState(
+                            element.getInternalName(),
+                            element.getTitle(),
+                            element.getBaseType(),
+                            Util.siteDataStringToCalendar(element.getLastModified()),
+                            strBaseTemplate, url, parentWeb, parentWebTitle,
+                            webstate.getSharePointType(),
+                            sharepointClientContext.getFeedType());
+
+                    String myNewListConst = "";
+                    final String listUrl = element.getDefaultViewUrl();// e.g.
+                    // /sites/abc/Lists/Announcements/AllItems.aspx
+                    LOGGER.log(Level.INFO, "getting listConst for list URL [ "
+                            + listUrl + " ] ");
+                    if ((listUrl != null) /* && (siteRelativeUrl!=null) */) {
+                        final StringTokenizer strTokList = new StringTokenizer(
+                                listUrl, SPConstants.SLASH);
+                        if (null != strTokList) {
+                            while ((strTokList.hasMoreTokens())
+                                    && (strTokList.countTokens() > 1)) {
+                                final String listToken = strTokList.nextToken();
+                                if (list.isDocumentLibrary()
+                                        && listToken.equals(SPConstants.FORMS_LIST_URL_SUFFIX)
+                                        && (strTokList.countTokens() == 1)) {
+                                    break;
                                 }
-                                list.setListConst(myNewListConst);
-                                LOGGER.log(Level.INFO, "using listConst [ "
-                                        + myNewListConst + " ] for list URL [ "
-                                        + listUrl + " ] ");
+                                if (null != listToken) {
+                                    myNewListConst += listToken
+                                            + SPConstants.SLASH;
+                                }
                             }
+                            list.setListConst(myNewListConst);
+                            LOGGER.log(Level.INFO, "using listConst [ "
+                                    + myNewListConst + " ] for list URL [ "
+                                    + listUrl + " ] ");
                         }
+                    }
 
+                    if (sharepointClientContext.isIncludedUrl(url)) {
                         // add the attribute(Metadata to the list )
                         list = getListWithAllAttributes(list, element);
-                        listCollection.add(list);
-
+                        // if a List URL is included, it will be sent as a
+                        // Document
+                        list.setSendListAsDocument(true);
+                        LOGGER.config("included URL :[" + url + "]");
                     } else {
+                        // if a List URL is EXCLUDED, it will NOT be sent as a
+                        // Document
+                        list.setSendListAsDocument(false);
                         LOGGER.warning("excluding " + url.toString());
                     }
+
+                    listCollection.add(list);
 
                     // Sort the base list
                     Collections.sort(listCollection);
@@ -337,7 +345,7 @@ public class SiteDataWS {
             stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
             return sWebMetadata.value.getTitle();
         } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+            // different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());

@@ -800,31 +800,40 @@ public class SharepointClient {
             // Logic: append list-> Document only when the whole list is
             // traversed
             if (nextPage == null) {
-                if (((listItems != null) && (listItems.size() > 0))
-                        || (listState.isNewList())) {
-                    String docId = listState.getPrimaryKey();
-                    if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
-                        docId = listState.getListURL() + SPConstants.DOC_TOKEN
-                                + docId;
+                if (listState.isSendListAsDocument()) {
+                    // send the listState as a document only if it was included
+                    // (not excluded) in the URL pattern matching
+                    if (((listItems != null) && (listItems.size() > 0))
+                            || (listState.isNewList())) {
+                        String docId = listState.getPrimaryKey();
+                        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+                            docId = listState.getListURL()
+                                    + SPConstants.DOC_TOKEN + docId;
+                        }
+                        final SPDocument listDoc = new SPDocument(docId,
+                                listState.getListURL(),
+                                listState.getLastModCal(),
+                                SPConstants.NO_AUTHOR,
+                                listState.getBaseTemplate(),
+                                listState.getParentWebTitle(),
+                                sharepointClientContext.getFeedType(),
+                                webState.getSharePointType());
+
+                        listDoc.setAllAttributes(listState.getAttrs());
+                        listItems.add(listDoc);
+
+                        Collections.sort(listItems);
+
+                        /*
+                         * The only purpose of list.isNewList to decide whether
+                         * to send the list as a document. Since, just now we
+                         * have done this, let's mark the list as not new.
+                         */
+                        listState.setNewList(false);
                     }
-                    final SPDocument listDoc = new SPDocument(docId,
-                            listState.getListURL(), listState.getLastModCal(),
-                            SPConstants.NO_AUTHOR, listState.getBaseTemplate(),
-                            listState.getParentWebTitle(),
-                            sharepointClientContext.getFeedType(),
-                            webState.getSharePointType());
-
-                    listDoc.setAllAttributes(listState.getAttrs());
-                    listItems.add(listDoc);
-
-                    Collections.sort(listItems);
-
-                    /*
-                     * The only purpose of list.isNewList to decide whether to
-                     * send the list as a document. Since, just now we have done
-                     * this, let's mark the list as not new.
-                     */
-                    listState.setNewList(false);
+                } else {
+                    LOGGER.log(Level.FINE, "List page not sent as document:"
+                            + listState.getListURL());
                 }
             } else {
                 // If any of the list has not been traversed completely, doCrawl

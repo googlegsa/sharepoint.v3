@@ -61,6 +61,12 @@ public class ListState implements StatefulObject {
     private String listURL = "";
 
     /**
+     * Flag to indicate if a this list is to be fed to GSA as a document or is
+     * it to be ignored
+     */
+    private boolean sendListAsDocument;
+
+    /**
      * To store the the recent change token required to make the web service
      * call next time.
      */
@@ -1345,6 +1351,20 @@ public class ListState implements StatefulObject {
      */
     public void setAttchmnts(StringBuffer attchmnts) {
         this.attchmnts = attchmnts;
+    }
+
+    /**
+     * @return the sendListAsDocument
+     */
+    public boolean isSendListAsDocument() {
+        return sendListAsDocument;
+    }
+
+    /**
+     * @param sendListAsDocument the sendListAsDocument to set
+     */
+    public void setSendListAsDocument(boolean sendListAsDocument) {
+        this.sendListAsDocument = sendListAsDocument;
     }
 
     /**
