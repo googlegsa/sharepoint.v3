@@ -89,7 +89,7 @@ public class SharepointClient {
         final List crawlQueue = list.getCrawlQueue();// return the list of
         // documents for the
         // crawl queue
-        if (null == crawlQueue) {
+        if (null == crawlQueue || crawlQueue.size() <= 0) {
             LOGGER.log(Level.FINE, "No CrawlQueue..");
             return null;
         }
@@ -159,7 +159,7 @@ public class SharepointClient {
                 resultsList = handleCrawlQueueForList(globalState, webState, list);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Problem in handling crawl queue for list URL [ "
-                        + list.getListURL() + " ]. ");
+                        + list.getListURL() + " ]. ", e);
             }
 
             if ((resultsList != null) && (resultsList.size() > 0)) {
