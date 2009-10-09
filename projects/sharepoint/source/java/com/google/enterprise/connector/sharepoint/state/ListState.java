@@ -98,6 +98,13 @@ public class ListState implements StatefulObject {
     SPDocument lastDocument;
 
     /**
+     * This doc is the last doc sent to CM and successfully fed to GSA with
+     * action=ADD. This is required during incremental crawl to tell the WS from
+     * where to look for more docs
+     */
+    SPDocument lastDocProcessedForWS;
+
+    /**
      * an ordered list of SPDocuments due to be fed to the Connector Manager
      */
     private List<SPDocument> crawlQueue = null;
@@ -462,15 +469,10 @@ public class ListState implements StatefulObject {
     public Calendar getDateForWSRefresh() {
         Calendar date = Util.jodaToCalendar(getLastMod()); // our default
 
-        if ((date != null) && (lastDocument != null)) {
-            final Calendar lastDocDate = lastDocument.getLastMod();
-            if (lastDocDate.toString().compareTo(date.toString()) < 0) {
-                date = lastDocDate;
-            }
-        }
-        // now, if there's a crawl queue, we might take its last entry:
-        if ((crawlQueue != null) && (crawlQueue.size() > 0)) {
-            final Calendar lastCrawlQueueDate = ((SPDocument) crawlQueue.get(crawlQueue.size() - 1)).getLastMod();
+        // Check if there was some doc that was last sent and use its last
+        // modified date in case if it is later than that of the list
+        if (getLastDocForWSRefresh() != null) {
+            final Calendar lastCrawlQueueDate = getLastDocForWSRefresh().getLastMod();
             if (lastCrawlQueueDate.before(date)) {
                 date = lastCrawlQueueDate;
             }
@@ -487,11 +489,10 @@ public class ListState implements StatefulObject {
      * @return {@link SPDocument}
      */
     public SPDocument getLastDocForWSRefresh() {
-        if ((crawlQueue != null) && (crawlQueue.size() > 0)) {
-            return (SPDocument) crawlQueue.get(crawlQueue.size() - 1);
-        } else {
-            return lastDocument;
-        }
+        // We know for sure that checkPoint() marked this doc as the last
+        // successfully sent doc. So for next incremental call use this doc as
+        // reference
+        return getLastDocProcessedForWS();
     }
 
     /**
@@ -612,31 +613,54 @@ public class ListState implements StatefulObject {
                     }
 
                     element.setAttribute(SPConstants.STATE_BIGGESTID, String.valueOf(biggestID));
+
+                    // Dump all the delete cache ids to the state file so that
+                    // we remember it even after a connector restart. Sending
+                    // duplicate delete feeds hangs the super GSA. This is very
+                    // serious so toavoid the same these ids are required which
+                    // will be checked before sending a delete feed
+                    if (cachedDeletedIDs != null && cachedDeletedIDs.size() > 0) {
+                        StringBuffer deletedListItemIDs = new StringBuffer();
+                        boolean firstElement = true;
+                        for (String deletedID : cachedDeletedIDs) {
+                            if (firstElement) {
+                                deletedListItemIDs.append(deletedID);
+                                firstElement = false;
+                            } else {
+                                deletedListItemIDs.append(SPConstants.HASH).append(deletedID);
+                            }
+                        }
+                        element.setAttribute(SPConstants.STATE_DELETED_LIST_ITEMIDS, deletedListItemIDs.toString());
+                    }
                 }
             }
 
             // dump the "last doc crawled"
-            if (lastDocument != null) {
+            // Do not refer to lastDocument. It is used to work with the crawl
+            // queue to identify if there are any pending docs from previous
+            // batch traversal. The one that will be helpful for connector in
+            // future web service calls is lastDocProcessedForWS
+            if (lastDocProcessedForWS != null) {
                 final Element elementLastDocCrawled = domDoc.createElement(SPConstants.STATE_LASTDOCCRAWLED);
                 element.appendChild(elementLastDocCrawled);
 
-                if (lastDocument.getDocId() != null) {
-                    elementLastDocCrawled.setAttribute(SPConstants.STATE_ID, lastDocument.getDocId());
+                if (lastDocProcessedForWS.getDocId() != null) {
+                    elementLastDocCrawled.setAttribute(SPConstants.STATE_ID, lastDocProcessedForWS.getDocId());
                 }
 
                 if (SPConstants.SP2007.equalsIgnoreCase(spType)) {
-                    if (lastDocument.getFolderLevel() != null
-                            && lastDocument.getFolderLevel().length() != 0) {
-                        elementLastDocCrawled.setAttribute(SPConstants.STATE_FOLDER_LEVEL, lastDocument.getFolderLevel());
+                    if (lastDocProcessedForWS.getFolderLevel() != null
+                            && lastDocProcessedForWS.getFolderLevel().length() != 0) {
+                        elementLastDocCrawled.setAttribute(SPConstants.STATE_FOLDER_LEVEL, lastDocProcessedForWS.getFolderLevel());
                     }
                     if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
-                        if (lastDocument.getAction() != null) {
-                            elementLastDocCrawled.setAttribute(SPConstants.STATE_ACTION, lastDocument.getAction().toString());
+                        if (lastDocProcessedForWS.getAction() != null) {
+                            elementLastDocCrawled.setAttribute(SPConstants.STATE_ACTION, lastDocProcessedForWS.getAction().toString());
                         }
                     }
                 }
-                if (lastDocument.getLastDocLastModString() != null) {
-                    elementLastDocCrawled.setAttribute(SPConstants.STATE_LASTMODIFIED, lastDocument.getLastDocLastModString());
+                if (lastDocProcessedForWS.getLastDocLastModString() != null) {
+                    elementLastDocCrawled.setAttribute(SPConstants.STATE_LASTMODIFIED, lastDocProcessedForWS.getLastDocLastModString());
                 }
             }
         }
@@ -723,6 +747,28 @@ public class ListState implements StatefulObject {
                         LOGGER.log(Level.WARNING, "Failed to load Biggest ID for list [ "
                                 + listURL + " ]. ", e);
                     }
+
+                    // Load all the delete cache ids from the state file so that
+                    // each delete feed can be checked against this list to
+                    // avoid sending duplicate delete feeds. Sending duplicate
+                    // delete feeds hangs the super GSA. This is very serious so
+                    // to avoid the same these ids are required which will be
+                    // checked before sending a delete feed
+                    String deletedListItemsIDs = element.getAttribute(SPConstants.STATE_DELETED_LIST_ITEMIDS);
+                    if (deletedListItemsIDs != null
+                            && !deletedListItemsIDs.equals("")) {
+
+                        String[] deletedIds = deletedListItemsIDs.split(SPConstants.HASH);
+
+                        if (deletedIds != null && deletedIds.length > 0) {
+                            cachedDeletedIDs = new HashSet<String>();
+                            for (String deletedId : deletedIds) {
+                                cachedDeletedIDs.add(deletedId);
+                            }
+                        }
+
+                    }
+
                 }
             }
 
@@ -750,7 +796,11 @@ public class ListState implements StatefulObject {
                             + listURL + " ]. ", e);
                 }
 
-                lastDocument = new SPDocument(lastCrawledDocId,
+                // The lastDocument is always used when working with the crawl
+                // queue. The one that we want to refer to is the document which
+                // was fed with action=ADD. It gives the connector the right
+                // reference when making web service calls.
+                lastDocProcessedForWS = new SPDocument(lastCrawledDocId,
                         lastCrawledDocLastMod, lastCrawledDocFolderLevel,
                         lastCrawledDocAction);
             }
@@ -1393,7 +1443,7 @@ public class ListState implements StatefulObject {
      *         document in the list are the same and false otherwise
      */
     public boolean allDocsFed() {
-        if (lastDocument != null) {
+        if (lastDocument != null && crawlQueue != null && crawlQueue.size() > 0) {
             return lastDocument.equals(crawlQueue.get(crawlQueue.size() - 1));
         }
         return false;
@@ -1404,9 +1454,9 @@ public class ListState implements StatefulObject {
      * since it has no reference in the crawl queue.
      */
     public void emptyCrawlQueue() {
-        crawlQueue.clear();
-        // This is important. A state where you have a valid lastDocument and
-        // null or empty crawlqueue is invalid
+        if (crawlQueue != null) {
+            crawlQueue.clear();
+        }
         lastDocument = null;
     }
 
@@ -1420,7 +1470,7 @@ public class ListState implements StatefulObject {
      *         batch traversal
      */
     public Iterator<SPDocument> getCurrentCrawlQueueIterator() {
-        if (crawlQueue != null) {
+        if (crawlQueue != null && crawlQueue.size() > 0) {
             int currentDocPos = crawlQueue.indexOf(lastDocument) + 1;
             if (currentDocPos < 0) {
                 // This is the case when no docs from this list have been sent
@@ -1436,4 +1486,19 @@ public class ListState implements StatefulObject {
 
         return null;
     }
+
+    /**
+     * @return the lastDocProcessedForWS
+     */
+    public SPDocument getLastDocProcessedForWS() {
+        return lastDocProcessedForWS;
+    }
+
+    /**
+     * @param lastDocProcessedForWS the lastDocProcessedForWS to set
+     */
+    public void setLastDocProcessedForWS(SPDocument lastDocProcessedForWS) {
+        this.lastDocProcessedForWS = lastDocProcessedForWS;
+    }
+
 }
