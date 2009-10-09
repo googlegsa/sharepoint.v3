@@ -164,7 +164,7 @@ public class ListsWS {
         try {
             res = stub.getAttachmentCollection(listName, listItemId);
         } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+            // different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
@@ -353,10 +353,10 @@ public class ListsWS {
                     + "</Query>";
         }
         final MessageElement[] meArray = { getMeFromString(strMyString) };// Array
-                                                                            // of
-                                                                            // the
-                                                                            // message
-                                                                            // element
+        // of
+        // the
+        // message
+        // element
         return meArray;
     }
 
@@ -553,19 +553,19 @@ public class ListsWS {
                 me.addChildElement(new MessageElement(new QName(
                         "ViewAttributes"))).addAttribute(SOAPFactory.newInstance().createName("Scope"), "Recursive");
                 me.addChildElement(new MessageElement(new QName("OptimizeFor"))).addTextNode("ItemIds"); // added
-                                                                                                            // for
-                                                                                                            // getting
-                                                                                                            // folder
-                                                                                                            // information
-                                                                                                            // when
-                                                                                                            // recursion
-                                                                                                            // is
-                                                                                                            // being
-                                                                                                            // used,
-                                                                                                            // in
-                                                                                                            // case
-                                                                                                            // of
-                                                                                                            // getListItemChangesSinceToken.
+                // for
+                // getting
+                // folder
+                // information
+                // when
+                // recursion
+                // is
+                // being
+                // used,
+                // in
+                // case
+                // of
+                // getListItemChangesSinceToken.
             }
 
             if (nextPage != null) {
@@ -615,15 +615,15 @@ public class ListsWS {
         final String viewName = "";
         final GetListItemsQuery query = new GetListItemsQuery();
         final GetListItemsViewFields viewFields = new GetListItemsViewFields(); // <ViewFields
-                                                                                // />
+        // />
         final GetListItemsQueryOptions queryOptions = new GetListItemsQueryOptions();
         final String webID = "";
         GetListItemsResponseGetListItemsResult res = null;
 
         try {
             query.set_any(createQuery(lastModified, lastItemID));// Create Query
-                                                                    // for the
-                                                                    // Lists
+            // for the
+            // Lists
             viewFields.set_any(createViewFields());
             queryOptions.set_any(createQueryOptions(list.canContainFolders(), null, null));
             LOGGER.log(Level.CONFIG, "Making Web Service call with the following parameters:\n query [ "
@@ -634,7 +634,7 @@ public class ListsWS {
                     + viewFields.get_any()[0] + "] ");
             res = stub.getListItems(listName, viewName, query, viewFields, rowLimit, queryOptions, webID);
         } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+            // different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
@@ -700,7 +700,7 @@ public class ListsWS {
         List<String> folderLevels = new ArrayList<String>();
         if (!list.canContainFolders()) {
             return folderLevels; // folders are created only inside document
-                                    // libraries.
+            // libraries.
         }
         if ((folderLevel != null) && (folderLevel.trim().length() != 0)) {
             folderLevels.add(folderLevel);
@@ -726,7 +726,7 @@ public class ListsWS {
                     + viewFields.get_any()[0] + "] ");
             res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, SPConstants.DEFAULT_ROWLIMIT, queryOptions, token, contains);
         } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+            // different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
@@ -832,7 +832,7 @@ public class ListsWS {
         final String viewName = "";
         final GetListItemsQuery query = new GetListItemsQuery();
         final GetListItemsViewFields viewFields = new GetListItemsViewFields(); // <ViewFields
-                                                                                // />
+        // />
         final GetListItemsQueryOptions queryOptions = new GetListItemsQueryOptions();
         final String webID = "";
         GetListItemsResponseGetListItemsResult res = null;
@@ -849,7 +849,7 @@ public class ListsWS {
                     + viewFields.get_any()[0] + "] ");
             res = stub.getListItems(listName, viewName, query, viewFields, rowLimit, queryOptions, webID);
         } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+            // different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
@@ -1038,7 +1038,7 @@ public class ListsWS {
                     + viewFields.get_any()[0] + "], token [ " + token + " ] ");
             res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, rowLimit, queryOptions, token, contains);
         } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+            // different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
@@ -1070,8 +1070,8 @@ public class ListsWS {
             final MessageElement[] me = res.get_any();
             if ((me != null) && (me.length > 0)) {
                 boolean inSequence = false; // To ensure that Changes are
-                                            // retrieved always before actual
-                                            // data.
+                // retrieved always before actual
+                // data.
                 for (final Iterator itChilds = me[0].getChildElements(); itChilds.hasNext();) {
                     final MessageElement child = (MessageElement) itChilds.next();
                     if (SPConstants.CHANGES.equalsIgnoreCase(child.getLocalName())) {
@@ -1183,6 +1183,15 @@ public class ListsWS {
         LOGGER.log(Level.FINE, "Constructing delete feeds for IDs "
                 + allDeletedIDs + ". ");
         for (String currentItemID : deletedIDs) {
+            if (list.isInDeleteCache(currentItemID)) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.log(Level.FINER, "Skipping document with original ID: "
+                            + currentItemID
+                            + " from list : "
+                            + list.getListURL());
+                }
+                continue;
+            }
             if (count > threashold) {
                 if (null == list.getNextPage()) {
                     list.setNextPage("not null");
@@ -1327,6 +1336,15 @@ public class ListsWS {
                             + itemId
                             + "] has been restored. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
                             + list.getListURL() + " ]. ");
+                    // Remove this ID from the list of deleted IDs. This is
+                    // important or else you might have orphaned docs in GSA's
+                    // index. There are various use cases where this can happen.
+                    // Like you dont remove the ID from list of deleted IDs now,
+                    // send an ADD feed and later send try to send DELETE feed.
+                    // Here this new delete feed will never be sent as the ID is
+                    // already marked in the list of deleted ids. Think of many
+                    // such use cases and this step will then make sense
+                    list.removeFromDeleteCache(itemId);
                 } else if (SPConstants.RENAME.equalsIgnoreCase(changeType)) {
                     renamedIDs.add(itemId);
                     LOGGER.log(Level.INFO, "ItemID ["
@@ -1612,9 +1630,9 @@ public class ListsWS {
         // STEP1: Process link sites
         if (list.isLinkSite() && (allWebs != null)) {
             String linkSiteURL = listItem.getAttribute(SPConstants.URL);// e.g.
-                                                                        // http://www.abc.com,
-                                                                        // abc
-                                                                        // site"
+            // http://www.abc.com,
+            // abc
+            // site"
             if (linkSiteURL == null) {
                 LOGGER.log(Level.WARNING, "Unable to get the link URL");
             } else {
@@ -1693,7 +1711,7 @@ public class ListsWS {
             author = SPConstants.NO_AUTHOR;
         } else {
             author = author.substring(author.indexOf(SPConstants.HASH) + 1); // e.g.1073741823;#System
-                                                                                // Account
+            // Account
         }
 
         Calendar calMod;
