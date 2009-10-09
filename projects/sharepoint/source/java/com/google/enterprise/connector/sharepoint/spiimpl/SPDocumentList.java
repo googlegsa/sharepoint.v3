@@ -164,6 +164,14 @@ public class SPDocumentList implements DocumentList {
             // position of the next document to be sent to CM. This is as
             // per the checkPoint semantics defined in Issue 106
             docsFedIndexPosition++;
+
+            // Set the last crawled web and list states which can be used by the
+            // batch traversal to know from where to look for pending documents
+            // from last batch traversal in the crawl queue that are supposed to
+            // be sent to GSA
+            globalState.setLastCrawledWebID(spDocument.getWebid());
+            globalState.setLastCrawledListID(spDocument.getListGuid());
+
             return spDocument;
         }
         return null;

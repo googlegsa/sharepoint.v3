@@ -22,6 +22,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -39,7 +40,7 @@ public class SharepointTraversalManager implements TraversalManager {
     private SharepointClientContext sharepointClientContext;
     private SharepointClientContext sharepointClientContextOriginal = null;
     protected GlobalState globalState; // not private, so the unittest can see
-                                        // it
+    // it
     private int hint = -1;
 
     /**
@@ -231,6 +232,11 @@ public class SharepointTraversalManager implements TraversalManager {
             globalState.setCurrentWeb(null);
         } else {
             final WebState ws = globalState.lookupWeb(lastWeb, sharepointClientContext);
+            // Get the last crawled list id and initiate the traversing from
+            // that state instead of searching for all liststates
+            String lastList = globalState.getLastCrawledListID();
+            ListState listState = ws.lookupList(lastList);
+            ws.setCurrentList(listState);
             globalState.setCurrentWeb(ws);
         }
         SPDocumentList rsAll = null;

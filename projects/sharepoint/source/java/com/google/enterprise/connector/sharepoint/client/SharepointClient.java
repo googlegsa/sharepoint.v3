@@ -55,6 +55,10 @@ public class SharepointClient {
     private int nDocuments = 0;
     private boolean doCrawl;// true, when threshhold is not reached and all webs
 
+    // This is mainly for test cases. It gives the count of liststates that are
+    // checked for any docs pending from previous crawl cycle
+    private int noOfVisitedListStates = 0;
+
     // all lists all documents are done. false, when a
     // partial cycle is completed i.e, threashold is
     // reached before processing all the documents.
@@ -140,11 +144,13 @@ public class SharepointClient {
             return null;
         }
 
+        noOfVisitedListStates = 0;
+
         LOGGER.log(Level.INFO, "Traversing web [ " + webState.getWebUrl()
                 + " ] ");
         SPDocumentList resultSet = null;
         int sizeSoFar = 0;
-        for (final Iterator iter = webState.getCircularIterator(); iter.hasNext();) {
+        for (final Iterator iter = webState.getCurrentListstateIterator(); iter.hasNext();) {
             final ListState list = (ListState) iter.next();
 
             webState.setCurrentList(list);
@@ -157,6 +163,7 @@ public class SharepointClient {
                 LOGGER.log(Level.INFO, "Handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ");
                 resultsList = handleCrawlQueueForList(globalState, webState, list);
+                noOfVisitedListStates++;
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Problem in handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ", e);
@@ -186,6 +193,13 @@ public class SharepointClient {
                 break;
             }
         }
+
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.config("No. of listStates scanned from site : "
+                    + webState.getWebUrl() + " for current batch traversal : "
+                    + noOfVisitedListStates);
+        }
+
         return resultSet;
     }
 
@@ -364,8 +378,7 @@ public class SharepointClient {
             LOGGER.warning("sharepointClientContext is not found");
             return;
         }
-        final SharepointClientContext tempCtx = (SharepointClientContext) sharepointClientContext.clone();
-        final ArrayList<String> lstLookupForWebs = new ArrayList<String>();
+        SharepointClientContext tempCtx = (SharepointClientContext) sharepointClientContext.clone();
 
         nDocuments = 0;
         doCrawl = true;
@@ -384,10 +397,11 @@ public class SharepointClient {
             sharepointClientContext.setSiteURL(nextLastWebID);
         }
 
-        LOGGER.info("Starting crawl cycle. initiating from the web [ "
-                + nextLastWebID + " ]. ");
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.config("Starting crawl cycle. initiating from the web [ "
+                    + nextLastWebID + " ]. ");
+        }
 
-        WebsWS websWS = new WebsWS(sharepointClientContext);
         globalState.startRecrawl();// start and end recrawl is used for garbage
         // collection...removing the non existant
         // lists
@@ -405,103 +419,69 @@ public class SharepointClient {
         // To store the intermediate webs discovered during crawl
         Set<String> allSites = new TreeSet<String>();
 
-        final Iterator itWebs = globalState.getCircularIterator();
-        while (itWebs.hasNext()) {
-            ws = (WebState) itWebs.next();// Get the first web
-            if (ws == null) {
-                continue;
-            }
+        ArrayList<String> lstLookupForWebs = new ArrayList<String>();
 
-            final String webURL = ws.getPrimaryKey();
-            nextLastWebID = webURL;// Keep Track of the webs getting traversed
+        // Traverse sites and lists from the last crawled site and list to fetch
+        // batch hint # of docs
+        traverseSites(globalState, allSites, tempCtx, nextLastWebID, nextLastListID, lstLookupForWebs);
 
-            // Note: Lookup table maintains keeps track of the links which has
-            // been visited till now.
-            // This helps to curb the cyclic link problem in which SiteA can
-            // have link to SiteB and SiteB having link to SiteA.
-            if (lstLookupForWebs.contains(webURL)) {
-                continue;
-            } else {
-                lstLookupForWebs.add(webURL);
-            }
+        // Update all the web info into the globalstate. Try and discover some
+        // intermediate webs e.g, linked sites. These will be processed in the
+        // same batch traversal in case the batch hint # of documents have not
+        // been discovered
+        boolean isGSupdated = updateGlobalState(globalState, allSites);
 
-            try {
-                final int currDocCount = nDocuments;
-                final String siteName = ws.getPrimaryKey();
-                LOGGER.info("Web [ " + siteName
-                        + " ] is getting crawled for documents....");
-                tempCtx.setSiteURL(siteName);
-                updateWebStateFromSite(tempCtx, ws, nextLastListID, allSites); // Process
-                // the
-                // web
-                // site,
-                // and
-                // add
-                // the
-                // link
-                // site
-                // info
-                // to
-                // allSites.
-                globalState.updateList(ws);// update global state with the
-                // updated web state
-                if (currDocCount == nDocuments) {
-                    // get Alerts for the web and update webState. The above
-                    // check is added to reduce the frequency with which
-                    // getAlerts WS call is made.
-                    LOGGER.info("Web [ " + siteName
-                            + " ] is getting crawled for alerts....");
-                    processAlerts(ws, tempCtx);
+        // Cases being handled here:
+        // 1. Batch hint # of documents have not been discovered, but there are
+        // new sites which have been discovered. Crawl documents till you get
+        // the batch hint # of docs
+        // 2. Batch hint # of documents have not been discovered and no new
+        // sites have been discovered. In such cases get any new
+        // personal/mysites, sites discoevered by GSS. Add them to the global
+        // state and crawl them till batch hint # of documents is reached.
+        if (doCrawl && spType != null) {
+            // If the first check has passed, it might mean Case 1. If the
+            // following if block is skipped, it means this is Case 1, else it
+            // will be Case 2
+            if (!isGSupdated) {
+                // If this check passed, it means Case 2
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "Discovering new sites");
                 }
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "Following exception occured while traversing/updating web state URL [ "
-                        + webURL + " ]. ", e);
-            } catch (final Throwable t) {
-                LOGGER.log(Level.WARNING, "Following error occured while traversing/updating web state URL [ "
-                        + webURL + " ]. ", t);
+
+                // Empty the current set of sites that have been traversed
+                // before discovering the new ones. This is important in case
+                // the current batch traversal has not discovered batch-hint no.
+                // of docs. In such cases the connector should not traverse the
+                // sites already traversed in the same batch traversal.
+                allSites.clear();
+
+                // Initiate the discovery of new sites
+                discoverExtraWebs(allSites, spType);
+                isGSupdated = updateGlobalState(globalState, allSites);
             }
 
-            // Check if the threshhold (i.e. 2*batchHint is reached)
-            final int batchHint = sharepointClientContext.getBatchHint();
-            if (nDocuments >= (2 * batchHint)) {
-                LOGGER.info("Stopping crawl cycle because batch hint has been reached");
-                doCrawl = false;
-                break;
+            // The following does not care if the sites are discovered for Case
+            // 1 or Case 2. It will simply go ahead and crawl batch hint no. of
+            // docs from the new sites
+            if (isGSupdated) {
+                LOGGER.log(Level.INFO, "global state has been updated with newly discovered sites. About to traverse them for docs");
+                // Traverse sites and lists under them to fetch batch hint # of
+                // docs
+                traverseSites(globalState, allSites, tempCtx, nextLastWebID, nextLastListID, lstLookupForWebs);
+
+                // There are chances that new sites are discovered (child sites
+                // OR linked sites) during the traversal of sites discovered as
+                // linked sites themselves OR as child sites OR through GSS. In
+                // such cases, the connector should just create webstates and
+                // add them to the global state. The next batch traversal will
+                // take them up for traversal
+                isGSupdated = updateGlobalState(globalState, allSites);
+                if (isGSupdated) {
+                    doCrawl = false;
+                }
+
             }
-
-            // Get the next web and discover its direct children
-            sharepointClientContext.setSiteURL(webURL);
-            websWS = new WebsWS(sharepointClientContext);
-            try {
-                LOGGER.log(Level.INFO, "Getting child sites for web [ "
-                        + webURL + "]. ");
-                final Set<String> allWebStateSet = websWS.getDirectChildsites();
-                allSites.addAll(allWebStateSet);
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "Unable to get the Child sites for site "
-                        + webURL, e);
-            }
-
-            // Set the last crawled date time. This is informative value for the
-            // user viewing the state file
-            ws.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
-
-        }
-
-        LOGGER.log(Level.INFO, "All the webs known till last crawl cycle have been crawled");
-        if (globalState.isBFullReCrawl() && null != spType) {
-            LOGGER.log(Level.INFO, "Discovering Extra webs");
-            discoverExtraWebs(allSites, spType);
-        }
-
-        // Update all the web info into the globalstate
-        final boolean isGSupdated = updateGlobalState(globalState, allSites);
-        // If we have discovered some intermediate webs e.g, linked sites,
-        // doCrawl must not be set true. This is becasue we'll process these
-        // webs in the next crawl cycle.
-        if (isGSupdated) {
-            LOGGER.log(Level.INFO, "global state has been updated with newly intermediate webs");
-            doCrawl = false;
         }
 
         globalState.setBFullReCrawl(doCrawl); // indicate if complete\Partial
@@ -596,7 +576,7 @@ public class SharepointClient {
      *            sites/Site directory.
      */
     private void updateWebStateFromSite(final SharepointClientContext tempCtx,
-            final WebState webState, final String nextLastListID,
+            final WebState webState, String nextLastListID,
             final Set<String> allWebs) throws SharepointException {
         List<SPDocument> listItems = new ArrayList<SPDocument>();
 
@@ -857,7 +837,120 @@ public class SharepointClient {
             // user viewing the state file
             listState.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
 
+            // Keeps track of which list is being traversed and crawled for
+            // docs. This will help in case this current traversal is going to
+            // discover new sites and traverse them in the same batch.
+            nextLastListID = listState.getPrimaryKey();
+
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("Crawled list with ID : " + listState.getListURL()
+                        + " for new/modified docs. Total : " + listItems.size());
+            }
+
         }// end:; for Lists
 
+    }
+
+    /**
+     * Traverses list of sites (webstates) which have not yet been crawled and
+     * discovers new docs to be sent to GSA
+     *
+     * @param globalState The global state which has the list of sites
+     *            (webstates) that need to be crawled for documents
+     * @param allSites The list of sites
+     * @param sharePointClientContext The current connector context. Instance of
+     *            {@link SharepointClientContext}
+     * @param nextLastWebID The id of the last site (webstate) that was crawled
+     * @param nextLastListID The id of the last liststate that as crawled
+     * @throws SharepointException In case of any problems fetching documents
+     */
+    private void traverseSites(GlobalState globalState, Set<String> allSites,
+            SharepointClientContext sharePointClientContext,
+            String nextLastWebID, String nextLastListID,
+            ArrayList<String> lstLookupForWebs) throws SharepointException {
+        final Iterator<WebState> itWebs = (Iterator<WebState>) globalState.getCircularIterator();
+        while (itWebs.hasNext()) {
+            WebState ws = (WebState) itWebs.next();// Get the first web
+            if (ws == null) {
+                continue;
+            }
+
+            final String webURL = ws.getPrimaryKey();
+
+            // Keep Track of the webs getting traversed
+            nextLastWebID = webURL;
+
+            // Note: Lookup table maintains keeps track of the links which has
+            // been visited till now.
+            // This helps to curb the cyclic link problem in which SiteA can
+            // have link to SiteB and SiteB having link to SiteA.
+            if (lstLookupForWebs.contains(webURL)) {
+                continue;
+            } else {
+                lstLookupForWebs.add(webURL);
+            }
+
+            try {
+                final int currDocCount = nDocuments;
+                final String siteName = ws.getPrimaryKey();
+
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Web [ " + siteName
+                            + " ] is getting crawled for documents....");
+                }
+                sharePointClientContext.setSiteURL(siteName);
+
+                // Process the web site, and add the link site info to allSites.
+                updateWebStateFromSite(sharePointClientContext, ws, nextLastListID, allSites);
+                globalState.updateList(ws);// update global state with the
+                // updated web state
+                if (currDocCount == nDocuments) {
+                    // get Alerts for the web and update webState. The above
+                    // check is added to reduce the frequency with which
+                    // getAlerts WS call is made.
+                    LOGGER.info("Web [ " + siteName
+                            + " ] is getting crawled for alerts....");
+                    processAlerts(ws, sharePointClientContext);
+                }
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "Following exception occured while traversing/updating web state URL [ "
+                        + webURL + " ]. ", e);
+            } catch (final Throwable t) {
+                LOGGER.log(Level.WARNING, "Following error occured while traversing/updating web state URL [ "
+                        + webURL + " ]. ", t);
+            }
+
+            // Check if the threshhold (i.e. 2*batchHint is reached)
+            final int batchHint = sharepointClientContext.getBatchHint();
+            if (nDocuments >= (2 * batchHint)) {
+                LOGGER.info("Stopping crawl cycle as connector has discovered (2 * batch hint) no. of docs. In total : "
+                        + nDocuments + " docs");
+                doCrawl = false;
+                break;
+            }
+
+            // Get the next web and discover its direct children
+            sharepointClientContext.setSiteURL(webURL);
+            WebsWS websWS = new WebsWS(sharepointClientContext);
+            try {
+                LOGGER.log(Level.INFO, "Getting child sites for web [ "
+                        + webURL + "]. ");
+                final Set<String> allWebStateSet = websWS.getDirectChildsites();
+                allSites.addAll(allWebStateSet);
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "Unable to get the Child sites for site "
+                        + webURL, e);
+            }
+        }
+    }
+
+    /**
+     * Returns the no of visited list states to check for pending docs from
+     * previous batch traversal for a given web state (site)
+     *
+     * @return The no of visited list states
+     */
+    public int getNoOfVisitedListStates() {
+        return noOfVisitedListStates;
     }
 }

@@ -1501,4 +1501,9 @@ public class ListState implements StatefulObject {
         this.lastDocProcessedForWS = lastDocProcessedForWS;
     }
 
+    @Override
+    public String toString() {
+        return this.listURL;
+    }
+
 }

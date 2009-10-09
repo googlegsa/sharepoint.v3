@@ -154,4 +154,32 @@ public class SharepointClientTest extends TestCase {
         System.out.println("Total dos: " + numDocs);
         System.out.println("[ testTraverse() ] Test Completed.");
     }
+
+    /**
+     * Tests {@link SharepointClient#traverse(GlobalState, WebState, int)} to
+     * check that only the lists starting from the given list are checked for
+     * pending docs from previous crawl cycle
+     *
+     * @throws SharepointException
+     */
+    public void testTraverseToCheckValidLists() throws SharepointException {
+
+        GlobalState gs = new GlobalState("c:\\", "metadata-and-URL");
+
+        WebState ws = TestConfiguration.createWebState(3);
+        gs.updateList(ws);
+
+        // Set the last crawled list and web id as set in web state
+        gs.setLastCrawledListID(ws.getLastCrawledListID());
+        gs.setLastCrawledWebID(ws.getPrimaryKey());
+
+        SharepointClient spclient = new SharepointClient(null);
+
+        // Traverse the lists for the given web state
+        spclient.traverse(gs, ws, 50);
+
+        // Since there are 4 lists, the third list being set as last crawled,
+        // the total no. of lists visited should be 2
+        assertEquals(2, spclient.getNoOfVisitedListStates());
+    }
 }
