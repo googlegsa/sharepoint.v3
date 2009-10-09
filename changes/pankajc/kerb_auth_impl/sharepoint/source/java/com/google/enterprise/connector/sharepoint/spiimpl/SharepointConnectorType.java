@@ -37,7 +37,8 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.apache.commons.httpclient.auth.AuthPolicy;
+import org.apache.commons.httpclient.contrib.auth.NegotiateScheme;
 import com.google.enterprise.connector.common.StringUtils;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -438,53 +439,50 @@ public class SharepointConnectorType implements ConnectorType {
 	 * Validates the values filled-in by the user at the connector's configuration page. 
 	 */
 	private boolean validateConfigMap(final Map configData, final ErrorDignostics ed) {
+		
 		if(configData==null){
 			LOGGER.warning("configData map is not found");
 			return false;
 		}
+		String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
+		String googleConnWorkDir = (String)configData.get(GOOGLE_CONN_WORK_DIR);
 
-		String krb5ConfPath = "config/krb5.conf";
-		String loginConfPath = "config/login.conf";
-		
-		InputStream krb5In = SharepointConnectorType.class.getClassLoader().getResourceAsStream(krb5ConfPath);
-		if(krb5In != null){
-			try {
-				File krb5File = new File(configData.get(GOOGLE_CONN_WORK_DIR).toString()+"\\krb5.conf"); 
-				String krb5Config = StringUtils.streamToStringAndThrow(krb5In);
-				krb5Config = krb5Config.replace("{REALM}", configData.get("realm").toString().toUpperCase());
-				krb5Config = krb5Config.replace("{realm}", configData.get("realm").toString().toLowerCase());
-				krb5Config = krb5Config.replace("{kdcserver}", configData.get("kdcserver").toString().toUpperCase());
-				FileOutputStream out = new FileOutputStream(krb5File);
-		        out.write(krb5Config.getBytes("UTF-8"));
-		        out.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)){
+			AuthPolicy.registerAuthScheme(SPConstants.NEGOTIATE, NegotiateScheme.class);
+			
+			InputStream krb5In = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_KRB5);
+			if(krb5In != null){
+				try {
+					File krb5File = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5); 
+					String krb5Config = StringUtils.streamToStringAndThrow(krb5In);
+					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_UPPERCASE, configData.get(SPConstants.DOMAIN).toString().toUpperCase());
+					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_LOWERCASE, configData.get(SPConstants.DOMAIN).toString().toLowerCase());
+					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_KDC_SERVER, configData.get(SPConstants.KDC_SERVER).toString().toUpperCase());
+					FileOutputStream out = new FileOutputStream(krb5File);
+					out.write(krb5Config.getBytes(SPConstants.UTF_8));
+					out.close();
+				} catch (IOException e) {
+					LOGGER.log(Level.SEVERE, "Failed to create krb5.conf in connector instance's directory.");
+				}
 			}
-		}
-		
-		InputStream loginIn = SharepointConnectorType.class.getClassLoader().getResourceAsStream(loginConfPath);
-		if(loginIn != null){
-			try {
-				File loginFile = new File(configData.get(GOOGLE_CONN_WORK_DIR).toString()+"\\login.conf"); 
-				String loginConfig = StringUtils.streamToStringAndThrow(loginIn);
-				FileOutputStream out = new FileOutputStream(loginFile);
-		        out.write(loginConfig.getBytes("UTF-8"));
-		        out.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+
+			InputStream loginIn = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_LOGIN);
+			if(loginIn != null){
+				try {
+					File loginFile = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN); 
+					String loginConfig = StringUtils.streamToStringAndThrow(loginIn);
+					FileOutputStream out = new FileOutputStream(loginFile);
+					out.write(loginConfig.getBytes(SPConstants.UTF_8));
+					out.close();
+				} catch (IOException e) {
+					LOGGER.log(Level.SEVERE, "Failed to create login.conf in connector instance's directory.");
+				}
 			}
+
+			System.setProperty(SPConstants.SYS_PROP_AUTH_LOGIN_CONFIG, googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
+			System.setProperty(SPConstants.SYS_PROP_AUTH_KRB5_CONFIG, googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
+			System.setProperty(SPConstants.SYS_PROP_AUTH_USESUBJETCREDSONLY, SPConstants.FALSE);
 		}
-		
-		System.setProperty("java.security.auth.login.config", configData.get(GOOGLE_CONN_WORK_DIR).toString() + "\\login.conf");
-		System.setProperty("java.security.krb5.conf", configData.get(GOOGLE_CONN_WORK_DIR).toString() + "\\krb5.conf");
-		System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
-//		System.setProperty("java.security.krb5.realm", configData.get("realm").toString().toUpperCase());
-//		System.setProperty("java.security.krb5.kdc", configData.get("kdcserver").toString());
-//		java.security.Security.setProperty("auth.login.defaultCallbackHandler", "com.google.enterprise.connector.sharepoint.client.TestCallbackHandler");
-		
-		
 		String feedType = null;
 		
 		for (final Iterator i = keys.iterator(); i.hasNext();) {
@@ -510,7 +508,7 @@ public class SharepointConnectorType implements ConnectorType {
 						ed.set(SPConstants.INCLUDED_URLS, rb.getString(SPConstants.INVALID_INCLUDE_PATTERN) + invalidSet.toString());
 						return false;
 					}
-				} 
+				}
 			} else if(collator.equals(key,SPConstants.ALIAS_MAP) && (val!=null) && !val.equals(SPConstants.BLANK_STRING)) {
 				final Set<String> wrongEntries = new HashSet<String>();
 				final String message = parseAlias(val, wrongEntries);
@@ -526,6 +524,11 @@ public class SharepointConnectorType implements ConnectorType {
 				}
 			} else if(collator.equals(key,SPConstants.AUTHORIZATION)) {
 				feedType = val;
+			} else if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING) && collator.equals(key,SPConstants.KDC_SERVER)){
+				if (kdcServer.indexOf(".")==-1 && !validateIPAddress(kdcServer)) {
+					ed.set(SPConstants.KDC_SERVER, rb.getString(SPConstants.KERBEROS_KDC_HOST_BLANK));
+					return false;      
+				}
 			}
 			setSharepointCredentials(key, val);		
 		}
@@ -536,7 +539,7 @@ public class SharepointConnectorType implements ConnectorType {
 		}
 		
 		try {
-			sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, username, 
+			sharepointClientContext = new SharepointClientContext(sharepointUrl, domain, kdcServer, username, 
 				password, "",includeURL,excludeURL,mySiteUrl,"",feedType);
 		} catch(final Exception e) {
 			LOGGER.log(Level.SEVERE, "Failed to create SharePointClientContext with the received configuration values. ");
@@ -1142,4 +1145,10 @@ public class SharepointConnectorType implements ConnectorType {
 		}
 		return message;
 	}	
+	
+	private boolean validateIPAddress (String sip){
+		if(sip.matches("[0-255]+.[0-255]+.[0-255]+.[0-255]+"))
+			return true;
+		else return false;
+	}
 }

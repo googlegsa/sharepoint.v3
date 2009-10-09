@@ -35,7 +35,7 @@ public class SharepointConnector implements Connector {
 	
 	private String sharepointUrl;
 	private String kdcserver;
-	private String realm;
+//	private String realm;
 	private String domain;
 	private String username;
 	private String password;
@@ -64,7 +64,7 @@ public class SharepointConnector implements Connector {
 		LOGGER.config("sharepointUrl = [" +sharepointUrl+"] , domain = ["+domain+"] , username = ["+username+"] , " +
 				"googleConnectorWorkDir = ["+googleConnectorWorkDir+"] , includedURls = ["+includedURls+"] , " +
 				"excludedURls = ["+excludedURls+"] , mySiteBaseURL = ["+mySiteBaseURL+"] , aliasHostPort = ["+aliasMapString+"]");		
-		sharepointClientContext = new SharepointClientContext(sharepointUrl,domain, username, password, 
+		sharepointClientContext = new SharepointClientContext(sharepointUrl,domain, kdcserver, username, password, 
 				googleConnectorWorkDir,includedURls,excludedURls,mySiteBaseURL,aliasMapString,feedType);
 	}
 
@@ -258,7 +258,7 @@ public class SharepointConnector implements Connector {
 		LOGGER.config("sharepointUrl = [" +sharepointUrl+"] , domain = ["+domain+"] , username = ["+username+"] , " +
 				"googleConnectorWorkDir = ["+googleConnectorWorkDir+"] , includedURls = ["+includedURls+"] , " +
 				"excludedURls = ["+excludedURls+"] , mySiteBaseURL = ["+mySiteBaseURL+"] , aliasHostPort = ["+aliasMap+"]");		
-		sharepointClientContext = new SharepointClientContext(sharepointUrl,domain, username, password, 
+		sharepointClientContext = new SharepointClientContext(sharepointUrl,domain, kdcserver, username, password, 
 				googleConnectorWorkDir,includedURls,excludedURls,mySiteBaseURL,aliasMap,authorization);
 		sharepointClientContext.setFQDNConversion(FQDNConversion);
 		sharepointClientContext.setIncluded_metadata(included_metadata);
@@ -287,11 +287,11 @@ public class SharepointConnector implements Connector {
 		this.kdcserver = kdcserver;
 	}
 
-	public String getRealm() {
+	/*public String getRealm() {
 		return realm;
 	}
 
 	public void setRealm(String realm) {
 		this.realm = realm;
-	}
+	}*/
 }

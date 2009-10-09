@@ -30,6 +30,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NTCredentials;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
@@ -50,6 +51,7 @@ public class SharepointClientContext implements Cloneable {
 	private String domain;
 	private String username;
 	private String password;
+	private String kdcServer;
 	
 	private String googleConnectorWorkDir = null;
 	private String [] excludedURlList = null; 
@@ -83,6 +85,10 @@ public class SharepointClientContext implements Cloneable {
 			
 			if(null != domain){				
 				spCl.setDomain(new String(domain));
+			}
+			
+			if(null != kdcServer){				
+				spCl.setKdcServer((new String(kdcServer)));
 			}
 
 			if(null != googleConnectorWorkDir){				
@@ -182,12 +188,14 @@ public class SharepointClientContext implements Cloneable {
 	 * @param inFeedType
 	 * @throws SharepointException
 	 */
-	public SharepointClientContext(String sharepointUrl, final String inDomain, final String inUsername, final String inPassword,
+	public SharepointClientContext(String sharepointUrl, final String inDomain, final String inKdcHost, final String inUsername, final String inPassword,
 			final String inGoogleConnectorWorkDir,final String includedURls,final String excludedURls,final String inMySiteBaseURL,
 			final String inAliasMapString, final String inFeedType) throws SharepointException {
 
 		Protocol.registerProtocol("https", new Protocol("https",new EasySSLProtocolSocketFactory(), SPConstants.SSL_DEFAULT_PORT));
-				
+		
+		kdcServer = inKdcHost;
+		
 		if(sharepointUrl==null){
 			throw new SharepointException("sharepoint URL is null");			
 		}
@@ -197,6 +205,7 @@ public class SharepointClientContext implements Cloneable {
 		if(inPassword == null) {
 			throw new SharepointException("Password is null.");
 		}
+
 		if(inGoogleConnectorWorkDir == null) {
 			throw new SharepointException("Working Directory is null.");
 		}
@@ -572,31 +581,22 @@ public class SharepointClientContext implements Cloneable {
 	public int checkConnectivity(final String strURL, HttpMethodBase method) throws Exception {
 		LOGGER.log(Level.CONFIG, "Requesting [ "+strURL+" ] ....");		
 		int responseCode = 0;
-		final String username = this.username;
+		String username = this.username;
 		final String host = Util.getHost(strURL);
 		
-//		credentials.put("Username", this.username);
-//		credentials.put("Password", this.password);
-		System.out.println("reached here");
-		/*Credentials credentials =  new Credentials() {
-//			 @Override
-			public String getPassword() {
-				return SharepointClientContext.this.password;
-			}
-			// @Override
-			public Principal getUserPrincipal() {
-				return new KerberosPrincipal(username);
-			}
-		};*/
-		
 		Credentials credentials =  null;
-//		boolean ntlm = true; // We first try to use ntlm
-//		if(null != domain && !domain.equals("")) {
+		boolean kerberos = false;
+		boolean ntlm = true; // We first try to use ntlm
+		
+		if(kdcServer != null && !kdcServer.equalsIgnoreCase("")){
 			credentials = new NTCredentials(username,password, host, domain);
-//		} else {
-//			credentials =  new UsernamePasswordCredentials(username,password);
-//			ntlm = false;
-//		}
+			kerberos = true;
+		}else if(!kerberos && null != domain && !domain.equals("")) {
+			credentials = new NTCredentials(username,password, host, domain);
+		} else {
+			credentials =  new UsernamePasswordCredentials(username,password);
+			ntlm = false;
+		}
 		
 		final HttpClient httpClient = new HttpClient();
 		
@@ -605,13 +605,13 @@ public class SharepointClientContext implements Cloneable {
 			method = new HeadMethod(strURL);
 		}
 		responseCode = httpClient.executeMethod(method);
-//		if(responseCode == 401 && ntlm) {
-//			LOGGER.log(Level.FINE,"Trying with HTTP Basic.");
-//			username = Util.getUserNameWithDomain(this.username, domain);
-//			credentials =  new UsernamePasswordCredentials(username,password);
-//			httpClient.getState().setCredentials(AuthScope.ANY,credentials);
-//			responseCode = httpClient.executeMethod(method);				
-//		}
+		if(responseCode == 401 && ntlm && !kerberos) {
+			LOGGER.log(Level.FINE,"Trying with HTTP Basic.");
+			username = Util.getUserNameWithDomain(this.username, domain);
+			credentials =  new UsernamePasswordCredentials(username,password);
+			httpClient.getState().setCredentials(AuthScope.ANY,credentials);
+			responseCode = httpClient.executeMethod(method);				
+		}
 		if(responseCode != 200) {
 			LOGGER.log(Level.WARNING, "responseCode: "+responseCode);
 		}
@@ -811,5 +811,9 @@ public class SharepointClientContext implements Cloneable {
 	 */
 	public String getSiteURL() {
 		return siteURL;
+	}
+
+	public void setKdcServer(String kdcServer) {
+		this.kdcServer = kdcServer;
 	}	
 }
