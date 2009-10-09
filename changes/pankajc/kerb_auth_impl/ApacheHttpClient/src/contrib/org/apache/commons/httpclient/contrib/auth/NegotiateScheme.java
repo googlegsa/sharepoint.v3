@@ -40,7 +40,9 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NTCredentials;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthChallengeException;
+import org.apache.commons.httpclient.auth.AuthPolicy;
 import org.apache.commons.httpclient.auth.AuthScheme;
 import org.apache.commons.httpclient.auth.AuthenticationException;
 import org.apache.commons.httpclient.auth.CredentialsNotAvailableException;
@@ -73,6 +75,8 @@ public class NegotiateScheme implements AuthScheme, PrivilegedAction {
     private static final int FAILED              = Integer.MAX_VALUE;
 
     private GSSContext context = null;
+    
+    private Subject subject = null;
 
     /** Authentication process state */
     private int state;
@@ -87,8 +91,9 @@ public class NegotiateScheme implements AuthScheme, PrivilegedAction {
      */
     protected void init(String server) throws GSSException {
          LOG.debug("init " + server);
+         
          /* Kerberos v5 GSS-API mechanism defined in RFC 1964. */
-         Oid krb5Oid = new Oid("1.2.840.113554.1.2.2");         
+         Oid krb5Oid = new Oid("1.2.840.113554.1.2.2");
  		
          GSSManager manager = GSSManager.getInstance();
          GSSName serverName = manager.createName("HTTP/"+server, null); 
@@ -268,7 +273,7 @@ public class NegotiateScheme implements AuthScheme, PrivilegedAction {
             try {                
                 if(context==null) {
                     LOG.info("host: " + method.getURI().getHost());
-                    init( method.getURI().getHost() );
+                    init( method.getURI().getHost());
                 }
             } catch (org.apache.commons.httpclient.URIException urie) {
                 LOG.error(urie.getMessage());
@@ -276,15 +281,33 @@ public class NegotiateScheme implements AuthScheme, PrivilegedAction {
                 throw new AuthenticationException(urie.getMessage());
             }
         
-            Subject subject = null;
+            String username = null;
+            String password = null;
+            
+            if(credentials instanceof NTCredentials){
+            	username = ((NTCredentials)credentials).getUserName();
+            	password = ((NTCredentials)credentials).getPassword();
+            }else if(credentials instanceof UsernamePasswordCredentials){
+            	username = ((UsernamePasswordCredentials)credentials).getUserName();
+            	password = ((UsernamePasswordCredentials)credentials).getPassword();
+            }
             try {
-     			LoginContext lc = new LoginContext("com.sun.security.jgss.login", new TestCallbackHandler(((NTCredentials)credentials).getUserName(), ((NTCredentials)credentials).getPassword()));
-     			lc.login();
-     			subject = lc.getSubject();
-     		} catch (LoginException e1) {
-     			LOG.error(e1.getMessage());
+            	LoginContext lc = new LoginContext("com.sun.security.jgss.login", new TestCallbackHandler(username, password));
+            	if(lc != null){
+            		lc.login();
+            		subject = lc.getSubject();
+            	} else {
+            		throw new LoginException();
+            	}
+            } catch (LoginException e1) {
+            	LOG.error(e1.getMessage());
+            	throw new GSSException(GSSException.DEFECTIVE_CREDENTIAL);
+            }
+            if(subject != null){
+            	Subject.doAs(subject, this);
+            }else{
+     			throw new GSSException(GSSException.DEFECTIVE_CREDENTIAL);
      		}
-     		Subject.doAs(subject, this);
             // HTTP 1.1 issue:
             // Mutual auth will never complete do to 200 insted of 401 in 
             // return from server. "state" will never reach ESTABLISHED

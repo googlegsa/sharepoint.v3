@@ -96,11 +96,11 @@ public abstract class AuthPolicy {
      * insecure, but most widely supported)
      */
     public static final String BASIC = "Basic";
-    
+
     public static final String NEGOTIATE = "Negotiate";
     
     static {
-    	AuthPolicy.registerAuthScheme(NEGOTIATE, NegotiateScheme.class);
+//    	AuthPolicy.registerAuthScheme(NEGOTIATE, NegotiateScheme.class);
         AuthPolicy.registerAuthScheme(NTLM,   NTLMScheme.class);
         AuthPolicy.registerAuthScheme(DIGEST, DigestScheme.class);
         AuthPolicy.registerAuthScheme(BASIC,  BasicScheme.class);
@@ -134,7 +134,11 @@ public abstract class AuthPolicy {
             throw new IllegalArgumentException("Authentication scheme class may not be null");
         }
         SCHEMES.put(id.toLowerCase(), clazz);
-        SCHEME_LIST.add(id.toLowerCase());
+        if(id.toLowerCase().equalsIgnoreCase("negotiate")){
+        	SCHEME_LIST.add(0, id.toLowerCase());
+        }else{
+        	SCHEME_LIST.add(id.toLowerCase());
+        }
     }
 
     /**
