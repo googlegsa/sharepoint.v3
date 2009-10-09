@@ -428,13 +428,18 @@ public class SPDocumentList implements DocumentList {
         // to begin next incremental crawl
         if (ActionType.DELETE.equals(spDocument.getAction())) {
             listState.removeExtraID(currentID);
-            if (listState.isExisting()) {
-                // A delete feed has being sent from an existing list
-                // ListState.cachedDeletedIDs is used only for existing
-                // lists. Add it to the delete cache so that same delete feed is
-                // not reported
+
+            boolean isCurrentDocForList = Util.getCollator().equals(listState.getPrimaryKey(), currentID);
+
+            // A delete feed has being sent from a list
+            // Add it to the delete cache so that same delete feed is
+            // not reported
+            // Check that the docId is not for the current list. The delete
+            // cache IDs are for listitems and not for individual lists
+            if (!isCurrentDocForList) {
                 listState.addToDeleteCache(currentID);
-            } else if (Util.getCollator().equals(listState.getPrimaryKey(), currentID)) {
+            }
+            if (!listState.isExisting() && isCurrentDocForList) {
                 // Last delete feed of a non-existent list has been sent
                 // Since list are sent at last and the list is non-exisitng, we
                 // can now delete this list state.
