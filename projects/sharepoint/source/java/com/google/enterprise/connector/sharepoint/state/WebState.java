@@ -486,6 +486,17 @@ public class WebState implements StatefulObject {
                                 + biggestID + " ] to construct delete feeds.");
                         while ((maxID <= biggestID)
                                 && (deletedDocs.size() < spContext.getBatchHint())) {
+                            if (list.isInDeleteCache(new Integer(maxID).toString())) {
+                                if (LOGGER.isLoggable(Level.FINER)) {
+                                    LOGGER.log(Level.FINER, "Skipping sending delete feed for document with ID : "
+                                            + maxID
+                                            + " under list : "
+                                            + list.getListURL()
+                                            + ". A delete feed has been sent in some earlier batch traversal.");
+                                }
+                                ++maxID;
+                                continue;
+                            }
                             String docID = list.getListURL()
                                     + SPConstants.DOC_TOKEN
                                     + Integer.toString(maxID);

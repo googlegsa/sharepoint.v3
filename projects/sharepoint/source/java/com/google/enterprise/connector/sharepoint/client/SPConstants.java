@@ -205,6 +205,7 @@ public class SPConstants {
     public static final String STATE_EXTRAIDS_ATTACHMENTS = "Attachments";
     public static final String STATE_EXTRAIDS_ALERTS = "Alerts";
     public static final String STATE_BIGGESTID = "BiggestID";
+    public static final String STATE_DELETED_LIST_ITEMIDS = "DeletedListItemIDs";
     public static final String STATE_LASTDOCCRAWLED = "LastDocCrawled";
     public static final String STATE_LASTMODIFIED = "LastModified";
     public static final String STATE_FEEDTYPE = "FeedType";
