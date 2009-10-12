@@ -444,46 +444,13 @@ public class SharepointConnectorType implements ConnectorType {
 			LOGGER.warning("configData map is not found");
 			return false;
 		}
-		String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
-		String googleConnWorkDir = (String)configData.get(GOOGLE_CONN_WORK_DIR);
-
-		if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)){
-			AuthPolicy.registerAuthScheme(SPConstants.NEGOTIATE, NegotiateScheme.class);
-			
-			InputStream krb5In = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_KRB5);
-			if(krb5In != null){
-				try {
-					File krb5File = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5); 
-					String krb5Config = StringUtils.streamToStringAndThrow(krb5In);
-					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_UPPERCASE, configData.get(SPConstants.DOMAIN).toString().toUpperCase());
-					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_LOWERCASE, configData.get(SPConstants.DOMAIN).toString().toLowerCase());
-					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_KDC_SERVER, configData.get(SPConstants.KDC_SERVER).toString().toUpperCase());
-					FileOutputStream out = new FileOutputStream(krb5File);
-					out.write(krb5Config.getBytes(SPConstants.UTF_8));
-					out.close();
-				} catch (IOException e) {
-					LOGGER.log(Level.SEVERE, "Failed to create krb5.conf in connector instance's directory.");
-				}
-			}
-
-			InputStream loginIn = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_LOGIN);
-			if(loginIn != null){
-				try {
-					File loginFile = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN); 
-					String loginConfig = StringUtils.streamToStringAndThrow(loginIn);
-					FileOutputStream out = new FileOutputStream(loginFile);
-					out.write(loginConfig.getBytes(SPConstants.UTF_8));
-					out.close();
-				} catch (IOException e) {
-					LOGGER.log(Level.SEVERE, "Failed to create login.conf in connector instance's directory.");
-				}
-			}
-
-			System.setProperty(SPConstants.SYS_PROP_AUTH_LOGIN_CONFIG, googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
-			System.setProperty(SPConstants.SYS_PROP_AUTH_KRB5_CONFIG, googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
-			System.setProperty(SPConstants.SYS_PROP_AUTH_USESUBJETCREDSONLY, SPConstants.FALSE);
-		}
+		
 		String feedType = null;
+		String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
+		
+		if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)){
+			kerberosSetUp(configData);
+		}
 		
 		for (final Iterator i = keys.iterator(); i.hasNext();) {
 			final String key = (String) i.next();					
@@ -1146,9 +1113,63 @@ public class SharepointConnectorType implements ConnectorType {
 		return message;
 	}	
 	
-	private boolean validateIPAddress (String sip){
-		if(sip.matches("[0-255]+.[0-255]+.[0-255]+.[0-255]+"))
+	/**
+	 * Validates the String to check whether it represents an IP address or not and returns the boolean status.
+	 * @param ip IP adress to be validated in the form of string.
+	 * @return If ip address matches the regular expression then true else false is returned.
+	 */
+	private boolean validateIPAddress (String ip){
+		if(ip.matches("[0-255]+.[0-255]+.[0-255]+.[0-255]+"))
 			return true;
 		else return false;
+	}
+	
+	/**
+	 *	All the initial set-up and pre-requisites for Kerberos Authentication. Following are the responsibilities:
+	 *		- If KDC Host is provided on UI configuration then the Negotiate AuthScheme is registered with AuthPolicy of Httpclient.
+	 *		- krb5.conf and login.conf files are copied to the connector instance's directory.
+	 *		- Values of KDC Server and Realm are changed at runtime in krb5.conf.
+	 *		- System properties required for the Kerberos AuthN are set. 
+	 */
+	private void kerberosSetUp(final Map configData){
+		String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
+		String googleConnWorkDir = (String)configData.get(GOOGLE_CONN_WORK_DIR);
+
+		if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)){
+			AuthPolicy.registerAuthScheme(SPConstants.NEGOTIATE, NegotiateScheme.class);
+			
+			InputStream krb5In = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_KRB5);
+			if(krb5In != null){
+				try {
+					File krb5File = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5); 
+					String krb5Config = StringUtils.streamToStringAndThrow(krb5In);
+					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_UPPERCASE, configData.get(SPConstants.DOMAIN).toString().toUpperCase());
+					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_LOWERCASE, configData.get(SPConstants.DOMAIN).toString().toLowerCase());
+					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_KDC_SERVER, configData.get(SPConstants.KDC_SERVER).toString().toUpperCase());
+					FileOutputStream out = new FileOutputStream(krb5File);
+					out.write(krb5Config.getBytes(SPConstants.UTF_8));
+					out.close();
+				} catch (IOException e) {
+					LOGGER.log(Level.SEVERE, "Failed to create krb5.conf in connector instance's directory.");
+				}
+			}
+
+			InputStream loginIn = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_LOGIN);
+			if(loginIn != null){
+				try {
+					File loginFile = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN); 
+					String loginConfig = StringUtils.streamToStringAndThrow(loginIn);
+					FileOutputStream out = new FileOutputStream(loginFile);
+					out.write(loginConfig.getBytes(SPConstants.UTF_8));
+					out.close();
+				} catch (IOException e) {
+					LOGGER.log(Level.SEVERE, "Failed to create login.conf in connector instance's directory.");
+				}
+			}
+
+			System.setProperty(SPConstants.SYS_PROP_AUTH_LOGIN_CONFIG, googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
+			System.setProperty(SPConstants.SYS_PROP_AUTH_KRB5_CONFIG, googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
+			System.setProperty(SPConstants.SYS_PROP_AUTH_USESUBJETCREDSONLY, SPConstants.FALSE);
+		}
 	}
 }
