@@ -3,6 +3,7 @@
 <beans>
 	<bean id="sharepoint-connector-defaults">
 	  <property name="sharepointUrl" value="${sharepointUrl}"/>
+	  <property name="kdcserver" value="${kdcserver}"/>
 	  <property name="domain" value="${domain}"/>
        <property name="username" value="${username}"/>
        <property name="password" value="${password}"/>
@@ -46,6 +47,7 @@
         <property name="properties"> 
             <props> 
                 <prop key="sharepointUrl"></prop>
+                <prop key="kdcserver"></prop>
                 <prop key="domain"></prop>
                 <prop key="username"></prop>
                 <prop key="password"></prop>
