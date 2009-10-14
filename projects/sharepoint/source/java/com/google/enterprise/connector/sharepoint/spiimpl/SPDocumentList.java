@@ -195,9 +195,11 @@ public class SPDocumentList implements DocumentList {
     public String checkpoint() throws RepositoryException {
 
         SPDocument spDoc = documents.get(docsFedIndexPosition - 1);
-        LOGGER.log(Level.INFO, "Checkpoint received at document docID [ "
-                + spDoc.getDocId() + " ], docURL [ " + spDoc.getUrl()
-                + " ], Action [ " + spDoc.getAction() + " ]. ");
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.log(Level.CONFIG, "Checkpoint received at document docID [ "
+                    + spDoc.getDocId() + " ], docURL [ " + spDoc.getUrl()
+                    + " ], Action [ " + spDoc.getAction() + " ]. ");
+        }
 
         // FIXME: Delete this once Issue 85 fix is merged
         globalState.setLastCrawledWebID(spDoc.getWebid());
@@ -209,7 +211,9 @@ public class SPDocumentList implements DocumentList {
             processListStateforCheckPoint(documents.get(i));
         }
 
-        LOGGER.info("checkpoint processed; saving GlobalState to disk.");
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.log(Level.CONFIG, "checkpoint processed; saving GlobalState to disk.");
+        }
         globalState.saveState(); // snapshot it all to disk
 
         return SPConstants.CHECKPOINT_VALUE;
@@ -399,6 +403,16 @@ public class SPDocumentList implements DocumentList {
      * during checkpoint
      * <p>
      * <ul>
+     * <li>In case action was DELETE
+     * <ul>
+     * <li>Remove the extra-id for the list</li>
+     * <li>If the list exists, add the documentId to the delete cache ids</li>
+     * <li>For a deleted list, it is removed from the in memory state of the
+     * connector</li>
+     * </ul>
+     * </li>
+     * <li>If the action was ADD mark the current doc as the doc from where the
+     * connector should start traversing in next time</li>
      * <li>If the current document is the last document sent from its list, it
      * checks if any more docs are pending
      * <ul>
@@ -408,8 +422,6 @@ public class SPDocumentList implements DocumentList {
      * </ul>
      * </li>
      * <li>The document is removed from the list's crawl queue</li>
-     * <li>In case delete feed is being sent for a deleted list, it is removed
-     * from the in memory state of the connector</li>
      * </ul>
      * </p>
      *
@@ -421,11 +433,42 @@ public class SPDocumentList implements DocumentList {
         final ListState listState = globalState.lookupList(spDocument.getWebid(), spDocument.getListGuid());
         final String currentID = Util.getOriginalDocId(spDocument.getDocId(), spDocument.getFeedType());
 
-        if (LOGGER.isLoggable(Level.FINER)) {
-            LOGGER.log(Level.FINER, "Document with DocID [ "
-                    + spDocument.getDocId() + " ] from List URL [ "
-                    + listState.getListURL()
-                    + " ] is being removed from crawl queue");
+        // for deleted documents, make sure to remove the extraid from list
+        // state and add it to delete cache ids as long as the list itself has
+        // not been deleted. Else just remove the list
+        // For ADD action, simply mark the document as the reference from where
+        // to begin next incremental crawl
+        if (ActionType.DELETE.equals(spDocument.getAction())) {
+            listState.removeExtraID(currentID);
+
+            boolean isCurrentDocForList = Util.getCollator().equals(listState.getPrimaryKey(), currentID);
+
+            // A delete feed has being sent from a list
+            // Add it to the delete cache so that same delete feed is
+            // not reported
+            // Check that the docId is not for the current list. The delete
+            // cache IDs are for listitems and not for individual lists
+            if (!isCurrentDocForList) {
+                listState.addToDeleteCache(currentID);
+            }
+            if (!listState.isExisting() && isCurrentDocForList) {
+                // Last delete feed of a non-existent list has been sent
+                // Since list are sent at last and the list is non-exisitng, we
+                // can now delete this list state.
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "Removing List State info List URL [ "
+                            + listState.getListURL() + " ].");
+                }
+
+                final WebState parentWeb = globalState.lookupWeb(spDocument.getWebid(), null);
+                if (parentWeb != null) {
+                    parentWeb.removeListStateFromKeyMap(listState);
+                    parentWeb.removeListStateFromSet(listState);
+                }
+            }
+
+        } else if (ActionType.ADD.equals(spDocument.getAction())) {
+            listState.setLastDocProcessedForWS(spDocument);
         }
 
         // The basic idea here is to rollback the change token in case there are
@@ -439,50 +482,50 @@ public class SPDocumentList implements DocumentList {
         // There cannot be the case where last document sent to CM from this
         // document list is after the last document sent for this list. If there
         // is such state, then something is wrong and is an invalid state.
+        // Imp. Note: One might consider that what is the point in dealing with
+        // change token if the list is deleted from web state since it is not
+        // existing anymore. The check will get complicated when combined with
+        // the check when the list exists and last document had ACTION=DELETE.
+        // Best is to revert OR update the token irrespective of whether the
+        // list exists or not.
         if (spDocument.equals(listState.getLastDocument())) {
-            // Check if there are docs pending in this list before the token is
-            // rolled back
-            if ((listState.isExisting()) && (!listState.allDocsFed())
-                    && (listState.getNextPage() == null)
-                    && (listState.getChangeToken() != null)) {
-                LOGGER.log(Level.INFO, "There are some docs left in the crawl queue of list [ "
-                        + listState.getListURL()
-                        + " ] at the time of checkpointing. rolling back the change token to its previous value.");
-                listState.rollbackToken();
-            } else if ((listState.isExisting()) && listState.allDocsFed()) {
+            if (listState.allDocsFed()) {
                 // The condition here ensures that we are done with all docs
                 // from the crawlqueue of the list and hence need to update the
                 // change token
-                LOGGER.log(Level.INFO, "Setting the change token to its latest cached value. All the documents from the list's crawl queue is sent. listURL [ "
-                        + listState.getListURL() + " ]. ");
-                listState.usingLatestToken();
-                if (listState.getNextPage() == null) {
-                    LOGGER.log(Level.INFO, "Cleaning delete cache...");
-                    listState.clearDeleteCache();
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "Setting the change token to its latest cached value. All the documents from the list's crawl queue is sent. listURL [ "
+                            + listState.getListURL() + " ]. ");
                 }
+                listState.usingLatestToken();
+                // Never clear the delete cache
+                /*
+                 * if (listState.getNextPage() == null) { if
+                 * (LOGGER.isLoggable(Level.CONFIG)) { LOGGER.log(Level.CONFIG,
+                 * "Cleaning delete cache..."); } listState.clearDeleteCache();
+                 * }
+                 */
+            } else if ((listState.getNextPage() == null)
+                    && (listState.getChangeToken() != null)) {
+                // There are docs pending in this list, so roll back the change
+                // token
+                if (LOGGER.isLoggable(Level.CONFIG)) {
+                    LOGGER.log(Level.CONFIG, "There are some docs left in the crawl queue of list [ "
+                            + listState.getListURL()
+                            + " ] at the time of checkpointing. rolling back the change token to its previous value.");
+                }
+                listState.rollbackToken();
             }
         }
 
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.log(Level.FINER, "Document with DocID [ "
+                    + spDocument.getDocId() + " ] from List URL [ "
+                    + listState.getListURL()
+                    + " ] is being removed from crawl queue");
+        }
         // Remove the document from the crawl queue
         listState.removeDocFromCrawlQueue(spDocument);
-
-        // for deleted documents, no need to use alias mapping. Only DocID
-        // is sufficient.
-        if (ActionType.DELETE.equals(spDocument.getAction())) {
-            listState.removeExtraID(currentID);
-            if (Util.getCollator().equals(listState.getPrimaryKey(), currentID)) {
-                // Last delete feed of a non-existent list is being sent
-                // Since list are sent at last and the list is non-exisitng, we
-                // can now delete this list state.
-                LOGGER.log(Level.INFO, "Removing List State info List URL [ "
-                        + listState.getListURL() + " ].");
-                final WebState parentWeb = globalState.lookupWeb(spDocument.getWebid(), null);
-                if (parentWeb != null) {
-                    parentWeb.removeListStateFromKeyMap(listState);
-                    parentWeb.removeListStateFromSet(listState);
-                }
-            }
-        }
 
     }
 
