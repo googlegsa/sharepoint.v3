@@ -63,7 +63,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     private InputStream content = null;// content of documents
     private String content_type = null;
     private ActionType action = ActionType.ADD; // By default mark it as to be
-                                                // added.
+    // added.
 
     private String folderLevel;
     private String listguid;
@@ -81,6 +81,25 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     private final int INITIALATTRLISTSIZE = 5;
     private final ArrayList<Attribute> attrs = new ArrayList<Attribute>(
             INITIALATTRLISTSIZE);
+
+    /**
+     * Flag to indicate if this document is to be sent as a feed
+     */
+    private boolean toBeFed = true;
+
+    /**
+     * @return the toBeFed
+     */
+    public boolean isToBeFed() {
+        return toBeFed;
+    }
+
+    /**
+     * @param toBeFed the toBeFed to set
+     */
+    public void setToBeFed(boolean toBeFed) {
+        this.toBeFed = toBeFed;
+    }
 
     /**
      * @return List GUID
@@ -306,13 +325,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 } else if (((folderLevel == null) || (folderLevel.length() == 0))
                         && ((doc.folderLevel != null) && (doc.folderLevel.length() != 0))) {
                     return 1; // incoming doc should be sent before the current
-                                // doc. We always send renamed/restored folder
-                                // items first
+                    // doc. We always send renamed/restored folder
+                    // items first
                 } else if (((folderLevel != null) && (folderLevel.length() != 0))
                         && ((doc.folderLevel == null) || (doc.folderLevel.length() == 0))) {
                     return -1; // current doc should be sent before the incoming
-                                // doc. We always send renamed/restored folder
-                                // items first
+                    // doc. We always send renamed/restored folder
+                    // items first
                 }
             }
         } else {
