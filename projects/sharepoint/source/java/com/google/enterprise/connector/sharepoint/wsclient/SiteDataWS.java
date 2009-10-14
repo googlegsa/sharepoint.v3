@@ -118,6 +118,7 @@ public class SiteDataWS {
 
         final String parentWeb = webstate.getPrimaryKey();
         final String parentWebTitle = webstate.getTitle();
+        final String parentUrl = webstate.getWebUrl();
 
         final Collator collator = Util.getCollator();
         final ArrayOf_sListHolder vLists = new ArrayOf_sListHolder();
@@ -245,24 +246,45 @@ public class SiteDataWS {
                             LOGGER.log(Level.INFO, "using listConst [ "
                                     + myNewListConst + " ] for list URL [ "
                                     + listUrl + " ] ");
+
+                            // Apply the URL filter here
+
+                            // check if the entire list subtree is to excluded
+                            // by comparing the prefix of the list URL with the
+                            // patterns
+                            if (sharepointClientContext.isIncludedUrl(parentUrl
+                                    + SPConstants.SLASH + myNewListConst)) {
+                                // is included
+
+                                // check if actual list url itself is to be
+                                // excluded
+                                if (sharepointClientContext.isIncludedUrl(url)) {
+                                    // if a List URL is included, it WILL be
+                                    // sent as a
+                                    // Document
+                                    list.setSendListAsDocument(true);
+                                    LOGGER.config("included URL :[" + url + "]");
+                                } else {
+                                    // if a List URL is EXCLUDED, it will NOT be
+                                    // sent as a
+                                    // Document
+                                    list.setSendListAsDocument(false);
+                                    LOGGER.warning("excluding "
+                                            + url.toString());
+                                }
+                                // add the attribute(Metadata to the list )
+                                list = getListWithAllAttributes(list, element);
+
+                                listCollection.add(list);
+                            } else {
+                                // entire subtree is to be excluded
+                                // do not construct list state
+                                LOGGER.fine("Excluding " + url
+                                        + " because entire subtree of "
+                                        + myNewListConst + " is excluded");
+                            }
                         }
                     }
-
-                    if (sharepointClientContext.isIncludedUrl(url)) {
-                        // add the attribute(Metadata to the list )
-                        list = getListWithAllAttributes(list, element);
-                        // if a List URL is included, it will be sent as a
-                        // Document
-                        list.setSendListAsDocument(true);
-                        LOGGER.config("included URL :[" + url + "]");
-                    } else {
-                        // if a List URL is EXCLUDED, it will NOT be sent as a
-                        // Document
-                        list.setSendListAsDocument(false);
-                        LOGGER.warning("excluding " + url.toString());
-                    }
-
-                    listCollection.add(list);
 
                     // Sort the base list
                     Collections.sort(listCollection);
