@@ -3,7 +3,7 @@
   <!-- Set the reference to build.properties -->
   <property file="build.properties" />
   <!-- ========================= PROPERTIES ============================= -->
-  <property name="version" value="2.0.0_Build9" />
+  <property name="version" value="${BUILD_VERSION}" />
   <property name="product" value="Google Enterprise Connector for Microsoft SharePoint 2003,2007" />
   <property name="projects.dir" value=".." />
   <property name="COMPILE_DEBUG_FLAG" value="true" />
@@ -245,7 +245,7 @@
               <attribute name="Implementation-Version" value="${version}"/>
           <attribute name="Implementation-Vendor" value="Google Inc."/>
           <attribute name="Specification-Title" value="Connector Manager SPI"/>
-          <attribute name="Specification-Version" value="2.0.0"/>
+          <attribute name="Specification-Version" value="${CONN_VERSION}"/>
           <attribute name="Specification-Vendor" value="Google Inc."/>
         <attribute name="Main-Class" value="com.google.enterprise.connector.sharepoint.SharePointMain" />
 

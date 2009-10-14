@@ -34,6 +34,7 @@ public class SharepointConnector implements Connector {
     private SharepointClientContext sharepointClientContext = null;
 
     private String sharepointUrl;
+    private String kdcserver;
     private String domain;
     private String username;
     private String password;
@@ -71,7 +72,7 @@ public class SharepointConnector implements Connector {
                 + mySiteBaseURL + "] , aliasHostPort = [" + aliasMapString
                 + "]");
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
-                domain, username, password, googleConnectorWorkDir,
+                domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMapString,
                 feedType);
     }
@@ -274,7 +275,7 @@ public class SharepointConnector implements Connector {
                 + "excludedURls = [" + excludedURls + "] , mySiteBaseURL = ["
                 + mySiteBaseURL + "] , aliasHostPort = [" + aliasMap + "]");
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
-                domain, username, password, googleConnectorWorkDir,
+                domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMap,
                 authorization);
         sharepointClientContext.setFQDNConversion(FQDNConversion);
@@ -295,4 +296,12 @@ public class SharepointConnector implements Connector {
     public ArrayList getExcluded_metadata() {
         return excluded_metadata;
     }
+
+public String getKdcserver() {
+		return kdcserver;
+	}
+
+	public void setKdcserver(String kdcserver) {
+		this.kdcserver = kdcserver;
+	}
 }
