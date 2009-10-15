@@ -533,9 +533,20 @@ public class SharepointConnectorType implements ConnectorType {
 			} else if (collator.equals(key, SPConstants.AUTHORIZATION)) {
 				feedType = val;
 			} else if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING) && collator.equals(key,SPConstants.KDC_SERVER)){
-				if (kdcServer.indexOf(".")==-1 && !validateIPAddress(kdcServer)) {
+				boolean isFQDN = false;
+				if (kdcServer.indexOf(".")==-1) {
 					ed.set(SPConstants.KDC_SERVER, rb.getString(SPConstants.KERBEROS_KDC_HOST_BLANK));
-					return false;      
+					return false; 
+				} else {  
+					try{
+						Integer.parseInt(kdcServer.substring(0, kdcServer.indexOf(".")));
+					}catch(NumberFormatException nfe){
+						isFQDN = true;
+					}
+					if(!isFQDN && !validateIPAddress(kdcServer)){
+						ed.set(SPConstants.KDC_SERVER, rb.getString(SPConstants.KERBEROS_KDC_HOST_BLANK));
+						return false;   
+					}
 				}
 			}
 			setSharepointCredentials(key, val);
