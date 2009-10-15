@@ -10,7 +10,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 2.0.0, June 22, 2009
+Release 2.4.0 Build1, 15 October, 2009
 ==========================
 
 Introduction
@@ -22,35 +22,20 @@ Summary of Changes
 ------------------
 New features:
 ---------------
-1) Support for selecting the authorization mode: Google Search Appliance/SAML provider OR by the connector
-2) Per site version detection which allows multiple sites of different SharePoint versions to be crawled using a single connector instance
-3) Discovering multiple site collection from a SharePoint farm installation
-4) Support for various security templates of NTLM V2
-5) Improved metadata control and indexing
-6) Improved Site Alias Mapping support
+1) Support for Kerberos Authentication at crawl time
 
 Issues fixed from last release:
 ---------------------------------
-Issue 21: Can we combine alias host & port?
-Issue 43: Detect SharePoint Server version from Crawl URL
-Issue 51: Connector does not validate the URL patterns for MySite URL
-Issue 52: Connector accepts crawl URL with repeated slashes 
-Issue 53: connector should support SharePoint farm
-Issue 54: Does the connector configuration UI work in Chrome? 
-Issue 55: The custom metadata fetched by the connector contains ows_ as its prefix. 
-Issue 56: Connector accepts username in format user@domain for user when SharePoint site mentioned under crawl URL is a HTTP basic protected site 
-Issue 63: Connector does not support the various strict Windows security templates that come up with NTLM Version 2.
-Issue 64: Log excluded URLs in a separate file
-Issue 65: Metadata values not fully-indexed (values originating from the ows_MetaInfo state-bag field)
-Issue 67: Error message should be shown to indicate that the prefix is incorrect for includeURLs and excludeURLs
-Issue 68: Connector does not detect renamed folders and send feeds for the same
-Issue 69: NullPointerException seen in logs when SharePoint version is selected as 2007 and Crawl URL is of SPS 2003 while configuring the connector instance.
-Issue 71: The connector configuration form should be XHTML compliant.
-
+Issue 74 - Support traversal by Kerberos authentication.
+Issue 85 - The discovery of site collection should be initiated in the first crawl cycle even though no content is crawled. 
+Issue 87 - Connector should canonicalize the URLs for child entities before applying include/exclude patterns.
+Issue 90 - The time at which connector completes a crawl cycle should be logged in state file.
+Issue 102 - Liststate entry is deleted from the connector state without checking if the list is deleted.
+Issue 106 - Connector should not remove/delete documents from its queue unless checkPoint() is called.
 
 Version Compatibility
 ---------------------
-Connectors created with earlier versions of the connector will not work with this version. This version works with Connector Manager version 2.0.0. Earlier versions of the Connector Manager will not work correctly with this version of the connector.
+This version works with Connector Manager version 2.0.0 and above. Versions lower than 2.0.0 of the Connector Manager will not work correctly with this version of the connector.
 
 
 Known Issues/Limitations
@@ -63,3 +48,4 @@ Known Issues/Limitations
    java.net.BindException: Address already in use: JVM_Bind
    Workaround: Stop the connector and restart it after some time to avoid this issue.
 4) Issue#70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and the credentials used are of a local machine user.
+
