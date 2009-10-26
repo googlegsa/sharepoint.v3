@@ -208,6 +208,7 @@ public class SPConstants {
 	public static final String STATE_EXTRAIDS_ATTACHMENTS = "Attachments";
 	public static final String STATE_EXTRAIDS_ALERTS = "Alerts";
 	public static final String STATE_BIGGESTID = "BiggestID";
+	public static final String STATE_DELETED_LIST_ITEMIDS = "DeletedListItemIDs";
 	public static final String STATE_LASTDOCCRAWLED = "LastDocCrawled";
 	public static final String STATE_LASTMODIFIED = "LastModified";
 	public static final String STATE_FEEDTYPE = "FeedType";
@@ -222,6 +223,7 @@ public class SPConstants {
 	public static final String WEB_STATE = "WebState";
 	public static final String STATE = "State";
 	public static final String LAST_FULL_CRAWL_DATETIME = "LastFullCrawlDateTime";
+	public static final String LAST_CRAWLED_DATETIME = "LastCrawledDateTime";
 
 	public static final String CONNECTOR_NAME = "Sharepoint";
 	public static final String CONNECTOR_PREFIX = "_state.xml";

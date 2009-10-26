@@ -12,7 +12,7 @@ If not, you can get it from http://code.google.com/p/google-enterprise-connector
 
 5. Set the value for CONNECTOR_MANAGER_DIR in build.properties. The value should be Connector Manager home directory. The required libraries should be in '/dist/jarfile/' folder which is set as CONNECTOR_MANAGER_DIR.
 If you have the Connector Manager source code, run the Connector Manager build so that the the Connector Manager binaries are present at the following location:
-{CONNECTOR_MANAGER_DIR}/dist/jarfile/
+{CONNECTOR_MANAGER_DIR}/dist/jarfile/ or {CONNECTOR_MANAGER_DIR}\\dist\\jarfile\\
 
 Following are the required Connector Manager libraries which are expected to be present:
 * connector-spi.jar
