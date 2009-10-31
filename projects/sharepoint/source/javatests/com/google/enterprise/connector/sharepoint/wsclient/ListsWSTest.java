@@ -43,7 +43,7 @@ public class ListsWSTest extends TestCase {
         System.out.println("Initializing SharepointClientContext ...");
         this.sharepointClientContext = new SharepointClientContext(
                 TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
