@@ -80,7 +80,7 @@ public class SharepointConnectorType implements ConnectorType {
 	private String initialConfigForm = null;
 
 	ResourceBundle rb = null;
-	public static final String GOOGLE_CONN_WORK_DIR = "googleConnectorWorkDir";	
+	public static final String GOOGLE_CONN_WORK_DIR = "googleConnectorWorkDir";
 
 	/**
 	 * Sets the keys that are required for configuration. These are the actual
@@ -534,10 +534,10 @@ public class SharepointConnectorType implements ConnectorType {
 				feedType = val;
 			} else if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING) && collator.equals(key,SPConstants.KDC_SERVER)){
 				boolean isFQDN = false;
-				if (kdcServer.indexOf(".")==-1) {
+				if (!Util.isFQDN(kdcServer)) {
 					ed.set(SPConstants.KDC_SERVER, rb.getString(SPConstants.KERBEROS_KDC_HOST_BLANK));
-					return false; 
-				} else {  
+					return false;
+				} else {
 					try{
 						Integer.parseInt(kdcServer.substring(0, kdcServer.indexOf(".")));
 					}catch(NumberFormatException nfe){
@@ -545,7 +545,7 @@ public class SharepointConnectorType implements ConnectorType {
 					}
 					if(!isFQDN && !validateIPAddress(kdcServer)){
 						ed.set(SPConstants.KDC_SERVER, rb.getString(SPConstants.KERBEROS_KDC_HOST_BLANK));
-						return false;   
+						return false;
 					}
 				}
 			}
@@ -1266,7 +1266,8 @@ public class SharepointConnectorType implements ConnectorType {
 	 * @return If ip address matches the regular expression then true else false is returned.
 	 */
 	private boolean validateIPAddress (String ip){
-		if(ip.matches("[0-255]+.[0-255]+.[0-255]+.[0-255]+"))
+//		if(ip.matches("[0-255]+.[0-255]+.[0-255]+.[0-255]+"))
+		if(ip.matches("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"))
 			return true;
 		else return false;
 	}
@@ -1276,7 +1277,7 @@ public class SharepointConnectorType implements ConnectorType {
 	 *		- If KDC Host is provided on UI configuration then the Negotiate AuthScheme is registered with AuthPolicy of Httpclient.
 	 *		- krb5.conf and login.conf files are copied to the connector instance's directory.
 	 *		- Values of KDC Server and Realm are changed at runtime in krb5.conf.
-	 *		- System properties required for the Kerberos AuthN are set. 
+	 *		- System properties required for the Kerberos AuthN are set.
 	 */
 	private void kerberosSetUp(final Map configData){
 		String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
@@ -1288,7 +1289,7 @@ public class SharepointConnectorType implements ConnectorType {
 			InputStream krb5In = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_KRB5);
 			if(krb5In != null){
 				try {
-					File krb5File = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5); 
+					File krb5File = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
 					String krb5Config = StringUtils.streamToStringAndThrow(krb5In);
 					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_UPPERCASE, configData.get(SPConstants.DOMAIN).toString().toUpperCase());
 					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_LOWERCASE, configData.get(SPConstants.DOMAIN).toString().toLowerCase());
@@ -1304,7 +1305,7 @@ public class SharepointConnectorType implements ConnectorType {
 			InputStream loginIn = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_LOGIN);
 			if(loginIn != null){
 				try {
-					File loginFile = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN); 
+					File loginFile = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
 					String loginConfig = StringUtils.streamToStringAndThrow(loginIn);
 					FileOutputStream out = new FileOutputStream(loginFile);
 					out.write(loginConfig.getBytes(SPConstants.UTF_8));
