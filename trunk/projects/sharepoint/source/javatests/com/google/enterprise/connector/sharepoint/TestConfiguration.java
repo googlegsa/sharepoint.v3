@@ -39,6 +39,7 @@ public class TestConfiguration {
     public static String sharepointUrl;
     public static String AliasMap;
     public static String domain;
+    public static String kdcserver;
     public static String username;
     public static String Password;
     public static String mySiteBaseURL;
@@ -80,6 +81,7 @@ public class TestConfiguration {
         sharepointUrl = properties.getProperty("sharepointUrl");
         AliasMap = properties.getProperty("AliasMap");
         domain = properties.getProperty("domain");
+        kdcserver = properties.getProperty("kdcserver");
         username = properties.getProperty("username");
         Password = properties.getProperty("Password");
         mySiteBaseURL = properties.getProperty("mySiteBaseURL");
@@ -129,6 +131,7 @@ public class TestConfiguration {
         configMap.put("sharepointUrl", sharepointUrl);
         configMap.put("AliasMap", AliasMap);
         configMap.put("domain", domain);
+        configMap.put("kdcserver", kdcserver);
         configMap.put("username", username);
         configMap.put("Password", Password);
         configMap.put("mySiteBaseURL", mySiteBaseURL);
