@@ -1,0 +1,133 @@
+/*--------------------------------------------------------------*\ 
+
+* 
+
+* InstallShield Example Script 
+
+* 
+
+* Demonstrates the LaunchAppAndWait function. 
+
+* 
+
+* This script presents the user with three options: 
+
+* 
+
+* -- Launch Notepad; after it closes, continue setup 
+
+* -- Launch Notepad and continue setup immediately 
+
+* -- Exit installation 
+
+* 
+
+* If the user selects the first option, the installation 
+
+* launches Notepad and then waits for it to close before 
+
+* continuing. If the user selects the second option, the 
+
+* installation launches Notepad and then continues immediately 
+
+* to execute the script. If the user selects the third option, 
+
+* the installation exits. 
+
+* 
+
+\*--------------------------------------------------------------*/ 
+
+
+#define PROGRAM          WINDIR^"NotePAD.EXE" 
+
+#define LAUNCH_WAIT_TEXT "Launch Notepad; after it closes, continue setup" 
+
+#define LAUNCH_GO_TEXT   "Launch Notepad and continue setup immediately" 
+
+#define EXIT_TEXT        "Exit installation" 
+
+
+// Include Ifx.h for built-in InstallScript function prototypes. 
+
+#include "Ifx.h" 
+
+
+export prototype ExFn_LaunchAppAndWait(HWND); 
+
+
+function ExFn_LaunchAppAndWait(hMSI) 
+
+    STRING szProgram, szCmdLine, szMsg; 
+
+    BOOL bLaunchAndGo, bLaunchAndWait, bExit; 
+
+    NUMBER nWait; 
+
+begin 
+
+
+    // Run the installation in a normal Window; 
+
+    Enable (BACKGROUND); 
+
+    Enable (DEFWINDOWMODE); 
+
+     
+
+    // Disable the Back button in installation dialogs. 
+
+    Disable (BACKBUTTON); 
+
+     
+
+    // Get an option from the user. 
+
+    AskOptions (EXCLUSIVE, "Test", 
+
+               LAUNCH_WAIT_TEXT, bLaunchAndWait, 
+
+               LAUNCH_GO_TEXT, bLaunchAndGo, 
+
+               EXIT_TEXT, bExit); 
+
+     
+
+    if !bExit then 
+
+
+        // Set variable to pass to LaunchAppAndWait 
+
+        // to indicate whether or not to wait. 
+
+        if bLaunchAndWait then 
+
+            nWait = WAIT; 
+
+        else 
+
+            nWait = NOWAIT; 
+
+        endif; 
+
+     
+
+        // Launch Notepad; the value of nWait determines 
+
+        // when execution of the installation continues. 
+
+        if (LaunchAppAndWait (PROGRAM, "", nWait) < 0) then 
+
+            MessageBox ("Unable to launch "+ PROGRAM +".",SEVERE); 
+
+        endif; 
+
+
+        MessageBox ("Setup will now exit.", INFORMATION); 
+
+     
+
+    endif; 
+
+
+end; 
