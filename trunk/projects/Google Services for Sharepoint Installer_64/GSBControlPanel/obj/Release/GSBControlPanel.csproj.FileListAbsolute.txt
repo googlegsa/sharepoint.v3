@@ -1,0 +1,9 @@
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\bin\Release\Configuration Wizard.exe
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\bin\Release\Configuration Wizard.pdb
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\bin\Release\Microsoft.SharePoint.dll
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\obj\Release\ResolveAssemblyReference.cache
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\obj\Release\GSBControlPanel.frmWebApplicationList.resources
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\obj\Release\GSBControlPanel.frmGSAParams.resources
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\obj\Release\GSBControlPanel.csproj.GenerateResource.Cache
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\obj\Release\Configuration Wizard.exe
+C:\Working Installshield\Google Services for Sharepoint Installer_64\GSBControlPanel\obj\Release\Configuration Wizard.pdb
