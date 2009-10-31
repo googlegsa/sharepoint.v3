@@ -19,9 +19,9 @@ import java.util.regex.Pattern;
 
 /**
  * Used to store constants
- * 
+ *
  * @author nitendra_thakur
- * 
+ *
  */
 public class SPConstants {
 	// used while parsing the alias string
@@ -329,10 +329,10 @@ public class SPConstants {
 
 	public static final String CHECKPOINT_VALUE = "SharePoint";
 	public static final int MAX_PORT_VALUE = 65535;
-	
+
 	// HTTP response header constants
 	public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
-	
+
 	//Kerberos related constants
 	public static final String CONFIG_KRB5 = "config/krb5.conf";
 	public static final String CONFIG_LOGIN = "config/login.conf";
@@ -347,4 +347,5 @@ public class SPConstants {
 	public static final String SYS_PROP_AUTH_KRB5_CONFIG = "java.security.krb5.conf";
 	public static final String SYS_PROP_AUTH_USESUBJETCREDSONLY = "javax.security.auth.useSubjectCredsOnly";
 	public static final String FALSE = "false";
+	public static final String PERIOD = ".";
 }

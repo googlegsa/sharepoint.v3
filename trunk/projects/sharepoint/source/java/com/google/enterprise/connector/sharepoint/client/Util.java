@@ -23,11 +23,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.text.Collator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1144,4 +1146,16 @@ public final class Util {
         return url.getHost();
     }
 
+    public static boolean isFQDN(String serverName){
+    	if(serverName.indexOf(SPConstants.PERIOD) == -1 || serverName.lastIndexOf(SPConstants.PERIOD) == serverName.length()-1){
+    		return false;
+    	} else {
+    		try {
+    			InetAddress.getByName(serverName);
+    		} catch (UnknownHostException e) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
 }
