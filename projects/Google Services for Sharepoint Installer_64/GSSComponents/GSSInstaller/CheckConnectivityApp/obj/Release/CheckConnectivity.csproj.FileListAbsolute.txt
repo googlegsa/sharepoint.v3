@@ -39,3 +39,13 @@ C:\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponen
 C:\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.exe
 C:\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.pdb
 C:\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\bin\Release\Verify Installation.exe.config
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\bin\Release\Verify Installation.exe
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\bin\Release\Verify Installation.XmlSerializers.dll
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\bin\Release\Verify Installation.pdb
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\ResolveAssemblyReference.cache
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\WindowsApplication1.frmVerifyInstallation.resources
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\CheckConnectivity.csproj.GenerateResource.Cache
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.exe
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.pdb
+\\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll
