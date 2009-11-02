@@ -353,13 +353,14 @@
 		<row><td>GSASAMLBridge</td><td>{D58CC5D9-525C-4286-BC12-197AC920FEA0}</td><td>SAML_BRIDGE1</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASAMLBridgeBin</td><td>{80FD5627-A25E-492F-A750-990C26D7AAB2}</td><td>BIN</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSBTestUtilityFiles</td><td>{7EABC854-17EC-4C87-9E55-D8AB9F4DAAC8}</td><td>GSBTESTUTILITY</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GoogleSearchBoxComponent</td><td>{9F4CB484-48ED-478A-A05D-D093B9D4445F}</td><td>GSBTEMP</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleSearchBoxComponent</td><td>{9F4CB484-48ED-478A-A05D-D093B9D4445F}</td><td>TEMPLATE</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxFeature</td><td>{2D76A4CD-7406-4A5E-A6A7-62C4EBA6DBA8}</td><td>GSAFEATURE</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxFile</td><td>{5BA755E8-3425-425F-AB61-B97A0C8C414A}</td><td>LAYOUTS</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxImage</td><td>{CB17CCDD-5738-4476-954D-EDBADC8E4A0A}</td><td>IMAGES</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchControlFile</td><td>{1F1A82A2-86BB-4528-B216-B4365F03F365}</td><td>CONTROLTEMPLATES</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleServicesComponent</td><td>{B4F0B6B8-32B8-4D8E-98DC-BB4AF4830695}</td><td>ISAPI</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleServicesLogComponent</td><td>{2E190130-4A60-497D-B64E-BBA3B19E6254}</td><td>TEMPLATE</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>SAMLBridgeCustomApplication</td><td>{10CD2192-20D9-4D7D-9E3B-E71393A2E5F1}</td><td>SAML_BRIDGE</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SAMLGSASimulator</td><td>{A7FAE624-941B-415F-B0E6-644801188A01}</td><td>GSA_SIMULATOR</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SAMLGSASimulatorBin</td><td>{35E80EE4-4F1B-4C1F-8A50-43D26781ABE6}</td><td>BIN1</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SAMLWebsiteComponent</td><td>{AFBB6FB3-27F7-47C2-8EAF-0DA119233A1A}</td><td>INSTALLDIR</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -1036,10 +1037,10 @@
 		<row><td>GSBBackupSearchBox</td><td>98</td><td>SystemFolder64</td><td>cmd.exe /c move "[INSTALLDIR]TEMPLATE\LAYOUTS\searchresults.aspx" "[INSTALLDIR]TEMPLATE\LAYOUTS\searchresults.aspx.backup"</td><td/><td/></row>
 		<row><td>GSBBackupSearchControl</td><td>98</td><td>SystemFolder64</td><td>cmd.exe /c move "[INSTALLDIR]TEMPLATE\CONTROLTEMPLATES\SearchArea.ascx" "[INSTALLDIR]TEMPLATE\CONTROLTEMPLATES\SearchArea.ascx.backup"</td><td/><td/></row>
 		<row><td>GSBInstallFeature</td><td>98</td><td>SystemFolder64</td><td>cmd.exe /c  "[INSTALLDIR]BIN\stsadm.exe -o installfeature -name GSAFeature -force"</td><td/><td/></row>
-		<row><td>GSBInstallShowWebAppCustomAction</td><td>17</td><td>gsbcustomaction.ca.dll</td><td>LaunchWebAppList</td><td/><td/></row>
+		<row><td>GSBLaunchWebAppList</td><td>82</td><td>configuration_wizard.exe</td><td>"[INSTALLDIR]TEMPLATE"</td><td/><td/></row>
 		<row><td>GSBRestoreSearchBox</td><td>1122</td><td>SystemFolder64</td><td>cmd.exe /c move "[INSTALLDIR]TEMPLATE\LAYOUTS\searchresults.aspx.backup" " [INSTALLDIR]TEMPLATE\LAYOUTS\searchresults.aspx"</td><td/><td/></row>
 		<row><td>GSBRestoreSearchControl</td><td>3170</td><td>SystemFolder64</td><td>cmd.exe /c move "[INSTALLDIR]TEMPLATE\CONTROLTEMPLATES\SearchArea.ascx.backup" "[INSTALLDIR]TEMPLATE\CONTROLTEMPLATES\SearchArea.ascx"</td><td/><td/></row>
-		<row><td>GSBUnInstallCleanWebConfig</td><td>17</td><td>gsbcustomaction.ca.dll</td><td>CleanUpWebAppSettings</td><td/><td/></row>
+		<row><td>GSBUnInstallCleanWebConfig</td><td>82</td><td>gsbcleanupgsasettings.exe</td><td/><td/><td/></row>
 		<row><td>ISIISCleanup</td><td>1</td><td>binIISHelper</td><td>ISIISCleanup</td><td/><td/></row>
 		<row><td>ISIISCosting</td><td>1</td><td>binIISHelper</td><td>ISIISCosting</td><td/><td/></row>
 		<row><td>ISIISInstall</td><td>3073</td><td>binIISHelper</td><td>ISIISInstall</td><td/><td/></row>
@@ -1052,6 +1053,7 @@
 		<row><td>ISSelfRegisterFinalize</td><td>1</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterFinalize</td><td/><td/></row>
 		<row><td>ISUnSelfRegisterFiles</td><td>3073</td><td>ISSELFREG.DLL</td><td>ISUnSelfRegisterFiles</td><td/><td/></row>
 		<row><td>IS_LAUNCH_MY_PROGRAM_PLEASE</td><td>210</td><td>verify_installation.exe</td><td/><td/><td/></row>
+		<row><td>SAMLBridgeLaunchConfigurationForm</td><td>82</td><td>samlbridgeconfiguation.exe</td><td>"[INSTALLDIR]saml-bridge"</td><td/><td/></row>
 		<row><td>SetARPINSTALLLOCATION</td><td>51</td><td>ARPINSTALLLOCATION</td><td>[INSTALLDIR]</td><td/><td/></row>
 		<row><td>SetAllUsersProfileNT</td><td>51</td><td>ALLUSERSPROFILE</td><td>[%SystemRoot]\Profiles\All Users</td><td/><td/></row>
 		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>291</td><td>INSTALLDIR</td><td>[SHAREPOINTLOCATION]</td><td/><td/></row>
@@ -1179,6 +1181,7 @@
 		<row><td>c__1</td><td>TARGETDIR</td><td>c__1</td><td/><td>0</td><td/></row>
 		<row><td>google_1_google_inc.</td><td>ProgramMenuFolder</td><td>##ID_STRING16##</td><td/><td>1</td><td/></row>
 		<row><td>newfolder1</td><td>google_1_google_inc.</td><td>##ID_STRING20##</td><td/><td>1</td><td/></row>
+		<row><td>newfolder2</td><td>google_1_google_inc.</td><td>##ID_STRING71##</td><td/><td>1</td><td/></row>
 		<row><td>tempsource</td><td>INSTALLDIR</td><td>##tempsource##</td><td>template directory</td><td/><td/></row>
 	</table>
 
@@ -1877,6 +1880,7 @@
 		<col key="yes" def="s72">Component_</col>
 		<row><td>GoogleSAMLBridge</td><td>GSASAMLBridge</td></row>
 		<row><td>GoogleSAMLBridge</td><td>GSASAMLBridgeBin</td></row>
+		<row><td>GoogleSAMLBridge</td><td>SAMLBridgeCustomApplication</td></row>
 		<row><td>GoogleSAMLBridge</td><td>SAMLGSASimulator</td></row>
 		<row><td>GoogleSAMLBridge</td><td>SAMLGSASimulatorBin</td></row>
 		<row><td>GoogleSAMLBridge</td><td>SAMLWebsiteComponent</td></row>
@@ -1939,8 +1943,7 @@
 		<row><td>gsa2sp.xsl</td><td>GoogleSearchBoxComponent</td><td>GSA2SP.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\GSA2SP.xsl</td><td>1</td><td/></row>
 		<row><td>gsa_simulator.sln</td><td>SAMLGSASimulator</td><td>GSA-SI~1.SLN|gsa-simulator.sln</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\gsa-simulator\gsa-simulator.sln</td><td>1</td><td/></row>
 		<row><td>gsa_simulator.suo</td><td>SAMLGSASimulator</td><td>GSA_SI~1.SUO|gsa_simulator.suo</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\gsa-simulator\gsa_simulator.suo</td><td>1</td><td/></row>
-		<row><td>gsbcustomaction.ca.dll</td><td>GoogleSearchBoxComponent</td><td>GSBCUS~1.DLL|GSBCustomAction.CA.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;PATH_TO_RELEASE_FILES1&gt;\GSBCustomAction.CA.dll</td><td>1</td><td/></row>
-		<row><td>gsbcustomaction.dll</td><td>GoogleSearchBoxComponent</td><td>GSBCUS~1.DLL|GSBCustomAction.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;PATH_TO_RELEASE_FILES1&gt;\GSBCustomAction.dll</td><td>1</td><td/></row>
+		<row><td>gsbcleanupgsasettings.exe</td><td>GoogleSearchBoxComponent</td><td>GSBCLE~1.EXE|GSBCleanUpGSASettings.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\gsbcleanupgsasettings\bin\release\GSBCleanUpGSASettings.exe</td><td>1</td><td/></row>
 		<row><td>gsbulkauthorization.asmx</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASM|GSBulkAuthorization.asmx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSBulkAuthorization.asmx</td><td>1</td><td/></row>
 		<row><td>gsbulkauthorizationdisco.asp</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASP|GSBulkAuthorizationdisco.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSBulkAuthorizationdisco.aspx</td><td>1</td><td/></row>
 		<row><td>gsbulkauthorizationwsdl.aspx</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASP|GSBulkAuthorizationwsdl.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSBulkAuthorizationwsdl.aspx</td><td>1</td><td/></row>
@@ -1949,8 +1952,6 @@
 		<row><td>gssitediscoverywsdl.aspx</td><td>GoogleServicesComponent</td><td>GSSITE~1.ASP|GSSiteDiscoverywsdl.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSSiteDiscoverywsdl.aspx</td><td>1</td><td/></row>
 		<row><td>login.aspx</td><td>GSASAMLBridge</td><td>LOGIN~1.ASP|Login.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\saml-bridge\Login.aspx</td><td>1</td><td/></row>
 		<row><td>login.aspx.resx</td><td>GSASAMLBridge</td><td>LOGINA~1.RES|Login.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\saml-bridge\Login.aspx.resx</td><td>1</td><td/></row>
-		<row><td>microsoft.deployment.windows</td><td>GoogleSearchBoxComponent</td><td>MICROS~1.XML|Microsoft.Deployment.WindowsInstaller.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;PATH_TO_RELEASE_FILES1&gt;\Microsoft.Deployment.WindowsInstaller.xml</td><td>1</td><td/></row>
-		<row><td>microsoft.deployment.windows1</td><td>GoogleSearchBoxComponent</td><td>MICROS~1.DLL|Microsoft.Deployment.WindowsInstaller.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;PATH_TO_RELEASE_FILES1&gt;\Microsoft.Deployment.WindowsInstaller.dll</td><td>1</td><td/></row>
 		<row><td>microsoft.sharepoint.dll</td><td>GoogleSearchBoxComponent</td><td>MICROS~1.DLL|Microsoft.SharePoint.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\gsbcontrolpanel\bin\release\Microsoft.SharePoint.dll</td><td>1</td><td/></row>
 		<row><td>precompiledapp.config</td><td>GSASAMLBridge</td><td>PRECOM~1.CON|PrecompiledApp.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\saml-bridge\PrecompiledApp.config</td><td>1</td><td/></row>
 		<row><td>precompiledapp.config1</td><td>SAMLGSASimulator</td><td>PRECOM~1.CON|PrecompiledApp.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\gsa-simulator\PrecompiledApp.config</td><td>1</td><td/></row>
@@ -1958,6 +1959,7 @@
 		<row><td>resolve.aspx.resx</td><td>GSASAMLBridge</td><td>RESOLV~1.RES|Resolve.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\saml-bridge\Resolve.aspx.resx</td><td>1</td><td/></row>
 		<row><td>samlartifactconsumer.aspx</td><td>SAMLGSASimulator</td><td>SAMLAR~1.ASP|SamlArtifactConsumer.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\gsa-simulator\SamlArtifactConsumer.aspx</td><td>1</td><td/></row>
 		<row><td>samlartifactconsumer.aspx.re</td><td>SAMLGSASimulator</td><td>SAMLAR~1.RES|SamlArtifactConsumer.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\gsa-simulator\SamlArtifactConsumer.aspx.resx</td><td>1</td><td/></row>
+		<row><td>samlbridgeconfiguation.exe</td><td>SAMLBridgeCustomApplication</td><td>SAMLBR~1.EXE|SAMLBridgeConfiguation.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\samlbridgeconfiguation\bin\release\SAMLBridgeConfiguation.exe</td><td>1</td><td/></row>
 		<row><td>samlrequest.xml</td><td>SAMLGSASimulator</td><td>SAMLRE~1.XML|SamlRequest.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\gsa-simulator\SamlRequest.xml</td><td>1</td><td/></row>
 		<row><td>samlresolve.xml</td><td>SAMLGSASimulator</td><td>SAMLRE~1.XML|SamlResolve.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\gsa-simulator\SamlResolve.xml</td><td>1</td><td/></row>
 		<row><td>search.aspx</td><td>SAMLGSASimulator</td><td>SEARCH~1.ASP|Search.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge_1.5.1\gsa-simulator\Search.aspx</td><td>1</td><td/></row>
@@ -2245,6 +2247,7 @@
 		<row><td>GoogleSearchControlFile</td><td/><td/><td>_AD0D4DEF_4C19_488F_8FE6_153DCD8EBF12_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleServicesComponent</td><td/><td/><td>_C90DA180_B09E_48B6_B0F5_A3B88E8D23A2_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleServicesLogComponent</td><td/><td/><td>_0050052E_4915_4836_AEAE_608294DA04E3_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>SAMLBridgeCustomApplication</td><td/><td/><td>_143A7B14_29C6_49F4_A3E3_1A4B0035E9F5_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>SAMLGSASimulator</td><td/><td/><td>_19645209_D3A2_4950_83A7_74C9E79E3433_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>SAMLGSASimulatorBin</td><td/><td/><td>_19645209_D3A2_4950_83A7_74C9E79E3433_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>SAMLWebsiteComponent</td><td/><td/><td>_78918649_7E75_4989_8911_43422342D69C_FILTER</td><td/><td/><td/><td/></row>
@@ -4135,6 +4138,8 @@
 		<row><td>ID_STRING69</td><td>1033</td><td>Google Search Box Test Utility</td><td>0</td><td/><td>-451069650</td></row>
 		<row><td>ID_STRING7</td><td>1033</td><td>http://www.GoogleInc..com</td><td>0</td><td/><td>-316814062</td></row>
 		<row><td>ID_STRING70</td><td>1033</td><td>Google Search Box Test Utility</td><td>0</td><td/><td>-451059410</td></row>
+		<row><td>ID_STRING71</td><td>1033</td><td>GOOGLE~1|Google SAML Bridge</td><td>0</td><td/><td>362628846</td></row>
+		<row><td>ID_STRING72</td><td>1033</td><td>SAMLBR~1|SAML Bridge Configuration Wizard</td><td>0</td><td/><td>362630958</td></row>
 		<row><td>ID_STRING8</td><td>1033</td><td>Google SharePoint Services</td><td>0</td><td/><td>-451054899</td></row>
 		<row><td>ID_STRING9</td><td>1033</td><td>Google SAML Bridge</td><td>0</td><td/><td>-451048723</td></row>
 		<row><td>ID_SearchBoxLocation</td><td>1033</td><td>[INSTALLDIR]TEMPLATE\CONTROLTEMPLATES</td><td>0</td><td>Search Box Location</td><td>-191036691</td></row>
@@ -4253,6 +4258,7 @@
 		<row><td>NewShortcut1_E0C0FD96A176431B8CF2C30915A14B58.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\view_logs-16.ico</td><td>0</td></row>
 		<row><td>NewShortcut2_39E82EF45B014796B79284A5B0F6246E.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\wizard-16.ico</td><td>0</td></row>
 		<row><td>NewShortcut3_FE9F6354DA9745E3B4CAAB539BCBE91A.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\customwsfiles\connectivity-16.ico</td><td>0</td></row>
+		<row><td>NewShortcut4_7D948081E44E48068BAC14D7B577DC5E.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\wizard-16.ico</td><td>0</td></row>
 		<row><td>SearchBoxLogs_5F8AE0476AC94D1282D303FCD268D213.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\view_logs-16.ico</td><td>0</td></row>
 		<row><td>UNINST_Uninstall_G_1F5D094805A14E2B86723CC64746FFF5.exe</td><td/><td>C:\Program Files\InstallShield\2010\Redist\Language Independent\OS Independent\uninstall.ico</td><td>0</td></row>
 		<row><td>UNINST_Uninstall_G_2CA475905D394442A0E1AA92BB17365D.exe</td><td/><td>C:\Program Files\InstallShield\2010\Redist\Language Independent\OS Independent\uninstall.ico</td><td>0</td></row>
@@ -4309,7 +4315,7 @@
 		<row><td>GSBInstallFeature</td><td>Not Installed</td><td>4006</td><td/><td/></row>
 		<row><td>GSBRestoreSearchBox</td><td>REMOVE="ALL"</td><td>3501</td><td/><td/></row>
 		<row><td>GSBRestoreSearchControl</td><td>REMOVE="ALL"</td><td>3502</td><td/><td/></row>
-		<row><td>GSBUnInstallCleanWebConfig</td><td>REMOVE="ALL"</td><td>4003</td><td/><td/></row>
+		<row><td>GSBUnInstallCleanWebConfig</td><td>REMOVE="ALL"</td><td>4001</td><td/><td/></row>
 		<row><td>ISIISCleanup</td><td/><td>6602</td><td/><td/></row>
 		<row><td>ISIISCosting</td><td/><td>1500</td><td/><td/></row>
 		<row><td>ISIISInstall</td><td>REMOVE&lt;&gt;"ALL"</td><td>4013</td><td/><td/></row>
@@ -4431,7 +4437,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>ExecuteAction</td><td/><td>1300</td><td>ExecuteAction</td><td/></row>
 		<row><td>FileCost</td><td/><td>900</td><td>FileCost</td><td/></row>
 		<row><td>FindRelatedProducts</td><td/><td>430</td><td>FindRelatedProducts</td><td/></row>
-		<row><td>GSBInstallShowWebAppCustomAction</td><td>Not Installed</td><td>1350</td><td/><td/></row>
+		<row><td>GSBLaunchWebAppList</td><td>Not Installed</td><td>1312</td><td/><td/></row>
 		<row><td>GoogleSamlPortNumber</td><td>&amp;GoogleSAMLBridge=3</td><td>1235</td><td>Launch only when user selects to install SAML Bridge</td><td/></row>
 		<row><td>GoogleSearchBoxTestUtility</td><td>&amp;GoogleSearchBoxTestUtility=3</td><td>1237</td><td>Launch only when user selects to indstall Search Box test utility</td><td/></row>
 		<row><td>ISPreventDowngrade</td><td>ISFOUNDNEWERPRODUCTVERSION</td><td>450</td><td>ISPreventDowngrade</td><td/></row>
@@ -4443,6 +4449,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>PatchWelcome</td><td>Installed And PATCH And Not IS_MAJOR_UPGRADE</td><td>1205</td><td>Patch Panel</td><td/></row>
 		<row><td>RMCCPSearch</td><td>Not CCP_SUCCESS And CCP_TEST</td><td>600</td><td>RMCCPSearch</td><td/></row>
 		<row><td>ResolveSource</td><td>Not Installed</td><td>990</td><td>ResolveSource</td><td/></row>
+		<row><td>SAMLBridgeLaunchConfigurationForm</td><td>Not Installed </td><td>1362</td><td/><td/></row>
 		<row><td>SetAllUsersProfileNT</td><td>VersionNT = 400</td><td>970</td><td/><td/></row>
 		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>1100</td><td/><td/></row>
 		<row><td>SetupCompleteError</td><td/><td>-3</td><td>SetupCompleteError</td><td/></row>
@@ -4875,6 +4882,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>NewShortcut1</td><td>GoogleSearchBoxComponent</td><td/><td>google_1_google_inc.</td><td>2</td></row>
 		<row><td>NewShortcut2</td><td>GoogleSearchBoxComponent</td><td/><td>GoogleSearchBoxforSharePoint</td><td>2</td></row>
 		<row><td>NewShortcut3</td><td>GoogleServicesLogComponent</td><td/><td>newfolder1</td><td>2</td></row>
+		<row><td>NewShortcut4</td><td>SAMLBridgeCustomApplication</td><td/><td>newfolder2</td><td>2</td></row>
 		<row><td>SearchBoxLogs</td><td>GoogleSearchBoxComponent</td><td/><td>google_1_google_inc.</td><td>2</td></row>
 		<row><td>UNINST_Uninstall_Google_Services_for_SharePoint</td><td>UnInstallComp</td><td/><td>google_1_google_inc.</td><td>2</td></row>
 	</table>
@@ -4964,6 +4972,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<col def="I4">ISAttributes</col>
 		<row><td>NewShortcut2</td><td>GoogleSearchBoxforSharePoint</td><td>##ID_STRING18##</td><td>GoogleSearchBoxComponent</td><td>[TEMPLATE]Configuration Wizard.exe</td><td/><td/><td/><td>NewShortcut2_39E82EF45B014796B79284A5B0F6246E.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>NewShortcut3</td><td>newfolder1</td><td>##ID_STRING34##</td><td>GoogleServicesLogComponent</td><td>[INSTALLDIR]TEMPLATE\Verify Installation.exe</td><td/><td/><td/><td>NewShortcut3_FE9F6354DA9745E3B4CAAB539BCBE91A.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>SAMLConfigurationShortcut</td><td>newfolder2</td><td>##ID_STRING72##</td><td>SAMLBridgeCustomApplication</td><td>[INSTALLDIR]saml-bridge\SAMLBridgeConfiguation.exe</td><td/><td/><td/><td>NewShortcut4_7D948081E44E48068BAC14D7B577DC5E.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>SearchBoxLogs</td><td>google_1_google_inc.</td><td>##ID_STRING17##</td><td>GoogleSearchBoxComponent</td><td>[TEMPLATE]ViewLogs.bat</td><td/><td/><td/><td>SearchBoxLogs_5F8AE0476AC94D1282D303FCD268D213.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>UNINST_Uninstall_Google_Services_for_SharePoint</td><td>google_1_google_inc.</td><td>UNINST|Uninstall Google Services for SharePoint</td><td>UnInstallComp</td><td>[SystemFolder]msiexec.exe</td><td>/i {0B40B646-4CCA-4379-AFCA-E8556F9BD14F} /qf</td><td/><td/><td>UNINST_Uninstall_G_545E3F23623741ADB851586249BE0FA5.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 	</table>

@@ -26,18 +26,21 @@ namespace GSBControlPanel
         [STAThread]
         static void Main(String[] args)
         {
-            const string DEFAULT_PATH = "c:";
+            //const string DEFAULT_PATH = "c:";
+            //const string DEFAULT_PATH = args[0];
+            //MessageBox.Show(args[0]);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
             frmWebApplicationList webAppForm = null;
             if ((args != null) && (args.Length > 0))
             {
-                webAppForm = new frmWebApplicationList(DEFAULT_PATH, true);
+                //MessageBox.Show("Got path", args[0]);
+                webAppForm = new frmWebApplicationList(args[0], true);
             }
             else 
             {
-                webAppForm = new frmWebApplicationList(DEFAULT_PATH, false);
+                webAppForm = new frmWebApplicationList("c:", false);
             }
 
 
