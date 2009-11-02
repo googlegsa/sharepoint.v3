@@ -58,6 +58,7 @@ public class SPConstants {
             .compile("^\\d+;\\#");
 
     public static final String UNAUTHORIZED = "(401)Unauthorized";
+	public static final String SAXPARSEEXCEPTION = "org.xml.sax.SAXParseException";
 
     public static final String EXCLUDED_URL_DIR = "excluded-URLs";
     public static final String EXCLUDED_URL_LOG = "excluded_url";
