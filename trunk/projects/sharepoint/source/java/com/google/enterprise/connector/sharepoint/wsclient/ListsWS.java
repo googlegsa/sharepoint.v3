@@ -1049,46 +1049,15 @@ public class ListsWS {
                 try {
                     res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, rowLimit, queryOptions, token, null);
                 } catch (final Exception e) {
-                    // Connector is not able proceed after the current state of
-                    // the
-                    // list (lastDoc+changetoken) because the web service call
-                    // has failed.
-                    // As a quick fix, marking the list as partially crawled in
-                    // this case.
-                    LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                            + list.getListURL()
-                            + " ]. The list's state can not be updated!!", e);
-                    list.setNewList(false); // This will ensure that list will
-                    // not be sent as document and hence
-                    // can not be assumed completed.
-
-                    // With the above logic, connector will get stuck at the
-                    // current
-                    // state of the list where the web service call has failed
-                    // and
-                    // will proceed only when the web service call can succeed.
-
-                    // TODO: Better solutions for this is being worked out. We
-                    // should
-                    // recover from the exception gracefully and proceed with
-                    // the
-                    // crawl. Any problematic document should be skipped and
-                    // list's
-                    // state should be appropriately updated.
+                    handleListException(list, e);
                     return listItems;
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                        + list.getListURL()
-                        + " ]. The list's state can not be updated!!", af);
-                list.setNewList(false);
+                handleListException(list, af);
                 return listItems;
             }
         } catch (final Throwable e) {
-            LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                    + list.getListURL()
-                    + " ]. The list's state can not be updated!!", e);
-            list.setNewList(false);
+            handleListException(list, e);
             return listItems;
         }
 
@@ -1184,6 +1153,37 @@ public class ListsWS {
         return listItems;
     }
 
+    /**
+     * Called when the connector is not able proceed after the current state of
+     * list (lastDoc+changetoken) because the web service call has failed.
+     * @param list List for which the exception occured
+     */
+    private void handleListException(final ListState list, Throwable te) {
+		if (te == null) {
+			return;
+		}
+        // As a quick fix, marking the list as partially crawled. Crawl will not proceed for the given list
+        LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
+                + list.getListURL()
+                + " ]. The list's state can not be updated and the crawl will not proceed for this list!!", te);
+        list.setNewList(false); // This will ensure that list will
+                                // not be sent as document and hence
+                                // can not be assumed completed.
+
+        // TODO: With the above logic, connector will get stuck at the current
+        // state of the list where the web service call has failed and
+        // will proceed only when the web service call can succeed.
+        // Better solutions for this is being worked out. We should
+        // recover from the exception gracefully and proceed with the
+        // crawl. Any problematic document should be skipped and list's
+        // state should be appropriately updated.
+		if (te.getMessage().indexOf(SPConstants.SAXPARSEEXCEPTION) != -1) {
+            LOGGER.log(Level.WARNING, "Could not parse the web service SOAP response for list [ "
+                    + list.getListURL()
+                    + " ]. This could happen becasue of invalid XML chanracters in the web service response. "
+					+ "Check if any of your document's metadata has such characters in it. ");
+        }
+    }
     /**
      * Construct SPDocument for all those items which has been deleted.
      *
