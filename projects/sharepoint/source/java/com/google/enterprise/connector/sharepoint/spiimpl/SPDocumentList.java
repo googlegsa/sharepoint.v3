@@ -120,11 +120,13 @@ public class SPDocumentList implements DocumentList {
      */
     public Document nextDocument() {
         SPDocument spDocument = null;
+        ListState listStateTemp;
 
         // find the next document in the list which is to be fed
         do {
             if (docsFedIndexPosition >= documents.size()) {
-                LOGGER.log(Level.SEVERE, "");
+                LOGGER.log(Level.FINE, "docsFedIndexPosition reached beyond document list size [ "
+                        + documents.size() + " ] discontinuing loop");
                 return null;
             }
             spDocument = (SPDocument) documents.get(docsFedIndexPosition);
@@ -140,9 +142,17 @@ public class SPDocumentList implements DocumentList {
                 LOGGER.log(Level.FINE, "Document skipped from feed because it is excluded: "
                         + spDocument.getUrl());
             }
+
+            listStateTemp = globalState.lookupList(spDocument.getWebid(), spDocument.getListGuid());
+
+            // Set the current doc as the last doc sent to CM. This will mark
+            // the current doc and its position in the crawlQueue. This info
+            // will be important when checkPoint() is called.
+            listStateTemp.setLastDocument(spDocument);
+
         } while (!spDocument.isToBeFed());
 
-        final ListState listState = globalState.lookupList(spDocument.getWebid(), spDocument.getListGuid());
+        final ListState listState = listStateTemp;
 
         final String currentID = Util.getOriginalDocId(spDocument.getDocId(), spDocument.getFeedType());
 
@@ -172,11 +182,6 @@ public class SPDocumentList implements DocumentList {
                     + " ] to CM for ADD.");
 
         }
-
-        // Set the current doc as the last doc sent to CM. This will mark
-        // the current doc and its position in the crawlQueue. This info
-        // will be important when checkPoint() is called.
-        listState.setLastDocument(spDocument);
 
         return spDocument;
     }
