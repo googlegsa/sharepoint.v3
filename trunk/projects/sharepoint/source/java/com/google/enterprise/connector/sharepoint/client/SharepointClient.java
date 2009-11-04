@@ -827,7 +827,10 @@ public class SharepointClient {
                         + " items to crawl in " + listState.getListURL());
                 nDocuments += listItems.size();
                 final int batchHint = sharepointClientContext.getBatchHint();
-                if (nDocuments >= (2 * batchHint)) {
+
+                // As per Issue 116 we need to stop at batchHint or a little
+                // more
+                if (nDocuments >= batchHint) {
                     doCrawl = false;
                     break;
                 }
@@ -920,10 +923,12 @@ public class SharepointClient {
                         + webURL + " ]. ", t);
             }
 
-            // Check if the threshhold (i.e. 2*batchHint is reached)
+            // Check if the threshhold (i.e. batchHint is reached)
             final int batchHint = sharepointClientContext.getBatchHint();
-            if (nDocuments >= (2 * batchHint)) {
-                LOGGER.info("Stopping crawl cycle as connector has discovered (2 * batch hint) no. of docs. In total : "
+
+            // As per Issue 116 we need to stop at batchHint or a little more
+            if (nDocuments >= batchHint) {
+                LOGGER.info("Stopping crawl cycle as connector has discovered (>= batchHint) # of docs. In total : "
                         + nDocuments + " docs");
                 doCrawl = false;
                 break;
