@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.common.I18NUtil;
+import com.google.enterprise.connector.servlet.ServletUtil;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnectorType;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 
 public class SharepointConnectorTypeTest extends TestCase {
@@ -53,14 +53,10 @@ public class SharepointConnectorTypeTest extends TestCase {
 
     public void testValidateConfig() {
         System.out.println("Testing validateConfig()...");
-        /*
-         * ResourceBundle rb =
-         * ResourceBundle.getBundle("SharepointConnectorResources",
-         * I18NUtil.getLocaleFromStandardLocaleString("en")); String str =
-         * rb.getString("Cannot_Connect"); System.out.println(str);
-         */
+
         final ConfigureResponse configRes = this.sharepointConnectorType.validateConfig(this.configMap, I18NUtil.getLocaleFromStandardLocaleString("en"), null);
-        assertNull(configRes);
+        assertNull("ValidateConfig() falied with error message : "
+                + configRes.getMessage(), configRes);
         System.out.println("[ validateConfig() ] Test Passed.");
     }
 
@@ -71,29 +67,20 @@ public class SharepointConnectorTypeTest extends TestCase {
         final String initialConfigForm = configureResponse.getFormSnippet();
         final boolean check = this.checkForExpectedFields(initialConfigForm);
         assertTrue(check);
-        /*
-         * DocumentBuilderFactory factory =
-         * DocumentBuilderFactory.newInstance(); try { DocumentBuilder builder =
-         * factory.newDocumentBuilder(); Document document =
-         * builder.parse("<top>"+initialConfigForm+"</top>"); } catch
-         * (ParserConfigurationException pce) { System.out.println(pce); } catch
-         * (SAXException se) { System.out.println(se); } catch (IOException ioe)
-         * { System.out.println(ioe); }
-         */
-
-        // String newForm = ServletUtil.filterSensitiveData(initialConfigForm);
-        // assertNotNull(newForm);
-        System.out.println("[ getConfigForm() ] Test Completed.");
+        String newForm = ServletUtil.filterSensitiveData(initialConfigForm);
+        assertNotNull(newForm);
     }
 
     public void testGetPopulatedConfigForm() {
         final ConfigureResponse response = this.sharepointConnectorType.getPopulatedConfigForm(this.configMap, new Locale(
                 "test"));
-        final String initialConfigForm = response.getFormSnippet();
-        final boolean check = this.checkForExpectedFields(initialConfigForm);
-        if (check) {
-            System.out.println("[ getConfigForm() ] Test Completed.");
-        }
+        final String populatedConfigForm = response.getFormSnippet();
+        final boolean check = this.checkForExpectedFields(populatedConfigForm);
+        assertTrue("Unexpected config form", check);
+
+        // Ensure that the XML parsing is successfull
+        String configForm = ServletUtil.filterSensitiveData(populatedConfigForm);
+        assertNotNull(configForm);
     }
 
     private boolean checkForExpectedFields(final String configForm) {
