@@ -50,6 +50,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 import com.google.enterprise.connector.spi.ConnectorFactory;
 import com.google.enterprise.connector.spi.ConnectorType;
+import com.google.enterprise.connector.spi.XmlUtils;
 
 /**
  * ConnectorType implementation for Sharepoint This class is mainly desinged for
@@ -194,7 +195,7 @@ public class SharepointConnectorType implements ConnectorType {
                                         }
                                     } catch (final Exception e) {
                                         final String logMessage = "Could not find the alias value for the pattern ["
-                                                                                                                   + alias_source_pattern + "].";
+                                                + alias_source_pattern + "].";
                                         LOGGER.log(Level.WARNING, logMessage, e);
                                     }
                                 }
@@ -281,15 +282,15 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.VALUE, value);
                     if (collator.equals(key, SPConstants.SHAREPOINT_URL) /*
-                     * ||
-                     * collator
-                     * .
-                     * equals
-                     * (key,
-                     * DOMAIN
-                     * )
-                     */
-                     || collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
+                                                                         * ||
+                                                                         * collator
+                                                                         * .
+                                                                         * equals
+                                                                         * (key,
+                                                                         * DOMAIN
+                                                                         * )
+                                                                         */
+                            || collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
                         appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
                     }
                     buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
@@ -396,9 +397,9 @@ public class SharepointConnectorType implements ConnectorType {
      */
     private void appendStartRow(final StringBuffer buf, final String key,
             final String configKey, final boolean red/*
-             * , final String
-             * displayValue
-             */) {
+                                                     * , final String
+                                                     * displayValue
+                                                     */) {
 
         buf.append(SPConstants.TR_START);
         buf.append(SPConstants.TD_START);
@@ -437,8 +438,16 @@ public class SharepointConnectorType implements ConnectorType {
         buf.append(" ");
         buf.append(attrName);
         buf.append("=\"");
-        // TODO xml-encode the special characters (< > " etc.)
-        buf.append(attrValue);
+        try {
+            // XML-encode the special characters (< > " etc.)
+            // Check the basic requirement mentioned in ConnectorType as part of
+            // CM-Issue 186
+            XmlUtils.xmlAppendAttrValue(attrValue, buf);
+        } catch (IOException e) {
+            String msg = new StringBuffer(
+                    "Exceptions while constructing the config form for attribute : ").append(attrName).append(" with value : ").append(attrValue).toString();
+            LOGGER.log(Level.WARNING, msg, e);
+        }
         buf.append("\"");
     }
 
@@ -483,7 +492,7 @@ public class SharepointConnectorType implements ConnectorType {
         String feedType = null;
         String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
 
-        if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)){
+        if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
             kerberosSetUp(configData);
         }
 
@@ -532,18 +541,19 @@ public class SharepointConnectorType implements ConnectorType {
                 }
             } else if (collator.equals(key, SPConstants.AUTHORIZATION)) {
                 feedType = val;
-            } else if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING) && collator.equals(key,SPConstants.KDC_SERVER)){
+            } else if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)
+                    && collator.equals(key, SPConstants.KDC_SERVER)) {
                 boolean isFQDN = false;
                 if (!Util.isFQDN(kdcServer)) {
                     ed.set(SPConstants.KDC_SERVER, rb.getString(SPConstants.KERBEROS_KDC_HOST_BLANK));
                     return false;
                 } else {
-                    try{
+                    try {
                         Integer.parseInt(kdcServer.substring(0, kdcServer.indexOf(".")));
-                    }catch(NumberFormatException nfe){
+                    } catch (NumberFormatException nfe) {
                         isFQDN = true;
                     }
-                    if(!isFQDN && !validateIPAddress(kdcServer)){
+                    if (!isFQDN && !validateIPAddress(kdcServer)) {
                         ed.set(SPConstants.KDC_SERVER, rb.getString(SPConstants.KERBEROS_KDC_HOST_BLANK));
                         return false;
                     }
@@ -561,8 +571,8 @@ public class SharepointConnectorType implements ConnectorType {
 
         try {
             sharepointClientContext = new SharepointClientContext(
-                    sharepointUrl, domain, kdcServer, username, password, "", includeURL,
-                    excludeURL, mySiteUrl, "", feedType);
+                    sharepointUrl, domain, kdcServer, username, password, "",
+                    includeURL, excludeURL, mySiteUrl, "", feedType);
         } catch (final Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to create SharePointClientContext with the received configuration values. ");
         }
@@ -638,7 +648,7 @@ public class SharepointConnectorType implements ConnectorType {
     private ConfigureResponse makeValidatedForm(final Map configMap,
             final ErrorDignostics ed) {
         final String sFunName = className
-        + ".makeValidatedForm(final Map configMap, ErrorDignostics ed)";
+                + ".makeValidatedForm(final Map configMap, ErrorDignostics ed)";
         if (configMap == null) {
             LOGGER.warning(sFunName + ": configMap is not found");
             if (rb != null) {
@@ -756,51 +766,51 @@ public class SharepointConnectorType implements ConnectorType {
         if (buf != null) {
             String js = "\r\n <script language=\"JavaScript\"> \r\n <![CDATA[ ";
             js += "\r\n function addRow() {"
-                + "\r\n var i=1;    var aliasTable = document.getElementById('aliasContainer');    var len=aliasTable.rows.length;"
-                + "\r\n for(i=1;i<len-1;i++){"
-                + "\r\n row = aliasTable.rows[i]; leftBox = row.cells[0].childNodes[0]; rightBox = row.cells[1].childNodes[0];"
-                + "\r\n if(leftBox.value=='' || rightBox.value=='') {"
-                + "\r\n alert(\""
-                + rb.getString(SPConstants.EMPTY_FIELD)
-                + "\"); return;"
-                + "\r\n }"
-                + "\r\n }"
-                + "\r\n var newrow = aliasTable.insertRow(len-1);"
-                +
+                    + "\r\n var i=1;    var aliasTable = document.getElementById('aliasContainer');    var len=aliasTable.rows.length;"
+                    + "\r\n for(i=1;i<len-1;i++){"
+                    + "\r\n row = aliasTable.rows[i]; leftBox = row.cells[0].childNodes[0]; rightBox = row.cells[1].childNodes[0];"
+                    + "\r\n if(leftBox.value=='' || rightBox.value=='') {"
+                    + "\r\n alert(\""
+                    + rb.getString(SPConstants.EMPTY_FIELD)
+                    + "\"); return;"
+                    + "\r\n }"
+                    + "\r\n }"
+                    + "\r\n var newrow = aliasTable.insertRow(len-1);"
+                    +
 
-                "\r\n newCell0 = newrow.insertCell(0); newCell0.innerHTML= '<input type=\"text\" size=\""
-                + SPConstants.ALIAS_TEXTBOX_SIZE_VALUE
-                + "\" onchange=\"readAlias()\"/> '; "
-                + "\r\n newCell1 = newrow.insertCell(1); newCell1.innerHTML= '<input type=\"text\" size=\""
-                + SPConstants.ALIAS_TEXTBOX_SIZE_VALUE
-                + "\" onchange=\"readAlias()\"/> '; "
-                +
+                    "\r\n newCell0 = newrow.insertCell(0); newCell0.innerHTML= '<input type=\"text\" size=\""
+                    + SPConstants.ALIAS_TEXTBOX_SIZE_VALUE
+                    + "\" onchange=\"readAlias()\"/> '; "
+                    + "\r\n newCell1 = newrow.insertCell(1); newCell1.innerHTML= '<input type=\"text\" size=\""
+                    + SPConstants.ALIAS_TEXTBOX_SIZE_VALUE
+                    + "\" onchange=\"readAlias()\"/> '; "
+                    +
 
-                "\r\n if(row.cells[0].style.backgroundColor=='') { newCell0.style.backgroundColor='#DDDDDD'; newCell1.style.backgroundColor='#DDDDDD'; }"
-                +
+                    "\r\n if(row.cells[0].style.backgroundColor=='') { newCell0.style.backgroundColor='#DDDDDD'; newCell1.style.backgroundColor='#DDDDDD'; }"
+                    +
 
-                "\r\n }";
+                    "\r\n }";
 
             js += "\r\n function readAlias(){"
-                + "\r\n var aliasString=''; var i=1; var aliasTable = document.getElementById('aliasContainer'); var SOURCE_ALIAS_SEPARATOR=/\\$\\$EQUAL\\$\\$/; var ALIAS_ENTRIES_SEPARATOR=/\\$\\$CRLF\\$\\$/;"
-                + "\r\n for(i=1;i<aliasTable.rows.length-1;i++){"
-                + "\r\n row = aliasTable.rows[i]; leftBoxVal = trim(row.cells[0].childNodes[0].value); rightBoxVal = trim(row.cells[1].childNodes[0].value);"
-                + "\r\n if(leftBoxVal=='' || leftBoxVal==null || leftBoxVal==undefined || rightBoxVal=='' || rightBoxVal==null || rightBoxVal==undefined) {continue;}"
-                + "\r\n if(leftBoxVal.search("
-                + SPConstants.SOURCE_ALIAS_SEPARATOR
-                + ")!=-1 || rightBoxVal.search("
-                + SPConstants.SOURCE_ALIAS_SEPARATOR
-                + ")!=-1 || leftBoxVal.search("
-                + SPConstants.ALIAS_ENTRIES_SEPARATOR
-                + ")!=-1 || rightBoxVal.search("
-                + SPConstants.ALIAS_ENTRIES_SEPARATOR
-                + ")!=-1) {continue;}"
-                + "\r\n aliasString += leftBoxVal + '"
-                + SPConstants.SOURCE_ALIAS_SEPARATOR
-                + "' + rightBoxVal + '"
-                + SPConstants.ALIAS_ENTRIES_SEPARATOR + "';" + "\r\n }"
-                + "\r\n document.getElementById('" + SPConstants.ALIAS_MAP
-                + "').value=aliasString;" + "\r\n }";
+                    + "\r\n var aliasString=''; var i=1; var aliasTable = document.getElementById('aliasContainer'); var SOURCE_ALIAS_SEPARATOR=/\\$\\$EQUAL\\$\\$/; var ALIAS_ENTRIES_SEPARATOR=/\\$\\$CRLF\\$\\$/;"
+                    + "\r\n for(i=1;i<aliasTable.rows.length-1;i++){"
+                    + "\r\n row = aliasTable.rows[i]; leftBoxVal = trim(row.cells[0].childNodes[0].value); rightBoxVal = trim(row.cells[1].childNodes[0].value);"
+                    + "\r\n if(leftBoxVal=='' || leftBoxVal==null || leftBoxVal==undefined || rightBoxVal=='' || rightBoxVal==null || rightBoxVal==undefined) {continue;}"
+                    + "\r\n if(leftBoxVal.search("
+                    + SPConstants.SOURCE_ALIAS_SEPARATOR
+                    + ")!=-1 || rightBoxVal.search("
+                    + SPConstants.SOURCE_ALIAS_SEPARATOR
+                    + ")!=-1 || leftBoxVal.search("
+                    + SPConstants.ALIAS_ENTRIES_SEPARATOR
+                    + ")!=-1 || rightBoxVal.search("
+                    + SPConstants.ALIAS_ENTRIES_SEPARATOR
+                    + ")!=-1) {continue;}"
+                    + "\r\n aliasString += leftBoxVal + '"
+                    + SPConstants.SOURCE_ALIAS_SEPARATOR
+                    + "' + rightBoxVal + '"
+                    + SPConstants.ALIAS_ENTRIES_SEPARATOR + "';" + "\r\n }"
+                    + "\r\n document.getElementById('" + SPConstants.ALIAS_MAP
+                    + "').value=aliasString;" + "\r\n }";
 
             js += "\r\n function trim(s) {return s.replace( /^\\s*/, \"\" ).replace( /\\s*$/, \"\" );}";
 
@@ -873,7 +883,7 @@ public class SharepointConnectorType implements ConnectorType {
             if ((excludeList != null)
                     && Util.match(excludeList, url, matchedPattern)) {
                 return rb.getString(SPConstants.EXCLUDED_PATTERN_MATCH)
-                + matchedPattern.toString();
+                        + matchedPattern.toString();
             }
             return null;
         } else {
@@ -1050,8 +1060,8 @@ public class SharepointConnectorType implements ConnectorType {
                         strPort = port + "";
                     }
                     urlPatt1stPart = "^" + urlPatt.getProtocol()
-                    + SPConstants.URL_SEP + urlPatt.getHost()
-                    + SPConstants.COLON + strPort;
+                            + SPConstants.URL_SEP + urlPatt.getHost()
+                            + SPConstants.COLON + strPort;
                     if (!(urlPatt.getFile()).startsWith(SPConstants.SLASH)) { // The
                         // pattern
                         // must
@@ -1072,13 +1082,13 @@ public class SharepointConnectorType implements ConnectorType {
                     final int indexOfStar = patternDecoded.indexOf("*");
                     if (indexOfStar != -1) {
                         urlPatt1stPart = "^"
-                            + patternDecoded.substring(0, indexOfStar)
-                            + "[0-9].*";
+                                + patternDecoded.substring(0, indexOfStar)
+                                + "[0-9].*";
                         if (!(patternDecoded.substring(indexOfStar + 1)).startsWith(SPConstants.SLASH)) {
                             invalidPatterns.add(pattern);
                         }
                         urlPatt2ndPart = "^"
-                        + patternDecoded.substring(indexOfStar + 1);
+                                + patternDecoded.substring(indexOfStar + 1);
                     }
                 }
 
@@ -1094,7 +1104,7 @@ public class SharepointConnectorType implements ConnectorType {
                 if (patternDecoded.indexOf(SPConstants.SLASH) != -1) {
                     if (patternDecoded.indexOf(SPConstants.COLON) == -1) {
                         urlPatt1stPart = patternDecoded.substring(0, patternDecoded.indexOf(SPConstants.SLASH))
-                        + ":[0-9].*";
+                                + ":[0-9].*";
                     } else {
                         urlPatt1stPart = patternDecoded.substring(0, patternDecoded.indexOf(SPConstants.SLASH));
                     }
@@ -1202,8 +1212,8 @@ public class SharepointConnectorType implements ConnectorType {
                         final String[] alias_entry = nextEntry.split(SPConstants.SOURCE_ALIAS_SEPARATOR);
                         if (alias_entry.length != 2) {
                             LOGGER.warning("Skipping alias entry [ "
-                                                                   + nextEntry
-                                                                   + " ] because required values are not found.");
+                                    + nextEntry
+                                    + " ] because required values are not found.");
                             continue;
                         } else {
                             final String source_url = alias_entry[0];
@@ -1246,7 +1256,7 @@ public class SharepointConnectorType implements ConnectorType {
                         }
                     } catch (final Exception e) {
                         final String logMessage = "Exception thrown while parsing AliasMap [ "
-                            + aliasMapString + " ] Values:";
+                                + aliasMapString + " ] Values:";
                         LOGGER.log(Level.WARNING, logMessage, e);
                         continue;
                     }
@@ -1259,37 +1269,44 @@ public class SharepointConnectorType implements ConnectorType {
         return message;
     }
 
-
     /**
-     * Validates the String to check whether it represents an IP address or not and returns the boolean status.
+     * Validates the String to check whether it represents an IP address or not
+     * and returns the boolean status.
+     *
      * @param ip IP adress to be validated in the form of string.
-     * @return If ip address matches the regular expression then true else false is returned.
+     * @return If ip address matches the regular expression then true else false
+     *         is returned.
      */
-    private boolean validateIPAddress (String ip){
-//		if(ip.matches("[0-255]+.[0-255]+.[0-255]+.[0-255]+"))
-        if(ip.matches("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"))
+    private boolean validateIPAddress(String ip) {
+        // if(ip.matches("[0-255]+.[0-255]+.[0-255]+.[0-255]+"))
+        if (ip.matches("^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"))
             return true;
-        else return false;
+        else
+            return false;
     }
 
     /**
-     *	All the initial set-up and pre-requisites for Kerberos Authentication. Following are the responsibilities:
-     *		- If KDC Host is provided on UI configuration then the Negotiate AuthScheme is registered with AuthPolicy of Httpclient.
-     *		- krb5.conf and login.conf files are copied to the connector instance's directory.
-     *		- Values of KDC Server and Realm are changed at runtime in krb5.conf.
-     *		- System properties required for the Kerberos AuthN are set.
+     * All the initial set-up and pre-requisites for Kerberos Authentication.
+     * Following are the responsibilities: - If KDC Host is provided on UI
+     * configuration then the Negotiate AuthScheme is registered with AuthPolicy
+     * of Httpclient. - krb5.conf and login.conf files are copied to the
+     * connector instance's directory. - Values of KDC Server and Realm are
+     * changed at runtime in krb5.conf. - System properties required for the
+     * Kerberos AuthN are set.
      */
-    private void kerberosSetUp(final Map configData){
+    private void kerberosSetUp(final Map configData) {
         String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
-        String googleConnWorkDir = (String)configData.get(GOOGLE_CONN_WORK_DIR);
+        String googleConnWorkDir = (String) configData.get(GOOGLE_CONN_WORK_DIR);
 
-        if(!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)){
+        if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
             AuthPolicy.registerAuthScheme(SPConstants.NEGOTIATE, NegotiateScheme.class);
 
             InputStream krb5In = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_KRB5);
-            if(krb5In != null){
+            if (krb5In != null) {
                 try {
-                    File krb5File = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
+                    File krb5File = new File(googleConnWorkDir
+                            + SPConstants.DOUBLEBACKSLASH
+                            + SPConstants.FILE_KRB5);
                     String krb5Config = StringUtils.streamToStringAndThrow(krb5In);
                     krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_UPPERCASE, configData.get(SPConstants.DOMAIN).toString().toUpperCase());
                     krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_LOWERCASE, configData.get(SPConstants.DOMAIN).toString().toLowerCase());
@@ -1303,9 +1320,11 @@ public class SharepointConnectorType implements ConnectorType {
             }
 
             InputStream loginIn = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_LOGIN);
-            if(loginIn != null){
+            if (loginIn != null) {
                 try {
-                    File loginFile = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
+                    File loginFile = new File(googleConnWorkDir
+                            + SPConstants.DOUBLEBACKSLASH
+                            + SPConstants.FILE_LOGIN);
                     String loginConfig = StringUtils.streamToStringAndThrow(loginIn);
                     FileOutputStream out = new FileOutputStream(loginFile);
                     out.write(loginConfig.getBytes(SPConstants.UTF_8));
@@ -1315,8 +1334,10 @@ public class SharepointConnectorType implements ConnectorType {
                 }
             }
 
-            System.setProperty(SPConstants.SYS_PROP_AUTH_LOGIN_CONFIG, googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
-            System.setProperty(SPConstants.SYS_PROP_AUTH_KRB5_CONFIG, googleConnWorkDir + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
+            System.setProperty(SPConstants.SYS_PROP_AUTH_LOGIN_CONFIG, googleConnWorkDir
+                    + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
+            System.setProperty(SPConstants.SYS_PROP_AUTH_KRB5_CONFIG, googleConnWorkDir
+                    + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
             System.setProperty(SPConstants.SYS_PROP_AUTH_USESUBJETCREDSONLY, SPConstants.FALSE);
         }
     }
