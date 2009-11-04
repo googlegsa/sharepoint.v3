@@ -58,11 +58,10 @@ This section describes some commonly encountered error messages and their likely
  This message appears when domain has been specified twice under domain field as well as in the username. You should always enter domain as domain and username as username; i.e, for a user dom\user or user@dom username is user and domain is dom.
 
 
- * *Web service gets a SAXParseException due to an invalid XML character in the web service 
-response*
+ * *Web service gets a SAXParseException due to an invalid XML character in the web service response*
  This is a known issue, see: .[http://code.google.com/p/google-enterprise-connector-sharepoint/issues/detail?id=50] The SharePoint web-service call fails with error `org.xml.sax.SAXParseException: Character reference "&#11" is an invalid XML character`. This is because the web-service response received from SharePoint contains an invalid XML character. 
 
- Please remove the unsupported character; it is probably present in one of the fields returned by the web-service, could be any of title/meta-data of the document.
+ Please remove the unsupported character; it is probably present in one of the fields returned by the web-service, could be in the title/meta-data of the document.
 
 
  * *java.lang.OutOfMemoryError: Java heap space*
@@ -297,6 +296,13 @@ Create a list of type Links, which can be discovered from the given crawl URL. T
 *OR*
 
 Create a Site Directory with links to all site collections. Give the site directory URL as crawl URL and the connector will crawl all site collections  listed under it.
+
+
+*Q. Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop and re-discovers the same documents again and again.
+
+The connector relies on the SharePoint's web-service to detect changes. The web-service in turn relies on the EventCache table. By default the entries in EventCache have a life time of 15days. If there is a long time gap in between modifications to the SharePoint list, the change tokens with the connector are invalidated and it is unable to detect any changes since the last crawl.
+
+To circumvent this problem, please increase the EventCache timeout to the maximum possible value for your environment. See [http://code.google.com/p/google-enterprise-connector-sharepoint/issues/detail?id=113] for details.
 
 
 === Metadata-and-URL Feed Mode ===
