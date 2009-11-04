@@ -57,6 +57,14 @@ This section describes some commonly encountered error messages and their likely
  * *Domain has been specified twice under Domain/Username. Please provide the credentials in right format.*
  This message appears when domain has been specified twice under domain field as well as in the username. You should always enter domain as domain and username as username; i.e, for a user dom\user or user@dom username is user and domain is dom.
 
+
+ * *Web service gets a SAXParseException due to an invalid XML character in the web service 
+response*
+ This is a known issue, see: .[http://code.google.com/p/google-enterprise-connector-sharepoint/issues/detail?id=50] The SharePoint web-service call fails with error `org.xml.sax.SAXParseException: Character reference "&#11" is an invalid XML character`. This is because the web-service response received from SharePoint contains an invalid XML character. 
+
+ Please remove the unsupported character; it is probably present in one of the fields returned by the web-service, could be any of title/meta-data of the document.
+
+
  * *java.lang.OutOfMemoryError: Java heap space*
  This message appears when the connector does not have sufficient memory to perform the requested task. One of the cases when this can occur is when the connector's state file has grown too large and the connector is restarted. The connector will fail while parsing the state file due to memory shortage. 
 
