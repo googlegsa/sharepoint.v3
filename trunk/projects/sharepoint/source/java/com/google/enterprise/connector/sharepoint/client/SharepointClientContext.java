@@ -38,6 +38,7 @@ import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.TraversalContext;
 
 /**
  * Class to hold the context information for sharepoint client connection. The
@@ -68,6 +69,9 @@ public class SharepointClientContext implements Cloneable {
     // be submitted to Connector manager
 
     private String excludedURL_ParentDir = null;
+
+    // The traversal context
+    private TraversalContext traversalContext;
 
     /**
      * For cloning
@@ -838,5 +842,23 @@ public class SharepointClientContext implements Cloneable {
 
     public void setKdcServer(String kdcServer) {
         this.kdcServer = kdcServer;
+    }
+
+    /**
+     * Returns the traversal context
+     *
+     * @return the traversalContext
+     */
+    public TraversalContext getTraversalContext() {
+        return traversalContext;
+    }
+
+    /**
+     * Sets the traversal context
+     *
+     * @param traversalContext the traversalContext to set
+     */
+    public void setTraversalContext(TraversalContext traversalContext) {
+        this.traversalContext = traversalContext;
     }
 }

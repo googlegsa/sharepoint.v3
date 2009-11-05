@@ -1159,9 +1159,9 @@ public class ListsWS {
      * @param list List for which the exception occured
      */
     private void handleListException(final ListState list, Throwable te) {
-		if (te == null) {
-			return;
-		}
+        if (te == null) {
+            return;
+        }
         // As a quick fix, marking the list as partially crawled. Crawl will not proceed for the given list
         LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
                 + list.getListURL()
@@ -1177,11 +1177,11 @@ public class ListsWS {
         // recover from the exception gracefully and proceed with the
         // crawl. Any problematic document should be skipped and list's
         // state should be appropriately updated.
-		if (te.getMessage().indexOf(SPConstants.SAXPARSEEXCEPTION) != -1) {
+        if (te.getMessage().indexOf(SPConstants.SAXPARSEEXCEPTION) != -1) {
             LOGGER.log(Level.WARNING, "Could not parse the web service SOAP response for list [ "
                     + list.getListURL()
                     + " ]. This could happen becasue of invalid XML chanracters in the web service response. "
-					+ "Check if any of your document's metadata has such characters in it. ");
+                    + "Check if any of your document's metadata has such characters in it. ");
         }
     }
     /**
@@ -1649,6 +1649,7 @@ public class ListsWS {
         String fileName = listItem.getAttribute(SPConstants.FILEREF);
         final String lastModified = listItem.getAttribute(SPConstants.MODIFIED);
         String strObjectType = listItem.getAttribute(SPConstants.CONTENTTYPE);
+        String fileSize = listItem.getAttribute(SPConstants.FILE_SIZE);
         String author = listItem.getAttribute(SPConstants.EDITOR);
         if (author == null) {
             author = listItem.getAttribute(SPConstants.AUTHOR);
@@ -1759,6 +1760,17 @@ public class ListsWS {
         doc = new SPDocument(docId, url.toString(), calMod, author,
                 strObjectType, list.getParentWebTitle(),
                 sharepointClientContext.getFeedType(), list.getSharePointType());
+
+        if (fileSize != null && !fileSize.equals("")) {
+            try {
+                doc.setFileSize(Integer.parseInt(fileSize));
+            } catch (NumberFormatException nfe) {
+                // Just log the message in case of errors.
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "Problems while parsing the file size attribute", nfe.getMessage());
+                }
+            }
+        }
 
         // iterate through all the attributes get the atribute name and value
         if (itAttrs != null) {
