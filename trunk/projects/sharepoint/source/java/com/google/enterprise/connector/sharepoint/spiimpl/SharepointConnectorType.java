@@ -494,6 +494,8 @@ public class SharepointConnectorType implements ConnectorType {
 
         if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
             kerberosSetUp(configData);
+		} else {
+			unregisterKerberosSetUp(configData);
         }
 
         for (final Iterator i = keys.iterator(); i.hasNext();) {
@@ -1341,4 +1343,19 @@ public class SharepointConnectorType implements ConnectorType {
             System.setProperty(SPConstants.SYS_PROP_AUTH_USESUBJETCREDSONLY, SPConstants.FALSE);
         }
     }
+
+	private void unregisterKerberosSetUp(Map configData) {
+		AuthPolicy.unregisterAuthScheme(SPConstants.NEGOTIATE);
+		String googleConnWorkDir = (String) configData.get(GOOGLE_CONN_WORK_DIR);
+		File fileKrb5 = new File(googleConnWorkDir
+				+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
+		if (fileKrb5 != null && fileKrb5.exists()) {
+			fileKrb5.delete();
+		}
+		File fileLogin = new File(googleConnWorkDir
+				+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
+		if (fileLogin != null && fileLogin.exists()) {
+			fileLogin.delete();
+		}
+	}
 }
