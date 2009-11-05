@@ -99,7 +99,8 @@ public class SPConstants {
     public static final String CONTENTTYPE_INMETA = "ows_MetaInfo_ContentType";
     public static final String EDITOR = "ows_Editor";
     public static final String AUTHOR = "ows_Author";
-    public static final String FILE_SIZE = "ows_FileSizeDisplay";
+    public static final String FILE_SIZE_DISPLAY = "ows_FileSizeDisplay";
+    public static final String FILE_SIZE = "ows_File_x0020_Size";
     public static final String QUERYOPTIONS = "QueryOptions";
     public static final String VIEWATTRIBUTES = "ViewAttributes";
     public static final String SCOPE = "Scope";
@@ -112,6 +113,7 @@ public class SPConstants {
     public static final String DOCUMENT = "Document";
     public static final String URL = "ows_URL";
     public static final String BT_DISCUSSIONBOARD = "DiscussionBoard";
+    public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final SimpleDateFormat ISO8601_DATE_FORMAT_SECS = new SimpleDateFormat(
             "yyyy-MM-dd'T'HH:mm:ss'Z'");
     public static final SimpleDateFormat ISO8601_DATE_FORMAT_MILLIS = new SimpleDateFormat(

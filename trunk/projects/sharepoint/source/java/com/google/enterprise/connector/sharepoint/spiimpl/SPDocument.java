@@ -538,6 +538,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         + getUrl()
                         + " with docId : "
                         + docId
+                        + " of size "
+                        + getFileSize()
                         + " as it exceeds the allowed max document size "
                         + sharepointClientContext.getTraversalContext().maxDocumentSize());
             }
@@ -561,7 +563,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 throw new RepositoryDocumentException(msg, t);
             }
 
-            final Header contentType = method.getResponseHeader("Content-Type");
+            final Header contentType = method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER);
             if (contentType != null) {
                 content_type = contentType.getValue();
 
