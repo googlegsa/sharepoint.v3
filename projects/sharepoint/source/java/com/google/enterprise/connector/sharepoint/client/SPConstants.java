@@ -58,7 +58,7 @@ public class SPConstants {
             .compile("^\\d+;\\#");
 
     public static final String UNAUTHORIZED = "(401)Unauthorized";
-	public static final String SAXPARSEEXCEPTION = "org.xml.sax.SAXParseException";
+    public static final String SAXPARSEEXCEPTION = "org.xml.sax.SAXParseException";
 
     public static final String EXCLUDED_URL_DIR = "excluded-URLs";
     public static final String EXCLUDED_URL_LOG = "excluded_url";
@@ -99,6 +99,7 @@ public class SPConstants {
     public static final String CONTENTTYPE_INMETA = "ows_MetaInfo_ContentType";
     public static final String EDITOR = "ows_Editor";
     public static final String AUTHOR = "ows_Author";
+    public static final String FILE_SIZE = "ows_FileSizeDisplay";
     public static final String QUERYOPTIONS = "QueryOptions";
     public static final String VIEWATTRIBUTES = "ViewAttributes";
     public static final String SCOPE = "Scope";

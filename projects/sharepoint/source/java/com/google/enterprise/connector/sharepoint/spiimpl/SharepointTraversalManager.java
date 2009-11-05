@@ -26,6 +26,8 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.TraversalContext;
+import com.google.enterprise.connector.spi.TraversalContextAware;
 import com.google.enterprise.connector.spi.TraversalManager;
 
 /**
@@ -35,13 +37,17 @@ import com.google.enterprise.connector.spi.TraversalManager;
  * @author amit_kagrawal
  */
 
-public class SharepointTraversalManager implements TraversalManager {
+public class SharepointTraversalManager implements TraversalManager,
+        TraversalContextAware {
     private final Logger LOGGER = Logger.getLogger(SharepointTraversalManager.class.getName());
     private SharepointClientContext sharepointClientContext;
     private SharepointClientContext sharepointClientContextOriginal = null;
     protected GlobalState globalState; // not private, so the unittest can see
     // it
     private int hint = -1;
+
+    // The traversal context instance
+    private TraversalContext traversalContext;
 
     /**
      * constructor.
@@ -163,6 +169,10 @@ public class SharepointTraversalManager implements TraversalManager {
             return null;
         }
 
+        // Set the traversal context on client context so that it can be used by
+        // any other classes that will make use of the same.
+        sharepointClientContext.setTraversalContext(traversalContext);
+
         final SharepointClient sharepointClient = new SharepointClient(
                 sharepointClientContext);
 
@@ -271,5 +281,14 @@ public class SharepointTraversalManager implements TraversalManager {
             }
         }
         return rsAll;
+    }
+
+    /**
+     * Sets the traversal context
+     *
+     * @param traversalContext The {@link TraversalContext} instance
+     */
+    public void setTraversalContext(TraversalContext traversalContext) {
+        this.traversalContext = traversalContext;
     }
 }

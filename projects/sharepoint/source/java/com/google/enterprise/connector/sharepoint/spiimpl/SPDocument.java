@@ -36,7 +36,9 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.Property;
+import com.google.enterprise.connector.spi.RepositoryDocumentException;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 import com.google.enterprise.connector.spiimpl.BinaryValue;
@@ -72,6 +74,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     // Added for document content download
     private String contentDwnldURL;
     private SharepointClientContext sharepointClientContext;
+
+    // The document size
+    private int fileSize = -1;
 
     private final Logger LOGGER = Logger.getLogger(SPDocument.class.getName());
 
@@ -512,8 +517,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      * of content feed only.
      *
      * @return the status of download
+     * @throws RepositoryException
      */
-    private String downloadContents() {
+    private String downloadContents() throws RepositoryException {
         if (null == sharepointClientContext) {
             LOGGER.log(Level.SEVERE, "Failed to download document content because the connector context is not found!");
             return SPConstants.CONNECTIVITY_FAIL;
@@ -521,27 +527,75 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         LOGGER.config("Document URL [ " + contentDwnldURL
                 + " is getting processed for contents");
         int responseCode = 0;
-        final String docURL = Util.encodeURL(contentDwnldURL);
-        HttpMethodBase method = null;
-        try {
-            method = new GetMethod(docURL);
-            responseCode = sharepointClientContext.checkConnectivity(docURL, method);
-            if (null == method) {
-                return SPConstants.CONNECTIVITY_FAIL;
+        boolean downloadContent = true;
+        if (getFileSize() > 0
+                && sharepointClientContext.getTraversalContext() != null) {
+            if (getFileSize() > sharepointClientContext.getTraversalContext().maxDocumentSize()) {
+                // Set the flag to download content to be false so that no
+                // content is downloaded as the CM itself will drop it.
+                downloadContent = false;
+                LOGGER.log(Level.WARNING, "Dropping content of document : "
+                        + getUrl()
+                        + " with docId : "
+                        + docId
+                        + " as it exceeds the allowed max document size "
+                        + sharepointClientContext.getTraversalContext().maxDocumentSize());
             }
-            content = method.getResponseBodyAsStream();
+        }
+        if (downloadContent) {
+            final String docURL = Util.encodeURL(contentDwnldURL);
+            HttpMethodBase method = null;
+            try {
+                method = new GetMethod(docURL);
+                responseCode = sharepointClientContext.checkConnectivity(docURL, method);
+                if (null == method) {
+                    return SPConstants.CONNECTIVITY_FAIL;
+                }
+                content = method.getResponseBodyAsStream();
+
+            } catch (Throwable t) {
+                String msg = new StringBuffer(
+                        "Unable to fetch contents from URL: ").append(url).toString();
+                LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: "
+                        + url, t);
+                throw new RepositoryDocumentException(msg, t);
+            }
+
             final Header contentType = method.getResponseHeader("Content-Type");
             if (contentType != null) {
                 content_type = contentType.getValue();
+
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.fine("The content type for doc : " + toString()
+                            + " is : " + content_type);
+                }
+
+                if (sharepointClientContext.getTraversalContext() != null) {
+                    // TODO : This is to be revisited later where a better
+                    // approach to skip documents or only content is
+                    // available
+                    int mimeTypeSupport = sharepointClientContext.getTraversalContext().mimeTypeSupportLevel(content_type);
+                    if (mimeTypeSupport == 0) {
+                        content = null;
+                        LOGGER.log(Level.WARNING, "Dropping content of document : "
+                                + getUrl()
+                                + " with docId : "
+                                + docId
+                                + " as the mimetype : "
+                                + content_type
+                                + " is not supported");
+                    } else if (mimeTypeSupport < 0) {
+                        // Since the mimetype is in list of 'ignored' mimetype
+                        // list, mark it to be skipped from sending
+                        String msg = new StringBuffer(
+                                "Skipping the document with docId : ").append(getDocId()).append(" doc URL: ").append(getUrl()).append(" as the mimetype is in the 'ignored' mimetypes list ").toString();
+                        // Log it to the excluded_url log
+                        sharepointClientContext.logExcludedURL(msg);
+                        throw new SkippedDocumentException(msg);
+                    }
+                }
             }
-        } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: "
-                    + url, e);
-            return e.getLocalizedMessage();
-        } catch (Throwable t) {
-            LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: "
-                    + url, t);
-            return t.getLocalizedMessage();
+
         }
 
         if (responseCode == 200) {
@@ -648,5 +702,24 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      */
     public void setContentDwnldURL(String contentDwnldURL) {
         this.contentDwnldURL = contentDwnldURL;
+    }
+
+    /**
+     * @return the fileSize
+     */
+    public int getFileSize() {
+        return fileSize;
+    }
+
+    /**
+     * @param fileSize the fileSize to set
+     */
+    public void setFileSize(int fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    @Override
+    public String toString() {
+        return url;
     }
 }
