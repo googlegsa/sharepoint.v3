@@ -1649,7 +1649,13 @@ public class ListsWS {
         String fileName = listItem.getAttribute(SPConstants.FILEREF);
         final String lastModified = listItem.getAttribute(SPConstants.MODIFIED);
         String strObjectType = listItem.getAttribute(SPConstants.CONTENTTYPE);
-        String fileSize = listItem.getAttribute(SPConstants.FILE_SIZE);
+        String fileSize = listItem.getAttribute(SPConstants.FILE_SIZE_DISPLAY);
+
+        if (fileSize == null) {
+            // Check with the other file size attribute as back-up
+            fileSize = listItem.getAttribute(SPConstants.FILE_SIZE);
+        }
+
         String author = listItem.getAttribute(SPConstants.EDITOR);
         if (author == null) {
             author = listItem.getAttribute(SPConstants.AUTHOR);
@@ -1770,6 +1776,10 @@ public class ListsWS {
                     LOGGER.log(Level.FINEST, "Problems while parsing the file size attribute", nfe.getMessage());
                 }
             }
+        } else if (LOGGER.isLoggable(Level.FINER)) {
+            // Just log for any doc level debugging purposes
+            LOGGER.finer("No file size attribute retrieved for document : "
+                    + doc.getUrl());
         }
 
         // iterate through all the attributes get the atribute name and value
