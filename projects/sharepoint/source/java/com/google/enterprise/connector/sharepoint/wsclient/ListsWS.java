@@ -1296,7 +1296,8 @@ public class ListsWS {
         LOGGER.log(Level.FINE, "Change Token Recieved [ " + lastChangeToken
                 + " ]. ");
         if (lastChangeToken == null) {
-            LOGGER.log(Level.SEVERE, "No Change Token Found in the Web Service Response !!!!");
+			LOGGER.log(Level.SEVERE, "No Change Token Found in the Web Service Response !!!! "
+					+ "The current change token might have become invalid; please check the Event Cache table of SharePoint content database.");
         }
 
         for (final Iterator itrchild = changeElement.getChildElements(); itrchild.hasNext();) {
