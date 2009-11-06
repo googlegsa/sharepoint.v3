@@ -4,13 +4,13 @@ Release Notes:
 Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007
 
 This document contains the release notes for Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007.
-The following sections describe the release in detail and provide information that supplements the main documentation.  
+The following sections describe the release in detail and provide information that supplements the main documentation.
 See the Issues Tab on the Code Site for the current list of known issues and workarounds.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 2.4.0 Build1, 15 October, 2009
+Release 2.4.0 Build2, 06 November, 2009
 ==========================
 
 Introduction
@@ -26,12 +26,9 @@ New features:
 
 Issues fixed from last release:
 ---------------------------------
-Issue 74 - Support traversal by Kerberos authentication.
-Issue 85 - The discovery of site collection should be initiated in the first crawl cycle even though no content is crawled. 
-Issue 87 - Connector should canonicalize the URLs for child entities before applying include/exclude patterns.
-Issue 90 - The time at which connector completes a crawl cycle should be logged in state file.
-Issue 102 - Liststate entry is deleted from the connector state without checking if the list is deleted.
-Issue 106 - Connector should not remove/delete documents from its queue unless checkPoint() is called.
+Issue 101 - Sending metadata to GSA when doc size > 30M.
+Issue 110 - Connector is not editable when password has ampersand (&) character. Connector configuration page throws XML error.
+Issue 116 - Return batchHint or little more docs from start/resumeTraversal and not 2* batchHint.
 
 Version Compatibility
 ---------------------
