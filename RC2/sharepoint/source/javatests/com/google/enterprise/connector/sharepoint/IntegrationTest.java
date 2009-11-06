@@ -19,6 +19,7 @@ import javax.security.auth.login.LoginException;
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.instantiator.MockInstantiator;
+import com.google.enterprise.connector.manager.Context;
 import com.google.enterprise.connector.persist.ConnectorStateStore;
 import com.google.enterprise.connector.persist.MockConnectorStateStore;
 import com.google.enterprise.connector.persist.StoreContext;
@@ -28,6 +29,8 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointTraversalMan
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+import com.google.enterprise.connector.traversal.BatchResult;
+import com.google.enterprise.connector.traversal.BatchSize;
 import com.google.enterprise.connector.traversal.QueryTraverser;
 import com.google.enterprise.connector.traversal.Traverser;
 
@@ -78,10 +81,10 @@ public class IntegrationTest extends TestCase {
         final MockPusher pusher = new MockPusher(System.out);
         final StoreContext storeContext = new StoreContext(connectorName);
         final ConnectorStateStore connectorStateStore = new MockConnectorStateStore();
-        final MockInstantiator instantiator = new MockInstantiator();
+        final MockInstantiator instantiator = new MockInstantiator(null);
         final Traverser traverser = new QueryTraverser(pusher, manager,
                 instantiator.getTraversalStateStore(connectorName),
-                connectorName);
+                connectorName, Context.getInstance().getTraversalContext());
         instantiator.setupTraverser(connectorName, traverser);
         System.out.println("\nRunning batch test batchsize " + batchSize);
 
@@ -89,8 +92,12 @@ public class IntegrationTest extends TestCase {
         int totalDocsProcessed = 0;
         int batchNumber = 0;
         while (true) {
-            docsProcessed = traverser.runBatch(batchSize);// do the traversal
-            totalDocsProcessed += docsProcessed;// do the checkpointing after
+            BatchResult result = traverser.runBatch(new BatchSize(10, 20));// do
+                                                                            // the
+                                                                            // traversal
+            totalDocsProcessed += result.getCountProcessed();// do the
+                                                                // checkpointing
+                                                                // after
                                                 // the traversal
             System.out.println("Batch# " + batchNumber + " docs "
                     + docsProcessed + " checkpoint "
