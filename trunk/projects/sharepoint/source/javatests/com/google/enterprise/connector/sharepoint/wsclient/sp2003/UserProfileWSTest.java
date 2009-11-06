@@ -16,11 +16,11 @@ package com.google.enterprise.connector.sharepoint.wsclient.sp2003;
 
 import java.net.MalformedURLException;
 import java.util.Set;
+
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.wsclient.sp2003.UserProfileWS;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 /**
@@ -37,7 +37,8 @@ public class UserProfileWSTest extends TestCase {
         System.out.println("Initializing SharepointClientContext ...");
         this.sharepointClientContext = new SharepointClientContext(
                 TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.kdcserver, TestConfiguration.username,
+                TestConfiguration.Password,
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
