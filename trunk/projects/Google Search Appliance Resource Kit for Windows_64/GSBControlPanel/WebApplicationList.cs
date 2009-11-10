@@ -1,4 +1,4 @@
-// Copyright (C) 2007 Google Inc.
+// Copyright (C) 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,8 +46,9 @@ namespace GSBControlPanel
 
         /// <summary>
         /// Determines whether the given sharepoint web application is hosted locally or remotely
+        /// Fix for issue 107: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/detail?id=107
         /// </summary>
-        /// <param name="wa">SharePoitn web application to test</param>
+        /// <param name="wa">SharePoint web application to test</param>
         /// <returns></returns>
         /// 
         public static bool isLocalWebApplication(SPWebApplication wa)
@@ -199,49 +200,6 @@ namespace GSBControlPanel
                         }
                     }
                     catch { }
-
-                    //try
-                    //{
-                    //    //Get the alternate URls
-                    //    SPAlternateUrlCollection CentralAdminAlternateURLCollection = wa.AlternateUrls;//Find all the alternal URL mapping for the central admin web application
-                    //    /*
-                    //     * Logic: if any of the URLs belong to the current machine then include the central admin
-                    //     * web application in our current list
-                    //     * else, ignore it
-                    //     */
-
-                    //    bool IsLookForMoreWebs = true;
-                                                    
-                    //    if (null != CentralAdminAlternateURLCollection)
-                    //    {
-                    //        foreach (SPAlternateUrl CentralWebApplnAlternateURL in CentralAdminAlternateURLCollection)
-                    //        {
-                    //            if ((null != CentralWebApplnAlternateURL) && (IsLookForMoreWebs==true))
-                    //            {
-                    //                Uri uri = CentralWebApplnAlternateURL.Uri;
-                    //                if (null != uri)
-                    //                {
-                    //                    string fqdnHost = uri.Host;//Get teh 
-                    //                    char[] separator = { '.' };
-                    //                    string onlyhost = fqdnHost.Split(separator)[0];
-
-                    //                    string computerName = SystemInformation.ComputerName.ToLower();
-                    //                    if ((null != onlyhost) && (onlyhost.ToLower().Equals(computerName)))
-                    //                    {
-                    //                        AddNewWebApplication(wa, ++i); //Note: Central web application needs to be added always
-                    //                        isNoWebApps = false;
-                    //                        IsLookForMoreWebs = false;
-                    //                    }
-                    //                }
-
-                                   
-                    //            }
-                    //        }
-                    //    }
-
-                    //    ///////////////////////
-                    //}
-                    //catch {}
                 }
 
                 foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
@@ -259,7 +217,6 @@ namespace GSBControlPanel
             }
             catch (Exception)
             {
-                //MessageBox.Show(e.StackTrace.ToString(), e.Message);
             }
 
             //handling for blank web apps
