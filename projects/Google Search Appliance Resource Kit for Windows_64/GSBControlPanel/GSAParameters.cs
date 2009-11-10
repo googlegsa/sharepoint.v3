@@ -1,4 +1,4 @@
-// Copyright (C) 2007 Google Inc.
+// Copyright (C) 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,12 +78,10 @@ namespace GSBControlPanel
                         GsaUrl = tbGSALocation.Text + "/search?q=&access=p&client=" + tbFrontEnd.Text + "&output=xml_no_dtd&proxystylesheet=" + tbFrontEnd.Text + "&sort=date%3AD%3AL%3Ad1&entqr=0&oe=UTF-8&ie=UTF-8&ud=1&site=" + tbSiteCollection.Text;
                     }
                 }
-
-                 
-                //MessageBox.Show(GsaUrl, "GSA URL");
+                
                 HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(GsaUrl);
                 request.Method = "Head";
-                //Amit: added validation for the secured site. This would be the default case for the Search Appliance
+                //Added validation for the secured site. This would be the default case for the Search Appliance
                 ServicePointManager.ServerCertificateValidationCallback += new System.Net.Security.RemoteCertificateValidationCallback(customXertificateValidation);//security certificate handler
 
                 HttpWebResponse response = (HttpWebResponse)request.GetResponse();
@@ -95,7 +93,6 @@ namespace GSBControlPanel
                 else
                 {
                     lblCheckConnectivityStatus.Visible = true;
-                    //toolTip1.SetToolTip(lblCheckConnectivityStatus, GsaUrl);
                     lblCause.Text = "StatusCode: "+response.StatusCode.ToString();
                 }
             }
@@ -103,7 +100,6 @@ namespace GSBControlPanel
             {
                 //In case of Exception do not allow to save the values
                 lblCheckConnectivityStatus.Visible = true;
-                //toolTip1.SetToolTip(lblCheckConnectivityStatus, GsaUrl);
                 lblCause.Text = "Reason: "+ew.Message.ToString();
                 toolTip1.SetToolTip(lblCause, ew.Message.ToString());
             }
@@ -117,11 +113,9 @@ namespace GSBControlPanel
         public void LoadConfigurationFromFileToForm(string webConfigFilePath)
         {
             GSBApplicationConfigManager gcm = new GSBApplicationConfigManager();
-            //MessageBox.Show(webConfigFilePath, "webConfigFilePath");
             gcm.LoadXML(webConfigFilePath);
             
             string myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='GSALocation']");
-            //MessageBox.Show(myVal, "GSALocation");
             if (null == myVal)
             {
                 myVal = "";
@@ -265,13 +259,6 @@ namespace GSBControlPanel
                 btnOk.Enabled = true;
             }
         }
-
-        private void lblCheckConnectivityStatus_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        
 
     }
 }

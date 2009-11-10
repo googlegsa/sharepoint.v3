@@ -214,7 +214,6 @@ namespace GSBControlPanel
             this.lblCheckConnectivityStatus.TabIndex = 35;
             this.lblCheckConnectivityStatus.Text = "Unable to connect to Search Appliance";
             this.lblCheckConnectivityStatus.Visible = false;
-            this.lblCheckConnectivityStatus.Click += new System.EventHandler(this.lblCheckConnectivityStatus_Click);
             // 
             // lblCause
             // 

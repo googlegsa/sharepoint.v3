@@ -18,31 +18,31 @@ public class BulkAuthorization : System.Web.Services.WebService
     /// <param name="loginId"></param>
     [WebMethod]
     public void Authorize(AuthData authData, string loginId)
-    {	
+    {
         SPSite site = null;
         SPWeb web = null;
-        try		
+        try
         {
-            bool isAlert = false; 
-			String listURL = authData.listURL;
-			
-			SPSecurity.RunWithElevatedPrivileges(delegate()
-            { 
-                // Let's try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.                
-		        try
-		        {
-			        site = new SPSite(listURL);
+            bool isAlert = false;
+      String listURL = authData.listURL;
+
+      SPSecurity.RunWithElevatedPrivileges(delegate()
+            {
+                // Let's try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.
+            try
+            {
+              site = new SPSite(listURL);
                     if (site == null)
                     {
                         site = new SPSite(SwitchURLFormat(listURL));
                     }
-		        }
-		        catch (Exception e)
-		        {
+            }
+            catch (Exception e)
+            {
                     site = new SPSite(SwitchURLFormat(listURL));
-		        }			
-	        });
-            		
+            }
+          });
+
             web = site.OpenWeb();
             SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, loginId, SPPrincipalType.All, false);
             if (userInfo == null)
@@ -55,21 +55,21 @@ public class BulkAuthorization : System.Web.Services.WebService
                 }
                 catch (Exception e)
                 {
-                    // Eatup Exception. Logging failed. This can occur due to a number of resons like if the event log is full.
+                    // Eatup Exception. Logging failed. This can occur due to a number of reasons like if the event log is full.
                 }
                 return;
             }
-            
-            // First ensure that the current user has rights to view pages or list items on the web. This will ensure that SPUser object can be constructed for this username.      
+
+            // First ensure that the current user has rights to view pages or list items on the web. This will ensure that SPUser object can be constructed for this username.
             bool web_auth = web.DoesUserHavePermissions(userInfo.LoginName, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
-            
+
             SPUser user = GetSPUser(web, userInfo.LoginName);
             if (user == null)
             {
                 authData.error = "User " + loginId + " not found against web " + web.Url;
                 return;
             }
-            
+
             if (authData.complexDocId != null && authData.complexDocId.StartsWith("[ALERT]"))
             {
                 Guid alert_guid = new Guid(authData.listItemId);
@@ -95,16 +95,16 @@ public class BulkAuthorization : System.Web.Services.WebService
                             {
                                 authData.isAllowed = true;
                             }
-                        }                        
-                    }                    
+                        }
+                    }
                 }
-                else 
+                else
                 {
                     authData.error = "Alert not found.";
                 }
                 return;
             }
-            
+
             SPList list = web.GetListFromUrl(listURL);
 
             if (authData.listItemId == null || authData.listItemId == "" || authData.listItemId.StartsWith("{"))
@@ -123,17 +123,17 @@ public class BulkAuthorization : System.Web.Services.WebService
         catch (Exception e)
         {
             authData.error = e.Message;
-            string logMsg = "Following error occured while authorizing user " + loginId + " while authorizing against " + authData.listURL + "|" + authData.listItemId + " :\n" + authData.error;
+            string logMsg = "Following error occurred while authorizing user " + loginId + " while authorizing against " + authData.listURL + "|" + authData.listItemId + " :\n" + authData.error;
             try
             {
                 System.Diagnostics.EventLog.WriteEntry("GSBulkAuthorization", logMsg, EventLogEntryType.Error);
             }
             catch (Exception e1)
             {
-                // Eatup Exception. Logging failed. This can occur due to a number of resons like if the event log is full.
+                // Eatup Exception. Logging failed. This can occur due to a number of reasons like if the event log is full.
             }
         }
-        finally 
+        finally
         {
             if (site != null)
             {
@@ -155,14 +155,14 @@ public class BulkAuthorization : System.Web.Services.WebService
     [WebMethod]
     public AuthData[] BulkAuthorize(AuthData[] authData, string loginId)
     {
-        string logMsg = "Authorization Request recived for user " + loginId + " against #" + authData.Length + " items";
+        string logMsg = "Authorization Request received for user " + loginId + " against #" + authData.Length + " items";
         try
         {
             System.Diagnostics.EventLog.WriteEntry("GSBulkAuthorization", logMsg, EventLogEntryType.Information);
         }
         catch (Exception e)
-        { 
-            // Eatup Exception. Logging failed. This can occur due to a number of resons like if the event log is full.
+        {
+            // Eatup Exception. Logging failed. This can occur due to a number of reasons like if the event log is full.
         }
         foreach (AuthData e in authData)
         {
@@ -176,21 +176,21 @@ public class BulkAuthorization : System.Web.Services.WebService
     /// </summary>
     /// <returns></returns>
     [WebMethod]
-    public string CheckConnectivity() {      
-	try {
-		SPSecurity.RunWithElevatedPrivileges(delegate() {			
-		});	
-	} 
-	catch (Exception e)
+    public string CheckConnectivity() {
+  try {
+    SPSecurity.RunWithElevatedPrivileges(delegate() {
+    });
+  }
+  catch (Exception e)
         {
             return e.Message;
         }
         return "success";
     }
-    
+
     /// <summary>
     /// There might be some cases when SPWeb.AllUsers can not return the SPUser object. Hence, we must try all the three: AllUsers, SiteUsers and, Users.
-    /// Also, these three properties of SPWeb has been accessedd in try blocks in the decreasing order of the possibility of success. AllUsers has the highest possibility to succeed.
+    /// Also, these three properties of SPWeb has been accessed in try blocks in the decreasing order of the possibility of success. AllUsers has the highest possibility to succeed.
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
@@ -231,7 +231,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         string host = url.Host;
         if (host.Contains("."))
         {
-            host = host.Split('.')[0];            
+            host = host.Split('.')[0];
         }
         else
         {

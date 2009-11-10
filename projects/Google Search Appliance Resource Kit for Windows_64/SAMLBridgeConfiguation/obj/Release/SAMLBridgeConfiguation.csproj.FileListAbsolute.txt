@@ -21,3 +21,14 @@ C:\Working Installshield\Google Services for Sharepoint Installer_64\SAMLBridgeC
 C:\Working Installshield\Google Services for Sharepoint Installer_64\SAMLBridgeConfiguation\bin\Release\SAMLConfigurationManager.cs
 \\ps4521\e$\Google Search Appliance Resource Kit for Windows\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
 \\ps4521\e$\Google Search Appliance Resource Kit for Windows\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\bin\Release\SAMLConfigurationManager.cs
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.exe
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.pdb
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\obj\Release\ResolveAssemblyReference.cache
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\obj\Release\SAMLConfiguration.frmSAMLConfiguration.resources
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.Properties.Resources.resources
+\\gdc06\C$\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
