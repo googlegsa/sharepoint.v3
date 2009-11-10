@@ -1,4 +1,4 @@
-// Copyright (C) 2007 Google Inc.
+// Copyright (C) 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ namespace GSBControlPanel
         private string frontEnd;
         private string enableLogging;
 
-        //additional parameters for custom stylesheet
+        //Additional parameters for custom stylesheet
         private string xslGSA2SP = "";
         private string xslSP2result = "";
         private string GSAStyle = "true";
@@ -81,8 +81,9 @@ namespace GSBControlPanel
                 gcm.ModifyNode("/configuration/appSettings", "xslGSA2SP", GsaToSpStyle);//for custom stylesheet
                 gcm.ModifyNode("/configuration/appSettings", "xslSP2result", SpToResultStyle);//for custom stylesheet
             }
-            else 
-            { 
+            else
+            {
+                #region Scenario and Sample
                 /*
                  Consider scenario: new web app created or user has clicked cancel on the "configuration wizard form" while putting the GSA parameters
                     -E.g. user has clicked cancel while saving the configuration
@@ -98,10 +99,10 @@ namespace GSBControlPanel
                 //sample values
                 //<add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\GSA2SP.xsl" />
                 //<add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\SP_Actual.xsl" />
+                #endregion Scenario and Sample
 
                 string StylesheetPath= "";
                 string CurrentDir = Directory.GetCurrentDirectory();//Get the current Directory value (common for all)
-                //MessageBox.Show("GetCurrentDirectory", CurrentDir);
                 
                 //read style#1
                 StylesheetPath = gcm.GetNodeValue("/configuration/appSettings/add[@key='xslGSA2SP']");
@@ -118,11 +119,8 @@ namespace GSBControlPanel
                     StylesheetPath = CurrentDir + "\\SP_Actual.xsl";//Get the value from web.config
                     gcm.ModifyNode("/configuration/appSettings", "xslSP2result", StylesheetPath);//modify node
                 }
-            
             }
-
-            //finally save the resultant modified values
-            gcm.SaveXML();
+            gcm.SaveXML();//finally save the resultant modified values
         }
 
         

@@ -1,4 +1,4 @@
-// Copyright (C) 2007 Google Inc.
+// Copyright (C) 2009 Google Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -71,10 +71,6 @@ namespace GSBControlPanel
                  * *************************************************************/
                 try
                 {
-                    //MessageBox.Show(myBasePath + SEARCHCONTROL, "SEARCHCONTROL");
-                    //MessageBox.Show(myBasePath + SEARCHCONTROL_BACKUP, "SEARCHCONTROL_BACKUP");
-                    //MessageBox.Show(myBasePath + CURRENT_SEARCHCONTROL, "CURRENT_SEARCHCONTROL");
-                    
                     ///////////////////////////STEPS FOR SEARCHCONTROL//////////////////////////////////////
                     if (File.Exists(myBasePath + SEARCHCONTROL))
                     {

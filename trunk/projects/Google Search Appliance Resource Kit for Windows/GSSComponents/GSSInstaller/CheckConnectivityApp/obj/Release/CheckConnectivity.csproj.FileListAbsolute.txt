@@ -49,3 +49,13 @@ C:\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponen
 \\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.exe
 \\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.pdb
 \\gdc06\c$\Working Installshield\Google Services for Sharepoint Installer_64\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\bin\Release\Verify Installation.exe.config
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\bin\Release\Verify Installation.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\bin\Release\Verify Installation.XmlSerializers.dll
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\bin\Release\Verify Installation.pdb
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\ResolveAssemblyReference.cache
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\WindowsApplication1.frmVerifyInstallation.resources
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\CheckConnectivity.csproj.GenerateResource.Cache
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.pdb
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSSComponents\GSSInstaller\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll
