@@ -931,8 +931,18 @@ public class SharepointClient {
                 LOGGER.info("Stopping crawl cycle as connector has discovered (>= batchHint) # of docs. In total : "
                         + nDocuments + " docs");
                 doCrawl = false;
+
+                // There are chances of missing updating the timestamp if we
+                // stop at this point
+                // Set the last crawled date time. This is informative value for
+                // the user viewing the state file
+                ws.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
                 break;
             }
+
+            // Set the last crawled date time. This is informative value for the
+            // user viewing the state file
+            ws.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
 
             // Get the next web and discover its direct children
             sharepointClientContext.setSiteURL(webURL);
