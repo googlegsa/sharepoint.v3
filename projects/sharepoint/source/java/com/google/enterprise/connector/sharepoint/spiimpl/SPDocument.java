@@ -77,6 +77,16 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     // The document size
     private int fileSize = -1;
+	private String fileref = null; // to be used for updating extraId during
+									// checkpoint
+
+	public String getFileref() {
+		return fileref;
+	}
+
+    public void setFileref(String fileref) {
+		this.fileref = fileref;
+	}
 
     private final Logger LOGGER = Logger.getLogger(SPDocument.class.getName());
 
@@ -318,6 +328,22 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 && SPConstants.SP2003.equalsIgnoreCase(spType)) {
             return 1;
         }
+
+		// If an item and its corresponding attachment is being compared, item
+		// should be after the attachment.
+		// This is because we want to send all the attachments before we send
+		// the item itself.
+		// This way, the item can serve as a marker for the completion of all
+		// the attachments. Useful during checkpoint.
+		if (SPConstants.OBJTYPE_ATTACHMENT.equals(objType)
+				&& SPConstants.OBJTYPE_LIST_ITEM.equals(doc.getObjType())
+				&& docId.endsWith(doc.getDocId())) {
+			return -1;
+		} else if (SPConstants.OBJTYPE_ATTACHMENT.equals(doc.getObjType())
+				&& SPConstants.OBJTYPE_LIST_ITEM.equals(objType)
+				&& doc.getDocId().endsWith(docId)) {
+			return 1;
+		}
 
         int comparison = 0;
 

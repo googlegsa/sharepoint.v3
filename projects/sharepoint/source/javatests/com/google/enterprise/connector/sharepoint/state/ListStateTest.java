@@ -188,7 +188,7 @@ public class ListStateTest extends TestCase {
         }
     }
 
-    public void testUpdateExtraIDAsAttachment() {
+	public void testUpdateExtraIDAsAttachment() throws SharepointException {
         System.out.println("Testing the attachment count handling ...");
         this.testList.updateExtraIDAsAttachment("1", "http://host.mycom.co.in:25000/sanity/Test Library/Forms/AllItems.aspx");
         this.testList.updateExtraIDAsAttachment("1", "http://host.mycom.co.in:25000/sanity/Test Library2/Forms/AllItems.aspx");

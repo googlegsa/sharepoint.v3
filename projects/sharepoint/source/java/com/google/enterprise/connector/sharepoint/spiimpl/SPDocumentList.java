@@ -442,7 +442,11 @@ public class SPDocumentList implements DocumentList {
         // For ADD action, simply mark the document as the reference from where
         // to begin next incremental crawl
         if (ActionType.DELETE.equals(spDocument.getAction())) {
-            listState.removeExtraID(currentID);
+			if (SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
+				listState.removeAttachmntURLFor(currentID, spDocument.getUrl());
+			} else {
+				listState.removeExtraID(currentID);
+			}
 
             boolean isCurrentDocForList = Util.getCollator().equals(listState.getPrimaryKey(), currentID);
 
@@ -451,7 +455,8 @@ public class SPDocumentList implements DocumentList {
             // not reported
             // Check that the docId is not for the current list. The delete
             // cache IDs are for listitems and not for individual lists
-            if (!isCurrentDocForList) {
+			if (!isCurrentDocForList
+					&& !SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
                 listState.addToDeleteCache(currentID);
             }
             if (!listState.isExisting() && isCurrentDocForList) {
@@ -469,9 +474,40 @@ public class SPDocumentList implements DocumentList {
                     parentWeb.removeListStateFromSet(listState);
                 }
             }
-
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
             listState.setLastDocProcessedForWS(spDocument);
+
+			// Update ExtraIDs
+			if (SPConstants.CONTENT_FEED.equalsIgnoreCase(spDocument.getFeedType())) {
+				if (SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
+					final List<String> knownAttachments = listState.getAttachmntURLsFor(currentID);
+					if (!knownAttachments.contains(spDocument.getUrl())) {
+						try {
+							listState.updateExtraIDAsAttachment(currentID, spDocument.getUrl());
+						} catch (SharepointException se) {
+							LOGGER.log(Level.WARNING, "Problem while updating Attachemenst as ExtraIDs.. "
+									+ "AttachmentURL [ "
+									+ spDocument.getUrl()
+									+ " ], currentID [ "
+									+ currentID
+									+ " ] listURL [ "
+									+ listState.getListURL()
+									+ " ]. ", se.getMessage());
+						}
+					}
+				} else if (null != spDocument.getFileref()) {
+					try {
+						listState.updateExtraIDs(spDocument.getFileref(), currentID, false);
+					} catch (SharepointException se) {
+						LOGGER.log(Level.WARNING, "Problem while updating ExtraIDs.. relativeURL [ "
+								+ spDocument.getFileref()
+								+ " ], currentID [ "
+								+ currentID
+								+ " ] listURL [ "
+								+ listState.getListURL() + " ]. ", se.getMessage());
+					}
+				}
+			}
         }
 
         // The basic idea here is to rollback the change token in case there are

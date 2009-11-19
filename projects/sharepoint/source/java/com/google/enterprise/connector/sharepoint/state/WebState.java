@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.state;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -516,10 +517,9 @@ public class WebState implements StatefulObject {
                             // each item had attachments and send delete feed
                             // for them.
                             if (list.canContainAttachments()) {
-                                final List attachments = list.getAttachmntURLsFor(Util.getOriginalDocId(docID, SPConstants.CONTENT_FEED));
+								final List<String> attachments = list.getAttachmntURLsFor(Util.getOriginalDocId(docID, SPConstants.CONTENT_FEED));
                                 final String originalDocID = docID;
-                                for (final Iterator itr = attachments.iterator(); itr.hasNext();) {
-                                    final String attchmnt_url = (String) itr.next();
+								for (String attchmnt_url : attachments) {
                                     docID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
                                             + "["
                                             + attchmnt_url
@@ -529,7 +529,7 @@ public class WebState implements StatefulObject {
                                             docID, list.getListURL(),
                                             list.getLastModCal(),
                                             SPConstants.NO_AUTHOR,
-                                            SPConstants.OBJTYPE_LIST_ITEM,
+											SPConstants.OBJTYPE_ATTACHMENT,
                                             list.getParentWebTitle(),
                                             SPConstants.CONTENT_FEED,
                                             SPConstants.SP2007);
@@ -557,7 +557,7 @@ public class WebState implements StatefulObject {
                             doc.setAction(ActionType.DELETE);
                             deletedDocs.add(doc);
                         }
-
+						Collections.sort(deletedDocs);
                         list.setCrawlQueue(deletedDocs);
                         // Do not remove the list at this point of time. This
                         // will be removed after handleCrawlQueue will be called
