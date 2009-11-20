@@ -64,6 +64,13 @@ div.ms-areaseparatorright{
         public bool isNext = true;
         public int start = 0;/* E.g. start = 1 and num =5 (return 11-15 results)*/
         int endB = 0;
+
+        /*We have following levels of log in search box*/
+        public enum LOG_LEVEL
+        {
+            INFO,
+            ERROR
+        }
         
         /*Google Search Box for SharePoint*/
         class GoogleSearchBox
@@ -77,7 +84,10 @@ div.ms-areaseparatorright{
             public string xslGSA2SP;
             public string xslSP2result;
             public string temp="true";
-			public const String PRODUCTNAME = "Google Search Box for SharePoint";
+			public const String PRODUCTNAME = "GSBS";
+            public LOG_LEVEL setLevel = LOG_LEVEL.ERROR;
+            public const String DEFAULT_LOG_LOCATION = @"C:\program files\Common Files\Microsoft Shared\web server extensions\12\LOGS\";
+            public string LogLocation = DEFAULT_LOG_LOCATION;
 
             /*For Internal Transformations*/
             public XslTransform xslt1 = null;
@@ -88,7 +98,7 @@ div.ms-areaseparatorright{
                 GSALocation = "";
                 siteCollection = "default_collection";
                 frontEnd = "default_frontend";
-                enableInfoLogging = "true";
+                //enableInfoLogging = "true";
                 xslGSA2SP = "";
                 xslSP2result = "";
             }
@@ -100,7 +110,7 @@ div.ms-areaseparatorright{
                 GSALocation = WebConfigurationManager.AppSettings["GSALocation"];
                 if((GSALocation==null) || (GSALocation.Trim().Equals("")))
                 {
-                    log("Google Search Appliance location is not specified", EventLogEntryType.Error);//log error
+                    log("Google Search Appliance location is not specified", LOG_LEVEL.ERROR);//log error
                     HttpContext.Current.Response.Write("Google Search Appliance location is not specified");
                     HttpContext.Current.Response.End();
                 }
@@ -108,23 +118,43 @@ div.ms-areaseparatorright{
                 siteCollection = WebConfigurationManager.AppSettings["siteCollection"];
                 if((siteCollection==null) || (siteCollection.Trim().Equals("")))
                 {
-                    log("Site collection value for Google Search Appliance is not specified", EventLogEntryType.Error);//log error
+                    log("Site collection value for Google Search Appliance is not specified", LOG_LEVEL.ERROR);//log error
                     HttpContext.Current.Response.Write("Site collection value for Google Search Appliance is not specified");
                     HttpContext.Current.Response.End();
                 }
+
+                LogLocation = WebConfigurationManager.AppSettings["logLocation"];
+                if ((LogLocation == null) || (LogLocation.Trim().Equals("")))
+                {
+                    LogLocation = DEFAULT_LOG_LOCATION;
+                }
+
+                if (!LogLocation.EndsWith("\\"))
+                {
+                    LogLocation += "\\";
+                }
                 
                 enableInfoLogging = WebConfigurationManager.AppSettings["verbose"];
-                if((enableInfoLogging==null) || (enableInfoLogging.Trim().Equals("")))
+                if ((enableInfoLogging == null) || (enableInfoLogging.Trim().Equals("")))
                 {
-                    log("Log level is not specified", EventLogEntryType.Error);//log error
-                    HttpContext.Current.Response.Write("Log level is not specified");
-                    HttpContext.Current.Response.End();
+                    setLevel = LOG_LEVEL.ERROR;//by default log level is error
+                }
+                else 
+                {
+                    if (enableInfoLogging.ToLower().Equals("true"))
+                    {
+                        setLevel = LOG_LEVEL.INFO;
+                    }
+                    else
+                    {
+                        setLevel = LOG_LEVEL.ERROR;
+                    }
                 }
                 
                 frontEnd = WebConfigurationManager.AppSettings["frontEnd"];
                 if((frontEnd==null) || (frontEnd.Trim().Equals("")))
                 {
-                    log("Front end value for Google Search Appliance is not specified", EventLogEntryType.Error);//log error
+                    log("Front end value for Google Search Appliance is not specified", LOG_LEVEL.ERROR);//log error
                     HttpContext.Current.Response.Write("Front end value for Google Search Appliance is not specified");
                     HttpContext.Current.Response.End();
                 }
@@ -132,7 +162,7 @@ div.ms-areaseparatorright{
                 String temp = WebConfigurationManager.AppSettings["GSAStyle"];
                 if((temp==null) || (temp.Trim().Equals("")))
                 {
-                    log("Please specify value for GSA Style. Specify 'true' to use Front end's style for rendering search results. Specify 'False' to use the locally deployed stylesheet for rendering search results", EventLogEntryType.Error);//log error
+                    log("Please specify value for GSA Style. Specify 'true' to use Front end's style for rendering search results. Specify 'False' to use the locally deployed stylesheet for rendering search results", LOG_LEVEL.ERROR);//log error
                     HttpContext.Current.Response.Write("Please specify value for GSA Style. Specify 'true' to use Front end's style for rendering search results. Specify 'False' to use the locally deployed stylesheet for rendering search results");
                     HttpContext.Current.Response.End();
                 }
@@ -153,14 +183,14 @@ div.ms-areaseparatorright{
                 {
                     if((xslGSA2SP==null) || (xslGSA2SP.Trim().Equals("")))
                     {
-                        log("Please specify the value for stylesheet to convert GSA results to SharePoint like results", EventLogEntryType.Error);//log error
+                        log("Please specify the value for stylesheet to convert GSA results to SharePoint like results", LOG_LEVEL.ERROR);//log error
                         HttpContext.Current.Response.Write("Please specify the value for stylesheet to convert GSA results to SharePoint like results");
                         HttpContext.Current.Response.End();
                     }
                     
                     if((xslSP2result==null) || (xslSP2result.Trim().Equals("")))
                     {
-                        log("Please specify the value for stylesheet to be applied on search  results", EventLogEntryType.Error);//log error
+                        log("Please specify the value for stylesheet to be applied on search  results", LOG_LEVEL.ERROR);//log error
                         HttpContext.Current.Response.Write("Please specify the value for stylesheet to be applied on search  results");
                         HttpContext.Current.Response.End();
                     }
@@ -183,7 +213,7 @@ div.ms-areaseparatorright{
                 }
                 catch (Exception e)
                 {
-                    log("problems while loading stylesheet, message=" + e.Message + "\nTrace: " + e.StackTrace, EventLogEntryType.Error);
+                    log("problems while loading stylesheet, message=" + e.Message + "\nTrace: " + e.StackTrace, LOG_LEVEL.ERROR);
                 }
                 
             }
@@ -217,7 +247,7 @@ div.ms-areaseparatorright{
                 }
                 else 
                 {
-                    log("No cookies found in cookie collection", EventLogEntryType.Information);
+                    log("No cookies found in cookie collection", LOG_LEVEL.INFO);
                     return null;
                 }
                 return cc;
@@ -249,7 +279,7 @@ div.ms-areaseparatorright{
                     catch (Exception zipe)
                     {
                         returnstring = "Error occured while converting the zipped contents, Error Message: " + zipe.Message;
-                        log("Error occured while converting the zipped contents, Error Message: " + zipe.Message, EventLogEntryType.Error);
+                        log("Error occured while converting the zipped contents, Error Message: " + zipe.Message, LOG_LEVEL.ERROR);
                     }
                 }
                 else
@@ -276,7 +306,7 @@ div.ms-areaseparatorright{
                 Stream objStream = null;
                 StreamReader objSR = null;
                 
-                log("Search Request to GSA:" + GSASearchUrl, EventLogEntryType.Information);
+                log("Search Request to GSA:" + GSASearchUrl, LOG_LEVEL.INFO);
 
                 objReq = (HttpWebRequest)HttpWebRequest.Create(GSASearchUrl);
                 objReq.KeepAlive = true;
@@ -363,23 +393,29 @@ div.ms-areaseparatorright{
             /// </summary>
             /// <param name="msg">The message to be logged</param>
             /// <param name="logLevel">Log level</param>
-            public void log(String msg, EventLogEntryType logLevel)
+            //public void log(String msg, EventLogEntryType logLevel)
+            public void log(String msg, LOG_LEVEL logLevel)
             {
-                if(null!=msg)
+                if (logLevel >= setLevel)
                 {
-					//Non-error messages should be displayed only if verbose =true
-					if (logLevel != EventLogEntryType.Error)
-					{
-						if ((enableInfoLogging != null) && (enableInfoLogging.ToLower().Equals("true")))
-						{
-							System.Diagnostics.EventLog.WriteEntry(PRODUCTNAME,msg, logLevel);
-						}
-					}
-					else
-					{
-						System.Diagnostics.EventLog.WriteEntry(PRODUCTNAME,msg, logLevel);
-					}
-				}
+                    try
+                    {
+                        DateTime dt = DateTime.Today;
+                        String time = dt.Year + "_" + dt.Month + "_" + dt.Day;
+
+                        String CustomName = PRODUCTNAME + "_" + time + ".log";
+                        String loc = LogLocation + CustomName;
+                        StreamWriter logger = File.AppendText(loc);
+
+                        SPSecurity.RunWithElevatedPrivileges(delegate()
+                        {
+                            logger.WriteLine("[" + DateTime.Now.ToString() + "] [" + logLevel + "] :- " + msg);
+                            logger.Close();
+                        });
+                    }
+                    catch (Exception) { }
+                  
+                }
             }
             
         }//end: class
@@ -434,10 +470,10 @@ div.ms-areaseparatorright{
 	   }	 
 	}
 		
-	function getParameter (queryString, parameterName)
+	function getParameter (queryString, parameterName1)
 	{
 	   
-	   var parameterName = parameterName + "=";
+	   var parameterName = parameterName1 + "=";
 	   if (queryString.length > 0)
 	   {
 		 var begin = queryString.indexOf (parameterName);
@@ -614,7 +650,7 @@ else if(document.attachEvent)
                                 }
                                 catch (Exception e)
                                 {
-                                    gProps.log("Unable to get value for start of page, Error= " + e.Message +"\n Trace="+e.StackTrace,EventLogEntryType.Error);
+                                    gProps.log("Unable to get value for start of page, Error= " + e.Message + "\n Trace=" + e.StackTrace, LOG_LEVEL.ERROR);
                                 }
                             }
                             searchReq += "&start=" + start  + "&num=" + num ;
@@ -643,7 +679,7 @@ else if(document.attachEvent)
                         string returnstring = "";//initialize the return string
                         objStream = objResp.GetResponseStream();//if the request is successful, get the results in returnstring
                         returnstring = gProps.GetContentFromStream(contentEncoding, objStream);
-                        gProps.log("Return Status from GSA: " + objResp.StatusCode,EventLogEntryType.Information);
+                        gProps.log("Return Status from GSA: " + objResp.StatusCode,LOG_LEVEL.INFO);
                         int FirstResponseCode = (int)objResp.StatusCode;//check the response code from the reply from 
                         
                         //*********************************************************************
@@ -657,7 +693,7 @@ else if(document.attachEvent)
                         /*handling for redirect*/
                         if (FirstResponseCode==302)
                         {
-                            gProps.log("The Response is being redirected to location " + newURL, EventLogEntryType.Information);
+                            gProps.log("The Response is being redirected to location " + newURL, LOG_LEVEL.INFO);
                             Cookie responseCookies= new Cookie();;//add cookies in GSA response to current response
                             int j;
                             for (j = 0; j < objResp.Cookies.Count -1; j++)
@@ -683,7 +719,7 @@ else if(document.attachEvent)
 
                             if (GSASessionCookie != null)
                             {
-                                gProps.log("GSA Session cookie is: " + GSASessionCookie, EventLogEntryType.Information);
+                                gProps.log("GSA Session cookie is: " + GSASessionCookie, LOG_LEVEL.INFO);
                                 String[] key_val = GSASessionCookie.Split(seps);
 
                                 if ((key_val != null) && (key_val[0] != null))
@@ -741,7 +777,7 @@ else if(document.attachEvent)
                             statusCode = (int)((HttpWebResponse)ex.Response).StatusCode;
                             if (statusCode != 200)
                             {
-                                gProps.log("Returning the result, Status code=" + statusCode, EventLogEntryType.Error);
+                                gProps.log("Returning the result, Status code=" + statusCode, LOG_LEVEL.ERROR);
                                 Response.Write(ex.Message);
                             }
                         }
@@ -759,7 +795,7 @@ else if(document.attachEvent)
                                 }
                                 catch (XmlException e)
                                 {
-                                    gProps.log("Unable to load the GSA result", EventLogEntryType.Error);
+                                    gProps.log("Unable to load the GSA result", LOG_LEVEL.ERROR);
                                 }
                                 
                                 ////////////////start and end boundaries/////////////////////////
@@ -788,7 +824,7 @@ else if(document.attachEvent)
                                         }
                                         catch (Exception e)
                                         {
-                                            gProps.log("Problems while parsing end search result boundary. \nTrace:" + e.StackTrace, EventLogEntryType.Error);
+                                            gProps.log("Problems while parsing end search result boundary. \nTrace:" + e.StackTrace, LOG_LEVEL.ERROR);
                                             endB = 0;
                                             isNext = false;//hide next
                                         }
@@ -801,7 +837,7 @@ else if(document.attachEvent)
                                 }
                                 catch (Exception e)
                                 {
-                                    gProps.log("Problems while parsing GSA results. \nTrace:" + e.StackTrace, EventLogEntryType.Error);
+                                    gProps.log("Problems while parsing GSA results. \nTrace:" + e.StackTrace, LOG_LEVEL.ERROR);
                                     isNext = false;//hide next
                                 }
                                 
@@ -811,7 +847,7 @@ else if(document.attachEvent)
                             }
                             catch (Exception e)
                             {
-                                gProps.log("Exception while applying transformations to GSA results: " + e.Message + "\nStack Trace: " + e.StackTrace, EventLogEntryType.Error);
+                                gProps.log("Exception while applying transformations to GSA results: " + e.Message + "\nStack Trace: " + e.StackTrace, LOG_LEVEL.ERROR);
                                 isNext = false;//hide next
                             }
                         }
@@ -839,7 +875,7 @@ else if(document.attachEvent)
                     catch (Exception ex)
                     {
                         isNext = false;//hide next
-                        gProps.log("Exception while searching on GSA: " + ex.Message+"\nException Trace: " + ex.StackTrace,EventLogEntryType.Error);
+                        gProps.log("Exception while searching on GSA: " + ex.Message+"\nException Trace: " + ex.StackTrace,LOG_LEVEL.ERROR);
                         HttpContext.Current.Response.Write(ex.Message);
                     }
         
