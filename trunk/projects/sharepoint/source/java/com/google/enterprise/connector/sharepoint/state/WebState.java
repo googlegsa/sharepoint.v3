@@ -557,6 +557,10 @@ public class WebState implements StatefulObject {
                             doc.setAction(ActionType.DELETE);
                             deletedDocs.add(doc);
                         }
+
+						// We must always sort the documents inside a
+						// SPDocumentList object. This is important for
+						// nextDoc() and checkPoint() logic
 						Collections.sort(deletedDocs);
                         list.setCrawlQueue(deletedDocs);
                         // Do not remove the list at this point of time. This
