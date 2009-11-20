@@ -187,6 +187,10 @@ public class ListsWS {
                     + listItemId + " ], List [ " + listName + " ].", e);
         }
 
+		// All the known attachments (discovered earlier and are their in the
+		// connector's state) are first collected into the knownAttachments and
+		// then all those which are still returned by the Web Service will be
+		// removed. This way, we'll be able to track the deleted attachments.
 		List<String> knownAttachments = null;
 		if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
 			knownAttachments = baseList.getAttachmntURLsFor(listItemId);
@@ -214,6 +218,10 @@ public class ListsWS {
                                                 + url
                                                 + "]"
                                                 + listItem.getDocId();
+
+										if (knownAttachments.contains(url)) {
+											knownAttachments.remove(url);
+										}
                                     }
                                     final SPDocument doc = new SPDocument(
                                             modifiedID,
@@ -224,11 +232,7 @@ public class ListsWS {
                                             baseList.getParentWebTitle(),
                                             sharepointClientContext.getFeedType(),
                                             listItem.getSharePointType());
-                                    if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
-                                        if (knownAttachments.contains(url)) {
-                                            knownAttachments.remove(url);
-                                        }
-                                    }
+
                                     listAttachments.add(doc);
                                 } else {
                                     LOGGER.warning("excluding " + url);
@@ -1597,13 +1601,13 @@ public class ListsWS {
     private SPDocument processListItemElement(final MessageElement listItem,
             final ListState list, final Set<String> allWebs) {
         // Get all the required attributes.
-        String fileName = listItem.getAttribute(SPConstants.FILEREF);
-		if (fileName == null) {
+		String fileref = listItem.getAttribute(SPConstants.FILEREF);
+		if (fileref == null) {
 			LOGGER.log(Level.WARNING, SPConstants.FILEREF
 					+ " is not found for one of the items in list [ "
 					+ list.getListURL() + " ]. ");
 		} else {
-			fileName = fileName.substring(fileName.indexOf(SPConstants.HASH) + 1);
+			fileref = fileref.substring(fileref.indexOf(SPConstants.HASH) + 1);
 		}
 
         final String lastModified = listItem.getAttribute(SPConstants.MODIFIED);
@@ -1661,7 +1665,7 @@ public class ListsWS {
 
         final StringBuffer url = new StringBuffer();
         if (list.isDocumentLibrary()) {
-            if (fileName == null) {
+			if (fileref == null) {
                 return null;
             }
             /*
@@ -1673,7 +1677,7 @@ public class ListsWS {
             url.setLength(0);
             url.append(urlPrefix);
             url.append(SPConstants.SLASH);
-            url.append(fileName);
+			url.append(fileref);
         } else {
             final String urlPrefix = Util.getWebApp(sharepointClientContext.getSiteURL());
             url.setLength(0);
@@ -1721,7 +1725,7 @@ public class ListsWS {
         doc = new SPDocument(docId, url.toString(), calMod, author,
                 strObjectType, list.getParentWebTitle(),
                 sharepointClientContext.getFeedType(), list.getSharePointType());
-		doc.setFileref(fileName);
+		doc.setFileref(fileref);
 
         if (fileSize != null && !fileSize.equals("")) {
             try {

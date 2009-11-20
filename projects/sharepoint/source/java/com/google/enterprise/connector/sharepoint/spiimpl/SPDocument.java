@@ -62,10 +62,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     private String feedType;
     private String spType;
-    private InputStream content = null;// content of documents
+
+	// content of documents
+	private InputStream content = null;
     private String content_type = null;
-    private ActionType action = ActionType.ADD; // By default mark it as to be
-    // added.
+
+	// By default mark it as to be added.
+	private ActionType action = ActionType.ADD;
 
     private String folderLevel;
     private String listguid;
@@ -77,16 +80,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     // The document size
     private int fileSize = -1;
-	private String fileref = null; // to be used for updating extraId during
-									// checkpoint
 
-	public String getFileref() {
-		return fileref;
-	}
-
-    public void setFileref(String fileref) {
-		this.fileref = fileref;
-	}
+	// to be used for updating extraId during checkpoint
+	private String fileref = null;
 
     private final Logger LOGGER = Logger.getLogger(SPDocument.class.getName());
 
@@ -750,4 +746,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public String toString() {
         return url;
     }
+
+	public String getFileref() {
+		return fileref;
+	}
+
+	public void setFileref(String fileref) {
+		this.fileref = fileref;
+	}
 }
