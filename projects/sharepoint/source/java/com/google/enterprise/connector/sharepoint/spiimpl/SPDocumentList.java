@@ -189,13 +189,6 @@ public class SPDocumentList implements DocumentList {
 
         }
 
-        // Set the last crawled web and list states which can be used by the
-        // batch traversal to know from where to look for pending documents
-        // from last batch traversal in the crawl queue that are supposed to
-        // be sent to GSA
-        globalState.setLastCrawledWebID(spDocument.getWebid());
-        globalState.setLastCrawledListID(spDocument.getListGuid());
-
         return spDocument;
     }
 
@@ -219,7 +212,10 @@ public class SPDocumentList implements DocumentList {
                     + " ], Action [ " + spDoc.getAction() + " ]. ");
         }
 
-        // FIXME: Delete this once Issue 85 fix is merged
+        // Set the last crawled web and list states which can be used by the
+        // batch traversal to know from where to look for pending documents
+        // from last batch traversal in the crawl queue that are supposed to
+        // be sent to GSA
         globalState.setLastCrawledWebID(spDoc.getWebid());
         globalState.setLastCrawledListID(spDoc.getListGuid());
 
@@ -457,7 +453,6 @@ public class SPDocumentList implements DocumentList {
         // For ADD action, simply mark the document as the reference from where
         // to begin next incremental crawl
         if (ActionType.DELETE.equals(spDocument.getAction())) {
-
             // Remove ExtraIDs
             if (SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
                 listState.removeAttachmntURLFor(currentID, spDocument.getUrl());
@@ -478,7 +473,7 @@ public class SPDocumentList implements DocumentList {
             }
             if (!listState.isExisting() && isCurrentDocForList) {
                 // Last delete feed of a non-existent list has been sent
-                // Since list are sent at last and the list is non-existing, we
+                // Since list are sent at last and the list is non-exisitng, we
                 // can now delete this list state.
                 if (LOGGER.isLoggable(Level.CONFIG)) {
                     LOGGER.log(Level.CONFIG, "Removing List State info List URL [ "
@@ -493,6 +488,7 @@ public class SPDocumentList implements DocumentList {
             }
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
             listState.setLastDocProcessedForWS(spDocument);
+
 
             // Update ExtraIDs
             if (SPConstants.CONTENT_FEED.equalsIgnoreCase(spDocument.getFeedType())) {
