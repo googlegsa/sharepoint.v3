@@ -517,9 +517,9 @@ public class WebState implements StatefulObject {
                             // each item had attachments and send delete feed
                             // for them.
                             if (list.canContainAttachments()) {
-								final List<String> attachments = list.getAttachmntURLsFor(Util.getOriginalDocId(docID, SPConstants.CONTENT_FEED));
+                                final List<String> attachments = list.getAttachmntURLsFor(Util.getOriginalDocId(docID, SPConstants.CONTENT_FEED));
                                 final String originalDocID = docID;
-								for (String attchmnt_url : attachments) {
+                                for (String attchmnt_url : attachments) {
                                     docID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
                                             + "["
                                             + attchmnt_url
@@ -529,7 +529,7 @@ public class WebState implements StatefulObject {
                                             docID, list.getListURL(),
                                             list.getLastModCal(),
                                             SPConstants.NO_AUTHOR,
-											SPConstants.OBJTYPE_ATTACHMENT,
+                                            SPConstants.OBJTYPE_ATTACHMENT,
                                             list.getParentWebTitle(),
                                             SPConstants.CONTENT_FEED,
                                             SPConstants.SP2007);
@@ -555,13 +555,20 @@ public class WebState implements StatefulObject {
                                     SPConstants.CONTENT_FEED,
                                     SPConstants.SP2007);
                             doc.setAction(ActionType.DELETE);
+                            if (!list.isSendListAsDocument()) {
+                                // send the listState as a feed only if it was
+                                // included (not excluded) in the URL pattern
+                                // matching
+                                doc.setToBeFed(false);
+                                LOGGER.log(Level.FINE, "List Document marked as not to be fed");
+                            }
                             deletedDocs.add(doc);
                         }
 
-						// We must always sort the documents inside a
-						// SPDocumentList object. This is important for
-						// nextDoc() and checkPoint() logic
-						Collections.sort(deletedDocs);
+                        // We must always sort the documents inside a
+                        // SPDocumentList object. This is important for
+                        // nextDoc() and checkPoint() logic
+                        Collections.sort(deletedDocs);
                         list.setCrawlQueue(deletedDocs);
                         // Do not remove the list at this point of time. This
                         // will be removed after handleCrawlQueue will be called
