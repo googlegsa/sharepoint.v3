@@ -1114,13 +1114,13 @@ public class ListState implements StatefulObject {
      * pat2.matcher(idPart); if(match2.find()) { String id = match2.group();
      * if(Util.isNumeric(id)) { idSet.add(id); } } } return idSet; }
      */
-	/**
-	 * This keeps track of the attachment URLs that have been sent for a for a
-	 * particular item ID. this info is stored as
-	 * #itemID|AttachURL1|AttachURL2....
-	 */
+    /**
+     * This keeps track of the attachment URLs that have been sent for a for a
+     * particular item ID. this info is stored as
+     * #itemID|AttachURL1|AttachURL2....
+     */
     public void updateExtraIDAsAttachment(final String itemID,
-			final String attachmentURL) throws SharepointException {
+            final String attachmentURL) throws SharepointException {
         LOGGER.log(Level.FINEST, "Request to update attachment [ "
                 + attachmentURL + " ] is received for item ID #" + itemID
                 + ". List URL [ " + listURL + " ]. ");
@@ -1237,6 +1237,7 @@ public class ListState implements StatefulObject {
             type = inList.getType();
             listTitle = inList.getListTitle();
             listConst = inList.getListConst();
+            sendListAsDocument = inList.isSendListAsDocument();
         }
     }
 

@@ -32,6 +32,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
@@ -118,7 +119,7 @@ public class SPDocumentList implements DocumentList {
      * </ul>
      * </p>
      */
-    public Document nextDocument() {
+    public Document nextDocument() throws SkippedDocumentException {
         SPDocument spDocument = null;
         ListState listStateTemp;
 
@@ -144,6 +145,20 @@ public class SPDocumentList implements DocumentList {
             }
 
             listStateTemp = globalState.lookupList(spDocument.getWebid(), spDocument.getListGuid());
+
+            if (null == listStateTemp) {
+                // This is an unexpected state which might occur if the
+                // in-memory
+                // lists are out of sync
+                String message = "Unexpected state occurred. Entry missing from inmemory state for SPDocument webId ["
+                        + spDocument.getWebid()
+                        + "] and ["
+                        + spDocument.getListGuid() + "]";
+
+                LOGGER.log(Level.WARNING, message);
+                throw new SkippedDocumentException("Document skipped. "
+                        + message);
+            }
 
             // Set the current doc as the last doc sent to CM. This will mark
             // the current doc and its position in the crawlQueue. This info
@@ -443,12 +458,12 @@ public class SPDocumentList implements DocumentList {
         // to begin next incremental crawl
         if (ActionType.DELETE.equals(spDocument.getAction())) {
 
-			// Remove ExtraIDs
-			if (SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
-				listState.removeAttachmntURLFor(currentID, spDocument.getUrl());
-			} else {
-				listState.removeExtraID(currentID);
-			}
+            // Remove ExtraIDs
+            if (SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
+                listState.removeAttachmntURLFor(currentID, spDocument.getUrl());
+            } else {
+                listState.removeExtraID(currentID);
+            }
 
             boolean isCurrentDocForList = Util.getCollator().equals(listState.getPrimaryKey(), currentID);
 
@@ -457,13 +472,13 @@ public class SPDocumentList implements DocumentList {
             // not reported
             // Check that the docId is not for the current list. The delete
             // cache IDs are for listitems and not for individual lists
-			if (!isCurrentDocForList
-					&& !SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
+            if (!isCurrentDocForList
+                    && !SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
                 listState.addToDeleteCache(currentID);
             }
             if (!listState.isExisting() && isCurrentDocForList) {
                 // Last delete feed of a non-existent list has been sent
-				// Since list are sent at last and the list is non-existing, we
+                // Since list are sent at last and the list is non-existing, we
                 // can now delete this list state.
                 if (LOGGER.isLoggable(Level.CONFIG)) {
                     LOGGER.log(Level.CONFIG, "Removing List State info List URL [ "
@@ -479,10 +494,10 @@ public class SPDocumentList implements DocumentList {
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
             listState.setLastDocProcessedForWS(spDocument);
 
-			// Update ExtraIDs
-			if (SPConstants.CONTENT_FEED.equalsIgnoreCase(spDocument.getFeedType())) {
-				updateExtraIDs(listState, spDocument, currentID);
-			}
+            // Update ExtraIDs
+            if (SPConstants.CONTENT_FEED.equalsIgnoreCase(spDocument.getFeedType())) {
+                updateExtraIDs(listState, spDocument, currentID);
+            }
         }
 
         // The basic idea here is to rollback the change token in case there are
@@ -543,35 +558,35 @@ public class SPDocumentList implements DocumentList {
 
     }
 
-	private void updateExtraIDs(ListState listState, SPDocument spDocument,
-			String currentID) {
-		if (SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
-			final List<String> knownAttachments = listState.getAttachmntURLsFor(currentID);
-			if (!knownAttachments.contains(spDocument.getUrl())) {
-				try {
-					listState.updateExtraIDAsAttachment(currentID, spDocument.getUrl());
-				} catch (SharepointException se) {
-					LOGGER.log(Level.WARNING, "Problem while updating Attachemenst as ExtraIDs.. "
-							+ "AttachmentURL [ "
-							+ spDocument.getUrl()
-							+ " ], currentID [ "
-							+ currentID
-							+ " ] listURL [ "
-							+ listState.getListURL() + " ]. ", se.getMessage());
-				}
-			}
-		} else if (null != spDocument.getFileref()) {
-			try {
-				listState.updateExtraIDs(spDocument.getFileref(), currentID, false);
-			} catch (SharepointException se) {
-				LOGGER.log(Level.WARNING, "Problem while updating ExtraIDs.. relativeURL [ "
-						+ spDocument.getFileref()
-						+ " ], currentID [ "
-						+ currentID
-						+ " ] listURL [ "
-						+ listState.getListURL()
-						+ " ]. ", se.getMessage());
-			}
-		}
-	}
+    private void updateExtraIDs(ListState listState, SPDocument spDocument,
+            String currentID) {
+        if (SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
+            final List<String> knownAttachments = listState.getAttachmntURLsFor(currentID);
+            if (!knownAttachments.contains(spDocument.getUrl())) {
+                try {
+                    listState.updateExtraIDAsAttachment(currentID, spDocument.getUrl());
+                } catch (SharepointException se) {
+                    LOGGER.log(Level.WARNING, "Problem while updating Attachemenst as ExtraIDs.. "
+                            + "AttachmentURL [ "
+                            + spDocument.getUrl()
+                            + " ], currentID [ "
+                            + currentID
+                            + " ] listURL [ "
+                            + listState.getListURL() + " ]. ", se.getMessage());
+                }
+            }
+        } else if (null != spDocument.getFileref()) {
+            try {
+                listState.updateExtraIDs(spDocument.getFileref(), currentID, false);
+            } catch (SharepointException se) {
+                LOGGER.log(Level.WARNING, "Problem while updating ExtraIDs.. relativeURL [ "
+                        + spDocument.getFileref()
+                        + " ], currentID [ "
+                        + currentID
+                        + " ] listURL [ "
+                        + listState.getListURL()
+                        + " ]. ", se.getMessage());
+            }
+        }
+    }
 }
