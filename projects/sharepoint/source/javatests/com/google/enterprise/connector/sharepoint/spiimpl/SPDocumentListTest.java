@@ -28,6 +28,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.spi.Document;
+import com.google.enterprise.connector.spi.SkippedDocumentException;
 
 public class SPDocumentListTest extends TestCase {
     SPDocumentList docs;
@@ -75,7 +76,7 @@ public class SPDocumentListTest extends TestCase {
         this.docs.setAliasMap(sharepointClientContext.getAliasMap());
     }
 
-    public void testNextDocument() {
+    public void testNextDocument() throws SkippedDocumentException {
         System.out.println("Testing nextDocument()...");
         this.docs.setFQDNConversion(true);
         final Document doc = this.docs.nextDocument();

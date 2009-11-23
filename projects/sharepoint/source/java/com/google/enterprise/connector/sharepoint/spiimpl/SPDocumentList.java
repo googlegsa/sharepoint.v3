@@ -150,10 +150,8 @@ public class SPDocumentList implements DocumentList {
                 // This is an unexpected state which might occur if the
                 // in-memory
                 // lists are out of sync
-                String message = "Unexpected state occurred. Entry missing from inmemory state for SPDocument webId ["
-                        + spDocument.getWebid()
-                        + "] and ["
-                        + spDocument.getListGuid() + "]";
+                String message = "Unexpected state occurred. Entry for either webstate or liststate is missing from the inmemory state for SPDocument "
+                        + spDocument.getUrl();
 
                 LOGGER.log(Level.WARNING, message);
                 throw new SkippedDocumentException("Document skipped. "
