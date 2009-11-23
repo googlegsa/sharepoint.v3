@@ -1,6 +1,7 @@
 <%@ WebService Language="C#" Class="BulkAuthorization" %>
 using System;
 using System.Net;
+using System.IO;
 using System.Web.Services;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
@@ -11,6 +12,19 @@ using System.Diagnostics;
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
 public class BulkAuthorization : System.Web.Services.WebService
 {
+    public enum LOG_LEVEL
+    {
+        ERROR,
+        INFO,
+        DEBUG
+    }
+    public LOG_LEVEL DEFAULT_LOG_LEVEL = LOG_LEVEL.INFO;
+    public const String PRODUCTNAME = "GSS";
+
+    private int LOG_MAX_SIZE = 52428800;
+    private int LOG_MAX_COUNT = 10;
+    private String logFile = null;
+    
     /// <summary>
     /// Authorizes an user against a single authData
     /// </summary>
@@ -47,15 +61,15 @@ public class BulkAuthorization : System.Web.Services.WebService
             SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, loginId, SPPrincipalType.All, false);
             if (userInfo == null)
             {
-                authData.error = "User " + loginId + " can not be resolved. ";
+                authData.error += "User " + loginId + " can not be resolved. ";
                 string logMsg = "Authorization failed because User " + loginId + " can not be resolved into a valid SharePoint user.";
                 try
                 {
-                    System.Diagnostics.EventLog.WriteEntry("GSBulkAuthorization", logMsg, EventLogEntryType.Error);
+                    log(logMsg, LOG_LEVEL.ERROR);
                 }
                 catch (Exception e)
                 {
-                    // Eatup Exception. Logging failed. This can occur due to a number of reasons like if the event log is full.
+                    authData.error += "WS logging attempt failed!! Exception [ " + e.Message + " ]. ";
                 }
                 return;
             }
@@ -66,7 +80,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             SPUser user = GetSPUser(web, userInfo.LoginName);
             if (user == null)
             {
-                authData.error = "User " + loginId + " not found against web " + web.Url;
+                authData.error += "User " + loginId + " not found against web " + web.Url;
                 return;
             }
 
@@ -100,7 +114,8 @@ public class BulkAuthorization : System.Web.Services.WebService
                 }
                 else
                 {
-                    authData.error = "Alert not found.";
+                    authData.error += "Alert not found.";
+                    log("Alert not found for AuthData [ " + authData.complexDocId + " ]. ", LOG_LEVEL.ERROR);
                 }
                 return;
             }
@@ -110,7 +125,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             if (authData.listItemId == null || authData.listItemId == "" || authData.listItemId.StartsWith("{"))
             {
                 bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                authData.isAllowed = isAllowed;
+                authData.isAllowed = isAllowed;                
             }
             else
             {
@@ -126,11 +141,11 @@ public class BulkAuthorization : System.Web.Services.WebService
             string logMsg = "Following error occurred while authorizing user " + loginId + " while authorizing against " + authData.listURL + "|" + authData.listItemId + " :\n" + authData.error;
             try
             {
-                System.Diagnostics.EventLog.WriteEntry("GSBulkAuthorization", logMsg, EventLogEntryType.Error);
+                log(logMsg, LOG_LEVEL.ERROR);
             }
             catch (Exception e1)
             {
-                // Eatup Exception. Logging failed. This can occur due to a number of reasons like if the event log is full.
+                authData.error += "WS logging attemp failed!! Exception [ " + e1.Message + " ]. ";
             }
         }
         finally
@@ -158,15 +173,24 @@ public class BulkAuthorization : System.Web.Services.WebService
         string logMsg = "Authorization Request received for user " + loginId + " against #" + authData.Length + " items";
         try
         {
-            System.Diagnostics.EventLog.WriteEntry("GSBulkAuthorization", logMsg, EventLogEntryType.Information);
+            logFile = getLogFileToWrite();
+            log(logMsg, LOG_LEVEL.INFO);
         }
         catch (Exception e)
         {
-            // Eatup Exception. Logging failed. This can occur due to a number of reasons like if the event log is full.
+            authData[0].error += "WS logging attemp failed!! Exception [ " + e.Message + " ]. ";
         }
-        foreach (AuthData e in authData)
+        foreach (AuthData ad in authData)
         {
-            Authorize(e, loginId);
+            Authorize(ad, loginId);
+            try
+            {
+                log("Authorization status for User [ " + loginId + "]. docID [ " + ad.complexDocId + " ], status [ " + ad.isAllowed + " ]. ", LOG_LEVEL.DEBUG);
+            }
+            catch (Exception e)
+            {
+                authData[0].error += "WS logging attemp failed!! Exception [ " + e.Message + " ]. ";
+            }
         }
         return authData;
     }
@@ -177,15 +201,15 @@ public class BulkAuthorization : System.Web.Services.WebService
     /// <returns></returns>
     [WebMethod]
     public string CheckConnectivity() {
-  try {
-    SPSecurity.RunWithElevatedPrivileges(delegate() {
-    });
-  }
-  catch (Exception e)
-        {
-            return e.Message;
-        }
-        return "success";
+      try {
+        SPSecurity.RunWithElevatedPrivileges(delegate() {        
+        });
+      }
+      catch (Exception e)
+      {
+        return e.Message;
+      }
+      return "success";
     }
 
     /// <summary>
@@ -240,6 +264,55 @@ public class BulkAuthorization : System.Web.Services.WebService
         }
         SiteURL = url.Scheme + "://" + host + ":" + url.Port + url.AbsolutePath;
         return SiteURL;
+    }
+
+    /// <summary>
+    /// Implements custom logging in a file created under the 12 hive LOGS directory
+    /// </summary>
+    /// <param name="msg"></param>
+    /// <param name="logLevel"></param>
+    public void log(String msg, LOG_LEVEL logLevel)
+    {
+        if (logLevel <= DEFAULT_LOG_LEVEL)
+        {
+            /*
+             * We need to make even a normal user with 'reader' access to be able to log messages
+             * This requires to elevate the user temporarily for write operation.
+             */
+            SPSecurity.RunWithElevatedPrivileges(delegate()
+            {
+                StreamWriter logger = File.AppendText(logFile);
+                logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
+                logger.Flush();
+                logger.Close();
+            });
+        }
+    }
+
+    /// <summary>
+    /// Returns a valid log file path which can be written. 
+    /// Also takes care of rotating the logs when the maximum count is reached. 
+    /// </summary>
+    /// <returns></returns>
+    private String getLogFileToWrite()
+    {
+        String log_location = SPUtility.GetGenericSetupPath("LOGS\\");
+        String current_log = log_location + PRODUCTNAME + ".0.log";
+        FileInfo fileInfo = new FileInfo(current_log);
+        if (fileInfo.Exists && fileInfo.Length > LOG_MAX_SIZE)
+        {
+            // rotate the logs                    
+            File.Delete(log_location + PRODUCTNAME + "." + LOG_MAX_COUNT + ".log");
+            for (int i = LOG_MAX_COUNT - 1; i >= 0; --i)
+            {
+                if (File.Exists(log_location + PRODUCTNAME + "." + i + ".log"))
+                {
+                    int j = i + 1;
+                    File.Move(log_location + PRODUCTNAME + "." + i + ".log", log_location + PRODUCTNAME + "." + j + ".log");
+                }
+            }
+        }
+        return current_log;
     }
 }
 
