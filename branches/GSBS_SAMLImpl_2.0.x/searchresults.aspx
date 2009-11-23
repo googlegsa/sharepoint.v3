@@ -65,7 +65,7 @@ div.ms-areaseparatorright{
         public int start = 0;/* E.g. start = 1 and num =5 (return 11-15 results)*/
         int endB = 0;
 
-        /*We have following levels of log in search box*/
+        /*Enumeration which defines Search Box Log levels*/
         public enum LOG_LEVEL
         {
             INFO,
@@ -85,7 +85,17 @@ div.ms-areaseparatorright{
             public string xslSP2result;
             public string temp="true";
 			public const String PRODUCTNAME = "GSBS";
-            public LOG_LEVEL setLevel = LOG_LEVEL.ERROR;
+            public LOG_LEVEL currentLogLevel = LOG_LEVEL.ERROR;
+
+            /**
+             * Block Logging. The flag is used to avoid the cyclic conditions. 
+             **/
+            public bool BLOCK_LOGGING = false;            
+            
+            /*
+             * The default location points to the 12 hive location where SharePoint usually logs all its messages
+             * User can always override this location and point to a different location.
+             */
             public const String DEFAULT_LOG_LOCATION = @"C:\program files\Common Files\Microsoft Shared\web server extensions\12\LOGS\";
             public string LogLocation = DEFAULT_LOG_LOCATION;
 
@@ -98,7 +108,6 @@ div.ms-areaseparatorright{
                 GSALocation = "";
                 siteCollection = "default_collection";
                 frontEnd = "default_frontend";
-                //enableInfoLogging = "true";
                 xslGSA2SP = "";
                 xslSP2result = "";
             }
@@ -123,33 +132,11 @@ div.ms-areaseparatorright{
                     HttpContext.Current.Response.End();
                 }
 
-                LogLocation = WebConfigurationManager.AppSettings["logLocation"];
-                if ((LogLocation == null) || (LogLocation.Trim().Equals("")))
-                {
-                    LogLocation = DEFAULT_LOG_LOCATION;
-                }
+                //set thelog location
+                LogLocation = getLogLocationFromConfig();
 
-                if (!LogLocation.EndsWith("\\"))
-                {
-                    LogLocation += "\\";
-                }
-                
-                enableInfoLogging = WebConfigurationManager.AppSettings["verbose"];
-                if ((enableInfoLogging == null) || (enableInfoLogging.Trim().Equals("")))
-                {
-                    setLevel = LOG_LEVEL.ERROR;//by default log level is error
-                }
-                else 
-                {
-                    if (enableInfoLogging.ToLower().Equals("true"))
-                    {
-                        setLevel = LOG_LEVEL.INFO;
-                    }
-                    else
-                    {
-                        setLevel = LOG_LEVEL.ERROR;
-                    }
-                }
+                //set the current log level
+                currentLogLevel = getLogLevel();
                 
                 frontEnd = WebConfigurationManager.AppSettings["frontEnd"];
                 if((frontEnd==null) || (frontEnd.Trim().Equals("")))
@@ -159,15 +146,15 @@ div.ms-areaseparatorright{
                     HttpContext.Current.Response.End();
                 }
                 
-                String temp = WebConfigurationManager.AppSettings["GSAStyle"];
-                if((temp==null) || (temp.Trim().Equals("")))
+                String GSAConfigStyle = WebConfigurationManager.AppSettings["GSAStyle"];
+                if((GSAConfigStyle==null) || (GSAConfigStyle.Trim().Equals("")))
                 {
                     log("Please specify value for GSA Style. Specify 'true' to use Front end's style for rendering search results. Specify 'False' to use the locally deployed stylesheet for rendering search results", LOG_LEVEL.ERROR);//log error
                     HttpContext.Current.Response.Write("Please specify value for GSA Style. Specify 'true' to use Front end's style for rendering search results. Specify 'False' to use the locally deployed stylesheet for rendering search results");
                     HttpContext.Current.Response.End();
                 }
                 
-                if (temp.ToLower().Equals("true"))
+                if (GSAConfigStyle.ToLower().Equals("true"))
                 {
                     bUseGSAStyling = true;
                 }
@@ -218,6 +205,50 @@ div.ms-areaseparatorright{
                 
             }
 
+            /// <summary>
+            /// Get the Log Level from the 
+            /// </summary>
+            /// <returns>Log Level</returns>
+            private LOG_LEVEL getLogLevel()
+            {
+                string LogLevel = WebConfigurationManager.AppSettings["verbose"];
+                if ((LogLevel == null) || (LogLevel.Trim().Equals("")))
+                {
+                    return LOG_LEVEL.ERROR;//by default log level is error
+                }
+                else
+                {
+                    if (LogLevel.ToLower().Equals("true"))
+                    {
+                        return LOG_LEVEL.INFO;
+                    }
+                    else
+                    {
+                        return LOG_LEVEL.ERROR;
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Get the Log Location from the Web.config
+            /// </summary>
+            /// <returns></returns>
+            private string getLogLocationFromConfig()
+            {
+                string ConfigLogLocation = WebConfigurationManager.AppSettings["logLocation"];
+                if ((ConfigLogLocation == null) || (ConfigLogLocation.Trim().Equals("")))
+                {
+                    ConfigLogLocation = DEFAULT_LOG_LOCATION;
+                }
+
+                if (!ConfigLogLocation.EndsWith("\\"))
+                {
+                    ConfigLogLocation += "\\";
+                }
+
+                return ConfigLogLocation;
+            }
+            
             /// <summary>
             /// Add the cookie from the cookie collection to the container. Your container may have some existing cookies
             /// </summary>
@@ -387,33 +418,43 @@ div.ms-areaseparatorright{
                 xslt.Transform(xPathDocument, null, tw);
                 return sb.ToString();//get result
             }
+           
             
             /// <summary>
             /// For logging the search box messages.
             /// </summary>
             /// <param name="msg">The message to be logged</param>
             /// <param name="logLevel">Log level</param>
-            //public void log(String msg, EventLogEntryType logLevel)
             public void log(String msg, LOG_LEVEL logLevel)
             {
-                if (logLevel >= setLevel)
+                if (logLevel >= currentLogLevel)
                 {
                     try
                     {
-                        DateTime dt = DateTime.Today;
-                        String time = dt.Year + "_" + dt.Month + "_" + dt.Day;
-
+                        String time = DateTime.Today.ToString("yyyy_MM_dd");
                         String CustomName = PRODUCTNAME + "_" + time + ".log";
                         String loc = LogLocation + CustomName;
                         StreamWriter logger = File.AppendText(loc);
 
+                        /*
+                         * We need to make even a normal user with 'reader' access to be able to log messages
+                         * This requires to elevate the user temporarily for write operation.
+                         */
                         SPSecurity.RunWithElevatedPrivileges(delegate()
                         {
-                            logger.WriteLine("[" + DateTime.Now.ToString() + "] [" + logLevel + "] :- " + msg);
+                            logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
+                            logger.Flush();
                             logger.Close();
                         });
                     }
-                    catch (Exception) { }
+                    catch (Exception logException) {
+                        if (BLOCK_LOGGING == false)
+                        {
+                            BLOCK_LOGGING = true;
+                            HttpContext.Current.Response.Write("<b><u>Logging failed due to:</u></b> " + logException.Message + "<br/>");
+                            HttpContext.Current.Response.End();
+                        }
+                    }
                   
                 }
             }
@@ -470,10 +511,9 @@ div.ms-areaseparatorright{
 	   }	 
 	}
 		
-	function getParameter (queryString, parameterName1)
+	function getParameter (queryString, parameterNameWithoutEquals)
 	{
-	   
-	   var parameterName = parameterName1 + "=";
+	   var parameterName = parameterNameWithoutEquals + "=";
 	   if (queryString.length > 0)
 	   {
 		 var begin = queryString.indexOf (parameterName);
