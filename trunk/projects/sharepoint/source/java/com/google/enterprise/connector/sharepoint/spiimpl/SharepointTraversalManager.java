@@ -180,7 +180,9 @@ public class SharepointTraversalManager implements TraversalManager,
         SPDocumentList rsAll = null;
 
         // First, get the documents discovered in the previous crawl cycle.
-        rsAll = traverse(sharepointClient);
+        // The true flag indicates that we want to check if there are any
+        // pending docs from previous crawl cycle
+        rsAll = traverse(sharepointClient, true);
         if ((rsAll != null) && (rsAll.size() > 0)) {
             LOGGER.info("Traversal returned " + rsAll.size()
                     + " documents discovered in the previous crawl cycle(s).");
@@ -193,7 +195,11 @@ public class SharepointTraversalManager implements TraversalManager,
             } catch (final Throwable t) {
                 LOGGER.log(Level.SEVERE, "Error while updating global state.... ", t);
             }
-            final SPDocumentList rs = traverse(sharepointClient);
+            // The 'false' flag indicates that we want to scan for all lists for
+            // any updates and just not the subset. This is required as the
+            // above call to updateGlobalState(globalState) might have
+            // discovered docs in one or more (worst case all) list states
+            final SPDocumentList rs = traverse(sharepointClient, false);
             if (rs != null) {
                 LOGGER.info("Traversal returned " + rs.size()
                         + " documents discovered in the current crawl cycle.");
@@ -233,14 +239,38 @@ public class SharepointTraversalManager implements TraversalManager,
     }
 
     /**
-     * @param sharepointClient
-     * @return {@link SPDocumentList}
+     * Traverses the site for crawled docs. It checks the crawl queue for the
+     * given list and creates a document list (instance of
+     * {@link SPDocumentList}) that will be returned from the current traversal
+     * <p>
+     * It will either check all lists or only a subset of lists for the current
+     * site based on the flag: checkForPendingDocs. Possible cases
+     * <ul>
+     * <li>If checkForPendingDocs = true, it starts scanning from the list for
+     * which checkPoint() was called from last batch traversal. Hence only a
+     * subset of lists will be scanned.</li>
+     * <li>If checkForPendingDocs = false, it will scan all the lists for the
+     * given site to create a document list. This implies that all the lists
+     * have been re-crawled for updates and one or more lists might have docs
+     * added to them</li>
+     * </ul>
+     *
+     * @TODO In future, this should always scan a subset of lists which have
+     *       docs and avoid unnecessary processing of all lists and sites
+     * @param sharepointClient The instance of {@link SharepointClient} that
+     *            will process the crawl queue to construct the document list
+     * @param checkForPendingDocs If true, scans from the list at which
+     *            checkPoint() was called. If false, will scan all lists
+     * @return {@link SPDocumentList} The document list to be returned from
+     *         current batch traversal
+     * @since 2.4
      */
-    private SPDocumentList traverse(final SharepointClient sharepointClient) {
+    private SPDocumentList traverse(final SharepointClient sharepointClient,
+            boolean checkForPendingDocs) {
         final String lastWeb = globalState.getLastCrawledWebID();
         if (null == lastWeb) {
             globalState.setCurrentWeb(null);
-        } else {
+        } else if (checkForPendingDocs) {
             final WebState ws = globalState.lookupWeb(lastWeb, sharepointClientContext);
             // Get the last crawled list id and initiate the traversing from
             // that state instead of searching for all liststates
@@ -248,10 +278,17 @@ public class SharepointTraversalManager implements TraversalManager,
             ListState listState = ws.lookupList(lastList);
             ws.setCurrentList(listState);
             globalState.setCurrentWeb(ws);
+        } else {
+            // This means that connector must have discovered updates for all
+            // lists for the given site and hence we need to scan all of them.
+            // Or else docs from few of the lists will be missed
+            final WebState ws = globalState.lookupWeb(lastWeb, sharepointClientContext);
+            ws.setCurrentList(null);
         }
+
         SPDocumentList rsAll = null;
         int sizeSoFar = 0;
-        for (final Iterator iter = globalState.getCircularIterator(); iter.hasNext()
+        for (final Iterator<WebState> iter = globalState.getCircularIterator(); iter.hasNext()
                 && (sizeSoFar < hint);) {
             final WebState webState = (WebState) iter.next();
             globalState.setCurrentWeb(webState);

@@ -564,8 +564,7 @@ public class WebState implements StatefulObject {
                             }
                             deletedDocs.add(doc);
                         }
-
-                        // We must always sort the documents inside a
+                         // We must always sort the documents inside a
                         // SPDocumentList object. This is important for
                         // nextDoc() and checkPoint() logic
                         Collections.sort(deletedDocs);
@@ -629,11 +628,11 @@ public class WebState implements StatefulObject {
         if (start == null) {
             return getIterator();
         }
-        // one might think you could just do tail.addAll(head) here. But you
-        // can't.
+        // Return the correct subset to be used for traversing. Start from the
+        // current list
         final ArrayList<ListState> full = new ArrayList<ListState>(
                 allListStateSet.tailSet(start));
-        // full.addAll(allListStateSet.headSet(start));
+
         return full.iterator();
     }
 
