@@ -102,9 +102,12 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         }
 
         String userName = identity.getUsername();
-        LOGGER.log(Level.INFO, "Username received for authorization: "
-                + userName);
         String domain = identity.getDomain();
+
+		LOGGER.log(Level.INFO, "Received #" + docIDs.size()
+				+ " documents for authorization. Username [ " + userName
+				+ " ], domain [ " + domain + " ]. ");
+
         // If domain is not received as part of the authorization request, use
         // the one from SharePointClientContext
         if ((domain == null) || (domain.length() == 0)) {
@@ -116,13 +119,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         LOGGER.log(Level.INFO, "Authorizing User: " + userName);
 
         final List<AuthorizationResponse> response = new ArrayList<AuthorizationResponse>();
-        final Map<String, Set<AuthData>> hmSortedDocuments = createAuthDataFromDocIDsPerWebApp(docIDs);// documents
-                                                                                                        // are
-                                                                                                        // arranged
-                                                                                                        // per
-                                                                                                        // web
-                                                                                                        // application
 
+        // documents are arranged per web application
+        final Map<String, Set<AuthData>> hmSortedDocuments = createAuthDataFromDocIDsPerWebApp(docIDs);
         GSBulkAuthorizationWS bulkAuthWS = null;
 
         final Set<Map.Entry<String, Set<AuthData>>> docPerWebApp = hmSortedDocuments.entrySet();
@@ -263,7 +262,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         for (AuthData element : authDocs) {
             if ((element.getError() != null)
                     && (element.getError().length() != 0)) {
-                LOGGER.log(Level.SEVERE, "Web Service has thrown the following error while authorizing. \n Error: "
+				LOGGER.log(Level.WARNING, "Web Service has thrown the following error while authorizing. \n Error: "
                         + element.getError());
             }
             final boolean status = element.isIsAllowed();
