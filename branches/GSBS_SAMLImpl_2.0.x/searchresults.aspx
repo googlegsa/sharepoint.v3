@@ -432,7 +432,7 @@ div.ms-areaseparatorright{
                     try
                     {
                         String time = DateTime.Today.ToString("yyyy_MM_dd");
-                        string waName="";
+                        string WebAppName="";
 
                         /**
                          * If possible get the web app name to be appended in log file name. If exception skip it.
@@ -440,14 +440,14 @@ div.ms-areaseparatorright{
                          **/
                         try
                         {    
-                            waName=SPContext.Current.Site.WebApplication.Name;
-                            if ((waName == null) || (waName.Trim().Equals("")))
+                            WebAppName=SPContext.Current.Site.WebApplication.Name;
+                            if ((WebAppName == null) || (WebAppName.Trim().Equals("")))
                             {
                                 /**
                                  * This is generally the acse with the SharePoint central web application.
                                  * e.g. DefaultServerComment = "SharePoint Central Administration v3"
                                  **/
-                                waName= SPContext.Current.Site.WebApplication.DefaultServerComment;
+                                WebAppName= SPContext.Current.Site.WebApplication.DefaultServerComment;
                             }
                         }
                         catch(Exception){}
@@ -456,7 +456,7 @@ div.ms-areaseparatorright{
                         int portNumber = -1;
 
                         /**
-                         * If possible get the web app name to be appended in log file name. If exception skip it
+                         * If possible get the port number to be appended in log file name. If exception skip it
                          **/
                         try
                         {
@@ -464,7 +464,7 @@ div.ms-areaseparatorright{
                         }
                         catch (Exception) { }
                         
-                        String CustomName = PRODUCTNAME +"_"+ waName + "_"+portNumber+"_" + time + ".log";
+                        String CustomName = PRODUCTNAME + "_" + WebAppName + "_" + portNumber + "_" + time + ".log";
                         String loc = LogLocation + CustomName;
                         FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
                         
@@ -479,6 +479,7 @@ div.ms-areaseparatorright{
                         SPSecurity.RunWithElevatedPrivileges(delegate()
                         {
                             logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
+                            f.Unlock(0, f.Length);//unlock the segment
                             logger.Flush();
                             logger.Close();
                         });
