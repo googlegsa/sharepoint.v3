@@ -85,6 +85,9 @@ div.ms-areaseparatorright{
             public string xslSP2result;
             public string temp="true";
 			public const String PRODUCTNAME = "GSBS";
+            //private String WebAppNameAndPort = GetCurrentWebAppNameAndPort();
+            //private String WebAppNameAndPort = "_sdfsdf";
+
             public LOG_LEVEL currentLogLevel = LOG_LEVEL.ERROR;
 
             /**
@@ -111,6 +114,21 @@ div.ms-areaseparatorright{
                 xslGSA2SP = "";
                 xslSP2result = "";
             }
+
+            /// <summary>
+            /// Get current web application name form the SharePoint's request context
+            /// </summary>
+            /// <returns></returns>
+            /*public string GetCurrentWebAppNameAndPort()
+            {
+                string name = "_";
+                
+                //In case of exception..do not care just ignore name
+                    //name = SPContext.Current.Site.WebApplication.Name.ToString();
+                    //name +="_"+SPContext.Current.Site.WebApplication.AlternateUrls[0].Uri.Port;
+
+                return name;
+            }*/
             
             //Method to extract configuration properties into GoogleSearchBox
             public void initGoogleSearchBox()
@@ -432,10 +450,46 @@ div.ms-areaseparatorright{
                     try
                     {
                         String time = DateTime.Today.ToString("yyyy_MM_dd");
-                        String CustomName = PRODUCTNAME + "_" + time + ".log";
-                        String loc = LogLocation + CustomName;
-                        StreamWriter logger = File.AppendText(loc);
+                        string waName="";
 
+                        /**
+                         * If possible get the web app name to be appended in log file name. If exception skip it.
+                         * Note: If we breakup create a unction to get the web app name it fails with 'Unknown error' in SharePoint
+                         **/
+                        try
+                        {    
+                            waName=SPContext.Current.Site.WebApplication.Name;
+                            if ((waName == null) || (waName.Trim().Equals("")))
+                            {
+                                /**
+                                 * This is generally the acse with the SharePoint central web application.
+                                 * e.g. DefaultServerComment = "SharePoint Central Administration v3"
+                                 **/
+                                waName= SPContext.Current.Site.WebApplication.DefaultServerComment;
+                            }
+                        }
+                        catch(Exception){}
+
+
+                        int portNumber = -1;
+
+                        /**
+                         * If possible get the web app name to be appended in log file name. If exception skip it
+                         **/
+                        try
+                        {
+                            portNumber= SPContext.Current.Site.WebApplication.AlternateUrls[0].Uri.Port;
+                        }
+                        catch (Exception) { }
+                        
+                        String CustomName = PRODUCTNAME +"_"+ waName + "_"+portNumber+"_" + time + ".log";
+                        String loc = LogLocation + CustomName;
+                        FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
+                        
+                        //Prevents other processes from changing the FileStream while permitting read access
+                        f.Lock(0, f.Length);//writing in the same section
+                        StreamWriter logger = new StreamWriter(f);
+                        
                         /*
                          * We need to make even a normal user with 'reader' access to be able to log messages
                          * This requires to elevate the user temporarily for write operation.
