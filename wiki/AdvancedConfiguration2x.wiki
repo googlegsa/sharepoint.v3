@@ -91,6 +91,13 @@ E.g.
 }}}
    This will allow connector to include only metadata Name & Owner while submitting documents to GSA for indexing
   
+
+*Note:* Following are some well known metadata which are sent for each document; these metadata are always sent irrespective of what inclusion/exclusion rule defined in the connectorInstance.xml:
+ * sharepoint:author
+ * sharepoint:listguid
+ * sharepoint:parentwebtitle
+ * google:objecttype
+
 ==== Enable/Disable FQDN Resolution for Host Names====
  
 'FQDNConversion' property, if set to true would convert the document and attachment URLs as fetched by the connector to FQDN format. 
