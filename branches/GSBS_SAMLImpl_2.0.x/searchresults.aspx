@@ -85,9 +85,6 @@ div.ms-areaseparatorright{
             public string xslSP2result;
             public string temp="true";
 			public const String PRODUCTNAME = "GSBS";
-            //private String WebAppNameAndPort = GetCurrentWebAppNameAndPort();
-            //private String WebAppNameAndPort = "_sdfsdf";
-
             public LOG_LEVEL currentLogLevel = LOG_LEVEL.ERROR;
 
             /**
@@ -114,21 +111,6 @@ div.ms-areaseparatorright{
                 xslGSA2SP = "";
                 xslSP2result = "";
             }
-
-            /// <summary>
-            /// Get current web application name form the SharePoint's request context
-            /// </summary>
-            /// <returns></returns>
-            /*public string GetCurrentWebAppNameAndPort()
-            {
-                string name = "_";
-                
-                //In case of exception..do not care just ignore name
-                    //name = SPContext.Current.Site.WebApplication.Name.ToString();
-                    //name +="_"+SPContext.Current.Site.WebApplication.AlternateUrls[0].Uri.Port;
-
-                return name;
-            }*/
             
             //Method to extract configuration properties into GoogleSearchBox
             public void initGoogleSearchBox()
