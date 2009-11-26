@@ -52,7 +52,7 @@
 	<summary>
 		<codepage>1252</codepage>
 		<title>##ID_STRING5##</title>
-		<subject>##ID_STRING6##</subject>
+		<subject>Google Search Appliance Resource Kit for SharePoint</subject>
 		<author>##COMPANY_NAME##</author>
 		<keywords>Installer,MSI,Database</keywords>
 		<comments>Contact:  Your local administrator</comments>
@@ -4096,9 +4096,9 @@
 		<row><td>ID_STRING66</td><td>1033</td><td>NewFeature1</td><td>0</td><td/><td>-451041106</td></row>
 		<row><td>ID_STRING67</td><td>1033</td><td>GSA Simulator for SharePoint</td><td>0</td><td/><td>1839030796</td></row>
 		<row><td>ID_STRING68</td><td>1033</td><td>Google Search Box Test Utility</td><td>0</td><td/><td>-451057426</td></row>
-		<row><td>ID_STRING69</td><td>1033</td><td>GSA Simulator with SAML Bridge for SharePoint</td><td>0</td><td/><td>-711074579</td></row>
+		<row><td>ID_STRING69</td><td>1033</td><td>GSA Resource Kit for SharePoint</td><td>0</td><td/><td>-711092401</td></row>
 		<row><td>ID_STRING7</td><td>1033</td><td>http://www.google..com</td><td>0</td><td/><td>-711090485</td></row>
-		<row><td>ID_STRING70</td><td>1033</td><td>Google Search Appliance Simulator with SAML Bridge for SharePoint</td><td>0</td><td/><td>-711113459</td></row>
+		<row><td>ID_STRING70</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>-711088305</td></row>
 		<row><td>ID_STRING71</td><td>1033</td><td>GOOGLE~1|Google SAML Bridge for Windows</td><td>0</td><td/><td>1839028527</td></row>
 		<row><td>ID_STRING72</td><td>1033</td><td>SAMLBR~1|SAML Bridge Configuration Wizard</td><td>0</td><td/><td>362630958</td></row>
 		<row><td>ID_STRING73</td><td>1033</td><td>UnInstallationFeature</td><td>0</td><td/><td>631084334</td></row>
@@ -4154,7 +4154,7 @@
 		<row><td>NEW_STRING7</td><td>1033</td><td>By installing the Google Search Box for SharePoint, the SharePoint search will be replaced by Google search for all the local SharePoint web applications</td><td>0</td><td/><td>-711085939</td></row>
 		<row><td>NEW_STRING8</td><td>1033</td><td>&amp;Next &gt;</td><td>0</td><td/><td>765317773</td></row>
 		<row><td>NEW_STRING9</td><td>1033</td><td>Cancel</td><td>0</td><td/><td>765317773</td></row>
-		<row><td>UNINST|Uninstall Google Services for SharePoint</td><td>1033</td><td>UNINST~1|Uninstall GSA Resource Kit for SharePoint</td><td>0</td><td/><td>-711110933</td></row>
+		<row><td>UNINST|Uninstall GSA Resource Kit for SharePoint</td><td>1033</td><td>UNINST~1|Uninstall GSA Resource Kit for SharePoint</td><td>0</td><td/><td>-711120784</td></row>
 		<row><td>tempsource</td><td>1033</td><td>template:template</td><td>0</td><td>temp source</td><td>891127475</td></row>
 	</table>
 
@@ -4992,7 +4992,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>SAMLConfigurationShortcut</td><td>newfolder2</td><td>##ID_STRING72##</td><td>SAMLBridgeCustomApplication</td><td>[SAML_BRIDGE2]SAMLBridgeConfiguation.exe</td><td/><td/><td/><td>SAMLConfigurationS_D8381E9421A34E6DA0655408D4CF75D6.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>SAMLLoginPageShortcut</td><td>newfolder2</td><td>##ID_STRING94##</td><td>SAMLBridgeCustomApplication</td><td>[GSA_RESOURCE_KIT]DetectNCreateLinksFromSiteID.exe</td><td>"SAMLBridge"</td><td/><td/><td>SAMLLoginPageShort_B7AE6BCEE28C46B4A0BF38145DCFD8E7.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>SearchBoxLogs</td><td>GoogleSearchBoxforSharePoint</td><td>##ID_STRING17##</td><td>GoogleSearchBoxComponent</td><td>[INSTALLDIR]LOGS</td><td/><td/><td/><td>SearchBoxLogs_4F982CB8724D49C89FB08CECFB1F0D3A.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
-		<row><td>UNINST_Uninstall_Google_Services_for_SharePoint</td><td>google_1_google_inc.</td><td>UNINST|Uninstall Google Services for SharePoint</td><td>UnInstallComp</td><td>[SystemFolder]msiexec.exe</td><td>/i {0B40B646-4CCA-4379-AFCA-E8556F9BD14F} /qf</td><td/><td/><td>UNINST_Uninstall_G_545E3F23623741ADB851586249BE0FA5.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>UNINST_Uninstall_Google_Services_for_SharePoint</td><td>google_1_google_inc.</td><td>##UNINST|Uninstall GSA Resource Kit for SharePoint##</td><td>UnInstallComp</td><td>[SystemFolder]msiexec.exe</td><td>/i {0B40B646-4CCA-4379-AFCA-E8556F9BD14F} /qf</td><td/><td/><td>UNINST_Uninstall_G_545E3F23623741ADB851586249BE0FA5.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="Signature">
