@@ -1,0 +1,14 @@
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.pdb
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.pdb
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.pdb
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.pdb
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
+C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
