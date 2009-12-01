@@ -1437,7 +1437,12 @@ public class ListsWS {
                                 + docId
                                 + " ], listURL [ "
                                 + list.getListURL() + " ]. ");
-                    }else {
+					} else if (null == contentType) {
+						LOGGER.log(Level.WARNING, "No content type found for the document, relativeURL [ "
+								+ relativeURL
+								+ " ], listURL [ "
+								+ list.getListURL() + " ]. ");
+					} else {
                         relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
                         if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
                             /*
@@ -1457,12 +1462,7 @@ public class ListsWS {
                             deletedIDs.remove(docId);
                             list.removeFromDeleteCache(docId);
 
-                            if(null == contentType) {
-                                LOGGER.log(Level.WARNING, "No content type found for the document, relativeURL [ "
-                                        + relativeURL
-                                        + " ], listURL [ "
-                                        + list.getListURL() + " ]. ");
-                            } else if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+							if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
                                 try {
                                     list.updateExtraIDs(relativeURL, docId, true);
                                 } catch (SharepointException se1) {
@@ -1578,7 +1578,7 @@ public class ListsWS {
             }
         } // end of For
 
-        // Process the list items whcih WS returns as rs:rows
+		// Process the list items which WS returns as rs:rows
         if (listItems.size() < intRowLimit) {
             for (Object element : updatedListItems) {
                 final MessageElement row = (MessageElement) element;
@@ -1588,14 +1588,14 @@ public class ListsWS {
                 }
             }
 
-            // If in case while getting the itmes under renamed/restored folder,
+			// If in case while getting the items under renamed/restored folder,
             // we have changed the nextPage value to null, let's get the
             // original value back.
             if (list.getNextPage() == null) {
                 list.setNextPage(receivedNextPage);
             }
         } else if (updatedListItems.size() > 0) {
-            // Since, we have not processed the updated itmes yet, nextPage must
+			// Since, we have not processed the updated items yet, nextPage must
             // explicitly be set non-null to indicate further processing is
             // required with the same Change Token
             list.setNextPage("not null");
