@@ -1082,7 +1082,7 @@ public class ListsWS {
             if (list.getNextPage() == null) {
                 // Update Change Token if we have processed all the
                 // changes/items with the current Change token.
-                if ((list.getChangeToken() == null)
+				if ((list.getChangeToken() == null || list.getChangeToken().trim().length() == 0)
                         && (list.getCachedPrevChangeToken() != null)) {
                     // We have stored the first received change token during the
                     // first complete crawl. Let's start from that change token
@@ -1095,8 +1095,8 @@ public class ListsWS {
                     LOGGER.log(Level.INFO, "Change Token Updated for list [ "
                             + list.getListURL() + " ].");
                 }
-            } else if ((list.getChangeToken() == null)
-                    && (list.getCachedPrevChangeToken() == null)) {
+			} else if ((list.getChangeToken() == null || list.getChangeToken().trim().length() == 0)
+					&& (list.getCachedPrevChangeToken() == null || list.getCachedPrevChangeToken().trim().length() == 0)) {
                 /*
                  * This is the first time we have received a change token for
                  * this list. We must start the incremental crawl in future from
@@ -1225,7 +1225,7 @@ public class ListsWS {
                     docID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID + "["
                             + attchmnt_url + "]" + originalDocID;
                     final SPDocument attchmnt = new SPDocument(docID,
-                            list.getListURL(), list.getLastModCal(),
+							attchmnt_url, list.getLastModCal(),
                             SPConstants.NO_AUTHOR,
 							SPConstants.OBJTYPE_ATTACHMENT,
                             list.getParentWebTitle(),
@@ -1234,7 +1234,6 @@ public class ListsWS {
                     attchmnt.setAction(ActionType.DELETE);
                     listItems.add(attchmnt);
                     count++;
-                    list.removeAttachmntURLFor(currentItemID, attchmnt_url);
                 }
             }
         }
@@ -1416,19 +1415,30 @@ public class ListsWS {
         for (final Iterator itrchild = dataElement.getChildElements(); itrchild.hasNext();) {
             try {
                 final MessageElement row = (MessageElement) itrchild.next();
+                final String docId = row.getAttribute(SPConstants.ID);
+                if (null == docId) {
+                    LOGGER.log(Level.WARNING, "Skipping current rs:data node as docID is not found. listURL [ "
+                            + list.getListURL() + " ]. ");
+                    continue;
+                }
                 if (list.canContainFolders()) {
-                    // case of folders will occur in case of document libraries.
                     String contentType = row.getAttribute(SPConstants.CONTENTTYPE);
                     if (contentType == null) {
                         contentType = row.getAttribute(SPConstants.CONTENTTYPE_INMETA);
                     }
                     String relativeURL = row.getAttribute(SPConstants.FILEREF);
-                    final String docId = row.getAttribute(SPConstants.ID);
+
                     LOGGER.log(Level.CONFIG, "docID [ " + docId
                             + " ], relativeURL [ " + relativeURL
                             + " ], contentType [ " + contentType + " ]. ");
-                    if ((docId != null) && (relativeURL != null)) {
 
+                    if(null == relativeURL) {
+                        LOGGER.log(Level.WARNING, "No relativeURL (FILEREF) attribute found for the document, docID [ "
+                                + docId
+                                + " ], listURL [ "
+                                + list.getListURL() + " ]. ");
+                    }else {
+                        relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
                         if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
                             /*
                              * Since we have got an entry for this item, this
@@ -1446,30 +1456,38 @@ public class ListsWS {
                              */
                             deletedIDs.remove(docId);
                             list.removeFromDeleteCache(docId);
-                        }
-                        relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
 
-                        if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
-                            try {
-                                list.updateExtraIDs(relativeURL, docId, true);
-                            } catch (SharepointException se1) {
-                                // Try again after updating hte folders info.
-                                // Because, the folder might have been renamed.
-                                LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
+                            if(null == contentType) {
+                                LOGGER.log(Level.WARNING, "No content type found for the document, relativeURL [ "
                                         + relativeURL
                                         + " ], listURL [ "
-                                        + list.getListURL()
-                                        + " ]. Retrying after updating the folders info.. ", se1.getMessage());
-                                getFolderHierarchy(list, null, null);
+                                        + list.getListURL() + " ]. ");
+                            } else if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
                                 try {
                                     list.updateExtraIDs(relativeURL, docId, true);
-                                } catch (SharepointException se2) {
+                                } catch (SharepointException se1) {
+                                    // Try again after updating the folders
+                                    // info.
+                                    // Because, the folder might have been renamed.
                                     LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
                                             + relativeURL
                                             + " ], listURL [ "
-                                            + list.getListURL() + " ]. ", se2);
+                                            + list.getListURL()
+                                            + " ]. Retrying after updating the folders info.. ", se1.getMessage());
+                                    getFolderHierarchy(list, null, null);
+                                    try {
+                                        list.updateExtraIDs(relativeURL, docId, true);
+                                    } catch (SharepointException se2) {
+                                        LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
+                                                + relativeURL
+                                                + " ], listURL [ "
+                                                + list.getListURL() + " ]. ", se2);
+                                    }
                                 }
                             }
+                        }
+
+                        if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
 
                             // When a folder is restored / renamed, we need to
                             // send new feeds for all the items which are
@@ -1507,7 +1525,7 @@ public class ListsWS {
 
                                 LOGGER.log(Level.INFO, "Getting folder hierarchy at folder level [ "
                                         + folderPath + " ]. ");
-								final List<String> folderLevels = getFolderHierarchy(list, folderPath, null);
+                                final List<String> folderLevels = getFolderHierarchy(list, folderPath, null);
 
                                 /*
                                  * If in the last cycle, we have stopped
@@ -1543,8 +1561,6 @@ public class ListsWS {
                             }
                             continue; // do not send folders as documents.
                         }
-                    } else {
-                        continue;
                     }
                 } // End -> if(list.isDocumentLibrary())
 
@@ -1552,7 +1568,7 @@ public class ListsWS {
                  * Do not process list items i.e, rs:rows here. This is because,
                  * we need to process the renamed/restored folders cases first.
                  * If we'll not reach the batch hint with such documents then
-                 * only we'll process the updated itmes.
+                 * only we'll process the updated items.
                  */
                 updatedListItems.add(row);
 
