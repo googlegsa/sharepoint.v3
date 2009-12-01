@@ -529,7 +529,7 @@ public class SPDocumentList implements DocumentList {
                  * }
                  */
             } else if ((listState.getNextPage() == null)
-                    && (listState.getChangeToken() != null)) {
+					&& (listState.getChangeToken() != null && listState.getChangeToken().trim().length() != 0)) {
                 // There are docs pending in this list, so roll back the change
                 // token
                 if (LOGGER.isLoggable(Level.CONFIG)) {
