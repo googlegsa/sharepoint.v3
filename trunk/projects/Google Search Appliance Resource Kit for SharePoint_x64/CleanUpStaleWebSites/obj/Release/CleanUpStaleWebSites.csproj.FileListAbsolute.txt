@@ -18,3 +18,8 @@ C:\Amit\Google Search Appliance Resource Kit for SharePoint_64\CleanUpStaleWebSi
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\CleanUpStaleWebSites\obj\Release\ResolveAssemblyReference.cache
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.exe
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\CleanUpStaleWebSites\bin\Release\CleanUpStaleWebSites.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\CleanUpStaleWebSites\bin\Release\CleanUpStaleWebSites.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\CleanUpStaleWebSites\obj\Release\ResolveAssemblyReference.cache
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.pdb

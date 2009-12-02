@@ -229,7 +229,6 @@
 	<table name="AppSearch">
 		<col key="yes" def="s72">Property</col>
 		<col key="yes" def="s72">Signature_</col>
-		<row><td>DOTNETVERSION20</td><td>DotNet20</td></row>
 		<row><td>IISROOTFOLDER</td><td>_IISROOTFOLDER</td></row>
 		<row><td>IISROOTLOCATION</td><td>NewSignature11</td></row>
 		<row><td>IIS_VERSION</td><td>_IIS_VERSION</td></row>
@@ -532,7 +531,7 @@
 		<row><td>GSASimulatorForSharePoint</td><td>Text3</td><td>Text</td><td>26</td><td>28</td><td>292</td><td>25</td><td>65539</td><td>NewProperty11</td><td>##NEW_STRING19##</td><td/><td/><td/><td/><td/><td/></row>
 		<row><td>GSASimulatorForSharePoint</td><td>btnTestUtilityCancel</td><td>PushButton</td><td>298</td><td>241</td><td>66</td><td>17</td><td>8388611</td><td/><td>##NEW_STRING5##</td><td>lblSearchBoxTestUtilityPort</td><td/><td/><td/><td/><td/></row>
 		<row><td>GSASimulatorForSharePoint</td><td>btnTestUtilityOK</td><td>PushButton</td><td>227</td><td>241</td><td>66</td><td>17</td><td>8388611</td><td/><td>##NEW_STRING4##</td><td>btnTestUtilityCancel</td><td/><td/><td/><td/><td/></row>
-		<row><td>GSASimulatorForSharePoint</td><td>lblSearchBoxTestUtilityPort</td><td>Text</td><td>11</td><td>109</td><td>155</td><td>15</td><td>65539</td><td>lblSamlPortProperty</td><td>##NEW_STRING3##</td><td>MYTESTUTILITYPORT</td><td/><td/><td/><td/><td/></row>
+		<row><td>GSASimulatorForSharePoint</td><td>lblSearchBoxTestUtilityPort</td><td>Text</td><td>11</td><td>109</td><td>163</td><td>15</td><td>65539</td><td>lblSamlPortProperty</td><td>##ID_STRING_PORT_NUMBER##</td><td>MYTESTUTILITYPORT</td><td/><td/><td/><td/><td/></row>
 		<row><td>InstallChangeFolder</td><td>Banner</td><td>Bitmap</td><td>0</td><td>0</td><td>374</td><td>44</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td>NewBinary5</td></row>
 		<row><td>InstallChangeFolder</td><td>BannerLine</td><td>Line</td><td>0</td><td>44</td><td>374</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>InstallChangeFolder</td><td>Branding1</td><td>Text</td><td>4</td><td>229</td><td>50</td><td>13</td><td>3</td><td/><td>##IDS_INSTALLSHIELD_FORMATTED##</td><td/><td/><td>0</td><td/><td/><td/></row>
@@ -2931,8 +2930,8 @@
 		<row><td>DN_AlwaysInstall</td><td>1033</td><td>Always Install</td><td>0</td><td/><td>1394414478</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_COLOR</td><td>1033</td><td>The color settings of your system are not adequate for running [ProductName].</td><td>0</td><td/><td>1394414478</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION10</td><td>1033</td><td>Microsoft .NET Framework 1.0 needs to be installed for this installation to continue.</td><td>0</td><td/><td>-325228978</td></row>
-		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION20</td><td>1033</td><td>Microsoft .NET Framework 2.0 needs to be installed for this installation to continue.</td><td>0</td><td/><td>-325235090</td></row>
-		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION20SP1</td><td>1033</td><td>Microsoft .NET Framework 2.0 SP1 or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>211654386</td></row>
+		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION20</td><td>1033</td><td>Microsoft .NET Framework 2.0 needs to be installed for this installation to continue.</td><td>0</td><td/><td>236837354</td></row>
+		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION20SP1</td><td>1033</td><td>Microsoft .NET Framework 2.0 SP1 or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>236831210</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_IE6FOUND</td><td>1033</td><td>Internet Explorer 6 or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>211660530</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_IE7FOUND</td><td>1033</td><td>Internet Explorer 7 or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>211662578</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_IE8FOUND</td><td>1033</td><td>Internet Explorer 8 or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>211662578</td></row>
@@ -4127,6 +4126,7 @@
 		<row><td>ID_STRING93</td><td>1033</td><td>NEWSHO~1|NewShortcut7</td><td>0</td><td/><td>-1784815407</td></row>
 		<row><td>ID_STRING94</td><td>1033</td><td>SAMLBR~1|SAML Bridge Login Page</td><td>0</td><td/><td>-1784827663</td></row>
 		<row><td>ID_STRING95</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-1113739436</td></row>
+		<row><td>ID_STRING_PORT_NUMBER</td><td>1033</td><td>GSA Resource Kit for SharePoint port number</td><td>0</td><td/><td>371005486</td></row>
 		<row><td>ID_SearchBoxLocation</td><td>1033</td><td>[INSTALLDIR]TEMPLATE\CONTROLTEMPLATES</td><td>0</td><td>Search Box Location</td><td>-191036691</td></row>
 		<row><td>ID_SearchResultsLocation</td><td>1033</td><td>[INSTALLDIR]TEMPLATE\LAYOUTS</td><td>0</td><td>Search Results location</td><td>-191005555</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>1394414478</td></row>
@@ -4134,13 +4134,13 @@
 		<row><td>NEW_STRING1</td><td>1033</td><td>Text</td><td>0</td><td/><td>1293792370</td></row>
 		<row><td>NEW_STRING10</td><td>1033</td><td>Enter port number for the SAML Bridge site. Select a port which is not currently in use.</td><td>0</td><td/><td>765271085</td></row>
 		<row><td>NEW_STRING11</td><td>1033</td><td>Enter port number for the SAML Bridge site. Assigned port number could be changed even after Installation. Select a port which is not in use.</td><td>0</td><td/><td>765312461</td></row>
-		<row><td>NEW_STRING12</td><td>1033</td><td>Enter port number for the GSA Simulator for SharePoint site. Assigned port number could be changed even after Installation. Select a port which is not in use.</td><td>0</td><td/><td>1839054319</td></row>
+		<row><td>NEW_STRING12</td><td>1033</td><td>Enter port number for the GSA Resource Kit for SharePoint site. Assigned port number could be changed even after Installation. Select a port which is not in use.</td><td>0</td><td/><td>370999374</td></row>
 		<row><td>NEW_STRING13</td><td>1033</td><td>&amp;OK</td><td>0</td><td/><td>765322701</td></row>
 		<row><td>NEW_STRING14</td><td>1033</td><td>&amp;Cancel</td><td>0</td><td/><td>765322701</td></row>
 		<row><td>NEW_STRING15</td><td>1033</td><td>Google SAML Bridge port number</td><td>0</td><td/><td>765300333</td></row>
 		<row><td>NEW_STRING16</td><td>1033</td><td>4521</td><td>0</td><td/><td>1704835476</td></row>
 		<row><td>NEW_STRING17</td><td>1033</td><td>{&amp;Tahoma8}4521</td><td>0</td><td/><td>-1650602865</td></row>
-		<row><td>NEW_STRING18</td><td>1033</td><td>{&amp;MSSansBold8}Search Box Test Utility port number</td><td>0</td><td/><td>1839007183</td></row>
+		<row><td>NEW_STRING18</td><td>1033</td><td>{&amp;MSSansBold8}GSA Resource Kit for SharePoint port number</td><td>0</td><td/><td>371019822</td></row>
 		<row><td>NEW_STRING19</td><td>1033</td><td>Click Ok to continue with Installation, or click Cancel to terminate installation.</td><td>0</td><td/><td>1839042159</td></row>
 		<row><td>NEW_STRING2</td><td>1033</td><td>{&amp;Tahoma8}Please enter the port number of the SAML Bridge</td><td>0</td><td/><td>1293796530</td></row>
 		<row><td>NEW_STRING20</td><td>1033</td><td>Note: By installing the Google Search Box for SharePoint, the SharePoint search will be replaced by Google search for all the local SharePoint web applications</td><td>0</td><td/><td>-711077811</td></row>
@@ -4148,7 +4148,7 @@
 		<row><td>NEW_STRING22</td><td>1033</td><td>fdfgfdgdf</td><td>0</td><td/><td>-711073267</td></row>
 		<row><td>NEW_STRING23</td><td>1033</td><td>Text</td><td>0</td><td/><td>-711103635</td></row>
 		<row><td>NEW_STRING24</td><td>1033</td><td>dssdfdsfsfs</td><td>0</td><td/><td>-711105619</td></row>
-		<row><td>NEW_STRING3</td><td>1033</td><td>GSA Simulator for SharePoint port number</td><td>0</td><td/><td>1839039951</td></row>
+		<row><td>NEW_STRING3</td><td>1033</td><td>GSA Resource Kit for SharePoint</td><td>0</td><td/><td>236838033</td></row>
 		<row><td>NEW_STRING4</td><td>1033</td><td>&amp;OK</td><td>0</td><td/><td>1293784946</td></row>
 		<row><td>NEW_STRING5</td><td>1033</td><td>&amp;Cancel</td><td>0</td><td/><td>1293795347</td></row>
 		<row><td>NEW_STRING6</td><td>1033</td><td>Google SAML Bridge port number</td><td>0</td><td/><td>765307597</td></row>
@@ -4819,7 +4819,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>SAMLPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
 		<row><td>SHOWLAUNCHPROGRAM</td><td>0</td><td/></row>
 		<row><td>SearchControlOriginalLocation</td><td>C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\</td><td/></row>
-		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DOTNETVERSION20;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;STSADMPATH;SAML_BRIDGE3</td><td/></row>
+		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;STSADMPATH;SAML_BRIDGE3</td><td/></row>
 		<row><td>SetupType</td><td>Typical</td><td/></row>
 		<row><td>TESTUTILITYPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
 		<row><td>UpgradeCode</td><td>{A9A5C3C2-1F45-47DA-877B-66078B3EA554}</td><td/></row>
@@ -4869,7 +4869,6 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<col def="s255">Key</col>
 		<col def="S255">Name</col>
 		<col def="I2">Type</col>
-		<row><td>DotNet20</td><td>2</td><td>SOFTWARE\Microsoft\NET Framework Setup\NDP\v2.0.50727</td><td>Install</td><td>18</td></row>
 		<row><td>NewSignature1</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\12.0</td><td>Location</td><td>18</td></row>
 		<row><td>NewSignature11</td><td>2</td><td>SOFTWARE\Microsoft\INetStp</td><td>PathWWWRoot</td><td>2</td></row>
 		<row><td>_IISROOTFOLDER</td><td>2</td><td>Software\Microsoft\InetStp</td><td>PathWWWRoot</td><td>16</td></row>
