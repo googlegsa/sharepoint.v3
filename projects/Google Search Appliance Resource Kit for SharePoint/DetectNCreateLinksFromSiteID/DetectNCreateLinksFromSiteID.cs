@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.DirectoryServices;
-
+using System.Windows.Forms;
 
 namespace GoogleResourceKitForSharePoint
 {
@@ -25,22 +25,26 @@ namespace GoogleResourceKitForSharePoint
         static void Main(string[] args)
         {
             string SITENAME = "gsa-resource-kit";//required to do search for the site
-            
-            string GSA_SIMULATOR ="GSASimulator";
+            string GSA_SIMULATOR = "GSASimulator";
             string SAML_BRIDGE = "SAMLBridge";
             string SEARCH_BOX_TEST_UTILITY = "SearchBoxTestUtility";
-
             int siteID = GetWebSiteId(SITENAME);
+
             String port = GetPortFromSiteID(siteID);
             String host = GetHostName();
             String PROTOCOL = "http://";
             String TEST_UTILITY_CONSTANT = "/SearchSite.aspx";
             String GSA_SIMULATOR_CONSTANT = "/gsa-simulator/default.aspx";
             String SAML_BRIDGE_CONSTANT = "/saml-bridge/Login.aspx";
-            
-            String url = PROTOCOL + host + port;
-            
-            if (args != null)
+
+            String url = PROTOCOL + host + ":" + port;
+
+            /**
+             * The port received could have extra colons 
+             * e.g. Discuss Project-Level Execution issues
+             **/
+
+            if ((args != null) && (args.Length > 0))
             {
                 if (args[0].Equals(GSA_SIMULATOR))
                 {
@@ -58,7 +62,7 @@ namespace GoogleResourceKitForSharePoint
 
                 }
             }
-
+            //MessageBox.Show(url, "url:");
 
             System.Diagnostics.Process.Start(url);//launch a web site in default browser
         }
@@ -73,34 +77,35 @@ namespace GoogleResourceKitForSharePoint
         {
             int result = -1;
 
-            DirectoryEntry w3svc = new DirectoryEntry(string.Format("IIS://localhost/w3svc"));
-
-            foreach (DirectoryEntry site in w3svc.Children)
+            try
             {
-                if (site.Properties["ServerComment"] != null)
-                {
-                    if (site.Properties["ServerComment"].Value != null)
-                    {
-                        if (string.Compare(site.Properties["ServerComment"].Value.ToString(), websiteName,false) == 0)
-                        {
-                            result = Int32.Parse(site.Name);
-                            break;
-                        }
+                DirectoryEntry w3svc = new DirectoryEntry(string.Format("IIS://localhost/w3svc"));
 
-                        
+                foreach (DirectoryEntry site in w3svc.Children)
+                {
+                    try
+                    {
+                        if (site.Properties["ServerComment"] != null)
+                        {
+                            if (site.Properties["ServerComment"].Value != null)
+                            {
+                                if (string.Compare(site.Properties["ServerComment"].Value.ToString(), websiteName, false) == 0)
+                                {
+                                    result = Int32.Parse(site.Name);
+                                    break;
+                                }
+
+
+                            }
+                        }
                     }
+                    catch (Exception) { }
                 }
             }
+            catch (Exception) { }
 
             return result;
         }
-
-
-        public static void ReadSiteIdFromConfig()
-        { 
-            
-        }
-
 
         /// <summary>
         /// Get the port from site ID
@@ -110,20 +115,18 @@ namespace GoogleResourceKitForSharePoint
         public static String GetPortFromSiteID(int SiteID)
         {
             DirectoryEntry site = new DirectoryEntry("IIS://localhost/w3svc/" + SiteID);
-            
-            
+
             //Get everything currently in the serverbindings propery.
             PropertyValueCollection serverBindings = site.Properties["ServerBindings"];
-            return serverBindings[0].ToString();//Get the first port
+            String PortString = serverBindings[0].ToString();
 
-            /* A site can have multiple port bindings. We need the first one */
-            /*for (int i = 0; i < serverBindings.Count; i++)
+            //cleanup the port string
+            if (null != PortString)
             {
-                Console.WriteLine(serverBindings[i]);
-            }*/
+                PortString = PortString.Replace(":", "");
+            }
 
-            
-            
+            return PortString;//Get the first port
         }
 
         /// <summary>

@@ -25,28 +25,37 @@ namespace GoogleResourceKitForSharePoint
         static void Main(string[] args)
         {
             string SITENAME = "gsa-resource-kit";//required to do search for the site
-            DeleteWebSiteFromName(SITENAME);
-
-            //Delete the folder for the IIS web site and Virtual Directory
-            if (args != null)
+            try
             {
-                String location = args[0];
-                if (location != null)
+                DeleteWebSiteFromName(SITENAME);
+
+                //Delete the folder for the IIS web site and Virtual Directory
+                if (args != null)
                 {
-                    //Note: due to a bug in installshield, we get additional Quote(") in the path. It needs to be handled
-                    if (location.EndsWith("\""))
+                    String location = args[0];
+                    if (location != null)
                     {
-                        location = location.Substring(0, location.Length - 1);
-                    }
+                        try
+                        {
+                            //Note: due to a bug in installshield, we get additional Quote(") in the path. It needs to be handled
+                            if (location.EndsWith("\""))
+                            {
+                                location = location.Substring(0, location.Length - 1);
+                            }
 
-                    DirectoryInfo di = new DirectoryInfo(location);
-                    if (di.Exists)
-                    {
-                        di.Delete(true);//recursively delete all
-                    }
+                            DirectoryInfo di = new DirectoryInfo(location);
+                            if (di.Exists)
+                            {
+                                di.Delete(true);//recursively delete all
+                            }
+                        }
+                        catch (Exception)
+                        { }
 
+                    }
                 }
             }
+            catch (Exception) { }
         }
 
         public static void DeleteWebSiteFromName(string websiteName)
@@ -54,19 +63,24 @@ namespace GoogleResourceKitForSharePoint
             DirectoryEntry w3svc = new DirectoryEntry(string.Format("IIS://localhost/w3svc"));
             foreach (DirectoryEntry site in w3svc.Children)
             {
-                if (site.Properties["ServerComment"] != null)
+                try
                 {
-                    if (site.Properties["ServerComment"].Value != null)
+                    if (site.Properties["ServerComment"] != null)
                     {
-                        if (string.Compare(site.Properties["ServerComment"].Value.ToString(), websiteName, false) == 0)
+                        if (site.Properties["ServerComment"].Value != null)
                         {
-                            site.DeleteTree();
-                            break;
+                            if (string.Compare(site.Properties["ServerComment"].Value.ToString(), websiteName, false) == 0)
+                            {
+                                site.DeleteTree();
+                                break;
+                            }
+
+
                         }
-
-
                     }
                 }
+                catch (Exception) { }
+
             }
 
         }
