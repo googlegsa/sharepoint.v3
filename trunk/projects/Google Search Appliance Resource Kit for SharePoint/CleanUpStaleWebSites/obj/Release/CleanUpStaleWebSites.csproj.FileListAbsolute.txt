@@ -8,3 +8,8 @@ C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoi
 C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\CleanUpStaleWebSites\obj\Release\ResolveAssemblyReference.cache
 C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.exe
 C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for SharePoint\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CleanUpStaleWebSites\bin\Release\CleanUpStaleWebSites.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CleanUpStaleWebSites\bin\Release\CleanUpStaleWebSites.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CleanUpStaleWebSites\obj\Release\ResolveAssemblyReference.cache
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.pdb

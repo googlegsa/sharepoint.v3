@@ -73,3 +73,13 @@ C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\
 C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\CheckConnectivityApp\obj\Release\Verify Installation.exe
 C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\CheckConnectivityApp\obj\Release\Verify Installation.pdb
 C:\Amit\Installshield_Delivery\Google Search Appliance Resource Kit for Windows\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\bin\Release\Verify Installation.exe.config
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\bin\Release\Verify Installation.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\bin\Release\Verify Installation.XmlSerializers.dll
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\bin\Release\Verify Installation.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\obj\Release\ResolveAssemblyReference.cache
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\obj\Release\WindowsApplication1.frmVerifyInstallation.resources
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\obj\Release\CheckConnectivity.csproj.GenerateResource.Cache
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\obj\Release\Verify Installation.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\obj\Release\Verify Installation.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll

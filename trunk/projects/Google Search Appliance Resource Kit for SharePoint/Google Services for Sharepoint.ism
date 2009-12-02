@@ -53,7 +53,7 @@
 		<codepage>1252</codepage>
 		<title>##ID_STRING5##</title>
 		<subject>Google Search Appliance Resource Kit for SharePoint</subject>
-		<author>##COMPANY_NAME##</author>
+		<author>##AUTHOR_NAME##</author>
 		<keywords>Installer,MSI,Database</keywords>
 		<comments>Contact:  Your local administrator</comments>
 		<template>Intel;1033</template>
@@ -532,7 +532,7 @@
 		<row><td>GSASimulatorForSharePoint</td><td>Text3</td><td>Text</td><td>26</td><td>28</td><td>292</td><td>25</td><td>65539</td><td>NewProperty11</td><td>##NEW_STRING19##</td><td/><td/><td/><td/><td/><td/></row>
 		<row><td>GSASimulatorForSharePoint</td><td>btnTestUtilityCancel</td><td>PushButton</td><td>298</td><td>241</td><td>66</td><td>17</td><td>8388611</td><td/><td>##NEW_STRING5##</td><td>lblSearchBoxTestUtilityPort</td><td/><td/><td/><td/><td/></row>
 		<row><td>GSASimulatorForSharePoint</td><td>btnTestUtilityOK</td><td>PushButton</td><td>227</td><td>241</td><td>66</td><td>17</td><td>8388611</td><td/><td>##NEW_STRING4##</td><td>btnTestUtilityCancel</td><td/><td/><td/><td/><td/></row>
-		<row><td>GSASimulatorForSharePoint</td><td>lblSearchBoxTestUtilityPort</td><td>Text</td><td>11</td><td>109</td><td>155</td><td>15</td><td>65539</td><td>lblSamlPortProperty</td><td>##NEW_STRING3##</td><td>MYTESTUTILITYPORT</td><td/><td/><td/><td/><td/></row>
+		<row><td>GSASimulatorForSharePoint</td><td>lblSearchBoxTestUtilityPort</td><td>Text</td><td>11</td><td>109</td><td>163</td><td>15</td><td>65539</td><td>lblSamlPortProperty</td><td>##ID_text_label##</td><td>MYTESTUTILITYPORT</td><td/><td/><td/><td/><td/></row>
 		<row><td>InstallChangeFolder</td><td>Banner</td><td>Bitmap</td><td>0</td><td>0</td><td>374</td><td>44</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td>NewBinary5</td></row>
 		<row><td>InstallChangeFolder</td><td>BannerLine</td><td>Line</td><td>0</td><td>44</td><td>374</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>InstallChangeFolder</td><td>Branding1</td><td>Text</td><td>4</td><td>229</td><td>50</td><td>13</td><td>3</td><td/><td>##IDS_INSTALLSHIELD_FORMATTED##</td><td/><td/><td>0</td><td/><td/><td/></row>
@@ -2927,6 +2927,7 @@
 		<col def="I2">Encoded</col>
 		<col def="S0">Comment</col>
 		<col def="I4">TimeStamp</col>
+		<row><td>AUTHOR_NAME</td><td>1033</td><td>Amit Agrawal</td><td>0</td><td/><td>-174244626</td></row>
 		<row><td>COMPANY_NAME</td><td>1033</td><td>Google Inc.</td><td>0</td><td/><td>-711070037</td></row>
 		<row><td>DN_AlwaysInstall</td><td>1033</td><td>Always Install</td><td>0</td><td/><td>1394414478</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_COLOR</td><td>1033</td><td>The color settings of your system are not adequate for running [ProductName].</td><td>0</td><td/><td>1394414478</td></row>
@@ -4114,7 +4115,7 @@
 		<row><td>ID_STRING82</td><td>1033</td><td>gsa-simulator</td><td>0</td><td/><td>1839028048</td></row>
 		<row><td>ID_STRING83</td><td>1033</td><td>SearchSite.aspx</td><td>0</td><td/><td>1839032112</td></row>
 		<row><td>ID_STRING84</td><td>1033</td><td>SearchSite.aspx</td><td>0</td><td/><td>1839048528</td></row>
-		<row><td>ID_STRING85</td><td>1033</td><td>Could not locate SharePoint's STSADM tool usually located at [SHAREPOINTLOCATION]LOGS. It is required for the installation of GSA Resource Kit for SharePoint.</td><td>0</td><td/><td>-979536652</td></row>
+		<row><td>ID_STRING85</td><td>1033</td><td>Could not locate SharePoint's STSADM tool usually located at [SHAREPOINTLOCATION]BIN. It is required for the installation of GSA Resource Kit for SharePoint.</td><td>0</td><td/><td>-174220082</td></row>
 		<row><td>ID_STRING86</td><td>1033</td><td>GOOGLE~1|Google Search Box Test Utility for SharePoint</td><td>0</td><td/><td>-1919084750</td></row>
 		<row><td>ID_STRING87</td><td>1033</td><td>SEARCH~1|Search Site</td><td>0</td><td/><td>-1919031502</td></row>
 		<row><td>ID_STRING88</td><td>1033</td><td>GOOGLE~1|Google Search Box Test Utility for SharePoint</td><td>0</td><td/><td>-1784817393</td></row>
@@ -4128,18 +4129,19 @@
 		<row><td>ID_STRING95</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-1113739436</td></row>
 		<row><td>ID_SearchBoxLocation</td><td>1033</td><td>[INSTALLDIR]TEMPLATE\CONTROLTEMPLATES</td><td>0</td><td>Search Box Location</td><td>-191036691</td></row>
 		<row><td>ID_SearchResultsLocation</td><td>1033</td><td>[INSTALLDIR]TEMPLATE\LAYOUTS</td><td>0</td><td>Search Results location</td><td>-191005555</td></row>
+		<row><td>ID_text_label</td><td>1033</td><td>GSA Resource Kit for SharePoint port number</td><td>0</td><td/><td>371057329</td></row>
 		<row><td>IIDS_UITEXT_FeatureUninstalled</td><td>1033</td><td>This feature will remain uninstalled.</td><td>0</td><td/><td>1394414478</td></row>
 		<row><td>IISPortSAMLBridge</td><td>1033</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td>0</td><td/><td>1293801683</td></row>
 		<row><td>NEW_STRING1</td><td>1033</td><td>Text</td><td>0</td><td/><td>1293792370</td></row>
 		<row><td>NEW_STRING10</td><td>1033</td><td>Enter port number for the SAML Bridge site. Select a port which is not currently in use.</td><td>0</td><td/><td>765271085</td></row>
 		<row><td>NEW_STRING11</td><td>1033</td><td>Enter port number for the SAML Bridge site. Assigned port number could be changed even after Installation. Select a port which is not in use.</td><td>0</td><td/><td>765312461</td></row>
-		<row><td>NEW_STRING12</td><td>1033</td><td>Enter port number for the GSA Simulator for SharePoint site. Assigned port number could be changed even after Installation. Select a port which is not in use.</td><td>0</td><td/><td>1839054319</td></row>
+		<row><td>NEW_STRING12</td><td>1033</td><td>Enter port number for the GSA Resource Kit for SharePoint site. Assigned port number could be changed even after Installation. Select a port which is not in use.</td><td>0</td><td/><td>371015758</td></row>
 		<row><td>NEW_STRING13</td><td>1033</td><td>&amp;OK</td><td>0</td><td/><td>765322701</td></row>
 		<row><td>NEW_STRING14</td><td>1033</td><td>&amp;Cancel</td><td>0</td><td/><td>765322701</td></row>
 		<row><td>NEW_STRING15</td><td>1033</td><td>Google SAML Bridge port number</td><td>0</td><td/><td>765300333</td></row>
 		<row><td>NEW_STRING16</td><td>1033</td><td>4521</td><td>0</td><td/><td>1704835476</td></row>
 		<row><td>NEW_STRING17</td><td>1033</td><td>{&amp;Tahoma8}4521</td><td>0</td><td/><td>-1650602865</td></row>
-		<row><td>NEW_STRING18</td><td>1033</td><td>{&amp;MSSansBold8}Search Box Test Utility port number</td><td>0</td><td/><td>1839007183</td></row>
+		<row><td>NEW_STRING18</td><td>1033</td><td>{&amp;MSSansBold8}GSA Resource Kit for SharePoint port number</td><td>0</td><td/><td>371030094</td></row>
 		<row><td>NEW_STRING19</td><td>1033</td><td>Click Ok to continue with Installation, or click Cancel to terminate installation.</td><td>0</td><td/><td>1839042159</td></row>
 		<row><td>NEW_STRING2</td><td>1033</td><td>{&amp;Tahoma8}Please enter the port number of the SAML Bridge</td><td>0</td><td/><td>1293796530</td></row>
 		<row><td>NEW_STRING20</td><td>1033</td><td>Note: By installing the Google Search Box for SharePoint, the SharePoint search will be replaced by Google search for all the local SharePoint web applications</td><td>0</td><td/><td>-711077811</td></row>
@@ -4147,7 +4149,7 @@
 		<row><td>NEW_STRING22</td><td>1033</td><td>fdfgfdgdf</td><td>0</td><td/><td>-711073267</td></row>
 		<row><td>NEW_STRING23</td><td>1033</td><td>Text</td><td>0</td><td/><td>-711103635</td></row>
 		<row><td>NEW_STRING24</td><td>1033</td><td>dssdfdsfsfs</td><td>0</td><td/><td>-711105619</td></row>
-		<row><td>NEW_STRING3</td><td>1033</td><td>GSA Simulator for SharePoint port number</td><td>0</td><td/><td>1839039951</td></row>
+		<row><td>NEW_STRING3</td><td>1033</td><td>GSA Resource Kit for SharePoint</td><td>0</td><td/><td>371001454</td></row>
 		<row><td>NEW_STRING4</td><td>1033</td><td>&amp;OK</td><td>0</td><td/><td>1293784946</td></row>
 		<row><td>NEW_STRING5</td><td>1033</td><td>&amp;Cancel</td><td>0</td><td/><td>1293795347</td></row>
 		<row><td>NEW_STRING6</td><td>1033</td><td>Google SAML Bridge port number</td><td>0</td><td/><td>765307597</td></row>
@@ -4437,7 +4439,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>ExecuteAction</td><td/><td>1300</td><td>ExecuteAction</td><td/></row>
 		<row><td>FileCost</td><td/><td>900</td><td>FileCost</td><td/></row>
 		<row><td>FindRelatedProducts</td><td/><td>430</td><td>FindRelatedProducts</td><td/></row>
-		<row><td>GSASimulatorForSharePoint</td><td>Not Installed  and &amp;GSASimulatorForSharePoint=3</td><td>1235</td><td/><td/></row>
+		<row><td>GSASimulatorForSharePoint</td><td>(Not Installed  and &amp;GSASimulatorForSharePoint=3) or (Installed  and &amp;GSASimulatorForSharePoint=3)</td><td>1235</td><td/><td/></row>
 		<row><td>GSBLaunchWebAppList</td><td>(Not Installed and &amp;GoogleSearchBox=3) or (Installed and &amp;GoogleSearchBox=3)</td><td>1312</td><td/><td/></row>
 		<row><td>GSSLaunchVerifyInstallation</td><td>(Not Installed and &amp;GoogleServicesForSharePoint=3) or (Installed and &amp;GoogleServicesForSharePoint=3)</td><td>1337</td><td/><td/></row>
 		<row><td>ISPreventDowngrade</td><td>ISFOUNDNEWERPRODUCTVERSION</td><td>450</td><td>ISPreventDowngrade</td><td/></row>
