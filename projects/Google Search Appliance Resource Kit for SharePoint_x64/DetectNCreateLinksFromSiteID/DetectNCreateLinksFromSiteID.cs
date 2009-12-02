@@ -25,12 +25,11 @@ namespace GoogleResourceKitForSharePoint
         static void Main(string[] args)
         {
             string SITENAME = "gsa-resource-kit";//required to do search for the site
-            
             string GSA_SIMULATOR ="GSASimulator";
             string SAML_BRIDGE = "SAMLBridge";
             string SEARCH_BOX_TEST_UTILITY = "SearchBoxTestUtility";
-
             int siteID = GetWebSiteId(SITENAME);
+
             String port = GetPortFromSiteID(siteID);
             String host = GetHostName();
             String PROTOCOL = "http://";
@@ -78,24 +77,32 @@ namespace GoogleResourceKitForSharePoint
         {
             int result = -1;
 
-            DirectoryEntry w3svc = new DirectoryEntry(string.Format("IIS://localhost/w3svc"));
-
-            foreach (DirectoryEntry site in w3svc.Children)
+            try
             {
-                if (site.Properties["ServerComment"] != null)
-                {
-                    if (site.Properties["ServerComment"].Value != null)
-                    {
-                        if (string.Compare(site.Properties["ServerComment"].Value.ToString(), websiteName,false) == 0)
-                        {
-                            result = Int32.Parse(site.Name);
-                            break;
-                        }
+                DirectoryEntry w3svc = new DirectoryEntry(string.Format("IIS://localhost/w3svc"));
 
-                        
+                foreach (DirectoryEntry site in w3svc.Children)
+                {
+                    try
+                    {
+                        if (site.Properties["ServerComment"] != null)
+                        {
+                            if (site.Properties["ServerComment"].Value != null)
+                            {
+                                if (string.Compare(site.Properties["ServerComment"].Value.ToString(), websiteName, false) == 0)
+                                {
+                                    result = Int32.Parse(site.Name);
+                                    break;
+                                }
+
+
+                            }
+                        }
                     }
+                    catch (Exception) { }
                 }
             }
+            catch (Exception) { }
 
             return result;
         }
@@ -111,7 +118,6 @@ namespace GoogleResourceKitForSharePoint
             
             //Get everything currently in the serverbindings propery.
             PropertyValueCollection serverBindings = site.Properties["ServerBindings"];
-
             String PortString = serverBindings[0].ToString();
             
             //cleanup the port string

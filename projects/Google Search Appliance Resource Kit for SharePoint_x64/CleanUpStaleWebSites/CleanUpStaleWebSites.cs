@@ -25,33 +25,37 @@ namespace GoogleResourceKitForSharePoint
         static void Main(string[] args)
         {
             string SITENAME = "gsa-resource-kit";//required to do search for the site
-            DeleteWebSiteFromName(SITENAME);
-
-            //Delete the folder for the IIS web site and Virtual Directory
-            if (args != null)
+            try
             {
-                String location = args[0];
-                if (location != null)
+                DeleteWebSiteFromName(SITENAME);
+
+                //Delete the folder for the IIS web site and Virtual Directory
+                if (args != null)
                 {
-                    try
+                    String location = args[0];
+                    if (location != null)
                     {
-                        //Note: due to a bug in installshield, we get additional Quote(") in the path. It needs to be handled
-                        if (location.EndsWith("\""))
+                        try
                         {
-                            location = location.Substring(0, location.Length - 1);
-                        }
+                            //Note: due to a bug in installshield, we get additional Quote(") in the path. It needs to be handled
+                            if (location.EndsWith("\""))
+                            {
+                                location = location.Substring(0, location.Length - 1);
+                            }
 
-                        DirectoryInfo di = new DirectoryInfo(location);
-                        if (di.Exists)
-                        {
-                            di.Delete(true);//recursively delete all
+                            DirectoryInfo di = new DirectoryInfo(location);
+                            if (di.Exists)
+                            {
+                                di.Delete(true);//recursively delete all
+                            }
                         }
+                        catch (Exception)
+                        { }
+
                     }
-                    catch (Exception)
-                    { }
-
                 }
             }
+            catch (Exception) { }
         }
 
         public static void DeleteWebSiteFromName(string websiteName)
