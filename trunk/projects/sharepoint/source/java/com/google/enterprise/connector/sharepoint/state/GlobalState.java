@@ -145,7 +145,7 @@ public class GlobalState {
             final WebState obj = new WebState(spContext, key);
             final DateTime dt = new DateTime();
             obj.setInsertionTime(dt);
-            updateList(obj);
+			AddOrUpdateWebStateInGlobalState(obj);
             return obj;
         } else {
             LOGGER.warning("Unable to make WebState because list key is not found");
@@ -164,7 +164,7 @@ public class GlobalState {
         if (bFullReCrawl == true) {
             LOGGER.config("Recrawling... setting all web states is isExist flag to false for clean up purpose");
             // mark all as non-existent
-            final Iterator it = dateMap.iterator();
+			final Iterator<WebState> it = dateMap.iterator();
             while (it.hasNext()) {
                 final WebState webs = (WebState) it.next();
                 webs.setExisting(false);
@@ -186,7 +186,7 @@ public class GlobalState {
         boolean configLogging = LOGGER.isLoggable(Level.CONFIG);
         if (bFullReCrawl == true) {
             LOGGER.config("ending recrawl ...bFullReCrawl true ... cleaning up WebStates");
-            final Iterator iter = getIterator();
+			final Iterator<WebState> iter = getIterator();
             if (null != iter) {
                 while (iter.hasNext()) {
                     final WebState webs = (WebState) iter.next();
@@ -236,7 +236,7 @@ public class GlobalState {
      *
      * @return Iterator on the objects by lastModified time
      */
-    public Iterator getIterator() {
+	public Iterator<WebState> getIterator() {
         return dateMap.iterator();
     }
 
@@ -248,8 +248,7 @@ public class GlobalState {
      * @return Iterator which begins at getCurrentList() and wraps around the
      *         end
      */
-
-    public Iterator getCircularIterator() {
+	public Iterator<WebState> getCircularIterator() {
         final WebState start = getCurrentWeb();
         if (start == null) {
             return getIterator();
@@ -411,10 +410,7 @@ public class GlobalState {
         top.appendChild(element2);
 
         // now dump the actual WebStates:
-        final Iterator it = dateMap.iterator();
-        // for (StatefulObject obj : dateMap) {
-        while (it.hasNext()) {
-            final StatefulObject obj = (StatefulObject) it.next();
+		for (WebState obj : dateMap) {
             top.appendChild(obj.dumpToDOM(doc));
         }
         final TransformerFactory tf = TransformerFactory.newInstance();
@@ -643,22 +639,22 @@ public class GlobalState {
                     }
 
                     if (!collator.equals(element.getTagName(), SPConstants.WEB_STATE)) {
-                        continue; // no exception; ignore xml for things we
-                        // don't understand
+						// no exception; ignore xml for things we don't
+						// understand
+						continue;
                     }
                     final WebState subObject = new WebState(feedType);
                     subObject.setLastCrawledListID(lastCrawledListID);
                     subObject.loadFromDOM(element);
-                    updateList(subObject);
+					AddOrUpdateWebStateInGlobalState(subObject);
 
                     // now, for "currentWeb", for which so far we've only the
-                    // key, find the
-                    // actual object:
+					// key, find the actual object:
                     if (lastCrawledWebID != null) {
                         currentWeb = keyMap.get(lastCrawledWebID);
                     }
                 }
-            }// null check for children
+			}
         } catch (final Throwable e) {
             LOGGER.severe(e.getMessage());
             throw new SharepointException("Unable to load state XML file");
@@ -724,14 +720,16 @@ public class GlobalState {
         return currentWeb;
     }
 
-    /**
-     * For a single StatefulObject, update the two data structures (url -> obj
-     * and time -> obj) and mark it "Existing" (if between startRecrawl() and
-     * endRecrawl()).
-     *
-     * @param state
-     */
-    public void updateList(final WebState state) {
+	/**
+	 * This is the recommended method for adding a new WebState entry into the
+	 * GlobalState Or, updating any such attribute of a WebState which can
+	 * affect the ordering of WebStates in current WebState. TODO: Currently,
+	 * there are no use cases where any such attribute which drives the ordering
+	 * is updated after the WebState is added. In future if required, this
+	 * method can be augmented with some generic attribute informations which
+	 * drives so that the ordering of WebStates is maintained.
+	 */
+	public void AddOrUpdateWebStateInGlobalState(final WebState state) {
         if (state != null) {
             keyMap.put(state.getPrimaryKey(), state);
             dateMap.add(state);
@@ -761,7 +759,7 @@ public class GlobalState {
     /**
      * @return the list sorted list of web states
      */
-    public SortedSet getAllWebStateSet() {
+	public SortedSet<WebState> getAllWebStateSet() {
         return dateMap;
     }
 

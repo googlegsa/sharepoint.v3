@@ -188,10 +188,10 @@ public class TestConfiguration {
         ListState ls3 = getListState("http://testcase.com/tempSite2/Lists/Announcements/AllItems.aspx", 12, 157790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1T4A}", ws.getPrimaryKey());
         ListState ls4 = getListState("http://testcase.com/tempSite4/Lists/Announcements/AllItems.aspx", 22, 158790, "{872819FC-6FA7-42AF-A71F-DCF7B8RT1T4A}", ws.getPrimaryKey());
 
-        ws.updateList(ls, ls.getLastMod());
-        ws.updateList(ls2, ls2.getLastMod());
-        ws.updateList(ls3, ls3.getLastMod());
-        ws.updateList(ls4, ls4.getLastMod());
+		ws.AddOrUpdateListStateInWebState(ls, ls.getLastMod());
+		ws.AddOrUpdateListStateInWebState(ls2, ls2.getLastMod());
+		ws.AddOrUpdateListStateInWebState(ls3, ls3.getLastMod());
+		ws.AddOrUpdateListStateInWebState(ls4, ls4.getLastMod());
 
         switch (indexOfLastCrawledList) {
         case 1:

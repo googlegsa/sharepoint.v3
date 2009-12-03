@@ -212,7 +212,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * @return document properties
      */
-    public ArrayList getAllAttrs() {
+	public ArrayList<Attribute> getAllAttrs() {
         return attrs;
     }
 
@@ -476,7 +476,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         }
 
         else {
-            for (final Iterator iter = getAllAttrs().iterator(); iter.hasNext();) {
+			for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
                 final Attribute attr = (Attribute) iter.next();
                 if (collator.equals(strPropertyName, attr.getName())) {
                     return new SPProperty(strPropertyName, new StringValue(
@@ -502,7 +502,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         s.add(SPConstants.PARENT_WEB_TITLE);
 
         // get the "extra" metadata fields, including those added by user:
-        for (final Iterator iter = getAllAttrs().iterator(); iter.hasNext();) {
+		for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
             final Attribute attr = (Attribute) iter.next();
             s.add(attr.getName().toString());
         }
@@ -751,7 +751,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 		return fileref;
 	}
 
-	public void setFileref(String fileref) {
+    public void setFileref(String fileref) {
 		this.fileref = fileref;
 	}
 }

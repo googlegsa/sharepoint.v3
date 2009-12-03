@@ -10,7 +10,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 2.4.0 Build3, 25 November, 2009
+Release 2.4.0 Build5, 03 December, 2009
 =======================================
 
 Introduction
@@ -35,8 +35,10 @@ Issue 102 - Liststate entry is deleted from the connector state without checking
 Issue 106 - Connector should not remove/delete documents from its queue unless checkPoint() is called.
 Issue 110 - Connector is not editable when password has ampersand (&) character. Connector configuration page throws XML error.
 Issue 116 - Return batchHint or little more docs from start/resumeTraversal and not 2* batchHint.
-Issue 118 - All the extra IDs (URLs in case of attachments) which are used during the consrtruction of delete feeds are updated before checkpoint
+Issue 118 - All the extra IDs (URLs in case of attachments) which are used during the construction of delete feeds are updated before checkpoint
 Issue 120 - Use file level custom logging instead of event-log based logging
+Issue 124 - ExtraIDs are un-necessarily updates in-memory in case of Metadata and URL feed mode.
+Issue 123 - Initial changes on the SharePoint are not tracked if the connector is restarted before the first traversal completes
 
 Version Compatibility
 ---------------------
@@ -66,21 +68,21 @@ Known Issues/Limitations
       Workaround:
       Increase the memory allocated to tomcat so that enough memory is available for parsing the state XML.
       To increase the memory allocated to the connector follow the steps given below:
-	  This change will allocate 2GB (i.e. 2048MB) of memory.
-	   LINUX
-	   ======
-	   Open the file: <Connector Installation Path>/<Connector Name>/Tomcat/bin/catalina.sh
-	   Search for: JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx1024m
-	   Change it to: JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx2048m
+    This change will allocate 2GB (i.e. 2048MB) of memory.
+     LINUX
+     ======
+     Open the file: <Connector Installation Path>/<Connector Name>/Tomcat/bin/catalina.sh
+     Search for: JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx1024m
+     Change it to: JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx2048m
 
-	   WINDOWS
-	   ========
-	   Open the file: <Connector Installation Path>\<Connector Name>\Tomcat\bin\service.bat
-	   Search for (must be towards the end of the file) :  --JvmMs 256 --JvmMx 1024
-	   Change it to:  --JvmMs 256 --JvmMx 2048
+     WINDOWS
+     ========
+     Open the file: <Connector Installation Path>\<Connector Name>\Tomcat\bin\service.bat
+     Search for (must be towards the end of the file) :  --JvmMs 256 --JvmMx 1024
+     Change it to:  --JvmMs 256 --JvmMx 2048
 
-	   Note: To be able to allocate memory successfully, the system must have at least twice
-	   as much physical memory.
+     Note: To be able to allocate memory successfully, the system must have at least twice
+     as much physical memory.
 
 5) Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
    -- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
@@ -367,7 +369,7 @@ Summary of Changes
 2. The connector supports following list of entities:
 [Microsoft SharePoint 2007]
 - Folder - File - Document Library
-- Discussion Boards - Site	- Web
+- Discussion Boards - Site  - Web
 - Attachment - Links - Wikipage Library
 - Tasks - Calendar - Contacts
 - Announcements - Issues - Alerts
@@ -380,7 +382,7 @@ Summary of Changes
 
 [Microsoft SharePoint 2003]
 - Folder - File - Document Library
-- Discussion Boards - Site	- Web
+- Discussion Boards - Site  - Web
 - Attachment - Links - Tasks
 - Calendar - Contacts
 - Announcements - Issues - Events
@@ -411,10 +413,10 @@ Summary of Changes
 2. The connector supports only Metadata and URL based crawl
 3. The connector supports only incremental crawl.
 4. The connector supports following list of entities:
-- Folder		- File
-- Document Library	- Discussion Boards
-- Site			- Web
-- Attachment		- Links
+- Folder    - File
+- Document Library  - Discussion Boards
+- Site      - Web
+- Attachment    - Links
 5. The connector supports pattern based URL inclusion and exclusion in which user can specify the URL patterns to crawl and the patterns to exclude while crawling SharePoint content repository.
 6. The connector supports NTLM and HTTP Basic authentication protected SharePoint repositories.
 7. The connector supports crawling Personal sites (or MySites) and personal Links (or MyLinks).

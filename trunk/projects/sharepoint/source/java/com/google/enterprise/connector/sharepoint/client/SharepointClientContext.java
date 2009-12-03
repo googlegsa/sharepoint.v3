@@ -428,7 +428,7 @@ public class SharepointClientContext implements Cloneable {
     /**
      * @return the Site Alias MAp
      */
-    public Map getAliasMap() {
+	public Map<String, String> getAliasMap() {
         return aliasMap;
     }
 
@@ -442,7 +442,7 @@ public class SharepointClientContext implements Cloneable {
     /**
      * @return excluded metadata list
      */
-    public ArrayList getExcluded_metadata() {
+	public ArrayList<Pattern> getExcluded_metadata() {
         return excluded_metadata;
     }
 
@@ -467,7 +467,7 @@ public class SharepointClientContext implements Cloneable {
     /**
      * @return included metadata list
      */
-    public ArrayList getIncluded_metadata() {
+	public ArrayList<Pattern> getIncluded_metadata() {
         return included_metadata;
     }
 
@@ -673,7 +673,7 @@ public class SharepointClientContext implements Cloneable {
             return false;
         }
         try {
-            if ((strValue != null) || (strValue.length() != 0)) {
+			if ((strValue != null) && (strValue.length() != 0)) {
                 if (Util.match(includedURlList, strValue, null)) {
                     final StringBuffer matchedPattern = new StringBuffer();
                     if (excludedURlList == null) {

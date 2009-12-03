@@ -91,16 +91,14 @@ public class WebsWS {
      * @return The set of child sites
      */
     public Set<String> getDirectChildsites() {
-        final Set<String> allWebsList = new TreeSet<String>();// to store all
-                                                                // the sub-webs
-                                                                // state
-
+		final Set<String> allWebsList = new TreeSet<String>();
+		// to store all the sub-webs state
         GetWebCollectionResponseGetWebCollectionResult webcollnResult = null;
 
         try {
             webcollnResult = stub.getWebCollection();
-        } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+		} catch (final AxisFault af) {
+			// Handling of username formats for different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());

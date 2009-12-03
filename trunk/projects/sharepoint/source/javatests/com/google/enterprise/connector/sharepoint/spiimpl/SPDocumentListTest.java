@@ -68,7 +68,7 @@ public class SPDocumentListTest extends TestCase {
                 System.out.println("Using " + baseList.getListURL()
                         + " as test list...");
                 this.docs = new SPDocumentList(listItems, state);
-                ws.updateList(baseList, baseList.getLastMod());
+				ws.AddOrUpdateListStateInWebState(baseList, baseList.getLastMod());
                 break;
             }
         }
