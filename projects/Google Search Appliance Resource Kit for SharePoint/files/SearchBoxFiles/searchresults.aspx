@@ -274,6 +274,10 @@ div.ms-areaseparatorright{
                         c.Domain = domain;
                         c.Expires = CookieCollection[i].Expires;
                         cc.Add(c);
+
+                        /*Cookie Information*/
+                        log("Cookie Name= " + tempCookieName+ "| Value= " + value+ "| Domain= " + domain+ "| Expires= " + c.Expires, LOG_LEVEL.INFO);
+                        
                     }
                 }
                 else 
@@ -367,6 +371,10 @@ div.ms-areaseparatorright{
                 {
                     try
                     {
+                        
+                        /*Logging the header key and value*/
+                        log("Request Header Key="+requestHeaderKeys[i]+"| Value= " + HttpContext.Current.Request.Headers[requestHeaderKeys[i]], LOG_LEVEL.INFO);
+		                
                         /*Set-Cookie is not handled by auto redirect*/
                         if (isAutoRedirect == true)
                         {
@@ -427,7 +435,10 @@ div.ms-areaseparatorright{
             /// <param name="logLevel">Log level</param>
             public void log(String msg, LOG_LEVEL logLevel)
             {
-                if (logLevel >= currentLogLevel)
+                /**
+                 * If logging is already blocked, do not do further processing 
+                 **/
+                if ((BLOCK_LOGGING==false)&&(logLevel >= currentLogLevel))
                 {
                     try
                     {
@@ -439,7 +450,8 @@ div.ms-areaseparatorright{
                          * Note: If we breakup create a unction to get the web app name it fails with 'Unknown error' in SharePoint
                          **/
                         try
-                        {    
+                        {
+                             
                             WebAppName=SPContext.Current.Site.WebApplication.Name;
                             if ((WebAppName == null) || (WebAppName.Trim().Equals("")))
                             {
@@ -466,23 +478,28 @@ div.ms-areaseparatorright{
                         
                         String CustomName = PRODUCTNAME + "_" + WebAppName + "_" + portNumber + "_" + time + ".log";
                         String loc = LogLocation + CustomName;
-                        FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
-                        
-                        //Prevents other processes from changing the FileStream while permitting read access
-                        f.Lock(0, f.Length);//writing in the same section
-                        StreamWriter logger = new StreamWriter(f);
+                       
                         
                         /*
                          * We need to make even a normal user with 'reader' access to be able to log messages
                          * This requires to elevate the user temporarily for write operation.
                          */
-                        SPSecurity.RunWithElevatedPrivileges(delegate()
-                        {
-                            logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
-                            f.Unlock(0, f.Length);//unlock the segment
-                            logger.Flush();
-                            logger.Close();
-                        });
+                            SPSecurity.RunWithElevatedPrivileges(delegate()
+                            {
+                                FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
+
+                                /**
+                                 * If we use FileLock [i.e.  f.Lock(0, f.Length)] then it may cause issue
+                                 * Logging failed due to: The process cannot access the file 'C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\LOGS\GSBS_SharePoint - 9000_9000_2009_12_03.log' because it is being used by another process.
+                                 * Thread was being aborted.
+                                 **/
+
+                                StreamWriter logger = new StreamWriter(f);
+                                
+                                logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
+                                logger.Flush();
+                                logger.Close();
+                            });
                     }
                     catch (Exception logException) {
                         if (BLOCK_LOGGING == false)
@@ -778,12 +795,15 @@ else if(document.attachEvent)
                                 responseCookies.Name = objResp.Cookies[j].Name;
                                 Encoding utf8 = Encoding.GetEncoding("utf-8");
                                 string value = objResp.Cookies[j].Value;
-                                
-                                    
                                 responseCookies.Value = HttpUtility.UrlEncode(value, utf8); 
                                 responseCookies.Domain = objReq.RequestUri.Host;
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
-                                newcc.Add(responseCookies);                            
+                                
+                                /*Cookie Information*/
+                                gProps.log("Cookie Name= " + responseCookies.Name + "| Value= " + value + "| Domain= " + responseCookies.Domain
+                                    + "| Expires= " + responseCookies.Expires.ToString(), LOG_LEVEL.INFO);
+                                
+                                newcc.Add(responseCookies);
                             }
                             
                             
@@ -810,6 +830,12 @@ else if(document.attachEvent)
 
                                     responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
                                     newcc.Add(responseCookies);
+
+                                    /*Cookie Information*/
+                                    gProps.log("Cookie Name= " + responseCookies.Name
+                                        + "| Value= " + key_val[1]
+                                        + "| Domain= " + GoogleUri.Host
+                                        + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
                                 }
                             }
 
@@ -833,6 +859,12 @@ else if(document.attachEvent)
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
                                 HttpContext.Current.Response.Cookies.Add(responseCookies);
                                 responseCookies = null;
+
+                                /*Cookie Information*/
+                                gProps.log("Cookie Name= " + objResp.Cookies[j].Name
+                                    + "| Value= " + objResp.Cookies[j].Value
+                                    + "| Domain= " + objReq.RequestUri.Host
+                                    + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
                             }                         
                          }//end if condition for SAML
                         // ********************************************
