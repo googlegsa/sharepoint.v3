@@ -177,7 +177,7 @@ public class WebState implements StatefulObject {
         if (exists == false) {
             // for each ListState, set "not existing" as the Webstate is not
             // existing
-            final Iterator it = allListStateSet.iterator();
+			final Iterator<ListState> it = allListStateSet.iterator();
             while (it.hasNext()) {
                 final ListState list = (ListState) it.next();
                 list.setExisting(false);
@@ -240,7 +240,7 @@ public class WebState implements StatefulObject {
                 }
                 final ListState subObject = new ListState(spType, feedType);
                 subObject.loadFromDOM(childElement);
-                updateList(subObject, subObject.getLastMod());
+				AddOrUpdateListStateInWebState(subObject, subObject.getLastMod());
 
                 // now, for "lastCrawledListID", for which so far we've only the
                 // key, find the
@@ -253,15 +253,20 @@ public class WebState implements StatefulObject {
         }
     }
 
-    /**
-     * For a single StatefulObject, update the two data structures (url -> obj
-     * and time -> obj) and mark it "Existing" (if bFullReCrawl is true).
-     *
-     * @param state
-     * @param time lastMod time for the List. If time is later than the existing
-     *            lastMod, the List is reindexed in the allListStateSet.
-     */
-    public void updateList(final ListState state, final DateTime time) {
+	/**
+	 * This is the recommended method for adding a new ListsState entry into the
+	 * WebState Or, updating any such attribute of a ListState which can affect
+	 * the ordering of ListStates in current WebState. TODO: Currently,
+	 * lastModified is identified as the only such attribute. In future, this
+	 * method can be augmented with more generic informations which drives the
+	 * ordering, instead of stricting this to just LastModifiedDate
+	 * 
+	 * @param state
+	 * @param time lastMod time for the List. If time is later than the existing
+	 *            lastMod, the List is reindexed in the allListStateSet.
+	 */
+	public void AddOrUpdateListStateInWebState(final ListState state,
+			final DateTime time) {
         if (state != null) {
             final ListState stateOld = keyMap.get(state.getPrimaryKey());
             if (stateOld != null) {
@@ -308,7 +313,7 @@ public class WebState implements StatefulObject {
 
         if (allListStateSet != null) {
             // dump the actual ListStates:
-            final Iterator it = allListStateSet.iterator();
+			final Iterator<ListState> it = allListStateSet.iterator();
             while (it.hasNext()) {
                 final StatefulObject obj = (StatefulObject) it.next();
                 element.appendChild(obj.dumpToDOM(domDoc));
@@ -377,7 +382,7 @@ public class WebState implements StatefulObject {
     /**
      * @return set of all list statesin this web
      */
-    public TreeSet getAllListStateSet() {
+	public TreeSet<ListState> getAllListStateSet() {
         return allListStateSet;
     }
 
@@ -405,7 +410,7 @@ public class WebState implements StatefulObject {
             final ListState obj = new ListState(spType, feedType);
             obj.setLastMod(inLastMod);
             obj.setPrimaryKey(key);
-            updateList(obj, inLastMod); // add to our maps
+			AddOrUpdateListStateInWebState(obj, inLastMod); // add to our maps
             return obj;
         } else {
             LOGGER.warning("Unable to make ListState due to list key not found");
@@ -435,7 +440,7 @@ public class WebState implements StatefulObject {
      * @param spContext
      */
     public void endRecrawl(final SharepointClientContext spContext) {
-        final Iterator iter = getIterator();
+		final Iterator<ListState> iter = getIterator();
         if (null != iter) {
             while (iter.hasNext()) {
                 final ListState list = (ListState) iter.next();
@@ -604,7 +609,7 @@ public class WebState implements StatefulObject {
     /**
      * @return the the iterator for the list contained in this web
      */
-    public Iterator getIterator() {
+	public Iterator<ListState> getIterator() {
         return allListStateSet.iterator();
     }
 
@@ -623,7 +628,7 @@ public class WebState implements StatefulObject {
      * @return the circular iterator for the set of lists. This iterator will
      *         start iterating for the current web.
      */
-    public Iterator getCurrentListstateIterator() {
+	public Iterator<ListState> getCurrentListstateIterator() {
         final ListState start = getCurrentList();
         if (start == null) {
             return getIterator();

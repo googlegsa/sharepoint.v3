@@ -153,7 +153,7 @@ public class GlobalStateTest extends TestCase {
         // This is required for garbage collection
 
         this.state.startRecrawl();// set exist all false
-        this.state.updateList(ws);// set exists for list1
+		this.state.AddOrUpdateWebStateInGlobalState(ws);// set exists for list1
         this.state.endRecrawl(this.sharepointClientContext);// list2 will be
         // removed from
         // global state
@@ -251,10 +251,10 @@ public class GlobalStateTest extends TestCase {
 
         GlobalState gs = new GlobalState("c:\\", "metadata-and-URL");
 
-        gs.updateList(ws);
-        gs.updateList(ws3);
-        gs.updateList(ws4);
-        gs.updateList(ws2);
+		gs.AddOrUpdateWebStateInGlobalState(ws);
+		gs.AddOrUpdateWebStateInGlobalState(ws3);
+		gs.AddOrUpdateWebStateInGlobalState(ws4);
+		gs.AddOrUpdateWebStateInGlobalState(ws2);
 
         assertEquals(3, gs.getAllWebStateSet().size());
 

@@ -167,7 +167,7 @@ public class SharepointClientTest extends TestCase {
         GlobalState gs = new GlobalState("c:\\", "metadata-and-URL");
 
         WebState ws = TestConfiguration.createWebState(3);
-        gs.updateList(ws);
+		gs.AddOrUpdateWebStateInGlobalState(ws);
 
         // Set the last crawled list and web id as set in web state
         gs.setLastCrawledListID(ws.getLastCrawledListID());
