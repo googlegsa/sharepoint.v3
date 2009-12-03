@@ -435,7 +435,10 @@ div.ms-areaseparatorright{
             /// <param name="logLevel">Log level</param>
             public void log(String msg, LOG_LEVEL logLevel)
             {
-                if (logLevel >= currentLogLevel)
+                /**
+                 * If logging is already blocked, do not do further processing 
+                 **/
+                if ((BLOCK_LOGGING==false)&&(logLevel >= currentLogLevel))
                 {
                     try
                     {
