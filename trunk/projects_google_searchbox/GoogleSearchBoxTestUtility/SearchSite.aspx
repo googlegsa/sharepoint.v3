@@ -4,7 +4,7 @@
 
 <html>
 <head runat="server">
-    <title>Mock GSA Site</title>
+    <title>Google Search Box for SharePoint- Test Utility</title>
 </head>
 <body>
     <form id="form1" runat="server">
