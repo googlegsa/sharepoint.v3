@@ -447,7 +447,8 @@ div.ms-areaseparatorright{
                          * Note: If we breakup create a unction to get the web app name it fails with 'Unknown error' in SharePoint
                          **/
                         try
-                        {    
+                        {
+                             
                             WebAppName=SPContext.Current.Site.WebApplication.Name;
                             if ((WebAppName == null) || (WebAppName.Trim().Equals("")))
                             {
@@ -474,23 +475,25 @@ div.ms-areaseparatorright{
                         
                         String CustomName = PRODUCTNAME + "_" + WebAppName + "_" + portNumber + "_" + time + ".log";
                         String loc = LogLocation + CustomName;
-                        FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
-                        
-                        //Prevents other processes from changing the FileStream while permitting read access
-                        f.Lock(0, f.Length);//writing in the same section
-                        StreamWriter logger = new StreamWriter(f);
+                       
                         
                         /*
                          * We need to make even a normal user with 'reader' access to be able to log messages
                          * This requires to elevate the user temporarily for write operation.
                          */
-                        SPSecurity.RunWithElevatedPrivileges(delegate()
-                        {
-                            logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
-                            f.Unlock(0, f.Length);//unlock the segment
-                            logger.Flush();
-                            logger.Close();
-                        });
+                            SPSecurity.RunWithElevatedPrivileges(delegate()
+                            {
+                                FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
+
+                                //Prevents other processes from changing the FileStream while permitting read access
+                                f.Lock(0, f.Length);//writing in the same section
+                                StreamWriter logger = new StreamWriter(f);
+                                
+                                logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
+                                f.Unlock(0, f.Length);//unlock the segment
+                                logger.Flush();
+                                logger.Close();
+                            });
                     }
                     catch (Exception logException) {
                         if (BLOCK_LOGGING == false)
