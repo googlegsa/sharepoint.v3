@@ -488,12 +488,15 @@ div.ms-areaseparatorright{
                             {
                                 FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
 
-                                //Prevents other processes from changing the FileStream while permitting read access
-                                f.Lock(0, f.Length);//writing in the same section
+                                /**
+                                 * If we use FileLock [i.e.  f.Lock(0, f.Length)] then it may cause issue
+                                 * Logging failed due to: The process cannot access the file 'C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\LOGS\GSBS_SharePoint - 9000_9000_2009_12_03.log' because it is being used by another process.
+                                 * Thread was being aborted.
+                                 **/
+
                                 StreamWriter logger = new StreamWriter(f);
                                 
                                 logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
-                                f.Unlock(0, f.Length);//unlock the segment
                                 logger.Flush();
                                 logger.Close();
                             });
