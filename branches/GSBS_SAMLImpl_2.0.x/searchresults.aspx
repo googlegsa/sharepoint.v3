@@ -274,6 +274,10 @@ div.ms-areaseparatorright{
                         c.Domain = domain;
                         c.Expires = CookieCollection[i].Expires;
                         cc.Add(c);
+
+                        /*Cookie Information*/
+                        log("Cookie Name= " + tempCookieName+ "| Value= " + value+ "| Domain= " + domain+ "| Expires= " + c.Expires, LOG_LEVEL.INFO);
+                        
                     }
                 }
                 else 
@@ -367,6 +371,10 @@ div.ms-areaseparatorright{
                 {
                     try
                     {
+                        
+                        /*Logging the header key and value*/
+                        log("Request Header Key="+requestHeaderKeys[i]+"| Value= " + HttpContext.Current.Request.Headers[requestHeaderKeys[i]], LOG_LEVEL.INFO);
+		                
                         /*Set-Cookie is not handled by auto redirect*/
                         if (isAutoRedirect == true)
                         {
@@ -778,12 +786,15 @@ else if(document.attachEvent)
                                 responseCookies.Name = objResp.Cookies[j].Name;
                                 Encoding utf8 = Encoding.GetEncoding("utf-8");
                                 string value = objResp.Cookies[j].Value;
-                                
-                                    
                                 responseCookies.Value = HttpUtility.UrlEncode(value, utf8); 
                                 responseCookies.Domain = objReq.RequestUri.Host;
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
-                                newcc.Add(responseCookies);                            
+                                
+                                /*Cookie Information*/
+                                gProps.log("Cookie Name= " + responseCookies.Name + "| Value= " + value + "| Domain= " + responseCookies.Domain
+                                    + "| Expires= " + responseCookies.Expires.ToString(), LOG_LEVEL.INFO);
+                                
+                                newcc.Add(responseCookies);
                             }
                             
                             
@@ -810,6 +821,12 @@ else if(document.attachEvent)
 
                                     responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
                                     newcc.Add(responseCookies);
+
+                                    /*Cookie Information*/
+                                    gProps.log("Cookie Name= " + responseCookies.Name
+                                        + "| Value= " + key_val[1]
+                                        + "| Domain= " + GoogleUri.Host
+                                        + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
                                 }
                             }
 
@@ -833,6 +850,12 @@ else if(document.attachEvent)
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
                                 HttpContext.Current.Response.Cookies.Add(responseCookies);
                                 responseCookies = null;
+
+                                /*Cookie Information*/
+                                gProps.log("Cookie Name= " + objResp.Cookies[j].Name
+                                    + "| Value= " + objResp.Cookies[j].Value
+                                    + "| Domain= " + objReq.RequestUri.Host
+                                    + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
                             }                         
                          }//end if condition for SAML
                         // ********************************************
