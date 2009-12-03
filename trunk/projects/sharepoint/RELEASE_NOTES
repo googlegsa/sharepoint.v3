@@ -37,8 +37,8 @@ Issue 110 - Connector is not editable when password has ampersand (&) character.
 Issue 116 - Return batchHint or little more docs from start/resumeTraversal and not 2* batchHint.
 Issue 118 - All the extra IDs (URLs in case of attachments) which are used during the construction of delete feeds are updated before checkpoint
 Issue 120 - Use file level custom logging instead of event-log based logging
-Issue 124 - ExtraIDs are un-necessarily updates in-memory in case of Metadata and URL feed mode.
 Issue 123 - Initial changes on the SharePoint are not tracked if the connector is restarted before the first traversal completes
+Issue 124 - ExtraIDs are un-necessarily updates in-memory in case of Metadata and URL feed mode.
 
 Version Compatibility
 ---------------------
@@ -93,6 +93,8 @@ Known Issues/Limitations
 6) In this release, following features are supported only on SharePoint 2007
    - Fix for issue#53 (Connector should support SharePoint farm )
    - Bulk Authorization by connector
+
+7) The "Kerberos KDC Hostname" field on connector configuration page is not localized
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Release 2.0.2, Sep 02, 2009
