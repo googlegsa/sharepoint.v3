@@ -35,9 +35,13 @@ along with 'Google Search Appliance Connector for Microsoft SharePoint 2003 and 
 Issues fixed from last release:
 -------------------------------
 1. Fixed Issue 84 - Google Search Box should support NTLM authentication scheme on SharePoint. This is supported by configuring Google SAML Bridge for Windows on Google Search Appliance.
-2. Fixed Issue 86 - Content encoding problems when searching from Google Search Box.
-3. Fixed Issue 107 - Google search box installer fails to detect web applications.
-4. Fixed Issue 119 - Google Search Box for SharePoint gives "access denied" when search is fired from a normal user.
+2. Fixed Issue 86 - Content encoding problems when searching from Google Search Box on IE. For Firefox, follow the steps below: 
+	1. Open the Firefox browser
+	2. On the address bar, type about:config
+	3. In filter section type "Network.http.accept-encoding"
+	4. By default this is set to gzip,deflate
+	5. Delete the value of this entry
+3. Fixed Issue 119 - Google Search Box for SharePoint gives "access denied" when search is fired from a normal user. Google Search Box for SharePoint allows you to perform search from even a non-site admin user.
 
 Version Compatibility
 ---------------------
@@ -69,7 +73,7 @@ Certified Against
 Microsoft Windows Server 2003
 Enterprise Edition
 Intel  Xeon  CPU
-E5504 @ 2.00GHz, 4.00 GB of RAM
+E5504 @ 2.00GHz, 2.00 GB of RAM
 
 
 64-bit:
@@ -77,8 +81,10 @@ E5504 @ 2.00GHz, 4.00 GB of RAM
 Microsoft Windows Server 2003
 Enterprise x64 Edition
 Intel  Xeon  CPU
-E5504 @ 2.00GHz, 4.00 GB of RAM
+E5504 @ 2.00GHz, 2.00 GB of RAM
 
 Known Limitations
 -----------------
 1. Search keyword is not displayed on the Search Box when using GSA's front end for displaying searched results and "repeat the search with the omitted results included" is clicked.
+2. Issue 126: When a new SharePoint web application is added after Search Box is installed using the GSA Resource Kit for SharePoint installer, it shows destorted search results when search is configured with a local stylesheet.
+3. Issue 127: Search Box does not work when Security Manager is enabled on GSA.
