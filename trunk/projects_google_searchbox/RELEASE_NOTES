@@ -1,7 +1,7 @@
 Release Notes
 ==============
 
-This document contains the release notes for Google Search Box for SharePoint. The following sections describe the release in detail and provide information that supplements the main documentation.  See the Issues Tab on the Code Site for the current list of known issues and workarounds.
+This document contains the release notes for Google Search Box for SharePoint 1.1.1. The following sections describe the release in detail and provide information that supplements the main documentation.  See the Issues Tab on the Code Site for the current list of known issues and workarounds.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
@@ -18,20 +18,20 @@ Summary of Changes
 
 New features:
 -------------
-1. Google Search Box for SharePoint supports search on NTLM contents. This is possible by
+1. Google Search Box for SharePoint 1.1.1 supports search on NTLM contents. This is possible by
 	a) Configuring SAML Bridge on GSA (http://code.google.com/apis/searchappliance/documentation/50/admin/wia.html#deployment) or
 	b) Configuring IWA (Integrated Windows Authentication)\Kerberos on GSA (http://code.google.com/apis/searchappliance/documentation/62/secure_search/secure_search_crwlsrv.html#kerberos_authentication)
 	
 along with 'Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007' configured in content-feed mode.
 
-2. Google Search Box for SharePoint is bundled with "Google Search Appliance Resource Kit for SharePoint" installer which also bundles other related components such as
+2. Google Search Box for SharePoint 1.1.1 is bundled with "Google Search Appliance Resource Kit for SharePoint" installer which also bundles other related components such as
 		* Google Services for SharePoint : It includes SharePoint custom web services which are used by SharePoint connector for traversal, Authentication & Authorization.
 		* GSA Resource Kit for SharePoint : It includes:
 			-Google Search Box for SharePoint Test Utility : It is used to verify the Google Search Box parameters, cookies and headers.
 			-GSA Security SPI Simulator: It is used to test "Google SAML Bridge for Windows" without involving the complexity of the GSA. Once you know that the SAML Bridge works, you can reconfigure it to work with the search appliance.
-			-Google SAML Bridge for Windows: It enables "Google Search Box for SharePoint" to perform search on NTLM contents.
+			-Google SAML Bridge for Windows: It enables "Google Search Box for SharePoint 1.1.1" to perform search on NTLM contents.
 			
-   For a farm setup, you need to install the Google Search Box on all the SharePoint Installations (machines).
+   For a farm setup, you need to install the Google Search Box on all the SharePoint 1.1.1 Installations (machines).
 
 Issues fixed from last release:
 -------------------------------
@@ -59,8 +59,10 @@ The Google Search Box for SharePoint 1.1.1 is certified on following browsers:
 * Microsoft Internet Explorer 7.0
 * Mozilla Firefox 3.0.5
 
+Platform Support
+------------------
+Google Search Box for SharePoint 1.1.1 can be installed on both 32-bit and 64-bit Windows Server 2003 Enterprise Operating System.
+
 Known Limitations
 -----------------
 1. Search keyword is not displayed on the Search Box when using GSA's front end for displaying searched results and "repeat the search with the omitted results included" is clicked.
-
-
