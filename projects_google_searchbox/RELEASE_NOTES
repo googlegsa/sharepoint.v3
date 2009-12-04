@@ -15,7 +15,6 @@ Users of previous releases should check the "Version Compatibility" section belo
 
 Summary of Changes
 ------------------
-
 New features:
 -------------
 1. Google Search Box for SharePoint 1.1.1 supports search on NTLM contents. This is possible by
@@ -35,7 +34,7 @@ along with 'Google Search Appliance Connector for Microsoft SharePoint 2003 and 
 
 Issues fixed from last release:
 -------------------------------
-1. Fixed Issue 84 - Google Search Box should support NTLM authentication scheme on SharePoint.
+1. Fixed Issue 84 - Google Search Box should support NTLM authentication scheme on SharePoint. This is supported by configuring Google SAML Bridge for Windows on Google Search Appliance.
 2. Fixed Issue 86 - Content encoding problems when searching from Google Search Box.
 3. Fixed Issue 107 - Google search box installer fails to detect web applications.
 4. Fixed Issue 119 - Google Search Box for SharePoint gives "access denied" when search is fired from a normal user.
@@ -62,6 +61,23 @@ The Google Search Box for SharePoint 1.1.1 is certified on following browsers:
 Platform Support
 ------------------
 Google Search Box for SharePoint 1.1.1 can be installed on both 32-bit and 64-bit Windows Server 2003 Enterprise Operating System.
+
+Certified Against
+-------------------
+32-bit:
+
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel  Xeon  CPU
+E5504 @ 2.00GHz, 4.00 GB of RAM
+
+
+64-bit:
+ 
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel  Xeon  CPU
+E5504 @ 2.00GHz, 4.00 GB of RAM
 
 Known Limitations
 -----------------
