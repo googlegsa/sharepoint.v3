@@ -35,12 +35,7 @@ along with 'Google Search Appliance Connector for Microsoft SharePoint 2003 and 
 Issues fixed from last release:
 -------------------------------
 1. Fixed Issue 84 - Google Search Box should support NTLM authentication scheme on SharePoint. This is supported by configuring Google SAML Bridge for Windows on Google Search Appliance.
-2. Fixed Issue 86 - Content encoding problems when searching from Google Search Box on IE. For Firefox, follow the steps below: 
-	1. Open the Firefox browser
-	2. On the address bar, type about:config
-	3. In filter section type "Network.http.accept-encoding"
-	4. By default this is set to gzip,deflate
-	5. Delete the value of this entry
+2. Fixed Issue 86 - Content encoding problems when searching from Google Search Box when kerberos is enabled on GSA. This is handled in the new Search Box code and user need not do any additional settings on the browser.
 3. Fixed Issue 119 - Google Search Box for SharePoint gives "access denied" when search is fired from a normal user. Google Search Box for SharePoint allows you to perform search from even a non-site admin user.
 
 Version Compatibility
