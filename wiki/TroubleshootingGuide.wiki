@@ -1,5 +1,5 @@
-#summary Troubleshooting guide for SharePoint Connector 2.0
-= Troubleshooting guide for SharePoint Connector 2.0 =
+#summary Troubleshooting guide for SharePoint Connector 2.4
+= Troubleshooting guide for SharePoint Connector 2.4 =
 
 
 
@@ -365,8 +365,11 @@ Disallow:
 
  Yes. Connector sends delete feeds for such documents. GSA, than removes all such documents and their contents from its index.
 
+=== Connector-Kerberos Configuration ===
+
 *Q. How can I verify that which type of Autehntication Scheme is being used by Sharepoint Connector at crawl time?*
-A. Selected authentication scheme is listed in the logs. To enable it, you need to follow the steps below:
+
+Selected authentication scheme is listed in the logs. To enable it, you need to follow the steps below:
    1. Open CONNECTOR_HOME\Tomcat\webapps\connector-manager\WEB-INF\classes\logging.properties and under the section #####  HTTPCLIENT LOGS #####, reset property "org.apache.commons.httpclient.level" to INFO
    2. Run the connector and check logs.
    3. In logs you will find following messages as per the authentication scheme selected:
@@ -375,22 +378,28 @@ A. Selected authentication scheme is listed in the logs. To enable it, you need 
          3. "basic authentication scheme selected" indicates Basic scheme
 		 
 *Q. What if, I left KDC Hostname field blank?*
-A. Appropriate other authentication schemes i.e. ntlm or basic will be automatically selected by conenctor while crawling.
+
+Appropriate other authentication schemes i.e. ntlm or basic will be automatically selected by conenctor while crawling.
 
 *Q. What if, I enter invalid IP Address in KDC Hostname field?*
-A. You will get an error message "Please specify a fully qualified hostname for the Kerberos Key Distribution Center (KDC)" and configuration will not save. Please enter KDC Hostname field in FQDN format (Recommended) or enter valid IP address.
+
+You will get an error message "Please specify a fully qualified hostname for the Kerberos Key Distribution Center (KDC)" and configuration will not save. Please enter KDC Hostname field in FQDN format (Recommended) or enter valid IP address.
 
 *Q. I have entered valid IP Address in KDC Hostname field. I can ping this IP Address, but still why connector is not able to crawl?*
-A. Please verify that the IP Address you have entered should be of Key Distribution Centre Server.
+
+Please verify that the IP Address you have entered should be of Key Distribution Centre Server.
 
 *Q. How can I limit the maximum size of document to be fed to Search Appliance?*
-A. You can customize the maximum size of document by modifying CONNECTOR_HOME\Tomcat\webapps\connector-manager\WEB-INF\applicationContext.xml. Edit value of property "maxDocumentSize" as desired.
+
+You can customize the maximum size of document by modifying CONNECTOR_HOME\Tomcat\webapps\connector-manager\WEB-INF\applicationContext.xml. Edit value of property "maxDocumentSize" as desired.
 
 *Q. My SharePoint repository have the documents of size >30 MB (Maximum file size accepted by the GSA). Will those documents be fed to Search Appliance?*
-A. In case of documents exceeding maximum file size, only metadata will be fed to Search Appliance. Content will not be sent.
+
+In case of documents exceeding maximum file size, only metadata will be fed to Search Appliance. Content will not be sent.
 
 *Q. For some of the documents, only metadata is fed to Search Appliance. Why the content is not fed to Search Appliance?*
-A. Following are the probable reasons for content not being fed to Search Appliance:
+
+Following are the probable reasons for content not being fed to Search Appliance:
    1. Target document size > maximum file size (default 30MB)
- 2. Unknown MIME type
+   2. Unknown MIME type
    Please check supported MIME types at: CONNECTOR_HOME\Tomcat\webapps\connector-manager\WEB-INF\applicationContext.xml
