@@ -392,5 +392,5 @@ A. In case of documents exceeding maximum file size, only metadata will be fed t
 *Q. For some of the documents, only metadata is fed to Search Appliance. Why the content is not fed to Search Appliance?*
 A. Following are the probable reasons for content not being fed to Search Appliance:
    1. Target document size > maximum file size (default 30MB)
-   2. Unknown MIME type
+ 2. Unknown MIME type
    Please check supported MIME types at: CONNECTOR_HOME\Tomcat\webapps\connector-manager\WEB-INF\applicationContext.xml
