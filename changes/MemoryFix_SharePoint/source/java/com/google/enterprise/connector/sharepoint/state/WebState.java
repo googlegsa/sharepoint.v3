@@ -27,10 +27,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.joda.time.DateTime;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -177,7 +177,7 @@ public class WebState implements StatefulObject {
         if (exists == false) {
             // for each ListState, set "not existing" as the Webstate is not
             // existing
-			final Iterator<ListState> it = allListStateSet.iterator();
+            final Iterator<ListState> it = allListStateSet.iterator();
             while (it.hasNext()) {
                 final ListState list = (ListState) it.next();
                 list.setExisting(false);
@@ -186,87 +186,19 @@ public class WebState implements StatefulObject {
     }
 
     /**
-     * Reload this WebState from a DOM tree. The opposite of dumpToDOM().
+     * This is the recommended method for adding a new ListsState entry into the
+     * WebState Or, updating any such attribute of a ListState which can affect
+     * the ordering of ListStates in current WebState. TODO: Currently,
+     * lastModified is identified as the only such attribute. In future, this
+     * method can be augmented with more generic informations which drives the
+     * ordering, instead of stricting this to just LastModifiedDate
      *
-     * @param element the DOM element
-     * @throws SharepointException if the DOM tree is not a valid representation
-     *             of a ListState
+     * @param state
+     * @param time lastMod time for the List. If time is later than the existing
+     *            lastMod, the List is reindexed in the allListStateSet.
      */
-    public void loadFromDOM(final Element element) throws SharepointException {
-        if (element == null) {
-            throw new SharepointException("element not found");
-        }
-
-        webId = element.getAttribute(SPConstants.STATE_ID);
-        if ((webId == null) || (webId.length() == 0)) {
-            throw new SharepointException(
-                    "Invalid XML: no id attribute for the WebState");
-        }
-
-        webUrl = element.getAttribute(SPConstants.STATE_URL);
-        title = element.getAttribute(SPConstants.STATE_WEB_TITLE);
-        try {
-            final String insertTime = element.getAttribute(SPConstants.STATE_INSERT_TIME);
-            insertionTime = Util.parseDate(insertTime);
-        } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Unable to get insertion time for web state [ "
-                    + title + " ]. ", e);
-        }
-
-        String lstCrawleddateTime = element.getAttribute(SPConstants.LAST_CRAWLED_DATETIME);
-        if (lstCrawleddateTime != null) {
-            setLastCrawledDateTime(lstCrawleddateTime);
-        }
-
-        spType = element.getAttribute(SPConstants.STATE_SPTYPE);
-
-        final NodeList children = element.getChildNodes();
-        if (children != null) {
-            for (int i = 0; i < children.getLength(); i++) {
-                final Node node = children.item(i);
-
-                if ((node == null) || (node.getNodeType() != Node.ELEMENT_NODE)) {
-                    continue;
-                }
-                final Element childElement = (Element) children.item(i);
-
-                if (childElement == null) {
-                    continue;
-                }
-
-                if (!collator.equals(childElement.getTagName(), SPConstants.LIST_STATE)) {
-                    continue; // no exception; ignore xml for things we don't
-                    // understand
-                }
-                final ListState subObject = new ListState(spType, feedType);
-                subObject.loadFromDOM(childElement);
-				AddOrUpdateListStateInWebState(subObject, subObject.getLastMod());
-
-                // now, for "lastCrawledListID", for which so far we've only the
-                // key, find the
-                // actual object:
-
-                if (lastCrawledListID != null) {
-                    currentList = keyMap.get(lastCrawledListID);
-                }
-            }
-        }
-    }
-
-	/**
-	 * This is the recommended method for adding a new ListsState entry into the
-	 * WebState Or, updating any such attribute of a ListState which can affect
-	 * the ordering of ListStates in current WebState. TODO: Currently,
-	 * lastModified is identified as the only such attribute. In future, this
-	 * method can be augmented with more generic informations which drives the
-	 * ordering, instead of stricting this to just LastModifiedDate
-	 * 
-	 * @param state
-	 * @param time lastMod time for the List. If time is later than the existing
-	 *            lastMod, the List is reindexed in the allListStateSet.
-	 */
-	public void AddOrUpdateListStateInWebState(final ListState state,
-			final DateTime time) {
+    public void AddOrUpdateListStateInWebState(final ListState state,
+            final DateTime time) {
         if (state != null) {
             final ListState stateOld = keyMap.get(state.getPrimaryKey());
             if (stateOld != null) {
@@ -281,45 +213,6 @@ public class WebState implements StatefulObject {
             }
             allListStateSet.add(state);
         }
-    }
-
-    /**
-     * dump the Web state into state file
-     */
-    public Node dumpToDOM(final Document domDoc) throws SharepointException {
-        final Element element = domDoc.createElement(SPConstants.WEB_STATE);
-        if (webId != null) {
-            element.setAttribute(SPConstants.STATE_ID, webId);
-        }
-        if (webUrl != null) {
-            element.setAttribute(SPConstants.STATE_URL, webUrl);
-        }
-
-        if (getLastCrawledDateTime() != null) {
-            element.setAttribute(SPConstants.LAST_CRAWLED_DATETIME, getLastCrawledDateTime());
-        }
-
-        if (title != null) {
-            element.setAttribute(SPConstants.STATE_WEB_TITLE, title);
-        }
-        final String strInsertionTime = getInsertionTimeString();
-        if (strInsertionTime != null) {
-            element.setAttribute(SPConstants.STATE_INSERT_TIME, strInsertionTime);
-        }
-
-        if (spType != null) {
-            element.setAttribute(SPConstants.STATE_SPTYPE, spType);
-        }
-
-        if (allListStateSet != null) {
-            // dump the actual ListStates:
-			final Iterator<ListState> it = allListStateSet.iterator();
-            while (it.hasNext()) {
-                final StatefulObject obj = (StatefulObject) it.next();
-                element.appendChild(obj.dumpToDOM(domDoc));
-            }
-        }
-        return element;
     }
 
     /**
@@ -382,7 +275,7 @@ public class WebState implements StatefulObject {
     /**
      * @return set of all list statesin this web
      */
-	public TreeSet<ListState> getAllListStateSet() {
+    public TreeSet<ListState> getAllListStateSet() {
         return allListStateSet;
     }
 
@@ -410,7 +303,7 @@ public class WebState implements StatefulObject {
             final ListState obj = new ListState(spType, feedType);
             obj.setLastMod(inLastMod);
             obj.setPrimaryKey(key);
-			AddOrUpdateListStateInWebState(obj, inLastMod); // add to our maps
+            AddOrUpdateListStateInWebState(obj, inLastMod); // add to our maps
             return obj;
         } else {
             LOGGER.warning("Unable to make ListState due to list key not found");
@@ -440,7 +333,7 @@ public class WebState implements StatefulObject {
      * @param spContext
      */
     public void endRecrawl(final SharepointClientContext spContext) {
-		final Iterator<ListState> iter = getIterator();
+        final Iterator<ListState> iter = getIterator();
         if (null != iter) {
             while (iter.hasNext()) {
                 final ListState list = (ListState) iter.next();
@@ -609,7 +502,7 @@ public class WebState implements StatefulObject {
     /**
      * @return the the iterator for the list contained in this web
      */
-	public Iterator<ListState> getIterator() {
+    public Iterator<ListState> getIterator() {
         return allListStateSet.iterator();
     }
 
@@ -628,7 +521,7 @@ public class WebState implements StatefulObject {
      * @return the circular iterator for the set of lists. This iterator will
      *         start iterating for the current web.
      */
-	public Iterator<ListState> getCurrentListstateIterator() {
+    public Iterator<ListState> getCurrentListstateIterator() {
         final ListState start = getCurrentList();
         if (start == null) {
             return getIterator();
@@ -716,6 +609,10 @@ public class WebState implements StatefulObject {
         return spType;
     }
 
+    public void setSharePointType(String spType) {
+        this.spType = spType;
+    }
+
     /**
      * @return the lastCrawledDateTime
      */
@@ -733,5 +630,60 @@ public class WebState implements StatefulObject {
     @Override
     public String toString() {
         return this.webUrl;
+    }
+
+    public void dumpStateToXML(ContentHandler handler) throws SAXException {
+        AttributesImpl atts = new AttributesImpl();
+
+        atts.clear();
+        atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getPrimaryKey());
+        atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getWebUrl());
+        atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
+        atts.addAttribute("", "", SPConstants.STATE_TITLE, SPConstants.STATE_ATTR_CDATA, getTitle());
+        atts.addAttribute("", "", SPConstants.STATE_SPTYPE, SPConstants.STATE_ATTR_CDATA, getSharePointType());
+        final String strInsertionTime = getInsertionTimeString();
+        if (strInsertionTime != null) {
+            atts.addAttribute("", "", SPConstants.STATE_INSERT_TIME, SPConstants.STATE_ATTR_CDATA, strInsertionTime);
+        }
+
+        handler.startElement("", "", SPConstants.WEB_STATE, atts);
+
+        // dump the actual ListStates:
+        if (null == allListStateSet) {
+            LOGGER.log(Level.WARNING, "No ListStates found in the WebState [ "
+                    + webUrl + " ]. " + "");
+        } else {
+            for (ListState list : allListStateSet) {
+                list.dumpStateToXML(handler);
+            }
+        }
+
+        handler.endElement("", "", SPConstants.WEB_STATE);
+    }
+
+    /**
+     * Construct and returns a WebState object using the attributes.
+     *
+     * @param web
+     * @param atts
+     * @param feedType
+     * @return
+     */
+    public static WebState loadStateFromXML(Attributes atts, String feedType) {
+        // TODO: create a well augmented WebState constructor instead
+        WebState web = new WebState(feedType);
+        web.setPrimaryKey(atts.getValue(SPConstants.STATE_ID));
+        web.setWebUrl(atts.getValue(SPConstants.STATE_URL));
+        web.setTitle(atts.getValue(SPConstants.STATE_WEB_TITLE));
+        web.setLastCrawledDateTime(atts.getValue(SPConstants.LAST_CRAWLED_DATETIME));
+        web.setSharePointType(atts.getValue(SPConstants.STATE_SPTYPE));
+        try {
+            String insertTime = atts.getValue(SPConstants.STATE_INSERT_TIME);
+            web.setInsertionTime(Util.parseDate(insertTime));
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Could not load insertion time for web-state [ "
+                    + web.getPrimaryKey() + " ]. ");
+        }
+        return web;
     }
 }

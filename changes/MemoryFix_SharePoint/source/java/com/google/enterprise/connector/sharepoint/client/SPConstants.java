@@ -228,6 +228,9 @@ public class SPConstants {
     public static final String STATE = "State";
     public static final String LAST_FULL_CRAWL_DATETIME = "LastFullCrawlDateTime";
     public static final String LAST_CRAWLED_DATETIME = "LastCrawledDateTime";
+    public static final String STATE_ATTR_CDATA = "CDATA";
+    public static final String STATE_ATTR_ID = "ID";
+    public static final String STATE_ATTR_IDREF = "IDREF";
 
     public static final String CONNECTOR_NAME = "Sharepoint";
     public static final String CONNECTOR_PREFIX = "_state.xml";

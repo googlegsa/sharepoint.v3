@@ -16,11 +16,8 @@ package com.google.enterprise.connector.sharepoint.state;
 //limitations under the License.
 
 import org.joda.time.DateTime;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 /**
  * StatefulObject is an interface which is implemented by any object which
@@ -36,9 +33,14 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
  */
 public interface StatefulObject extends Comparable<StatefulObject> {
 
-    Node dumpToDOM(Document doc) throws SharepointException;
-
-    void loadFromDOM(Element element) throws SharepointException;
+    /**
+     * dumps all the necessary information into an XML tree which can be stored
+     * under connector state file.
+     *
+     * @param handler
+     * @throws SAXException
+     */
+    void dumpStateToXML(ContentHandler handler) throws SAXException;
 
     /**
      * Getter for the primary key.

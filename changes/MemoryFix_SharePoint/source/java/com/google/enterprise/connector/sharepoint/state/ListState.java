@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.state;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -27,18 +28,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.joda.time.DateTime;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
  * Represents a SharePoint List/Library as a stateful object
@@ -545,266 +544,6 @@ public class ListState implements StatefulObject {
                 + " ], Action [ " + doc.getAction() + " ], deleteStatus [ "
                 + status + " ], currentCrawlQueueSize [ " + crawlQueue.size()
                 + " ]. ");
-    }
-
-    /**
-     * Create a DOM tree for the entire ListState object.
-     *
-     * @param domDoc DOM node for the containing XML document, which is
-     *            necessary for creating new DOM nodes
-     * @return Node head of DOM tree
-     * @throws SharepointException
-     */
-    public Node dumpToDOM(final Document domDoc) throws SharepointException {
-        final Element element = domDoc.createElement(SPConstants.LIST_STATE);
-        element.setAttribute(SPConstants.STATE_ID, getPrimaryKey());
-
-        if (listURL != null) {
-            element.setAttribute(SPConstants.STATE_URL, listURL);
-        }
-
-        final String strLastMod = getLastModString();
-        if (strLastMod != null) {
-            element.setAttribute(SPConstants.STATE_LASTMODIFIED, strLastMod);
-        }
-
-        if (getLastCrawledDateTime() != null) {
-            element.setAttribute(SPConstants.LAST_CRAWLED_DATETIME, getLastCrawledDateTime());
-        }
-
-        if (null == type) {
-            type = "";
-        }
-        element.setAttribute(SPConstants.STATE_TYPE, type);
-        if (SPConstants.ALERTS_TYPE.equalsIgnoreCase(type)) {
-            if (getIDs() != null && getIDs().length() != 0) {
-                final Element IDsTmp = domDoc.createElement(SPConstants.STATE_EXTRAIDS_ALERTS);
-                final Text IDsText = domDoc.createTextNode(getIDs().toString());
-                IDsTmp.appendChild(IDsText);
-                element.appendChild(IDsTmp);
-            }
-        } else {
-            if (SPConstants.SP2007.equalsIgnoreCase(spType)) {
-                if ((changeToken == null) || (changeToken.length() == 0)) {
-                    if ((CachedPrevChangeToken == null)
-                            || (CachedPrevChangeToken.length() == 0)) {
-                        element.setAttribute(SPConstants.STATE_CHANGETOKEN, "");
-                    } else {
-                        element.setAttribute(SPConstants.STATE_CACHED_CHANGETOKEN, CachedPrevChangeToken);
-                    }
-                } else {
-                    element.setAttribute(SPConstants.STATE_CHANGETOKEN, changeToken);
-                }
-                if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
-                    if (canContainFolders() && getIDs() != null
-                            && getIDs().length() != 0) {
-                        Element IDsTmp = domDoc.createElement(SPConstants.STATE_EXTRAIDS_FOLDERS);
-                        final Text IDsText = domDoc.createTextNode(getIDs().toString());
-                        IDsTmp.appendChild(IDsText);
-                        element.appendChild(IDsTmp);
-                    }
-
-                    if (canContainAttachments() && getAttchmnts() != null
-                            && getAttchmnts().length() != 0) {
-                        Element attchmntsTmp = domDoc.createElement(SPConstants.STATE_EXTRAIDS_ATTACHMENTS);
-                        final Text IDsText = domDoc.createTextNode(getAttchmnts().toString());
-                        attchmntsTmp.appendChild(IDsText);
-                        element.appendChild(attchmntsTmp);
-                    }
-
-                    element.setAttribute(SPConstants.STATE_BIGGESTID, String.valueOf(biggestID));
-
-                    // Dump all the delete cache ids to the state file so that
-                    // we remember it even after a connector restart. Sending
-                    // duplicate delete feeds hangs the super GSA. This is very
-                    // serious so toavoid the same these ids are required which
-                    // will be checked before sending a delete feed
-                    if (cachedDeletedIDs != null && cachedDeletedIDs.size() > 0) {
-                        StringBuffer deletedListItemIDs = new StringBuffer();
-                        boolean firstElement = true;
-                        for (String deletedID : cachedDeletedIDs) {
-                            if (firstElement) {
-                                deletedListItemIDs.append(deletedID);
-                                firstElement = false;
-                            } else {
-                                deletedListItemIDs.append(SPConstants.HASH).append(deletedID);
-                            }
-                        }
-                        element.setAttribute(SPConstants.STATE_DELETED_LIST_ITEMIDS, deletedListItemIDs.toString());
-                    }
-                }
-            }
-
-            // dump the "last doc crawled"
-            // Do not refer to lastDocument. It is used to work with the crawl
-            // queue to identify if there are any pending docs from previous
-            // batch traversal. The one that will be helpful for connector in
-            // future web service calls is lastDocProcessedForWS
-            if (lastDocProcessedForWS != null) {
-                final Element elementLastDocCrawled = domDoc.createElement(SPConstants.STATE_LASTDOCCRAWLED);
-                element.appendChild(elementLastDocCrawled);
-
-                if (lastDocProcessedForWS.getDocId() != null) {
-                    elementLastDocCrawled.setAttribute(SPConstants.STATE_ID, lastDocProcessedForWS.getDocId());
-                }
-
-                if (SPConstants.SP2007.equalsIgnoreCase(spType)) {
-                    if (lastDocProcessedForWS.getFolderLevel() != null
-                            && lastDocProcessedForWS.getFolderLevel().length() != 0) {
-                        elementLastDocCrawled.setAttribute(SPConstants.STATE_FOLDER_LEVEL, lastDocProcessedForWS.getFolderLevel());
-                    }
-                    if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
-                        if (lastDocProcessedForWS.getAction() != null) {
-                            elementLastDocCrawled.setAttribute(SPConstants.STATE_ACTION, lastDocProcessedForWS.getAction().toString());
-                        }
-                    }
-                }
-                if (lastDocProcessedForWS.getLastDocLastModString() != null) {
-                    elementLastDocCrawled.setAttribute(SPConstants.STATE_LASTMODIFIED, lastDocProcessedForWS.getLastDocLastModString());
-                }
-            }
-        }
-
-        return element;
-    }
-
-    /**
-     * Reload this ListState from a DOM tree. The opposite of dumpToDOM().
-     *
-     * @param element the DOM element
-     * @throws SharepointException if the DOM tree is not a valid representation
-     *             of a ListState
-     */
-    public void loadFromDOM(final Element element) throws SharepointException {
-        if (element == null) {
-            throw new SharepointException("element not found");
-        }
-        key = element.getAttribute(SPConstants.STATE_ID);
-        if ((key == null) || (key.length() == 0)) {
-            throw new SharepointException("Invalid XML: no id attribute");
-        }
-        listURL = element.getAttribute(SPConstants.STATE_URL);
-
-        try {
-            final String lastModString = element.getAttribute(SPConstants.STATE_LASTMODIFIED);
-            lastMod = Util.jodaToCalendar(Util.parseDate(lastModString));
-        } catch (final Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to load Last Modified for list [ "
-                    + listURL + " ]. ", e);
-        }
-
-        String lstCrawleddateTime = element.getAttribute(SPConstants.LAST_CRAWLED_DATETIME);
-        if (lstCrawleddateTime != null) {
-            setLastCrawledDateTime(lstCrawleddateTime);
-        }
-
-        type = element.getAttribute(SPConstants.STATE_TYPE);
-        if (null == type) {
-            type = "";
-        }
-        if (SPConstants.ALERTS_TYPE.equalsIgnoreCase(type)) {
-            final NodeList IDsNodeList = element.getElementsByTagName(SPConstants.STATE_EXTRAIDS_ALERTS);
-            if ((IDsNodeList != null) && (IDsNodeList.item(0) != null)
-                    && (IDsNodeList.item(0).getFirstChild() != null)) {
-                extraIDs = new StringBuffer(
-                        IDsNodeList.item(0).getFirstChild().getNodeValue());
-            }
-        } else {
-            if (SPConstants.SP2007.equalsIgnoreCase(spType)) {
-                setChangeToken(element.getAttribute(SPConstants.STATE_CHANGETOKEN));
-                if ((changeToken == null) || (changeToken.length() == 0)) {
-                    CachedPrevChangeToken = element.getAttribute(SPConstants.STATE_CACHED_CHANGETOKEN);
-                }
-                if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
-                    if (type != null) {
-                        if (canContainFolders()) {
-                            NodeList IDsNodeList = element.getElementsByTagName(SPConstants.STATE_EXTRAIDS_FOLDERS);
-                            if ((IDsNodeList != null)
-                                    && !IDsNodeList.equals("")) {
-                                if ((IDsNodeList.item(0) != null)
-                                        && (IDsNodeList.item(0).getFirstChild() != null)) {
-                                    extraIDs = new StringBuffer(
-                                            IDsNodeList.item(0).getFirstChild().getNodeValue());
-                                }
-                            }
-                        }
-                        if (canContainAttachments()) {
-                            NodeList attchmntsNodeList = element.getElementsByTagName(SPConstants.STATE_EXTRAIDS_ATTACHMENTS);
-                            if ((attchmntsNodeList != null)
-                                    && !attchmntsNodeList.equals("")) {
-                                if ((attchmntsNodeList.item(0) != null)
-                                        && (attchmntsNodeList.item(0).getFirstChild() != null)) {
-                                    attchmnts = new StringBuffer(
-                                            attchmntsNodeList.item(0).getFirstChild().getNodeValue());
-                                }
-                            }
-                        }
-                    }
-
-                    try {
-                        biggestID = Integer.parseInt(element.getAttribute(SPConstants.STATE_BIGGESTID));
-                    } catch (final Exception e) {
-                        LOGGER.log(Level.WARNING, "Failed to load Biggest ID for list [ "
-                                + listURL + " ]. ", e);
-                    }
-
-                    // Load all the delete cache ids from the state file so that
-                    // each delete feed can be checked against this list to
-                    // avoid sending duplicate delete feeds. Sending duplicate
-                    // delete feeds hangs the super GSA. This is very serious so
-                    // to avoid the same these ids are required which will be
-                    // checked before sending a delete feed
-                    String deletedListItemsIDs = element.getAttribute(SPConstants.STATE_DELETED_LIST_ITEMIDS);
-                    if (deletedListItemsIDs != null
-                            && !deletedListItemsIDs.equals("")) {
-
-                        String[] deletedIds = deletedListItemsIDs.split(SPConstants.HASH);
-
-                        if (deletedIds != null && deletedIds.length > 0) {
-                            cachedDeletedIDs = new HashSet<String>();
-                            for (String deletedId : deletedIds) {
-                                cachedDeletedIDs.add(deletedId);
-                            }
-                        }
-
-                    }
-
-                }
-            }
-
-            // Last Doc Crawled
-            final NodeList lastDocCrawledNodeList = element.getElementsByTagName(SPConstants.STATE_LASTDOCCRAWLED);
-            if ((lastDocCrawledNodeList != null)
-                    && (lastDocCrawledNodeList.item(0) != null)) {
-                final Element elemLastDoc = (Element) lastDocCrawledNodeList.item(0);
-                final String lastCrawledDocId = elemLastDoc.getAttribute(SPConstants.STATE_ID);
-                Calendar lastCrawledDocLastMod = null;
-                String lastCrawledDocFolderLevel = null;
-                ActionType lastCrawledDocAction = null;
-
-                if (SPConstants.SP2007.equalsIgnoreCase(spType)) {
-                    lastCrawledDocFolderLevel = elemLastDoc.getAttribute(SPConstants.STATE_FOLDER_LEVEL);
-                    if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
-                        lastCrawledDocAction = ActionType.findActionType(elemLastDoc.getAttribute(SPConstants.STATE_ACTION));
-                    }
-                }
-                try {
-                    final String strLastCrawledDocLastMod = elemLastDoc.getAttribute(SPConstants.STATE_LASTMODIFIED);
-                    lastCrawledDocLastMod = Util.jodaToCalendar(Util.parseDate(strLastCrawledDocLastMod));
-                } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Failed to load lastCrawledDocLastModified for List [ "
-                            + listURL + " ]. ", e);
-                }
-
-                // The lastDocument is always used when working with the crawl
-                // queue. The one that we want to refer to is the document which
-                // was fed with action=ADD. It gives the connector the right
-                // reference when making web service calls.
-                lastDocProcessedForWS = new SPDocument(lastCrawledDocId,
-                        lastCrawledDocLastMod, lastCrawledDocFolderLevel,
-                        lastCrawledDocAction);
-            }
-        }
     }
 
     /**
@@ -1508,4 +1247,161 @@ public class ListState implements StatefulObject {
         return this.listURL;
     }
 
+    public Set<String> getDeleteCache() {
+        return cachedDeletedIDs;
+    }
+
+    public String getFeedType() {
+        return feedType;
+    }
+
+    @Override
+    public void dumpStateToXML(ContentHandler handler) throws SAXException {
+        AttributesImpl atts = new AttributesImpl();
+        atts.clear();
+        atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getPrimaryKey());
+        atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getListURL());
+        atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastModString());
+        atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
+        atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_CDATA, getType());
+        if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(getType())) {
+            if (SPConstants.SP2007.equalsIgnoreCase(getSharePointType())) {
+                if ((getChangeToken() == null)
+                        || (getChangeToken().length() == 0)) {
+                    if ((getCachedPrevChangeToken() == null)
+                            || (getCachedPrevChangeToken().length() == 0)) {
+                        atts.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, "");
+                    } else {
+                        atts.addAttribute("", "", SPConstants.STATE_CACHED_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getCachedPrevChangeToken());
+                    }
+                } else {
+                    atts.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getChangeToken());
+                }
+                if (SPConstants.CONTENT_FEED.equalsIgnoreCase(getFeedType())) {
+                    atts.addAttribute("", "", SPConstants.STATE_BIGGESTID, SPConstants.STATE_ATTR_CDATA, String.valueOf(getBiggestID()));
+
+                    // We need to remember this so that duplicate delete feeds
+                    // are not sent. This is critical because of a bug in GSA
+                    // wherein duplicate delete feeds hangs the GSA indexer.
+                    if (getDeleteCache() != null && getDeleteCache().size() > 0) {
+                        StringBuffer deletedListItemIDs = new StringBuffer();
+                        boolean firstElement = true;
+                        for (String deletedID : getDeleteCache()) {
+                            if (firstElement) {
+                                deletedListItemIDs.append(deletedID);
+                                firstElement = false;
+                            } else {
+                                deletedListItemIDs.append(SPConstants.HASH).append(deletedID);
+                            }
+                        }
+                        atts.addAttribute("", "", SPConstants.STATE_DELETED_LIST_ITEMIDS, SPConstants.STATE_ATTR_CDATA, deletedListItemIDs.toString());
+                    }
+                }
+            }
+        }
+        handler.startElement("", "", SPConstants.LIST_STATE, atts);
+
+        // Creating child nodes of ListState node
+        if (SPConstants.ALERTS_TYPE.equalsIgnoreCase(type)) {
+            if (getIDs() != null && getIDs().length() != 0) {
+                atts.clear();
+                handler.startElement("", "", SPConstants.STATE_EXTRAIDS_ALERTS, atts);
+                handler.characters(getIDs().toString().toCharArray(), 0, getIDs().length());
+                handler.endElement("", "", SPConstants.STATE_EXTRAIDS_ALERTS);
+            }
+        } else {
+            if (SPConstants.SP2007.equalsIgnoreCase(spType)) {
+                if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+                    if (canContainFolders() && getIDs() != null
+                            && getIDs().length() != 0) {
+                        atts.clear();
+                        handler.startElement("", "", SPConstants.STATE_EXTRAIDS_FOLDERS, atts);
+                        handler.characters(getIDs().toString().toCharArray(), 0, getIDs().length());
+                        handler.endElement("", "", SPConstants.STATE_EXTRAIDS_FOLDERS);
+                    }
+
+                    if (canContainAttachments() && getAttchmnts() != null
+                            && getAttchmnts().length() != 0) {
+                        atts.clear();
+                        handler.startElement("", "", SPConstants.STATE_EXTRAIDS_ATTACHMENTS, atts);
+                        handler.characters(getAttchmnts().toString().toCharArray(), 0, getAttchmnts().length());
+                        handler.endElement("", "", SPConstants.STATE_EXTRAIDS_ATTACHMENTS);
+                    }
+                }
+            }
+
+            // dump the lastDocProcessedForWS
+            if (getLastDocProcessedForWS() != null) {
+                atts.clear();
+                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getLastDocProcessedForWS().getDocId());
+                if (SPConstants.SP2007.equalsIgnoreCase(getSharePointType())) {
+                    if (getLastDocProcessedForWS().getFolderLevel() != null
+                            && getLastDocProcessedForWS().getFolderLevel().length() != 0) {
+                        atts.addAttribute("", "", SPConstants.STATE_FOLDER_LEVEL, SPConstants.STATE_ATTR_CDATA, getLastDocProcessedForWS().getFolderLevel());
+                    }
+                    if (SPConstants.CONTENT_FEED.equalsIgnoreCase(getFeedType())) {
+                        atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocProcessedForWS().getAction().toString());
+                    }
+                }
+                atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastDocProcessedForWS().getLastDocLastModString());
+                handler.startElement("", "", SPConstants.STATE_LASTDOCCRAWLED, atts);
+                handler.endElement("", "", SPConstants.STATE_LASTDOCCRAWLED);
+            }
+        }
+        handler.endElement("", "", SPConstants.LIST_STATE);
+    }
+
+    /**
+     * Construct and returns a ListState object using the attributes.
+     *
+     * @param web
+     * @param atts
+     * @param feedType
+     * @return
+     */
+    public static ListState loadStateFromXML(WebState web, Attributes atts,
+            String feedType) {
+        ListState list = null;
+        try {
+            list = new ListState(atts.getValue(SPConstants.STATE_ID),
+                    atts.getValue(SPConstants.STATE_TITLE),
+                    atts.getValue(SPConstants.STATE_TYPE), null, null,
+                    atts.getValue(SPConstants.STATE_URL), web.getPrimaryKey(),
+                    web.getTitle(), web.getSharePointType(), feedType);
+            final String lastModString = atts.getValue(SPConstants.STATE_LASTMODIFIED);
+            list.setLastMod(Util.parseDate(lastModString));
+        } catch (final Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to load Last Modified for list [ "
+                    + list.getListURL() + " ]. ", e);
+        }
+
+        list.setLastCrawledDateTime(atts.getValue(SPConstants.LAST_CRAWLED_DATETIME));
+
+        if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(list.getType())) {
+            if (SPConstants.SP2007.equalsIgnoreCase(list.getSharePointType())) {
+                list.setChangeToken(atts.getValue(SPConstants.STATE_CHANGETOKEN));
+                if ((list.getChangeToken() == null)
+                        || (list.getChangeToken().length() == 0)) {
+                    list.setCachedPrevChangeToken(atts.getValue(SPConstants.STATE_CACHED_CHANGETOKEN));
+                }
+                if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+                    try {
+                        list.setBiggestID(Integer.parseInt(atts.getValue(SPConstants.STATE_BIGGESTID)));
+                    } catch (final Exception e) {
+                        LOGGER.log(Level.WARNING, "Failed to load Biggest ID for list [ "
+                                + list.getListURL() + " ]. ", e);
+                    }
+
+                    String deletedListItemsIDs = atts.getValue(SPConstants.STATE_DELETED_LIST_ITEMIDS);
+                    if (deletedListItemsIDs != null
+                            && !deletedListItemsIDs.equals("")) {
+
+                        String[] deletedIds = deletedListItemsIDs.split(SPConstants.HASH);
+                        Collections.addAll(list.getDeleteCache(), deletedIds);
+                    }
+                }
+            }
+        }
+        return list;
+    }
 }
