@@ -37,6 +37,7 @@ import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
 
@@ -60,13 +61,12 @@ public class SharepointClientContext implements Cloneable {
     private String mySiteBaseURL = null;
 
     private Map<String, String> aliasMap = null;
-    private String feedType = null;
+	private FeedType feedType = null;
 
     private final ArrayList<Pattern> included_metadata = new ArrayList<Pattern>();
     private final ArrayList<Pattern> excluded_metadata = new ArrayList<Pattern>();
     private boolean bFQDNConversion = false;
-    private int batchHint = -1; // the batch size in which the documents have to
-    // be submitted to Connector manager
+	private int batchHint = -1;
 
     private String excludedURL_ParentDir = null;
 
@@ -85,7 +85,7 @@ public class SharepointClientContext implements Cloneable {
             }
 
             if (null != feedType) {
-                spCl.setFeedType(new String(feedType));
+				spCl.setFeedType(feedType);
             }
 
             if (null != domain) {
@@ -194,7 +194,7 @@ public class SharepointClientContext implements Cloneable {
             final String inPassword, final String inGoogleConnectorWorkDir,
             final String includedURls, final String excludedURls,
             final String inMySiteBaseURL, final String inAliasMapString,
-            final String inFeedType) throws SharepointException {
+			final FeedType inFeedType) throws SharepointException {
 
         Protocol.registerProtocol("https", new Protocol("https",
                 new EasySSLProtocolSocketFactory(),
@@ -558,14 +558,14 @@ public class SharepointClientContext implements Cloneable {
     /**
      * @return the feedType
      */
-    public String getFeedType() {
+	public FeedType getFeedType() {
         return feedType;
     }
 
     /**
      * @param inFeedType the feedType to set
      */
-    public void setFeedType(final String inFeedType) {
+	public void setFeedType(final FeedType inFeedType) {
         feedType = inFeedType;
     }
 
@@ -621,7 +621,7 @@ public class SharepointClientContext implements Cloneable {
      * @param strURL
      * @return the SharePoint Type of the siteURL being passed
      */
-    public String checkSharePointType(String strURL) {
+	public SPConstants.SPType checkSharePointType(String strURL) {
         LOGGER.log(Level.CONFIG, "Checking [ " + strURL
                 + " ] for the SharePoint version.");
 
@@ -631,14 +631,14 @@ public class SharepointClientContext implements Cloneable {
             method = new HeadMethod(strURL);
             checkConnectivity(strURL, method);
             if (null == method) {
-                return SPConstants.CONNECTIVITY_FAIL;
+				return null;
             }
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Unable to connect " + strURL, e);
-            return e.getLocalizedMessage();
+			return null;
         }
         if (null == method) {
-            return SPConstants.CONNECTIVITY_FAIL;
+			return null;
         }
         final Header contentType = method.getResponseHeader("MicrosoftSharePointTeamServices");
         String version = null;
@@ -649,16 +649,16 @@ public class SharepointClientContext implements Cloneable {
         if (version == null) {
             LOGGER.warning("Sharepoint version not found for the site [ "
                     + strURL + " ]");
-            return SPConstants.CONNECTIVITY_FAIL;
+			return null;
         }
         if (version.trim().startsWith("12")) {
-            return SPConstants.SP2007;
+			return SPConstants.SPType.SP2007;
         } else if (version.trim().startsWith("6")) {
-            return SPConstants.SP2003;
+			return SPConstants.SPType.SP2003;
         } else {
             LOGGER.warning("Unknown sharepoint version found for the site [ "
                     + strURL + " ]");
-            return SPConstants.CONNECTIVITY_FAIL;
+			return null;
         }
     }
 

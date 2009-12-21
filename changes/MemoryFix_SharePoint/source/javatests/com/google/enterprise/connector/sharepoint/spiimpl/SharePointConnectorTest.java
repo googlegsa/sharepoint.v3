@@ -14,11 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import junit.framework.TestCase;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
-
-import junit.framework.TestCase;
 
 public class SharePointConnectorTest extends TestCase {
 
@@ -28,25 +27,13 @@ public class SharePointConnectorTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+		this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
         this.connector.setIncluded_metadata(TestConfiguration.whiteList);
         this.connector.setExcluded_metadata(TestConfiguration.blackList);
 
         System.out.println("initializing SharepointConnector ...");
-        this.connector = new SharepointConnector(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+		this.connector = new SharepointConnector();
         this.connector.setFQDNConversion(TestConfiguration.FQDNflag);
     }
 

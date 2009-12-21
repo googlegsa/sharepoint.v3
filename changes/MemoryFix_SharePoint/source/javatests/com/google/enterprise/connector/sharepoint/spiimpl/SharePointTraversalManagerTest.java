@@ -14,14 +14,13 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import junit.framework.TestCase;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointTraversalManager;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
-
-import junit.framework.TestCase;
 
 public class SharePointTraversalManagerTest extends TestCase {
 
@@ -50,7 +49,7 @@ public class SharePointTraversalManagerTest extends TestCase {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+				FeedType.METADATA_URL_FEED.toString());
         connector.setFQDNConversion(TestConfiguration.FQDNflag);
         System.out.println("Initializing SharepointTraversalManager ...");
         this.travMan = new SharepointTraversalManager(connector,

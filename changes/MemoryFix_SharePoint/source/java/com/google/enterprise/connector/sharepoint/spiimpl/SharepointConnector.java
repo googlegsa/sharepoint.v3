@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
@@ -43,20 +44,20 @@ public class SharepointConnector implements Connector {
     private String includedURls = null;
     private String mySiteBaseURL = null;
     private boolean FQDNConversion = false;
-    private ArrayList included_metadata = null;
-    private ArrayList excluded_metadata = null;
+	private ArrayList<String> included_metadata = null;
+	private ArrayList<String> excluded_metadata = null;
     private String aliasMap = null;
-    private String authorization = null;
+	private String authorizationAsfeedType = null;
 
     public SharepointConnector() {
 
     }
 
-    /**
-     * All the arguemenmts required to create an instance of this class are
-     * defined in the file connector_Instance.xml The arguement supplied here
-     * must match those specified under connector_Instance.xml and vice-versa
-     */
+	/**
+	 * All the arguments required to create an instance of this class are
+	 * defined in the file connector_Instance.xml The argument supplied here
+	 * must match those specified under connector_Instance.xml and vice-versa
+	 */
     public SharepointConnector(final String sharepointUrl, final String domain,
             final String username, final String password,
             final String googleConnectorWorkDir, final String includedURls,
@@ -74,7 +75,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMapString,
-                feedType);
+				FeedType.getFeedType(feedType));
     }
 
     /**
@@ -104,7 +105,7 @@ public class SharepointConnector implements Connector {
      *
      * @param inExcluded_metadata
      */
-    public void setExcluded_metadata(final ArrayList inExcluded_metadata) {
+	public void setExcluded_metadata(final ArrayList<String> inExcluded_metadata) {
         excluded_metadata = inExcluded_metadata;
         if (sharepointClientContext != null) {
             sharepointClientContext.setExcluded_metadata(inExcluded_metadata);
@@ -118,7 +119,7 @@ public class SharepointConnector implements Connector {
      *
      * @param inIncluded_metadata
      */
-    public void setIncluded_metadata(final ArrayList inIncluded_metadata) {
+	public void setIncluded_metadata(final ArrayList<String> inIncluded_metadata) {
         included_metadata = inIncluded_metadata;
         if (sharepointClientContext != null) {
             sharepointClientContext.setIncluded_metadata(inIncluded_metadata);
@@ -257,14 +258,14 @@ public class SharepointConnector implements Connector {
      * @return the authorization
      */
     public String getAuthorization() {
-        return authorization;
+		return authorizationAsfeedType;
     }
 
     /**
      * @param authorization the authorization to set
      */
     public void setAuthorization(final String authorization) {
-        this.authorization = authorization;
+		this.authorizationAsfeedType = authorization;
     }
 
     public void init() throws SharepointException {
@@ -277,7 +278,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMap,
-                authorization);
+				FeedType.getFeedType(authorizationAsfeedType));
         sharepointClientContext.setFQDNConversion(FQDNConversion);
         sharepointClientContext.setIncluded_metadata(included_metadata);
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
@@ -286,14 +287,14 @@ public class SharepointConnector implements Connector {
     /**
      * @return the included_metadata
      */
-    public ArrayList getIncluded_metadata() {
+	public ArrayList<String> getIncluded_metadata() {
         return included_metadata;
     }
 
     /**
      * @return the excluded_metadata
      */
-    public ArrayList getExcluded_metadata() {
+	public ArrayList<String> getExcluded_metadata() {
         return excluded_metadata;
     }
 
@@ -301,7 +302,7 @@ public String getKdcserver() {
 		return kdcserver;
 	}
 
-	public void setKdcserver(String kdcserver) {
+    public void setKdcserver(String kdcserver) {
 		this.kdcserver = kdcserver;
 	}
 }

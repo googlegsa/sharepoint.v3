@@ -28,6 +28,7 @@ import org.apache.axis.message.MessageElement;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.generated.webs.GetWebCollectionResponseGetWebCollectionResult;
 import com.google.enterprise.connector.sharepoint.generated.webs.GetWebResponseGetWebResult;
 import com.google.enterprise.connector.sharepoint.generated.webs.Webs;
@@ -210,13 +211,13 @@ public class WebsWS {
      * @param spType The SharePOint type for this web
      * @return the web title
      */
-    public String getWebTitle(final String webURL, final String spType) {
+	public String getWebTitle(final String webURL, final SPType spType) {
         String webTitle = "No Title";
         try {
             LOGGER.config("Getting title for Web: " + webURL
                     + " SharepointConnectorType: " + spType);
 
-            if (SPConstants.SP2003.equalsIgnoreCase(spType)) {
+			if (SPType.SP2003.equals(spType)) {
                 final SiteDataWS siteDataWS = new SiteDataWS(
                         sharepointClientContext);
                 webTitle = siteDataWS.getTitle();
@@ -247,9 +248,7 @@ public class WebsWS {
                 if (null != resWeb) {
                     final MessageElement[] meArray = resWeb.get_any();
                     if ((meArray != null) && (meArray[0] != null)) {
-                        webTitle = meArray[0].getAttribute(SPConstants.WEB_TITLE);// Get
-                                                                                    // the
-                                                                                    // Title
+						webTitle = meArray[0].getAttribute(SPConstants.WEB_TITLE);
                     }
                 }
             }

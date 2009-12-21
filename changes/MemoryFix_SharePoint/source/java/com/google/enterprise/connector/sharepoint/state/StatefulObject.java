@@ -15,9 +15,6 @@ package com.google.enterprise.connector.sharepoint.state;
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-import org.joda.time.DateTime;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 
 /**
  * StatefulObject is an interface which is implemented by any object which
@@ -34,15 +31,6 @@ import org.xml.sax.SAXException;
 public interface StatefulObject extends Comparable<StatefulObject> {
 
     /**
-     * dumps all the necessary information into an XML tree which can be stored
-     * under connector state file.
-     *
-     * @param handler
-     * @throws SAXException
-     */
-    void dumpStateToXML(ContentHandler handler) throws SAXException;
-
-    /**
      * Getter for the primary key.
      *
      * @return primary key
@@ -55,17 +43,6 @@ public interface StatefulObject extends Comparable<StatefulObject> {
      * @param newKey
      */
     void setPrimaryKey(String newKey);
-
-    DateTime getLastMod();
-
-    /**
-     * Get lastMod in string form.
-     *
-     * @return string version of lastMod
-     */
-    String getLastModString();
-
-    void setLastMod(DateTime lastMod);
 
     /**
      * Get the "existing" state. This is intended for use in traversal, to be

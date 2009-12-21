@@ -41,6 +41,8 @@ import org.xml.sax.helpers.AttributesImpl;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
@@ -59,7 +61,7 @@ public class GlobalState {
     private static final Logger LOGGER = Logger.getLogger(GlobalState.class.getName());
     private boolean recrawling = false;
     private String workDir = null;
-    private String feedType;
+	private FeedType feedType;
     /**
      * To keep track of WebStates, we keep two data structures: a TreeSet
      * relying on the insertion time property of a StatefulObject, and a HashMap
@@ -76,8 +78,9 @@ public class GlobalState {
      */
     protected WebState currentWeb = null;
 
-    private String lastCrawledWebID = null;
-    private String lastCrawledListID = null;
+	private WebState lastCrawledWeb = null;
+	private ListState lastCrawledList = null;
+
     private boolean bFullReCrawl = false;
     private String lastFullCrawlDateTime = null;
 
@@ -93,6 +96,8 @@ public class GlobalState {
     class StateHandler implements ContentHandler {
         WebState web;
         ListState list;
+		private String lastCrawledWebID;
+		private String lastCrawledListID;
 
         // Since, SAX triggers separate callbacks for the
         // inner-text and the containing node, we need to keep track of how the
@@ -142,15 +147,15 @@ public class GlobalState {
                     LOGGER.log(Level.SEVERE, "Can not parse the current ListState node because the expected WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
                 }
             } else if (SPConstants.STATE_LASTDOCCRAWLED.equals(localName)) {
-                if (null != list) {
+                if (null != list && null != web) {
                     final String lastCrawledDocId = atts.getValue(SPConstants.STATE_ID);
                     Calendar lastCrawledDocLastMod = null;
                     String lastCrawledDocFolderLevel = null;
                     ActionType lastCrawledDocAction = null;
 
-                    if (SPConstants.SP2007.equalsIgnoreCase(list.getSharePointType())) {
+                    if (SPType.SP2007.equals(web.getSharePointType())) {
                         lastCrawledDocFolderLevel = atts.getValue(SPConstants.STATE_FOLDER_LEVEL);
-                        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+                        if (FeedType.CONTENT_FEED.equals(feedType)) {
                             lastCrawledDocAction = ActionType.findActionType(atts.getValue(SPConstants.STATE_ACTION));
                         }
                     }
@@ -166,7 +171,7 @@ public class GlobalState {
                             lastCrawledDocId, lastCrawledDocLastMod,
                             lastCrawledDocFolderLevel, lastCrawledDocAction));
                 } else {
-                    LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
+                    LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
                 }
             } else if (SPConstants.STATE_EXTRAIDS_FOLDERS.equals(localName)) {
                 currentNode = Nodes.FOLDERS_EXTRAID;
@@ -176,8 +181,7 @@ public class GlobalState {
                 currentNode = Nodes.ALERTS_EXTRAID;
             } else if (SPConstants.WEB_STATE.equals(localName)) {
                 try {
-                    web = WebState.loadStateFromXML(atts, feedType);
-                    web.setLastCrawledListID(lastCrawledListID);
+                    web = WebState.loadStateFromXML(atts);
                     AddOrUpdateWebStateInGlobalState(web);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Problem while loading WebState node from state file. ");
@@ -190,7 +194,7 @@ public class GlobalState {
                 bFullReCrawl = new Boolean(atts.getValue(SPConstants.STATE_ID));
                 lastFullCrawlDateTime = atts.getValue(SPConstants.LAST_FULL_CRAWL_DATETIME);
             } else if (SPConstants.STATE_TYPE.equals(localName)) {
-                feedType = atts.getValue(SPConstants.STATE_TYPE);
+                feedType = FeedType.getFeedType(atts.getValue(SPConstants.STATE_TYPE));
             }
         }
 
@@ -198,8 +202,12 @@ public class GlobalState {
         public void endElement(String namespaceURI, String localName,
                 String rawName) throws SAXException {
             if (SPConstants.STATE.equals(localName)) {
-                if (lastCrawledWebID != null) {
-                    currentWeb = keyMap.get(lastCrawledWebID);
+                if (null != lastCrawledWebID) {
+                    lastCrawledWeb = currentWeb = keyMap.get(lastCrawledWebID);
+                }
+                if (null != lastCrawledListID && null != lastCrawledWeb) {
+                    lastCrawledList = lookupList(lastCrawledWebID, lastCrawledListID);
+					lastCrawledWeb.setLastCrawledList(lastCrawledWeb.lookupList(lastCrawledListID));
                 }
             } else if (SPConstants.LIST_STATE.equals(localName)) {
                 list = null;
@@ -214,10 +222,14 @@ public class GlobalState {
             if (null == list || null == currentNode) {
                 return;
             }
+			String chrs = new String(ch, start, end);
+			if (chrs.trim().length() == 0) {
+				return;
+			}
             if (Nodes.ALERTS_EXTRAID.equals(currentNode)
                     || Nodes.FOLDERS_EXTRAID.equals(currentNode)) {
                 list.getIDs().append(ch, start, end);
-            } else if (Nodes.ALERTS_EXTRAID.equals(currentNode)) {
+			} else if (Nodes.ATTACHMENTS_EXTRAID.equals(currentNode)) {
                 list.getAttchmnts().append(ch, start, end);
             }
         }
@@ -267,7 +279,7 @@ public class GlobalState {
      *            saved in the system preferences, so that environmental changes
      *            don't make us lose the file.)
      */
-    public GlobalState(final String inWorkDir, final String inFeedType) {
+	public GlobalState(final String inWorkDir, final FeedType inFeedType) {
         if (inWorkDir != null) {
             workDir = inWorkDir;
         }
@@ -550,36 +562,20 @@ public class GlobalState {
         return dateMap;
     }
 
-    /**
-     * @return the last crawled list ID
-     */
-    public String getLastCrawledListID() {
-        return lastCrawledListID;
+	public ListState getLastCrawledList() {
+		return lastCrawledList;
     }
 
-    /**
-     * @param inLastCrawledListState
-     */
-    public void setLastCrawledListID(final String inLastCrawledListState) {
-        lastCrawledListID = inLastCrawledListState;
+	public void setLastCrawledList(final ListState inLastCrawledListState) {
+		lastCrawledList = inLastCrawledListState;
     }
 
-    /**
-     * @return the last crawled web ID
-     */
-    public String getLastCrawledWebID() {
-        if ((lastCrawledWebID == null) || (lastCrawledWebID.trim().equals(""))) {
-            return null;
-        }
-
-        return lastCrawledWebID;
+	public WebState getLastCrawledWeb() {
+		return lastCrawledWeb;
     }
 
-    /**
-     * @param inLastCrawledWebID
-     */
-    public void setLastCrawledWebID(final String inLastCrawledWebID) {
-        lastCrawledWebID = inLastCrawledWebID;
+	public void setLastCrawledWeb(final WebState inLastCrawledWeb) {
+		lastCrawledWeb = inLastCrawledWeb;
     }
 
     /**
@@ -607,7 +603,7 @@ public class GlobalState {
     /**
      * @return the feedType
      */
-    public String getFeedType() {
+	public FeedType getFeedType() {
         return feedType;
     }
 
@@ -637,7 +633,7 @@ public class GlobalState {
 
         // Feed Type used
         atts.clear();
-        atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_ID, feedType);
+		atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_ID, feedType.toString());
         handler.startElement("", "", SPConstants.STATE_FEEDTYPE, atts);
         handler.endElement("", "", SPConstants.STATE_FEEDTYPE);
 
@@ -649,23 +645,27 @@ public class GlobalState {
         handler.endElement("", "", SPConstants.FULL_RECRAWL_FLAG);
 
         // LAST_CRAWLED_WEB_ID
-        atts.clear();
-        atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_IDREF, lastCrawledWebID);
-        handler.startElement("", "", SPConstants.LAST_CRAWLED_WEB_ID, atts);
-        handler.endElement("", "", SPConstants.LAST_CRAWLED_WEB_ID);
+		if (null != getLastCrawledWeb()) {
+			atts.clear();
+			atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_IDREF, getLastCrawledWeb().getPrimaryKey());
+			handler.startElement("", "", SPConstants.LAST_CRAWLED_WEB_ID, atts);
+			handler.endElement("", "", SPConstants.LAST_CRAWLED_WEB_ID);
+		}
 
         // LAST_CRAWLED_LIST_ID
-        atts.clear();
-        atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_IDREF, lastCrawledListID);
-        handler.startElement("", "", SPConstants.LAST_CRAWLED_LIST_ID, atts);
-        handler.endElement("", "", SPConstants.LAST_CRAWLED_LIST_ID);
+		if (null != lastCrawledList) {
+			atts.clear();
+			atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_IDREF, getLastCrawledList().getPrimaryKey());
+			handler.startElement("", "", SPConstants.LAST_CRAWLED_LIST_ID, atts);
+			handler.endElement("", "", SPConstants.LAST_CRAWLED_LIST_ID);
+		}
 
         // now dump the actual WebStates:
         if (null == dateMap) {
             LOGGER.log(Level.WARNING, "No WebStates found in the connector state.");
         } else {
             for (WebState web : dateMap) {
-                web.dumpStateToXML(handler);
+				web.dumpStateToXML(handler, feedType);
             }
         }
         handler.endElement("", "", SPConstants.STATE);
