@@ -62,6 +62,10 @@ public class SharepointClient {
     // reached before processing all the documents.
     private boolean doCrawl;
 
+	// This is mainly for test cases. It gives the count of liststates that are
+	// checked for any docs pending from previous crawl cycle
+	private int noOfVisitedListStates = 0;
+
     public SharepointClient(
             final SharepointClientContext inSharepointClientContext)
             throws SharepointException {
@@ -139,6 +143,8 @@ public class SharepointClient {
             return null;
         }
 
+		noOfVisitedListStates = 0;
+
         LOGGER.log(Level.INFO, "Traversing web [ " + webState.getWebUrl()
                 + " ] ");
         SPDocumentList resultSet = null;
@@ -159,6 +165,7 @@ public class SharepointClient {
                 LOGGER.log(Level.INFO, "Handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ");
                 resultsList = handleCrawlQueueForList(globalState, webState, list);
+				noOfVisitedListStates++;
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Problem in handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ", e);
@@ -189,6 +196,12 @@ public class SharepointClient {
                 break;
             }
         }
+
+		if (LOGGER.isLoggable(Level.CONFIG)) {
+			LOGGER.config("No. of listStates scanned from site : "
+					+ webState.getWebUrl() + " for current batch traversal : "
+					+ noOfVisitedListStates);
+		}
 
         return resultSet;
     }
@@ -916,4 +929,14 @@ public class SharepointClient {
         }
         return nextWeb;
     }
+
+	/**
+	 * Returns the no of visited list states to check for pending docs from
+	 * previous batch traversal for a given web state (site)
+	 * 
+	 * @return The no of visited list states
+	 */
+	public int getNoOfVisitedListStates() {
+		return noOfVisitedListStates;
+	}
 }
