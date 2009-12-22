@@ -931,7 +931,7 @@ public final class Util {
         if (docId == null) {
             return docId;
         }
-        if (SPConstants.FeedType.CONTENT_FEED.equals(feedType)) {
+		if (FeedType.CONTENT_FEED == feedType) {
             final String[] parts = docId.split(SPConstants.DOUBLEBACKSLASH
                     + SPConstants.DOC_TOKEN); // because | is a regexp character
             // and has to be delimited.

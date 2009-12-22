@@ -490,7 +490,7 @@ public class SPDocumentList implements DocumentList {
 
 
             // Update ExtraIDs
-			if (FeedType.CONTENT_FEED.equals(spDocument.getFeedType())) {
+			if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {
                 updateExtraIDs(listState, spDocument, currentID);
             }
         }

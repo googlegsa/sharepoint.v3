@@ -417,8 +417,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return new SPProperty(SpiConstants.PROPNAME_CONTENTURL,
                     new StringValue(getUrl()));
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
-			if (FeedType.CONTENT_FEED.equals(getFeedType())
-					&& ActionType.ADD.equals(getAction())) {
+			if (FeedType.CONTENT_FEED == getFeedType()
+                    && ActionType.ADD.equals(getAction())) {
                 if (null == content) {
                     String status = downloadContents();
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
@@ -430,8 +430,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         new BinaryValue(content));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_MIMETYPE)) {
-			if (FeedType.CONTENT_FEED.equals(getFeedType())
-					&& ActionType.ADD.equals(getAction())) {
+			if (FeedType.CONTENT_FEED == getFeedType()
+                    && ActionType.ADD.equals(getAction())) {
                 if (null == content) {
                     String status = downloadContents();
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
@@ -443,7 +443,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         new StringValue(content_type));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
-			if (!FeedType.CONTENT_FEED.equals(getFeedType())) {
+			if (FeedType.CONTENT_FEED != getFeedType()) {
                 return new SPProperty(SpiConstants.PROPNAME_SEARCHURL,
                         new StringValue(getUrl()));
             }
@@ -459,11 +459,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_LASTMODIFIED)) {
             return new SPProperty(SpiConstants.PROPNAME_LASTMODIFIED,
                     new DateValue(getLastMod()));
-		} else if (collator.equals(strPropertyName, SPConstants.LIST_GUID)) {
-			if (null != getParentList()) {
-				return new SPProperty(SPConstants.LIST_GUID, new StringValue(
-						getParentList().getPrimaryKey()));
-			}
+        } else if (collator.equals(strPropertyName, SPConstants.LIST_GUID)) {
+            if (null != getParentList()) {
+                return new SPProperty(SPConstants.LIST_GUID, new StringValue(
+                        getParentList().getPrimaryKey()));
+            }
         } else if (collator.equals(strPropertyName, SPConstants.SPAUTHOR)) {
             return new SPProperty(SPConstants.SPAUTHOR, new StringValue(
                     getAuthor()));
@@ -475,11 +475,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                     BooleanValue.makeBooleanValue(false));
         } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
             return new SPProperty(SpiConstants.PROPNAME_ISPUBLIC,
-					new StringValue(getAction().toString()));
+                    new StringValue(getAction().toString()));
         }
 
         else {
-			for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
+            for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
                 final Attribute attr = (Attribute) iter.next();
                 if (collator.equals(strPropertyName, attr.getName())) {
                     return new SPProperty(strPropertyName, new StringValue(

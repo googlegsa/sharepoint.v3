@@ -182,7 +182,7 @@ public class AlertsWS {
                     // Send only those alerts which are newly added.
                     final int idPos = knownAlerts.indexOf(docId);
                     if (idPos == -1) {
-						if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             docId = SPConstants.ALERT_SUFFIX_IN_DOCID
                                     + alertListState.getListURL()
                                     + SPConstants.DOC_TOKEN + docId;
@@ -202,7 +202,7 @@ public class AlertsWS {
 
                 // Create delete feed docs for all those alerts which have been
                 // deleted.
-				if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+				if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                     final Pattern pat = Pattern.compile("\\{.+\\}");
                     final Matcher match = pat.matcher(knownAlerts);
                     if (match.find()) {

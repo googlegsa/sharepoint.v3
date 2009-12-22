@@ -100,7 +100,7 @@ public class SharepointClient {
 			doc.setParentList(list);
 			doc.setParentWeb(web);
             // Update necessary information required for downloading contents.
-            if (FeedType.CONTENT_FEED.equals(doc.getFeedType())) {
+			if (FeedType.CONTENT_FEED == doc.getFeedType()) {
                 doc.setContentDwnldURL(doc.getUrl());
                 doc.setSharepointClientContext(sharepointClientContext);
             }
@@ -589,7 +589,7 @@ public class SharepointClient {
                         + listState.getListURL());
 
                 if (SPType.SP2007.equals(webState.getSharePointType())) {
-                    if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+					if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                         // In case of content feed, we need to keep track of
                         // folders and the items under that. This is reaquired
                         // for sending delete feeds for the documents when their
@@ -645,13 +645,13 @@ public class SharepointClient {
                  * a full crawl.
                  */
                 if (lastDoc != null) {
-                    if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())
+					if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()
                             && ActionType.DELETE.equals(lastDoc.getAction())) {
                         listState.setChangeToken(null);
                         listState.setCachedPrevChangeToken(null);
                         listState.setLastDocument(null);
                         listState.setCrawlQueue(null);
-                        if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             // In case of content feed, we need to keep track of
                             // folders and the items under that. This is
                             // reaquired for sending delete feeds for the
@@ -741,7 +741,7 @@ public class SharepointClient {
                 if (((listItems != null) && (listItems.size() > 0))
                         || (listState.isNewList())) {
                     String docId = listState.getPrimaryKey();
-                    if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+					if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                         docId = listState.getListURL() + SPConstants.DOC_TOKEN
                                 + docId;
                     }

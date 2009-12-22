@@ -1229,7 +1229,7 @@ public class ListState implements StatefulObject {
                 } else {
                     atts.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getChangeToken());
                 }
-				if (FeedType.CONTENT_FEED.equals(feedType)) {
+				if (FeedType.CONTENT_FEED == feedType) {
                     atts.addAttribute("", "", SPConstants.STATE_BIGGESTID, SPConstants.STATE_ATTR_CDATA, String.valueOf(getBiggestID()));
 
                     // We need to remember this so that duplicate delete feeds
@@ -1263,7 +1263,7 @@ public class ListState implements StatefulObject {
             }
         } else {
 			if (SPType.SP2007.equals(getParentWebState().getSharePointType())) {
-				if (FeedType.CONTENT_FEED.equals(feedType)) {
+				if (FeedType.CONTENT_FEED == feedType) {
                     if (canContainFolders() && getIDs() != null
                             && getIDs().length() != 0) {
                         atts.clear();
@@ -1291,7 +1291,7 @@ public class ListState implements StatefulObject {
 							&& getLastDocForWSRefresh().getFolderLevel().length() != 0) {
 						atts.addAttribute("", "", SPConstants.STATE_FOLDER_LEVEL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getFolderLevel());
                     }
-					if (FeedType.CONTENT_FEED.equals(feedType)) {
+					if (FeedType.CONTENT_FEED == feedType) {
 						atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getAction().toString());
                     }
                 }
@@ -1333,7 +1333,7 @@ public class ListState implements StatefulObject {
                         || (list.getChangeToken().length() == 0)) {
                     list.setCachedPrevChangeToken(atts.getValue(SPConstants.STATE_CACHED_CHANGETOKEN));
                 }
-				if (FeedType.CONTENT_FEED.equals(feedType)) {
+				if (FeedType.CONTENT_FEED == feedType) {
                     try {
                         list.setBiggestID(Integer.parseInt(atts.getValue(SPConstants.STATE_BIGGESTID)));
                     } catch (final Exception e) {

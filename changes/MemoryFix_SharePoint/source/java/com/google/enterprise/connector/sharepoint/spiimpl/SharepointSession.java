@@ -63,7 +63,7 @@ public class SharepointSession implements Session {
     public AuthenticationManager getAuthenticationManager()
             throws RepositoryException {
         LOGGER.info("getAuthenticationManager()");
-		if (FeedType.METADATA_URL_FEED.equals(sharepointClientContext.getFeedType())) {
+		if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
             return null;
         }
         return new SharepointAuthenticationManager(sharepointClientContext);
@@ -75,7 +75,7 @@ public class SharepointSession implements Session {
     public AuthorizationManager getAuthorizationManager()
             throws RepositoryException {
         LOGGER.info("getAuthorizationManager()");
-		if (FeedType.METADATA_URL_FEED.equals(sharepointClientContext.getFeedType())) {
+		if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
             return null;
         }
         return new SharepointAuthorizationManager(sharepointClientContext);

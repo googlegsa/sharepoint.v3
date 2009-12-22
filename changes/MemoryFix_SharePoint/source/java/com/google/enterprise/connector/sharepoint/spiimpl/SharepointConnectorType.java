@@ -580,7 +580,7 @@ public class SharepointConnectorType implements ConnectorType {
         }
         status = null;
 
-		if (FeedType.CONTENT_FEED.equals(feedType)) {
+		if (FeedType.CONTENT_FEED == feedType) {
             status = checkGSConnectivity(sharepointUrl);
             if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
                 ed.set(null, rb.getString(SPConstants.BULKAUTH_ERROR_CRAWL_URL)
@@ -625,7 +625,7 @@ public class SharepointConnectorType implements ConnectorType {
                 return false;
             }
 
-			if (FeedType.CONTENT_FEED.equals(feedType)) {
+			if (FeedType.CONTENT_FEED == feedType) {
                 status = checkGSConnectivity(mySiteUrl);
                 if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
                     ed.set(SPConstants.MYSITE_BASE_URL, rb.getString(SPConstants.BULKAUTH_ERROR_MYSITE_URL)

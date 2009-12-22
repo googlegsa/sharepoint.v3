@@ -113,7 +113,7 @@ public class WebState implements StatefulObject {
         spContext.setSiteURL(webUrl);
         final WebsWS websWS = new WebsWS(spContext);
         title = websWS.getWebTitle(webUrl, spType);
-        if (FeedType.CONTENT_FEED.equals(spContext.getFeedType())
+		if (FeedType.CONTENT_FEED == spContext.getFeedType()
                 && SPType.SP2003.equals(spType)) {
             LOGGER.warning("excluding "
                     + spURL
@@ -300,7 +300,7 @@ public class WebState implements StatefulObject {
                         continue;
                     }
 
-                    if (FeedType.CONTENT_FEED.equals(spContext.getFeedType())) {
+					if (FeedType.CONTENT_FEED == spContext.getFeedType()) {
                         // Need to send delete feeds for all the documents that
                         // were inside this list. Not required for alerts.
                         final List<SPDocument> deletedDocs = new ArrayList<SPDocument>();

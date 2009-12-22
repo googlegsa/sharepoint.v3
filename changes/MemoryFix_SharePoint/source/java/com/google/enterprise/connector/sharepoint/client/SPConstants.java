@@ -30,21 +30,24 @@ public class SPConstants {
 
     public static final String GLOBAL_ALIAS_IDENTIFIER = "^";
 
-	// TODO: Create similar enums for ListTypes and templates etc. This will
-	// help in easy reference to the relevant values as the list of constants
-	// grows.
+    // TODO: Create similar enums for ListTypes and templates etc. This will
+    // help in easy reference to the relevant values as the list of constants
+    // grows. In future, we may also create another class specifically for these
+    // enums.
     public static enum FeedType {
 		METADATA_URL_FEED("metadata-and-URL"), CONTENT_FEED("content");
-		private String feedType;
+        // For backward compatibility. Earlier connectors would be using
+        // "metadata-and-URL" & "content" literals
+        private String feedType;
 
         FeedType(String feedType) {
-			this.feedType = feedType;
-		}
+            this.feedType = feedType;
+        }
 
         public static FeedType getFeedType(String feedType) {
-            if ("metadata-and-URL".toString().equalsIgnoreCase(feedType)) {
+            if (METADATA_URL_FEED.toString().equalsIgnoreCase(feedType)) {
                 return METADATA_URL_FEED;
-            } else if ("content".toString().equalsIgnoreCase(feedType)) {
+            } else if (CONTENT_FEED.toString().equalsIgnoreCase(feedType)) {
                 return CONTENT_FEED;
             } else {
                 return null;
@@ -53,7 +56,7 @@ public class SPConstants {
 
         @Override
         public String toString() {
-			return feedType;
+            return feedType;
         }
     }
 

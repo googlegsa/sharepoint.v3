@@ -193,7 +193,7 @@ public class ListsWS {
 		// then all those which are still returned by the Web Service will be
 		// removed. This way, we'll be able to track the deleted attachments.
 		List<String> knownAttachments = null;
-		if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
 			knownAttachments = baseList.getAttachmntURLsFor(listItemId);
 		}
 
@@ -213,7 +213,7 @@ public class ListsWS {
                                     LOGGER.config("included URL [" + url + " ]");
 
                                     String modifiedID = listItemId;
-									if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+									if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                                         modifiedID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
                                                 + "["
                                                 + url
@@ -249,7 +249,7 @@ public class ListsWS {
                 + "] new/updated attachments for listItem [ "
                 + listItem.getUrl() + "]. ");
 
-		if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
 			// All the urls which have been left in knownAttachments are
 			// considered to be deleted.
 			for (String attchmnt_url : knownAttachments) {
@@ -782,7 +782,7 @@ public class ListsWS {
                             relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
                             String folderPath = null;
                             if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
-								if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+								if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                                     try {
                                         list.updateExtraIDs(relativeURL, docId, true);
                                     } catch (SharepointException se) {
@@ -1067,7 +1067,7 @@ public class ListsWS {
                 + list.getListURL() + "] for feed action=ADD");
 
         // Process deleted IDs
-		if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             try {
                 listItems.addAll(processDeletedItems(deletedIDs, list));
             } catch (Exception e) {
@@ -1311,7 +1311,7 @@ public class ListsWS {
                     }
                 }
                 if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
-					if (!FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+					if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
                         // Delete feed processing is done only in case of
                         // content feed
                         continue;
@@ -1445,7 +1445,7 @@ public class ListsWS {
 								+ list.getListURL() + " ]. ");
 					} else {
                         relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
-						if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             /*
                              * Since we have got an entry for this item, this
                              * item can never be considered as deleted.
@@ -1736,7 +1736,7 @@ public class ListsWS {
             calMod = list.getLastModCal();
         }
 
-		if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;
         }
         doc = new SPDocument(docId, url.toString(), calMod, author,
@@ -1786,7 +1786,7 @@ public class ListsWS {
             }
         }
 
-		if (FeedType.CONTENT_FEED.equals(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             try {
                 final int id = Integer.parseInt(Util.getOriginalDocId(docId, sharepointClientContext.getFeedType()));
                 if (id > list.getBiggestID()) {
