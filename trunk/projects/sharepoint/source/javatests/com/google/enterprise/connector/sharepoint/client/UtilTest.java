@@ -22,12 +22,18 @@ import junit.framework.TestCase;
 
 import org.joda.time.DateTime;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 public class UtilTest extends TestCase {
 
     protected void setUp() throws Exception {
         System.out.println("\n--------------");
+		FeedType fd = FeedType.getFeedType("CONTENT");
+		FeedType fd2 = FeedType.getFeedType("content");
+		System.out.println(fd.equals(fd2));
+		System.out.println(fd.toString());
+		System.out.println(fd.valueOf("CONTENT_FEED"));
     }
 
     public final void testListItemsStringToCalendar() {

@@ -34,6 +34,10 @@ import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryDocumentException;
@@ -60,10 +64,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     private String objType = SPConstants.NO_OBJTYPE;
     private String parentWebTitle = "No Title";
 
-    private String feedType;
-    private String spType;
+	private FeedType feedType;
+	private SPType spType;
 
-	// content of documents
+    // content of documents
 	private InputStream content = null;
     private String content_type = null;
 
@@ -71,8 +75,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 	private ActionType action = ActionType.ADD;
 
     private String folderLevel;
-    private String listguid;
-    private String webid;
+	private ListState parentList;
+	private WebState parentWeb;
 
     // Added for document content download
     private String contentDwnldURL;
@@ -112,20 +116,20 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         this.toBeFed = toBeFed;
     }
 
-    /**
-     * @return List GUID
-     */
-    public String getListGuid() {
-        return listguid;
+    public ListState getParentList() {
+		return parentList;
     }
 
-    /**
-     * @param newguid
-     */
-    public void setListGuid(final String newguid) {
-        if (newguid != null) {
-            listguid = newguid;
-        }
+    public void setParentList(final ListState list) {
+		parentList = list;
+	}
+
+    public WebState getParentWeb() {
+		return parentWeb;
+	}
+
+    public void setParentWeb(final WebState web) {
+		parentWeb = web;
     }
 
     /**
@@ -141,7 +145,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public SPDocument(final String inDocId, final String inUrl,
             final Calendar inLastMod, final String inAuthor,
             final String inObjType, final String inParentWebTitle,
-            final String inFeedType, final String inSpType) {
+			final FeedType inFeedType, final SPType inSpType) {
         docId = inDocId;
         url = inUrl;
         lastMod = inLastMod;
@@ -287,11 +291,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public boolean equals(final Object obj) {
         if (obj instanceof SPDocument) {
             final SPDocument doc = (SPDocument) obj;
-            if ((doc != null) && (docId != null) && (doc.docId != null)
-                    && (webid != null) && (listguid != null)
-                    && (doc.webid != null) && (doc.listguid != null)
-                    && webid.equals(doc.webid) && listguid.equals(doc.listguid)
-                    && docId.equals(doc.docId)) {
+			if (doc != null && docId != null && docId.equals(doc.getDocId())
+					&& url != null && (url.equals(doc.getUrl()))) {
                 return true;
             }
         }
@@ -317,11 +318,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return -1;
         }
 
-        if (SPConstants.SP2007.equalsIgnoreCase(spType)
-                && SPConstants.SP2003.equalsIgnoreCase(doc.spType)) {
+		if (SPType.SP2007.equals(getSPType())
+				&& SPType.SP2003 == doc.getSPType()) {
             return -1;
-        } else if (SPConstants.SP2007.equalsIgnoreCase(doc.spType)
-                && SPConstants.SP2003.equalsIgnoreCase(spType)) {
+		} else if (SPType.SP2007 == doc.getSPType()
+				&& SPType.SP2003 == getSPType()) {
             return 1;
         }
 
@@ -343,7 +344,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
         int comparison = 0;
 
-        if (SPConstants.SP2007.equalsIgnoreCase(spType)) {
+		if (SPType.SP2007.equals(getSPType())) {
             if ((folderLevel != null) || (doc.folderLevel != null)) {
                 if ((folderLevel != null) && (doc.folderLevel != null)
                         && (folderLevel.length() != 0)
@@ -416,8 +417,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return new SPProperty(SpiConstants.PROPNAME_CONTENTURL,
                     new StringValue(getUrl()));
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
-            if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)
-                    && ActionType.ADD.equals(action)) {
+			if (FeedType.CONTENT_FEED == getFeedType()
+                    && ActionType.ADD.equals(getAction())) {
                 if (null == content) {
                     String status = downloadContents();
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
@@ -429,8 +430,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         new BinaryValue(content));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_MIMETYPE)) {
-            if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)
-                    && ActionType.ADD.equals(action)) {
+			if (FeedType.CONTENT_FEED == getFeedType()
+                    && ActionType.ADD.equals(getAction())) {
                 if (null == content) {
                     String status = downloadContents();
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
@@ -442,7 +443,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         new StringValue(content_type));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
-            if (!SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+			if (FeedType.CONTENT_FEED != getFeedType()) {
                 return new SPProperty(SpiConstants.PROPNAME_SEARCHURL,
                         new StringValue(getUrl()));
             }
@@ -459,8 +460,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return new SPProperty(SpiConstants.PROPNAME_LASTMODIFIED,
                     new DateValue(getLastMod()));
         } else if (collator.equals(strPropertyName, SPConstants.LIST_GUID)) {
-            return new SPProperty(SPConstants.LIST_GUID, new StringValue(
-                    getListGuid()));
+            if (null != getParentList()) {
+                return new SPProperty(SPConstants.LIST_GUID, new StringValue(
+                        getParentList().getPrimaryKey()));
+            }
         } else if (collator.equals(strPropertyName, SPConstants.SPAUTHOR)) {
             return new SPProperty(SPConstants.SPAUTHOR, new StringValue(
                     getAuthor()));
@@ -472,11 +475,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                     BooleanValue.makeBooleanValue(false));
         } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
             return new SPProperty(SpiConstants.PROPNAME_ISPUBLIC,
-                    new StringValue(action.toString()));
+                    new StringValue(getAction().toString()));
         }
 
         else {
-			for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
+            for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
                 final Attribute attr = (Attribute) iter.next();
                 if (collator.equals(strPropertyName, attr.getName())) {
                     return new SPProperty(strPropertyName, new StringValue(
@@ -497,7 +500,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public Set<String> getPropertyNames() throws RepositoryException {
         final Set<String> s = new HashSet<String>();
         s.add(SPConstants.OBJECT_TYPE);
-        s.add(SPConstants.LIST_GUID);
+		s.add(SPConstants.LIST_GUID);
         s.add(SPConstants.SPAUTHOR);
         s.add(SPConstants.PARENT_WEB_TITLE);
 
@@ -646,7 +649,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * @return the feedType
      */
-    public String getFeedType() {
+	public FeedType getFeedType() {
         return feedType;
     }
 
@@ -681,22 +684,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * @return the spType
      */
-    public String getSharePointType() {
+	public SPType getSPType() {
         return spType;
-    }
-
-    /**
-     * @return the webid
-     */
-    public String getWebid() {
-        return webid;
-    }
-
-    /**
-     * @param webid the webid to set
-     */
-    public void setWebid(final String webid) {
-        this.webid = webid;
     }
 
     /**

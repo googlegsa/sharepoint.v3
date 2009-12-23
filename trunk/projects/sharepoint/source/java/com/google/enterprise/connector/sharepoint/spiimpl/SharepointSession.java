@@ -15,8 +15,9 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import java.util.logging.Logger;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
+
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -62,7 +63,7 @@ public class SharepointSession implements Session {
     public AuthenticationManager getAuthenticationManager()
             throws RepositoryException {
         LOGGER.info("getAuthenticationManager()");
-        if (SPConstants.METADATA_URL_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+		if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
             return null;
         }
         return new SharepointAuthenticationManager(sharepointClientContext);
@@ -74,7 +75,7 @@ public class SharepointSession implements Session {
     public AuthorizationManager getAuthorizationManager()
             throws RepositoryException {
         LOGGER.info("getAuthorizationManager()");
-        if (SPConstants.METADATA_URL_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+		if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
             return null;
         }
         return new SharepointAuthorizationManager(sharepointClientContext);

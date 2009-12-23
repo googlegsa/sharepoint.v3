@@ -15,12 +15,6 @@ package com.google.enterprise.connector.sharepoint.state;
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-import org.joda.time.DateTime;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 /**
  * StatefulObject is an interface which is implemented by any object which
@@ -36,10 +30,6 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
  */
 public interface StatefulObject extends Comparable<StatefulObject> {
 
-    Node dumpToDOM(Document doc) throws SharepointException;
-
-    void loadFromDOM(Element element) throws SharepointException;
-
     /**
      * Getter for the primary key.
      *
@@ -53,17 +43,6 @@ public interface StatefulObject extends Comparable<StatefulObject> {
      * @param newKey
      */
     void setPrimaryKey(String newKey);
-
-    DateTime getLastMod();
-
-    /**
-     * Get lastMod in string form.
-     *
-     * @return string version of lastMod
-     */
-    String getLastModString();
-
-    void setLastMod(DateTime lastMod);
 
     /**
      * Get the "existing" state. This is intended for use in traversal, to be

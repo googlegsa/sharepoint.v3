@@ -20,8 +20,8 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
@@ -48,7 +48,7 @@ public class SPDocumentListTest extends TestCase {
 
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
-                SPConstants.CONTENT_FEED);
+ FeedType.CONTENT_FEED);
         WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
 
         final SiteDataWS siteDataWS = new SiteDataWS(
@@ -62,8 +62,8 @@ public class SPDocumentListTest extends TestCase {
             if (listItems.size() > 0) {
                 for (Iterator itr = listItems.iterator(); itr.hasNext();) {
                     SPDocument spdoc = (SPDocument) itr.next();
-                    spdoc.setWebid(ws.getPrimaryKey());
-                    spdoc.setListGuid(baseList.getPrimaryKey());
+					spdoc.setParentWeb(ws);
+					spdoc.setParentList(baseList);
                 }
                 System.out.println("Using " + baseList.getListURL()
                         + " as test list...");

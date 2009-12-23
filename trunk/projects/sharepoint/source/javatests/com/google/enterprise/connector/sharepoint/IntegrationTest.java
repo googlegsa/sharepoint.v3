@@ -24,6 +24,7 @@ import com.google.enterprise.connector.persist.ConnectorStateStore;
 import com.google.enterprise.connector.persist.MockConnectorStateStore;
 import com.google.enterprise.connector.persist.StoreContext;
 import com.google.enterprise.connector.pusher.MockPusher;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointTraversalManager;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -50,7 +51,7 @@ public class IntegrationTest extends TestCase {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+				FeedType.METADATA_URL_FEED.toString());
         this.connector.setIncluded_metadata(TestConfiguration.whiteList);
         this.connector.setExcluded_metadata(TestConfiguration.blackList);
         this.connector.setFQDNConversion(true);

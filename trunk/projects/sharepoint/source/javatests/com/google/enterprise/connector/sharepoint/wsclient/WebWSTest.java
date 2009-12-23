@@ -19,8 +19,8 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 
 /**
  * Test the functionality of webs web service.
@@ -73,7 +73,7 @@ public class WebWSTest extends TestCase {
 
     public final void testGetWebTitle() throws Throwable {
         System.out.println("Testing getWebTitle()...");
-        final String siteURL = this.websWS.getWebTitle(TestConfiguration.sharepointUrl, SPConstants.SP2007);
+		final String siteURL = this.websWS.getWebTitle(TestConfiguration.sharepointUrl, SPType.SP2007);
         assertNotNull(siteURL);
         System.out.println("[ getWebTitle() ] Test Passed");
     }

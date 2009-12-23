@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -27,7 +28,11 @@ import java.util.Random;
 import org.joda.time.DateTime;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
@@ -66,7 +71,7 @@ public class TestConfiguration {
     public static ArrayList<String> blackList = new ArrayList<String>();
     public static ArrayList<String> whiteList = new ArrayList<String>();
     public static boolean FQDNflag;
-    public static String feedType;
+    public static FeedType feedType;
 
     static {
         final Properties properties = new Properties();
@@ -122,7 +127,7 @@ public class TestConfiguration {
          * whiteList.add(".*vti_author$");
          */
         FQDNflag = false;
-        feedType = "metadata-and-url";
+        feedType = FeedType.METADATA_URL_FEED;
     }
 
     public static Map<String, String> getConfigMap() {
@@ -151,10 +156,12 @@ public class TestConfiguration {
      * @param webId The web state id
      * @return instance of {@link ListState}
      */
-    public static ListState getListState(String url, int dayOfMonth, int docId,
-            String primaryKey, String webId) {
-        ListState ls = new ListState(SPConstants.SP2007,
-                SPConstants.METADATA_URL_FEED);
+	public static ListState getListState(String url, int dayOfMonth, int docId,
+			String primaryKey, WebState webState) throws SharepointException {
+		DateTime dt = new DateTime(2009, 9, dayOfMonth, 11, 26, 38, 100);
+        ListState ls = new ListState(primaryKey, "inTitle",
+                SPConstants.GENERIC_LIST, dt.toCalendar(Locale.ENGLISH), "",
+				url, webState);
 
         ls.setPrimaryKey(primaryKey);
         ls.setType(SPConstants.GENERIC_LIST);
@@ -163,10 +170,10 @@ public class TestConfiguration {
         ls.setLastDocument(doc);
         ls.setChangeToken("1;3;d0266ee5-8769-44df-8fb4-31b998f9f006;633857711707900000;10405618");
         ls.setUrl(url);
-        DateTime dt = new DateTime(2009, 9, dayOfMonth, 11, 26, 38, 100);
+
         ls.setLastMod(dt);
 
-        ls.setCrawlQueue(getDocuments(webId, ls.getPrimaryKey()));
+		ls.setCrawlQueue(getDocuments(webState, ls));
 
         return ls;
     }
@@ -178,36 +185,38 @@ public class TestConfiguration {
      *            marked as last crawled list
      * @return instance of {@link WebState}
      */
-    public static WebState createWebState(int indexOfLastCrawledList) {
-        WebState ws = new WebState(SPConstants.METADATA_URL_FEED);
+	public static WebState createWebState(GlobalState globalState,
+			SharepointClientContext spContext, String url,
+			int indexOfLastCrawledList) throws SharepointException {
+        WebState ws = globalState.makeWebState(spContext, url);
         ws.setPrimaryKey("http://testcase.com:22819/sites/testissue85");
         DateTime dt = new DateTime();
         ws.setInsertionTime(dt);
-        ListState ls = getListState("http://testcase.com:22819/tempSite/Lists/Announcements/AllItems.aspx", 10, 156790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1E4A}", ws.getPrimaryKey());
-        ListState ls2 = getListState("http://testcase.com:22819/tempSite2/Lists/Announcements/AllItems.aspx", 11, 122790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1G4A}", ws.getPrimaryKey());
-        ListState ls3 = getListState("http://testcase.com/tempSite2/Lists/Announcements/AllItems.aspx", 12, 157790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1T4A}", ws.getPrimaryKey());
-        ListState ls4 = getListState("http://testcase.com/tempSite4/Lists/Announcements/AllItems.aspx", 22, 158790, "{872819FC-6FA7-42AF-A71F-DCF7B8RT1T4A}", ws.getPrimaryKey());
+        ListState ls = getListState("http://testcase.com:22819/tempSite/Lists/Announcements/AllItems.aspx", 10, 156790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1E4A}", ws);
+        ListState ls2 = getListState("http://testcase.com:22819/tempSite2/Lists/Announcements/AllItems.aspx", 11, 122790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1G4A}", ws);
+		ListState ls3 = getListState("http://testcase.com/tempSite2/Lists/Announcements/AllItems.aspx", 12, 157790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1T4A}", ws);
+        ListState ls4 = getListState("http://testcase.com/tempSite4/Lists/Announcements/AllItems.aspx", 22, 158790, "{872819FC-6FA7-42AF-A71F-DCF7B8RT1T4A}", ws);
 
-		ws.AddOrUpdateListStateInWebState(ls, ls.getLastMod());
-		ws.AddOrUpdateListStateInWebState(ls2, ls2.getLastMod());
-		ws.AddOrUpdateListStateInWebState(ls3, ls3.getLastMod());
-		ws.AddOrUpdateListStateInWebState(ls4, ls4.getLastMod());
+        ws.AddOrUpdateListStateInWebState(ls, ls.getLastMod());
+        ws.AddOrUpdateListStateInWebState(ls2, ls2.getLastMod());
+        ws.AddOrUpdateListStateInWebState(ls3, ls3.getLastMod());
+        ws.AddOrUpdateListStateInWebState(ls4, ls4.getLastMod());
 
         switch (indexOfLastCrawledList) {
         case 1:
-            ws.setLastCrawledListID(ls.getPrimaryKey());
+			ws.setLastCrawledList(ls);
             ws.setCurrentList(ls);
             break;
         case 2:
-            ws.setLastCrawledListID(ls2.getPrimaryKey());
+			ws.setLastCrawledList(ls2);
             ws.setCurrentList(ls2);
             break;
         case 3:
-            ws.setLastCrawledListID(ls3.getPrimaryKey());
+			ws.setLastCrawledList(ls3);
             ws.setCurrentList(ls3);
             break;
         case 4:
-            ws.setLastCrawledListID(ls4.getPrimaryKey());
+			ws.setLastCrawledList(ls4);
             ws.setCurrentList(ls4);
             break;
         }
@@ -217,6 +226,26 @@ public class TestConfiguration {
         return ws;
     }
 
+	public static GlobalState initState() {
+		return new GlobalState(googleConnectorWorkDir, feedType);
+    }
+
+	public static SharepointClientContext initContext()
+			throws SharepointException {
+        final SharepointClientContext sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.kdcserver, TestConfiguration.username,
+                TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+
+        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+        return sharepointClientContext;
+    }
+
     /**
      * Returns a list of documents with the given webId and listId
      *
@@ -224,7 +253,7 @@ public class TestConfiguration {
      * @param listId The list-id
      * @return The list of documents
      */
-    public static List<SPDocument> getDocuments(String webId, String listId) {
+	public static List<SPDocument> getDocuments(WebState web, ListState list) {
         List<SPDocument> listOfDocs = new ArrayList<SPDocument>();
 
         Random r = new Random();
@@ -233,15 +262,15 @@ public class TestConfiguration {
 
             Integer docId = r.nextInt(200000);
             SPDocument doc = null;
-            if (1 % 3 == 0) {
+			if (i % 3 == 0) {
                 doc = new SPDocument(docId.toString(), Calendar.getInstance(),
                         null, ActionType.DELETE);
             } else {
                 doc = new SPDocument(docId.toString(), Calendar.getInstance(),
                         null, ActionType.ADD);
             }
-            doc.setWebid(webId);
-            doc.setListGuid(listId);
+			doc.setParentWeb(web);
+			doc.setParentList(list);
 
             listOfDocs.add(doc);
         }

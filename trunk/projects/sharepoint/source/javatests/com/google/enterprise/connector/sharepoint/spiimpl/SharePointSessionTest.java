@@ -14,16 +14,14 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import junit.framework.TestCase;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointSession;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalManager;
-
-import junit.framework.TestCase;
 
 public class SharePointSessionTest extends TestCase {
 
@@ -45,13 +43,7 @@ public class SharePointSessionTest extends TestCase {
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
         System.out.println("Initializing SharepointConnector ...");
-        final SharepointConnector connector = new SharepointConnector(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+		final SharepointConnector connector = new SharepointConnector();
         connector.setFQDNConversion(TestConfiguration.FQDNflag);
         System.out.println("Initializing SharepointSession ...");
         this.session = new SharepointSession(connector,

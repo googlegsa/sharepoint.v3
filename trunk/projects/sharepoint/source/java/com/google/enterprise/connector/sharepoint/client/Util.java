@@ -49,6 +49,7 @@ import org.joda.time.convert.InstantConverter;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnectorType;
 import com.google.enterprise.connector.spi.RepositoryException;
 
@@ -925,13 +926,12 @@ public final class Util {
      * @param docId
      * @param feedType
      */
-    public static String getOriginalDocId(final String docId,
-            final String feedType) {
+	public static String getOriginalDocId(final String docId, FeedType feedType) {
         String originalDocId = docId;
         if (docId == null) {
             return docId;
         }
-        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+		if (FeedType.CONTENT_FEED == feedType) {
             final String[] parts = docId.split(SPConstants.DOUBLEBACKSLASH
                     + SPConstants.DOC_TOKEN); // because | is a regexp character
             // and has to be delimited.
@@ -1147,15 +1147,16 @@ public final class Util {
     }
 
     public static boolean isFQDN(String serverName){
-    	if(serverName.indexOf(SPConstants.PERIOD) == -1 || serverName.lastIndexOf(SPConstants.PERIOD) == serverName.length()-1){
-    		return false;
-    	} else {
-    		try {
-    			InetAddress.getByName(serverName);
-    		} catch (UnknownHostException e) {
-    			return false;
-    		}
-    	}
-    	return true;
+        if (serverName.indexOf(SPConstants.PERIOD) == -1
+                || serverName.lastIndexOf(SPConstants.PERIOD) == serverName.length() - 1) {
+            return false;
+        } else {
+            try {
+                InetAddress.getByName(serverName);
+            } catch (UnknownHostException e) {
+                return false;
+            }
+        }
+        return true;
     }
 }

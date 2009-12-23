@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -22,18 +23,17 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import junit.framework.TestCase;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.xml.sax.ContentHandler;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
@@ -45,21 +45,10 @@ public class ListStateTest extends TestCase {
     public void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        final SharepointClientContext sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
-
-        assertNotNull(sharepointClientContext);
-
-        System.out.println("Creating test List ...");
-        final SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
-
-        final List listCollection = siteDataWS.getNamedLists(new WebState(
-                sharepointClientContext, TestConfiguration.sharepointUrl));
+		SharepointClientContext spContext = TestConfiguration.initContext();
+		final SiteDataWS siteDataWS = new SiteDataWS(spContext);
+		WebState ws = TestConfiguration.createWebState(TestConfiguration.initState(), spContext, TestConfiguration.sharepointUrl, 1);
+		final List<ListState> listCollection = siteDataWS.getNamedLists(ws);
 
         assertNotNull(listCollection);
         for (int i = 0; i < listCollection.size(); i++) {
@@ -72,24 +61,22 @@ public class ListStateTest extends TestCase {
         final SPDocument doc1 = new SPDocument("1",
                 "http://www.host.mycomp.com/test1", new GregorianCalendar(2007,
                         1, 1), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-                SPConstants.PARENT_WEB_TITLE, SPConstants.CONTENT_FEED,
-                SPConstants.SP2007);
+				SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
+				SPType.SP2007);
         final SPDocument doc2 = new SPDocument("2",
                 "http://www.host.mycomp.com/test2", new GregorianCalendar(2007,
                         1, 2), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-                SPConstants.PARENT_WEB_TITLE, SPConstants.CONTENT_FEED,
-                SPConstants.SP2007);
+				SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
+				SPType.SP2007);
         final SPDocument doc3 = new SPDocument("3",
                 "http://www.host.mycomp.com/test3", new GregorianCalendar(2007,
                         1, 3), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-                SPConstants.PARENT_WEB_TITLE, SPConstants.CONTENT_FEED,
-                SPConstants.SP2007);
+				SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
+				SPType.SP2007);
 
         // final DateTime time = Util.parseDate("20080702T140516.411+0000");
 
-        // testList =new ListState("{001-002-003}", time);
-        this.testList = new ListState(SPConstants.SP2007,
-                SPConstants.CONTENT_FEED);
+		this.testList = TestConfiguration.getListState("http://", 1, 1, "", ws);
         this.testList.setType(SPConstants.GENERIC_LIST);
 
         final ArrayList<SPDocument> crawlQueueList1 = new ArrayList<SPDocument>();
@@ -107,12 +94,11 @@ public class ListStateTest extends TestCase {
         System.out.println();
     }
 
-    public void testCompareTo() {
+	public void testCompareTo() throws SharepointException {
         System.out.println("Testing compareTo()...");
         System.out.println("Creating temporary listState to compare");
         // DateTime time = Util.parseDate("20080702T140520.411+0000");
-        final ListState lst1 = new ListState(SPConstants.SP2007,
-                SPConstants.CONTENT_FEED);
+		final ListState lst1 = new ListState("", "", "", null, "", "", null);
         lst1.setLastMod(this.testList.getLastMod());
         final int i = this.testList.compareTo(lst1);
         assertEquals(i, 0);
@@ -126,34 +112,21 @@ public class ListStateTest extends TestCase {
         System.out.println("[ getDateForWSRefresh() ] Test Completed.");
     }
 
-    public void testDOCToDOMToDOC() {
-        System.out.println("Testing Basic conversion from DOM to DOC and Vice Versa ...");
-        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        org.w3c.dom.Document doc = null;
-        Node node = null;
-        try {
-            final DocumentBuilder builder = factory.newDocumentBuilder();
-            doc = builder.newDocument();
-            node = this.testList.dumpToDOM(doc);
-            assertNotNull(node);
-        } catch (final ParserConfigurationException e) {
-            System.out.println("Unable to get state XML");
-            return;
-        } catch (final SharepointException spe) {
-            System.out.println("[ dumpToDOM() ] Test Failed.");
-            return;
-        }
+	public void testDOCToDOMToDOC() throws Exception {
+        GlobalState gs1 = TestConfiguration.initState();
+        FileOutputStream fos = new FileOutputStream(
+                TestConfiguration.googleConnectorWorkDir);
+        OutputFormat of = new OutputFormat("XML", "UTF-8", true);
+        of.setLineWidth(500);
+        of.setIndent(2);
+        XMLSerializer serializer = new XMLSerializer(fos, of);
+        ContentHandler handler = serializer.asContentHandler();
+        TestConfiguration.initState().dumpStateToXML(handler);
+        fos.close();
 
-        final ListState tempList = new ListState(SPConstants.SP2007,
-                SPConstants.CONTENT_FEED);
-        try {
-            tempList.loadFromDOM((Element) node);
-            final int i = this.testList.compareTo(tempList);
-            assertEquals(i, 0);
-            System.out.println("[ Basic conversion from DOM to DOC and Vice Versa ] Test Passed.");
-        } catch (final SharepointException spe) {
-            System.out.println("[ loadFromDOM() ] Test Failed.");
-        }
+		GlobalState gs2 = TestConfiguration.initState();
+		gs2.loadState();
+		assertEquals(gs1.getAllWebStateSet(), gs2.getAllWebStateSet());
     }
 
     public void testCachedDeletedID() {
@@ -164,10 +137,9 @@ public class ListStateTest extends TestCase {
         System.out.println("[ cachedDeletedIDs() ] Test Completed.");
     }
 
-    public void testExtraIDs() {
+	public void testExtraIDs() throws SharepointException {
         System.out.println("Testing ExtraIDs handling...");
-        final ListState state = new ListState(SPConstants.SP2007,
-                SPConstants.CONTENT_FEED);
+		final ListState state = new ListState("", "", "", null, "", "", null);
         state.setType(SPConstants.DOC_LIB);
         state.setUrl("http://host.mycom.co.in:25000/sanity/Test Library/Forms/AllItems.aspx");
         state.setListConst("sanity/Test Library/");

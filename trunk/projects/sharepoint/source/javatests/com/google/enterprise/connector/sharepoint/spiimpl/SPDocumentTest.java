@@ -24,9 +24,9 @@ import junit.framework.TestCase;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.GetMethod;
 
-import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.spi.Property;
 import com.sun.jndi.toolkit.url.UrlUtil;
 
@@ -39,8 +39,8 @@ public class SPDocumentTest extends TestCase {
         final String docURL = "http://myHost.myDomain:port/path/";
         this.doc = new SPDocument("docID", docURL, Calendar.getInstance(),
                 SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-                SPConstants.PARENT_WEB_TITLE, SPConstants.CONTENT_FEED,
-                SPConstants.SP2007);
+				SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
+				SPType.SP2007);
         try {
             String str = UrlUtil.encode(docURL, "UTF-8");
             String charset = new GetMethod(str).getParams().getUriCharset();
@@ -56,11 +56,11 @@ public class SPDocumentTest extends TestCase {
         final SPDocument tmpdoc1 = new SPDocument("1", "HTTP://MYCOMP.COM",
                 Calendar.getInstance(), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-                SPConstants.CONTENT_FEED, SPConstants.SP2007);
+				FeedType.CONTENT_FEED, SPType.SP2007);
         final SPDocument tmpdoc2 = new SPDocument("2", "HTTP://MYCOMP.COM",
                 Calendar.getInstance(), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-                SPConstants.CONTENT_FEED, SPConstants.SP2007);
+				FeedType.CONTENT_FEED, SPType.SP2007);
         final List<SPDocument> testSet = new ArrayList<SPDocument>();
         testSet.add(tmpdoc1);
         testSet.add(tmpdoc2);

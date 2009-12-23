@@ -62,22 +62,11 @@ public class AlertsWSTest extends TestCase {
         final String internalName = this.sharepointClientContext.getSiteURL();
         final Calendar cLastMod = Calendar.getInstance();
         cLastMod.setTime(new Date());
-        final ListState currentDummyAlertList = new ListState(
-                internalName,
-                SPConstants.ALERTS_TYPE,
-                SPConstants.ALERTS_TYPE,
-                cLastMod,
-                SPConstants.ALERTS_TYPE,
-                internalName,
-                TestConfiguration.ParentWebURL,
-                TestConfiguration.ParentWebTitle,
-                this.sharepointClientContext.checkSharePointType(TestConfiguration.sharepointUrl),
-                this.sharepointClientContext.getFeedType());
-
-        final GlobalState state = new GlobalState(
-                TestConfiguration.googleConnectorWorkDir,
-                SPConstants.CONTENT_FEED);
-        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
+		final GlobalState state = TestConfiguration.initState();
+		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
+		final ListState currentDummyAlertList = new ListState(internalName,
+				SPConstants.ALERTS_TYPE, SPConstants.ALERTS_TYPE, cLastMod,
+				SPConstants.ALERTS_TYPE, internalName, ws);
 
         final ArrayList lstAlerts = (ArrayList) this.alertWS.getAlerts(ws, currentDummyAlertList);
         assertNotNull(lstAlerts);

@@ -45,6 +45,8 @@ import com.google.enterprise.connector.common.StringUtils;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
@@ -76,7 +78,7 @@ public class SharepointConnectorType implements ConnectorType {
     // Create dummy context for doing validations.
     private SharepointClientContext sharepointClientContext = null;
 
-    private List keys = null;
+    private List<String> keys = null;
     private final HashMap<Object, String> configStrings = new HashMap<Object, String>();
     private String initialConfigForm = null;
 
@@ -89,7 +91,7 @@ public class SharepointConnectorType implements ConnectorType {
      *
      * @param inKeys A list of String keys
      */
-    public void setConfigKeys(final List inKeys) {
+    public void setConfigKeys(final List<String> inKeys) {
         if (keys != null) {
             throw new IllegalStateException();
         }
@@ -137,11 +139,11 @@ public class SharepointConnectorType implements ConnectorType {
      * @param configMap The configuration keys and their values
      * @param ed Contains the validation error, if any
      */
-    private String makeConfigForm(final Map configMap, final ErrorDignostics ed) {
+    private String makeConfigForm(final Map<String, String> configMap,
+            final ErrorDignostics ed) {
         final StringBuffer buf = new StringBuffer();
         if (keys != null) {
-            for (final Iterator itr = keys.iterator(); itr.hasNext();) {
-                final String key = (String) itr.next();
+            for (String key : keys) {
                 final String configKey = (String) configStrings.get(key);
 
                 if ((ed == null) || !key.equals(ed.error_key)) {
@@ -160,12 +162,12 @@ public class SharepointConnectorType implements ConnectorType {
                         if (aliasMap == null) {
                             appendRowForAliasMapping(buf, SPConstants.BLANK_STRING, SPConstants.BLANK_STRING, false);
                         } else {
-                            final Set aliasValues = aliasMap.keySet();
+                            final Set<String> aliasValues = aliasMap.keySet();
                             int i = 0;
-                            for (final Iterator aliasItr = aliasValues.iterator(); aliasItr.hasNext();) {
-                                final String alias_source_pattern = (String) aliasItr.next();
+                            for (final Iterator<String> aliasItr = aliasValues.iterator(); aliasItr.hasNext();) {
+                                final String alias_source_pattern = aliasItr.next();
                                 String alias_host_port = "";
-                                final ArrayList aliases = (ArrayList) aliasMap.get(alias_source_pattern);
+                                final ArrayList<String> aliases = aliasMap.get(alias_source_pattern);
                                 if (aliases.size() == 0) {
                                     if (i % 2 == 0) {
                                         appendRowForAliasMapping(buf, SPConstants.BLANK_STRING, SPConstants.BLANK_STRING, false);
@@ -175,8 +177,8 @@ public class SharepointConnectorType implements ConnectorType {
                                     ++i;
                                 } else {
                                     try {
-                                        for (final Iterator it = aliases.iterator(); it.hasNext();) {
-                                            alias_host_port = (String) it.next();
+                                        for (final Iterator<String> it = aliases.iterator(); it.hasNext();) {
+                                            alias_host_port = it.next();
                                             if (it.hasNext()
                                                     || aliasItr.hasNext()) {
                                                 if (i % 2 == 0) {
@@ -231,10 +233,10 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
-                    appendAttribute(buf, SPConstants.VALUE, SPConstants.METADATA_URL_FEED);
+                    appendAttribute(buf, SPConstants.VALUE, FeedType.METADATA_URL_FEED.toString());
                     appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.HELP_AUTHZ_BY_GSA));
                     if ((value.length() == 0)
-                            || value.equalsIgnoreCase(SPConstants.METADATA_URL_FEED)) {
+                            || value.equalsIgnoreCase(FeedType.METADATA_URL_FEED.toString())) {
                         appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
@@ -245,9 +247,9 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
-                    appendAttribute(buf, SPConstants.VALUE, SPConstants.CONTENT_FEED);
+                    appendAttribute(buf, SPConstants.VALUE, FeedType.CONTENT_FEED.toString());
                     appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.HELP_AUTHZ_BY_CONNECTOR));
-                    if (value.equalsIgnoreCase(SPConstants.CONTENT_FEED)) {
+                    if (value.equalsIgnoreCase(FeedType.CONTENT_FEED.toString())) {
                         appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
@@ -281,15 +283,7 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.VALUE, value);
-                    if (collator.equals(key, SPConstants.SHAREPOINT_URL) /*
-                                                                         * ||
-                                                                         * collator
-                                                                         * .
-                                                                         * equals
-                                                                         * (key,
-                                                                         * DOMAIN
-                                                                         * )
-                                                                         */
+                    if (collator.equals(key, SPConstants.SHAREPOINT_URL)
                             || collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
                         appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
                     }
@@ -482,23 +476,23 @@ public class SharepointConnectorType implements ConnectorType {
      * Validates the values filled-in by the user at the connector's
      * configuration page.
      */
-    private boolean validateConfigMap(final Map configData,
+    private boolean validateConfigMap(final Map<String, String> configData,
             final ErrorDignostics ed) {
         if (configData == null) {
             LOGGER.warning("configData map is not found");
             return false;
         }
 
-        String feedType = null;
+        FeedType feedType = null;
         String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
 
         if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
             kerberosSetUp(configData);
-		} else {
-			unregisterKerberosSetUp(configData);
+        } else {
+            unregisterKerberosSetUp(configData);
         }
 
-        for (final Iterator i = keys.iterator(); i.hasNext();) {
+        for (final Iterator<String> i = keys.iterator(); i.hasNext();) {
             final String key = (String) i.next();
             final String val = (String) configData.get(key);
 
@@ -518,7 +512,7 @@ public class SharepointConnectorType implements ConnectorType {
                         return false;
                     }
                 } else if (collator.equals(key, SPConstants.INCLUDED_URLS)) {
-                    final Set invalidSet = validatePatterns(val);
+                    final Set<String> invalidSet = validatePatterns(val);
                     if (invalidSet != null) {
                         ed.set(SPConstants.INCLUDED_URLS, rb.getString(SPConstants.INVALID_INCLUDE_PATTERN)
                                 + invalidSet.toString());
@@ -535,14 +529,14 @@ public class SharepointConnectorType implements ConnectorType {
                     return false;
                 }
             } else if (collator.equals(key, SPConstants.EXCLUDED_URLS)) {
-                final Set invalidSet = validatePatterns(val);
+                final Set<String> invalidSet = validatePatterns(val);
                 if (invalidSet != null) {
                     ed.set(SPConstants.EXCLUDED_URLS, rb.getString(SPConstants.INVALID_EXCLUDE_PATTERN)
                             + invalidSet.toString());
                     return false;
                 }
             } else if (collator.equals(key, SPConstants.AUTHORIZATION)) {
-                feedType = val;
+                feedType = FeedType.getFeedType(val);
             } else if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)
                     && collator.equals(key, SPConstants.KDC_SERVER)) {
                 boolean isFQDN = false;
@@ -586,7 +580,7 @@ public class SharepointConnectorType implements ConnectorType {
         }
         status = null;
 
-        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+        if (FeedType.CONTENT_FEED == feedType) {
             status = checkGSConnectivity(sharepointUrl);
             if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
                 ed.set(null, rb.getString(SPConstants.BULKAUTH_ERROR_CRAWL_URL)
@@ -604,8 +598,8 @@ public class SharepointConnectorType implements ConnectorType {
         }
         status = null;
 
-        final String SPVersion = sharepointClientContext.checkSharePointType(sharepointUrl);
-        if (SPConstants.SP2007.equals(SPVersion) && (mySiteUrl != null)
+        final SPType SPVersion = sharepointClientContext.checkSharePointType(sharepointUrl);
+        if (SPType.SP2007 == SPVersion && mySiteUrl != null
                 && !mySiteUrl.equals(SPConstants.BLANK_STRING)) {
             if (!isURL(mySiteUrl)) {
                 ed.set(SPConstants.MYSITE_BASE_URL, rb.getString(SPConstants.MALFORMED_MYSITE_URL));
@@ -631,7 +625,7 @@ public class SharepointConnectorType implements ConnectorType {
                 return false;
             }
 
-            if (SPConstants.CONTENT_FEED.equalsIgnoreCase(feedType)) {
+            if (FeedType.CONTENT_FEED == feedType) {
                 status = checkGSConnectivity(mySiteUrl);
                 if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
                     ed.set(SPConstants.MYSITE_BASE_URL, rb.getString(SPConstants.BULKAUTH_ERROR_MYSITE_URL)
@@ -647,7 +641,8 @@ public class SharepointConnectorType implements ConnectorType {
      * Used while re-displaying the connector configuration page after any
      * validation error occurs.
      */
-    private ConfigureResponse makeValidatedForm(final Map configMap,
+    private ConfigureResponse makeValidatedForm(
+            final Map<String, String> configMap,
             final ErrorDignostics ed) {
         final String sFunName = className
                 + ".makeValidatedForm(final Map configMap, ErrorDignostics ed)";
@@ -685,7 +680,8 @@ public class SharepointConnectorType implements ConnectorType {
      * Called by connector-manager to display the connector configuration page
      * with filled in values.
      */
-    public ConfigureResponse getPopulatedConfigForm(final Map configMap,
+    public ConfigureResponse getPopulatedConfigForm(
+            final Map<String, String> configMap,
             final Locale locale) {
         LOGGER.config("Locale " + locale);
 
@@ -703,12 +699,14 @@ public class SharepointConnectorType implements ConnectorType {
      * values.
      */
     // due to GCM changes
-    public ConfigureResponse validateConfig(final Map configData,
+    public ConfigureResponse validateConfig(
+            final Map<String, String> configData,
             final Locale locale, final ConnectorFactory arg2) {
         return this.validateConfig(configData, locale);
     }
 
-    public ConfigureResponse validateConfig(final Map configData,
+    public ConfigureResponse validateConfig(
+            final Map<String, String> configData,
             final Locale locale) {
         LOGGER.config("Locale " + locale);
 
@@ -900,7 +898,7 @@ public class SharepointConnectorType implements ConnectorType {
      * @param patterns The pattern to be validated
      * @return the set of wrong patterns, if any. Otherwise returns null
      */
-    private Set validatePatterns(final String patterns) {
+    private Set<String> validatePatterns(final String patterns) {
         LOGGER.info("validating patterns [ " + patterns + " ]. ");
         String[] patternsList = null;
         if ((patterns != null) && (patterns.trim().length() != 0)) {
@@ -1344,18 +1342,18 @@ public class SharepointConnectorType implements ConnectorType {
         }
     }
 
-	private void unregisterKerberosSetUp(Map configData) {
-		AuthPolicy.unregisterAuthScheme(SPConstants.NEGOTIATE);
-		String googleConnWorkDir = (String) configData.get(GOOGLE_CONN_WORK_DIR);
-		File fileKrb5 = new File(googleConnWorkDir
-				+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
-		if (fileKrb5 != null && fileKrb5.exists()) {
-			fileKrb5.delete();
-		}
-		File fileLogin = new File(googleConnWorkDir
-				+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
-		if (fileLogin != null && fileLogin.exists()) {
-			fileLogin.delete();
-		}
-	}
+    private void unregisterKerberosSetUp(Map configData) {
+        AuthPolicy.unregisterAuthScheme(SPConstants.NEGOTIATE);
+        String googleConnWorkDir = (String) configData.get(GOOGLE_CONN_WORK_DIR);
+        File fileKrb5 = new File(googleConnWorkDir
+                + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
+        if (fileKrb5 != null && fileKrb5.exists()) {
+            fileKrb5.delete();
+        }
+        File fileLogin = new File(googleConnWorkDir
+                + SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
+        if (fileLogin != null && fileLogin.exists()) {
+            fileLogin.delete();
+        }
+    }
 }

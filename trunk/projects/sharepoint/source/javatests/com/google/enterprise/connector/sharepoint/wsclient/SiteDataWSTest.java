@@ -21,8 +21,8 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -63,7 +63,7 @@ public class SiteDataWSTest extends TestCase {
         System.out.println("Testing getNamedLists()...");
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
-                SPConstants.CONTENT_FEED);
+ FeedType.CONTENT_FEED);
         WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
         final List items = this.siteDataWS.getNamedLists(ws);
         assertNotNull(items);

@@ -24,6 +24,8 @@ import junit.framework.TestCase;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
@@ -41,13 +43,7 @@ public class ListsWSTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+		this.sharepointClientContext = TestConfiguration.initContext();
 
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
@@ -62,7 +58,7 @@ public class ListsWSTest extends TestCase {
 
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
-                SPConstants.CONTENT_FEED);
+ FeedType.CONTENT_FEED);
         WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
 
         final List listCollection = siteDataWS.getNamedLists(ws);
@@ -92,7 +88,7 @@ public class ListsWSTest extends TestCase {
         final SPDocument doc = new SPDocument("1", "url1",
                 new GregorianCalendar(2007, 1, 1), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-                SPConstants.CONTENT_FEED, SPConstants.SP2007);
+				FeedType.CONTENT_FEED, SPType.SP2007);
         final List items = this.listWS.getAttachments(this.testList, doc);
         assertNotNull(items);
         System.out.println("[ getAttachments() ] Test Passed.");
