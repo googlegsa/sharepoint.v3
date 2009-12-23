@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -42,8 +41,7 @@ public class SharepointTraversalManager implements TraversalManager,
     private final Logger LOGGER = Logger.getLogger(SharepointTraversalManager.class.getName());
     private SharepointClientContext sharepointClientContext;
     private SharepointClientContext sharepointClientContextOriginal = null;
-    protected GlobalState globalState; // not private, so the unittest can see
-    // it
+    private GlobalState globalState;
     private int hint = -1;
 
     // The traversal context instance
@@ -102,7 +100,7 @@ public class SharepointTraversalManager implements TraversalManager,
         // If feed type has been changed after the last traversal cycle. Let's
         // start a full recrawl
         if ((globalState.getFeedType() == null)
-                || !globalState.getFeedType().equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+                || !globalState.getFeedType().equals(sharepointClientContext.getFeedType())) {
             LOGGER.log(Level.INFO, "feedType updated. initiating a full recrawl. ");
             return startTraversal();
         } else {
@@ -163,8 +161,7 @@ public class SharepointTraversalManager implements TraversalManager,
 
         LOGGER.config("sharepointClientContext.feedType [ "
                 + sharepointClientContext.getFeedType() + " ]");
-        if (!SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())
-                && !SPConstants.METADATA_URL_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+        if (null == sharepointClientContext.getFeedType()) {
             LOGGER.severe("Aborting Traversal. Invalid Feed Type.");
             return null;
         }
@@ -211,17 +208,11 @@ public class SharepointTraversalManager implements TraversalManager,
             } else {
                 LOGGER.info("No documents to be sent from the current crawl cycle.");
             }
-            if (sharepointClient.isDoCrawl()) {
-                if (null == rsAll || rsAll.size() == 0) {
-                    String tmpStoredWeb = globalState.getLastCrawledWebID();
-                    if (null != tmpStoredWeb
-                            && tmpStoredWeb.trim().length() > 0) {
+            if (sharepointClient.isDoCrawl() && (null == rsAll || rsAll.size() == 0) && null != globalState.getLastCrawledWeb()) {
                         LOGGER.log(Level.INFO, "Setting LastCrawledWebStateID and LastCrawledListStateID as null and updating the state file to reflect that a full crawl has completed...");
-                        globalState.setLastCrawledWebID(null);
-                        globalState.setLastCrawledListID(null);
+                        globalState.setLastCrawledWeb(null);
+                        globalState.setLastCrawledList(null);
                         globalState.saveState();
-                    }
-                }
             }
         }
 
@@ -238,65 +229,61 @@ public class SharepointTraversalManager implements TraversalManager,
         return rsAll;
     }
 
-	/**
-	 * Traverses the site for crawled docs. It checks the crawl queue for the
-	 * given list and creates a document list (instance of
-	 * {@link SPDocumentList}) that will be returned from the current traversal
-	 * <p>
-	 * It will either check all lists or only a subset of lists for the current
-	 * site based on the flag: checkForPendingDocs. Possible cases
-	 * <ul>
-	 * <li>If checkForPendingDocs = true, it starts scanning from the web/list
-	 * for which checkPoint() was called from last batch traversal. Hence only a
-	 * subset of lists will be scanned.</li>
-	 * <li>If checkForPendingDocs = false, it starts scanning from the web/list
-	 * set during the document discovery (
-	 * {@link SharepointClient#updateGlobalState(GlobalState)})</li>
-	 * </ul>
-	 * 
-	 * @TODO In future, this should always scan a subset of lists which have
-	 *       docs and avoid unnecessary processing of all lists and sites
-	 * @param sharepointClient The instance of {@link SharepointClient} that
-	 *            will process the crawl queue to construct the document list
-	 * @param checkForPendingDocs If true, scans from the list at which
-	 *            checkPoint() was called. If false, will scan all lists
-	 * @return {@link SPDocumentList} The document list to be returned from
-	 *         current batch traversal
-	 * @since 2.4
-	 */
+    /**
+     * Traverses the site for crawled docs. It checks the crawl queue for the
+     * given list and creates a document list (instance of
+     * {@link SPDocumentList}) that will be returned from the current traversal
+     * <p>
+     * It will either check all lists or only a subset of lists for the current
+     * site based on the flag: checkForPendingDocs. Possible cases
+     * <ul>
+     * <li>If checkForPendingDocs = true, it starts scanning from the web/list
+     * for which checkPoint() was called from last batch traversal. Hence only a
+     * subset of lists will be scanned.</li>
+     * <li>If checkForPendingDocs = false, it starts scanning from the web/list
+     * set during the document discovery (
+     * {@link SharepointClient#updateGlobalState(GlobalState)})</li>
+     * </ul>
+     *
+     * @TODO In future, this should always scan a subset of lists which have
+     *       docs and avoid unnecessary processing of all lists and sites
+     * @param sharepointClient The instance of {@link SharepointClient} that
+     *            will process the crawl queue to construct the document list
+     * @param checkForPendingDocs If true, scans from the list at which
+     *            checkPoint() was called. If false, will scan all lists
+     * @return {@link SPDocumentList} The document list to be returned from
+     *         current batch traversal
+     * @since 2.4
+     */
     private SPDocumentList traverse(final SharepointClient sharepointClient,
             boolean checkForPendingDocs) {
         if (checkForPendingDocs) {
-            final String lastWeb = globalState.getLastCrawledWebID();
-            final String lastList = globalState.getLastCrawledListID();
-            WebState ws = null;
-            ListState listState = null;
-            if (null != lastWeb) {
-                ws = globalState.lookupWeb(lastWeb, sharepointClientContext);
-                listState = ws.lookupList(lastList);
+            WebState ws = globalState.getLastCrawledWeb();
+            ListState listState = globalState.getLastCrawledList();
+            globalState.setCurrentWeb(ws);
+            if (null != ws) {
                 ws.setCurrentList(listState);
             }
-            globalState.setCurrentWeb(ws);
         }
 
-		// CurrentWeb and CurrentList will define the starting point for
-		// the traversal/scan-of-crawl-queues. In case of list, all the
-		// lists before CurrentList will not be scanned.
-		// TODO: The same is to be done for webs also so that only the relevant
-		// WebStates
+        // CurrentWeb and CurrentList will define the starting point for
+        // the traversal/scan-of-crawl-queues. In case of list, all the
+        // lists before CurrentList will not be scanned.
+        // TODO: The same is to be done for webs also so that only the relevant
+        // WebStates
         // gets scanned. It does not make sense to traverse all the WebStates
         // all the time. Precisely, what we need here is an intelligent
         // liniarIterator instead of a dumb circularIterator.
 
-		SPDocumentList rsAll = null;
-		int sizeSoFar = 0;
+        SPDocumentList rsAll = null;
+        int sizeSoFar = 0;
         for (final Iterator<WebState> iter = globalState.getCircularIterator(); iter.hasNext()
                 && (sizeSoFar < hint);) {
             final WebState webState = (WebState) iter.next();
             globalState.setCurrentWeb(webState);
             SPDocumentList rs = null;
             try {
-                rs = sharepointClient.traverse(globalState, webState, hint);
+                rs = sharepointClient.traverse(globalState, webState, sizeSoFar);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Exception occured while traversing web URL [ "
                         + webState.getWebUrl() + " ] ");

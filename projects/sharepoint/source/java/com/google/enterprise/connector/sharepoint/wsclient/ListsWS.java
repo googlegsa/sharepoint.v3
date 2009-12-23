@@ -49,6 +49,7 @@ import org.xml.sax.SAXException;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetAttachmentCollectionResponseGetAttachmentCollectionResult;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenContains;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQuery;
@@ -192,7 +193,7 @@ public class ListsWS {
 		// then all those which are still returned by the Web Service will be
 		// removed. This way, we'll be able to track the deleted attachments.
 		List<String> knownAttachments = null;
-		if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
 			knownAttachments = baseList.getAttachmntURLsFor(listItemId);
 		}
 
@@ -212,7 +213,7 @@ public class ListsWS {
                                     LOGGER.config("included URL [" + url + " ]");
 
                                     String modifiedID = listItemId;
-                                    if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+									if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                                         modifiedID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
                                                 + "["
                                                 + url
@@ -229,9 +230,9 @@ public class ListsWS {
                                             baseList.getLastModCal(),
                                             SPConstants.NO_AUTHOR,
                                             SPConstants.OBJTYPE_ATTACHMENT,
-                                            baseList.getParentWebTitle(),
+											baseList.getParentWebState().getTitle(),
                                             sharepointClientContext.getFeedType(),
-                                            listItem.getSharePointType());
+											listItem.getSPType());
 
                                     listAttachments.add(doc);
                                 } else {
@@ -248,19 +249,18 @@ public class ListsWS {
                 + "] new/updated attachments for listItem [ "
                 + listItem.getUrl() + "]. ");
 
-		if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
 			// All the urls which have been left in knownAttachments are
-			// considered
-			// to be deleted.
+			// considered to be deleted.
 			for (String attchmnt_url : knownAttachments) {
 				final String docID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
 						+ "[" + attchmnt_url + "]" + listItem.getDocId();
 				final SPDocument attchmnt = new SPDocument(docID, attchmnt_url,
 						baseList.getLastModCal(), SPConstants.NO_AUTHOR,
 						SPConstants.OBJTYPE_ATTACHMENT,
-						baseList.getParentWebTitle(),
+						baseList.getParentWebState().getTitle(),
 						sharepointClientContext.getFeedType(),
-						baseList.getSharePointType());
+						baseList.getParentWebState().getSharePointType());
 				attchmnt.setAction(ActionType.DELETE);
 				listAttachments.add(attchmnt);
 				LOGGER.log(Level.INFO, "Sending attachment [" + attchmnt_url
@@ -782,7 +782,7 @@ public class ListsWS {
                             relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
                             String folderPath = null;
                             if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
-                                if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+								if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                                     try {
                                         list.updateExtraIDs(relativeURL, docId, true);
                                     } catch (SharepointException se) {
@@ -792,7 +792,7 @@ public class ListsWS {
                                                 + list.getListURL() + " ]. ", se);
                                     }
                                 }
-                                folderPath = Util.getFolderPathForWSCall(list.getParentWeb(), relativeURL);
+								folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
                                 if (folderPath == null) {
                                     continue;
                                 }
@@ -1067,7 +1067,7 @@ public class ListsWS {
                 + list.getListURL() + "] for feed action=ADD");
 
         // Process deleted IDs
-        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             try {
                 listItems.addAll(processDeletedItems(deletedIDs, list));
             } catch (Exception e) {
@@ -1209,9 +1209,10 @@ public class ListsWS {
                     + currentItemID;
             final SPDocument doc = new SPDocument(docID, list.getListURL(),
                     list.getLastModCal(), SPConstants.NO_AUTHOR,
-                    SPConstants.OBJTYPE_LIST_ITEM, list.getParentWebTitle(),
+					SPConstants.OBJTYPE_LIST_ITEM,
+					list.getParentWebState().getTitle(),
                     sharepointClientContext.getFeedType(),
-                    list.getSharePointType());
+					list.getParentWebState().getSharePointType());
             doc.setAction(ActionType.DELETE);
             listItems.add(doc);
             count++;
@@ -1228,9 +1229,9 @@ public class ListsWS {
 							attchmnt_url, list.getLastModCal(),
                             SPConstants.NO_AUTHOR,
 							SPConstants.OBJTYPE_ATTACHMENT,
-                            list.getParentWebTitle(),
+							list.getParentWebState().getTitle(),
                             sharepointClientContext.getFeedType(),
-                            list.getSharePointType());
+							list.getParentWebState().getSharePointType());
                     attchmnt.setAction(ActionType.DELETE);
                     listItems.add(attchmnt);
                     count++;
@@ -1310,7 +1311,7 @@ public class ListsWS {
                     }
                 }
                 if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
-                    if (!SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+					if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
                         // Delete feed processing is done only in case of
                         // content feed
                         continue;
@@ -1444,7 +1445,7 @@ public class ListsWS {
 								+ list.getListURL() + " ]. ");
 					} else {
                         relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
-                        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             /*
                              * Since we have got an entry for this item, this
                              * item can never be considered as deleted.
@@ -1518,7 +1519,7 @@ public class ListsWS {
                                         + docId
                                         + "], relativeURL["
                                         + relativeURL + "] ");
-                                final String folderPath = Util.getFolderPathForWSCall(list.getParentWeb(), relativeURL);
+								final String folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
                                 if (folderPath == null) {
                                     continue;
                                 }
@@ -1735,12 +1736,13 @@ public class ListsWS {
             calMod = list.getLastModCal();
         }
 
-        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;
         }
         doc = new SPDocument(docId, url.toString(), calMod, author,
-                strObjectType, list.getParentWebTitle(),
-                sharepointClientContext.getFeedType(), list.getSharePointType());
+				strObjectType, list.getParentWebState().getTitle(),
+				sharepointClientContext.getFeedType(),
+				list.getParentWebState().getSharePointType());
 		doc.setFileref(fileref);
 
         if (fileSize != null && !fileSize.equals("")) {
@@ -1784,7 +1786,7 @@ public class ListsWS {
             }
         }
 
-        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             try {
                 final int id = Integer.parseInt(Util.getOriginalDocId(docId, sharepointClientContext.getFeedType()));
                 if (id > list.getBiggestID()) {

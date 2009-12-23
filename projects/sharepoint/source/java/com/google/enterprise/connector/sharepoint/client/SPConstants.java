@@ -30,13 +30,48 @@ public class SPConstants {
 
     public static final String GLOBAL_ALIAS_IDENTIFIER = "^";
 
-    // for determining the feed type
-    public static final String METADATA_URL_FEED = "metadata-and-URL";
-    public static final String CONTENT_FEED = "content";
+    // TODO: Create similar enums for ListTypes and templates etc. This will
+    // help in easy reference to the relevant values as the list of constants
+    // grows. In future, we may also create another class specifically for these
+    // enums.
+    public static enum FeedType {
+        METADATA_URL_FEED("metadata-and-URL"), CONTENT_FEED("content");
+        // For backward compatibility. Earlier connectors would be using
+        // "metadata-and-URL" & "content" literals
+        private String feedType;
 
-    // SharePoint version
-    public static final String SP2003 = "sp2003";
-    public static final String SP2007 = "sp2007";
+        FeedType(String feedType) {
+            this.feedType = feedType;
+        }
+
+        public static FeedType getFeedType(String feedType) {
+            if (METADATA_URL_FEED.toString().equalsIgnoreCase(feedType)) {
+                return METADATA_URL_FEED;
+            } else if (CONTENT_FEED.toString().equalsIgnoreCase(feedType)) {
+                return CONTENT_FEED;
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return feedType;
+        }
+    }
+
+    public static enum SPType {
+        SP2007, SP2003;
+        public static SPType getSPType(String spType) {
+            if (SP2007.toString().equalsIgnoreCase(spType)) {
+                return SP2007;
+            } else if (SP2003.toString().equalsIgnoreCase(spType)) {
+                return SP2003;
+            } else {
+                return null;
+            }
+        }
+    }
 
     // used while forming URLs
     public static final String URL_SEP = "://";
@@ -228,6 +263,9 @@ public class SPConstants {
     public static final String STATE = "State";
     public static final String LAST_FULL_CRAWL_DATETIME = "LastFullCrawlDateTime";
     public static final String LAST_CRAWLED_DATETIME = "LastCrawledDateTime";
+    public static final String STATE_ATTR_CDATA = "CDATA";
+    public static final String STATE_ATTR_ID = "ID";
+    public static final String STATE_ATTR_IDREF = "IDREF";
 
     public static final String CONNECTOR_NAME = "Sharepoint";
     public static final String CONNECTOR_PREFIX = "_state.xml";

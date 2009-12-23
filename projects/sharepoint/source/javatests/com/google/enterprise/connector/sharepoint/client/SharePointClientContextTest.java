@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.client;
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 
 public class SharePointClientContextTest extends TestCase {
 
@@ -60,7 +61,7 @@ public class SharePointClientContextTest extends TestCase {
     public void testCheckSharePointType() {
         System.out.println("Testing checkSharePointVersion()...");
         try {
-            final String spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.ParentWebURL);
+			final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.ParentWebURL);
             assertEquals(spType, SPConstants.CONNECTIVITY_SUCCESS);
         } catch (Exception e) {
             System.out.println(e);

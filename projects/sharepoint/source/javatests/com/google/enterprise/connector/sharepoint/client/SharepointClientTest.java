@@ -164,14 +164,14 @@ public class SharepointClientTest extends TestCase {
      */
     public void testTraverseToCheckValidLists() throws SharepointException {
 
-        GlobalState gs = new GlobalState("c:\\", "metadata-and-URL");
-
-        WebState ws = TestConfiguration.createWebState(3);
-		gs.AddOrUpdateWebStateInGlobalState(ws);
+        GlobalState gs = TestConfiguration.initState();
+        SharepointClientContext spContext = TestConfiguration.initContext();
+        WebState ws = TestConfiguration.createWebState(gs, spContext, TestConfiguration.sharepointUrl, 1);
+        gs.AddOrUpdateWebStateInGlobalState(ws);
 
         // Set the last crawled list and web id as set in web state
-        gs.setLastCrawledListID(ws.getLastCrawledListID());
-        gs.setLastCrawledWebID(ws.getPrimaryKey());
+        gs.setLastCrawledList(ws.getLastCrawledList());
+        gs.setLastCrawledWeb(ws);
 
         SharepointClient spclient = new SharepointClient(null);
 

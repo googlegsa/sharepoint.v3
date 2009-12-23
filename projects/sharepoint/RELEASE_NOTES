@@ -10,6 +10,84 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
+Release 2.4.2 Build1, 22 December, 2009
+=======================================
+
+Introduction
+------------
+This is a maintenance release that improves quality, reliability, and performance without adding any new functionality.  All users of previous 2.4.0 releases should upgrade to this release.
+Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
+
+Summary of Changes
+------------------
+
+Issues fixed from last release:
+---------------------------------
+Issue 108 - Connector is unable to traverse the repository upon restart if the state file is very large
+       Connector, now uses SAX based parsing instead of DOM which will reduce the heap memory consumption.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager version 2.4.0 and above.
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+SUSE Linux Enterprise Server 11 (x86_64)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+   -- With 2.0 release, the connector used to re-crawl all documents from the SharePoint list which has documents with
+      invalid XML character in its metadata. With 2.4 release the connector will not crawl any new documents from the
+      list unless the document is removed from the SharePoint list OR the metadata is corrected
+      Workaround:
+      Remove the problematic document from the SharePoint list OR the remove the invalid characters from metadata
+
+2) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+   java.net.BindException: Address already in use: JVM_Bind
+   Workaround: Stop the connector and restart it after some time to avoid this issue.
+
+3) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+   the credentials used are of a local machine user.
+
+4) Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
+   -- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
+      by SharePoint's Change log. In such cases the connector logs as WARNING message. The connector will have to be reset and crawl
+      and index all content once more
+      Workaround: Re-crawl all content by resetting the conenctor
+
+5) In this release, following features are supported only on SharePoint 2007
+   - Fix for issue#53 (Connector should support SharePoint farm )
+   - Bulk Authorization by connector
+
+8) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Release 2.4.0 Build5, 03 December, 2009
 =======================================
 
@@ -28,44 +106,44 @@ New features:
 Issues fixed from last release:
 ---------------------------------
 Issue 74 - Support traversal by Kerberos authentication.
-		   This is a new feature. This will mean that customers can now crawl SharePoint content which is protected by Kerberos.
-		   Earlier, NTLM was being used at crawl time. This will be useful for customers which require Kerberos to be used always.
+       This is a new feature. This will mean that customers can now crawl SharePoint content which is protected by Kerberos.
+       Earlier, NTLM was being used at crawl time. This will be useful for customers which require Kerberos to be used always.
 Issue 85 - The discovery of site collection should be initiated in the first crawl cycle even though no content is crawled.
-		   In case there were no sites/lists under the top level site mentioned as crawl URL, the connector did not initiate the discovery of other sites.
-		   This implied that the connector never initiated a traversal. This is resolved with this fix
+       In case there were no sites/lists under the top level site mentioned as crawl URL, the connector did not initiate the discovery of other sites.
+       This implied that the connector never initiated a traversal. This is resolved with this fix
 Issue 87 - Connector should canonicalize the URLs for child entities before applying include/exclude patterns.
-		   This is required to exclude all ASPX pages from indexing. Earlier this was not possible as the list URLs (which end with ASPX extension)
-		   would get excluded and hence no content was being discovered and fed to GSA. Users can configure the connector exclude all aspx pages
+       This is required to exclude all ASPX pages from indexing. Earlier this was not possible as the list URLs (which end with ASPX extension)
+       would get excluded and hence no content was being discovered and fed to GSA. Users can configure the connector exclude all aspx pages
 Issue 90 - The time at which connector completes a crawl cycle should be logged in state file.
-		   This is an enhancement to the information logged in state file. It helps to precisely know when did the traversal cycle complete,
-		   when was the site/list queried last time for any updates
+       This is an enhancement to the information logged in state file. It helps to precisely know when did the traversal cycle complete,
+       when was the site/list queried last time for any updates
 Issue 101 - Sending metadata to GSA when doc size > 30M.
-			GSA rejects any content > 30M. In content feed mode the connector has now added this check so that only metadata and URL are sent without content
-			This avoids the task of feeding content which will be rejected by GSA eventually.
-			It also adds support for filtering documents based on mimetype
+      GSA rejects any content > 30M. In content feed mode the connector has now added this check so that only metadata and URL are sent without content
+      This avoids the task of feeding content which will be rejected by GSA eventually.
+      It also adds support for filtering documents based on mimetype
 Issue 102 - Liststate entry is deleted from the connector state without checking if the list is deleted.
-			The entry for a list was deleted without checking if the SharePoint server was temporarily unavailable or the list was actually deleted. This has been fixed
-			so that the list entry is removed only if it has been deleted.
+      The entry for a list was deleted without checking if the SharePoint server was temporarily unavailable or the list was actually deleted. This has been fixed
+      so that the list entry is removed only if it has been deleted.
 Issue 106 - Connector should not remove/delete documents from its queue unless checkPoint() is called.
-			The documents from crawl queue were deleted before checkpoint is called. Customers will not see any visible impact as this change
-			is more to be in line with SPI specification unless any exception is encountered when documents are being sent to GSA by Connector Manager
+      The documents from crawl queue were deleted before checkpoint is called. Customers will not see any visible impact as this change
+      is more to be in line with SPI specification unless any exception is encountered when documents are being sent to GSA by Connector Manager
 Issue 110 - Connector is not editable when password has ampersand (&) character. Connector configuration page throws XML error.
             From 1.3.2 version onwards the connector form is XHTML complaint. As part of this, every feild needs o be XHTML complaint else
             it will result in a XML parsing exception. The value of password field has now been XML encoded to be XHTML complaint
 Issue 116 - Return batchHint or little more docs from start/resumeTraversal and not 2* batchHint.
-	        Connector Manager now supports accepting more # documents than batchHint per batch traversal. Hence the connector tries to discover
-	        a little more than batchHint rather than 2*batchHint # of documents as done earlier. This will not have any impact on how fast the documents are being
-	        indexed. However, you will find that the connector will now index documents from list1, then list2 and so on. Earlier you would find that
-	        the connector would discover documents from list1, list2 simultaneously as long as the cap of (2*batchHint) was not reached.
+          Connector Manager now supports accepting more # documents than batchHint per batch traversal. Hence the connector tries to discover
+          a little more than batchHint rather than 2*batchHint # of documents as done earlier. This will not have any impact on how fast the documents are being
+          indexed. However, you will find that the connector will now index documents from list1, then list2 and so on. Earlier you would find that
+          the connector would discover documents from list1, list2 simultaneously as long as the cap of (2*batchHint) was not reached.
 Issue 118 - All the extra IDs (URLs in case of attachments) which are used during the construction of delete feeds are updated before checkpoint
-			This was required as part of fix for Issue 106 else, delete feeds for few attachments was not being sent earlier.
+      This was required as part of fix for Issue 106 else, delete feeds for few attachments was not being sent earlier.
 Issue 120 - Use file level custom logging instead of event-log based logging
-			The logging of custom web services (GSS) was done to the event viewer. Now it is logged in the main connector logs under Tomcat/logs folder
+      The logging of custom web services (GSS) was done to the event viewer. Now it is logged in the main connector logs under Tomcat/logs folder
 Issue 123 - Initial changes on the SharePoint are not tracked if the connector is restarted before the first traversal completes
-			If the connector was stopped before the first traversal was completed, then few docs from that folder/list were skipped.
-			This has been fixed now.
+      If the connector was stopped before the first traversal was completed, then few docs from that folder/list were skipped.
+      This has been fixed now.
 Issue 124 - ExtraIDs are un-necessarily updated in-memory in case of Metadata and URL feed mode.
-			This does not have any visible change for the customers. The extraId is used in content feed only and not not be updated for metadata and URL feed mode
+      This does not have any visible change for the customers. The extraId is used in content feed only and not not be updated for metadata and URL feed mode
 
 Version Compatibility
 ---------------------

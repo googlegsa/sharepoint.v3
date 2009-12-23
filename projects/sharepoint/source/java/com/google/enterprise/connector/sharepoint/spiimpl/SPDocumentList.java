@@ -26,9 +26,9 @@ import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -121,7 +121,6 @@ public class SPDocumentList implements DocumentList {
      */
     public Document nextDocument() throws SkippedDocumentException {
         SPDocument spDocument = null;
-        ListState listStateTemp;
 
         // find the next document in the list which is to be fed
         do {
@@ -144,13 +143,8 @@ public class SPDocumentList implements DocumentList {
                         + spDocument.getUrl());
             }
 
-            listStateTemp = globalState.lookupList(spDocument.getWebid(), spDocument.getListGuid());
-
-            if (null == listStateTemp) {
-                // This is an unexpected state which might occur if the
-                // in-memory
-                // lists are out of sync
-                String message = "Unexpected state occurred. Entry for either webstate or liststate is missing from the inmemory state for SPDocument "
+			if (null == spDocument.getParentList()) {
+				String message = "Parent List for the document is not found. docURL [ "
                         + spDocument.getUrl();
 
                 LOGGER.log(Level.WARNING, message);
@@ -161,11 +155,9 @@ public class SPDocumentList implements DocumentList {
             // Set the current doc as the last doc sent to CM. This will mark
             // the current doc and its position in the crawlQueue. This info
             // will be important when checkPoint() is called.
-            listStateTemp.setLastDocument(spDocument);
+			spDocument.getParentList().setLastDocument(spDocument);
 
         } while (!spDocument.isToBeFed());
-
-        final ListState listState = listStateTemp;
 
         // for deleted documents, no need to use alias mapping. Only DocID
         // is sufficient.
@@ -174,8 +166,7 @@ public class SPDocumentList implements DocumentList {
         if (ActionType.DELETE.equals(spDocument.getAction())) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Sending DocID [ "
-                        + spDocument.getDocId() + " ] from List URL [ "
-                        + listState.getListURL() + " ] to CM for DELETE");
+						+ spDocument.getDocId() + " ] to CM for DELETE");
             }
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
             // Do Alias mapping before sending the doc
@@ -214,8 +205,8 @@ public class SPDocumentList implements DocumentList {
         // batch traversal to know from where to look for pending documents
         // from last batch traversal in the crawl queue that are supposed to
         // be sent to GSA
-        globalState.setLastCrawledWebID(spDoc.getWebid());
-        globalState.setLastCrawledListID(spDoc.getListGuid());
+		globalState.setLastCrawledWeb(spDoc.getParentWeb());
+		globalState.setLastCrawledList(spDoc.getParentList());
 
         for (int i = 0; i < docsFedIndexPosition; i++) {
             // Process the liststate and its crawl queue for the given doc which
@@ -442,7 +433,7 @@ public class SPDocumentList implements DocumentList {
      *            of individual lists
      */
     private void processListStateforCheckPoint(SPDocument spDocument) {
-        final ListState listState = globalState.lookupList(spDocument.getWebid(), spDocument.getListGuid());
+		final ListState listState = spDocument.getParentList();
         final String currentID = Util.getOriginalDocId(spDocument.getDocId(), spDocument.getFeedType());
 
         // for deleted documents, make sure to remove the extraid from list
@@ -468,6 +459,17 @@ public class SPDocumentList implements DocumentList {
             if (!isCurrentDocForList
                     && !SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
                 listState.addToDeleteCache(currentID);
+
+				// Though, a delete-feed document is never set as the LastDoc in
+				// state file as it will create problem while WS calls. This, is
+				// an special case where the list has been deleted and we are
+				// sure that we are not going to make any web service calls for
+				// this list (even if we do, it wont update any info in the
+				// connector's state because the call will fail). So, we can
+				// make use of this LastDoc information in another way: like a
+				// starting point (ID) from where the next delete feed documents
+				// will be created. Refer to WebState.endRecrawl().
+				listState.setLastDocProcessedForWS(spDocument);
             }
             if (!listState.isExisting() && isCurrentDocForList) {
                 // Last delete feed of a non-existent list has been sent
@@ -478,10 +480,9 @@ public class SPDocumentList implements DocumentList {
                             + listState.getListURL() + " ].");
                 }
 
-                final WebState parentWeb = globalState.lookupWeb(spDocument.getWebid(), null);
-                if (parentWeb != null) {
-                    parentWeb.removeListStateFromKeyMap(listState);
-                    parentWeb.removeListStateFromSet(listState);
+				if (spDocument.getParentWeb() != null) {
+					spDocument.getParentWeb().removeListStateFromKeyMap(listState);
+					spDocument.getParentWeb().removeListStateFromSet(listState);
                 }
             }
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
@@ -489,7 +490,7 @@ public class SPDocumentList implements DocumentList {
 
 
             // Update ExtraIDs
-            if (SPConstants.CONTENT_FEED.equalsIgnoreCase(spDocument.getFeedType())) {
+			if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {
                 updateExtraIDs(listState, spDocument, currentID);
             }
         }
@@ -521,13 +522,6 @@ public class SPDocumentList implements DocumentList {
                             + listState.getListURL() + " ]. ");
                 }
                 listState.usingLatestToken();
-                // Never clear the delete cache
-                /*
-                 * if (listState.getNextPage() == null) { if
-                 * (LOGGER.isLoggable(Level.CONFIG)) { LOGGER.log(Level.CONFIG,
-                 * "Cleaning delete cache..."); } listState.clearDeleteCache();
-                 * }
-                 */
             } else if ((listState.getNextPage() == null)
 					&& (listState.getChangeToken() != null && listState.getChangeToken().trim().length() != 0)) {
                 // There are docs pending in this list, so roll back the change
@@ -547,9 +541,10 @@ public class SPDocumentList implements DocumentList {
                     + listState.getListURL()
                     + " ] is being removed from crawl queue");
         }
-        // Remove the document from the crawl queue
+		// Remove the document from the crawl queue. No need to remove the
+		// documents from DocumentList as the whole list is discarded by the CM
+		// at the completion of this traversal.
         listState.removeDocFromCrawlQueue(spDocument);
-
     }
 
     private void updateExtraIDs(ListState listState, SPDocument spDocument,

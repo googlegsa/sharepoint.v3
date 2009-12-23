@@ -116,10 +116,6 @@ public class SiteDataWS {
             return listCollection;
         }
 
-        final String parentWeb = webstate.getPrimaryKey();
-        final String parentWebTitle = webstate.getTitle();
-        final String parentUrl = webstate.getWebUrl();
-
         final Collator collator = Util.getCollator();
         final ArrayOf_sListHolder vLists = new ArrayOf_sListHolder();
         final UnsignedIntHolder getListCollectionResult = new UnsignedIntHolder();
@@ -216,10 +212,7 @@ public class SiteDataWS {
                             element.getTitle(),
                             element.getBaseType(),
                             Util.siteDataStringToCalendar(element.getLastModified()),
-                            strBaseTemplate, url, parentWeb, parentWebTitle,
-                            webstate.getSharePointType(),
-                            sharepointClientContext.getFeedType());
-
+							strBaseTemplate, url, webstate);
                     String myNewListConst = "";
                     final String listUrl = element.getDefaultViewUrl();// e.g.
                     // /sites/abc/Lists/Announcements/AllItems.aspx
@@ -252,12 +245,10 @@ public class SiteDataWS {
                             // check if the entire list subtree is to excluded
                             // by comparing the prefix of the list URL with the
                             // patterns
-                            if (sharepointClientContext.isIncludedUrl(parentUrl
+							if (sharepointClientContext.isIncludedUrl(webstate.getWebUrl()
                                     + SPConstants.SLASH + myNewListConst)) {
-                                // is included
-
-                                // check if actual list url itself is to be
-                                // excluded
+								// is included check if actual list url itself
+								// is to be excluded
                                 if (sharepointClientContext.isIncludedUrl(url)) {
                                     // if a List URL is included, it WILL be
                                     // sent as a

@@ -30,6 +30,7 @@ import org.apache.axis.AxisFault;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.generated.alerts.Alert;
 import com.google.enterprise.connector.sharepoint.generated.alerts.AlertInfo;
 import com.google.enterprise.connector.sharepoint.generated.alerts.Alerts;
@@ -181,7 +182,7 @@ public class AlertsWS {
                     // Send only those alerts which are newly added.
                     final int idPos = knownAlerts.indexOf(docId);
                     if (idPos == -1) {
-                        if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             docId = SPConstants.ALERT_SUFFIX_IN_DOCID
                                     + alertListState.getListURL()
                                     + SPConstants.DOC_TOKEN + docId;
@@ -201,7 +202,7 @@ public class AlertsWS {
 
                 // Create delete feed docs for all those alerts which have been
                 // deleted.
-                if (SPConstants.CONTENT_FEED.equalsIgnoreCase(sharepointClientContext.getFeedType())) {
+				if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                     final Pattern pat = Pattern.compile("\\{.+\\}");
                     final Matcher match = pat.matcher(knownAlerts);
                     if (match.find()) {
