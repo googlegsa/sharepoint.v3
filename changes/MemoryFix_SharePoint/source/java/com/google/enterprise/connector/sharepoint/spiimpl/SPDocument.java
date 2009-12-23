@@ -319,10 +319,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         }
 
 		if (SPType.SP2007.equals(getSPType())
-				&& SPType.SP2003.equals(doc.getSPType())) {
+				&& SPType.SP2003 == doc.getSPType()) {
             return -1;
-		} else if (SPType.SP2007.equals(doc.getSPType())
-				&& SPType.SP2003.equals(getSPType())) {
+		} else if (SPType.SP2007 == doc.getSPType()
+				&& SPType.SP2003 == getSPType()) {
             return 1;
         }
 

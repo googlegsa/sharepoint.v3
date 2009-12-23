@@ -35,7 +35,7 @@ public class SPConstants {
     // grows. In future, we may also create another class specifically for these
     // enums.
     public static enum FeedType {
-		METADATA_URL_FEED("metadata-and-URL"), CONTENT_FEED("content");
+        METADATA_URL_FEED("metadata-and-URL"), CONTENT_FEED("content");
         // For backward compatibility. Earlier connectors would be using
         // "metadata-and-URL" & "content" literals
         private String feedType;

@@ -50,13 +50,13 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 public class ListState implements StatefulObject {
     protected String key = null;
 
-	/**
-	 * Whether the underlying SharePoint object that this object was created to
-	 * represent actually exists. This variable is periodically set to false by
-	 * GlobalState, and then set true if the underlying object is found to be
-	 * still there.
-	 */
-	// By default mark all list state as existing when they are created.
+    /**
+     * Whether the underlying SharePoint object that this object was created to
+     * represent actually exists. This variable is periodically set to false by
+     * GlobalState, and then set true if the underlying object is found to be
+     * still there.
+     */
+    // By default mark all list state as existing when they are created.
     private boolean exists = true;
 
     private String listTitle = "";
@@ -92,15 +92,15 @@ public class ListState implements StatefulObject {
 
     private static final Logger LOGGER = Logger.getLogger(ListState.class.getName());
 
-	/**
-	 * This doc is the last doc sent to CM but, we are not sure if it has been
-	 * fed to GSA or not. This happens when the documents are being sent to CM
-	 * as per the call to {@link SPDocumentList#nextDocument()} but the
-	 * {@link SPDocumentList#checkpoint()} has not yet been called. Once
-	 * checkpoint is called, we can assure that all the docs are fed to GSA. And
-	 * at that point of time only, this lastDocument is converted to
-	 * {@link ListState#lastDocProcessedForWS}
-	 */
+    /**
+     * This doc is the last doc sent to CM but, we are not sure if it has been
+     * fed to GSA or not. This happens when the documents are being sent to CM
+     * as per the call to {@link SPDocumentList#nextDocument()} but the
+     * {@link SPDocumentList#checkpoint()} has not yet been called. Once
+     * checkpoint is called, we can assure that all the docs are fed to GSA. And
+     * at that point of time only, this lastDocument is converted to
+     * {@link ListState#lastDocProcessedForWS}
+     */
     SPDocument lastDocument;
 
     /**
@@ -150,7 +150,7 @@ public class ListState implements StatefulObject {
      */
     private String lastCrawledDateTime;
 
-	WebState parentWeb;
+    WebState parentWeb;
 
     /**
      * @param inInternalName
@@ -161,27 +161,27 @@ public class ListState implements StatefulObject {
      * @param inUrl
      * @throws SharepointException
      */
-	public ListState(final String inPrimaryKey, final String inTitle,
+    public ListState(final String inPrimaryKey, final String inTitle,
             final String inType, final Calendar inLastMod,
-			final String inBaseTemplate, final String inUrl,
-			WebState inParentWeb)
+            final String inBaseTemplate, final String inUrl,
+            WebState inParentWeb)
             throws SharepointException {
 
-		LOGGER.config("inInternalName[" + inPrimaryKey + "], inType["
+        LOGGER.config("inInternalName[" + inPrimaryKey + "], inType["
                 + inType + "], inLastMod[" + inLastMod + "], inBaseTemplate["
-				+ inBaseTemplate + "], inUrl[" + inUrl + "]");
+                + inBaseTemplate + "], inUrl[" + inUrl + "]");
 
         if (null == inPrimaryKey || null == inType) {
-			throw new SharepointException("primary key [ " + inPrimaryKey
-					+ " ] / type [ " + inType + "] can not be null.");
+            throw new SharepointException("primary key [ " + inPrimaryKey
+                    + " ] / type [ " + inType + "] can not be null.");
         }
-		key = inPrimaryKey;
+        key = inPrimaryKey;
         listTitle = inTitle;
         type = inType;
         lastMod = inLastMod;
         baseTemplate = inBaseTemplate;
         listURL = inUrl;
-		parentWeb = inParentWeb;
+        parentWeb = inParentWeb;
     }
 
     /**
@@ -463,7 +463,7 @@ public class ListState implements StatefulObject {
         // We know for sure that checkPoint() marked this doc as the last
         // successfully sent doc. So for next incremental call use this doc as
         // reference
-		return lastDocProcessedForWS;
+        return lastDocProcessedForWS;
     }
 
     /**
@@ -1054,7 +1054,7 @@ public class ListState implements StatefulObject {
     /**
      * @return the parentWeb
      */
-	public WebState getParentWebState() {
+    public WebState getParentWebState() {
         return parentWeb;
     }
 
@@ -1200,15 +1200,15 @@ public class ListState implements StatefulObject {
         return cachedDeletedIDs;
     }
 
-	/**
-	 * dumps all the necessary information to a node in the state file
-	 * 
-	 * @param handler
-	 * @param feedType
-	 * @throws SAXException
-	 */
-	public void dumpStateToXML(ContentHandler handler, FeedType feedType)
-			throws SAXException {
+    /**
+     * dumps all the necessary information to a node in the state file
+     *
+     * @param handler
+     * @param feedType
+     * @throws SAXException
+     */
+    public void dumpStateToXML(ContentHandler handler, FeedType feedType)
+            throws SAXException {
         AttributesImpl atts = new AttributesImpl();
         atts.clear();
         atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getPrimaryKey());
@@ -1217,7 +1217,7 @@ public class ListState implements StatefulObject {
         atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
         atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_CDATA, getType());
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(getType())) {
-			if (SPType.SP2007.equals(getParentWebState().getSharePointType())) {
+            if (SPType.SP2007 == getParentWebState().getSharePointType()) {
                 if ((getChangeToken() == null)
                         || (getChangeToken().length() == 0)) {
                     if ((getCachedPrevChangeToken() == null)
@@ -1229,7 +1229,7 @@ public class ListState implements StatefulObject {
                 } else {
                     atts.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getChangeToken());
                 }
-				if (FeedType.CONTENT_FEED == feedType) {
+                if (FeedType.CONTENT_FEED == feedType) {
                     atts.addAttribute("", "", SPConstants.STATE_BIGGESTID, SPConstants.STATE_ATTR_CDATA, String.valueOf(getBiggestID()));
 
                     // We need to remember this so that duplicate delete feeds
@@ -1262,8 +1262,8 @@ public class ListState implements StatefulObject {
                 handler.endElement("", "", SPConstants.STATE_EXTRAIDS_ALERTS);
             }
         } else {
-			if (SPType.SP2007.equals(getParentWebState().getSharePointType())) {
-				if (FeedType.CONTENT_FEED == feedType) {
+            if (SPType.SP2007 == getParentWebState().getSharePointType()) {
+                if (FeedType.CONTENT_FEED == feedType) {
                     if (canContainFolders() && getIDs() != null
                             && getIDs().length() != 0) {
                         atts.clear();
@@ -1283,19 +1283,19 @@ public class ListState implements StatefulObject {
             }
 
             // dump the lastDocProcessedForWS
-			if (getLastDocForWSRefresh() != null) {
+            if (getLastDocForWSRefresh() != null) {
                 atts.clear();
-				atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getLastDocForWSRefresh().getDocId());
-				if (SPType.SP2007.equals(getParentWebState().getSharePointType())) {
-					if (getLastDocForWSRefresh().getFolderLevel() != null
-							&& getLastDocForWSRefresh().getFolderLevel().length() != 0) {
-						atts.addAttribute("", "", SPConstants.STATE_FOLDER_LEVEL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getFolderLevel());
+                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getLastDocForWSRefresh().getDocId());
+                if (SPType.SP2007 == getParentWebState().getSharePointType()) {
+                    if (getLastDocForWSRefresh().getFolderLevel() != null
+                            && getLastDocForWSRefresh().getFolderLevel().length() != 0) {
+                        atts.addAttribute("", "", SPConstants.STATE_FOLDER_LEVEL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getFolderLevel());
                     }
-					if (FeedType.CONTENT_FEED == feedType) {
-						atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getAction().toString());
+                    if (FeedType.CONTENT_FEED == feedType) {
+                        atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getAction().toString());
                     }
                 }
-				atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getLastDocLastModString());
+                atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getLastDocLastModString());
                 handler.startElement("", "", SPConstants.STATE_LASTDOCCRAWLED, atts);
                 handler.endElement("", "", SPConstants.STATE_LASTDOCCRAWLED);
             }
@@ -1312,10 +1312,10 @@ public class ListState implements StatefulObject {
      * @return
      */
     public static ListState loadStateFromXML(WebState web, Attributes atts,
-			FeedType feedType) throws SharepointException {
-		ListState list = new ListState(atts.getValue(SPConstants.STATE_ID), "",
-				atts.getValue(SPConstants.STATE_TYPE), null, "",
-				atts.getValue(SPConstants.STATE_URL), web);
+            FeedType feedType) throws SharepointException {
+        ListState list = new ListState(atts.getValue(SPConstants.STATE_ID), "",
+                atts.getValue(SPConstants.STATE_TYPE), null, "",
+                atts.getValue(SPConstants.STATE_URL), web);
         try {
             final String lastModString = atts.getValue(SPConstants.STATE_LASTMODIFIED);
             list.setLastMod(Util.parseDate(lastModString));
@@ -1327,13 +1327,13 @@ public class ListState implements StatefulObject {
         list.setLastCrawledDateTime(atts.getValue(SPConstants.LAST_CRAWLED_DATETIME));
 
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(list.getType())) {
-			if (SPType.SP2007.equals(web.getSharePointType())) {
+            if (SPType.SP2007 == web.getSharePointType()) {
                 list.setChangeToken(atts.getValue(SPConstants.STATE_CHANGETOKEN));
                 if ((list.getChangeToken() == null)
                         || (list.getChangeToken().length() == 0)) {
                     list.setCachedPrevChangeToken(atts.getValue(SPConstants.STATE_CACHED_CHANGETOKEN));
                 }
-				if (FeedType.CONTENT_FEED == feedType) {
+                if (FeedType.CONTENT_FEED == feedType) {
                     try {
                         list.setBiggestID(Integer.parseInt(atts.getValue(SPConstants.STATE_BIGGESTID)));
                     } catch (final Exception e) {

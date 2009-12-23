@@ -15,7 +15,7 @@ Release 2.4.2 Build1, 22 December, 2009
 
 Introduction
 ------------
-This is a maintenance release that improves quality, reliability, and performance without adding any new functionality.  All users of previous X.Y releases should upgrade to this release.
+This is a maintenance release that improves quality, reliability, and performance without adding any new functionality.  All users of previous 2.4.0 releases should upgrade to this release.
 Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
 
 Summary of Changes

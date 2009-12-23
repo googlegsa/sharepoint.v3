@@ -56,15 +56,15 @@ public class SharepointClient {
     private SharepointClientContext sharepointClientContext;
     private int nDocuments = 0;
 
-	// true -> when threshold is not reached and all webs
+    // true -> when threshold is not reached and all webs
     // all lists all documents are done.
     // false -> when a partial cycle is completed i.e, threshold is
     // reached before processing all the documents.
     private boolean doCrawl;
 
-	// This is mainly for test cases. It gives the count of liststates that are
-	// checked for any docs pending from previous crawl cycle
-	private int noOfVisitedListStates = 0;
+    // This is mainly for test cases. It gives the count of liststates that are
+    // checked for any docs pending from previous crawl cycle
+    private int noOfVisitedListStates = 0;
 
     public SharepointClient(
             final SharepointClientContext inSharepointClientContext)
@@ -101,10 +101,10 @@ public class SharepointClient {
         final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
         for (final Iterator<SPDocument> iter = list.getCurrentCrawlQueueIterator(); iter.hasNext();) {
             final SPDocument doc = (SPDocument) iter.next();
-			doc.setParentList(list);
-			doc.setParentWeb(web);
+            doc.setParentList(list);
+            doc.setParentWeb(web);
             // Update necessary information required for downloading contents.
-			if (FeedType.CONTENT_FEED == doc.getFeedType()) {
+            if (FeedType.CONTENT_FEED == doc.getFeedType()) {
                 doc.setContentDwnldURL(doc.getUrl());
                 doc.setSharepointClientContext(sharepointClientContext);
             }
@@ -143,7 +143,7 @@ public class SharepointClient {
             return null;
         }
 
-		noOfVisitedListStates = 0;
+        noOfVisitedListStates = 0;
 
         LOGGER.log(Level.INFO, "Traversing web [ " + webState.getWebUrl()
                 + " ] ");
@@ -165,7 +165,7 @@ public class SharepointClient {
                 LOGGER.log(Level.INFO, "Handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ");
                 resultsList = handleCrawlQueueForList(globalState, webState, list);
-				noOfVisitedListStates++;
+                noOfVisitedListStates++;
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Problem in handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ", e);
@@ -197,11 +197,11 @@ public class SharepointClient {
             }
         }
 
-		if (LOGGER.isLoggable(Level.CONFIG)) {
-			LOGGER.config("No. of listStates scanned from site : "
-					+ webState.getWebUrl() + " for current batch traversal : "
-					+ noOfVisitedListStates);
-		}
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.config("No. of listStates scanned from site : "
+                    + webState.getWebUrl() + " for current batch traversal : "
+                    + noOfVisitedListStates);
+        }
 
         return resultSet;
     }
@@ -216,7 +216,7 @@ public class SharepointClient {
      */
     private void discoverExtraWebs(final Set<String> allSites,
             final SPType spType) throws SharepointException {
-        if (SPType.SP2003.equals(spType)) {
+        if (SPType.SP2003 == spType) {
             LOGGER.log(Level.INFO, "Getting the initial list of MySites/Personal sites for SharePoint type SP2003. Context URL [ "
                     + sharepointClientContext.getSiteURL() + " ]");
             final com.google.enterprise.connector.sharepoint.wsclient.sp2003.UserProfileWS userProfileWS = new com.google.enterprise.connector.sharepoint.wsclient.sp2003.UserProfileWS(
@@ -236,7 +236,7 @@ public class SharepointClient {
                             + sharepointClientContext.getSiteURL() + " ]", e);
                 }
             }
-        } else if (SPType.SP2007.equals(spType)) {
+        } else if (SPType.SP2007 == spType) {
             final String strMySiteURL = sharepointClientContext.getMySiteBaseURL(); // --GET
             // THE
             // MYSITE
@@ -601,8 +601,8 @@ public class SharepointClient {
                 LOGGER.info("discovered new listState. List URL: "
                         + listState.getListURL());
 
-                if (SPType.SP2007.equals(webState.getSharePointType())) {
-					if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                if (SPType.SP2007 == webState.getSharePointType()) {
+                    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                         // In case of content feed, we need to keep track of
                         // folders and the items under that. This is reaquired
                         // for sending delete feeds for the documents when their
@@ -645,7 +645,7 @@ public class SharepointClient {
                 String lastDocID = null;
                 String lastDocFolderLevel = null;
 
-				SPDocument lastDoc = listState.getLastDocForWSRefresh();
+                SPDocument lastDoc = listState.getLastDocForWSRefresh();
 
                 /*
                  * We must ensure that the last doc that we are using was
@@ -658,13 +658,13 @@ public class SharepointClient {
                  * a full crawl.
                  */
                 if (lastDoc != null) {
-					if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()
+                    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()
                             && ActionType.DELETE.equals(lastDoc.getAction())) {
                         listState.setChangeToken(null);
                         listState.setCachedPrevChangeToken(null);
                         listState.setLastDocument(null);
                         listState.setCrawlQueue(null);
-						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             // In case of content feed, we need to keep track of
                             // folders and the items under that. This is
                             // reaquired for sending delete feeds for the
@@ -754,7 +754,7 @@ public class SharepointClient {
                 if (((listItems != null) && (listItems.size() > 0))
                         || (listState.isNewList())) {
                     String docId = listState.getPrimaryKey();
-					if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                         docId = listState.getListURL() + SPConstants.DOC_TOKEN
                                 + docId;
                     }
@@ -885,7 +885,7 @@ public class SharepointClient {
 
                 // This call is not required currently as there are no such information getting updated as per the crawl which can affect the ordering of WebStates. For detail, refer to the javadoc of
                 // {WebState.AddOrUpdateListStateInWebState}. Also, this is risky to call this method right here because this method may change the collection we are iterating over.
-				/* globalState.AddOrUpdateWebStateInGlobalState(ws); */
+                /* globalState.AddOrUpdateWebStateInGlobalState(ws); */
 
                 if (currDocCount == nDocuments) {
                     // get Alerts for the web and update webState. The above
@@ -930,13 +930,13 @@ public class SharepointClient {
         return nextWeb;
     }
 
-	/**
-	 * Returns the no of visited list states to check for pending docs from
-	 * previous batch traversal for a given web state (site)
-	 * 
-	 * @return The no of visited list states
-	 */
-	public int getNoOfVisitedListStates() {
-		return noOfVisitedListStates;
-	}
+    /**
+     * Returns the no of visited list states to check for pending docs from
+     * previous batch traversal for a given web state (site)
+     *
+     * @return The no of visited list states
+     */
+    public int getNoOfVisitedListStates() {
+        return noOfVisitedListStates;
+    }
 }

@@ -62,8 +62,8 @@ public class WebState implements StatefulObject {
      * The "current" object for ListState. The current object may be null.
      */
     private ListState currentList = null;
-	// private String lastCrawledListID = null;
-	private ListState lastCrawledList = null;
+    // private String lastCrawledListID = null;
+    private ListState lastCrawledList = null;
 
     private SPType spType;
 
@@ -76,20 +76,20 @@ public class WebState implements StatefulObject {
      * For the sole purpose of loading WebState nodes as WebState objects when
      * state file is loaded in-memory.
      */
-	private WebState(String webId, String webURL, String title,
-			String lastCrawledAt, DateTime insertionTime, SPType spType)
-			throws SharepointException {
-		if (null == webId || null == webURL || null == spType) {
-			throw new SharepointException("webID [ " + webId + "] / webUrl [ "
-					+ webURL + "] / spType [ " + spType
-					+ " ] can not be null. ");
-		}
-		this.webId = webId;
-		this.webUrl = webURL;
-		this.title = title;
-		this.lastCrawledDateTime = lastCrawledAt;
-		this.insertionTime = insertionTime;
-		this.spType = spType;
+    private WebState(String webId, String webURL, String title,
+            String lastCrawledAt, DateTime insertionTime, SPType spType)
+            throws SharepointException {
+        if (null == webId || null == webURL || null == spType) {
+            throw new SharepointException("webID [ " + webId + "] / webUrl [ "
+                    + webURL + "] / spType [ " + spType
+                    + " ] can not be null. ");
+        }
+        this.webId = webId;
+        this.webUrl = webURL;
+        this.title = title;
+        this.lastCrawledDateTime = lastCrawledAt;
+        this.insertionTime = insertionTime;
+        this.spType = spType;
     }
 
     /**
@@ -105,7 +105,7 @@ public class WebState implements StatefulObject {
             LOGGER.log(Level.WARNING, "Unknown SharePoint version [ " + spType
                     + " ] URL [ " + spURL + " ]. WebState creation failed. ");
             spContext.logExcludedURL("[ " + spURL
-					+ " ] Unknown SharePoint version. ");
+                    + " ] Unknown SharePoint version. ");
             throw new SharepointException("Unknown SharePoint version.");
         }
 
@@ -113,8 +113,8 @@ public class WebState implements StatefulObject {
         spContext.setSiteURL(webUrl);
         final WebsWS websWS = new WebsWS(spContext);
         title = websWS.getWebTitle(webUrl, spType);
-		if (FeedType.CONTENT_FEED == spContext.getFeedType()
-                && SPType.SP2003.equals(spType)) {
+        if (FeedType.CONTENT_FEED == spContext.getFeedType()
+                && SPType.SP2003 == spType) {
             LOGGER.warning("excluding "
                     + spURL
                     + " because it is a SP2003 site and the feedType being used is content. Content feed is not supported on SP2003. ");
@@ -300,7 +300,7 @@ public class WebState implements StatefulObject {
                         continue;
                     }
 
-					if (FeedType.CONTENT_FEED == spContext.getFeedType()) {
+                    if (FeedType.CONTENT_FEED == spContext.getFeedType()) {
                         // Need to send delete feeds for all the documents that
                         // were inside this list. Not required for alerts.
                         final List<SPDocument> deletedDocs = new ArrayList<SPDocument>();
@@ -490,18 +490,18 @@ public class WebState implements StatefulObject {
         currentList = currentObj;
     }
 
-	/**
-	 * @return the last crawled list reference
-	 */
+    /**
+     * @return the last crawled list reference
+     */
     public ListState getLastCrawledList() {
-		return lastCrawledList;
+        return lastCrawledList;
     }
 
-	/**
-	 * @param inLastCrawledList
-	 */
+    /**
+     * @param inLastCrawledList
+     */
     public void setLastCrawledList(final ListState inLastCrawledList) {
-		lastCrawledList = inLastCrawledList;
+        lastCrawledList = inLastCrawledList;
     }
 
     /**
@@ -608,13 +608,13 @@ public class WebState implements StatefulObject {
      * @param feedType
      * @return
      */
-	public static WebState loadStateFromXML(Attributes atts)
-			throws SharepointException {
-		WebState web = new WebState(atts.getValue(SPConstants.STATE_ID),
-				atts.getValue(SPConstants.STATE_URL),
-				atts.getValue(SPConstants.STATE_WEB_TITLE),
-				atts.getValue(SPConstants.LAST_CRAWLED_DATETIME), null,
-				SPType.getSPType(atts.getValue(SPConstants.STATE_SPTYPE)));
+    public static WebState loadStateFromXML(Attributes atts)
+            throws SharepointException {
+        WebState web = new WebState(atts.getValue(SPConstants.STATE_ID),
+                atts.getValue(SPConstants.STATE_URL),
+                atts.getValue(SPConstants.STATE_WEB_TITLE),
+                atts.getValue(SPConstants.LAST_CRAWLED_DATETIME), null,
+                SPType.getSPType(atts.getValue(SPConstants.STATE_SPTYPE)));
         try {
             String insertTime = atts.getValue(SPConstants.STATE_INSERT_TIME);
             web.setInsertionTime(Util.parseDate(insertTime));

@@ -153,7 +153,7 @@ public class GlobalState {
                     String lastCrawledDocFolderLevel = null;
                     ActionType lastCrawledDocAction = null;
 
-                    if (SPType.SP2007.equals(web.getSharePointType())) {
+                    if (SPType.SP2007 == web.getSharePointType()) {
                         lastCrawledDocFolderLevel = atts.getValue(SPConstants.STATE_FOLDER_LEVEL);
                         if (FeedType.CONTENT_FEED == feedType) {
                             lastCrawledDocAction = ActionType.findActionType(atts.getValue(SPConstants.STATE_ACTION));

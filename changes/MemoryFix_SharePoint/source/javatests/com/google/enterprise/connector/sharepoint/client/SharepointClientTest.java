@@ -164,14 +164,14 @@ public class SharepointClientTest extends TestCase {
      */
     public void testTraverseToCheckValidLists() throws SharepointException {
 
-		GlobalState gs = TestConfiguration.initState();
-		SharepointClientContext spContext = TestConfiguration.initContext();
-		WebState ws = TestConfiguration.createWebState(gs, spContext, TestConfiguration.sharepointUrl, 1);
-		gs.AddOrUpdateWebStateInGlobalState(ws);
+        GlobalState gs = TestConfiguration.initState();
+        SharepointClientContext spContext = TestConfiguration.initContext();
+        WebState ws = TestConfiguration.createWebState(gs, spContext, TestConfiguration.sharepointUrl, 1);
+        gs.AddOrUpdateWebStateInGlobalState(ws);
 
         // Set the last crawled list and web id as set in web state
-		gs.setLastCrawledList(ws.getLastCrawledList());
-		gs.setLastCrawledWeb(ws);
+        gs.setLastCrawledList(ws.getLastCrawledList());
+        gs.setLastCrawledWeb(ws);
 
         SharepointClient spclient = new SharepointClient(null);
 
@@ -180,6 +180,6 @@ public class SharepointClientTest extends TestCase {
 
         // Since there are 4 lists, the third list being set as last crawled,
         // the total no. of lists visited should be 2
-		// assertEquals(2, spclient.getNoOfVisitedListStates());
+        assertEquals(2, spclient.getNoOfVisitedListStates());
     }
 }
