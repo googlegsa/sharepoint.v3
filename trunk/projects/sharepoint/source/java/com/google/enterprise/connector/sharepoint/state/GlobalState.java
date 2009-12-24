@@ -104,34 +104,27 @@ public class GlobalState {
         // current inner-text should be interpreted.
         Nodes currentNode = null;
 
-        @Override
         public void setDocumentLocator(Locator locator) {
         }
 
-        @Override
         public void startDocument() throws SAXException {
             LOGGER.log(Level.INFO, "Parsing Begins. ");
         }
 
-        @Override
         public void endDocument() throws SAXException {
             LOGGER.log(Level.INFO, "Parsing Ends.");
         }
 
-        @Override
         public void processingInstruction(String target, String data)
                 throws SAXException {
         }
 
-        @Override
         public void startPrefixMapping(String prefix, String uri) {
         }
 
-        @Override
         public void endPrefixMapping(String prefix) {
         }
 
-        @Override
         public void startElement(String namespaceURI, final String localName,
                 String rawName, Attributes atts) throws SAXException {
 
@@ -198,7 +191,6 @@ public class GlobalState {
             }
         }
 
-        @Override
         public void endElement(String namespaceURI, String localName,
                 String rawName) throws SAXException {
             if (SPConstants.STATE.equals(localName)) {
@@ -216,7 +208,6 @@ public class GlobalState {
             }
         }
 
-        @Override
         public void characters(char[] ch, int start, int end)
                 throws SAXException {
             if (null == list || null == currentNode) {
@@ -234,12 +225,10 @@ public class GlobalState {
             }
         }
 
-        @Override
         public void ignorableWhitespace(char[] ch, int start, int end)
                 throws SAXException {
         }
 
-        @Override
         public void skippedEntity(String name) throws SAXException {
         }
     }
