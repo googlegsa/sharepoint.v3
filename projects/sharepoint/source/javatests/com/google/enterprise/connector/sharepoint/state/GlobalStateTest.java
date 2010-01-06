@@ -40,12 +40,12 @@ public class GlobalStateTest extends TestCase {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-				TestConfiguration.feedType);
+                TestConfiguration.feedType);
         assertNotNull(sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-		this.state = new GlobalState(TMP_DIR, FeedType.CONTENT_FEED);
+        this.state = new GlobalState(TMP_DIR, FeedType.CONTENT_FEED);
     }
 
     public void testMakeWebStateDat() {
@@ -54,7 +54,7 @@ public class GlobalStateTest extends TestCase {
         try {
             final GlobalState state = new GlobalState(
                     TestConfiguration.googleConnectorWorkDir,
-					FeedType.CONTENT_FEED);
+                    FeedType.CONTENT_FEED);
             state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
             if (this.state.lookupWeb(TestConfiguration.ParentWebURL, sharepointClientContext) != null) {
                 System.out.println("[ makeWebState() ] Test Passed.");
@@ -78,10 +78,10 @@ public class GlobalStateTest extends TestCase {
         System.out.println("[ startRecrawl() ] Test Completed.");
     }
 
-	/**
-	 * Test basic functionality: create a GlobalState, save it to XML, load
-	 * another from XML, save THAT to XML, and verify that the XML is the same.
-	 */
+    /**
+     * Test basic functionality: create a GlobalState, save it to XML, load
+     * another from XML, save THAT to XML, and verify that the XML is the same.
+     */
     public final void testBasic() throws SharepointException {
         System.out.println("Testing the basic functionalities of an stateful object");
 
@@ -95,47 +95,47 @@ public class GlobalStateTest extends TestCase {
         state.makeWebState(sharepointClientContext, TestConfiguration.sharepointUrl);
         state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
 
-		final ListState list1 = new ListState("foo", "", "", null, "", "", ws);
-		final ListState list2 = new ListState("bar", "", "", null, "", "", ws);
+        final ListState list1 = new ListState("foo", "", "", null, "", "", ws);
+        final ListState list2 = new ListState("bar", "", "", null, "", "", ws);
 
         ws.setCurrentList(list1);
 
         final SPDocument doc1 = new SPDocument("id1", "url1",
                 new GregorianCalendar(2007, 1, 1), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-				FeedType.CONTENT_FEED, SPType.SP2007);
-        list1.setLastDocument(doc1);
+                FeedType.CONTENT_FEED, SPType.SP2007);
+        list1.setLastDocProcessedForWS(doc1);
         ws.setCurrentList(list1);
         this.state.setCurrentWeb(ws);
 
         final SPDocument doc2 = new SPDocument("id2", "url2",
                 new GregorianCalendar(2007, 1, 2), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-				FeedType.CONTENT_FEED, SPType.SP2007);
-        list2.setLastDocument(doc2);
+                FeedType.CONTENT_FEED, SPType.SP2007);
+        list2.setLastDocProcessedForWS(doc2);
 
         // make a crawl queue & store it in our "current" ListState
         final ArrayList<SPDocument> docTree = new ArrayList<SPDocument>();
         final SPDocument doc3 = new SPDocument("id3", "url3",
                 new GregorianCalendar(2007, 1, 3), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-				FeedType.CONTENT_FEED, SPType.SP2007);
+                FeedType.CONTENT_FEED, SPType.SP2007);
         docTree.add(doc3);
         final SPDocument doc4 = new SPDocument("id4", "url4",
                 new GregorianCalendar(2007, 1, 4), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-				FeedType.CONTENT_FEED, SPType.SP2007);
+                FeedType.CONTENT_FEED, SPType.SP2007);
         docTree.add(doc4);
         list1.setCrawlQueue(docTree);
 
         this.state.setCurrentWeb(ws);
-		this.state.setLastCrawledWeb(ws);
-		this.state.setLastCrawledList(list1);
+        this.state.setLastCrawledWeb(ws);
+        this.state.setLastCrawledList(list1);
         this.state.saveState();// save the state to disk.. forms
 
         // TMP_DIR\Sharepoint_state.xml file
         GlobalState state2 = null;
-		state2 = new GlobalState(TMP_DIR, FeedType.CONTENT_FEED);
+        state2 = new GlobalState(TMP_DIR, FeedType.CONTENT_FEED);
         state2.loadState(); // load from the old GlobalState's XML
 
         for (WebState web : this.state.getAllWebStateSet()) {
@@ -148,13 +148,13 @@ public class GlobalStateTest extends TestCase {
         }
     }
 
-	/**
-	 * Utility for testCircularIterators(): make sure the iterator returns the
-	 * same set of items as list.
-	 * 
-	 * @param iter iterator to be tested
-	 * @param list array of the expected results
-	 */
+    /**
+     * Utility for testCircularIterators(): make sure the iterator returns the
+     * same set of items as list.
+     *
+     * @param iter iterator to be tested
+     * @param list array of the expected results
+     */
     void verifyIterator(final Iterator iter, final WebState[] arr1) {
         for (int i = 0; i < arr1.length; i++) {
             assertTrue(iter.hasNext());
@@ -164,21 +164,21 @@ public class GlobalStateTest extends TestCase {
         assertFalse(iter.hasNext());
     }
 
-	/**
-	 * Make sure that the getCircularIterator() call works properly (since, if
-	 * it doesn't, the connector will fail to pick up new or changed SharePoint.
-	 * documents)
-	 * 
-	 * @throws InterruptedException
-	 */
+    /**
+     * Make sure that the getCircularIterator() call works properly (since, if
+     * it doesn't, the connector will fail to pick up new or changed SharePoint.
+     * documents)
+     *
+     * @throws InterruptedException
+     */
     public void testCircularIterators() throws SharepointException,
             InterruptedException {
         System.out.println("Testing getCircularIterator()...");
-		/*
-		 * final DateTime time1 = Util.parseDate("20070504T144419.403-0700");
-		 * final DateTime time2 = Util.parseDate("20070505T144419.867-0700");
-		 * final DateTime time3 = Util.parseDate("20070506T144419.867-0700");
-		 */
+        /*
+         * final DateTime time1 = Util.parseDate("20070504T144419.403-0700");
+         * final DateTime time2 = Util.parseDate("20070505T144419.867-0700");
+         * final DateTime time3 = Util.parseDate("20070506T144419.867-0700");
+         */
         WebState list1 = null, list2 = null, list3 = null;
 
         // create Web State inside Global state
@@ -205,43 +205,43 @@ public class GlobalStateTest extends TestCase {
         System.out.println("[ getCircularIterator() ] Test Passed.");
     }
 
-	/**
-	 * Test to check that web states are ordered in the descending order of
-	 * insertion time
-	 */
-	public void testUpdateListState() throws SharepointException {
-		WebState ws = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
+    /**
+     * Test to check that web states are ordered in the descending order of
+     * insertion time
+     */
+    public void testUpdateListState() throws SharepointException {
+        WebState ws = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
         ws.setPrimaryKey("http://contentvm1.corp.google.com:12084/sites/testissue85");
         DateTime dt = new DateTime();
         ws.setInsertionTime(dt);
 
-		WebState ws2 = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
+        WebState ws2 = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
         ws2.setPrimaryKey("http://testcase.com:12084/sites/testissue85/abc");
         DateTime dt2 = new DateTime(2009, 9, 06, 10, 25, 36, 100);
         ws2.setInsertionTime(dt2);
 
-		WebState ws3 = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
+        WebState ws3 = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
         ws3.setPrimaryKey("http://testcase.com:12084/sites/testissue85");
         DateTime dt3 = new DateTime(2009, 9, 07, 10, 25, 36, 100);
         ws3.setInsertionTime(dt3);
 
-		WebState ws4 = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
+        WebState ws4 = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
         ws4.setPrimaryKey("http://testcase.com:12084/sites/testissue859");
         DateTime dt4 = new DateTime(2009, 9, 8, 11, 26, 38, 100);
         ws4.setInsertionTime(dt4);
 
-		WebState ws5 = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
+        WebState ws5 = TestConfiguration.createWebState(state, sharepointClientContext, "", 1);
 
         state.AddOrUpdateWebStateInGlobalState(ws);
-		state.AddOrUpdateWebStateInGlobalState(ws3);
-		state.AddOrUpdateWebStateInGlobalState(ws4);
-		state.AddOrUpdateWebStateInGlobalState(ws2);
+        state.AddOrUpdateWebStateInGlobalState(ws3);
+        state.AddOrUpdateWebStateInGlobalState(ws4);
+        state.AddOrUpdateWebStateInGlobalState(ws2);
 
         assertEquals(3, state.getAllWebStateSet().size());
 
         int count = 0;
 
-		for (WebState webstate : state.dateMap) {
+        for (WebState webstate : state.dateMap) {
             if (count == 0) {
                 assertEquals(ws4.getPrimaryKey(), webstate.getPrimaryKey());
             }
@@ -250,7 +250,7 @@ public class GlobalStateTest extends TestCase {
 
         count = 0;
 
-		Iterator<WebState> wsiT = state.dateMap.iterator();
+        Iterator<WebState> wsiT = state.dateMap.iterator();
 
         while (wsiT.hasNext()) {
             WebState webstate = wsiT.next();

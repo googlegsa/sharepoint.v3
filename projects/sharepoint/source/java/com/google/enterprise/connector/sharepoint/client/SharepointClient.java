@@ -99,7 +99,7 @@ public class SharepointClient {
             return null;
         }
         final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
-        for (final Iterator<SPDocument> iter = list.getCurrentCrawlQueueIterator(); iter.hasNext();) {
+        for (final Iterator<SPDocument> iter = list.getCrawlQueue().iterator(); iter.hasNext();) {
             final SPDocument doc = (SPDocument) iter.next();
             doc.setParentList(list);
             doc.setParentWeb(web);
@@ -662,12 +662,12 @@ public class SharepointClient {
                             && ActionType.DELETE.equals(lastDoc.getAction())) {
                         listState.setChangeToken(null);
                         listState.setCachedPrevChangeToken(null);
-                        listState.setLastDocument(null);
+                        listState.setLastDocProcessedForWS(null);
                         listState.setCrawlQueue(null);
                         if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             // In case of content feed, we need to keep track of
                             // folders and the items under that. This is
-                            // reaquired for sending delete feeds for the
+                            // required for sending delete feeds for the
                             // documents when their parent folder is deleted.
                             LOGGER.log(Level.INFO, "Discovering all the folders in the current list/library [ "
                                     + listState.getListURL() + " ] ");

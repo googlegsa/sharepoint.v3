@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.state;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +38,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 public class ListStateTest extends TestCase {
 
@@ -45,10 +47,10 @@ public class ListStateTest extends TestCase {
     public void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-		SharepointClientContext spContext = TestConfiguration.initContext();
-		final SiteDataWS siteDataWS = new SiteDataWS(spContext);
-		WebState ws = TestConfiguration.createWebState(TestConfiguration.initState(), spContext, TestConfiguration.sharepointUrl, 1);
-		final List<ListState> listCollection = siteDataWS.getNamedLists(ws);
+        SharepointClientContext spContext = TestConfiguration.initContext();
+        final SiteDataWS siteDataWS = new SiteDataWS(spContext);
+        WebState ws = TestConfiguration.createWebState(TestConfiguration.initState(), spContext, TestConfiguration.sharepointUrl, 1);
+        final List<ListState> listCollection = siteDataWS.getNamedLists(ws);
 
         assertNotNull(listCollection);
         for (int i = 0; i < listCollection.size(); i++) {
@@ -58,47 +60,52 @@ public class ListStateTest extends TestCase {
             }
         }
 
-        final SPDocument doc1 = new SPDocument("1",
+        final SPDocument doc1 = new SPDocument("2",
                 "http://www.host.mycomp.com/test1", new GregorianCalendar(2007,
                         1, 1), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-				SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
-				SPType.SP2007);
-        final SPDocument doc2 = new SPDocument("2",
+                SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
+                SPType.SP2007);
+        final SPDocument doc2 = new SPDocument("3",
                 "http://www.host.mycomp.com/test2", new GregorianCalendar(2007,
                         1, 2), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-				SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
-				SPType.SP2007);
-        final SPDocument doc3 = new SPDocument("3",
+                SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
+                SPType.SP2007);
+        final SPDocument doc3 = new SPDocument("4",
                 "http://www.host.mycomp.com/test3", new GregorianCalendar(2007,
                         1, 3), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-				SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
-				SPType.SP2007);
+                SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
+                SPType.SP2007);
+        final SPDocument doc4 = new SPDocument("5",
+                "http://www.host.mycomp.com/test4", new GregorianCalendar(2007,
+                        1, 3), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
+                SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
+                SPType.SP2007);
 
         // final DateTime time = Util.parseDate("20080702T140516.411+0000");
 
-		this.testList = TestConfiguration.getListState("http://", 1, 1, "", ws);
+        this.testList = TestConfiguration.getListState("http://", 1, 6, "", ws);
         this.testList.setType(SPConstants.GENERIC_LIST);
 
         final ArrayList<SPDocument> crawlQueueList1 = new ArrayList<SPDocument>();
         crawlQueueList1.add(doc1);
         crawlQueueList1.add(doc2);
         crawlQueueList1.add(doc3);
+        crawlQueueList1.add(doc4);
 
         this.testList.setCrawlQueue(crawlQueueList1);
-
+        Collections.sort(this.testList.getCrawlQueue());
         this.testList.dumpCrawlQueue();
 
         System.out.println("Test List being used: "
                 + this.testList.getPrimaryKey());
 
-        System.out.println();
     }
 
-	public void testCompareTo() throws SharepointException {
+    public void testCompareTo() throws SharepointException {
         System.out.println("Testing compareTo()...");
         System.out.println("Creating temporary listState to compare");
         // DateTime time = Util.parseDate("20080702T140520.411+0000");
-		final ListState lst1 = new ListState("", "", "", null, "", "", null);
+        final ListState lst1 = new ListState("", "", "", null, "", "", null);
         lst1.setLastMod(this.testList.getLastMod());
         final int i = this.testList.compareTo(lst1);
         assertEquals(i, 0);
@@ -112,7 +119,7 @@ public class ListStateTest extends TestCase {
         System.out.println("[ getDateForWSRefresh() ] Test Completed.");
     }
 
-	public void testDOCToDOMToDOC() throws Exception {
+    public void testDOCToDOMToDOC() throws Exception {
         GlobalState gs1 = TestConfiguration.initState();
         FileOutputStream fos = new FileOutputStream(
                 TestConfiguration.googleConnectorWorkDir);
@@ -124,9 +131,9 @@ public class ListStateTest extends TestCase {
         TestConfiguration.initState().dumpStateToXML(handler);
         fos.close();
 
-		GlobalState gs2 = TestConfiguration.initState();
-		gs2.loadState();
-		assertEquals(gs1.getAllWebStateSet(), gs2.getAllWebStateSet());
+        GlobalState gs2 = TestConfiguration.initState();
+        gs2.loadState();
+        assertEquals(gs1.getAllWebStateSet(), gs2.getAllWebStateSet());
     }
 
     public void testCachedDeletedID() {
@@ -137,9 +144,9 @@ public class ListStateTest extends TestCase {
         System.out.println("[ cachedDeletedIDs() ] Test Completed.");
     }
 
-	public void testExtraIDs() throws SharepointException {
+    public void testExtraIDs() throws SharepointException {
         System.out.println("Testing ExtraIDs handling...");
-		final ListState state = new ListState("", "", "", null, "", "", null);
+        final ListState state = new ListState("", "", "", null, "", "", null);
         state.setType(SPConstants.DOC_LIB);
         state.setUrl("http://host.mycom.co.in:25000/sanity/Test Library/Forms/AllItems.aspx");
         state.setListConst("sanity/Test Library/");
@@ -160,7 +167,7 @@ public class ListStateTest extends TestCase {
         }
     }
 
-	public void testUpdateExtraIDAsAttachment() throws SharepointException {
+    public void testUpdateExtraIDAsAttachment() throws SharepointException {
         System.out.println("Testing the attachment count handling ...");
         this.testList.updateExtraIDAsAttachment("1", "http://host.mycom.co.in:25000/sanity/Test Library/Forms/AllItems.aspx");
         this.testList.updateExtraIDAsAttachment("1", "http://host.mycom.co.in:25000/sanity/Test Library2/Forms/AllItems.aspx");
@@ -173,5 +180,17 @@ public class ListStateTest extends TestCase {
         final Matcher match = pat.matcher("$");
         System.out.println(match.find());
         System.out.println("[ updateExtraIDAsAttachment() ] Test Completed.");
+    }
+
+    public void testGetLastDocForWSRefresh() {
+        int i = 1;
+        for (SPDocument doc : testList.getCrawlQueue()) {
+            if (i % 2 == 0) {
+                doc.setAction(ActionType.DELETE);
+            }
+            ++i;
+        }
+        SPDocument doc = testList.getLastDocForWSRefresh();
+        assertEquals(ActionType.ADD, doc.getAction());
     }
 }

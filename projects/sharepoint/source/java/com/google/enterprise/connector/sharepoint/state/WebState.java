@@ -229,7 +229,7 @@ public class WebState implements StatefulObject {
     }
 
     /**
-     * For Web Satate equality comparison
+     * For Web State equality comparison
      */
     public boolean equals(final Object obj) {
         if ((null != obj) && (obj instanceof WebState)) {
@@ -271,7 +271,7 @@ public class WebState implements StatefulObject {
     }
 
     /**
-     * Signals that the recrawl cycle is over and any non-exisitng ListState can
+     * Signals that the recrawl cycle is over and any non-existing ListState can
      * be deleted
      *
      * @param spContext
@@ -305,30 +305,18 @@ public class WebState implements StatefulObject {
                         // were inside this list. Not required for alerts.
                         final List<SPDocument> deletedDocs = new ArrayList<SPDocument>();
                         final int biggestID = list.getBiggestID();
-                        int maxID = 1; // start from 1 because 0 is not a valid
-                        // itemID. SharePoint starts allocating
-                        // ID from 1.
 
-                        // If we have sent some delete feeds in previous cycle,
-                        // start from the next ID. Use LastDoc for this.
-                        if ((list.getLastDocument() != null)
-                                && ActionType.DELETE.equals(list.getLastDocument().getAction())) {
-                            try {
-                                maxID = Integer.parseInt(Util.getOriginalDocId(list.getLastDocument().getDocId(), FeedType.CONTENT_FEED));
-                            } catch (final Exception e) {
-                                /*
-                                 * If the list is deleted and the lastDoc
-                                 * crawled is the list itself then it means that
-                                 * we have not sent any delete feeds yet. Hence,
-                                 * start from 0. Remember that for deleted list,
-                                 * lastCrawledDoc is never set to the list
-                                 * itself.
-                                 */
-                            }
-                        }
+                        // start from 1 because 0 is not a valid itemID.
+                        // SharePoint starts allocating ID from 1.
+                        int maxID = 1;
+                        // TODO: find the largest ID which is currently there in
+                        // the list's delete cache and start from there instead
+                        // of always starting from 1.
+
                         LOGGER.log(Level.INFO, "List [ " + list.getListURL()
                                 + " ] has been deleted. Using BiggestID [ "
-                                + biggestID + " ] to construct delete feeds.");
+                                + biggestID
+                                + " ] and to construct delete feeds.");
                         while ((maxID <= biggestID)
                                 && (deletedDocs.size() < spContext.getBatchHint())) {
                             if (list.isInDeleteCache(new Integer(maxID).toString())) {

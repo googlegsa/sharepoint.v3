@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -39,8 +38,8 @@ import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
  * Represents a SharePoint List/Library as a stateful object
@@ -91,17 +90,6 @@ public class ListState implements StatefulObject {
     private Set<String> cachedDeletedIDs = new HashSet<String>();
 
     private static final Logger LOGGER = Logger.getLogger(ListState.class.getName());
-
-    /**
-     * This doc is the last doc sent to CM but, we are not sure if it has been
-     * fed to GSA or not. This happens when the documents are being sent to CM
-     * as per the call to {@link SPDocumentList#nextDocument()} but the
-     * {@link SPDocumentList#checkpoint()} has not yet been called. Once
-     * checkpoint is called, we can assure that all the docs are fed to GSA. And
-     * at that point of time only, this lastDocument is converted to
-     * {@link ListState#lastDocProcessedForWS}
-     */
-    SPDocument lastDocument;
 
     /**
      * This doc is the last doc sent to CM and successfully fed to GSA with
@@ -452,18 +440,36 @@ public class ListState implements StatefulObject {
     }
 
     /**
-     * Return the most suitable DocID to start the crawl. Used in case of
-     * SP2007. Ideally we should start from the lastDoc. But if there is a crawl
-     * queue whose last entry is greater then the lastDoc, we'll start from the
-     * last doc of the crawl queue.
+     * Return the most suitable Document to start the crawl. Used in case of
+     * SP2007. Ideally we should start from the lastDocProcessedForWS. But if
+     * the crawl queue has a document of ADD ActionType which is greater than
+     * lastDocProcessedForWS, we'll start from that doc of the crawl queue.
      *
      * @return {@link SPDocument}
      */
     public SPDocument getLastDocForWSRefresh() {
-        // We know for sure that checkPoint() marked this doc as the last
-        // successfully sent doc. So for next incremental call use this doc as
-        // reference
-        return lastDocProcessedForWS;
+        SPDocument lastDocFromCrawlQueue = getLastDocInCrawlQueueOfActionTypeADD();
+        if (null == lastDocFromCrawlQueue) {
+            return lastDocProcessedForWS;
+        } else if (lastDocFromCrawlQueue.compareTo(lastDocProcessedForWS) > 0) {
+            return lastDocFromCrawlQueue;
+        } else {
+            return lastDocProcessedForWS;
+        }
+    }
+
+    private SPDocument getLastDocInCrawlQueueOfActionTypeADD() {
+        if (null == crawlQueue || crawlQueue.size() == 0) {
+            return null;
+        } else {
+            for (int i = crawlQueue.size() - 1; i >= 0; --i) {
+                SPDocument lastDoc = crawlQueue.get(i);
+                if (ActionType.ADD.equals(lastDoc.getAction())) {
+                    return lastDoc;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -1021,37 +1027,6 @@ public class ListState implements StatefulObject {
     }
 
     /**
-     * @return the lastDocument
-     */
-    public SPDocument getLastDocument() {
-        return lastDocument;
-    }
-
-    /**
-     * setting lastDocCrawled has two effects: 1) doc is remembered. 2) if doc
-     * is present in the current crawlQueue, it is removed. It is not an error
-     * if doc is NOT present; thus, the client can do either this style: a)
-     * process the doc b) remove it from its local crawl queue c)
-     * setLastDocCrawled() d) setCrawlQueue() with its local crawl queue -- OR
-     * -- a) process the doc b) setLastDocCrawled() c) do
-     * getCrawlQueue().first() to get the next doc It is possible, or even
-     * likely,that 'doc' is not the first item in the queue. If we get a
-     * checkpoint from the Connector Manager, it could be the 100th of a
-     * 100-item queue, or the 50th, or in error cases it might even not be IN
-     * the queue. So the operation of this method is: 1) make sure the doc is in
-     * the queue, and if so: 2) remove everything up to and including the doc.
-     *
-     * @param lastDocument Content Feed -> If while discovering the docs we have
-     *            not yet fetched all the docs duw to the batchhint,
-     *            LastCrawlesDoc is set by the getListItemChangesSinceToken. If
-     *            we have fetched all the docs, LastCrawledDoc is set at the
-     *            time of checkpointing.
-     */
-    public void setLastDocument(final SPDocument lastDocument) {
-        this.lastDocument = lastDocument;
-    }
-
-    /**
      * @return the parentWeb
      */
     public WebState getParentWebState() {
@@ -1126,62 +1101,6 @@ public class ListState implements StatefulObject {
      */
     public void setLastCrawledDateTime(String lastCrawledDateTime) {
         this.lastCrawledDateTime = lastCrawledDateTime;
-    }
-
-    /**
-     * Checks if all the docs from the crawlqueue have been successfully pulled
-     * by CM using nextDocument().
-     * <p>
-     * Basically it ensures that the last document sent from this list is also
-     * the last document in the crawlqueue
-     * </p>
-     *
-     * @return True if the last document sent from this list and the last
-     *         document in the list are the same and false otherwise
-     */
-    public boolean allDocsFed() {
-        if (lastDocument != null && crawlQueue != null && crawlQueue.size() > 0) {
-            return lastDocument.equals(crawlQueue.get(crawlQueue.size() - 1));
-        }
-        return false;
-    }
-
-    /**
-     * Clears all the docs in the crawl queue and also sets lastDocument to null
-     * since it has no reference in the crawl queue.
-     */
-    public void emptyCrawlQueue() {
-        if (crawlQueue != null) {
-            crawlQueue.clear();
-        }
-        lastDocument = null;
-    }
-
-    /**
-     * Returns an iterator to the crawl queue starting from the next position of
-     * the index of last document sent to CM. This is required when the list has
-     * discovered more docs than the batchhint and hence the CM will fetch them
-     * in next batch traversal. Need to point to the correct sublist
-     *
-     * @return Iterator to the sublist which was not pulled by CM during last
-     *         batch traversal
-     */
-    public Iterator<SPDocument> getCurrentCrawlQueueIterator() {
-        if (crawlQueue != null && crawlQueue.size() > 0) {
-            int currentDocPos = crawlQueue.indexOf(lastDocument) + 1;
-            if (currentDocPos < 0) {
-                // This is the case when no docs from this list have been sent
-                // even though discovered in some previous batch traversals. So
-                // set the current position to be 0. Basically this implies
-                // returning an iterator for the entire queue rather than a sub
-                // list
-                currentDocPos = 0;
-            }
-            List<SPDocument> docList = crawlQueue.subList(currentDocPos, crawlQueue.size());
-            return docList.iterator();
-        }
-
-        return null;
     }
 
     /**

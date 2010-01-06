@@ -143,19 +143,14 @@ public class SPDocumentList implements DocumentList {
                         + spDocument.getUrl());
             }
 
-			if (null == spDocument.getParentList()) {
-				String message = "Parent List for the document is not found. docURL [ "
+            if (null == spDocument.getParentList()) {
+                String message = "Parent List for the document is not found. docURL [ "
                         + spDocument.getUrl();
 
                 LOGGER.log(Level.WARNING, message);
                 throw new SkippedDocumentException("Document skipped. "
                         + message);
             }
-
-            // Set the current doc as the last doc sent to CM. This will mark
-            // the current doc and its position in the crawlQueue. This info
-            // will be important when checkPoint() is called.
-			spDocument.getParentList().setLastDocument(spDocument);
 
         } while (!spDocument.isToBeFed());
 
@@ -166,7 +161,7 @@ public class SPDocumentList implements DocumentList {
         if (ActionType.DELETE.equals(spDocument.getAction())) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Sending DocID [ "
-						+ spDocument.getDocId() + " ] to CM for DELETE");
+                        + spDocument.getDocId() + " ] to CM for DELETE");
             }
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
             // Do Alias mapping before sending the doc
@@ -193,27 +188,12 @@ public class SPDocumentList implements DocumentList {
      * </p>
      */
     public String checkpoint() throws RepositoryException {
-
-        SPDocument spDoc = documents.get(docsFedIndexPosition - 1);
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.log(Level.CONFIG, "Checkpoint received at document docID [ "
-                    + spDoc.getDocId() + " ], docURL [ " + spDoc.getUrl()
-                    + " ], Action [ " + spDoc.getAction() + " ]. ");
-        }
-
-        // Set the last crawled web and list states which can be used by the
-        // batch traversal to know from where to look for pending documents
-        // from last batch traversal in the crawl queue that are supposed to
-        // be sent to GSA
-		globalState.setLastCrawledWeb(spDoc.getParentWeb());
-		globalState.setLastCrawledList(spDoc.getParentList());
-
         for (int i = 0; i < docsFedIndexPosition; i++) {
             // Process the liststate and its crawl queue for the given doc which
             // has been sent to CM and fed to GSA successfully
             processListStateforCheckPoint(documents.get(i));
         }
-
+        doCheckPoint();
         if (LOGGER.isLoggable(Level.CONFIG)) {
             LOGGER.log(Level.CONFIG, "checkpoint processed; saving GlobalState to disk.");
         }
@@ -418,11 +398,6 @@ public class SPDocumentList implements DocumentList {
      * connector should start traversing in next time</li>
      * <li>If the current document is the last document sent from its list, it
      * checks if any more docs are pending
-     * <ul>
-     * <li>In case docs are pending, the change token in rolled back</li>
-     * <li>In case all docs are done, change token is updated to the latest
-     * value</li>
-     * </ul>
      * </li>
      * <li>The document is removed from the list's crawl queue</li>
      * </ul>
@@ -433,7 +408,7 @@ public class SPDocumentList implements DocumentList {
      *            of individual lists
      */
     private void processListStateforCheckPoint(SPDocument spDocument) {
-		final ListState listState = spDocument.getParentList();
+        final ListState listState = spDocument.getParentList();
         final String currentID = Util.getOriginalDocId(spDocument.getDocId(), spDocument.getFeedType());
 
         // for deleted documents, make sure to remove the extraid from list
@@ -459,17 +434,6 @@ public class SPDocumentList implements DocumentList {
             if (!isCurrentDocForList
                     && !SPConstants.OBJTYPE_ATTACHMENT.equals(spDocument.getObjType())) {
                 listState.addToDeleteCache(currentID);
-
-				// Though, a delete-feed document is never set as the LastDoc in
-				// state file as it will create problem while WS calls. This, is
-				// an special case where the list has been deleted and we are
-				// sure that we are not going to make any web service calls for
-				// this list (even if we do, it wont update any info in the
-				// connector's state because the call will fail). So, we can
-				// make use of this LastDoc information in another way: like a
-				// starting point (ID) from where the next delete feed documents
-				// will be created. Refer to WebState.endRecrawl().
-				listState.setLastDocProcessedForWS(spDocument);
             }
             if (!listState.isExisting() && isCurrentDocForList) {
                 // Last delete feed of a non-existent list has been sent
@@ -480,58 +444,17 @@ public class SPDocumentList implements DocumentList {
                             + listState.getListURL() + " ].");
                 }
 
-				if (spDocument.getParentWeb() != null) {
-					spDocument.getParentWeb().removeListStateFromKeyMap(listState);
-					spDocument.getParentWeb().removeListStateFromSet(listState);
+                if (spDocument.getParentWeb() != null) {
+                    spDocument.getParentWeb().removeListStateFromKeyMap(listState);
+                    spDocument.getParentWeb().removeListStateFromSet(listState);
                 }
             }
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
             listState.setLastDocProcessedForWS(spDocument);
 
-
             // Update ExtraIDs
-			if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {
+            if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {
                 updateExtraIDs(listState, spDocument, currentID);
-            }
-        }
-
-        // The basic idea here is to rollback the change token in case there are
-        // still docs pending to be pulled by CM or update to the latest one if
-        // all docs have been sent. But this has to be done only
-        // once. It cannot be done for every document as it might overwrite the
-        // token with some invalid value and make the connector start to look
-        // for any updates in future from some invalid state. So, the best way
-        // to address this is to do this check only when the current document
-        // from the document list is the last document sent from this liststate.
-        // There cannot be the case where last document sent to CM from this
-        // document list is after the last document sent for this list. If there
-        // is such state, then something is wrong and is an invalid state.
-        // Imp. Note: One might consider that what is the point in dealing with
-        // change token if the list is deleted from web state since it is not
-        // existing anymore. The check will get complicated when combined with
-        // the check when the list exists and last document had ACTION=DELETE.
-        // Best is to revert OR update the token irrespective of whether the
-        // list exists or not.
-        if (spDocument.equals(listState.getLastDocument())) {
-            if (listState.allDocsFed()) {
-                // The condition here ensures that we are done with all docs
-                // from the crawlqueue of the list and hence need to update the
-                // change token
-                if (LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.log(Level.CONFIG, "Setting the change token to its latest cached value. All the documents from the list's crawl queue is sent. listURL [ "
-                            + listState.getListURL() + " ]. ");
-                }
-                listState.usingLatestToken();
-            } else if ((listState.getNextPage() == null)
-					&& (listState.getChangeToken() != null && listState.getChangeToken().trim().length() != 0)) {
-                // There are docs pending in this list, so roll back the change
-                // token
-                if (LOGGER.isLoggable(Level.CONFIG)) {
-                    LOGGER.log(Level.CONFIG, "There are some docs left in the crawl queue of list [ "
-                            + listState.getListURL()
-                            + " ] at the time of checkpointing. rolling back the change token to its previous value.");
-                }
-                listState.rollbackToken();
             }
         }
 
@@ -541,10 +464,85 @@ public class SPDocumentList implements DocumentList {
                     + listState.getListURL()
                     + " ] is being removed from crawl queue");
         }
-		// Remove the document from the crawl queue. No need to remove the
-		// documents from DocumentList as the whole list is discarded by the CM
-		// at the completion of this traversal.
+        // Remove the document from the crawl queue. No need to remove the
+        // documents from DocumentList as the whole list is discarded by the CM
+        // at the completion of this traversal.
         listState.removeDocFromCrawlQueue(spDocument);
+    }
+
+    /**
+     * All the logics which are governed by the document where checkpoint has
+     * occurred. This includes two things: 1. Setting the lastList and
+     * lastParent in globalstate 2. rolling back the change token and getting
+     * back the original token depending on whether all the docs discovered are
+     * also sent to CM.
+     */
+    private void doCheckPoint() {
+        SPDocument spDocument = documents.get(docsFedIndexPosition - 1);
+        if (LOGGER.isLoggable(Level.CONFIG)) {
+            LOGGER.log(Level.CONFIG, "Checkpoint received at document docID [ "
+                    + spDocument.getDocId() + " ], docURL [ "
+                    + spDocument.getUrl() + " ], Action [ "
+                    + spDocument.getAction() + " ]. ");
+        }
+
+        // Set the last crawled web and list states which can be used by the
+        // batch traversal to know from where to look for pending documents
+        // from last batch traversal in the crawl queue that are supposed to
+        // be sent to GSA
+        globalState.setLastCrawledWeb(spDocument.getParentWeb());
+        globalState.setLastCrawledList(spDocument.getParentList());
+
+        final ListState listState = spDocument.getParentList();
+
+        // The basic idea here is to rollback the change token in case there are
+        // more docs pending to be pulled by CM. Or, update to the latest one if
+        // all
+        // docs have been sent. This is done only for the list which is the
+        // parent
+        // list of the document where checkpoint has occurred. There is no need
+        // to
+        // do this for all other lists from where documents might have been
+        // sent. The reason being, while construction of SPDocumentList, all the
+        // lists are scanned in sequence and the next list is scanned only after
+        // all
+        // the docs from the previous list are filled into the DocumentList.
+        // Hence,
+        // it's safe to assume that the crawl queues of all the lists which have
+        // been used prior to the parentList of checkpoint document are
+        // completely
+        // processed and are empty now. And, in that case, there is no need to
+        // manipulate the change token for those lists.
+
+        // It might be the case that the parentlist/parentweb of the document
+        // has been deleted from the connector's state as per the call to
+        // processListStateForCheckpoint. And in that case, all the processing
+        // being done here is useless though, it's not harmful. But, considering
+        // the fact that such cases of lists/webs deletion is rare, we are
+        // avoiding
+        // some extra checks and complications in the code.
+        if (null == listState.getCrawlQueue()
+                || listState.getCrawlQueue().size() == 0) {
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.CONFIG, "Setting the change token to its latest cached value. All the documents from the list's crawl queue is sent. listURL [ "
+                        + listState.getListURL() + " ]. ");
+            }
+            listState.usingLatestToken();
+        } else if ((listState.getNextPage() == null)
+                && (listState.getChangeToken() != null && listState.getChangeToken().trim().length() != 0)) {
+            // The current check ensures that the change might have been updated
+            // for the list at the time of document discovery.
+            // But, since all the docs have not yet been fed, the change token
+            // must be roll back to its previous value.
+            // Connector might be restarted at this point of time. And, it's not
+            // safe to keep the updated change token in the connector's state.
+            if (LOGGER.isLoggable(Level.CONFIG)) {
+                LOGGER.log(Level.CONFIG, "There are some docs left in the crawl queue of list [ "
+                        + listState.getListURL()
+                        + " ] at the time of checkpointing. rolling back the change token to its previous value.");
+            }
+            listState.rollbackToken();
+        }
     }
 
     private void updateExtraIDs(ListState listState, SPDocument spDocument,
