@@ -10,7 +10,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 2.4.2 Build1, 22 December, 2009
+Release 2.4.2 Build2, 07 January, 2010
 =======================================
 
 Introduction
@@ -79,7 +79,7 @@ Known Issues/Limitations
    -- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
       by SharePoint's Change log. In such cases the connector logs as WARNING message. The connector will have to be reset and crawl
       and index all content once more
-      Workaround: Re-crawl all content by resetting the conenctor
+      Workaround: Re-crawl all content by resetting the connector
 
 5) In this release, following features are supported only on SharePoint 2007
    - Fix for issue#53 (Connector should support SharePoint farm )
