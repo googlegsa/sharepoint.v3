@@ -660,8 +660,8 @@ public class SharepointClient {
                 if (lastDoc != null) {
                     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()
                             && ActionType.DELETE.equals(lastDoc.getAction())) {
-                        listState.setChangeToken(null);
-                        listState.setCachedPrevChangeToken(null);
+                        listState.saveNextChangeTokenForWSCall(null);
+                        listState.commitChangeTokenForWSCall();
                         listState.setLastDocProcessedForWS(null);
                         listState.setCrawlQueue(null);
                         if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {

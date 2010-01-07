@@ -468,6 +468,15 @@ public class SPDocumentList implements DocumentList {
         // documents from DocumentList as the whole list is discarded by the CM
         // at the completion of this traversal.
         listState.removeDocFromCrawlQueue(spDocument);
+
+        if ((null == listState.getCrawlQueue() || listState.getCrawlQueue().size() == 0)
+                && null == listState.getNextPage()
+                && null != listState.getNextChangeTokenForSubsequectWSCalls()) {
+            // Since, all the docs are sent, commit the next suitable change
+            // token value as current change token which gets used for the
+            // subsequent WS calls.
+            listState.commitChangeTokenForWSCall();
+        }
     }
 
     /**
@@ -492,57 +501,6 @@ public class SPDocumentList implements DocumentList {
         // be sent to GSA
         globalState.setLastCrawledWeb(spDocument.getParentWeb());
         globalState.setLastCrawledList(spDocument.getParentList());
-
-        final ListState listState = spDocument.getParentList();
-
-        // The basic idea here is to rollback the change token in case there are
-        // more docs pending to be pulled by CM. Or, update to the latest one if
-        // all
-        // docs have been sent. This is done only for the list which is the
-        // parent
-        // list of the document where checkpoint has occurred. There is no need
-        // to
-        // do this for all other lists from where documents might have been
-        // sent. The reason being, while construction of SPDocumentList, all the
-        // lists are scanned in sequence and the next list is scanned only after
-        // all
-        // the docs from the previous list are filled into the DocumentList.
-        // Hence,
-        // it's safe to assume that the crawl queues of all the lists which have
-        // been used prior to the parentList of checkpoint document are
-        // completely
-        // processed and are empty now. And, in that case, there is no need to
-        // manipulate the change token for those lists.
-
-        // It might be the case that the parentlist/parentweb of the document
-        // has been deleted from the connector's state as per the call to
-        // processListStateForCheckpoint. And in that case, all the processing
-        // being done here is useless though, it's not harmful. But, considering
-        // the fact that such cases of lists/webs deletion is rare, we are
-        // avoiding
-        // some extra checks and complications in the code.
-        if (null == listState.getCrawlQueue()
-                || listState.getCrawlQueue().size() == 0) {
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "Setting the change token to its latest cached value. All the documents from the list's crawl queue is sent. listURL [ "
-                        + listState.getListURL() + " ]. ");
-            }
-            listState.usingLatestToken();
-        } else if ((listState.getNextPage() == null)
-                && (listState.getChangeToken() != null && listState.getChangeToken().trim().length() != 0)) {
-            // The current check ensures that the change might have been updated
-            // for the list at the time of document discovery.
-            // But, since all the docs have not yet been fed, the change token
-            // must be roll back to its previous value.
-            // Connector might be restarted at this point of time. And, it's not
-            // safe to keep the updated change token in the connector's state.
-            if (LOGGER.isLoggable(Level.CONFIG)) {
-                LOGGER.log(Level.CONFIG, "There are some docs left in the crawl queue of list [ "
-                        + listState.getListURL()
-                        + " ] at the time of checkpointing. rolling back the change token to its previous value.");
-            }
-            listState.rollbackToken();
-        }
     }
 
     private void updateExtraIDs(ListState listState, SPDocument spDocument,

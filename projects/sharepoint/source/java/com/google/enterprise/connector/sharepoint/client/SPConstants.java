@@ -241,7 +241,13 @@ public class SPConstants {
     public static final String STATE_TITLE = "Title";
     public static final String STATE_TYPE = "Type";
     public static final String STATE_URL = "URL";
+    // TODO: rename it to CurrentChangeToken in future to make better sense.
+    // Keeping it as it is for now so that already running connectors does not
+    // break
     public static final String STATE_CHANGETOKEN = "ChangeToken";
+    // TODO: rename it to NextChangeToken in future to make better sense.
+    // Keeping it as it is for now so that already running connectors does not
+    // break
     public static final String STATE_CACHED_CHANGETOKEN = "CachedChangeToken";
     public static final String STATE_EXTRAIDS_FOLDERS = "FolderItemIDs";
     public static final String STATE_EXTRAIDS_ATTACHMENTS = "Attachments";

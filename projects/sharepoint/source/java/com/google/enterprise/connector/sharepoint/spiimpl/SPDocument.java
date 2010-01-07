@@ -63,30 +63,28 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     private String author = SPConstants.NO_AUTHOR;
     private String objType = SPConstants.NO_OBJTYPE;
     private String parentWebTitle = "No Title";
-
-	private FeedType feedType;
-	private SPType spType;
-
-    // content of documents
-	private InputStream content = null;
-    private String content_type = null;
-
-	// By default mark it as to be added.
-	private ActionType action = ActionType.ADD;
-
+    private FeedType feedType;
+    private SPType spType;
+    private ActionType action = ActionType.ADD;
     private String folderLevel;
-	private ListState parentList;
-	private WebState parentWeb;
+    // to be used for updating extraId during checkpoint
+    private String fileref = null;
 
-    // Added for document content download
+    // Attributes which are set at the time when SPDOcumentList is constructed.
+    // No assumptions should be made based on these attributes very early during
+    // traversal.
+    private ListState parentList;
+    private WebState parentWeb;
     private String contentDwnldURL;
     private SharepointClientContext sharepointClientContext;
 
-    // The document size
+    // Attributes which are set when requested by CM during the findProperty
+    // call.
+    // No assumptions should be made based on these attributes very early during
+    // traversal.
+    private InputStream content = null;
+    private String content_type = null;
     private int fileSize = -1;
-
-	// to be used for updating extraId during checkpoint
-	private String fileref = null;
 
     private final Logger LOGGER = Logger.getLogger(SPDocument.class.getName());
 
@@ -117,19 +115,19 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     }
 
     public ListState getParentList() {
-		return parentList;
+        return parentList;
     }
 
     public void setParentList(final ListState list) {
-		parentList = list;
-	}
+        parentList = list;
+    }
 
     public WebState getParentWeb() {
-		return parentWeb;
-	}
+        return parentWeb;
+    }
 
     public void setParentWeb(final WebState web) {
-		parentWeb = web;
+        parentWeb = web;
     }
 
     /**
@@ -145,7 +143,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public SPDocument(final String inDocId, final String inUrl,
             final Calendar inLastMod, final String inAuthor,
             final String inObjType, final String inParentWebTitle,
-			final FeedType inFeedType, final SPType inSpType) {
+            final FeedType inFeedType, final SPType inSpType) {
         docId = inDocId;
         url = inUrl;
         lastMod = inLastMod;
@@ -216,7 +214,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * @return document properties
      */
-	public ArrayList<Attribute> getAllAttrs() {
+    public ArrayList<Attribute> getAllAttrs() {
         return attrs;
     }
 
@@ -291,8 +289,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public boolean equals(final Object obj) {
         if (obj instanceof SPDocument) {
             final SPDocument doc = (SPDocument) obj;
-			if (doc != null && docId != null && docId.equals(doc.getDocId())
-					&& url != null && (url.equals(doc.getUrl()))) {
+            if (doc != null && docId != null && docId.equals(doc.getDocId())
+                    && url != null && (url.equals(doc.getUrl()))) {
                 return true;
             }
         }
@@ -318,33 +316,33 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return -1;
         }
 
-		if (SPType.SP2007.equals(getSPType())
-				&& SPType.SP2003 == doc.getSPType()) {
+        if (SPType.SP2007.equals(getSPType())
+                && SPType.SP2003 == doc.getSPType()) {
             return -1;
-		} else if (SPType.SP2007 == doc.getSPType()
-				&& SPType.SP2003 == getSPType()) {
+        } else if (SPType.SP2007 == doc.getSPType()
+                && SPType.SP2003 == getSPType()) {
             return 1;
         }
 
-		// If an item and its corresponding attachment is being compared, item
-		// should be after the attachment.
-		// This is because we want to send all the attachments before we send
-		// the item itself.
-		// This way, the item can serve as a marker for the completion of all
-		// the attachments. Useful during checkpoint.
-		if (SPConstants.OBJTYPE_ATTACHMENT.equals(objType)
-				&& SPConstants.OBJTYPE_LIST_ITEM.equals(doc.getObjType())
-				&& docId.endsWith(doc.getDocId())) {
-			return -1;
-		} else if (SPConstants.OBJTYPE_ATTACHMENT.equals(doc.getObjType())
-				&& SPConstants.OBJTYPE_LIST_ITEM.equals(objType)
-				&& doc.getDocId().endsWith(docId)) {
-			return 1;
-		}
+        // If an item and its corresponding attachment is being compared, item
+        // should be after the attachment.
+        // This is because we want to send all the attachments before we send
+        // the item itself.
+        // This way, the item can serve as a marker for the completion of all
+        // the attachments. Useful during checkpoint.
+        if (SPConstants.OBJTYPE_ATTACHMENT.equals(objType)
+                && SPConstants.OBJTYPE_LIST_ITEM.equals(doc.getObjType())
+                && docId.endsWith(doc.getDocId())) {
+            return -1;
+        } else if (SPConstants.OBJTYPE_ATTACHMENT.equals(doc.getObjType())
+                && SPConstants.OBJTYPE_LIST_ITEM.equals(objType)
+                && doc.getDocId().endsWith(docId)) {
+            return 1;
+        }
 
         int comparison = 0;
 
-		if (SPType.SP2007.equals(getSPType())) {
+        if (SPType.SP2007.equals(getSPType())) {
             if ((folderLevel != null) || (doc.folderLevel != null)) {
                 if ((folderLevel != null) && (doc.folderLevel != null)
                         && (folderLevel.length() != 0)
@@ -417,7 +415,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return new SPProperty(SpiConstants.PROPNAME_CONTENTURL,
                     new StringValue(getUrl()));
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
-			if (FeedType.CONTENT_FEED == getFeedType()
+            if (FeedType.CONTENT_FEED == getFeedType()
                     && ActionType.ADD.equals(getAction())) {
                 if (null == content) {
                     String status = downloadContents();
@@ -430,7 +428,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         new BinaryValue(content));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_MIMETYPE)) {
-			if (FeedType.CONTENT_FEED == getFeedType()
+            if (FeedType.CONTENT_FEED == getFeedType()
                     && ActionType.ADD.equals(getAction())) {
                 if (null == content) {
                     String status = downloadContents();
@@ -443,7 +441,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         new StringValue(content_type));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
-			if (FeedType.CONTENT_FEED != getFeedType()) {
+            if (FeedType.CONTENT_FEED != getFeedType()) {
                 return new SPProperty(SpiConstants.PROPNAME_SEARCHURL,
                         new StringValue(getUrl()));
             }
@@ -500,12 +498,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public Set<String> getPropertyNames() throws RepositoryException {
         final Set<String> s = new HashSet<String>();
         s.add(SPConstants.OBJECT_TYPE);
-		s.add(SPConstants.LIST_GUID);
+        s.add(SPConstants.LIST_GUID);
         s.add(SPConstants.SPAUTHOR);
         s.add(SPConstants.PARENT_WEB_TITLE);
 
         // get the "extra" metadata fields, including those added by user:
-		for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
+        for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
             final Attribute attr = (Attribute) iter.next();
             s.add(attr.getName().toString());
         }
@@ -649,7 +647,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * @return the feedType
      */
-	public FeedType getFeedType() {
+    public FeedType getFeedType() {
         return feedType;
     }
 
@@ -684,7 +682,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * @return the spType
      */
-	public SPType getSPType() {
+    public SPType getSPType() {
         return spType;
     }
 
@@ -736,11 +734,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         return url;
     }
 
-	public String getFileref() {
-		return fileref;
-	}
+    public String getFileref() {
+        return fileref;
+    }
 
     public void setFileref(String fileref) {
-		this.fileref = fileref;
-	}
+        this.fileref = fileref;
+    }
 }

@@ -68,20 +68,15 @@ public class ListState implements StatefulObject {
     private boolean sendListAsDocument;
 
     /**
-     * To store the the recent change token required to make the web service
-     * call next time.
+     * The change token which is used for making web service call.
      */
-    private String changeToken;
+    private String currentChangeToken;
+
     /**
-     * To store the the previous change token in memory. we might need to roll
-     * back.
+     * The next change token value whihc should be used for subsequent web
+     * service calls.
      */
-    private String CachedPrevChangeToken;
-    /**
-     * To keep track of the latest change token value that we might lose during
-     * rolling back.
-     */
-    private String LatestCachedChangeToken;
+    private String nextChangeToken;
 
     /**
      * To store all the extraIDs for which delete feed has been sent. This is
@@ -539,49 +534,54 @@ public class ListState implements StatefulObject {
     }
 
     /**
-     * @return the changeToken
+     * @return the suitable changeToken value for making WS call.
      */
-    public String getChangeToken() {
-        return changeToken;
+    public String getChangeTokenForWSCall() {
+        return currentChangeToken;
     }
 
     /**
-     * @param inChangeToken the changeToken to set
+     * Must not be exposed to the clients. Never make it public. The appropriate
+     * way of updating ChangeToken is to call
+     * {@link ListState#commitChangeTokenForWSCall()}
      */
-    public void setChangeToken(final String inChangeToken) {
-        CachedPrevChangeToken = changeToken;
-        changeToken = inChangeToken;
-        LatestCachedChangeToken = changeToken;
-        LOGGER.log(Level.CONFIG, "changeToken [ " + changeToken
-                + " ], CachedPrevChangeToken [ " + CachedPrevChangeToken
+    private void setChangeTokenForWSCall(String inChangeToken) {
+        currentChangeToken = inChangeToken;
+    }
+
+    /**
+     * Return a change token value which can be safely committed as current
+     * change token in {@link ListState#commitChangeTokenForWSCall()}
+     *
+     * @return the suitable changeToken value which can be committed as in
+     *         {@link ListState#commitChangeTokenForWSCall()}
+     */
+    public String getNextChangeTokenForSubsequectWSCalls() {
+        return nextChangeToken;
+    }
+
+    /**
+     * @param inChangeToken save it as the next change token to be used for WS
+     *            calls. Note that, this value is not picked up during the WS
+     *            call unless you call
+     *            {@link ListState#commitChangeTokenForWSCall()}
+     */
+    public void saveNextChangeTokenForWSCall(final String inChangeToken) {
+        nextChangeToken = inChangeToken;
+        LOGGER.log(Level.CONFIG, "currentChangeToken [ " + currentChangeToken
+                + " ], nextChangeToken [ " + nextChangeToken
                 + " ]. ");
     }
 
     /**
-     * rollback to the last used token;
+     * commits the internally saved next change token value as the current
+     * change token and reset the next change token.
      */
-    public void rollbackToken() {
-        LOGGER.log(Level.CONFIG, "Rolling back changeToken [ " + changeToken
-                + " ], to CachedPrevChangeToken [ " + CachedPrevChangeToken
-                + " ] .... ");
-        LatestCachedChangeToken = changeToken;
-        changeToken = CachedPrevChangeToken;
-        LOGGER.log(Level.CONFIG, "changeToken [ " + changeToken
-                + " ], CachedPrevChangeToken [ " + CachedPrevChangeToken
-                + " ], LatestChangeToken [ " + LatestCachedChangeToken + " ]. ");
-    }
-
-    /**
-     * Set the changeToken to its latest value which might have been rolled back
-     * to some older value
-     */
-    public void usingLatestToken() {
-        LOGGER.log(Level.CONFIG, "Using latest cached token [ "
-                + LatestCachedChangeToken + " ] as change token ..... ");
-        changeToken = LatestCachedChangeToken;
-        LOGGER.log(Level.CONFIG, "changeToken [ " + changeToken
-                + " ], CachedPrevChangeToken [ " + CachedPrevChangeToken
-                + " ]. ");
+    public void commitChangeTokenForWSCall() {
+        LOGGER.log(Level.CONFIG, "committing nextChangeToken [ "
+                + nextChangeToken + " ] as currentChangetoken");
+        currentChangeToken = nextChangeToken;
+        nextChangeToken = null;
     }
 
     /**
@@ -1034,20 +1034,6 @@ public class ListState implements StatefulObject {
     }
 
     /**
-     * @return the cachedPrevChangeToken
-     */
-    public String getCachedPrevChangeToken() {
-        return CachedPrevChangeToken;
-    }
-
-    /**
-     * @param cachedPrevChangeToken the cachedPrevChangeToken to set
-     */
-    public void setCachedPrevChangeToken(final String cachedPrevChangeToken) {
-        CachedPrevChangeToken = cachedPrevChangeToken;
-    }
-
-    /**
      * @return the listTitle
      */
     public String getListTitle() {
@@ -1137,17 +1123,16 @@ public class ListState implements StatefulObject {
         atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_CDATA, getType());
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(getType())) {
             if (SPType.SP2007 == getParentWebState().getSharePointType()) {
-                if ((getChangeToken() == null)
-                        || (getChangeToken().length() == 0)) {
-                    if ((getCachedPrevChangeToken() == null)
-                            || (getCachedPrevChangeToken().length() == 0)) {
-                        atts.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, "");
-                    } else {
-                        atts.addAttribute("", "", SPConstants.STATE_CACHED_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getCachedPrevChangeToken());
-                    }
-                } else {
-                    atts.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getChangeToken());
+                if ((getChangeTokenForWSCall() != null)
+                        && (getChangeTokenForWSCall().length() != 0)) {
+                    atts.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getChangeTokenForWSCall());
                 }
+                if ((getNextChangeTokenForSubsequectWSCalls() != null)
+                        && (getNextChangeTokenForSubsequectWSCalls().length() != 0)) {
+                    atts.addAttribute("", "", SPConstants.STATE_CACHED_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getNextChangeTokenForSubsequectWSCalls());
+
+                }
+
                 if (FeedType.CONTENT_FEED == feedType) {
                     atts.addAttribute("", "", SPConstants.STATE_BIGGESTID, SPConstants.STATE_ATTR_CDATA, String.valueOf(getBiggestID()));
 
@@ -1247,11 +1232,9 @@ public class ListState implements StatefulObject {
 
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(list.getType())) {
             if (SPType.SP2007 == web.getSharePointType()) {
-                list.setChangeToken(atts.getValue(SPConstants.STATE_CHANGETOKEN));
-                if ((list.getChangeToken() == null)
-                        || (list.getChangeToken().length() == 0)) {
-                    list.setCachedPrevChangeToken(atts.getValue(SPConstants.STATE_CACHED_CHANGETOKEN));
-                }
+                list.setChangeTokenForWSCall(atts.getValue(SPConstants.STATE_CHANGETOKEN));
+                list.saveNextChangeTokenForWSCall(atts.getValue(SPConstants.STATE_CACHED_CHANGETOKEN));
+
                 if (FeedType.CONTENT_FEED == feedType) {
                     try {
                         list.setBiggestID(Integer.parseInt(atts.getValue(SPConstants.STATE_BIGGESTID)));

@@ -188,14 +188,14 @@ public class ListsWS {
                     + listItemId + " ], List [ " + listName + " ].", e);
         }
 
-		// All the known attachments (discovered earlier and are their in the
-		// connector's state) are first collected into the knownAttachments and
-		// then all those which are still returned by the Web Service will be
-		// removed. This way, we'll be able to track the deleted attachments.
-		List<String> knownAttachments = null;
-		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-			knownAttachments = baseList.getAttachmntURLsFor(listItemId);
-		}
+        // All the known attachments (discovered earlier and are their in the
+        // connector's state) are first collected into the knownAttachments and
+        // then all those which are still returned by the Web Service will be
+        // removed. This way, we'll be able to track the deleted attachments.
+        List<String> knownAttachments = null;
+        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+            knownAttachments = baseList.getAttachmntURLsFor(listItemId);
+        }
 
         if (res != null) {
             final MessageElement[] me = res.get_any();
@@ -213,16 +213,16 @@ public class ListsWS {
                                     LOGGER.config("included URL [" + url + " ]");
 
                                     String modifiedID = listItemId;
-									if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                                    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                                         modifiedID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
                                                 + "["
                                                 + url
                                                 + "]"
                                                 + listItem.getDocId();
 
-										if (knownAttachments.contains(url)) {
-											knownAttachments.remove(url);
-										}
+                                        if (knownAttachments.contains(url)) {
+                                            knownAttachments.remove(url);
+                                        }
                                     }
                                     final SPDocument doc = new SPDocument(
                                             modifiedID,
@@ -230,9 +230,9 @@ public class ListsWS {
                                             baseList.getLastModCal(),
                                             SPConstants.NO_AUTHOR,
                                             SPConstants.OBJTYPE_ATTACHMENT,
-											baseList.getParentWebState().getTitle(),
+                                            baseList.getParentWebState().getTitle(),
                                             sharepointClientContext.getFeedType(),
-											listItem.getSPType());
+                                            listItem.getSPType());
 
                                     listAttachments.add(doc);
                                 } else {
@@ -249,24 +249,24 @@ public class ListsWS {
                 + "] new/updated attachments for listItem [ "
                 + listItem.getUrl() + "]. ");
 
-		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-			// All the urls which have been left in knownAttachments are
-			// considered to be deleted.
-			for (String attchmnt_url : knownAttachments) {
-				final String docID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
-						+ "[" + attchmnt_url + "]" + listItem.getDocId();
-				final SPDocument attchmnt = new SPDocument(docID, attchmnt_url,
-						baseList.getLastModCal(), SPConstants.NO_AUTHOR,
-						SPConstants.OBJTYPE_ATTACHMENT,
-						baseList.getParentWebState().getTitle(),
-						sharepointClientContext.getFeedType(),
-						baseList.getParentWebState().getSharePointType());
-				attchmnt.setAction(ActionType.DELETE);
-				listAttachments.add(attchmnt);
-				LOGGER.log(Level.INFO, "Sending attachment [" + attchmnt_url
-						+ "] for listItem [ " + listItem.getUrl()
-						+ "] as a delete feed. ");
-			}
+        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+            // All the urls which have been left in knownAttachments are
+            // considered to be deleted.
+            for (String attchmnt_url : knownAttachments) {
+                final String docID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
+                        + "[" + attchmnt_url + "]" + listItem.getDocId();
+                final SPDocument attchmnt = new SPDocument(docID, attchmnt_url,
+                        baseList.getLastModCal(), SPConstants.NO_AUTHOR,
+                        SPConstants.OBJTYPE_ATTACHMENT,
+                        baseList.getParentWebState().getTitle(),
+                        sharepointClientContext.getFeedType(),
+                        baseList.getParentWebState().getSharePointType());
+                attchmnt.setAction(ActionType.DELETE);
+                listAttachments.add(attchmnt);
+                LOGGER.log(Level.INFO, "Sending attachment [" + attchmnt_url
+                        + "] for listItem [ " + listItem.getUrl()
+                        + "] as a delete feed. ");
+            }
         }
 
         Collections.sort(listAttachments);
@@ -782,7 +782,7 @@ public class ListsWS {
                             relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
                             String folderPath = null;
                             if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
-								if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                                if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                                     try {
                                         list.updateExtraIDs(relativeURL, docId, true);
                                     } catch (SharepointException se) {
@@ -792,7 +792,7 @@ public class ListsWS {
                                                 + list.getListURL() + " ]. ", se);
                                     }
                                 }
-								folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
+                                folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
                                 if (folderPath == null) {
                                     continue;
                                 }
@@ -911,29 +911,29 @@ public class ListsWS {
         return listItems;
     }
 
-	/**
-	 * Used to get list items under a list. If a change token is specified, we
-	 * only get the changed items. If no change token is specified we get all
-	 * the items along with the list schema. CAML query that is used while
-	 * calling getListItemChangesSinceToken should only be used for items that
-	 * are returned and not for the changes. Because if the query stops any
-	 * itemID to be shown under the changes, web service returns wrong
-	 * information about the changes on that item. For example, a rename of ID 1
-	 * may be shown as deleted or so. Take care of this while making the first
-	 * call. If you are using a token to get the changes and the CAML query
-	 * specified may stop some element from getting shown, do not trust the
-	 * change info.
-	 * 
-	 * @param list : List whose items is to be retrieved
-	 * @param lastItemID : serves as a base for incremental crawl
-	 * @param allWebs : A collection to store any webs, discovered as part of
-	 *            discovering list items. Foe example link sites are stored as
-	 *            list items.
-	 * @param folderLevel : indicates a folder level if we have to start from
-	 *            that folder level. This is possible when some folder has been
-	 *            restored.
-	 * @return the list of documents as {@link SPDocument}
-	 */
+    /**
+     * Used to get list items under a list. If a change token is specified, we
+     * only get the changed items. If no change token is specified we get all
+     * the items along with the list schema. CAML query that is used while
+     * calling getListItemChangesSinceToken should only be used for items that
+     * are returned and not for the changes. Because if the query stops any
+     * itemID to be shown under the changes, web service returns wrong
+     * information about the changes on that item. For example, a rename of ID 1
+     * may be shown as deleted or so. Take care of this while making the first
+     * call. If you are using a token to get the changes and the CAML query
+     * specified may stop some element from getting shown, do not trust the
+     * change info.
+     *
+     * @param list : List whose items is to be retrieved
+     * @param lastItemID : serves as a base for incremental crawl
+     * @param allWebs : A collection to store any webs, discovered as part of
+     *            discovering list items. Foe example link sites are stored as
+     *            list items.
+     * @param folderLevel : indicates a folder level if we have to start from
+     *            that folder level. This is possible when some folder has been
+     *            restored.
+     * @return the list of documents as {@link SPDocument}
+     */
     public List<SPDocument> getListItemChangesSinceToken(final ListState list,
             final String lastItemID, final Set<String> allWebs,
             final String folderLevel) {
@@ -961,7 +961,7 @@ public class ListsWS {
         final GetListItemChangesSinceTokenQuery query = new GetListItemChangesSinceTokenQuery();
         final GetListItemChangesSinceTokenViewFields viewFields = new GetListItemChangesSinceTokenViewFields();
         final GetListItemChangesSinceTokenQueryOptions queryOptions = new GetListItemChangesSinceTokenQueryOptions();
-        String token = list.getChangeToken();
+        String token = list.getChangeTokenForWSCall();
 
         // Set token as null If it is blank, because the web service expects so,
         // otherwise it fails.
@@ -1067,7 +1067,7 @@ public class ListsWS {
                 + list.getListURL() + "] for feed action=ADD");
 
         // Process deleted IDs
-		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             try {
                 listItems.addAll(processDeletedItems(deletedIDs, list));
             } catch (Exception e) {
@@ -1075,45 +1075,21 @@ public class ListsWS {
             }
         }
 
-        /*
-         * Update nextPage if we have fetched all the items from this list.
-         */
-        if (lastChangeToken != null) {
-            if (list.getNextPage() == null) {
-                // Update Change Token if we have processed all the
-                // changes/items with the current Change token.
-				if ((list.getChangeToken() == null || list.getChangeToken().trim().length() == 0)
-                        && (list.getCachedPrevChangeToken() != null)) {
-                    // We have stored the first received change token during the
-                    // first complete crawl. Let's start from that change token
-                    // so that no change information is missed.
-                    LOGGER.log(Level.WARNING, "Picking the first change token to start incremental crawl for list [ "
-                            + list.getListURL() + " ] ");
-                    list.setChangeToken(list.getCachedPrevChangeToken());
-                } else if (!lastChangeToken.equals(list.getChangeToken())) {
-                    list.setChangeToken(lastChangeToken);
-                    LOGGER.log(Level.INFO, "Change Token Updated for list [ "
-                            + list.getListURL() + " ].");
-                }
-			} else if ((list.getChangeToken() == null || list.getChangeToken().trim().length() == 0)
-					&& (list.getCachedPrevChangeToken() == null || list.getCachedPrevChangeToken().trim().length() == 0)) {
-                /*
-                 * This is the first time we have received a change token for
-                 * this list. We must start the incremental crawl in future from
-                 * this change token. This is required because if we process the
-                 * first one complete crawl of the sites in batches because of
-                 * lesser batch hint, the change token is received in every
-                 * cycle will be the most recent and updated change token. If
-                 * some document on SharePoint gets modified during the time of
-                 * first complete crawl only, we can trace such modified docs
-                 * only if we use the first change token received, and not the
-                 * latest one.
-                 */
-                list.setCachedPrevChangeToken(lastChangeToken);
-                LOGGER.log(Level.INFO, "Caching the first received Change Token list [ "
-                        + list.getListURL() + " ].");
-            }
+        if (null != lastChangeToken
+                && (null == list.getNextChangeTokenForSubsequectWSCalls() || list.getNextChangeTokenForSubsequectWSCalls().trim().length() == 0)) {
+            // This is the first change token we have received for the first
+            // call to WS with the current change token. This first change
+            // token must only be used as the next change token for making
+            // subsequent WS calls. This is important because by the time we
+            // make another WS call with the same change token, some more
+            // changes could happen on the SharePoint and the change token
+            // that will be received in that case will be greater than the
+            // currently received first change token. Using the first change
+            // token as next token will ensure that we will not miss any
+            // such changes.
+            list.saveNextChangeTokenForWSCall(lastChangeToken);
         }
+
 
         /*
          * If we had received a numeric lastItemID, we must send at list one doc
@@ -1209,10 +1185,10 @@ public class ListsWS {
                     + currentItemID;
             final SPDocument doc = new SPDocument(docID, list.getListURL(),
                     list.getLastModCal(), SPConstants.NO_AUTHOR,
-					SPConstants.OBJTYPE_LIST_ITEM,
-					list.getParentWebState().getTitle(),
+                    SPConstants.OBJTYPE_LIST_ITEM,
+                    list.getParentWebState().getTitle(),
                     sharepointClientContext.getFeedType(),
-					list.getParentWebState().getSharePointType());
+                    list.getParentWebState().getSharePointType());
             doc.setAction(ActionType.DELETE);
             listItems.add(doc);
             count++;
@@ -1220,18 +1196,18 @@ public class ListsWS {
             // If this list can contain attachments, assume that each item had
             // attachments and send delete feed for them.
             if (list.canContainAttachments()) {
-				final List<String> attachments = list.getAttachmntURLsFor(currentItemID);
+                final List<String> attachments = list.getAttachmntURLsFor(currentItemID);
                 final String originalDocID = docID;
-				for (String attchmnt_url : attachments) {
+                for (String attchmnt_url : attachments) {
                     docID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID + "["
                             + attchmnt_url + "]" + originalDocID;
                     final SPDocument attchmnt = new SPDocument(docID,
-							attchmnt_url, list.getLastModCal(),
+                            attchmnt_url, list.getLastModCal(),
                             SPConstants.NO_AUTHOR,
-							SPConstants.OBJTYPE_ATTACHMENT,
-							list.getParentWebState().getTitle(),
+                            SPConstants.OBJTYPE_ATTACHMENT,
+                            list.getParentWebState().getTitle(),
                             sharepointClientContext.getFeedType(),
-							list.getParentWebState().getSharePointType());
+                            list.getParentWebState().getSharePointType());
                     attchmnt.setAction(ActionType.DELETE);
                     listItems.add(attchmnt);
                     count++;
@@ -1271,8 +1247,8 @@ public class ListsWS {
         LOGGER.log(Level.FINE, "Change Token Recieved [ " + lastChangeToken
                 + " ]. ");
         if (lastChangeToken == null) {
-			LOGGER.log(Level.SEVERE, "No Change Token Found in the Web Service Response !!!! "
-					+ "The current change token might have become invalid; please check the Event Cache table of SharePoint content database.");
+            LOGGER.log(Level.SEVERE, "No Change Token Found in the Web Service Response !!!! "
+                    + "The current change token might have become invalid; please check the Event Cache table of SharePoint content database.");
         }
 
         for (final Iterator itrchild = changeElement.getChildElements(); itrchild.hasNext();) {
@@ -1301,9 +1277,9 @@ public class ListsWS {
                         || (folderLevel.indexOf(SPConstants.SLASH) == -1)) {
                     try {
                         if (Integer.parseInt(itemId) <= Integer.parseInt(lastItemID)) {
-							LOGGER.log(Level.WARNING, "This ItemId [ "
-									+ itemId
-									+ " ] has already been tracked during change detection. skipping...");
+                            LOGGER.log(Level.WARNING, "This ItemId [ "
+                                    + itemId
+                                    + " ] has already been tracked during change detection. skipping...");
                             continue;
                         }
                     } catch (final Exception e) {
@@ -1311,7 +1287,7 @@ public class ListsWS {
                     }
                 }
                 if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
-					if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
+                    if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
                         // Delete feed processing is done only in case of
                         // content feed
                         continue;
@@ -1438,14 +1414,14 @@ public class ListsWS {
                                 + docId
                                 + " ], listURL [ "
                                 + list.getListURL() + " ]. ");
-					} else if (null == contentType) {
-						LOGGER.log(Level.WARNING, "No content type found for the document, relativeURL [ "
-								+ relativeURL
-								+ " ], listURL [ "
-								+ list.getListURL() + " ]. ");
-					} else {
+                    } else if (null == contentType) {
+                        LOGGER.log(Level.WARNING, "No content type found for the document, relativeURL [ "
+                                + relativeURL
+                                + " ], listURL [ "
+                                + list.getListURL() + " ]. ");
+                    } else {
                         relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
-						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             /*
                              * Since we have got an entry for this item, this
                              * item can never be considered as deleted.
@@ -1463,7 +1439,7 @@ public class ListsWS {
                             deletedIDs.remove(docId);
                             list.removeFromDeleteCache(docId);
 
-							if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+                            if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
                                 try {
                                     list.updateExtraIDs(relativeURL, docId, true);
                                 } catch (SharepointException se1) {
@@ -1519,7 +1495,7 @@ public class ListsWS {
                                         + docId
                                         + "], relativeURL["
                                         + relativeURL + "] ");
-								final String folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
+                                final String folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
                                 if (folderPath == null) {
                                     continue;
                                 }
@@ -1579,7 +1555,7 @@ public class ListsWS {
             }
         } // end of For
 
-		// Process the list items which WS returns as rs:rows
+        // Process the list items which WS returns as rs:rows
         if (listItems.size() < intRowLimit) {
             for (Object element : updatedListItems) {
                 final MessageElement row = (MessageElement) element;
@@ -1589,14 +1565,14 @@ public class ListsWS {
                 }
             }
 
-			// If in case while getting the items under renamed/restored folder,
+            // If in case while getting the items under renamed/restored folder,
             // we have changed the nextPage value to null, let's get the
             // original value back.
             if (list.getNextPage() == null) {
                 list.setNextPage(receivedNextPage);
             }
         } else if (updatedListItems.size() > 0) {
-			// Since, we have not processed the updated items yet, nextPage must
+            // Since, we have not processed the updated items yet, nextPage must
             // explicitly be set non-null to indicate further processing is
             // required with the same Change Token
             list.setNextPage("not null");
@@ -1618,14 +1594,14 @@ public class ListsWS {
     private SPDocument processListItemElement(final MessageElement listItem,
             final ListState list, final Set<String> allWebs) {
         // Get all the required attributes.
-		String fileref = listItem.getAttribute(SPConstants.FILEREF);
-		if (fileref == null) {
-			LOGGER.log(Level.WARNING, SPConstants.FILEREF
-					+ " is not found for one of the items in list [ "
-					+ list.getListURL() + " ]. ");
-		} else {
-			fileref = fileref.substring(fileref.indexOf(SPConstants.HASH) + 1);
-		}
+        String fileref = listItem.getAttribute(SPConstants.FILEREF);
+        if (fileref == null) {
+            LOGGER.log(Level.WARNING, SPConstants.FILEREF
+                    + " is not found for one of the items in list [ "
+                    + list.getListURL() + " ]. ");
+        } else {
+            fileref = fileref.substring(fileref.indexOf(SPConstants.HASH) + 1);
+        }
 
         final String lastModified = listItem.getAttribute(SPConstants.MODIFIED);
         String strObjectType = listItem.getAttribute(SPConstants.CONTENTTYPE);
@@ -1682,7 +1658,7 @@ public class ListsWS {
 
         final StringBuffer url = new StringBuffer();
         if (list.isDocumentLibrary()) {
-			if (fileref == null) {
+            if (fileref == null) {
                 return null;
             }
             /*
@@ -1694,7 +1670,7 @@ public class ListsWS {
             url.setLength(0);
             url.append(urlPrefix);
             url.append(SPConstants.SLASH);
-			url.append(fileref);
+            url.append(fileref);
         } else {
             final String urlPrefix = Util.getWebApp(sharepointClientContext.getSiteURL());
             url.setLength(0);
@@ -1736,14 +1712,14 @@ public class ListsWS {
             calMod = list.getLastModCal();
         }
 
-		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;
         }
         doc = new SPDocument(docId, url.toString(), calMod, author,
-				strObjectType, list.getParentWebState().getTitle(),
-				sharepointClientContext.getFeedType(),
-				list.getParentWebState().getSharePointType());
-		doc.setFileref(fileref);
+                strObjectType, list.getParentWebState().getTitle(),
+                sharepointClientContext.getFeedType(),
+                list.getParentWebState().getSharePointType());
+        doc.setFileref(fileref);
 
         if (fileSize != null && !fileSize.equals("")) {
             try {
@@ -1786,7 +1762,7 @@ public class ListsWS {
             }
         }
 
-		if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             try {
                 final int id = Integer.parseInt(Util.getOriginalDocId(docId, sharepointClientContext.getFeedType()));
                 if (id > list.getBiggestID()) {

@@ -309,9 +309,10 @@ public class WebState implements StatefulObject {
                         // start from 1 because 0 is not a valid itemID.
                         // SharePoint starts allocating ID from 1.
                         int maxID = 1;
-                        // TODO: find the largest ID which is currently there in
-                        // the list's delete cache and start from there instead
-                        // of always starting from 1.
+                        // One may think of starting from the largest ID in the
+                        // lists's delete cache. But, that is not safe. The
+                        // biggest ID might not be the one that has been sent as
+                        // deleted feed after the list's deletion.
 
                         LOGGER.log(Level.INFO, "List [ " + list.getListURL()
                                 + " ] has been deleted. Using BiggestID [ "
