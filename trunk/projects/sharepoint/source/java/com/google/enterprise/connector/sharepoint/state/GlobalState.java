@@ -337,9 +337,8 @@ public class GlobalState {
                     final WebState webs = (WebState) iter.next();
                     webs.endRecrawl(spContext);
                     if (!webs.isExisting()) {
-                        // Case of web deletion
-                        // Delete this web State only if does not contain any
-                        // list State info.
+                        // Case of web deletion. Delete this web State only if
+                        // does not contain any list State info.
                         if (webs.getAllListStateSet().size() == 0) {
                             int responseCode = 0;
                             try {

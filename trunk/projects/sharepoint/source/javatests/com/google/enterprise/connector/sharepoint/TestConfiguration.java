@@ -168,7 +168,6 @@ public class TestConfiguration {
         SPDocument doc = new SPDocument(new Integer(docId).toString(),
                 Calendar.getInstance(), null, null);
         ls.setLastDocProcessedForWS(doc);
-        ls.setChangeToken("1;3;d0266ee5-8769-44df-8fb4-31b998f9f006;633857711707900000;10405618");
         ls.setUrl(url);
 
         ls.setLastMod(dt);
