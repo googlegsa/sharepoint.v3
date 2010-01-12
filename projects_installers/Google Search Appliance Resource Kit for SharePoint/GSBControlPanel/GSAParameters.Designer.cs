@@ -29,6 +29,7 @@ namespace GSBControlPanel
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmGSAParams));
             this.btnOk = new System.Windows.Forms.Button();
             this.lblGSALocation = new System.Windows.Forms.Label();
             this.tbGSALocation = new System.Windows.Forms.TextBox();
@@ -249,6 +250,7 @@ namespace GSBControlPanel
             this.Controls.Add(this.lblGSALocation);
             this.Controls.Add(this.btnOk);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmGSAParams";
