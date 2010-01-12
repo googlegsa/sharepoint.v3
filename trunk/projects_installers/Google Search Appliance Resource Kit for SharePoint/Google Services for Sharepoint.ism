@@ -2421,7 +2421,7 @@
 		<row><td>ISIISProperty6</td><td>IisItem1</td><td/><td>AuthFlags</td><td/><td/><td/><td/><td>4</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty60</td><td>IisItem5</td><td/><td>MaxProc</td><td/><td/><td/><td/><td>1</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty61</td><td>IisItem5</td><td/><td>managedRuntimeVersion</td><td/><td/><td/><td/><td>v2.0</td><td>0</td><td>0</td></row>
-		<row><td>ISIISProperty62</td><td>IisItem5</td><td/><td>managedPipelineMode</td><td/><td/><td/><td/><td>Integrated</td><td>0</td><td>0</td></row>
+		<row><td>ISIISProperty62</td><td>IisItem5</td><td/><td>managedPipelineMode</td><td/><td/><td/><td/><td>Classic</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty63</td><td>IisItem2</td><td/><td>AppPoolId</td><td/><td/><td/><td/><td>##ID_STRING67##</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty64</td><td>IisItem2</td><td/><td>AspVer</td><td/><td/><td/><td/><td>2.0.50727</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty65</td><td>IisItem2</td><td/><td>AspNetVerBitness</td><td/><td/><td/><td/><td>x86</td><td>0</td><td>0</td></row>
@@ -4473,7 +4473,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 	<table name="LaunchCondition">
 		<col key="yes" def="s255">Condition</col>
 		<col def="l255">Description</col>
-		<row><td>(Not VersionNT=500) And (Not VersionNT=501) And (Not VersionNT=600) And (Not VersionNT=601)</td><td>##IDPROP_EXPRESS_LAUNCH_CONDITION_OS##</td></row>
+		<row><td>(Not VersionNT=500) And (Not VersionNT=501) And (Not (VersionNT=600 And (MsiNTProductType=1))) And (Not (VersionNT=601 And (MsiNTProductType=1)))</td><td>##IDPROP_EXPRESS_LAUNCH_CONDITION_OS##</td></row>
 		<row><td>SHAREPOINTLOCATION&lt;&gt;""</td><td>##ID_STRING1##</td></row>
 		<row><td>STSADMPATH &lt;&gt; ""</td><td>##ID_STRING85##</td></row>
 	</table>
