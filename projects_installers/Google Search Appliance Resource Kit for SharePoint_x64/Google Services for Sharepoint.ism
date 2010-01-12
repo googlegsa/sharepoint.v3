@@ -1038,6 +1038,7 @@
 		<row><td>ISSelfRegisterCosting</td><td>1</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterCosting</td><td/><td/></row>
 		<row><td>ISSelfRegisterFiles</td><td>3073</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterFiles</td><td/><td/></row>
 		<row><td>ISSelfRegisterFinalize</td><td>1</td><td>ISSELFREG.DLL</td><td>ISSelfRegisterFinalize</td><td/><td/></row>
+		<row><td>ISSetAllUsers</td><td>257</td><td>SetAllUsers.dll</td><td>SetAllUsers</td><td/><td/></row>
 		<row><td>ISUnSelfRegisterFiles</td><td>3073</td><td>ISSELFREG.DLL</td><td>ISUnSelfRegisterFiles</td><td/><td/></row>
 		<row><td>SAMLBridgeLaunchConfigurationForm</td><td>82</td><td>samlbridgeconfiguation.exe</td><td>"[SAML_BRIDGE2]"</td><td/><td/></row>
 		<row><td>SetARPINSTALLLOCATION</td><td>51</td><td>ARPINSTALLLOCATION</td><td>[INSTALLDIR]</td><td/><td/></row>
@@ -2406,6 +2407,7 @@
 		<row><td>ISIISProperty34</td><td>IisItem3</td><td/><td>ScriptTimeout</td><td/><td/><td/><td/><td>90</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty35</td><td>IisItem3</td><td/><td>SessionTimeout</td><td/><td/><td/><td/><td>20</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty36</td><td>IisItem3</td><td/><td>AppPoolId</td><td/><td/><td/><td/><td>##ID_STRING67##</td><td>0</td><td>0</td></row>
+		<row><td>ISIISProperty37</td><td>IisItem1</td><td/><td>AnonymousPasswordSync</td><td/><td/><td/><td/><td>0</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty4</td><td>IisItem1</td><td/><td>DontLog</td><td/><td/><td/><td/><td>0</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty48</td><td>IisItem3</td><td/><td>AspVer</td><td/><td/><td/><td/><td>2.0.50727</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty49</td><td>IisItem3</td><td/><td>AspNetVerBitness</td><td/><td/><td/><td/><td>x64</td><td>0</td><td>0</td></row>
@@ -2420,14 +2422,14 @@
 		<row><td>ISIISProperty6</td><td>IisItem1</td><td/><td>AuthFlags</td><td/><td/><td/><td/><td>4</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty60</td><td>IisItem5</td><td/><td>MaxProc</td><td/><td/><td/><td/><td>1</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty61</td><td>IisItem5</td><td/><td>managedRuntimeVersion</td><td/><td/><td/><td/><td>v2.0</td><td>0</td><td>0</td></row>
-		<row><td>ISIISProperty62</td><td>IisItem5</td><td/><td>managedPipelineMode</td><td/><td/><td/><td/><td>Integrated</td><td>0</td><td>0</td></row>
+		<row><td>ISIISProperty62</td><td>IisItem5</td><td/><td>managedPipelineMode</td><td/><td/><td/><td/><td>Classic</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty63</td><td>IisItem2</td><td/><td>AppPoolId</td><td/><td/><td/><td/><td>##ID_STRING67##</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty64</td><td>IisItem2</td><td/><td>AspVer</td><td/><td/><td/><td/><td>2.0.50727</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty65</td><td>IisItem2</td><td/><td>AspNetVerBitness</td><td/><td/><td/><td/><td>x64</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty66</td><td>IisItem2</td><td/><td>DirBrowseFlags</td><td/><td/><td/><td/><td>-2147483586</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty67</td><td>IisItem2</td><td/><td>AnonymousPasswordSync</td><td/><td/><td/><td/><td>1</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty7</td><td>IisItem1</td><td/><td>ScriptTimeout</td><td/><td/><td/><td/><td>90</td><td>0</td><td>0</td></row>
-		<row><td>ISIISProperty78</td><td>IisItem5</td><td/><td>Enable32bitAppOnWin64</td><td/><td/><td/><td/><td>true</td><td>0</td><td>0</td></row>
+		<row><td>ISIISProperty78</td><td>IisItem5</td><td/><td>Enable32bitAppOnWin64</td><td/><td/><td/><td/><td>false</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty8</td><td>IisItem1</td><td/><td>SessionTimeout</td><td/><td/><td/><td/><td>20</td><td>0</td><td>0</td></row>
 		<row><td>ISIISProperty9</td><td>IisItem1</td><td/><td>AppPoolId</td><td/><td/><td/><td/><td>##ID_STRING67##</td><td>0</td><td>0</td></row>
 	</table>
@@ -2564,6 +2566,7 @@
 	<table name="ISPatchConfigImage">
 		<col key="yes" def="S72">PatchConfiguration_</col>
 		<col key="yes" def="s72">UpgradedImage_</col>
+		<row><td>PatchConfiguration1</td><td>Latest1</td></row>
 	</table>
 
 	<table name="ISPatchConfiguration">
@@ -2582,12 +2585,29 @@
 		<col def="s0">OutputPath</col>
 		<col def="i2">MinMsiVersion</col>
 		<col def="I4">Attributes</col>
+		<row><td>PatchConfiguration1</td><td>1</td><td>1</td><td>0</td><td>0</td><td>1</td><td>1</td><td>&lt;ISProjectDataFolder&gt;</td><td>2338</td><td/><td>*</td><td>{E62B0BF4-6B33-4A91-96A1-63050AB63932}</td><td>&lt;ISProjectDataFolder&gt;</td><td>200</td><td/></row>
 	</table>
 
 	<table name="ISPatchConfigurationProperty">
 		<col key="yes" def="S72">ISPatchConfiguration_</col>
 		<col key="yes" def="S50">Property</col>
 		<col def="S50">Value</col>
+		<row><td>PatchConfiguration1</td><td>CreateSetupExe</td><td>1</td></row>
+		<row><td>PatchConfiguration1</td><td>DotNetRedistLocation</td><td>http://www.installengine.com/cert05/dotnetfx</td></row>
+		<row><td>PatchConfiguration1</td><td>DotNetRedistLocationOption</td><td>3</td></row>
+		<row><td>PatchConfiguration1</td><td>GenerateMsiPatchOldAssembly</td><td>1</td></row>
+		<row><td>PatchConfiguration1</td><td>GeneratePatchGuid</td><td>1</td></row>
+		<row><td>PatchConfiguration1</td><td>Install9xEngine</td><td>0</td></row>
+		<row><td>PatchConfiguration1</td><td>InstallNTEngine</td><td>0</td></row>
+		<row><td>PatchConfiguration1</td><td>MsiEngineVersion</td><td>12</td></row>
+		<row><td>PatchConfiguration1</td><td>MsiLocation30</td><td>http://www.installengine.com/Msiengine30</td></row>
+		<row><td>PatchConfiguration1</td><td>MsiLocation9x</td><td>http://www.installengine.com/Msiengine20</td></row>
+		<row><td>PatchConfiguration1</td><td>MsiLocationNT</td><td>http://www.installengine.com/Msiengine20</td></row>
+		<row><td>PatchConfiguration1</td><td>MsiLocationOption</td><td>2</td></row>
+		<row><td>PatchConfiguration1</td><td>OptimizePatchSizeForLargeFiles</td><td>1</td></row>
+		<row><td>PatchConfiguration1</td><td>SEQUENCE_DATA_GENERATION_DISABLED</td><td>0</td></row>
+		<row><td>PatchConfiguration1</td><td>SetupLauncherType</td><td>1</td></row>
+		<row><td>PatchConfiguration1</td><td>ValidateAtBuild</td><td>1</td></row>
 	</table>
 
 	<table name="ISPatchExternalFile">
@@ -2620,6 +2640,7 @@
 		<row><td>PATH_TO_RELEASE_FILES1</td><td>C:\Working Installshield\Google Services for Sharepoint Installer\GSBCustomAction\bin\Release</td><td/><td>2</td></row>
 		<row><td>PATH_TO_SAML-BRIDGE_FILES</td><td>C:\Documents and Settings\Administrator\Desktop\GoogleSearchBoxMsi\GoogleSearchBoxMsi\files\saml-bridge_1.5.1\saml-bridge</td><td/><td>2</td></row>
 		<row><td>PATH_TO_SEARCHBOXFILES_FIL</td><td>C:\IS_backup_10_51am\new1\GoogleSearchBoxMsi\GoogleSearchBoxMsi\files\SearchBoxFiles</td><td/><td>2</td></row>
+		<row><td>PATH_TO_X64_FILES</td><td>C:\Amit\uploaded\x64</td><td/><td>2</td></row>
 		<row><td>ProgramFilesFolder</td><td/><td/><td>1</td></row>
 		<row><td>SystemFolder</td><td/><td/><td>1</td></row>
 		<row><td>WindowsFolder</td><td/><td/><td>1</td></row>
@@ -4166,6 +4187,7 @@
 		<col def="i2">Order</col>
 		<col def="I4">Flags</col>
 		<col def="i2">IgnoreMissingFiles</col>
+		<row><td>Latest1</td><td>Prev1</td><td>NoMsiPath</td><td>0</td><td>2210</td><td>0</td></row>
 	</table>
 
 	<table name="ISUpgradeMsiItem">
@@ -4179,6 +4201,7 @@
 		<col key="yes" def="s13">Name</col>
 		<col def="s0">MsiPath</col>
 		<col def="s8">Family</col>
+		<row><td>Latest1</td><td>&lt;ISLatestRelease&gt;</td><td>Family1</td></row>
 	</table>
 
 	<table name="ISVirtualDirectory">
@@ -4257,7 +4280,7 @@
 		<col def="V0">Data</col>
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I2">ISIconIndex</col>
-		<row><td>ARPPRODUCTICON.exe</td><td/><td>&lt;ISProductFolder&gt;\redist\Language Independent\OS Independent\setupicon.ico</td><td>0</td></row>
+		<row><td>ARPPRODUCTICON.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\icons\gsa_installer.ico</td><td>0</td></row>
 		<row><td>GSBTestSearchSiteS_80DBE9009E724CF8825DACAB38FA1B97.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\icons\connectivity-16.ico</td><td>0</td></row>
 		<row><td>MockGSAShortcut_999848C72B08434FA01FA595403BCA4D.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\icons\connectivity-16.ico</td><td>0</td></row>
 		<row><td>NewShortcut1_E0C0FD96A176431B8CF2C30915A14B58.exe</td><td/><td>&lt;ISProjectFolder&gt;\files\view_logs-16.ico</td><td>0</td></row>
@@ -4326,6 +4349,7 @@
 		<row><td>ISSelfRegisterCosting</td><td/><td>2201</td><td/><td/></row>
 		<row><td>ISSelfRegisterFiles</td><td/><td>5601</td><td/><td/></row>
 		<row><td>ISSelfRegisterFinalize</td><td/><td>6601</td><td/><td/></row>
+		<row><td>ISSetAllUsers</td><td>Not Installed</td><td>10</td><td/><td/></row>
 		<row><td>ISUnSelfRegisterFiles</td><td/><td>2202</td><td/><td/></row>
 		<row><td>InstallFiles</td><td/><td>4000</td><td>InstallFiles</td><td/></row>
 		<row><td>InstallFinalize</td><td/><td>6600</td><td>InstallFinalize</td><td/></row>
@@ -4442,6 +4466,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>GSBLaunchWebAppList</td><td>(Not Installed and &amp;GoogleSearchBox=3) or (Installed and &amp;GoogleSearchBox=3)</td><td>1312</td><td/><td/></row>
 		<row><td>GSSLaunchVerifyInstallation</td><td>(Not Installed and &amp;GoogleServicesForSharePoint=3) or (Installed and &amp;GoogleServicesForSharePoint=3)</td><td>1337</td><td/><td/></row>
 		<row><td>ISPreventDowngrade</td><td>ISFOUNDNEWERPRODUCTVERSION</td><td>450</td><td>ISPreventDowngrade</td><td/></row>
+		<row><td>ISSetAllUsers</td><td>Not Installed</td><td>10</td><td/><td/></row>
 		<row><td>InstallWelcome</td><td>Not Installed</td><td>1210</td><td>InstallWelcome</td><td/></row>
 		<row><td>IsolateComponents</td><td/><td>950</td><td>IsolateComponents</td><td/></row>
 		<row><td>LaunchConditions</td><td>Not Installed</td><td>410</td><td>LaunchConditions</td><td/></row>
@@ -4472,7 +4497,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 	<table name="LaunchCondition">
 		<col key="yes" def="s255">Condition</col>
 		<col def="l255">Description</col>
-		<row><td>(Not VersionNT=500) And (Not VersionNT=501) And (Not VersionNT=600) And (Not VersionNT=601)</td><td>##IDPROP_EXPRESS_LAUNCH_CONDITION_OS##</td></row>
+		<row><td>(Not VersionNT=500) And (Not VersionNT=501) And (Not (VersionNT=600 And (MsiNTProductType=1))) And (Not (VersionNT=601 And (MsiNTProductType=1)))</td><td>##IDPROP_EXPRESS_LAUNCH_CONDITION_OS##</td></row>
 		<row><td>SHAREPOINTLOCATION&lt;&gt;""</td><td>##ID_STRING1##</td></row>
 		<row><td>STSADMPATH &lt;&gt; ""</td><td>##ID_STRING85##</td></row>
 	</table>
@@ -4607,6 +4632,13 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<col key="yes" def="S72">Company</col>
 		<col key="yes" def="s72">Property</col>
 		<col def="S0">Value</col>
+		<row><td>PatchConfiguration1</td><td></td><td>AllowRemoval</td><td>0</td></row>
+		<row><td>PatchConfiguration1</td><td></td><td>Classification</td><td> Update</td></row>
+		<row><td>PatchConfiguration1</td><td></td><td>Description</td><td>Contact:  Your local administrator</td></row>
+		<row><td>PatchConfiguration1</td><td></td><td>DisplayName</td><td>Google Search Appliance Resource Kit for SharePoint</td></row>
+		<row><td>PatchConfiguration1</td><td></td><td>ManufacturerName</td><td>Google Inc.</td></row>
+		<row><td>PatchConfiguration1</td><td></td><td>MoreInfoURL</td><td> Support URL</td></row>
+		<row><td>PatchConfiguration1</td><td></td><td>TargetProductName</td><td>Google Search Appliance Resource Kit for SharePoint</td></row>
 	</table>
 
 	<table name="MsiPatchOldAssemblyFile">

@@ -28,6 +28,7 @@ namespace WindowsApplication1
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmVerifyInstallation));
             this.btnCheckConnectivity = new System.Windows.Forms.Button();
             this.txtUrl = new System.Windows.Forms.TextBox();
             this.txtUserName = new System.Windows.Forms.TextBox();
@@ -145,9 +146,9 @@ namespace WindowsApplication1
             this.cbUseWindowsSessionCreds.AutoSize = true;
             this.cbUseWindowsSessionCreds.Location = new System.Drawing.Point(165, 137);
             this.cbUseWindowsSessionCreds.Name = "cbUseWindowsSessionCreds";
-            this.cbUseWindowsSessionCreds.Size = new System.Drawing.Size(189, 17);
+            this.cbUseWindowsSessionCreds.Size = new System.Drawing.Size(184, 17);
             this.cbUseWindowsSessionCreds.TabIndex = 11;
-            this.cbUseWindowsSessionCreds.Text = "Use Windowss session credentials";
+            this.cbUseWindowsSessionCreds.Text = "Use Windows session credentials";
             this.cbUseWindowsSessionCreds.UseVisualStyleBackColor = true;
             this.cbUseWindowsSessionCreds.Visible = false;
             this.cbUseWindowsSessionCreds.CheckedChanged += new System.EventHandler(this.cbUseWindowsSessionCreds_CheckedChanged);
@@ -171,6 +172,7 @@ namespace WindowsApplication1
             this.Controls.Add(this.txtUserName);
             this.Controls.Add(this.txtUrl);
             this.Controls.Add(this.btnCheckConnectivity);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmVerifyInstallation";

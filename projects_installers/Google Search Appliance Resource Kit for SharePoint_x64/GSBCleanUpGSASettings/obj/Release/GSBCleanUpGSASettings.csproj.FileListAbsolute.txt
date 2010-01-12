@@ -28,3 +28,19 @@ C:\Amit\Google Search Appliance Resource Kit for SharePoint_64\GSBCleanUpGSASett
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.pdb
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.exe
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.dll
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.xml
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.pdb
+\\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache

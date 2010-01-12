@@ -57,3 +57,12 @@ C:\Amit\Google Search Appliance Resource Kit for SharePoint_64\SAMLBridgeConfigu
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\bin\Release\SAMLConfigurationManager.cs
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.pdb
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\ResolveAssemblyReference.cache
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\SAMLConfiguration.frmSAMLConfiguration.resources
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.Properties.Resources.resources
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
+C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb

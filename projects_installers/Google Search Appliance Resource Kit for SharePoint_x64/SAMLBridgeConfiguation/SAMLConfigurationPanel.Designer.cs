@@ -29,6 +29,7 @@ namespace SAMLConfiguration
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmSAMLConfiguration));
             this.btnSave = new System.Windows.Forms.Button();
             this.lblArtifactConsumer = new System.Windows.Forms.Label();
             this.tbArtifactConsumerURL = new System.Windows.Forms.TextBox();
@@ -114,6 +115,7 @@ namespace SAMLConfiguration
             this.Controls.Add(this.lblArtifactConsumer);
             this.Controls.Add(this.btnSave);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmSAMLConfiguration";

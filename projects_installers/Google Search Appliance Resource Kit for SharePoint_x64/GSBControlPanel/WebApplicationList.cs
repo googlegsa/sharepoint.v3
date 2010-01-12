@@ -292,6 +292,11 @@ namespace GSBControlPanel
             }
         }
 
+        private void lblWarning_Click(object sender, EventArgs e)
+        {
+
+        }
+
        
     }
 }

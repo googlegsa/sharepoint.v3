@@ -97,6 +97,7 @@ namespace GSBControlPanel
             this.lblWarning.TabIndex = 11;
             this.lblWarning.Text = "By installing the Google Search Box for SharePoint, the SharePoint search will be" +
                 " replaced by Google search for the following web applications";
+            this.lblWarning.Click += new System.EventHandler(this.lblWarning_Click);
             // 
             // pictureBox1
             // 
@@ -119,6 +120,7 @@ namespace GSBControlPanel
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.lblWarning);
             this.Controls.Add(this.tableLayoutPanel1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmWebApplicationList";
