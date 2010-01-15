@@ -51,7 +51,7 @@ public class AlertsWSTest extends TestCase {
 
     public final void testAlertsWS() throws Throwable {
         System.out.println("Testing AlertsWS(SharepointClientContext, siteName)...");
-        sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
+		sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
         this.alertWS = new AlertsWS(this.sharepointClientContext);
         assertNotNull(this.alertWS);
         System.out.println("[ AlertsWS(SharepointClientContext, siteName) ] Test Passed");
@@ -62,8 +62,10 @@ public class AlertsWSTest extends TestCase {
         final String internalName = this.sharepointClientContext.getSiteURL();
         final Calendar cLastMod = Calendar.getInstance();
         cLastMod.setTime(new Date());
-		final GlobalState state = TestConfiguration.initState();
-		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
+		GlobalState gs = new GlobalState(
+				TestConfiguration.googleConnectorWorkDir,
+				TestConfiguration.feedType);
+		WebState ws = gs.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
 		final ListState currentDummyAlertList = new ListState(internalName,
 				SPConstants.ALERTS_TYPE, SPConstants.ALERTS_TYPE, cLastMod,
 				SPConstants.ALERTS_TYPE, internalName, ws);

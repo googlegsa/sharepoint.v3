@@ -162,9 +162,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * To be used while loading the lastDocument from the state file.
      */
-    public SPDocument(final String inDocId, final Calendar inLastMod,
+	public SPDocument(final String inDocId, final String inDocURL,
+			final Calendar inLastMod,
             final String inFolderLevel, final ActionType inAction) {
         docId = inDocId;
+		url = inDocURL;
         lastMod = inLastMod;
         folderLevel = inFolderLevel;
         action = inAction;

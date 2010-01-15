@@ -49,7 +49,7 @@ public class SPDocumentListTest extends TestCase {
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
  FeedType.CONTENT_FEED);
-        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
+		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
 
         final SiteDataWS siteDataWS = new SiteDataWS(
                 this.sharepointClientContext);

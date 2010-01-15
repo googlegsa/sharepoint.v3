@@ -164,7 +164,9 @@ public class SharepointClientTest extends TestCase {
      */
     public void testTraverseToCheckValidLists() throws SharepointException {
 
-        GlobalState gs = TestConfiguration.initState();
+		GlobalState gs = new GlobalState(
+				TestConfiguration.googleConnectorWorkDir,
+				TestConfiguration.feedType);
         SharepointClientContext spContext = TestConfiguration.initContext();
         WebState ws = TestConfiguration.createWebState(gs, spContext, TestConfiguration.sharepointUrl, 1);
         gs.AddOrUpdateWebStateInGlobalState(ws);

@@ -57,16 +57,35 @@ public class TestConfiguration {
     public static String SearchDocID2;
     public static String SearchDocID3;
 
-    public static String DocID1;
-    public static String DocID2;
-    public static String DocID3;
+	public static String Site1_URL;
+	public static String Site1_List1_GUID;
+	public static String Site1_List1_URL;
+	public static String Site1_List1_Item1_URL;
+	public static String Site1_List1_Item2_URL;
+	public static String Site1_List2_GUID;
+	public static String Site1_List2_URL;
+	public static String Site1_List2_Item1_URL;
+	public static String Site1_List2_Item2_URL;
 
-    public static String ParentWebURL;
-    public static String ParentWebTitle;
-    public static String BaseListID;
-    public static String LastModified;
-    public static String LastItemID;
-    public static String lastItemURL;
+    public static String Site2_URL;
+	public static String Site2_List1_GUID;
+	public static String Site2_List1_URL;
+	public static String Site2_List1_Item1_URL;
+	public static String Site2_List1_Item2_URL;
+	public static String Site2_List2_GUID;
+	public static String Site2_List2_URL;
+	public static String Site2_List2_Item1_URL;
+	public static String Site2_List2_Item2_URL;
+
+    public static String Site3_URL;
+	public static String Site3_List1_GUID;
+	public static String Site3_List1_URL;
+	public static String Site3_List1_Item1_URL;
+	public static String Site3_List1_Item2_URL;
+	public static String Site3_List2_GUID;
+	public static String Site3_List2_URL;
+	public static String Site3_List2_Item1_URL;
+	public static String Site3_List2_Item2_URL;
 
     public static ArrayList<String> blackList = new ArrayList<String>();
     public static ArrayList<String> whiteList = new ArrayList<String>();
@@ -99,16 +118,35 @@ public class TestConfiguration {
         SearchDocID2 = properties.getProperty("SearchDocID2");
         SearchDocID3 = properties.getProperty("SearchDocID3");
 
-        DocID1 = properties.getProperty("DocID1");
-        DocID2 = properties.getProperty("DocID2");
-        DocID3 = properties.getProperty("DocID3");
+		Site1_URL = properties.getProperty("Site1_URL");
+		Site1_List1_GUID = properties.getProperty("Site1_List1_GUID");
+		Site1_List1_URL = properties.getProperty("Site1_List1_URL");
+		Site1_List1_Item1_URL = properties.getProperty("Site1_List1_Item1_URL");
+		Site1_List1_Item2_URL = properties.getProperty("Site1_List1_Item2_URL");
+		Site1_List2_GUID = properties.getProperty("Site1_List2_GUID");
+		Site1_List2_URL = properties.getProperty("Site1_List2_URL");
+		Site1_List2_Item1_URL = properties.getProperty("Site1_List2_Item1_URL");
+		Site1_List2_Item2_URL = properties.getProperty("Site1_List2_Item2_URL");
 
-        ParentWebURL = properties.getProperty("ParentWebURL");
-        ParentWebTitle = properties.getProperty("ParentWebTitle");
-        BaseListID = properties.getProperty("BaseListID");
-        LastModified = properties.getProperty("LastModified");
-        LastItemID = properties.getProperty("LastItemID");
-        lastItemURL = properties.getProperty("LastItemURL");
+        Site2_URL = properties.getProperty("Site2_URL");
+		Site2_List1_GUID = properties.getProperty("Site2_List1_GUID");
+		Site2_List1_URL = properties.getProperty("Site2_List1_URL");
+		Site2_List1_Item1_URL = properties.getProperty("Site2_List1_Item1_URL");
+		Site2_List1_Item2_URL = properties.getProperty("Site2_List1_Item2_URL");
+		Site2_List2_GUID = properties.getProperty("Site2_List2_GUID");
+		Site2_List2_URL = properties.getProperty("Site2_List2_URL");
+		Site2_List2_Item1_URL = properties.getProperty("Site2_List2_Item1_URL");
+		Site2_List2_Item2_URL = properties.getProperty("Site2_List2_Item2_URL");
+
+        Site3_URL = properties.getProperty("Site3_URL");
+		Site3_List1_GUID = properties.getProperty("Site3_List1_GUID");
+		Site3_List1_URL = properties.getProperty("Site3_List1_URL");
+		Site3_List1_Item1_URL = properties.getProperty("Site3_List1_Item1_URL");
+		Site3_List1_Item2_URL = properties.getProperty("Site3_List1_Item2_URL");
+		Site3_List2_GUID = properties.getProperty("Site3_List2_GUID");
+		Site3_List2_URL = properties.getProperty("Site3_List2_URL");
+		Site3_List2_Item1_URL = properties.getProperty("Site3_List2_Item1_URL");
+		Site3_List2_Item2_URL = properties.getProperty("Site3_List2_Item2_URL");
 
         blackList.add(".*cachedcustomprops$");
         blackList.add(".*parserversion$");
@@ -165,7 +203,7 @@ public class TestConfiguration {
 
         ls.setPrimaryKey(primaryKey);
         ls.setType(SPConstants.GENERIC_LIST);
-        SPDocument doc = new SPDocument(new Integer(docId).toString(),
+		SPDocument doc = new SPDocument(new Integer(docId).toString(), "X",
                 Calendar.getInstance(), null, null);
         ls.setLastDocProcessedForWS(doc);
         ls.setUrl(url);
@@ -188,7 +226,7 @@ public class TestConfiguration {
             SharepointClientContext spContext, String url,
             int indexOfLastCrawledList) throws SharepointException {
         WebState ws = globalState.makeWebState(spContext, url);
-        ws.setPrimaryKey("http://testcase.com:22819/sites/testissue85");
+		ws.setPrimaryKey(url);
         DateTime dt = new DateTime();
         ws.setInsertionTime(dt);
         ListState ls = getListState("http://testcase.com:22819/tempSite/Lists/Announcements/AllItems.aspx", 10, 156790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1E4A}", ws);
@@ -225,10 +263,6 @@ public class TestConfiguration {
         return ws;
     }
 
-    public static GlobalState initState() {
-        return new GlobalState(googleConnectorWorkDir, feedType);
-    }
-
     public static SharepointClientContext initContext()
             throws SharepointException {
         final SharepointClientContext sharepointClientContext = new SharepointClientContext(
@@ -262,10 +296,12 @@ public class TestConfiguration {
             Integer docId = r.nextInt(200000);
             SPDocument doc = null;
             if (i % 3 == 0) {
-                doc = new SPDocument(docId.toString(), Calendar.getInstance(),
+				doc = new SPDocument(docId.toString(), "X",
+						Calendar.getInstance(),
                         null, ActionType.DELETE);
             } else {
-                doc = new SPDocument(docId.toString(), Calendar.getInstance(),
+				doc = new SPDocument(docId.toString(), "X",
+						Calendar.getInstance(),
                         null, ActionType.ADD);
             }
             doc.setParentWeb(web);

@@ -1190,6 +1190,7 @@ public class ListState implements StatefulObject {
             if (getLastDocForWSRefresh() != null) {
                 atts.clear();
                 atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getLastDocForWSRefresh().getDocId());
+				atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getUrl());
                 if (SPType.SP2007 == getParentWebState().getSharePointType()) {
                     if (getLastDocForWSRefresh().getFolderLevel() != null
                             && getLastDocForWSRefresh().getFolderLevel().length() != 0) {
@@ -1255,4 +1256,12 @@ public class ListState implements StatefulObject {
         }
         return list;
     }
+
+	public boolean isCrawlQueueEmpty() {
+		if (null == crawlQueue || crawlQueue.size() == 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

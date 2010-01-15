@@ -42,7 +42,10 @@ public class WebStateTest extends TestCase {
         System.out.println("Creating test Web State for testing.");
         this.spURL = sharepointClientContext.getSiteURL();
 
-		this.webState = TestConfiguration.createWebState(TestConfiguration.initState(), sharepointClientContext, this.spURL, 1);
+		GlobalState gs = new GlobalState(
+				TestConfiguration.googleConnectorWorkDir,
+				TestConfiguration.feedType);
+		this.webState = TestConfiguration.createWebState(gs, sharepointClientContext, this.spURL, 1);
         final SPDocument doc1 = new SPDocument("id1", "url1",
                 new GregorianCalendar(2007, 1, 1), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
