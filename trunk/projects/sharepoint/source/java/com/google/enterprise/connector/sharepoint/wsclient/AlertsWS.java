@@ -222,6 +222,8 @@ public class AlertsWS {
                     }
                 }
                 alertListState.setIDs(currentAlerts);
+			} else {
+				alertListState.setExisting(false);
             }
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Problem while getting alerts", e);

@@ -59,14 +59,14 @@ public class ListsWSTest extends TestCase {
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
  FeedType.CONTENT_FEED);
-        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
+		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
 
         final List listCollection = siteDataWS.getNamedLists(ws);
 
         assertNotNull(listCollection);
         for (int i = 0; i < listCollection.size(); i++) {
             final ListState baseList = (ListState) listCollection.get(i);
-            if (baseList.getPrimaryKey().equals(TestConfiguration.BaseListID)) {
+			if (baseList.getPrimaryKey().equals(TestConfiguration.Site1_List1_URL)) {
                 this.testList = baseList;
             }
         }
@@ -76,7 +76,7 @@ public class ListsWSTest extends TestCase {
 
     public final void testListsWS() throws Throwable {
         System.out.println("Testing ListsWS(SharepointClientContext, siteName)...");
-        sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
+		sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
         this.listWS = new ListsWS(this.sharepointClientContext);
         assertNotNull(this.listWS);
         System.out.println("[ ListsWS(SharepointClientContext, siteName) ] Test Passed");

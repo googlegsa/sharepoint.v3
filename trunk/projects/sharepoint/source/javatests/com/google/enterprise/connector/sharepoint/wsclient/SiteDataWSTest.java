@@ -52,7 +52,7 @@ public class SiteDataWSTest extends TestCase {
 
     public final void testSiteDataWS() throws Throwable {
         System.out.println("Testing SiteDataWS(SharepointClientContext, siteName)...");
-        sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
+		sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
         this.siteDataWS = new SiteDataWS(this.sharepointClientContext);
         assertNotNull(this.siteDataWS);
         System.out.println("[ SiteDataWS(SharepointClientContext, siteName) ] Test Passed");
@@ -64,7 +64,7 @@ public class SiteDataWSTest extends TestCase {
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
  FeedType.CONTENT_FEED);
-        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.ParentWebURL);
+		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
         final List items = this.siteDataWS.getNamedLists(ws);
         assertNotNull(items);
         System.out.println("[ getNamedLists() ] Test Passed.");

@@ -373,8 +373,14 @@ public class WebState implements StatefulObject {
                         // If we have sent the complete delete feeds, send one
                         // more delete feed corresponding to the list itself.
                         // This is not required for alerts.
-                        if (!SPConstants.ALERTS_TYPE.equals(list.getType())
-                                && (maxID >= biggestID)) {
+                        if (SPConstants.ALERTS_TYPE.equals(list.getType())
+                                && deletedDocs.size() == 0
+                                && list.isCrawlQueueEmpty()) {
+                            LOGGER.log(Level.INFO, "Deleting Alerts List for list/library ["
+                                    + list.getListURL() + "]. ");
+                            iter.remove();
+                            keyMap.remove(list.getPrimaryKey());
+                        } else if (maxID >= biggestID) {
                             final SPDocument doc = new SPDocument(
                                     list.getListURL() + SPConstants.DOC_TOKEN
                                             + list.getPrimaryKey(),
@@ -567,7 +573,7 @@ public class WebState implements StatefulObject {
         atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getPrimaryKey());
         atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getWebUrl());
         atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
-        atts.addAttribute("", "", SPConstants.STATE_TITLE, SPConstants.STATE_ATTR_CDATA, getTitle());
+		atts.addAttribute("", "", SPConstants.STATE_WEB_TITLE, SPConstants.STATE_ATTR_CDATA, getTitle());
         atts.addAttribute("", "", SPConstants.STATE_SPTYPE, SPConstants.STATE_ATTR_CDATA, getSharePointType().toString());
         final String strInsertionTime = getInsertionTimeString();
         if (strInsertionTime != null) {

@@ -48,7 +48,7 @@ public class GSBulkAuthorizationWSTest extends TestCase {
 
     public final void testGSBulkAuthorizationWS() throws Throwable {
         System.out.println("Testing GSBulkAuthorizationWS(SharepointClientContext, siteName)...");
-        sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
+		sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
         this.bulkAuth = new GSBulkAuthorizationWS(this.sharepointClientContext);
         assertNotNull(this.bulkAuth);
         System.out.println("[ GSBulkAuthorizationWS(SharepointClientContext, siteName) ] Test Passed");

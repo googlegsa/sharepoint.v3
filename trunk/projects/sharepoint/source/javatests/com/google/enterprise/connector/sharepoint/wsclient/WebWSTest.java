@@ -51,7 +51,7 @@ public class WebWSTest extends TestCase {
 
     public final void testWebsWS() throws Throwable {
         System.out.println("Testing WebsWS(SharepointClientContext, siteName)...");
-        sharepointClientContext.setSiteURL(TestConfiguration.ParentWebURL);
+		sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
         this.websWS = new WebsWS(this.sharepointClientContext);
         assertNotNull(this.websWS);
         System.out.println("[ WebsWS(SharepointClientContext, siteName) ] Test Passed");
@@ -66,7 +66,7 @@ public class WebWSTest extends TestCase {
 
     public final void testGetWebURLFromPageURL() throws Throwable {
         System.out.println("Testing getWebURLFromPageURL()...");
-        final String siteURL = this.websWS.getWebURLFromPageURL(TestConfiguration.DocID1);
+		final String siteURL = this.websWS.getWebURLFromPageURL(TestConfiguration.Site1_List1_Item1_URL);
         assertNotNull(siteURL);
         System.out.println("[ getWebURLFromPageURL() ] Test Passed");
     }

@@ -61,7 +61,7 @@ public class SharePointClientContextTest extends TestCase {
     public void testCheckSharePointType() {
         System.out.println("Testing checkSharePointVersion()...");
         try {
-			final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.ParentWebURL);
+			final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.Site1_URL);
             assertEquals(spType, SPConstants.CONNECTIVITY_SUCCESS);
         } catch (Exception e) {
             System.out.println(e);

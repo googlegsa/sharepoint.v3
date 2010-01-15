@@ -142,6 +142,7 @@ public class GlobalState {
             } else if (SPConstants.STATE_LASTDOCCRAWLED.equals(localName)) {
                 if (null != list && null != web) {
                     final String lastCrawledDocId = atts.getValue(SPConstants.STATE_ID);
+					final String lastCrawledDocURL = atts.getValue(SPConstants.STATE_URL);
                     Calendar lastCrawledDocLastMod = null;
                     String lastCrawledDocFolderLevel = null;
                     ActionType lastCrawledDocAction = null;
@@ -161,7 +162,8 @@ public class GlobalState {
                     }
 
                     list.setLastDocProcessedForWS(new SPDocument(
-                            lastCrawledDocId, lastCrawledDocLastMod,
+							lastCrawledDocId, lastCrawledDocURL,
+							lastCrawledDocLastMod,
                             lastCrawledDocFolderLevel, lastCrawledDocAction));
                 } else {
                     LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
@@ -186,7 +188,7 @@ public class GlobalState {
             } else if (SPConstants.FULL_RECRAWL_FLAG.equals(localName)) {
                 bFullReCrawl = new Boolean(atts.getValue(SPConstants.STATE_ID));
                 lastFullCrawlDateTime = atts.getValue(SPConstants.LAST_FULL_CRAWL_DATETIME);
-            } else if (SPConstants.STATE_TYPE.equals(localName)) {
+			} else if (SPConstants.STATE_FEEDTYPE.equals(localName)) {
                 feedType = FeedType.getFeedType(atts.getValue(SPConstants.STATE_TYPE));
             }
         }
