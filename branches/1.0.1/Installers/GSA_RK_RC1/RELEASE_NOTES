@@ -22,7 +22,7 @@ Pre-requisites
 * SharePoint 2007 (WSS 3.0, MOSS 2007) server.
 * Windows Server 2003 Enterprise server/Windows Server 2008 Enterprise server.
 * Microsoft .Net Framework 2.0.
-* IIS 6.0/IIS 7.0.
+* IIS 6.0/IIS 7.0
 
 Note:
 -----
@@ -34,7 +34,7 @@ Features
 	a) Google Search Box for SharePoint: It represents Google Search Box for SharePoint. When selected, the Google Search Box for SharePoint is enabled on all SharePoint web applications on a machine, which share the same search control.
 	b) Google Services for SharePoint: The Google Services for SharePoint are custom web services used by the Google Search Appliance Connector for Microsoft SharePoint 2007
 	c) GSA Resource Kit for SharePoint: It represents the following utilities:
-			-Google Search Box for SharePoint Test Utility : It is used to verify the Google Search Box for SharePoint parameters, cookies and headers. 
+			-Google Search Box for SharePoint Test Utility : It is used to verify the Google Search Box for SharePoint parameters, cookies and headers.
 			-GSA Security SPI Simulator: It is used to test Google SAML Bridge for Windows without involving the complexity of the search appliance. Once you know that the SAML Bridge works, you can reconfigure it to work with the search appliance.
 			-Google SAML Bridge for Windows: It enables Google Search Box for SharePoint to perform search on NTLM contents.
 
@@ -46,7 +46,7 @@ Issue 130: GSA Resource Kit for SharePoint fails to install on Windows Server 20
 Version Compatibility
 ---------------------
 The Google Services for SharePoint are supported on the following SharePoint versions:
-* Microsoft Office SharePoint Server 2007 (MOSS 2007) 
+* Microsoft Office SharePoint Server 2007 (MOSS 2007)
 * Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
 
 
@@ -54,7 +54,7 @@ Platform Support
 -----------------
 Google Resource Kit for SharePoint 1.0.1 (32-bit) can be installed on Windows Server 2003 Enterprise (32-bit)/Windows Server 2008 Enterprise (32-bit) Operating System.
 
-Note: 
+Note:
 -----
 	a) There are separate installers for 32-bit and 64-bit Operating System.
 	b) The 64-bit installer is supported on machines with x64 platform.
@@ -75,4 +75,11 @@ Known Issues/Limitations
 ------------------------
 1. The Installer does not validate the port number for 'GSA Resource Kit for SharePoint'. User needs to enter a valid non-conflicting port during installation. Assigned port number could be changed even after Installation directly through IIS Manager.
 2. The Installer does not validate the 'Artifact Consumer' URL on "Google SAML Bridge for Windows - Configuration Wizard".
-3. Cancelling Installer does not intiate rollback of the installed components. You need to run installer again in 'remove' mode to clean up the installed components.
+3. Cancelling Installer does not initiate rollback of the installed components. You need to run installer again in 'remove' mode to clean up the installed components.
+4. If only resource kit is to be installed, installer creates an empty virtual directory for SAML bridge even though SAML bridge was not selected
+   Hence, when user tries to access the SAML bridge, he'/she gets the specified error.
+   Impact: No impact in functionality. If the user later installs the SMAL bridge, it will point to correct directory on the disk
+5. If the installer is run on a machine other than Windows 2003/Windows 2008, we get an error dialog which mentions that the installer is supported on Win 2003 server.
+   The message does not mention Win 2008.
+   Impact: No functionality impact apart from the UI message
+6. No scroll bar is displayed for the Google Search Box configuration wizard and it gets distorted when the web application path is huge
