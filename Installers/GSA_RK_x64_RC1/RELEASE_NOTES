@@ -70,7 +70,7 @@ IIS 7.5
 
 Microsoft Windows Server 2003
 Enterprise x64 Edition
-Intel  Xeon  CPU
+Intel(R)  Xeon(R)  CPU
 E5504 @ 2.00GHz, 2.00 GB of RAM
 IIS 6.0
 
@@ -78,10 +78,10 @@ Known Issues/Limitations
 ------------------------
 1. The Installer does not validate the port number for 'GSA Resource Kit for SharePoint'. User needs to enter a valid non-conflicting port during installation. Assigned port number could be changed even after Installation directly through IIS Manager.
 2. The Installer does not validate the 'Artifact Consumer' URL on "Google SAML Bridge for Windows - Configuration Wizard".
-3. Cancelling Installer does not intiate rollback of the installed components. You need to run installer again in 'remove' mode to clean up the installed components.
+3. Canceling Installer does not initiate rollback of the installed components. You need to run installer again in 'remove' mode to clean up the installed components.
 4. If only resource kit is to be installed, installer creates an empty virtual directory for SAML bridge even though SAML bridge was not selected
    Hence, when user tries to access the SAML bridge, he'/she gets the specified error.
-   Impact: No impact in functionality. If the user later installs the SMAL bridge, it will point to correct directory on the disk
+   Impact: No impact in functionality. If the user later installs the SAML bridge, it will point to correct directory on the disk
 5. If the installer is run on a machine other than Windows 2003/Windows 2008, we get an error dialog which mentions that the installer is supported on Win 2003 server.
    The message does not mention Win 2008.
    Impact: No functionality impact apart from the UI message
