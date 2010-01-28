@@ -1,0 +1,13 @@
+﻿<SOAP-ENV:Envelope
+xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Body>
+    <samlp:ArtifactResolve
+      xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+      xmlns="urn:oasis:names:tc:SAML:2.0:assertion"
+      ID="%ID" Version="2.0"
+      IssueInstant="%INSTANT">
+      <Issuer>%ISSUER</Issuer>
+      <samlp:Artifact>%ARTIFACT</samlp:Artifact>
+    </samlp:ArtifactResolve>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
