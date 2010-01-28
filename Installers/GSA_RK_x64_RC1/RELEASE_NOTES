@@ -10,12 +10,12 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 1.0.1, 18 Jan, 2010
+Release 1.0.1, 28 Jan, 2010
 ===========================
 
 INTRODUCTION
 ------------
-This is an early access release for wide evaluation and usage. Your feedback is important to us. Keep in mind that we are continuing to work on Google Search Appliance Resource Kit for SharePoint 1.0.1 (64-bit) and things may change in the future.
+This is a maintenance release that improves quality, reliability, and performance without adding any new functionality.
 
 Pre-requisites
 ---------------
