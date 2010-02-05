@@ -10,7 +10,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 2.4.2 Build3, 15 January, 2010
+Release 2.4.4 , 22 January, 2010
 =======================================
 
 Introduction
@@ -23,17 +23,19 @@ Summary of Changes
 
 Issues fixed from last release:
 ---------------------------------
-Issue 108 - Connector is unable to traverse the repository upon restart if the state file is very large
-       Connector, now uses SAX based parsing instead of DOM which will reduce the heap memory consumption.
+Issue 108 - Connector is unable to traverse the repository upon restart if the state file is very large.
+       Connector now uses SAX based parsing instead of DOM which will reduce the heap memory consumption.
+Issue 132 - Connector stops responding while saving and loading state file.
+		This is related to issue 108. 
 
 Version Compatibility
 ---------------------
-This version works with Connector Manager version 2.4.0 and above.
+This version works with Connector Manager Version 2.4.0 and above.
 Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -55,9 +57,49 @@ Enterprise x64 Edition
 Intel(R) Xeon(R) CPU
 E5504 @ 2.00GHz, 2.00 GB of RAM
 
-SUSE Linux Enterprise Server 11 (x86_64)
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
+
+
+Performance Test details:
+Performance Test Results for Metadata & URL Feed mode:
+
+Test Environment Details:
+
+OS:                         Linux 32 bit      
+Heap Size Settings			256M-1024M (Connector Default)   
+Nos. of Web State:          9560       
+Nos. of List State:         56784    
+Feed Mode:                  M&U
+
+Test Results:
+
+Memory Usage:               36 MB (Average)-63.2MB (Max)
+CPU Usage:                  3.06% (Average)    
+Size of State file:         30MB    
+  
+ Observations:
+1. Memory consumption is low initially and increases gradually after state file size increases.
+2. Memory consumption gradually becomes constant at end of the test cycle as no activity on SharePoint sever.
+3. During Test cycle, 0.6% of the readings are above 10% of CPU usage, few times CPU usage has also crossed 50% but dropped immediately to normal CPU usage.
+4. Average CPU usage is 3%.
+
+Performance Test Results for Content Feed mode:
+
+OS:                         Windows 2003 Server (64 bit)
+Heap Size Settings			256M-1024M (Connector Default)
+Nos. of Web State:          2684       
+Nos. of List State:         10161    
+Feed Mode:                  Content 
+
+Test Results:
+Memory Usage:               160(Average)-320 MB (Max)
+CPU Usage					8.63%(Average)	
+Size of State file:         5MB 
+
+Observations:
+1. Memory utilization range 160-320 MB for Documents per Minute value set to 500.
+2. Memory utilization increase in case of content feed mode as Connector is involved in fetching content from documents.
+3. Average CPU usage is 8.63, few times CPU usage has also crossed 50 % but dropped immediately to normal CPU usage. There was no constant increase in the CPU Usage.
+
 
 Known Issues/Limitations
 ------------------------
@@ -86,6 +128,11 @@ Known Issues/Limitations
    - Bulk Authorization by connector
 
 8) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+9) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+   -- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+      Type1Message are not initialized properly and hence connector configuration does not gets saved.
+	  
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Release 2.4.0 Build5, 03 December, 2009
