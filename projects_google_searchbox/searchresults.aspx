@@ -809,13 +809,13 @@ else if(document.attachEvent)
                                We need to check if there is a cookie or not. This check is for the 
                                initial request to GSA in case of SAML is configured with GSA. 
                              */
-
                             gProps.log("Adding cookies: " + GSASessionCookie, LOG_LEVEL.INFO);
                             
                             /*Break multiple cookie based on semi-colon as separator*/
                             Char[] seps = {';'};
                             if (GSASessionCookie != null)
                             {
+                                
                                 String[] key_val = GSASessionCookie.Split(seps);
                                 
                                 /*check if there is atleast one cookie in the set-cookie header*/
@@ -840,22 +840,48 @@ else if(document.attachEvent)
                                           Parse the cookies and get 1st part as keyName and remaing part as value. 
                                           Get only 2 tokens as value could also contain '='. E.g. String one_cookie = "aa=bb=cc=dd";
                                         */
-                                        String[] Cookie_Key_Val = one_cookie.Split(Seps_Each_Cookie, 2);
                                         
-                                        responseCookies.Name = Cookie_Key_Val[0];
+                                        string name; 
+                                        string value;
+                                        
+                                        /*
+                                            Problem:
+                                            =========
+                                            Cookie may or may not have a value.
+                                            E.g. GSA_SESSION_ID=7d8b50eb55a1c077159657da24e5b71d; secure
+                                            'secure' does not have any value.
+                                            
+                                            Solution:
+                                            ========
+                                            Check if the cookie contains '='/cookie key-value separator. 
+                                            If so get the value. 
+                                            If not value should be empty;
+                                        */
+
+                                        if(one_cookie.Contains("="))
+                    					{
+                        					String[] Cookie_Key_Val = one_cookie.Trim().Split(Seps_Each_Cookie, 2);
+                                            name = Cookie_Key_Val[0];
+                        					value = Cookie_Key_Val[1];
+                    					}
+                                        else
+                                        {
+                                            name=one_cookie.Trim();
+                                            gProps.log("The cookie contains only key '"+name+"'without any value", LOG_LEVEL.INFO);
+                                            value="";
+                                        }
+                                        /////////////////////////
+                                        responseCookies.Name = name;
                                         Encoding utf8 = Encoding.GetEncoding("utf-8");
-                                        string value = Cookie_Key_Val[1];
                                         responseCookies.Value = HttpUtility.UrlEncode(value, utf8); 
-                                        
                                         Uri GoogleUri = new Uri(GSASearchUrl);
                                         responseCookies.Domain = GoogleUri.Host;
-
                                         responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
                                         newcc.Add(responseCookies);
 
                                         /*Cookie Information*/
                                         gProps.log("Cookie Name= " + responseCookies.Name
-                                            + "| Value= " + Cookie_Key_Val[1]
+                                            + "| Value= " + value
                                             + "| Domain= " + GoogleUri.Host
                                             + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
                                     }
