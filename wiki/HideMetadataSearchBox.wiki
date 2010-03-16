@@ -1,3 +1,4 @@
+#summary How to hide all the metadata from search results while using GSA stylesheet in the search box?
 = How to hide all the metadata from search results while using GSA stylesheet in the search box? =
 
 = Introduction =
