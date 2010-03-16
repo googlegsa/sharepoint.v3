@@ -1,3 +1,4 @@
+#labels HidingallthemetadatafromsearchresultswhileusingGSAstylesheetinthesearchbox
 = How to hide all the metadata from search results while using GSA stylesheet in the search box? =
 
 = Introduction =
@@ -16,5 +17,3 @@ By default, when you deploy SPS_Frontend stylesheet on GSA and use GSA styleshee
                   </xsl:if>
 
 2. Save the front end on GSA and perform search from the search box. You should see only the Doc URL, content snippet, and last modified date in the search results.
-
-
