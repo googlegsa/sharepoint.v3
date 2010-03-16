@@ -1,4 +1,3 @@
-#labels HidingallthemetadatafromsearchresultswhileusingGSAstylesheetinthesearchbox
 = How to hide all the metadata from search results while using GSA stylesheet in the search box? =
 
 = Introduction =
