@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
@@ -104,6 +105,15 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         if (bulkAuth == null) {
             LOGGER.warning("Failed to initialize GSBulkAuthorizationWS.");
             return null;
+        }
+
+        try {
+            AuthenticationWS authWS = new AuthenticationWS(
+                    sharepointClientContext, null);
+            String authCookie = authWS.login();
+            bulkAuth.setAuthenticationCookie(authCookie);
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
         }
 
         /*

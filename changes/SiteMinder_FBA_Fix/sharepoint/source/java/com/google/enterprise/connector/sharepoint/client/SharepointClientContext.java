@@ -29,17 +29,22 @@ import java.util.regex.Pattern;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NTCredentials;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
-import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.generated.authentication.AuthenticationMode;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.spi.TraversalContext;
 
 /**
@@ -73,6 +78,12 @@ public class SharepointClientContext implements Cloneable {
 
     // The traversal context
     private TraversalContext traversalContext;
+
+    // For FBA Authentication support
+    private String fbaLoginPath = null;
+    private String fbaUsernameField = null;
+    private String fbaPasswordField = null;
+    private String fbaUserAgent = null;
 
     /**
      * For cloning
@@ -144,6 +155,22 @@ public class SharepointClientContext implements Cloneable {
 
             if (null != excludedURL_ParentDir) {
                 spCl.excludedURL_ParentDir = excludedURL_ParentDir;
+            }
+
+            if (null != fbaLoginPath) {
+                spCl.setFbaLoginPath(fbaLoginPath);
+            }
+
+            if (null != fbaPasswordField) {
+                spCl.setFbaPasswordField(fbaPasswordField);
+            }
+
+            if (null != fbaUserAgent) {
+                spCl.setFbaUserAgent(fbaUserAgent);
+            }
+
+            if (null != fbaUsernameField) {
+                spCl.setFbaUsernameField(fbaUsernameField);
             }
 
             return spCl;
@@ -576,34 +603,50 @@ public class SharepointClientContext implements Cloneable {
      * @param strURL The URL to be checked
      * @return the HTTP response code
      */
-    public int checkConnectivity(final String strURL, HttpMethodBase method)
+    public int checkConnectivity(final String strURL, HttpMethodBase method,
+            HttpClient httpClient)
             throws Exception {
         LOGGER.log(Level.CONFIG, "Requesting [ " + strURL + " ] ....");
         int responseCode = 0;
-        String username = this.username;
-        final String host = Util.getHost(strURL);
         Credentials credentials = null;
+
+        // TODO: create an enum for these AuthModes
         boolean kerberos = false;
         boolean ntlm = true; // We first try to use ntlm
+        boolean fba = false;
 
-        if (kdcServer != null
-                && !kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
-            credentials = new NTCredentials(username, password, host, domain);
-            kerberos = true;
-        } else if (!kerberos && null != domain && !domain.equals("")) {
-            credentials = new NTCredentials(username, password, host, domain);
-        } else {
-            credentials = new UsernamePasswordCredentials(username, password);
-            ntlm = false;
-        }
-        final HttpClient httpClient = new HttpClient();
-
-        httpClient.getState().setCredentials(AuthScope.ANY, credentials);
         if (null == method) {
-            method = new HeadMethod(strURL);
+            // TODO: GET or HEAD ??
+            method = new GetMethod(strURL);
         }
+
+        if (null == httpClient) {
+            httpClient = new HttpClient();
+            String username = this.username;
+            final String host = Util.getHost(strURL);
+            if (kdcServer != null
+                    && !kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
+                credentials = new NTCredentials(username, password, host,
+                        domain);
+                kerberos = true;
+            } else if (!kerberos && null != domain && !domain.equals("")) {
+                credentials = new NTCredentials(username, password, host,
+                        domain);
+            } else {
+                credentials = new UsernamePasswordCredentials(username,
+                        password);
+                ntlm = false;
+            }
+            httpClient.getState().setCredentials(AuthScope.ANY, credentials);
+        } else {
+            fba = true;
+            // TODO: Check the implication of this
+            method.removeRequestHeader(SPConstants.USER_AGENT);
+            method.addRequestHeader(SPConstants.USER_AGENT, getFbaUserAgent());
+        }
+
         responseCode = httpClient.executeMethod(method);
-        if (responseCode == 401 && ntlm && !kerberos) {
+        if (responseCode == 401 && ntlm && !kerberos && !fba) {
             LOGGER.log(Level.FINE, "Trying with HTTP Basic.");
             username = Util.getUserNameWithDomain(this.username, domain);
             credentials = new UsernamePasswordCredentials(username, password);
@@ -616,10 +659,74 @@ public class SharepointClientContext implements Cloneable {
         return responseCode;
     }
 
+
     /**
-     * Detect SharePoint type from the URL
+     * Performs FBA authentication against a site and returns an HttpClient
+     * which can be used afterwards without a need of re-authentication. The
+     * returned HttpClient contains all the required cookies which ensures that
+     * the authentication has been done. Though, after the cookies expires,
+     * caler should request for a new HttpClient object.
      *
-     * @param strURL
+     * @param strURL SharePoint Site URL. The URL must be ending with slash and should not contain page file name e.g default.aspx
+     * @return
+     * @throws Exception
+     */
+    public HttpClient getAuthenticatedHttpClient(String webUrl)
+            throws Exception {
+        LOGGER.log(Level.CONFIG, "Creating HttpClient for [ " + webUrl + " ]");
+        int responseCode = 0;
+        HttpClient httpClient = new HttpClient();
+
+        // TODO: How to decide GET or HEAD?
+        HttpMethod method = new GetMethod(webUrl);
+
+        // TODO: Check the implication of this
+        method.removeRequestHeader(SPConstants.USER_AGENT);
+        method.addRequestHeader(SPConstants.USER_AGENT, getFbaUserAgent());
+
+        responseCode = httpClient.executeMethod(method);
+
+        if (responseCode == 200) {
+            if (null == method.getPath()
+                    || !method.getPath().contains(getFbaLoginPath())) {
+                LOGGER.log(Level.WARNING, "Redirect location [ "
+                        + method.getPath()
+                        + " ] to the first GET is not as expected. Returning...");
+                return null;
+            }
+        } else {
+            LOGGER.log(Level.WARNING, "HTTP Response [ " + responseCode
+                    + " ] to the first GET is not 200. Returning...");
+            return null;
+        }
+
+        LOGGER.log(Level.INFO, "POSTING username and password for authentication against FBA.");
+        PostMethod postmethod = new PostMethod();
+        postmethod.setPath(method.getPath());
+        postmethod.setQueryString(method.getQueryString());
+        // TODO: What's the alternative? Creating HostConfiguration manually and
+        // passing to the method base?
+        postmethod.setHostConfiguration(method.getHostConfiguration());
+
+        LOGGER.log(Level.INFO, "Testing " + getFbaUsernameField() + " :: "
+                + getFbaPasswordField());
+        LOGGER.log(Level.INFO, "Testing " + username + " :: " + password);
+        NameValuePair[] data = {
+                new NameValuePair(getFbaUsernameField(), username),
+                new NameValuePair(getFbaPasswordField(), password) };
+        postmethod.setRequestBody(data);
+        responseCode = httpClient.executeMethod(postmethod);
+        LOGGER.log(Level.INFO, "Http Response after FBA authentication is [ "
+                + responseCode + " ]. Path [ " + method.getPath() + " ] ");
+        return httpClient;
+    }
+
+    /**
+     * Detect SharePoint type from the URL. Checks the authentication mode and
+     * if FBA, attempts an pre-hand FBA authentication
+     *
+     * @param strURL SharePoint Site URL. The URL must be ending with slash and
+     *            should not contain page file name e.g default.aspx
      * @return the SharePoint Type of the siteURL being passed
      */
     public SPConstants.SPType checkSharePointType(String strURL) {
@@ -628,9 +735,23 @@ public class SharepointClientContext implements Cloneable {
 
         strURL = Util.encodeURL(strURL);
         HttpMethodBase method = null;
+        HttpClient httpClient = null;
         try {
-            method = new HeadMethod(strURL);
-            checkConnectivity(strURL, method);
+            AuthenticationWS authWS = new AuthenticationWS(this, strURL);
+            AuthenticationMode authenticationMode = authWS.mode();
+            if (null != authenticationMode) {
+                if (SPConstants.FORMS.equalsIgnoreCase(authenticationMode.getValue())) {
+                    httpClient = getAuthenticatedHttpClient(strURL);
+                }
+            }
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+        }
+
+        try {
+            // TODO: How to decide GET or HEAD?
+            method = new GetMethod(strURL);
+            checkConnectivity(strURL, method, httpClient);
             if (null == method) {
                 return null;
             }
@@ -641,6 +762,10 @@ public class SharepointClientContext implements Cloneable {
         if (null == method) {
             return null;
         }
+        return getSPVersionFromHeader(method, strURL);
+    }
+
+    private SPType getSPVersionFromHeader(HttpMethod method, String strURL) {
         final Header contentType = method.getResponseHeader("MicrosoftSharePointTeamServices");
         String version = null;
         if (contentType != null) {
@@ -861,5 +986,37 @@ public class SharepointClientContext implements Cloneable {
      */
     public void setTraversalContext(TraversalContext traversalContext) {
         this.traversalContext = traversalContext;
+    }
+
+    public String getFbaLoginPath() {
+        return fbaLoginPath;
+    }
+
+    public void setFbaLoginPath(String fbaLoginPath) {
+        this.fbaLoginPath = fbaLoginPath;
+    }
+
+    public String getFbaUsernameField() {
+        return fbaUsernameField;
+    }
+
+    public void setFbaUsernameField(String fbaUsernameField) {
+        this.fbaUsernameField = fbaUsernameField;
+    }
+
+    public String getFbaPasswordField() {
+        return fbaPasswordField;
+    }
+
+    public void setFbaPasswordField(String fbaPasswordField) {
+        this.fbaPasswordField = fbaPasswordField;
+    }
+
+    public String getFbaUserAgent() {
+        return fbaUserAgent;
+    }
+
+    public void setFbaUserAgent(String fbaUserAgent) {
+        this.fbaUserAgent = fbaUserAgent;
     }
 }

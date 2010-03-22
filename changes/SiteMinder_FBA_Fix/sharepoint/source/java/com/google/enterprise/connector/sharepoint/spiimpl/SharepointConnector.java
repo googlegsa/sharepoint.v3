@@ -44,20 +44,26 @@ public class SharepointConnector implements Connector {
     private String includedURls = null;
     private String mySiteBaseURL = null;
     private boolean FQDNConversion = false;
-	private ArrayList<String> included_metadata = null;
-	private ArrayList<String> excluded_metadata = null;
+    private ArrayList<String> included_metadata = null;
+    private ArrayList<String> excluded_metadata = null;
     private String aliasMap = null;
-	private String authorizationAsfeedType = null;
+    private String authorizationAsfeedType = null;
+
+    // For FBA Authentication support
+    private String fbaLoginPath = null;
+    private String fbaUsernameField = null;
+    private String fbaPasswordField = null;
+    private String fbaUserAgent = null;
 
     public SharepointConnector() {
 
     }
 
-	/**
-	 * All the arguments required to create an instance of this class are
-	 * defined in the file connector_Instance.xml The argument supplied here
-	 * must match those specified under connector_Instance.xml and vice-versa
-	 */
+    /**
+     * All the arguments required to create an instance of this class are
+     * defined in the file connector_Instance.xml The argument supplied here
+     * must match those specified under connector_Instance.xml and vice-versa
+     */
     public SharepointConnector(final String sharepointUrl, final String domain,
             final String username, final String password,
             final String googleConnectorWorkDir, final String includedURls,
@@ -75,7 +81,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMapString,
-				FeedType.getFeedType(feedType));
+                FeedType.getFeedType(feedType));
     }
 
     /**
@@ -105,7 +111,7 @@ public class SharepointConnector implements Connector {
      *
      * @param inExcluded_metadata
      */
-	public void setExcluded_metadata(final ArrayList<String> inExcluded_metadata) {
+    public void setExcluded_metadata(final ArrayList<String> inExcluded_metadata) {
         excluded_metadata = inExcluded_metadata;
         if (sharepointClientContext != null) {
             sharepointClientContext.setExcluded_metadata(inExcluded_metadata);
@@ -119,7 +125,7 @@ public class SharepointConnector implements Connector {
      *
      * @param inIncluded_metadata
      */
-	public void setIncluded_metadata(final ArrayList<String> inIncluded_metadata) {
+    public void setIncluded_metadata(final ArrayList<String> inIncluded_metadata) {
         included_metadata = inIncluded_metadata;
         if (sharepointClientContext != null) {
             sharepointClientContext.setIncluded_metadata(inIncluded_metadata);
@@ -258,14 +264,14 @@ public class SharepointConnector implements Connector {
      * @return the authorization
      */
     public String getAuthorization() {
-		return authorizationAsfeedType;
+        return authorizationAsfeedType;
     }
 
     /**
      * @param authorization the authorization to set
      */
     public void setAuthorization(final String authorization) {
-		this.authorizationAsfeedType = authorization;
+        this.authorizationAsfeedType = authorization;
     }
 
     public void init() throws SharepointException {
@@ -274,35 +280,76 @@ public class SharepointConnector implements Connector {
                 + "googleConnectorWorkDir = [" + googleConnectorWorkDir
                 + "] , includedURls = [" + includedURls + "] , "
                 + "excludedURls = [" + excludedURls + "] , mySiteBaseURL = ["
-                + mySiteBaseURL + "] , aliasHostPort = [" + aliasMap + "]");
+                + mySiteBaseURL + "] , aliasHostPort = [" + aliasMap
+                + "], fbaLoginPath = [" + fbaLoginPath
+                + "] , fbaPasswordField = [" + fbaPasswordField
+                + "] , fbaUserAgent = [" + fbaUserAgent + "] , "
+                + "fbaUsernameField = [" + fbaUsernameField + " ] ");
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMap,
-				FeedType.getFeedType(authorizationAsfeedType));
+                FeedType.getFeedType(authorizationAsfeedType));
         sharepointClientContext.setFQDNConversion(FQDNConversion);
         sharepointClientContext.setIncluded_metadata(included_metadata);
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
+        sharepointClientContext.setFbaLoginPath(fbaLoginPath);
+        sharepointClientContext.setFbaPasswordField(fbaPasswordField);
+        sharepointClientContext.setFbaUserAgent(fbaUserAgent);
+        sharepointClientContext.setFbaUsernameField(fbaUsernameField);
     }
 
     /**
      * @return the included_metadata
      */
-	public ArrayList<String> getIncluded_metadata() {
+    public ArrayList<String> getIncluded_metadata() {
         return included_metadata;
     }
 
     /**
      * @return the excluded_metadata
      */
-	public ArrayList<String> getExcluded_metadata() {
+    public ArrayList<String> getExcluded_metadata() {
         return excluded_metadata;
     }
 
-public String getKdcserver() {
-		return kdcserver;
-	}
+    public String getKdcserver() {
+        return kdcserver;
+    }
 
     public void setKdcserver(String kdcserver) {
-		this.kdcserver = kdcserver;
-	}
+        this.kdcserver = kdcserver;
+    }
+
+    public String getFbaLoginPath() {
+        return fbaLoginPath;
+    }
+
+    public void setFbaLoginPath(String fbaLoginPath) {
+        this.fbaLoginPath = fbaLoginPath;
+    }
+
+    public String getFbaUsernameField() {
+        return fbaUsernameField;
+    }
+
+    public void setFbaUsernameField(String fbaUsernameField) {
+        this.fbaUsernameField = fbaUsernameField;
+    }
+
+    public String getFbaPasswordField() {
+        return fbaPasswordField;
+    }
+
+    public void setFbaPasswordField(String fbaPasswordField) {
+        this.fbaPasswordField = fbaPasswordField;
+    }
+
+    public String getFbaUserAgent() {
+        return fbaUserAgent;
+    }
+
+    public void setFbaUserAgent(String fbaUserAgent) {
+        this.fbaUserAgent = fbaUserAgent;
+    }
+
 }

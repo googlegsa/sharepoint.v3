@@ -26,6 +26,8 @@ import java.util.regex.Pattern;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.client.Call;
+import org.apache.axis.transport.http.HTTPConstants;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -182,7 +184,7 @@ public class AlertsWS {
                     // Send only those alerts which are newly added.
                     final int idPos = knownAlerts.indexOf(docId);
                     if (idPos == -1) {
-						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             docId = SPConstants.ALERT_SUFFIX_IN_DOCID
                                     + alertListState.getListURL()
                                     + SPConstants.DOC_TOKEN + docId;
@@ -202,7 +204,7 @@ public class AlertsWS {
 
                 // Create delete feed docs for all those alerts which have been
                 // deleted.
-				if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                     final Pattern pat = Pattern.compile("\\{.+\\}");
                     final Matcher match = pat.matcher(knownAlerts);
                     if (match.find()) {
@@ -222,12 +224,19 @@ public class AlertsWS {
                     }
                 }
                 alertListState.setIDs(currentAlerts);
-			} else {
-				alertListState.setExisting(false);
+            } else {
+                alertListState.setExisting(false);
             }
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Problem while getting alerts", e);
         }
         return lstAllAlerts;
+    }
+
+    public void setAuthenticationCookie(String cookie) {
+        if (null != cookie) {
+            stub._setProperty(Call.SESSION_MAINTAIN_PROPERTY, new Boolean(true));
+            stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie);
+        }
     }
 }

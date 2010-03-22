@@ -23,6 +23,8 @@ import java.util.logging.Logger;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.client.Call;
+import org.apache.axis.transport.http.HTTPConstants;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -228,4 +230,10 @@ public class UserProfileWS {
         return personalSitesSet;
     }
 
+    public void setAuthenticationCookie(String cookie) {
+        if (null != null) {
+            stub._setProperty(Call.SESSION_MAINTAIN_PROPERTY, new Boolean(true));
+            stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie);
+        }
+    }
 }

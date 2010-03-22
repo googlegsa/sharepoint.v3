@@ -162,11 +162,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * To be used while loading the lastDocument from the state file.
      */
-	public SPDocument(final String inDocId, final String inDocURL,
-			final Calendar inLastMod,
+    public SPDocument(final String inDocId, final String inDocURL,
+            final Calendar inLastMod,
             final String inFolderLevel, final ActionType inAction) {
         docId = inDocId;
-		url = inDocURL;
+        url = inDocURL;
         lastMod = inLastMod;
         folderLevel = inFolderLevel;
         action = inAction;
@@ -574,7 +574,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             HttpMethodBase method = null;
             try {
                 method = new GetMethod(docURL);
-                responseCode = sharepointClientContext.checkConnectivity(docURL, method);
+                responseCode = sharepointClientContext.checkConnectivity(docURL, method, parentWeb.getHttpClient());
                 if (null == method) {
                     return SPConstants.CONNECTIVITY_FAIL;
                 }

@@ -33,6 +33,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData;
+import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthorizationManager;
@@ -104,9 +105,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         String userName = identity.getUsername();
         String domain = identity.getDomain();
 
-		LOGGER.log(Level.INFO, "Received #" + docIDs.size()
-				+ " documents for authorization. Username [ " + userName
-				+ " ], domain [ " + domain + " ]. ");
+        LOGGER.log(Level.INFO, "Received #" + docIDs.size()
+                + " documents for authorization. Username [ " + userName
+                + " ], domain [ " + domain + " ]. ");
 
         // If domain is not received as part of the authorization request, use
         // the one from SharePointClientContext
@@ -143,6 +144,16 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
             try {
                 sharepointClientContext.setSiteURL(key_webapp);
                 bulkAuthWS = new GSBulkAuthorizationWS(sharepointClientContext);
+
+                try {
+                    AuthenticationWS authWS = new AuthenticationWS(
+                            sharepointClientContext, null);
+                    String authCookie = authWS.login();
+                    bulkAuthWS.setAuthenticationCookie(authCookie);
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+                }
+
                 authData = bulkAuthWS.bulkAuthorize(authData, userName);
             } catch (final Exception e) {
                 final String logMessage = "Problem while making remote call to BulkAuthorize. key_webapp [ "
@@ -262,7 +273,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         for (AuthData element : authDocs) {
             if ((element.getError() != null)
                     && (element.getError().length() != 0)) {
-				LOGGER.log(Level.WARNING, "Web Service has thrown the following error while authorizing. \n Error: "
+                LOGGER.log(Level.WARNING, "Web Service has thrown the following error while authorizing. \n Error: "
                         + element.getError());
             }
             final boolean status = element.isIsAllowed();

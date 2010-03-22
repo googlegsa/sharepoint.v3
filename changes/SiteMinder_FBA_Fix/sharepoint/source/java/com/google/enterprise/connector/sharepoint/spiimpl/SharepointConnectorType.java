@@ -47,6 +47,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
@@ -1142,9 +1143,19 @@ public class SharepointConnectorType implements ConnectorType {
             return rb.getString(SPConstants.ENDPOINT_NOT_FOUND);
         }
 
+        String authCookie = null;
+        try {
+            AuthenticationWS authWS = new AuthenticationWS(
+                    sharepointClientContext, null);
+            authCookie = authWS.login();
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+        }
+
         try {
             sharepointClientContext.setSiteURL(endpoint);
             final WebsWS websWS = new WebsWS(sharepointClientContext);
+            websWS.setAuthenticationCookie(authCookie);
             return websWS.checkConnectivity();
         } catch (final Exception e) {
             final String logMessage = "Problem while connecting.";
@@ -1171,6 +1182,15 @@ public class SharepointConnectorType implements ConnectorType {
             sharepointClientContext.setSiteURL(endpoint);
             final GSBulkAuthorizationWS testBulkAuth = new GSBulkAuthorizationWS(
                     sharepointClientContext);
+            try {
+                AuthenticationWS authWS = new AuthenticationWS(
+                        sharepointClientContext, null);
+                String authCookie = authWS.login();
+                testBulkAuth.setAuthenticationCookie(authCookie);
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+            }
+
             return testBulkAuth.checkConnectivity();
         } catch (final Exception e) {
             final String logMessage = "Problem while connecting.";

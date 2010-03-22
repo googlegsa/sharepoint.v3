@@ -57,40 +57,46 @@ public class TestConfiguration {
     public static String SearchDocID2;
     public static String SearchDocID3;
 
-	public static String Site1_URL;
-	public static String Site1_List1_GUID;
-	public static String Site1_List1_URL;
-	public static String Site1_List1_Item1_URL;
-	public static String Site1_List1_Item2_URL;
-	public static String Site1_List2_GUID;
-	public static String Site1_List2_URL;
-	public static String Site1_List2_Item1_URL;
-	public static String Site1_List2_Item2_URL;
+    public static String Site1_URL;
+    public static String Site1_List1_GUID;
+    public static String Site1_List1_URL;
+    public static String Site1_List1_Item1_URL;
+    public static String Site1_List1_Item2_URL;
+    public static String Site1_List2_GUID;
+    public static String Site1_List2_URL;
+    public static String Site1_List2_Item1_URL;
+    public static String Site1_List2_Item2_URL;
 
     public static String Site2_URL;
-	public static String Site2_List1_GUID;
-	public static String Site2_List1_URL;
-	public static String Site2_List1_Item1_URL;
-	public static String Site2_List1_Item2_URL;
-	public static String Site2_List2_GUID;
-	public static String Site2_List2_URL;
-	public static String Site2_List2_Item1_URL;
-	public static String Site2_List2_Item2_URL;
+    public static String Site2_List1_GUID;
+    public static String Site2_List1_URL;
+    public static String Site2_List1_Item1_URL;
+    public static String Site2_List1_Item2_URL;
+    public static String Site2_List2_GUID;
+    public static String Site2_List2_URL;
+    public static String Site2_List2_Item1_URL;
+    public static String Site2_List2_Item2_URL;
 
     public static String Site3_URL;
-	public static String Site3_List1_GUID;
-	public static String Site3_List1_URL;
-	public static String Site3_List1_Item1_URL;
-	public static String Site3_List1_Item2_URL;
-	public static String Site3_List2_GUID;
-	public static String Site3_List2_URL;
-	public static String Site3_List2_Item1_URL;
-	public static String Site3_List2_Item2_URL;
+    public static String Site3_List1_GUID;
+    public static String Site3_List1_URL;
+    public static String Site3_List1_Item1_URL;
+    public static String Site3_List1_Item2_URL;
+    public static String Site3_List2_GUID;
+    public static String Site3_List2_URL;
+    public static String Site3_List2_Item1_URL;
+    public static String Site3_List2_Item2_URL;
 
     public static ArrayList<String> blackList = new ArrayList<String>();
     public static ArrayList<String> whiteList = new ArrayList<String>();
     public static boolean FQDNflag;
     public static FeedType feedType;
+
+    // For FBA Authentication support
+    public static String fbaLoginPath = null;
+    public static String fbaUsernameField = null;
+    public static String fbaPasswordField = null;
+    public static String fbaUserAgent = null;
 
     static {
         final Properties properties = new Properties();
@@ -118,35 +124,35 @@ public class TestConfiguration {
         SearchDocID2 = properties.getProperty("SearchDocID2");
         SearchDocID3 = properties.getProperty("SearchDocID3");
 
-		Site1_URL = properties.getProperty("Site1_URL");
-		Site1_List1_GUID = properties.getProperty("Site1_List1_GUID");
-		Site1_List1_URL = properties.getProperty("Site1_List1_URL");
-		Site1_List1_Item1_URL = properties.getProperty("Site1_List1_Item1_URL");
-		Site1_List1_Item2_URL = properties.getProperty("Site1_List1_Item2_URL");
-		Site1_List2_GUID = properties.getProperty("Site1_List2_GUID");
-		Site1_List2_URL = properties.getProperty("Site1_List2_URL");
-		Site1_List2_Item1_URL = properties.getProperty("Site1_List2_Item1_URL");
-		Site1_List2_Item2_URL = properties.getProperty("Site1_List2_Item2_URL");
+        Site1_URL = properties.getProperty("Site1_URL");
+        Site1_List1_GUID = properties.getProperty("Site1_List1_GUID");
+        Site1_List1_URL = properties.getProperty("Site1_List1_URL");
+        Site1_List1_Item1_URL = properties.getProperty("Site1_List1_Item1_URL");
+        Site1_List1_Item2_URL = properties.getProperty("Site1_List1_Item2_URL");
+        Site1_List2_GUID = properties.getProperty("Site1_List2_GUID");
+        Site1_List2_URL = properties.getProperty("Site1_List2_URL");
+        Site1_List2_Item1_URL = properties.getProperty("Site1_List2_Item1_URL");
+        Site1_List2_Item2_URL = properties.getProperty("Site1_List2_Item2_URL");
 
         Site2_URL = properties.getProperty("Site2_URL");
-		Site2_List1_GUID = properties.getProperty("Site2_List1_GUID");
-		Site2_List1_URL = properties.getProperty("Site2_List1_URL");
-		Site2_List1_Item1_URL = properties.getProperty("Site2_List1_Item1_URL");
-		Site2_List1_Item2_URL = properties.getProperty("Site2_List1_Item2_URL");
-		Site2_List2_GUID = properties.getProperty("Site2_List2_GUID");
-		Site2_List2_URL = properties.getProperty("Site2_List2_URL");
-		Site2_List2_Item1_URL = properties.getProperty("Site2_List2_Item1_URL");
-		Site2_List2_Item2_URL = properties.getProperty("Site2_List2_Item2_URL");
+        Site2_List1_GUID = properties.getProperty("Site2_List1_GUID");
+        Site2_List1_URL = properties.getProperty("Site2_List1_URL");
+        Site2_List1_Item1_URL = properties.getProperty("Site2_List1_Item1_URL");
+        Site2_List1_Item2_URL = properties.getProperty("Site2_List1_Item2_URL");
+        Site2_List2_GUID = properties.getProperty("Site2_List2_GUID");
+        Site2_List2_URL = properties.getProperty("Site2_List2_URL");
+        Site2_List2_Item1_URL = properties.getProperty("Site2_List2_Item1_URL");
+        Site2_List2_Item2_URL = properties.getProperty("Site2_List2_Item2_URL");
 
         Site3_URL = properties.getProperty("Site3_URL");
-		Site3_List1_GUID = properties.getProperty("Site3_List1_GUID");
-		Site3_List1_URL = properties.getProperty("Site3_List1_URL");
-		Site3_List1_Item1_URL = properties.getProperty("Site3_List1_Item1_URL");
-		Site3_List1_Item2_URL = properties.getProperty("Site3_List1_Item2_URL");
-		Site3_List2_GUID = properties.getProperty("Site3_List2_GUID");
-		Site3_List2_URL = properties.getProperty("Site3_List2_URL");
-		Site3_List2_Item1_URL = properties.getProperty("Site3_List2_Item1_URL");
-		Site3_List2_Item2_URL = properties.getProperty("Site3_List2_Item2_URL");
+        Site3_List1_GUID = properties.getProperty("Site3_List1_GUID");
+        Site3_List1_URL = properties.getProperty("Site3_List1_URL");
+        Site3_List1_Item1_URL = properties.getProperty("Site3_List1_Item1_URL");
+        Site3_List1_Item2_URL = properties.getProperty("Site3_List1_Item2_URL");
+        Site3_List2_GUID = properties.getProperty("Site3_List2_GUID");
+        Site3_List2_URL = properties.getProperty("Site3_List2_URL");
+        Site3_List2_Item1_URL = properties.getProperty("Site3_List2_Item1_URL");
+        Site3_List2_Item2_URL = properties.getProperty("Site3_List2_Item2_URL");
 
         blackList.add(".*cachedcustomprops$");
         blackList.add(".*parserversion$");
@@ -166,6 +172,11 @@ public class TestConfiguration {
          */
         FQDNflag = false;
         feedType = FeedType.METADATA_URL_FEED;
+
+        fbaLoginPath = properties.getProperty("fbaLoginPath");
+        fbaUsernameField = properties.getProperty("fbaUsernameField");
+        fbaPasswordField = properties.getProperty("fbaPasswordField");
+        fbaUserAgent = properties.getProperty("fbaUserAgent");
     }
 
     public static Map<String, String> getConfigMap() {
@@ -203,7 +214,7 @@ public class TestConfiguration {
 
         ls.setPrimaryKey(primaryKey);
         ls.setType(SPConstants.GENERIC_LIST);
-		SPDocument doc = new SPDocument(new Integer(docId).toString(), "X",
+        SPDocument doc = new SPDocument(new Integer(docId).toString(), "X",
                 Calendar.getInstance(), null, null);
         ls.setLastDocProcessedForWS(doc);
         ls.setUrl(url);
@@ -226,7 +237,7 @@ public class TestConfiguration {
             SharepointClientContext spContext, String url,
             int indexOfLastCrawledList) throws SharepointException {
         WebState ws = globalState.makeWebState(spContext, url);
-		ws.setPrimaryKey(url);
+        ws.setPrimaryKey(url);
         DateTime dt = new DateTime();
         ws.setInsertionTime(dt);
         ListState ls = getListState("http://testcase.com:22819/tempSite/Lists/Announcements/AllItems.aspx", 10, 156790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1E4A}", ws);
@@ -296,12 +307,12 @@ public class TestConfiguration {
             Integer docId = r.nextInt(200000);
             SPDocument doc = null;
             if (i % 3 == 0) {
-				doc = new SPDocument(docId.toString(), "X",
-						Calendar.getInstance(),
+                doc = new SPDocument(docId.toString(), "X",
+                        Calendar.getInstance(),
                         null, ActionType.DELETE);
             } else {
-				doc = new SPDocument(docId.toString(), "X",
-						Calendar.getInstance(),
+                doc = new SPDocument(docId.toString(), "X",
+                        Calendar.getInstance(),
                         null, ActionType.ADD);
             }
             doc.setParentWeb(web);

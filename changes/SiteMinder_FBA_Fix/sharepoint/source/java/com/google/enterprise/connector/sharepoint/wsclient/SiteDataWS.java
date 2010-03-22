@@ -27,7 +27,9 @@ import javax.xml.rpc.ServiceException;
 import javax.xml.rpc.holders.StringHolder;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.client.Call;
 import org.apache.axis.holders.UnsignedIntHolder;
+import org.apache.axis.transport.http.HTTPConstants;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -212,7 +214,7 @@ public class SiteDataWS {
                             element.getTitle(),
                             element.getBaseType(),
                             Util.siteDataStringToCalendar(element.getLastModified()),
-							strBaseTemplate, url, webstate);
+                            strBaseTemplate, url, webstate);
                     String myNewListConst = "";
                     final String listUrl = element.getDefaultViewUrl();// e.g.
                     // /sites/abc/Lists/Announcements/AllItems.aspx
@@ -245,10 +247,10 @@ public class SiteDataWS {
                             // check if the entire list subtree is to excluded
                             // by comparing the prefix of the list URL with the
                             // patterns
-							if (sharepointClientContext.isIncludedUrl(webstate.getWebUrl()
+                            if (sharepointClientContext.isIncludedUrl(webstate.getWebUrl()
                                     + SPConstants.SLASH + myNewListConst)) {
-								// is included check if actual list url itself
-								// is to be excluded
+                                // is included check if actual list url itself
+                                // is to be excluded
                                 if (sharepointClientContext.isIncludedUrl(url)) {
                                     // if a List URL is included, it WILL be
                                     // sent as a
@@ -386,4 +388,10 @@ public class SiteDataWS {
         }
     }
 
+    public void setAuthenticationCookie(String cookie) {
+        if (null != cookie) {
+            stub._setProperty(Call.SESSION_MAINTAIN_PROPERTY, new Boolean(true));
+            stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie);
+        }
+    }
 }

@@ -36,6 +36,11 @@ public class SharePointClientContextTest extends TestCase {
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
+        sharepointClientContext.setFbaLoginPath(TestConfiguration.fbaLoginPath);
+        sharepointClientContext.setFbaPasswordField(TestConfiguration.fbaPasswordField);
+        sharepointClientContext.setFbaUserAgent(TestConfiguration.fbaUserAgent);
+        sharepointClientContext.setFbaUsernameField(TestConfiguration.fbaUsernameField);
+
         System.out.println("SharepointClientContext has been initialized successfully.");
     }
 
@@ -49,7 +54,7 @@ public class SharePointClientContextTest extends TestCase {
     public void testCheckConnectivity() {
         System.out.println("Testing checkConnectivity()...");
         try {
-            final int responseCode = this.sharepointClientContext.checkConnectivity(TestConfiguration.sharepointUrl, null);
+            final int responseCode = this.sharepointClientContext.checkConnectivity(TestConfiguration.sharepointUrl, null, null);
             assertEquals(responseCode, 200);
         } catch (Exception e) {
             System.out.println(e);
@@ -61,7 +66,7 @@ public class SharePointClientContextTest extends TestCase {
     public void testCheckSharePointType() {
         System.out.println("Testing checkSharePointVersion()...");
         try {
-			final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.Site1_URL);
+            final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.Site1_URL);
             assertEquals(spType, SPConstants.CONNECTIVITY_SUCCESS);
         } catch (Exception e) {
             System.out.println(e);

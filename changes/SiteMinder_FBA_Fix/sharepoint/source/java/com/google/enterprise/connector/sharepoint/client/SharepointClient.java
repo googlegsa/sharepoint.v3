@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.generated.authentication.AuthenticationMode;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -34,6 +35,7 @@ import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.AlertsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.sharepoint.wsclient.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
@@ -143,6 +145,19 @@ public class SharepointClient {
             return null;
         }
 
+        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()
+                && SPConstants.FORMS.equalsIgnoreCase(webState.getAuthMode())) {
+            LOGGER.log(Level.INFO, "Initiating FBA authentication for web [ "
+                    + webState.getPrimaryKey() + " ]. ");
+            try {
+                webState.setHttpClient(sharepointClientContext.getAuthenticatedHttpClient(webState.getPrimaryKey()));
+            } catch (Exception e) {
+                LOGGER.log(Level.INFO, "FBA authentication failedfor web [ "
+                        + webState.getPrimaryKey() + " ]. ");
+                // TODO: skip this web state. Don't traverse.
+            }
+        }
+
         noOfVisitedListStates = 0;
 
         LOGGER.log(Level.INFO, "Traversing web [ " + webState.getWebUrl()
@@ -215,21 +230,15 @@ public class SharepointClient {
      * @throws SharepointException
      */
     private void discoverExtraWebs(final Set<String> allSites,
-            final SPType spType) throws SharepointException {
+            final SPType spType, GlobalState globalState) throws SharepointException {
         if (SPType.SP2003 == spType) {
             LOGGER.log(Level.INFO, "Getting the initial list of MySites/Personal sites for SharePoint type SP2003. Context URL [ "
                     + sharepointClientContext.getSiteURL() + " ]");
             final com.google.enterprise.connector.sharepoint.wsclient.sp2003.UserProfileWS userProfileWS = new com.google.enterprise.connector.sharepoint.wsclient.sp2003.UserProfileWS(
                     sharepointClientContext);
-            if (userProfileWS.isSPS()) {// Check if SPS2003 or WSS 2.0
+            if (userProfileWS.isSPS()) {
                 try {
-                    final Set<String> personalSites = userProfileWS.getPersonalSiteList();// Get
-                    // the
-                    // list
-                    // of
-                    // my
-                    // sites/personal
-                    // sites
+                    final Set<String> personalSites = userProfileWS.getPersonalSiteList();
                     allSites.addAll(personalSites);
                 } catch (final Exception e) {
                     LOGGER.log(Level.WARNING, "Unable to get MySites for the Context URL [ "
@@ -237,17 +246,30 @@ public class SharepointClient {
                 }
             }
         } else if (SPType.SP2007 == spType) {
-            final String strMySiteURL = sharepointClientContext.getMySiteBaseURL(); // --GET
-            // THE
-            // MYSITE
-            // URL
+            String authCookie = null;
+            WebState ws = globalState.lookupWeb(sharepointClientContext.getSiteURL(), sharepointClientContext);
+            if (null == ws || null == ws.getAuthenticationCookie()) {
+                try {
+                    AuthenticationWS authWS = new AuthenticationWS(
+                            sharepointClientContext, null);
+                    authCookie = authWS.login();
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+                }
+            }
+
+            final String strMySiteURL = sharepointClientContext.getMySiteBaseURL();
             if ((strMySiteURL != null) && (!strMySiteURL.trim().equals(""))) {
                 LOGGER.log(Level.INFO, "Getting the initial list of MySites for SharePoint type SP2007 from MySiteBaseURL [ "
                         + strMySiteURL + " ]");
-                final UserProfileWS userProfileWS = new UserProfileWS(
+                UserProfileWS userProfileWS = new UserProfileWS(
                         sharepointClientContext);
+                userProfileWS.setAuthenticationCookie(authCookie);
                 if (userProfileWS.isSPS()) {
                     try {
+                        userProfileWS = new UserProfileWS(
+                                sharepointClientContext);
+                        userProfileWS.setAuthenticationCookie(authCookie);
                         final Set<String> lstMyLinks = userProfileWS.getMyLinks();
                         allSites.addAll(lstMyLinks);// remove duplicates
                     } catch (final Exception e) {
@@ -256,6 +278,9 @@ public class SharepointClient {
                     }
 
                     try {
+                        userProfileWS = new UserProfileWS(
+                                sharepointClientContext);
+                        userProfileWS.setAuthenticationCookie(authCookie);
                         final Set<String> personalSites = userProfileWS.getPersonalSiteList();
                         allSites.addAll(personalSites);
                     } catch (final Exception e) {
@@ -268,6 +293,7 @@ public class SharepointClient {
             // Get all top level sites from the farm. Supported only in SP2007.
             final GSSiteDiscoveryWS gspSiteDiscoveryWS = new GSSiteDiscoveryWS(
                     sharepointClientContext);
+            gspSiteDiscoveryWS.setAuthenticationCookie(authCookie);
             final Set<String> sitecollection = gspSiteDiscoveryWS.getMatchingSiteCollections();
             allSites.addAll(sitecollection);
         }
@@ -315,6 +341,17 @@ public class SharepointClient {
         String webUrl = url;
         WebState wsGS = globalState.lookupWeb(url, null);
 
+        String authCookie = null;
+
+        try {
+            sharepointClientContext.setSiteURL(webUrl);
+            AuthenticationWS authWS = new AuthenticationWS(
+                    sharepointClientContext, null);
+            authCookie = authWS.login();
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+        }
+
         /*
          * The incoming url might not always be exactly the web URL that is used
          * while creation of web state and is required by Web Services as such.
@@ -326,6 +363,7 @@ public class SharepointClient {
             try {
                 sharepointClientContext.setSiteURL(webAppURL);
                 websWS = new WebsWS(sharepointClientContext);
+                websWS.setAuthenticationCookie(authCookie);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "webWS creation failed for URL [ "
                         + url + " ]. ", e);
@@ -447,7 +485,7 @@ public class SharepointClient {
                 allSites.clear();
 
                 // Initiate the discovery of new sites
-                discoverExtraWebs(allSites, spType);
+                discoverExtraWebs(allSites, spType, globalState);
                 isGSupdated = updateGlobalState(globalState, allSites);
             }
 
@@ -534,6 +572,7 @@ public class SharepointClient {
 
         try {
             final AlertsWS alertsWS = new AlertsWS(tempCtx);
+            alertsWS.setAuthenticationCookie(webState.getAuthenticationCookie());
             listCollectionAlerts = alertsWS.getAlerts(webState, dummyAlertListState);
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Problem while getting alerts. ", e);
@@ -569,6 +608,7 @@ public class SharepointClient {
         // get all the lists for the given web // e.g. picture,wiki,document
         // libraries etc.
         final SiteDataWS siteDataWS = new SiteDataWS(tempCtx);
+        siteDataWS.setAuthenticationCookie(webState.getAuthenticationCookie());
         List<ListState> listCollection = siteDataWS.getNamedLists(webState);
 
         // Remove duplicate lists, if any.
@@ -584,7 +624,7 @@ public class SharepointClient {
             Collections.rotate(listCollection, -(listCollection.indexOf(nextList)));
         }
 
-        final ListsWS listsWS = new ListsWS(tempCtx);
+        ListsWS listsWS = null;
         for (int i = 0; i < listCollection.size(); i++) {
             final ListState currentList = listCollection.get(i);
             ListState listState = webState.lookupList(currentList.getPrimaryKey());
@@ -610,6 +650,8 @@ public class SharepointClient {
                         LOGGER.log(Level.INFO, "Discovering all the folders in the current list/library [ "
                                 + listState.getListURL() + " ] ");
                         try {
+                            listsWS = new ListsWS(tempCtx);
+                            listsWS.setAuthenticationCookie(webState.getAuthenticationCookie());
                             listsWS.getFolderHierarchy(listState, null, null);
                         } catch (final Exception e) {
                             LOGGER.log(Level.WARNING, "Exception occured while getting the folders hierarchy for list [ "
@@ -620,6 +662,8 @@ public class SharepointClient {
                         }
                     }
                     try {
+                        listsWS = new ListsWS(tempCtx);
+                        listsWS.setAuthenticationCookie(webState.getAuthenticationCookie());
                         listItems = listsWS.getListItemChangesSinceToken(listState, null, allWebs, null);
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
@@ -630,6 +674,8 @@ public class SharepointClient {
                     }
                 } else {
                     try {
+                        listsWS = new ListsWS(tempCtx);
+                        listsWS.setAuthenticationCookie(webState.getAuthenticationCookie());
                         listItems = listsWS.getListItems(listState, null, null, allWebs);
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
@@ -672,6 +718,8 @@ public class SharepointClient {
                             LOGGER.log(Level.INFO, "Discovering all the folders in the current list/library [ "
                                     + listState.getListURL() + " ] ");
                             try {
+                                listsWS = new ListsWS(tempCtx);
+                                listsWS.setAuthenticationCookie(webState.getAuthenticationCookie());
                                 listsWS.getFolderHierarchy(listState, null, null);
                             } catch (final Exception e) {
                                 LOGGER.log(Level.WARNING, "Exception occured while getting the folders hierarchy for list [ "
@@ -698,6 +746,8 @@ public class SharepointClient {
                         }
                         listState.updateList(currentList);
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
+                        listsWS = new ListsWS(tempCtx);
+                        listsWS.setAuthenticationCookie(webState.getAuthenticationCookie());
                         listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
@@ -721,7 +771,8 @@ public class SharepointClient {
                         if (dateSince.before(dateCurrent)) {
                             listState.setNewList(true);
                         }
-
+                        listsWS = new ListsWS(tempCtx);
+                        listsWS.setAuthenticationCookie(webState.getAuthenticationCookie());
                         listItems = listsWS.getListItems(listState, dateSince, lastDocID, allWebs);
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
@@ -740,6 +791,8 @@ public class SharepointClient {
                 for (int j = 0; j < listItems.size(); j++) {
                     final SPDocument doc = listItems.get(j);
                     if (ActionType.ADD.equals(doc.getAction())) {
+                        listsWS = new ListsWS(tempCtx);
+                        listsWS.setAuthenticationCookie(webState.getAuthenticationCookie());
                         final List<SPDocument> attachments = listsWS.getAttachments(listState, doc);
                         attachmentItems.addAll(attachments);
                     }
@@ -880,6 +933,28 @@ public class SharepointClient {
                 }
                 sharePointClientContext.setSiteURL(siteName);
 
+                try {
+                    LOGGER.log(Level.INFO, "Initiating FBA authentication befroe crawling web [ "
+                            + ws.getPrimaryKey() + " ] ");
+                    AuthenticationWS authWS = new AuthenticationWS(
+                            sharePointClientContext, ws.getPrimaryKey());
+                    AuthenticationMode authenticationMode = authWS.mode();
+                    String authMode = authenticationMode.getValue();
+                    if (null != authenticationMode) {
+                        authMode = authenticationMode.getValue();
+                        if (SPConstants.FORMS.equalsIgnoreCase(authMode)) {
+                            ws.setAuthenticationCookie(authWS.login());
+                        }
+                    }
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "FBA AuthenticationWS.login failed. ", e);
+                }
+
+                if ("Forms".equalsIgnoreCase(ws.getAuthMode())
+                        && null == ws.getHttpClient()) {
+                    ws.setHttpClient(sharePointClientContext.getAuthenticatedHttpClient(ws.getPrimaryKey()));
+                }
+
                 // Process the web site, and add the link site info to allSites.
                 updateWebStateFromSite(sharePointClientContext, ws, nextList, allSites);
 
@@ -916,7 +991,18 @@ public class SharepointClient {
 
             // Get the next web and discover its direct children
             sharepointClientContext.setSiteURL(webURL);
+
+            String authCookie = null;
+            try {
+                AuthenticationWS authWS = new AuthenticationWS(
+                        sharepointClientContext, null);
+                authCookie = authWS.login();
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+            }
+
             WebsWS websWS = new WebsWS(sharepointClientContext);
+            websWS.setAuthenticationCookie(authCookie);
             try {
                 LOGGER.log(Level.INFO, "Getting child sites for web [ "
                         + webURL + "]. ");

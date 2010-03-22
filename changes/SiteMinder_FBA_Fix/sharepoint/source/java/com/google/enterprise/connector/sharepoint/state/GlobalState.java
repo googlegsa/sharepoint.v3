@@ -45,6 +45,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
@@ -348,7 +349,7 @@ public class GlobalState {
                         if (webs.getAllListStateSet().size() == 0) {
                             int responseCode = 0;
                             try {
-                                responseCode = spContext.checkConnectivity(Util.encodeURL(webs.getWebUrl()), null);
+                                responseCode = spContext.checkConnectivity(Util.encodeURL(webs.getWebUrl()), null, webs.getHttpClient());
                             } catch (final Exception e) {
                                 LOGGER.log(Level.WARNING, "Connectivity failed! ", e);
                             }
@@ -449,11 +450,22 @@ public class GlobalState {
          */
         final SharepointClientContext spContext = (SharepointClientContext) sharepointClientContext.clone();
         if (null == ws) {
+            String authCookie = null;
+            try {
+                sharepointClientContext.setSiteURL(key);
+                AuthenticationWS authWS = new AuthenticationWS(
+                        sharepointClientContext, null);
+                authCookie = authWS.login();
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+            }
+
             final String webAppURL = Util.getWebApp(key);
             WebsWS websWS = null;
             try {
                 spContext.setSiteURL(webAppURL);
                 websWS = new WebsWS(spContext);
+                websWS.setAuthenticationCookie(authCookie);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "webWS creation failed for URL [ "
                         + key + " ]. ", e);

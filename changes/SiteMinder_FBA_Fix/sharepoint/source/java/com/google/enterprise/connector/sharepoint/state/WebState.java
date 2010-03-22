@@ -24,6 +24,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.httpclient.HttpClient;
 import org.joda.time.DateTime;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -37,6 +38,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
@@ -50,6 +52,11 @@ public class WebState implements StatefulObject {
     private String webId = null;
     private String title = "No Title";
     private DateTime insertionTime = null;
+
+    // Required for FBA authentication
+    private String authMode;
+    private String authenticationCookie;
+    private HttpClient httpClient;
 
     // By default mark all web state as exisitng when they are created.
     private boolean exists = true;
@@ -100,6 +107,16 @@ public class WebState implements StatefulObject {
     WebState(final SharepointClientContext spContext, final String spURL)
             throws SharepointException {
         LOGGER.config("Creating Web State for [ " + spURL + " ]");
+        webId = webUrl = spURL;
+        spContext.setSiteURL(webUrl);
+
+        try {
+            AuthenticationWS authWS = new AuthenticationWS(spContext, webUrl);
+            authenticationCookie = authWS.login();
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+        }
+
         spType = spContext.checkSharePointType(spURL);
         if (null == spType) {
             LOGGER.log(Level.WARNING, "Unknown SharePoint version [ " + spType
@@ -109,9 +126,8 @@ public class WebState implements StatefulObject {
             throw new SharepointException("Unknown SharePoint version.");
         }
 
-        webId = webUrl = spURL;
-        spContext.setSiteURL(webUrl);
         final WebsWS websWS = new WebsWS(spContext);
+        websWS.setAuthenticationCookie(authenticationCookie);
         title = websWS.getWebTitle(webUrl, spType);
         if (FeedType.CONTENT_FEED == spContext.getFeedType()
                 && SPType.SP2003 == spType) {
@@ -284,7 +300,7 @@ public class WebState implements StatefulObject {
                 if (!list.isExisting()) {
                     int responseCode = 0;
                     try {
-                        responseCode = spContext.checkConnectivity(Util.encodeURL(list.getListURL()), null);
+                        responseCode = spContext.checkConnectivity(Util.encodeURL(list.getListURL()), null, httpClient);
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Connectivity failed! ", e);
                     }
@@ -619,5 +635,29 @@ public class WebState implements StatefulObject {
                     + web.getPrimaryKey() + " ]. ");
         }
         return web;
+    }
+
+    public String getAuthMode() {
+        return authMode;
+    }
+
+    public void setAuthMode(String authMode) {
+        this.authMode = authMode;
+    }
+
+    public String getAuthenticationCookie() {
+        return authenticationCookie;
+    }
+
+    public void setAuthenticationCookie(String authenticationCookie) {
+        this.authenticationCookie = authenticationCookie;
+    }
+
+    public HttpClient getHttpClient() {
+        return httpClient;
+    }
+
+    public void setHttpClient(HttpClient httpClient) {
+        this.httpClient = httpClient;
     }
 }

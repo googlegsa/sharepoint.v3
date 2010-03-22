@@ -40,7 +40,9 @@ import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPFactory;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.client.Call;
 import org.apache.axis.message.MessageElement;
+import org.apache.axis.transport.http.HTTPConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -1774,5 +1776,12 @@ public class ListsWS {
             }
         }
         return doc;
+    }
+
+    public void setAuthenticationCookie(String cookie) {
+        if (null != cookie) {
+            stub._setProperty(Call.SESSION_MAINTAIN_PROPERTY, new Boolean(true));
+            stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie);
+        }
     }
 }

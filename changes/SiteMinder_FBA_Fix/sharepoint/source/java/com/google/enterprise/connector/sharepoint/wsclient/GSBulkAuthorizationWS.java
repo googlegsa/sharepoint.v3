@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.client.Call;
+import org.apache.axis.transport.http.HTTPConstants;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -163,6 +165,13 @@ public class GSBulkAuthorizationWS {
         } catch (final Throwable e) {
             LOGGER.log(Level.WARNING, "Can not connect to GSBulkAuthorization web service.", e);
             return e.getLocalizedMessage();
+        }
+    }
+
+    public void setAuthenticationCookie(String cookie) {
+        if (null != cookie) {
+            stub._setProperty(Call.SESSION_MAINTAIN_PROPERTY, new Boolean(true));
+            stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie);
         }
     }
 }

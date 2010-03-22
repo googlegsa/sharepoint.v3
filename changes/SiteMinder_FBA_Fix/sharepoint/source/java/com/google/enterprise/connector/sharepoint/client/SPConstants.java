@@ -121,6 +121,7 @@ public class SPConstants {
     public static final String GSPSITEDISCOVERYWS_END_POINT = "/_vti_bin/GSSiteDiscovery.asmx";
     public static final String SITEDATAENDPOINT = "/_vti_bin/SiteData.asmx";
     public static final String USERPROFILEENDPOINT = "/_vti_bin/UserProfileService.asmx";
+    public static final String AUTHENTICATIONENDPOINT = "_vti_bin/Authentication.asmx";
 
     public static final String DEFAULT_ROWLIMIT = "1000";
 
@@ -396,4 +397,9 @@ public class SPConstants {
     public static final String SYS_PROP_AUTH_USESUBJETCREDSONLY = "javax.security.auth.useSubjectCredsOnly";
     public static final String FALSE = "false";
     public static final String PERIOD = ".";
+
+    // For FBA Support
+    public static final String USER_AGENT = "User_Agent";
+    public static final String FORMS = "Forms";
+
 }
