@@ -809,7 +809,17 @@ public class ListsWS {
                             }
                         }
                         if (tmpNextPage != null) {
-                            folderLevels.addAll(getFolderHierarchy(list, folderLevel, lastItemID));
+                            ListsWS listsWS = null;
+                            try {
+                                listsWS = new ListsWS(sharepointClientContext);
+                                if (null != list.getParentWebState()) {
+                                    listsWS.setAuthenticationCookie(list.getParentWebState().getAuthenticationCookie());
+                                }
+                            } catch (Exception e) {
+                                LOGGER.log(Level.WARNING, "New ListWS creation failed. Using the current ListWS for recursive call. ", e);
+                                listsWS = this;
+                            }
+                            folderLevels.addAll(listsWS.getFolderHierarchy(list, folderLevel, lastItemID));
                         }
                     }
                 }

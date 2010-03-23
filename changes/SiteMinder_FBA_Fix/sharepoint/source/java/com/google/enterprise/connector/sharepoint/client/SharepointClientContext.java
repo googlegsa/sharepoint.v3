@@ -708,9 +708,6 @@ public class SharepointClientContext implements Cloneable {
         // passing to the method base?
         postmethod.setHostConfiguration(method.getHostConfiguration());
 
-        LOGGER.log(Level.INFO, "Testing " + getFbaUsernameField() + " :: "
-                + getFbaPasswordField());
-        LOGGER.log(Level.INFO, "Testing " + username + " :: " + password);
         NameValuePair[] data = {
                 new NameValuePair(getFbaUsernameField(), username),
                 new NameValuePair(getFbaPasswordField(), password) };
