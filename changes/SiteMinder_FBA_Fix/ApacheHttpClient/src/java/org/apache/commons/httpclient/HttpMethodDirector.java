@@ -41,11 +41,11 @@ import org.apache.commons.httpclient.auth.AuthChallengeException;
 import org.apache.commons.httpclient.auth.AuthChallengeParser;
 import org.apache.commons.httpclient.auth.AuthChallengeProcessor;
 import org.apache.commons.httpclient.auth.AuthScheme;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.auth.AuthState;
 import org.apache.commons.httpclient.auth.AuthenticationException;
-import org.apache.commons.httpclient.auth.CredentialsProvider;
 import org.apache.commons.httpclient.auth.CredentialsNotAvailableException;
-import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.auth.CredentialsProvider;
 import org.apache.commons.httpclient.auth.MalformedChallengeException;
 import org.apache.commons.httpclient.params.HostParams;
 import org.apache.commons.httpclient.params.HttpClientParams;
@@ -645,8 +645,14 @@ class HttpMethodDirector {
             }
 
             if (this.redirectLocations.contains(redirectUri)) {
-                throw new CircularRedirectException("Circular redirect to '" +
-                    redirectUri + "'");
+                // Commented out to support SiteMinder-FBA scenarios
+                /*
+                 * throw new CircularRedirectException("Circular redirect to '"
+                 * + redirectUri + "'");
+                 */
+                LOG.debug("Allowing redirect to "
+                        + redirectUri
+                        + ". This is a case of Circular Redirect and HttpClient throws an exception in such cases. But, this has to be accepted for the sake of SiteMinder-FBA support. ");
             }
         }
 
