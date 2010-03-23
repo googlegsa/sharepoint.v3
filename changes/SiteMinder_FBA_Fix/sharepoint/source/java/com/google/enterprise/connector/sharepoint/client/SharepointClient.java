@@ -146,7 +146,7 @@ public class SharepointClient {
         }
 
         if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()
-                && SPConstants.FORMS.equalsIgnoreCase(webState.getAuthMode())) {
+                && AuthenticationMode._Forms.equalsIgnoreCase(webState.getAuthMode())) {
             LOGGER.log(Level.INFO, "Initiating FBA authentication for web [ "
                     + webState.getPrimaryKey() + " ]. ");
             try {
@@ -343,21 +343,21 @@ public class SharepointClient {
 
         String authCookie = null;
 
-        try {
-            sharepointClientContext.setSiteURL(webUrl);
-            AuthenticationWS authWS = new AuthenticationWS(
-                    sharepointClientContext, null);
-            authCookie = authWS.login();
-        } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
-        }
-
         /*
          * The incoming url might not always be exactly the web URL that is used
          * while creation of web state and is required by Web Services as such.
          * Hence, a second check is required.
          */
         if (null == wsGS) {
+            try {
+                sharepointClientContext.setSiteURL(webUrl);
+                AuthenticationWS authWS = new AuthenticationWS(
+                        sharepointClientContext, null);
+                authCookie = authWS.login();
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
+            }
+
             final String webAppURL = Util.getWebApp(url);
             WebsWS websWS = null;
             try {
@@ -940,9 +940,10 @@ public class SharepointClient {
                             sharePointClientContext, ws.getPrimaryKey());
                     AuthenticationMode authenticationMode = authWS.mode();
                     String authMode = authenticationMode.getValue();
+                    ws.setAuthMode(authMode);
                     if (null != authenticationMode) {
                         authMode = authenticationMode.getValue();
-                        if (SPConstants.FORMS.equalsIgnoreCase(authMode)) {
+                        if (AuthenticationMode._Forms.equalsIgnoreCase(authMode)) {
                             ws.setAuthenticationCookie(authWS.login());
                         }
                     }
@@ -992,17 +993,8 @@ public class SharepointClient {
             // Get the next web and discover its direct children
             sharepointClientContext.setSiteURL(webURL);
 
-            String authCookie = null;
-            try {
-                AuthenticationWS authWS = new AuthenticationWS(
-                        sharepointClientContext, null);
-                authCookie = authWS.login();
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
-            }
-
             WebsWS websWS = new WebsWS(sharepointClientContext);
-            websWS.setAuthenticationCookie(authCookie);
+            websWS.setAuthenticationCookie(ws.getAuthenticationCookie());
             try {
                 LOGGER.log(Level.INFO, "Getting child sites for web [ "
                         + webURL + "]. ");

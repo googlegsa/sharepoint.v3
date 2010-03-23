@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.axis.transport.http.HTTPConstants;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -641,8 +642,7 @@ public class SharepointClientContext implements Cloneable {
         } else {
             fba = true;
             // TODO: Check the implication of this
-            method.removeRequestHeader(SPConstants.USER_AGENT);
-            method.addRequestHeader(SPConstants.USER_AGENT, getFbaUserAgent());
+            method.setRequestHeader(HTTPConstants.HEADER_USER_AGENT, getFbaUserAgent());
         }
 
         responseCode = httpClient.executeMethod(method);
@@ -681,8 +681,7 @@ public class SharepointClientContext implements Cloneable {
         HttpMethod method = new GetMethod(webUrl);
 
         // TODO: Check the implication of this
-        method.removeRequestHeader(SPConstants.USER_AGENT);
-        method.addRequestHeader(SPConstants.USER_AGENT, getFbaUserAgent());
+        method.setRequestHeader(HTTPConstants.HEADER_USER_AGENT, getFbaUserAgent());
 
         responseCode = httpClient.executeMethod(method);
 
@@ -737,7 +736,7 @@ public class SharepointClientContext implements Cloneable {
             AuthenticationWS authWS = new AuthenticationWS(this, strURL);
             AuthenticationMode authenticationMode = authWS.mode();
             if (null != authenticationMode) {
-                if (SPConstants.FORMS.equalsIgnoreCase(authenticationMode.getValue())) {
+                if (AuthenticationMode._Forms.equalsIgnoreCase(authenticationMode.getValue())) {
                     httpClient = getAuthenticatedHttpClient(strURL);
                 }
             }

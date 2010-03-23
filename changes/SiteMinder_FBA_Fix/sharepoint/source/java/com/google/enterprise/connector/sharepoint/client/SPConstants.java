@@ -397,9 +397,4 @@ public class SPConstants {
     public static final String SYS_PROP_AUTH_USESUBJETCREDSONLY = "javax.security.auth.useSubjectCredsOnly";
     public static final String FALSE = "false";
     public static final String PERIOD = ".";
-
-    // For FBA Support
-    public static final String USER_AGENT = "User_Agent";
-    public static final String FORMS = "Forms";
-
 }
