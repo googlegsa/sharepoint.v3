@@ -642,7 +642,10 @@ public class SharepointClientContext implements Cloneable {
         } else {
             fba = true;
             // TODO: Check the implication of this
-            method.setRequestHeader(HTTPConstants.HEADER_USER_AGENT, getFbaUserAgent());
+            if (null != getFbaUserAgent()
+                    && getFbaUserAgent().trim().length() != 0) {
+                method.setRequestHeader(HTTPConstants.HEADER_USER_AGENT, getFbaUserAgent());
+            }
         }
 
         responseCode = httpClient.executeMethod(method);
@@ -681,7 +684,9 @@ public class SharepointClientContext implements Cloneable {
         HttpMethod method = new GetMethod(webUrl);
 
         // TODO: Check the implication of this
-        method.setRequestHeader(HTTPConstants.HEADER_USER_AGENT, getFbaUserAgent());
+        if (null != getFbaUserAgent() && getFbaUserAgent().trim().length() != 0) {
+            method.setRequestHeader(HTTPConstants.HEADER_USER_AGENT, getFbaUserAgent());
+        }
 
         responseCode = httpClient.executeMethod(method);
 
@@ -699,7 +704,7 @@ public class SharepointClientContext implements Cloneable {
             return null;
         }
 
-        LOGGER.log(Level.INFO, "POSTING username and password for authentication against FBA.");
+        LOGGER.log(Level.FINE, "POSTING username and password for authentication against FBA.");
         PostMethod postmethod = new PostMethod();
         postmethod.setPath(method.getPath());
         postmethod.setQueryString(method.getQueryString());
@@ -712,8 +717,10 @@ public class SharepointClientContext implements Cloneable {
                 new NameValuePair(getFbaPasswordField(), password) };
         postmethod.setRequestBody(data);
         responseCode = httpClient.executeMethod(postmethod);
-        LOGGER.log(Level.INFO, "Http Response after FBA authentication is [ "
-                + responseCode + " ]. Path [ " + method.getPath() + " ] ");
+        if (responseCode != 302) {
+            LOGGER.log(Level.WARNING, "Http Response after FBA authentication is [ "
+                    + responseCode + " ]. Path [ " + method.getPath() + " ] ");
+        }
         return httpClient;
     }
 
