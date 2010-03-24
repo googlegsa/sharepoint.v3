@@ -46,7 +46,6 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
@@ -599,42 +598,38 @@ public class SharepointConnectorType implements ConnectorType {
         }
         status = null;
 
-        final SPType SPVersion = sharepointClientContext.checkSharePointType(sharepointUrl);
-        if (SPType.SP2007 == SPVersion && mySiteUrl != null
-                && !mySiteUrl.equals(SPConstants.BLANK_STRING)) {
-            if (!isURL(mySiteUrl)) {
-                ed.set(SPConstants.MYSITE_BASE_URL, rb.getString(SPConstants.MALFORMED_MYSITE_URL));
-                return false;
-            }
-            if (!isInFQDN(mySiteUrl)) {
-                ed.set(SPConstants.MYSITE_BASE_URL, rb.getString(SPConstants.REQ_FQDN_MYSITE_URL));
-                return false;
-            }
-
-            status = checkPattern(mySiteUrl);
-            if (status != null) {
-                ed.set(null, rb.getString(SPConstants.MYSITE_BASE_URL) + " "
-                        + status);
-                return false;
-            }
-            status = null;
-
-            status = checkConnectivity(mySiteUrl);
-            if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-                ed.set(SPConstants.MYSITE_BASE_URL, rb.getString(SPConstants.CANNOT_CONNECT_MYSITE)
-                        + rb.getString(SPConstants.REASON) + status);
-                return false;
-            }
-
-            if (FeedType.CONTENT_FEED == feedType) {
-                status = checkGSConnectivity(mySiteUrl);
-                if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-                    ed.set(SPConstants.MYSITE_BASE_URL, rb.getString(SPConstants.BULKAUTH_ERROR_MYSITE_URL)
-                            + rb.getString(SPConstants.REASON) + status);
-                    return false;
-                }
-            }
-        }
+        // TODO: Commenting out temporarily to support FBA. Since, FBA related
+        // congiguratioon values (in connectorDefaults.xml) are not available
+        // here, SharePoint version detection fails.
+        // FIXME: make the configuration value savailable here, and than
+        // uncomment the code.
+        /*
+         * final SPType SPVersion =
+         * sharepointClientContext.checkSharePointType(sharepointUrl); if
+         * (SPType.SP2007 == SPVersion && mySiteUrl != null &&
+         * !mySiteUrl.equals(SPConstants.BLANK_STRING)) { if (!isURL(mySiteUrl))
+         * { ed.set(SPConstants.MYSITE_BASE_URL,
+         * rb.getString(SPConstants.MALFORMED_MYSITE_URL)); return false; } if
+         * (!isInFQDN(mySiteUrl)) { ed.set(SPConstants.MYSITE_BASE_URL,
+         * rb.getString(SPConstants.REQ_FQDN_MYSITE_URL)); return false; }
+         *
+         * status = checkPattern(mySiteUrl); if (status != null) { ed.set(null,
+         * rb.getString(SPConstants.MYSITE_BASE_URL) + " " + status); return
+         * false; } status = null;
+         *
+         * status = checkConnectivity(mySiteUrl); if
+         * (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
+         * ed.set(SPConstants.MYSITE_BASE_URL,
+         * rb.getString(SPConstants.CANNOT_CONNECT_MYSITE) +
+         * rb.getString(SPConstants.REASON) + status); return false; }
+         *
+         * if (FeedType.CONTENT_FEED == feedType) { status =
+         * checkGSConnectivity(mySiteUrl); if
+         * (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
+         * ed.set(SPConstants.MYSITE_BASE_URL,
+         * rb.getString(SPConstants.BULKAUTH_ERROR_MYSITE_URL) +
+         * rb.getString(SPConstants.REASON) + status); return false; } } }
+         */
         return true;
     }
 
