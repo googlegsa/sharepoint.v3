@@ -63,7 +63,8 @@ public class UserProfileWS {
             throws SharepointException {
         if (inSharepointClientContext != null) {
             sharepointClientContext = inSharepointClientContext;
-            endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
+            String siteUrl = Util.getWebURLForWSCall(sharepointClientContext.getSiteURL());
+            endpoint = Util.encodeURL(siteUrl)
                     + SPConstants.USERPROFILEENDPOINT;
             LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
 

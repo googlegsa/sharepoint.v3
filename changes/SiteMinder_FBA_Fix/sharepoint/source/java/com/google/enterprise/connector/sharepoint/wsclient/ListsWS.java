@@ -102,7 +102,8 @@ public class ListsWS {
                 rowLimit = "" + inSharepointClientContext.getBatchHint();
             }
             LOGGER.log(Level.FINEST, "RowLimit set to: " + rowLimit);
-            endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
+            String siteUrl = Util.getWebURLForWSCall(sharepointClientContext.getSiteURL());
+            endpoint = Util.encodeURL(siteUrl)
                     + SPConstants.LISTS_END_POINT;
             LOGGER.config("endpoint set to: " + endpoint);
 

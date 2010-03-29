@@ -39,7 +39,6 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
@@ -126,9 +125,6 @@ public class WebState implements StatefulObject {
             throw new SharepointException("Unknown SharePoint version.");
         }
 
-        final WebsWS websWS = new WebsWS(spContext);
-        websWS.setAuthenticationCookie(authenticationCookie);
-        title = websWS.getWebTitle(webUrl, spType);
         if (FeedType.CONTENT_FEED == spContext.getFeedType()
                 && SPType.SP2003 == spType) {
             LOGGER.warning("excluding "

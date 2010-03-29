@@ -37,7 +37,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 public class AuthenticationWS {
     private String endpoint;
     private AuthenticationSoap_BindingStub stub = null;
-    private final Logger LOGGER = Logger.getLogger(WebsWS.class.getName());
+    private final Logger LOGGER = Logger.getLogger(AuthenticationWS.class.getName());
     private SharepointClientContext sharepointClientContext;
 
     /**
@@ -54,6 +54,7 @@ public class AuthenticationWS {
         if (null == siteUrl) {
             siteUrl = sharePointClientContext.getSiteURL();
         }
+        siteUrl = Util.getWebURLForWSCall(siteUrl);
         endpoint = Util.encodeURL(siteUrl);
         if (endpoint.endsWith("/")) {
             endpoint += SPConstants.AUTHENTICATIONENDPOINT;

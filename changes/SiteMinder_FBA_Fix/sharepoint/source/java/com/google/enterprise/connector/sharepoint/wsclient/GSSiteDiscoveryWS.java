@@ -62,7 +62,8 @@ public class GSSiteDiscoveryWS {
             throws SharepointException {
         if (inSharepointClientContext != null) {
             sharepointClientContext = inSharepointClientContext;
-            endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
+            String siteUrl = Util.getWebURLForWSCall(sharepointClientContext.getSiteURL());
+            endpoint = Util.encodeURL(siteUrl)
                     + SPConstants.GSPSITEDISCOVERYWS_END_POINT;
             LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
 

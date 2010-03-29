@@ -40,7 +40,6 @@ import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.sharepoint.wsclient.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.UserProfileWS;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
@@ -247,7 +246,7 @@ public class SharepointClient {
             }
         } else if (SPType.SP2007 == spType) {
             String authCookie = null;
-            WebState ws = globalState.lookupWeb(sharepointClientContext.getSiteURL(), sharepointClientContext);
+            WebState ws = globalState.lookupWeb(sharepointClientContext.getSiteURL());
             if (null == ws || null == ws.getAuthenticationCookie()) {
                 try {
                     AuthenticationWS authWS = new AuthenticationWS(
@@ -339,42 +338,7 @@ public class SharepointClient {
             return web;
         }
         String webUrl = url;
-        WebState wsGS = globalState.lookupWeb(url, null);
-
-        String authCookie = null;
-
-        /*
-         * The incoming url might not always be exactly the web URL that is used
-         * while creation of web state and is required by Web Services as such.
-         * Hence, a second check is required.
-         */
-        if (null == wsGS) {
-            try {
-                sharepointClientContext.setSiteURL(webUrl);
-                AuthenticationWS authWS = new AuthenticationWS(
-                        sharepointClientContext, null);
-                authCookie = authWS.login();
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
-            }
-
-            final String webAppURL = Util.getWebApp(url);
-            WebsWS websWS = null;
-            try {
-                sharepointClientContext.setSiteURL(webAppURL);
-                websWS = new WebsWS(sharepointClientContext);
-                websWS.setAuthenticationCookie(authCookie);
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "webWS creation failed for URL [ "
-                        + url + " ]. ", e);
-            }
-            if (null != websWS) {
-                webUrl = websWS.getWebURLFromPageURL(url);
-                if (!url.equals(webUrl)) {
-                    wsGS = globalState.lookupWeb(webUrl, null);
-                }
-            }
-        }
+        WebState wsGS = globalState.lookupWeb(url);
 
         if (null == wsGS) {// new web
             LOGGER.info("Making WebState for : " + webUrl);
@@ -419,7 +383,7 @@ public class SharepointClient {
         WebState nextWeb = globalState.getLastCrawledWeb();
 
         if (null == nextWeb) {
-            nextWeb = globalState.lookupWeb(sharepointClientContext.getSiteURL(), sharepointClientContext);
+            nextWeb = globalState.lookupWeb(sharepointClientContext.getSiteURL());
         } else {
             sharepointClientContext.setSiteURL(nextWeb.getWebUrl());
         }
@@ -951,11 +915,6 @@ public class SharepointClient {
                     LOGGER.log(Level.WARNING, "FBA AuthenticationWS.login failed. ", e);
                 }
 
-                if ("Forms".equalsIgnoreCase(ws.getAuthMode())
-                        && null == ws.getHttpClient()) {
-                    ws.setHttpClient(sharePointClientContext.getAuthenticatedHttpClient(ws.getPrimaryKey()));
-                }
-
                 // Process the web site, and add the link site info to allSites.
                 updateWebStateFromSite(sharePointClientContext, ws, nextList, allSites);
 
@@ -993,12 +952,12 @@ public class SharepointClient {
             // Get the next web and discover its direct children
             sharepointClientContext.setSiteURL(webURL);
 
-            WebsWS websWS = new WebsWS(sharepointClientContext);
-            websWS.setAuthenticationCookie(ws.getAuthenticationCookie());
+            SiteDataWS siteDataWs = new SiteDataWS(sharepointClientContext);
+            siteDataWs.setAuthenticationCookie(ws.getAuthenticationCookie());
             try {
                 LOGGER.log(Level.INFO, "Getting child sites for web [ "
                         + webURL + "]. ");
-                final Set<String> allWebStateSet = websWS.getDirectChildsites();
+                final Set<String> allWebStateSet = siteDataWs.getWebs(ws);
                 allSites.addAll(allWebStateSet);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Unable to get the Child sites for site "

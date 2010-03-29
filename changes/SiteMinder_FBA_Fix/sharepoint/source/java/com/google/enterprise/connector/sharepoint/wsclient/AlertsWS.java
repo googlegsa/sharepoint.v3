@@ -69,8 +69,8 @@ public class AlertsWS {
             throws RepositoryException {
         if (inSharepointClientContext != null) {
             sharepointClientContext = inSharepointClientContext;
-            endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
-                    + SPConstants.ALERTSENDPOINT;
+            String siteUrl = Util.getWebURLForWSCall(sharepointClientContext.getSiteURL());
+            endpoint = Util.encodeURL(siteUrl) + SPConstants.ALERTSENDPOINT;
             LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
 
             try {

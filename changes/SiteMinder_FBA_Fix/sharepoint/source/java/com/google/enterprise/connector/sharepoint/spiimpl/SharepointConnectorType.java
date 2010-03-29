@@ -48,7 +48,7 @@ import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 import com.google.enterprise.connector.spi.ConnectorFactory;
 import com.google.enterprise.connector.spi.ConnectorType;
@@ -1149,9 +1149,10 @@ public class SharepointConnectorType implements ConnectorType {
 
         try {
             sharepointClientContext.setSiteURL(endpoint);
-            final WebsWS websWS = new WebsWS(sharepointClientContext);
-            websWS.setAuthenticationCookie(authCookie);
-            return websWS.checkConnectivity();
+            final SiteDataWS siteDataWs = new SiteDataWS(
+                    sharepointClientContext);
+            siteDataWs.setAuthenticationCookie(authCookie);
+            return siteDataWs.checkConnectivity();
         } catch (final Exception e) {
             final String logMessage = "Problem while connecting.";
             LOGGER.log(Level.WARNING, logMessage, e);

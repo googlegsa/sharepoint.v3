@@ -27,15 +27,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.axis.transport.http.HTTPConstants;
-import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -43,9 +39,7 @@ import org.apache.commons.httpclient.protocol.Protocol;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.generated.authentication.AuthenticationMode;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.spi.TraversalContext;
 
 /**
@@ -607,59 +601,44 @@ public class SharepointClientContext implements Cloneable {
     public int checkConnectivity(final String strURL, HttpMethodBase method,
             HttpClient httpClient)
             throws Exception {
-        LOGGER.log(Level.CONFIG, "Requesting [ " + strURL + " ] ....");
+        // LOGGER.log(Level.CONFIG, "Requesting [ " + strURL + " ] ....");
         int responseCode = 0;
-        Credentials credentials = null;
-
-        // TODO: create an enum for these AuthModes
-        boolean kerberos = false;
-        boolean ntlm = true; // We first try to use ntlm
-        boolean fba = false;
-
-        if (null == method) {
-            // TODO: GET or HEAD ??
-            method = new GetMethod(strURL);
-        }
-
-        if (null == httpClient) {
-            httpClient = new HttpClient();
-            String username = this.username;
-            final String host = Util.getHost(strURL);
-            if (kdcServer != null
-                    && !kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
-                credentials = new NTCredentials(username, password, host,
-                        domain);
-                kerberos = true;
-            } else if (!kerberos && null != domain && !domain.equals("")) {
-                credentials = new NTCredentials(username, password, host,
-                        domain);
-            } else {
-                credentials = new UsernamePasswordCredentials(username,
-                        password);
-                ntlm = false;
-            }
-            httpClient.getState().setCredentials(AuthScope.ANY, credentials);
-        } else {
-            fba = true;
-            // TODO: Check the implication of this
-            if (null != getFbaUserAgent()
-                    && getFbaUserAgent().trim().length() != 0) {
-                method.setRequestHeader(HTTPConstants.HEADER_USER_AGENT, getFbaUserAgent());
-            }
-        }
-
-        responseCode = httpClient.executeMethod(method);
-        if (responseCode == 401 && ntlm && !kerberos && !fba) {
-            LOGGER.log(Level.FINE, "Trying with HTTP Basic.");
-            username = Util.getUserNameWithDomain(this.username, domain);
-            credentials = new UsernamePasswordCredentials(username, password);
-            httpClient.getState().setCredentials(AuthScope.ANY, credentials);
-            responseCode = httpClient.executeMethod(method);
-        }
-        if (responseCode != 200) {
-            LOGGER.log(Level.WARNING, "responseCode: " + responseCode);
-        }
         return responseCode;
+        // TODO
+        /*
+         * Credentials credentials = null;
+         *
+         * // TODO: create an enum for these AuthModes boolean kerberos = false;
+         * boolean ntlm = true; // We first try to use ntlm boolean fba = false;
+         *
+         * if (null == method) { // TODO: GET or HEAD ?? method = new
+         * GetMethod(strURL); }
+         *
+         * if (null == httpClient) { httpClient = new HttpClient(); String
+         * username = this.username; final String host = Util.getHost(strURL);
+         * if (kdcServer != null &&
+         * !kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) { credentials
+         * = new NTCredentials(username, password, host, domain); kerberos =
+         * true; } else if (!kerberos && null != domain && !domain.equals("")) {
+         * credentials = new NTCredentials(username, password, host, domain); }
+         * else { credentials = new UsernamePasswordCredentials(username,
+         * password); ntlm = false; }
+         * httpClient.getState().setCredentials(AuthScope.ANY, credentials); }
+         * else { fba = true; // TODO: Check the implication of this if (null !=
+         * getFbaUserAgent() && getFbaUserAgent().trim().length() != 0) {
+         * method.setRequestHeader(HTTPConstants.HEADER_USER_AGENT,
+         * getFbaUserAgent()); } }
+         *
+         * responseCode = httpClient.executeMethod(method); if (responseCode ==
+         * 401 && ntlm && !kerberos && !fba) { LOGGER.log(Level.FINE,
+         * "Trying with HTTP Basic."); username =
+         * Util.getUserNameWithDomain(this.username, domain); credentials = new
+         * UsernamePasswordCredentials(username, password);
+         * httpClient.getState().setCredentials(AuthScope.ANY, credentials);
+         * responseCode = httpClient.executeMethod(method); } if (responseCode
+         * != 200) { LOGGER.log(Level.WARNING, "responseCode: " + responseCode);
+         * } return responseCode;
+         */
     }
 
 
@@ -733,39 +712,29 @@ public class SharepointClientContext implements Cloneable {
      * @return the SharePoint Type of the siteURL being passed
      */
     public SPConstants.SPType checkSharePointType(String strURL) {
-        LOGGER.log(Level.CONFIG, "Checking [ " + strURL
-                + " ] for the SharePoint version.");
-
-        strURL = Util.encodeURL(strURL);
-        HttpMethodBase method = null;
-        HttpClient httpClient = null;
-        try {
-            AuthenticationWS authWS = new AuthenticationWS(this, strURL);
-            AuthenticationMode authenticationMode = authWS.mode();
-            if (null != authenticationMode) {
-                if (AuthenticationMode._Forms.equalsIgnoreCase(authenticationMode.getValue())) {
-                    httpClient = getAuthenticatedHttpClient(strURL);
-                }
-            }
-        } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
-        }
-
-        try {
-            // TODO: How to decide GET or HEAD?
-            method = new GetMethod(strURL);
-            checkConnectivity(strURL, method, httpClient);
-            if (null == method) {
-                return null;
-            }
-        } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Unable to connect " + strURL, e);
-            return null;
-        }
-        if (null == method) {
-            return null;
-        }
-        return getSPVersionFromHeader(method, strURL);
+        /*
+         * LOGGER.log(Level.CONFIG, "Checking [ " + strURL +
+         * " ] for the SharePoint version.");
+         */
+        return SPType.SP2007;
+        // TODO
+        /*
+         * strURL = Util.encodeURL(strURL); HttpMethodBase method = null;
+         * HttpClient httpClient = null; try { AuthenticationWS authWS = new
+         * AuthenticationWS(this, strURL); AuthenticationMode authenticationMode
+         * = authWS.mode(); if (null != authenticationMode) { if
+         * (AuthenticationMode
+         * ._Forms.equalsIgnoreCase(authenticationMode.getValue())) { httpClient
+         * = getAuthenticatedHttpClient(strURL); } } } catch (final Exception e)
+         * { LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e); }
+         *
+         * try { // TODO: How to decide GET or HEAD? method = new
+         * GetMethod(strURL); checkConnectivity(strURL, method, httpClient); if
+         * (null == method) { return null; } } catch (final Exception e) {
+         * LOGGER.log(Level.WARNING, "Unable to connect " + strURL, e); return
+         * null; } if (null == method) { return null; } return
+         * getSPVersionFromHeader(method, strURL);
+         */
     }
 
     private SPType getSPVersionFromHeader(HttpMethod method, String strURL) {

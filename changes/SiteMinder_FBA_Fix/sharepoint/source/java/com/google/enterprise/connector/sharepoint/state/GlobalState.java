@@ -45,8 +45,6 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
@@ -436,46 +434,12 @@ public class GlobalState {
      * @param key primary key
      * @return object handle, or null if none found
      */
-    public WebState lookupWeb(final String key,
-            final SharepointClientContext sharepointClientContext) {
+    public WebState lookupWeb(final String key) {
         WebState ws = keyMap.get(key);
-        if (null == sharepointClientContext) {
-            return ws;
-        }
-
-        /*
-         * The incoming url might not always be exactly the web URL that is used
-         * while creation of web state and is required by Web Services as such.
-         * Hence, a second check is required.
-         */
-        final SharepointClientContext spContext = (SharepointClientContext) sharepointClientContext.clone();
         if (null == ws) {
-            String authCookie = null;
-            try {
-                sharepointClientContext.setSiteURL(key);
-                AuthenticationWS authWS = new AuthenticationWS(
-                        sharepointClientContext, null);
-                authCookie = authWS.login();
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
-            }
-
-            final String webAppURL = Util.getWebApp(key);
-            WebsWS websWS = null;
-            try {
-                spContext.setSiteURL(webAppURL);
-                websWS = new WebsWS(spContext);
-                websWS.setAuthenticationCookie(authCookie);
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "webWS creation failed for URL [ "
-                        + key + " ]. ", e);
-            }
-            if (null != websWS) {
-                final String tmpKey = websWS.getWebURLFromPageURL(key);
-                if (!key.equals(tmpKey)) {
-                    ws = keyMap.get(tmpKey);
-                    ;
-                }
+            final String tmpKey = Util.getWebURLForWSCall(key);
+            if (!key.equals(tmpKey)) {
+                ws = keyMap.get(tmpKey);
             }
         }
         return ws;

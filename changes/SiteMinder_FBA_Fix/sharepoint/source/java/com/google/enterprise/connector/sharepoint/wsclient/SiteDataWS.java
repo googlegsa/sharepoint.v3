@@ -14,12 +14,15 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,6 +41,8 @@ import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteData;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataLocator;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.sitedata._sList;
+import com.google.enterprise.connector.sharepoint.generated.sitedata._sWebMetadata;
+import com.google.enterprise.connector.sharepoint.generated.sitedata._sWebWithTime;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOfStringHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sFPUrlHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
@@ -72,7 +77,8 @@ public class SiteDataWS {
             throws SharepointException {
         if (inSharepointClientContext != null) {
             sharepointClientContext = inSharepointClientContext;
-            endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
+            String siteUrl = Util.getWebURLForWSCall(sharepointClientContext.getSiteURL());
+            endpoint = Util.encodeURL(siteUrl)
                     + SPConstants.SITEDATAENDPOINT;
             LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
 
@@ -385,6 +391,139 @@ public class SiteDataWS {
             LOGGER.log(Level.WARNING, "Unable to get the title for web beacuse call to the WS failed. endpoint [ "
                     + endpoint + " ]", e);
             return "";
+        }
+    }
+
+    /**
+     * @return
+     * @throws RemoteException
+     */
+    public Set<String> getWebs(WebState webstate) throws RemoteException {
+        final Set<String> allWebs = new TreeSet<String>();
+
+        final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
+        final _sWebMetadataHolder sWebMetadata = new _sWebMetadataHolder();
+        final ArrayOf_sWebWithTimeHolder vWebs = new ArrayOf_sWebWithTimeHolder();
+        final ArrayOf_sListWithTimeHolder vLists = new ArrayOf_sListWithTimeHolder();
+        final ArrayOf_sFPUrlHolder vFPUrls = new ArrayOf_sFPUrlHolder();
+        final StringHolder strRoles = new StringHolder();
+        final ArrayOfStringHolder vRolesUsers = new ArrayOfStringHolder();
+        final ArrayOfStringHolder vRolesGroups = new ArrayOfStringHolder();
+        try {
+            stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
+        } catch (final AxisFault af) { // Handling of username formats for
+            // different authentication models.
+            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+                    && (sharepointClientContext.getDomain() != null)) {
+                final String username = Util.switchUserNameFormat(stub.getUsername());
+                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ].");
+                LOGGER.log(Level.INFO, "Trying with " + username);
+                stub.setUsername(username);
+                try {
+                    stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "Unable to get the title for web beacuse call to the WS failed. endpoint [ "
+                            + endpoint + " ]", e);
+                    return allWebs;
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "Unable to get the title for web beacuse call to the WS failed. endpoint [ "
+                        + endpoint + " ]", af);
+                return allWebs;
+            }
+        } catch (final Throwable e) {
+            LOGGER.log(Level.WARNING, "Unable to get the title for web beacuse call to the WS failed. endpoint [ "
+                    + endpoint + " ]", e);
+            return allWebs;
+        }
+
+        LOGGER.log(Level.FINE, "Parsing WS response..");
+        try {
+            if(null == vWebs) {
+                return allWebs;
+            }
+            _sWebWithTime[] webs = vWebs.value;
+            if (null != webs) {
+                for (_sWebWithTime web : webs) {
+                    if (null != web && null != web.getUrl()) {
+                        allWebs.add(makeHttps(web.getUrl()));
+                    }
+                }
+            }
+
+            if (null != webstate) {
+                _sWebMetadata webmeta = sWebMetadata.value;
+                if (null != webmeta) {
+                    if (null != webmeta && null != webmeta.getTitle()) {
+                        webstate.setTitle(webmeta.getTitle());
+                    }
+                }
+            }
+        } catch(Exception e) {
+            LOGGER.log(Level.WARNING, "Parsing WS response failed.", e);
+        }
+        return allWebs;
+    }
+
+    // FIXME: This is temporary.
+    private String makeHttps(String strUrl) {
+        try {
+            URL url = new URL(strUrl);
+            StringBuffer sb = new StringBuffer("https://" + url.getHost());
+            if (-1 != url.getPort()) {
+                sb.append(":" + url.getPort());
+            }
+            if(null != url.getPath() && !url.getPath().startsWith("/")) {
+                sb.append("/");
+            }
+            sb.append(url.getPath());
+            // Can ignore query strings as these URLs will be used to set endpoints
+            return sb.toString();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Problem while converting to HTTPS..");
+            return strUrl;
+        }
+    }
+
+    public String checkConnectivity() throws Exception {
+        final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
+        final _sWebMetadataHolder sWebMetadata = new _sWebMetadataHolder();
+        final ArrayOf_sWebWithTimeHolder vWebs = new ArrayOf_sWebWithTimeHolder();
+        final ArrayOf_sListWithTimeHolder vLists = new ArrayOf_sListWithTimeHolder();
+        final ArrayOf_sFPUrlHolder vFPUrls = new ArrayOf_sFPUrlHolder();
+        final StringHolder strRoles = new StringHolder();
+        final ArrayOfStringHolder vRolesUsers = new ArrayOfStringHolder();
+        final ArrayOfStringHolder vRolesGroups = new ArrayOfStringHolder();
+        try {
+            stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
+            return SPConstants.CONNECTIVITY_SUCCESS;
+        } catch (final AxisFault af) { // Handling of username formats for
+            // different authentication models.
+            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+                    && (sharepointClientContext.getDomain() != null)) {
+                final String username = Util.switchUserNameFormat(stub.getUsername());
+                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ].");
+                LOGGER.log(Level.INFO, "Trying with " + username);
+                stub.setUsername(username);
+                try {
+                    stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
+                    return SPConstants.CONNECTIVITY_SUCCESS;
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "WS failed. endpoint [ "
+                            + endpoint + " ]", e);
+                    return e.getLocalizedMessage();
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "WS failed. endpoint [ " + endpoint
+                        + " ]", af);
+                return af.getLocalizedMessage();
+            }
+        } catch (final Throwable e) {
+            LOGGER.log(Level.WARNING, "WS failed. endpoint [ " + endpoint
+                    + " ]", e);
+            return e.getLocalizedMessage();
         }
     }
 
