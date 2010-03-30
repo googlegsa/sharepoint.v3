@@ -122,6 +122,7 @@ public class SPConstants {
     public static final String SITEDATAENDPOINT = "/_vti_bin/SiteData.asmx";
     public static final String USERPROFILEENDPOINT = "/_vti_bin/UserProfileService.asmx";
     public static final String AUTHENTICATIONENDPOINT = "_vti_bin/Authentication.asmx";
+	public static final String GSPFILECONTENT_END_POINT = "/_vti_bin/GSPFileContent.asmx";
 
     public static final String DEFAULT_ROWLIMIT = "1000";
 

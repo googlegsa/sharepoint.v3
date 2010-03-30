@@ -14,6 +14,26 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.sharepoint.client.Attribute;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.GSPFileContentWS;
+import com.google.enterprise.connector.spi.Document;
+import com.google.enterprise.connector.spi.Property;
+import com.google.enterprise.connector.spi.RepositoryDocumentException;
+import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+import com.google.enterprise.connector.spiimpl.BinaryValue;
+import com.google.enterprise.connector.spiimpl.BooleanValue;
+import com.google.enterprise.connector.spiimpl.DateValue;
+import com.google.enterprise.connector.spiimpl.StringValue;
+
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.text.Collator;
@@ -25,30 +45,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.GetMethod;
-
-import com.google.enterprise.connector.sharepoint.client.Attribute;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.spi.Document;
-import com.google.enterprise.connector.spi.Property;
-import com.google.enterprise.connector.spi.RepositoryDocumentException;
-import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.SkippedDocumentException;
-import com.google.enterprise.connector.spi.SpiConstants;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-import com.google.enterprise.connector.spiimpl.BinaryValue;
-import com.google.enterprise.connector.spiimpl.BooleanValue;
-import com.google.enterprise.connector.spiimpl.DateValue;
-import com.google.enterprise.connector.spiimpl.StringValue;
 
 /**
  * Class to hold data regarding a sharepoint document. Anything that is sent ot
@@ -163,8 +159,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      * To be used while loading the lastDocument from the state file.
      */
     public SPDocument(final String inDocId, final String inDocURL,
-            final Calendar inLastMod,
-            final String inFolderLevel, final ActionType inAction) {
+            final Calendar inLastMod, final String inFolderLevel,
+            final ActionType inAction) {
         docId = inDocId;
         url = inDocURL;
         lastMod = inLastMod;
@@ -571,56 +567,72 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         }
         if (downloadContent) {
             final String docURL = Util.encodeURL(contentDwnldURL);
-            HttpMethodBase method = null;
-            try {
-                method = new GetMethod(docURL);
-                responseCode = sharepointClientContext.checkConnectivity(docURL, method, parentWeb.getHttpClient());
-                if (null == method) {
-                    return SPConstants.CONNECTIVITY_FAIL;
-                }
-                content = method.getResponseBodyAsStream();
 
+            // Omitting the following section in order to retrieve the file
+            // content using a custom web service and not HTTP GET.
+            // FIXME: Mimetype needs to be retrieved separately if this approach
+            // will be standard going ahead
+
+            /*
+             * HttpMethodBase method = null; try {
+             *
+             * method = new GetMethod(docURL); responseCode =
+             * sharepointClientContext.checkConnectivity(docURL, method,
+             * parentWeb.getHttpClient()); if (null == method) { return
+             * SPConstants.CONNECTIVITY_FAIL; } content =
+             * method.getResponseBodyAsStream();
+             *
+             *
+             *
+             * } catch (Throwable t) { String msg = new StringBuffer(
+             * "Unable to fetch contents from URL: ").append(url).toString();
+             * LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: " +
+             * url, t); throw new RepositoryDocumentException(msg, t); }
+             *
+             *
+             *
+             * final Header contentType =
+             * method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER); if
+             * (contentType != null) { content_type = contentType.getValue();
+             *
+             * if (LOGGER.isLoggable(Level.FINEST)) {
+             * LOGGER.fine("The content type for doc : " + toString() + " is : "
+             * + content_type); }
+             *
+             * if (sharepointClientContext.getTraversalContext() != null) { //
+             * TODO : This is to be revisited later where a better // approach
+             * to skip documents or only content is // available int
+             * mimeTypeSupport =
+             * sharepointClientContext.getTraversalContext().mimeTypeSupportLevel
+             * (content_type); if (mimeTypeSupport == 0) { content = null;
+             * LOGGER.log(Level.WARNING, "Dropping content of document : " +
+             * getUrl() + " with docId : " + docId + " as the mimetype : " +
+             * content_type + " is not supported"); } else if (mimeTypeSupport <
+             * 0) { // Since the mimetype is in list of 'ignored' mimetype //
+             * list, mark it to be skipped from sending String msg = new
+             * StringBuffer(
+             * "Skipping the document with docId : ").append(getDocId
+             * ()).append(" doc URL: ").append(getUrl()).append(
+             * " as the mimetype is in the 'ignored' mimetypes list "
+             * ).toString(); // Log it to the excluded_url log
+             * sharepointClientContext.logExcludedURL(msg); throw new
+             * SkippedDocumentException(msg); } } }
+             */
+
+            try {
+                // Using the custom web service to retrieve the file contents
+                // instead of HTTP GET. This is important and will be required
+                // if SP is protected by SSO with FBA as the direct URL used for
+                // HTTP GET will get blocked by FBA
+                GSPFileContentWS gspFileContentWS = new GSPFileContentWS(
+                        sharepointClientContext);
+                content = gspFileContentWS.getFileContent(docURL);
+                responseCode = 200;
             } catch (Throwable t) {
                 String msg = new StringBuffer(
-                        "Unable to fetch contents from URL: ").append(url).toString();
-                LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: "
-                        + url, t);
+                        "Unable to fetch contents from URL: ").append(contentDwnldURL).toString();
+                LOGGER.log(Level.WARNING, msg, t);
                 throw new RepositoryDocumentException(msg, t);
-            }
-
-            final Header contentType = method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER);
-            if (contentType != null) {
-                content_type = contentType.getValue();
-
-                if (LOGGER.isLoggable(Level.FINEST)) {
-                    LOGGER.fine("The content type for doc : " + toString()
-                            + " is : " + content_type);
-                }
-
-                if (sharepointClientContext.getTraversalContext() != null) {
-                    // TODO : This is to be revisited later where a better
-                    // approach to skip documents or only content is
-                    // available
-                    int mimeTypeSupport = sharepointClientContext.getTraversalContext().mimeTypeSupportLevel(content_type);
-                    if (mimeTypeSupport == 0) {
-                        content = null;
-                        LOGGER.log(Level.WARNING, "Dropping content of document : "
-                                + getUrl()
-                                + " with docId : "
-                                + docId
-                                + " as the mimetype : "
-                                + content_type
-                                + " is not supported");
-                    } else if (mimeTypeSupport < 0) {
-                        // Since the mimetype is in list of 'ignored' mimetype
-                        // list, mark it to be skipped from sending
-                        String msg = new StringBuffer(
-                                "Skipping the document with docId : ").append(getDocId()).append(" doc URL: ").append(getUrl()).append(" as the mimetype is in the 'ignored' mimetypes list ").toString();
-                        // Log it to the excluded_url log
-                        sharepointClientContext.logExcludedURL(msg);
-                        throw new SkippedDocumentException(msg);
-                    }
-                }
             }
 
         }
