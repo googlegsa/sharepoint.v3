@@ -22,6 +22,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.AuthenticationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSPFileContentWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.Property;
@@ -35,6 +36,7 @@ import com.google.enterprise.connector.spiimpl.DateValue;
 import com.google.enterprise.connector.spiimpl.StringValue;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -566,7 +568,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             }
         }
         if (downloadContent) {
-            final String docURL = Util.encodeURL(contentDwnldURL);
+
+            // This is a dirty fix when a "http" traffic is redirected to
+            // "https". Certain customers set this up and connector will start
+            // receiving HTTP 500 errors. Henec need to convert https to http
+            // and strip HTTPS specific port 443
+            String docURL = makeHttp(contentDwnldURL);
+            docURL = Util.encodeURL(docURL);
 
             // Omitting the following section in order to retrieve the file
             // content using a custom web service and not HTTP GET.
@@ -625,7 +633,18 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 // if SP is protected by SSO with FBA as the direct URL used for
                 // HTTP GET will get blocked by FBA
                 GSPFileContentWS gspFileContentWS = new GSPFileContentWS(
-                        sharepointClientContext);
+                        sharepointClientContext, getParentWeb().getPrimaryKey());
+
+                // First get the SharePoint specific cookie that is required to
+                // access any SP resource. This is not a SSO specific cookie but
+                // a cookie understood by SharePoint when FBA with/without SSO
+                // is setup with SharePoint
+                AuthenticationWS authws = new AuthenticationWS(
+                        sharepointClientContext, getParentWeb().getPrimaryKey());
+
+                // Set the cookie to be forwarded in the SOAP request
+                gspFileContentWS.setAuthenticationCookie(authws.login());
+
                 content = gspFileContentWS.getFileContent(docURL);
                 responseCode = 200;
             } catch (Throwable t) {
@@ -754,5 +773,34 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     public void setFileref(String fileref) {
         this.fileref = fileref;
+    }
+
+    /**
+     * Dirty fix to convert a https URL to http. This is required when customers
+     * have such weird setups
+     *
+     * @param strUrl The URL with https
+     * @return New URL with http
+     */
+    private String makeHttp(String strUrl) {
+        try {
+            URL url = new URL(strUrl);
+            StringBuffer sb = new StringBuffer("http://" + url.getHost());
+            if (-1 != url.getPort()) {
+                if (443 != url.getPort()) {
+                    sb.append(":" + url.getPort());
+                }
+            }
+            if (null != url.getPath() && !url.getPath().startsWith("/")) {
+                sb.append("/");
+            }
+            sb.append(url.getPath());
+            if (url.getQuery() != null && url.getQuery().trim().length() != 0)
+                sb.append("?").append(url.getQuery());
+            return sb.toString();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Problem while converting to HTTP..");
+            return strUrl;
+        }
     }
 }

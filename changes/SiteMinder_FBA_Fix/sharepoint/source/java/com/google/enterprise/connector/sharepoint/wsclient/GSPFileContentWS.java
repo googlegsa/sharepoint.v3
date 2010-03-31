@@ -22,6 +22,8 @@ import com.google.enterprise.connector.sharepoint.generated.filecontent.GSPFileC
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.client.Call;
+import org.apache.axis.transport.http.HTTPConstants;
 
 import java.io.ByteArrayInputStream;
 import java.rmi.RemoteException;
@@ -52,12 +54,19 @@ public class GSPFileContentWS {
      *            file whose contents will be retrieved
      * @throws SharepointException
      */
-    public GSPFileContentWS(SharepointClientContext inSharepointClientContext)
+    public GSPFileContentWS(SharepointClientContext inSharepointClientContext,
+            String parentWeb)
             throws SharepointException {
         if (inSharepointClientContext != null) {
             sharepointClientContext = inSharepointClientContext;
 
-            String siteUrl = Util.getWebURLForWSCall(sharepointClientContext.getSiteURL());
+            String siteUrl = null;
+            if (parentWeb == null) {
+                siteUrl = Util.getWebURLForWSCall(sharepointClientContext.getSiteURL());
+            } else {
+                siteUrl = Util.getWebURLForWSCall(parentWeb);
+            }
+
             endpoint = Util.encodeURL(siteUrl)
                     + SPConstants.GSPFILECONTENT_END_POINT;
             LOGGER.config("endpoint set to: " + endpoint);
@@ -81,6 +90,7 @@ public class GSPFileContentWS {
             strUser = Util.getUserNameWithDomain(strUser, strDomain);
             stub.setUsername(strUser);
             stub.setPassword(strPassword);
+
         }
     }
 
@@ -164,5 +174,17 @@ public class GSPFileContentWS {
         return null;
     }
 
+    /**
+     * Method to set the cookie which is required if SharePoint is setup with
+     * FBA. The cookie is SharePoint specific
+     *
+     * @param cookie The cookie
+     */
+    public void setAuthenticationCookie(String cookie) {
+        if (null != cookie) {
+            stub._setProperty(Call.SESSION_MAINTAIN_PROPERTY, new Boolean(true));
+            stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie);
+        }
+    }
 
 }

@@ -15,6 +15,7 @@ package com.google.enterprise.connector.sharepoint.wsclient;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import java.io.ByteArrayInputStream;
 import java.rmi.RemoteException;
@@ -37,15 +38,25 @@ public class GSPFileContentWSTest extends TestCase {
 
         assertNotNull(this.sharepointClientContext);
 
-        gspFileContentWS = new GSPFileContentWS(sharepointClientContext);
+        gspFileContentWS = new GSPFileContentWS(sharepointClientContext, null);
         assertNotNull(this.gspFileContentWS);
     }
 
     public void testGetFileContent() {
 
-        String fileURL = "http://ps4521.persistent.co.in:30837/AmitSite/Shared%20Documents/cafeteria.xls";
+        String fileURL = "http://example.com/Documents/MyExampleDocsHelp.aspx";
+
         ByteArrayInputStream fileContent = null;
         try {
+            AuthenticationWS authws = null;
+            try {
+                authws = new AuthenticationWS(sharepointClientContext, null);
+            } catch (SharepointException e) {
+                fail("Failed with exception : " + e.getMessage());
+            }
+
+            gspFileContentWS.setAuthenticationCookie(authws.login());
+            System.out.println("Cookie that is being used : " + authws.login());
             fileContent = gspFileContentWS.getFileContent(fileURL);
         } catch (RemoteException e) {
             e.printStackTrace();
