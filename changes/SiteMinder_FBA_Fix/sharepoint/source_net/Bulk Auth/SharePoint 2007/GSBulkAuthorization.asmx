@@ -42,18 +42,18 @@ public class BulkAuthorization : System.Web.Services.WebService
           });
 
             web = site.OpenWeb();
-            SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, loginId, SPPrincipalType.All, false);
-            if (userInfo == null)
-            {
-                string logMsg = "Authorization failed because User " + loginId + " can not be resolved into a valid SharePoint user.";
-                authData.error += logMsg;
-                return;
-            }
+            //SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, loginId, SPPrincipalType.All, false);
+            //if (userInfo == null)
+            //{
+            //    string logMsg = "Authorization failed because User " + loginId + " can not be resolved into a valid SharePoint user.";
+            //    authData.error += logMsg;
+            //    return;
+            //}
 
             // First ensure that the current user has rights to view pages or list items on the web. This will ensure that SPUser object can be constructed for this username.
-            bool web_auth = web.DoesUserHavePermissions(userInfo.LoginName, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
+            bool web_auth = web.DoesUserHavePermissions(loginId, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
 
-            SPUser user = GetSPUser(web, userInfo.LoginName);
+            SPUser user = GetSPUser(web, loginId);
             if (user == null)
             {
                 authData.error += "User " + loginId + " information not found in the parent site collection of web " + web.Url;
@@ -100,7 +100,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             if (authData.listItemId == null || authData.listItemId == "" || authData.listItemId.StartsWith("{"))
             {
                 bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                authData.isAllowed = isAllowed;                
+                authData.isAllowed = isAllowed;
             }
             else
             {
@@ -113,7 +113,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         catch (Exception e)
         {
             string logMsg = "Following error occurred while authorizing user [ " + loginId + " ] against docid [ " + authData.complexDocId + " ] :" + e.Message;
-            authData.error += logMsg;            
+            authData.error += logMsg;
         }
         finally
         {
@@ -139,7 +139,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         foreach (AuthData ad in authData)
         {
-            Authorize(ad, loginId);            
+            Authorize(ad, loginId);
         }
         return authData;
     }
@@ -150,10 +150,10 @@ public class BulkAuthorization : System.Web.Services.WebService
     /// <returns></returns>
     [WebMethod]
     public string CheckConnectivity() {
-        // All the pre-requisites for running this web service should be checked here. 
+        // All the pre-requisites for running this web service should be checked here.
         // Currently, we are ensuring that RunWithElevatedPrivileges works.
       try {
-        SPSecurity.RunWithElevatedPrivileges(delegate() {        
+        SPSecurity.RunWithElevatedPrivileges(delegate() {
         });
       }
       catch (Exception e)
@@ -215,7 +215,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         }
         SiteURL = url.Scheme + "://" + host + ":" + url.Port + url.AbsolutePath;
         return SiteURL;
-    }   
+    }
 }
 
 /// <summary>

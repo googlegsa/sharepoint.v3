@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -154,6 +155,10 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
                     LOGGER.log(Level.WARNING, "AuthenticationWS.login failed. ", e);
                 }
 
+                for (AuthData ad : authData) {
+                    ad.setListURL(makeHttp(ad.getListURL()));
+                }
+
                 authData = bulkAuthWS.bulkAuthorize(authData, userName);
             } catch (final Exception e) {
                 final String logMessage = "Problem while making remote call to BulkAuthorize. key_webapp [ "
@@ -175,6 +180,27 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         }
 
         return response;
+    }
+
+    // FIXME: This is temporary.
+    private String makeHttp(String strUrl) {
+        try {
+            URL url = new URL(strUrl);
+            StringBuffer sb = new StringBuffer("http://" + url.getHost());
+            if (-1 != url.getPort()) {
+                if (443 != url.getPort()) {
+                    sb.append(":" + url.getPort());
+                }
+            }
+            if (null != url.getPath() && !url.getPath().startsWith("/")) {
+                sb.append("/");
+            }
+            sb.append(url.getPath());
+            return sb.toString();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Problem while converting to HTTP..");
+            return strUrl;
+        }
     }
 
     /**
