@@ -1,8 +1,23 @@
+//Copyright 2010 Google Inc.
+
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+
+//http://www.apache.org/licenses/LICENSE-2.0
+
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+
 <%@ WebService Language="C#" Class="GssAclMonitor" %>
 using System;
 using System.Net;
 using System.Text;
 using System.Collections.Generic;
+using System.Web;
 using System.Web.Services;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Administration;
@@ -16,6 +31,7 @@ using Microsoft.SharePoint.Utilities;
 [Serializable]
 public class GssPrincipal
 {
+    // Name of the prinicpal
     private string name;
 
     public enum PrincipalType
@@ -102,7 +118,10 @@ public class GssPrincipal
 [Serializable]
 public class GssSharepointPermission
 {
+    // List of allowed permissions
     private SPBasePermissions grantRightMask;
+
+    // List denied permission
     private SPBasePermissions denyRightMask;
 
     public SPBasePermissions GrantRightMask
@@ -116,7 +135,7 @@ public class GssSharepointPermission
         set { denyRightMask = value; }
     }
 
-    public void updatePermission(SPBasePermissions allowedPermissions, SPBasePermissions deniedPermission)
+    public void UpdatePermission(SPBasePermissions allowedPermissions, SPBasePermissions deniedPermission)
     {
         grantRightMask = grantRightMask | allowedPermissions;
         denyRightMask = denyRightMask | deniedPermission;
@@ -177,21 +196,33 @@ public class GssAce
 }
 
 /// <summary>
-/// Represents ACL of a SharePoint entity
+/// Represents ACL of a SharePoint entity. The represented ACL is a collection of all the effective <see cref="ACE"/>
 /// </summary>
 [WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
 [Serializable]
 public class GssAcl
 {
+    // URL of the entity whose ACLs are being represented
     private string entityUrl;
+
+    // Author/Owner of the document. This is an added info returned along with the ACL. This could be relevant to the clients becasue the owner's value as returned by the available SharePoint web servcies are not LDAP fromat.
+    private string owner;
+
+    // List of all the ACEs
     private List<GssAce> allAce;
+
     private StringBuilder logMessage;
 
     public string EntityUrl
     {
         get { return entityUrl; }
         set { entityUrl = value; }
+    }
+    public string Owner
+    {
+        get { return owner; }
+        set { owner = value; }
     }
     public List<GssAce> AllAce
     {
@@ -236,6 +267,7 @@ public class GssAcl
 [Serializable]
 public class GssAclChange
 {
+    // Type of the Object/Entity which has changed
     public enum ObjectType
     {
         NA,
@@ -249,7 +281,11 @@ public class GssAclChange
     }
 
     private ObjectType changedObject;
+
+    // Type of change
     private SPChangeType changeType;
+
+    // An additional hint to identify the exact object/entity that has changed. Most of the time, this would be the ID, GUID or URL.
     private string hint;
 
     public ObjectType ChangedObject
@@ -288,6 +324,7 @@ public class GssAclChange
 [Serializable]
 public class GssAclChangeCollection
 {
+    // Next change token that should be used for synchronization
     private string changeToken;
     private List<GssAclChange> changes;
     private StringBuilder logMessage;
@@ -400,7 +437,7 @@ public class GssAclChangeCollection
         }
     }
 
-    public void updateChangeToken(SPChangeToken inToken)
+    public void UpdateChangeToken(SPChangeToken inToken)
     {
         if (null != inToken)
         {
@@ -415,6 +452,81 @@ public class GssAclChangeCollection
 }
 
 /// <summary>
+/// Representts a basic response object containing minimal information and that can be used by all other web methods
+/// </summary>
+[WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+[Serializable]
+public abstract class GssAclBaseResult
+{
+    private string siteCollectionUrl;
+    private Guid siteCollectionGuid;
+
+    public string SiteCollectionUrl
+    {
+        get { return siteCollectionUrl; }
+        set { siteCollectionUrl = value; }
+    }
+    public Guid SiteCollectionGuid
+    {
+        get { return siteCollectionGuid; }
+        set { siteCollectionGuid = value; }
+    }
+}
+
+/// <summary>
+/// Response Object for GetAclForUrls web method
+/// </summary>
+[WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+[Serializable]
+public class GssGetAclForUrlsResult : GssAclBaseResult
+{
+    // Ideally, a map of <url, Acl> should be returned. But, C# Dictionary is not SOAP serializable. Hence, using List.
+    private List<GssAcl> allAcls;
+
+    public List<GssAcl> AllAcls
+    {
+        get { return allAcls; }
+        set { allAcls = value; }
+    }
+}
+
+/// <summary>
+/// Response Object for GetAclChangesSinceToken web method
+/// </summary>
+[WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+[Serializable]
+public class GssGetAclChangesSinceTokenResult : GssAclBaseResult
+{
+    private GssAclChangeCollection allChanges;
+
+    public GssAclChangeCollection AllChanges
+    {
+        get { return allChanges; }
+        set { allChanges = value; }
+    }
+}
+
+/// <summary>
+/// Response Object for ResolveSPGroup web method
+/// </summary>
+[WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+[Serializable]
+public class GssResolveSPGroupResult : GssAclBaseResult
+{
+    private List<GssPrincipal> prinicpals;
+
+    public List<GssPrincipal> Prinicpals
+    {
+        get { return prinicpals; }
+        set { prinicpals = value; }
+    }
+}
+
+/// <summary>
 /// Provides alll the necessary web methods exposed by the Web Service
 /// </summary>
 [WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
@@ -422,7 +534,10 @@ public class GssAclChangeCollection
 public class GssAclMonitor
 {
     GssAclUtility gssUtil = new GssAclUtility();
+    // Current site collection in which request os to be served
     SPSite site;
+
+    // SharePoint site used for consructing the web servcie endpoint
     SPWeb web;
 
     public GssAclMonitor()
@@ -432,13 +547,19 @@ public class GssAclMonitor
         web = site.OpenWeb();
     }
 
+    ~GssAclMonitor()
+    {
+        web.Dispose();
+        site.Dispose();
+    }
+
     /// <summary>
     /// Returns ACLs of a set of entities which belongs to a single SharePoint web site. The SharePoint site is identified by the SPContext in which thwe request is being served.
     /// </summary>
     /// <param name="urls"> Entity URLs whose ACLs are to be returned </param>
     /// <returns> List Of ACLs corresponding to the entity URLs </returns>
     [WebMethod]
-    public List<GssAcl> GetAclForUrls(string[] urls)
+    public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
     {
         if (null == site || null == web)
         {
@@ -468,7 +589,7 @@ public class GssAclMonitor
 
         foreach (string url in urls)
         {
-            GssAcl acl = new GssAcl();
+            GssAcl acl = null;
             try
             {
                 Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
@@ -480,17 +601,27 @@ public class GssAclMonitor
                     acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
                 }
                 allAcls.Add(acl);
+
+                SPUser owner = gssUtil.GetOwner(secobj);
+                if (null != owner)
+                {
+                    acl.Owner = owner.LoginName;
+                }
             }
             catch (Exception e)
             {
+                acl = new GssAcl();
                 acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
             }
+
             acl.AddLogMessage(gssUtil.CommonLogMessage.ToString());
         }
 
-        web.Dispose();
-        site.Dispose();
-        return allAcls;
+        GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
+        result.AllAcls = allAcls;
+        result.SiteCollectionUrl = site.Url;
+        result.SiteCollectionGuid = site.ID;
+        return result;
     }
 
     /// <summary>
@@ -502,7 +633,7 @@ public class GssAclMonitor
     /// <param name="strChangeToken"> The change tokenfrom where the changes are to be scanned in the SharePoint's change log </param>
     /// <returns> a list of ACL spefic changes </returns>
     [WebMethod]
-    public GssAclChangeCollection GetAclChangesSinceToken(string strChangeToken)
+    public GssGetAclChangesSinceTokenResult GetAclChangesSinceToken(string strChangeToken)
     {
         if (null == site || null == web)
         {
@@ -522,7 +653,7 @@ public class GssAclMonitor
             // The problem with the second approach is that if no ACL specific changes will occur, the change token will never gets updated and will becaome invalid after some time.
             // Another performance issue is is that, the scan wil always start form the same token unless there is a ACL specific change.
             // Since, the change tracking logic ensures that all changes will be tracked (i.e there is no rowlimit kind of thing associated), it is safe to use the first approach.
-            allChanges.updateChangeToken(site.CurrentChangeToken);
+            allChanges.UpdateChangeToken(site.CurrentChangeToken);
         }
         catch (Exception e)
         {
@@ -530,7 +661,12 @@ public class GssAclMonitor
             allChanges = new GssAclChangeCollection(changeToken);
             gssUtil.AddLogMessage("Exception occured while change detection, Exception [ " + e.Message + " ] ");
         }
-        return allChanges;
+
+        GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
+        result.AllChanges = allChanges;
+        result.SiteCollectionUrl = site.Url;
+        result.SiteCollectionGuid = site.ID;
+        return result;
     }
 
     /// <summary>
@@ -540,7 +676,7 @@ public class GssAclMonitor
     /// <param name="groupId"> the SharePoint group ID/Name that is to be resolved </param>
     /// <returns> list of GssPrincipal object with the Members attribute set as the list of member users/domain-groups</returns>
     [WebMethod]
-    public List<GssPrincipal> ResolveSPGroup(string[] groupId)
+    public GssResolveSPGroupResult ResolveSPGroup(string[] groupId)
     {
         if (null == site || null == web)
         {
@@ -548,27 +684,29 @@ public class GssAclMonitor
         }
 
         List<GssPrincipal> prinicpals = new List<GssPrincipal>();
-        if (null == groupId)
+        if (null != groupId)
         {
-            return prinicpals;
+            foreach (string id in groupId)
+            {
+                GssPrincipal principal = new GssPrincipal();
+                SPGroup spGroup = web.Groups[id];
+                if (null == spGroup)
+                {
+                    principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                }
+                else
+                {
+                    principal.Members = gssUtil.ResolveSPGroup(spGroup);
+                }
+                prinicpals.Add(principal);
+            }
         }
 
-        foreach (string id in groupId)
-        {
-            GssPrincipal principal = new GssPrincipal();
-            SPGroup spGroup = web.Groups[id];
-            if (null == spGroup)
-            {
-                principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
-            }
-            else
-            {
-                principal.Members = gssUtil.ResolveSPGroup(spGroup);
-            }
-            prinicpals.Add(principal);
-        }
-
-        return prinicpals;
+        GssResolveSPGroupResult result = new GssResolveSPGroupResult();
+        result.Prinicpals = prinicpals;
+        result.SiteCollectionUrl = site.Url;
+        result.SiteCollectionGuid = site.ID;
+        return result;
     }
 
     /// <summary>
@@ -691,13 +829,13 @@ public class GssAclUtility
             }
             else
             {
-                aceMap.Add(principal, permission);
                 permission = new GssSharepointPermission();
+                aceMap.Add(principal, permission);
             }
 
             foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
             {
-                permission.updatePermission(policyRole.GrantRightsMask, policyRole.DenyRightsMask);
+                permission.UpdatePermission(policyRole.GrantRightsMask, policyRole.DenyRightsMask);
             }
         }
     }
@@ -725,11 +863,11 @@ public class GssAclUtility
             }
             else
             {
-                aceMap.Add(principal, permission);
                 permission = new GssSharepointPermission();
+                aceMap.Add(principal, permission);
             }
             // Administrators have Full Rights in the site collection.
-            permission.updatePermission(SPBasePermissions.FullMask, SPBasePermissions.EmptyMask);
+            permission.UpdatePermission(SPBasePermissions.FullMask, SPBasePermissions.EmptyMask);
         }
     }
 
@@ -756,13 +894,13 @@ public class GssAclUtility
             }
             else
             {
-                aceMap.Add(principal, permission);
                 permission = new GssSharepointPermission();
+                aceMap.Add(principal, permission);
             }
 
             foreach (SPRoleDefinition roledef in roleAssg.RoleDefinitionBindings)
             {
-                permission.updatePermission(roledef.BasePermissions, SPBasePermissions.EmptyMask);
+                permission.UpdatePermission(roledef.BasePermissions, SPBasePermissions.EmptyMask);
             }
         }
     }
@@ -784,10 +922,75 @@ public class GssAclUtility
         SPList list = web.GetList(url);
         if (null != list)
         {
-            return list;
+            try
+            {
+                Uri uri = new Uri(url);
+                string query = uri.Query;
+                string id = HttpUtility.ParseQueryString(query).Get("ID");
+                listItem = list.GetItemById(int.Parse(id));
+                return listItem;
+            }
+            catch (Exception e)
+            {
+                return list;
+            }
         }
 
         return web.Site.OpenWeb(url);
+    }
+
+    /// <summary>
+    /// Retrieves the Owner's information about a given ISecurable entity
+    /// </summary>
+    /// <param name="secobj"></param>
+    /// <returns></returns>
+    public SPUser GetOwner(ISecurableObject secobj)
+    {
+        SPUser owner = null;
+        if (secobj is SPList)
+        {
+            owner = ((SPList)secobj).Author;
+        }
+        else if (secobj is SPListItem)
+        {
+            SPListItem item = (SPListItem)secobj;
+            SPFile file = item.File;
+            if (null != file)
+            {
+                // Case of Document Library
+                owner = file.Author;
+            }
+            else
+            {
+                // Case of other generic lists
+                String key = "Created By";
+                try
+                {
+                    SPFieldUser field = item.Fields[key] as SPFieldUser;
+                    if (field != null)
+                    {
+                        SPFieldUserValue fieldValue = field.GetFieldValue(item[key].ToString()) as SPFieldUserValue;
+                        if (fieldValue != null)
+                        {
+                            owner = fieldValue.User;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    AddLogMessage("Failed to detect Owner for the list item [ " + item.Url + " ] ");
+                }
+            }
+        }
+        else if (secobj is SPWeb)
+        {
+            owner = ((SPWeb)secobj).Author;
+        }
+        else
+        {
+            AddLogMessage("Failed to detect Owner becasue the entity is neither a listitem, list or a web. ");
+        }
+        return owner;
     }
 
     /// <summary>
