@@ -1,11 +1,20 @@
-<%@ Page="" Language="C#" Inherits="System.Web.UI.Page"%>
-<%@ Assembly="" Name="Microsoft.SharePoint, Version=11.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
-<%@ Import="" Namespace="Microsoft.SharePoint.Utilities" %>
-<%@ Import="" Namespace="Microsoft.SharePoint" %>
+<%@ Page Language="C#" Inherits="System.Web.UI.Page"%>
+<%@ Assembly Name="Microsoft.SharePoint, Version=11.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Import Namespace="Microsoft.SharePoint.Utilities" %> <%@ Import Namespace="Microsoft.SharePoint" %>
 <% Response.ContentType = "text/xml"; %>
-<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="gssAcl.generated.sharepoint.connector.enterprise.google.com" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="gssAcl.generated.sharepoint.connector.enterprise.google.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="gssAcl.generated.sharepoint.connector.enterprise.google.com" xmlns:s1="http://microsoft.com/wsdl/types/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="gssAcl.generated.sharepoint.connector.enterprise.google.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
   <wsdl:types>
     <s:schema elementFormDefault="qualified" targetNamespace="gssAcl.generated.sharepoint.connector.enterprise.google.com">
+      <s:import namespace="http://microsoft.com/wsdl/types/" />
+      <s:element name="CheckConnectivity">
+        <s:complexType />
+      </s:element>
+      <s:element name="CheckConnectivityResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CheckConnectivityResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
       <s:element name="GetAclForUrls">
         <s:complexType>
           <s:sequence>
@@ -21,10 +30,25 @@
       <s:element name="GetAclForUrlsResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="GetAclForUrlsResult" type="tns:ArrayOfGssAcl" />
+            <s:element minOccurs="0" maxOccurs="1" name="GetAclForUrlsResult" type="tns:GssGetAclForUrlsResult" />
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:complexType name="GssGetAclForUrlsResult">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:GssAclBaseResult">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="AllAcls" type="tns:ArrayOfGssAcl" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="GssAclBaseResult" abstract="true">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="SiteCollectionUrl" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="SiteCollectionGuid" type="s1:guid" />
+        </s:sequence>
+      </s:complexType>
       <s:complexType name="ArrayOfGssAcl">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="unbounded" name="GssAcl" nillable="true" type="tns:GssAcl" />
@@ -33,6 +57,7 @@
       <s:complexType name="GssAcl">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="EntityUrl" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Owner" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="AllAce" type="tns:ArrayOfGssAce" />
           <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="tns:StringBuilder" />
         </s:sequence>
@@ -61,6 +86,7 @@
           <s:enumeration value="USER" />
           <s:enumeration value="DOMAINGROUP" />
           <s:enumeration value="SPGROUP" />
+          <s:enumeration value="NA" />
         </s:restriction>
       </s:simpleType>
       <s:complexType name="ArrayOfGssPrincipal">
@@ -133,10 +159,19 @@
       <s:element name="GetAclChangesSinceTokenResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="GetAclChangesSinceTokenResult" type="tns:GssAclChangeCollection" />
+            <s:element minOccurs="0" maxOccurs="1" name="GetAclChangesSinceTokenResult" type="tns:GssGetAclChangesSinceTokenResult" />
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:complexType name="GssGetAclChangesSinceTokenResult">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:GssAclBaseResult">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="AllChanges" type="tns:GssAclChangeCollection" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
       <s:complexType name="GssAclChangeCollection">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="ChangeToken" type="s:string" />
@@ -198,10 +233,19 @@
       <s:element name="ResolveSPGroupResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="ResolveSPGroupResult" type="tns:ArrayOfGssPrincipal" />
+            <s:element minOccurs="0" maxOccurs="1" name="ResolveSPGroupResult" type="tns:GssResolveSPGroupResult" />
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:complexType name="GssResolveSPGroupResult">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:GssAclBaseResult">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="Prinicpals" type="tns:ArrayOfGssPrincipal" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
       <s:element name="GetAffectedListIDsForChangeWeb">
         <s:complexType>
           <s:sequence>
@@ -231,7 +275,20 @@
         </s:complexType>
       </s:element>
     </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
+      <s:simpleType name="guid">
+        <s:restriction base="s:string">
+          <s:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+        </s:restriction>
+      </s:simpleType>
+    </s:schema>
   </wsdl:types>
+  <wsdl:message name="CheckConnectivitySoapIn">
+    <wsdl:part name="parameters" element="tns:CheckConnectivity" />
+  </wsdl:message>
+  <wsdl:message name="CheckConnectivitySoapOut">
+    <wsdl:part name="parameters" element="tns:CheckConnectivityResponse" />
+  </wsdl:message>
   <wsdl:message name="GetAclForUrlsSoapIn">
     <wsdl:part name="parameters" element="tns:GetAclForUrls" />
   </wsdl:message>
@@ -263,6 +320,10 @@
     <wsdl:part name="parameters" element="tns:GetAffectedItemIDsForChangeListResponse" />
   </wsdl:message>
   <wsdl:portType name="GssAclMonitorSoap">
+    <wsdl:operation name="CheckConnectivity">
+      <wsdl:input message="tns:CheckConnectivitySoapIn" />
+      <wsdl:output message="tns:CheckConnectivitySoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="GetAclForUrls">
       <wsdl:input message="tns:GetAclForUrlsSoapIn" />
       <wsdl:output message="tns:GetAclForUrlsSoapOut" />
@@ -286,6 +347,15 @@
   </wsdl:portType>
   <wsdl:binding name="GssAclMonitorSoap" type="tns:GssAclMonitorSoap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="CheckConnectivity">
+      <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/CheckConnectivity" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="GetAclForUrls">
       <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForUrls" style="document" />
       <wsdl:input>
@@ -334,6 +404,15 @@
   </wsdl:binding>
   <wsdl:binding name="GssAclMonitorSoap12" type="tns:GssAclMonitorSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="CheckConnectivity">
+      <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/CheckConnectivity" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="GetAclForUrls">
       <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForUrls" style="document" />
       <wsdl:input>
@@ -382,12 +461,10 @@
   </wsdl:binding>
   <wsdl:service name="GssAclMonitor">
     <wsdl:port name="GssAclMonitorSoap" binding="tns:GssAclMonitorSoap">
-      <soap:address location=""
-      <% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
+      <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
     <wsdl:port name="GssAclMonitorSoap12" binding="tns:GssAclMonitorSoap12">
-      <soap12:address location=""
-      <% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
+      <soap12:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
