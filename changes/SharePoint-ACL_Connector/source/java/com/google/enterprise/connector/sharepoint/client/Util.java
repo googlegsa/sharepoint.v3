@@ -1172,10 +1172,10 @@ public final class Util {
                 || null == objectType) {
             return roleTypes;
         }
-		if (permissions.length == 0
-				&& permissions[0].equals(SPBasePermissions.EMPTYMASK)) {
-			return roleTypes;
-		}
+        if (permissions.length == 0
+                && permissions[0].equals(SPBasePermissions.EMPTYMASK)) {
+            return roleTypes;
+        }
         boolean managelist = false;
         boolean additems = false;
         for(String permission : permissions) {
@@ -1186,29 +1186,29 @@ public final class Util {
                 if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
                     roleTypes.add(RoleType.WRITER);
                 }
-				if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
-					roleTypes.add(RoleType.READER);
-				}
+                if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+                    roleTypes.add(RoleType.READER);
+                }
             } else if (objectType.LIST.equals(objectType)) {
-				if (!managelist
-						&& SPBasePermissions.MANAGELISTS.equals(permission)) {
-					managelist = true;
-				}
-				if (!additems
-						&& SPBasePermissions.ADDLISTITEMS.equals(permission)) {
-					additems = true;
-				}
-				if (SPBasePermissions.VIEWPAGES.equals(permission)) {
-					roleTypes.add(RoleType.READER);
+                if (!managelist
+                        && SPBasePermissions.MANAGELISTS.equals(permission)) {
+                    managelist = true;
+                }
+                if (!additems
+                        && SPBasePermissions.ADDLISTITEMS.equals(permission)) {
+                    additems = true;
+                }
+                if (SPBasePermissions.VIEWPAGES.equals(permission)) {
+                    roleTypes.add(RoleType.READER);
                 }
             }
-			// Currently, only list and list-items are fed as documents. In
-			// future, if sites and pages are also sent, more checks will have
-			// to be added here
-		}
+            // Currently, only list and list-items are fed as documents. In
+            // future, if sites and pages are also sent, more checks will have
+            // to be added here
+        }
 
         if (objectType.LIST.equals(objectType) && managelist && additems) {
-			roleTypes.add(RoleType.WRITER);
+            roleTypes.add(RoleType.WRITER);
         }
         return roleTypes;
     }

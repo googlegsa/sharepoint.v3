@@ -87,7 +87,7 @@ public class SharepointClient {
      */
     private SPDocumentList handleCrawlQueueForList(
             final GlobalState globalState, final WebState web,
-			final ListState list) {
+            final ListState list) {
         if (null == web) {
             LOGGER.log(Level.WARNING, "web is not found");
             return null;
@@ -203,7 +203,7 @@ public class SharepointClient {
             }
         }
 
-		setAclForDocuments(resultSet, webState);
+        setAclForDocuments(resultSet, webState);
 
         if (LOGGER.isLoggable(Level.CONFIG)) {
             LOGGER.config("No. of listStates scanned from site : "
@@ -211,31 +211,31 @@ public class SharepointClient {
                     + noOfVisitedListStates);
         }
 
-		return resultSet;
-	}
+        return resultSet;
+    }
 
     private void setAclForDocuments(SPDocumentList resultSet, WebState webState) {
-		if (null == resultSet) {
-			return;
-		}
-		List<SPDocument> documents = resultSet.getDocuments();
-		if (null != documents) {
-			Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
-			String[] allUrlsForAcl = new String[resultSet.size()];
-			try {
-				GssAclWS aclWs = new GssAclWS(sharepointClientContext,
-						webState.getWebUrl());
-				int i = 0;
-				for (SPDocument document : documents) {
-					urlToDocMap.put(document.getUrl(), document);
-					allUrlsForAcl[i++] = document.getUrl();
+        if (null == resultSet) {
+            return;
+        }
+        List<SPDocument> documents = resultSet.getDocuments();
+        if (null != documents) {
+            Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
+            String[] allUrlsForAcl = new String[resultSet.size()];
+            try {
+                GssAclWS aclWs = new GssAclWS(sharepointClientContext,
+                        webState.getWebUrl());
+                int i = 0;
+                for (SPDocument document : documents) {
+                    urlToDocMap.put(document.getUrl(), document);
+                    allUrlsForAcl[i++] = document.getUrl();
                 }
-				GssGetAclForUrlsResult wsResult = aclWs.getAclForUrls(allUrlsForAcl);
-				aclWs.processWsResponse(wsResult, urlToDocMap);
-			} catch (Exception e) {
-				LOGGER.log(Level.CONFIG, "Getting ACL for #"
-						+ urlToDocMap.size() + " entities crawled from site [ "
-						+ webState.getWebUrl() + " ]");
+                GssGetAclForUrlsResult wsResult = aclWs.getAclForUrls(allUrlsForAcl);
+                aclWs.processWsResponse(wsResult, urlToDocMap);
+            } catch (Exception e) {
+                LOGGER.log(Level.CONFIG, "Getting ACL for #"
+                        + urlToDocMap.size() + " entities crawled from site [ "
+                        + webState.getWebUrl() + " ]");
             }
         }
     }
@@ -800,7 +800,7 @@ public class SharepointClient {
                             webState.getSharePointType());
 
                     listDoc.setAllAttributes(listState.getAttrs());
-					listDoc.setList(true);
+                    listDoc.setList(true);
 
                     if (!listState.isSendListAsDocument()) {
                         // send the listState as a feed only if it was

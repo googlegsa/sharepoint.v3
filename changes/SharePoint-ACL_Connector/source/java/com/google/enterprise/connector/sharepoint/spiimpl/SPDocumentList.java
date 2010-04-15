@@ -535,7 +535,7 @@ public class SPDocumentList implements DocumentList {
         }
     }
 
-	public List<SPDocument> getDocuments() {
-		return documents;
-	}
+    public List<SPDocument> getDocuments() {
+        return documents;
+    }
 }

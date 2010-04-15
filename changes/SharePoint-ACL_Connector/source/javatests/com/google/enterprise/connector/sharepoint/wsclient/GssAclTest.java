@@ -25,60 +25,60 @@ import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPG
 
 public class GssAclTest extends TestCase {
 
-	SharepointClientContext sharepointClientContext;
-	GssAclWS aclWS;
+    SharepointClientContext sharepointClientContext;
+    GssAclWS aclWS;
 
     protected void setUp() throws Exception {
-		System.out.println("\n...Setting Up...");
-		System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = new SharepointClientContext(
-				TestConfiguration.sharepointUrl, TestConfiguration.domain,
-				TestConfiguration.kdcserver, TestConfiguration.username,
-				TestConfiguration.Password,
-				TestConfiguration.googleConnectorWorkDir,
-				TestConfiguration.includedURls, TestConfiguration.excludedURls,
-				TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-				TestConfiguration.feedType);
-		assertNotNull(this.sharepointClientContext);
-		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-		sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+        System.out.println("\n...Setting Up...");
+        System.out.println("Initializing SharepointClientContext ...");
+        this.sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.kdcserver, TestConfiguration.username,
+                TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType);
+        assertNotNull(this.sharepointClientContext);
+        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
         System.out.println("Initializing GsAclWS ...");
-		this.aclWS = new GssAclWS(this.sharepointClientContext, null);
-	}
-
-    public void testGetAclForUrls() {
-		String[] urls = {};
-		GssGetAclForUrlsResult result = aclWS.getAclForUrls(urls);
-		assertNotNull(result);
-	}
-
-    public void testGetAclChangesSinceToken() {
-		String strChangeToken = "";
-		GssGetAclChangesSinceTokenResult result = aclWS.getAclChangesSinceToken(strChangeToken);
-		assertNotNull(result);
-	}
-
-    public void testGetAffectedItemIDsForChangeList() {
-		String listGuid = "";
-		String[] result = aclWS.getAffectedItemIDsForChangeList(listGuid);
-		assertNotNull(result);
-	}
-
-    public void testGetAffectedListIDsForChangeWeb() {
-		String webGuid = "";
-		String[] result = aclWS.getAffectedListIDsForChangeWeb(webGuid);
-		assertNotNull(result);
-	}
-
-    public void testResolveSPGroup() {
-		String[] groupIds = {};
-		GssResolveSPGroupResult result = aclWS.resolveSPGroup(groupIds);
-		assertNotNull(result);
+        this.aclWS = new GssAclWS(this.sharepointClientContext, null);
     }
 
-	public void testCheckConnectivity() {
-		String status = aclWS.checkConnectivity();
-		assertEquals(SPConstants.CONNECTIVITY_SUCCESS, status);
+    public void testGetAclForUrls() {
+        String[] urls = {};
+        GssGetAclForUrlsResult result = aclWS.getAclForUrls(urls);
+        assertNotNull(result);
+    }
+
+    public void testGetAclChangesSinceToken() {
+        String strChangeToken = "";
+        GssGetAclChangesSinceTokenResult result = aclWS.getAclChangesSinceToken(strChangeToken);
+        assertNotNull(result);
+    }
+
+    public void testGetAffectedItemIDsForChangeList() {
+        String listGuid = "";
+        String[] result = aclWS.getAffectedItemIDsForChangeList(listGuid);
+        assertNotNull(result);
+    }
+
+    public void testGetAffectedListIDsForChangeWeb() {
+        String webGuid = "";
+        String[] result = aclWS.getAffectedListIDsForChangeWeb(webGuid);
+        assertNotNull(result);
+    }
+
+    public void testResolveSPGroup() {
+        String[] groupIds = {};
+        GssResolveSPGroupResult result = aclWS.resolveSPGroup(groupIds);
+        assertNotNull(result);
+    }
+
+    public void testCheckConnectivity() {
+        String status = aclWS.checkConnectivity();
+        assertEquals(SPConstants.CONNECTIVITY_SUCCESS, status);
     }
 }
