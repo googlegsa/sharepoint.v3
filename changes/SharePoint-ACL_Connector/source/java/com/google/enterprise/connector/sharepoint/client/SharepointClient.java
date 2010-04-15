@@ -18,8 +18,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -27,6 +29,7 @@ import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -35,6 +38,7 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.AlertsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
+import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.UserProfileWS;
@@ -83,7 +87,7 @@ public class SharepointClient {
      */
     private SPDocumentList handleCrawlQueueForList(
             final GlobalState globalState, final WebState web,
-            final ListState list) {
+			final ListState list) {
         if (null == web) {
             LOGGER.log(Level.WARNING, "web is not found");
             return null;
@@ -108,6 +112,7 @@ public class SharepointClient {
                 doc.setContentDwnldURL(doc.getUrl());
                 doc.setSharepointClientContext(sharepointClientContext);
             }
+
             newlist.add(doc);
             LOGGER.log(Level.FINEST, "[ DocId = " + doc.getDocId() + ", URL = "
                     + doc.getUrl() + " ]");
@@ -161,6 +166,7 @@ public class SharepointClient {
             }
 
             SPDocumentList resultsList = null;
+
             try {
                 LOGGER.log(Level.INFO, "Handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ");
@@ -197,13 +203,41 @@ public class SharepointClient {
             }
         }
 
+		setAclForDocuments(resultSet, webState);
+
         if (LOGGER.isLoggable(Level.CONFIG)) {
             LOGGER.config("No. of listStates scanned from site : "
                     + webState.getWebUrl() + " for current batch traversal : "
                     + noOfVisitedListStates);
         }
 
-        return resultSet;
+		return resultSet;
+	}
+
+    private void setAclForDocuments(SPDocumentList resultSet, WebState webState) {
+		if (null == resultSet) {
+			return;
+		}
+		List<SPDocument> documents = resultSet.getDocuments();
+		if (null != documents) {
+			Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
+			String[] allUrlsForAcl = new String[resultSet.size()];
+			try {
+				GssAclWS aclWs = new GssAclWS(sharepointClientContext,
+						webState.getWebUrl());
+				int i = 0;
+				for (SPDocument document : documents) {
+					urlToDocMap.put(document.getUrl(), document);
+					allUrlsForAcl[i++] = document.getUrl();
+                }
+				GssGetAclForUrlsResult wsResult = aclWs.getAclForUrls(allUrlsForAcl);
+				aclWs.processWsResponse(wsResult, urlToDocMap);
+			} catch (Exception e) {
+				LOGGER.log(Level.CONFIG, "Getting ACL for #"
+						+ urlToDocMap.size() + " entities crawled from site [ "
+						+ webState.getWebUrl() + " ]");
+            }
+        }
     }
 
     /**
@@ -766,6 +800,7 @@ public class SharepointClient {
                             webState.getSharePointType());
 
                     listDoc.setAllAttributes(listState.getAttrs());
+					listDoc.setList(true);
 
                     if (!listState.isSendListAsDocument()) {
                         // send the listState as a feed only if it was

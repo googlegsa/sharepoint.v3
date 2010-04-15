@@ -33,9 +33,11 @@ import java.net.UnknownHostException;
 import java.text.Collator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,8 +52,11 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPBasePermissions;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnectorType;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 /**
  * Class to hold random utility functions
@@ -926,12 +931,12 @@ public final class Util {
      * @param docId
      * @param feedType
      */
-	public static String getOriginalDocId(final String docId, FeedType feedType) {
+    public static String getOriginalDocId(final String docId, FeedType feedType) {
         String originalDocId = docId;
         if (docId == null) {
             return docId;
         }
-		if (FeedType.CONTENT_FEED == feedType) {
+        if (FeedType.CONTENT_FEED == feedType) {
             final String[] parts = docId.split(SPConstants.DOUBLEBACKSLASH
                     + SPConstants.DOC_TOKEN); // because | is a regexp character
             // and has to be delimited.
@@ -1158,5 +1163,53 @@ public final class Util {
             }
         }
         return true;
+    }
+
+    public static List<RoleType> getRoleTypesFor(String[] permissions,
+            ObjectType objectType) {
+        List<RoleType> roleTypes = new ArrayList<RoleType>();
+        if (null == permissions || permissions.length == 0
+                || null == objectType) {
+            return roleTypes;
+        }
+		if (permissions.length == 0
+				&& permissions[0].equals(SPBasePermissions.EMPTYMASK)) {
+			return roleTypes;
+		}
+        boolean managelist = false;
+        boolean additems = false;
+        for(String permission : permissions) {
+            if (SPBasePermissions.FULLMASK.equals(permission)) {
+                roleTypes.add(RoleType.OWNER);
+            }
+            if (objectType.ITEM.equals(objectType)) {
+                if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
+                    roleTypes.add(RoleType.WRITER);
+                }
+				if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+					roleTypes.add(RoleType.READER);
+				}
+            } else if (objectType.LIST.equals(objectType)) {
+				if (!managelist
+						&& SPBasePermissions.MANAGELISTS.equals(permission)) {
+					managelist = true;
+				}
+				if (!additems
+						&& SPBasePermissions.ADDLISTITEMS.equals(permission)) {
+					additems = true;
+				}
+				if (SPBasePermissions.VIEWPAGES.equals(permission)) {
+					roleTypes.add(RoleType.READER);
+                }
+            }
+			// Currently, only list and list-items are fed as documents. In
+			// future, if sites and pages are also sent, more checks will have
+			// to be added here
+		}
+
+        if (objectType.LIST.equals(objectType) && managelist && additems) {
+			roleTypes.add(RoleType.WRITER);
+        }
+        return roleTypes;
     }
 }
