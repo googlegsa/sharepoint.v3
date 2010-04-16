@@ -33,7 +33,7 @@ public class GssPrincipal
 {
     // Name of the prinicpal
     private string name;
-    
+
     public enum PrincipalType
     {
         USER, DOMAINGROUP, SPGROUP, NA
@@ -42,11 +42,11 @@ public class GssPrincipal
     private PrincipalType type;
 
     /// <summary>
-    /// Represetns the member users If the current principal is a group
+    /// Represents the member users If the current principal is a group
     /// </summary>
     List<GssPrincipal> members;
     StringBuilder logMessage;
-    
+
     public string Name
     {
         get { return name; }
@@ -67,8 +67,8 @@ public class GssPrincipal
         get { return logMessage; }
         set { logMessage = value; }
     }
-    
-    public GssPrincipal() 
+
+    public GssPrincipal()
     {
         Members = new List<GssPrincipal>();
         LogMessage = new StringBuilder();
@@ -96,7 +96,7 @@ public class GssPrincipal
                 return true;
             }
         }
-        return false;            
+        return false;
     }
 
     public override int GetHashCode()
@@ -120,7 +120,7 @@ public class GssSharepointPermission
 {
     // List of allowed permissions
     private SPBasePermissions grantRightMask;
-    
+
     // List denied permission
     private SPBasePermissions denyRightMask;
 
@@ -139,7 +139,7 @@ public class GssSharepointPermission
     {
         grantRightMask = grantRightMask | allowedPermissions;
         denyRightMask = denyRightMask | deniedPermission;
-    }        
+    }
 }
 
 /// <summary>
@@ -163,8 +163,8 @@ public class GssAce
         get { return permission; }
         set { permission = value; }
     }
-    
-    public GssAce() 
+
+    public GssAce()
     {
         principal = new GssPrincipal();
     }
@@ -180,13 +180,13 @@ public class GssAce
         if (obj is GssAce)
         {
             GssAce ace = (GssAce)obj;
-            if(null != this.Principal && null != ace && null != ace.Principal 
+            if(null != this.Principal && null != ace && null != ace.Principal
                 && this.Principal.Equals(ace.Principal) && this.Permission.Equals(ace.Permission))
             {
                 return true;
-            }                
+            }
         }
-        return false;            
+        return false;
     }
 
     public override int GetHashCode()
@@ -206,12 +206,12 @@ public class GssAcl
     // URL of the entity whose ACLs are being represented
     private string entityUrl;
 
-    // Author/Owner of the document. This is an added info returned along with the ACL. This could be relevant to the clients becasue the owner's value as returned by the available SharePoint web servcies are not LDAP fromat.
+    // Author/Owner of the document. This is an added info returned along with the ACL. This could be relevant to the clients because the owner's value as returned by the available SharePoint web services are not LDAP format.
     private string owner;
-    
+
     // List of all the ACEs
     private List<GssAce> allAce;
-    
+
     private StringBuilder logMessage;
 
     public string EntityUrl
@@ -223,7 +223,7 @@ public class GssAcl
     {
         get { return owner; }
         set { owner = value; }
-    }    
+    }
     public List<GssAce> AllAce
     {
         get { return allAce; }
@@ -235,7 +235,7 @@ public class GssAcl
         set { logMessage = value; }
     }
 
-    public GssAcl() 
+    public GssAcl()
     {
         this.allAce = new List<GssAce>();
         logMessage = new StringBuilder();
@@ -260,6 +260,21 @@ public class GssAcl
 }
 
 /// <summary>
+/// Type of possible Object/Entity which the web service deals with
+/// </summary>
+public enum ObjectType
+{
+    NA,
+    SECURITY_POLICY,
+    ADMINISTRATORS,
+    GROUP,
+    USER,
+    WEB,
+    LIST,
+    ITEM
+}
+
+/// <summary>
 /// Represents a single ACL specific change in SharePoint
 /// </summary>
 [WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
@@ -267,24 +282,12 @@ public class GssAcl
 [Serializable]
 public class GssAclChange
 {
-    // Type of the Object/Entity which has changed
-    public enum ObjectType
-    {
-        NA,
-        SECURITY_POLICY,
-        ADMINISTRATORS,
-        GROUP,
-        USER,
-        WEB,
-        LIST,
-        ITEM
-    }        
-
+    // The object type that has changed
     private ObjectType changedObject;
-    
+
     // Type of change
     private SPChangeType changeType;
-    
+
     // An additional hint to identify the exact object/entity that has changed. Most of the time, this would be the ID, GUID or URL.
     private string hint;
 
@@ -328,7 +331,7 @@ public class GssAclChangeCollection
     private string changeToken;
     private List<GssAclChange> changes;
     private StringBuilder logMessage;
-    
+
     public string ChangeToken
     {
         get { return changeToken; }
@@ -369,7 +372,7 @@ public class GssAclChangeCollection
     }
 
     /// <summary>
-    /// Construct an appropriare <see cref="GssAclChnage"/> object from a SharePoint's SPChange object and adds it to the list of changes
+    /// Construct an appropriate <see cref="GssAclChnage"/> object from a SharePoint's SPChange object and adds it to the list of changes
     /// </summary>
     /// <param name="change"> SharePoint's change object. This may not necessarily be a ACL related change. </param>
     public void AddChange(SPChange change)
@@ -377,20 +380,20 @@ public class GssAclChangeCollection
         if (change is SPChangeWeb)
         {
             switch (change.ChangeType)
-            { 
+            {
                 case SPChangeType.AssignmentAdd:
                 case SPChangeType.AssignmentDelete:
                 case SPChangeType.RoleAdd:
                 case SPChangeType.RoleDelete:
                 case SPChangeType.RoleUpdate:
                     SPChangeWeb changeWeb = (SPChangeWeb)change;
-                    // Instead of sending the ID of the web that has changed, one may consider sending the acrual LIst IDs that should be re-crawled. This is becasue, 
+                    // Instead of sending the ID of the web that has changed, one may consider sending the actual List IDs that should be re-crawled. This is because,
                     // connector does the actual document discovery per list level. Sending the changed webId will force the connector to make an extra call to get the Lists that should be re-crawled.
-                    // But, such implementationn will become confusing when the connector will evolve in future to support site colection and web application level crawling.
+                    // But, such implementation will become confusing when the connector will evolve in future to support site collection and web application level crawling.
                     // It's better to send the change web ID as hint and let the connector decide how to work on this.
-                    AddChange(new GssAclChange(GssAclChange.ObjectType.WEB, changeWeb.ChangeType, changeWeb.Id.ToString()));
+                    AddChange(new GssAclChange(ObjectType.WEB, changeWeb.ChangeType, changeWeb.Id.ToString()));
                     break;
-            }                
+            }
         }
         else if (change is SPChangeList)
         {
@@ -402,20 +405,20 @@ public class GssAclChangeCollection
                 case SPChangeType.RoleDelete:
                 case SPChangeType.RoleUpdate:
                     SPChangeList changeList = (SPChangeList)change;
-                    AddChange(new GssAclChange(GssAclChange.ObjectType.LIST, changeList.ChangeType, changeList.Id.ToString()));
+                    AddChange(new GssAclChange(ObjectType.LIST, changeList.ChangeType, changeList.Id.ToString()));
                     break;
-            } 
+            }
         }
         else if (change is SPChangeUser)
         {
             SPChangeUser changeUser = (SPChangeUser)change;
             if (changeUser.IsSiteAdminChange)
             {
-                AddChange(new GssAclChange(GssAclChange.ObjectType.ADMINISTRATORS, changeUser.ChangeType, "" + changeUser.Id));
+                AddChange(new GssAclChange(ObjectType.ADMINISTRATORS, changeUser.ChangeType, changeUser.Id.ToString()));
             }
             else if (changeUser.ChangeType == SPChangeType.Delete)
             {
-                AddChange(new GssAclChange(GssAclChange.ObjectType.USER, changeUser.ChangeType, "" + changeUser.Id));
+                AddChange(new GssAclChange(ObjectType.USER, changeUser.ChangeType, changeUser.Id.ToString()));
             }
         }
         else if (change is SPChangeGroup)
@@ -426,14 +429,14 @@ public class GssAclChangeCollection
                 case SPChangeType.MemberDelete:
                 case SPChangeType.Delete:
                     SPChangeGroup changeGroup = (SPChangeGroup)change;
-                    AddChange(new GssAclChange(GssAclChange.ObjectType.GROUP, changeGroup.ChangeType, "" + changeGroup.Id));
+                    AddChange(new GssAclChange(ObjectType.GROUP, changeGroup.ChangeType, changeGroup.Id.ToString()));
                     break;
             }
         }
         else if (change is SPChangeSecurityPolicy)
         {
             SPChangeSecurityPolicy changeSecurityPolicy = (SPChangeSecurityPolicy)change;
-            AddChange(new GssAclChange(GssAclChange.ObjectType.SECURITY_POLICY, changeSecurityPolicy.ChangeType, ""));
+            AddChange(new GssAclChange(ObjectType.SECURITY_POLICY, changeSecurityPolicy.ChangeType, ""));
         }
     }
 
@@ -448,11 +451,16 @@ public class GssAclChangeCollection
     public void AddLogMessage(string logMsg)
     {
         logMessage.Append("\n" + logMsg);
-    }        
+    }
 }
 
 /// <summary>
-/// Representts a basic response object containing minimal information and that can be used by all other web methods
+/// Represents a basic response object containing minimal information that can be used by all other web methods.
+/// For now, site collection information has been identified as one such information. The reason being, Java connector
+/// uses SharePoint site's URL to access this web servcie. However, the operation GetAclForURLs, GetAclChangeSinceToken,
+/// ResolveSPGroup etc works at site collection level. Returning this site collection info in the web service response will
+/// tell the client (Java connector) about the actual site collection which was used by the web service for serving the request.
+/// This info can be used for various purposes like maintaining users/groups membership as they are defined at site collection level.
 /// </summary>
 [WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
@@ -484,7 +492,7 @@ public class GssGetAclForUrlsResult : GssAclBaseResult
 {
     // Ideally, a map of <url, Acl> should be returned. But, C# Dictionary is not SOAP serializable. Hence, using List.
     private List<GssAcl> allAcls;
-    
+
     public List<GssAcl> AllAcls
     {
         get { return allAcls; }
@@ -501,7 +509,7 @@ public class GssGetAclForUrlsResult : GssAclBaseResult
 public class GssGetAclChangesSinceTokenResult : GssAclBaseResult
 {
     private GssAclChangeCollection allChanges;
-    
+
     public GssAclChangeCollection AllChanges
     {
         get { return allChanges; }
@@ -534,10 +542,10 @@ public class GssResolveSPGroupResult : GssAclBaseResult
 public class GssAclMonitor
 {
     GssAclUtility gssUtil = new GssAclUtility();
-    // Current site collection in which request os to be served
+    // Current site collection in which request is to be served
     SPSite site;
-    
-    // SharePoint site used for consructing the web servcie endpoint
+
+    // SharePoint site used for constructing the web service endpoint
     SPWeb web;
 
     public GssAclMonitor()
@@ -563,7 +571,7 @@ public class GssAclMonitor
     }
 
     /// <summary>
-    /// Returns ACLs of a set of entities which belongs to a single SharePoint web site. The SharePoint site is identified by the SPContext in which thwe request is being served.
+    /// Returns ACLs of a set of entities which belongs to a single SharePoint web site. The SharePoint site is identified by the SPContext in which the request is being served.
     /// </summary>
     /// <param name="urls"> Entity URLs whose ACLs are to be returned </param>
     /// <returns> List Of ACLs corresponding to the entity URLs </returns>
@@ -580,7 +588,7 @@ public class GssAclMonitor
         Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
         try
         {
-            gssUtil.TrackSecurityPolicyForAcl(site.WebApplication, commonAceMap);
+            gssUtil.FetchSecurityPolicyForAcl(site.WebApplication, commonAceMap);
         }
         catch (Exception e)
         {
@@ -589,7 +597,7 @@ public class GssAclMonitor
 
         try
         {
-            gssUtil.TrackSiteAdminsForAcl(web, commonAceMap);
+            gssUtil.FetchSiteAdminsForAcl(web, commonAceMap);
         }
         catch (Exception e)
         {
@@ -603,14 +611,14 @@ public class GssAclMonitor
             {
                 Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
                 ISecurableObject secobj = gssUtil.IdentifyObject(url, web);
-                gssUtil.TrackRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
+                gssUtil.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
                 acl = new GssAcl(url, aceMap.Count);
                 foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
                 {
                     acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
                 }
                 allAcls.Add(acl);
-                
+
                 SPUser owner = gssUtil.GetOwner(secobj);
                 if (null != owner)
                 {
@@ -622,7 +630,7 @@ public class GssAclMonitor
                 acl = new GssAcl();
                 acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
             }
-                
+
             acl.AddLogMessage(gssUtil.CommonLogMessage.ToString());
         }
 
@@ -634,13 +642,13 @@ public class GssAclMonitor
     }
 
     /// <summary>
-    /// Returns a list of ACL specific changes that have happened over a period of time, determined by the change token. 
-    /// These changes purely reflects the actions performed on the SharePoint but does not talk about their implications. The caller should not assume that the ACL of any entity has changed just becasue it recieves a set of changes from this API.
-    /// A typical exampke could be when the permission hierarchy of a list/web is reset and immediately brought to its orignial state. In that case this API will return two changes but there is no ACL change on the SharePoint.
+    /// Returns a list of ACL specific changes that have happened over a period of time, determined by the change token.
+    /// These changes purely reflects the actions performed on the SharePoint but does not talk about their implications. The caller should not assume that the ACL of any entity has changed just because it receives a set of changes from this API.
+    /// A typical example could be when the permission hierarchy of a list/web is reset and immediately brought to its original state. In that case this API will return two changes but there is no ACL change on the SharePoint.
     /// Deletion of an empty group is another such case.
     /// </summary>
-    /// <param name="strChangeToken"> The change tokenfrom where the changes are to be scanned in the SharePoint's change log </param>
-    /// <returns> a list of ACL spefic changes </returns>
+    /// <param name="strChangeToken"> The change token from where the changes are to be scanned in the SharePoint's change log </param>
+    /// <returns> a list of ACL specific changes </returns>
     [WebMethod]
     public GssGetAclChangesSinceTokenResult GetAclChangesSinceToken(string strChangeToken)
     {
@@ -656,31 +664,31 @@ public class GssAclMonitor
             allChanges = new GssAclChangeCollection(changeToken);
             try
             {
-                SPChangeCollection spChanges = gssUtil.TrackAclChanges(site, changeToken);
+                SPChangeCollection spChanges = gssUtil.FetchAclChanges(site, changeToken);
                 foreach (SPChange change in spChanges)
                 {
                     allChanges.AddChange(change);
-                }                
+                }
             }
             catch (Exception e)
             {
-                // All the changes should be processed as one atomic operation. If any one fails, all should be ignored. This is in lieu of maintaing a single change token which will be used for executing change queries.
+                // All the changes should be processed as one atomic operation. If any one fails, all should be ignored. This is in lieu of maintaining a single change token which will be used for executing change queries.
                 allChanges = new GssAclChangeCollection();
-                gssUtil.AddLogMessage("Exception occured while change detection, Exception [ " + e.Message + " ] ");
-            }   
+                gssUtil.AddLogMessage("Exception occurred while change detection, Exception [ " + e.Message + " ] ");
+            }
         }
         else
         {
             allChanges = new GssAclChangeCollection();
         }
-        
+
         // There are two ways to get the next Change Token value that should be used for synchronization. 1) Get the last change token available for the site
-        // 2) Get the last change token corresponding to which changes have been tracked. 
-        // The problem with the second approach is that if no ACL specific changes will occur, the change token will never gets updated and will becaome invalid after some time. 
-        // Another performance issue is is that, the scan wil always start form the same token unless there is a ACL specific change.
+        // 2) Get the last change token corresponding to which changes have been tracked.
+        // The problem with the second approach is that if no ACL specific changes will occur, the change token will never gets updated and will become invalid after some time.
+        // Another performance issue is is that, the scan will always start form the same token unless there is a ACL specific change.
         // Since, the change tracking logic ensures that all changes will be tracked (i.e there is no rowlimit kind of thing associated), it is safe to use the first approach.
         allChanges.UpdateChangeToken(site.CurrentChangeToken);
-        
+
         GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         result.AllChanges = allChanges;
         result.SiteCollectionUrl = site.Url;
@@ -689,7 +697,7 @@ public class GssAclMonitor
     }
 
     /// <summary>
-    /// Exapnds a SharePoint group to find all the member users and domain groups. Creates a <see cref="GssPrincipal"/> object for each of them and returns the same.
+    /// Expands a SharePoint group to find all the member users and domain groups. Creates a <see cref="GssPrincipal"/> object for each of them and returns the same.
     /// The group must exist in the site collection for which the request has been sent.
     /// </summary>
     /// <param name="groupId"> the SharePoint group ID/Name that is to be resolved </param>
@@ -719,7 +727,7 @@ public class GssAclMonitor
                 }
                 prinicpals.Add(principal);
             }
-        }       
+        }
 
         GssResolveSPGroupResult result = new GssResolveSPGroupResult();
         result.Prinicpals = prinicpals;
@@ -759,7 +767,7 @@ public class GssAclMonitor
         SPListCollection lists = changeWeb.Lists;
         foreach (SPList list in lists)
         {
-            if (!list.HasUniqueRoleAssignments)
+            if (!list.HasUniqueRoleAssignments && changeWeb.Equals(list.FirstUniqueAncestor))
             {
                 listIDs.Add(list.ID.ToString());
             }
@@ -798,7 +806,7 @@ public class GssAclMonitor
         SPListItemCollection items = changeList.Items;
         foreach (SPListItem item in items)
         {
-            if (!item.HasUniqueRoleAssignments)
+            if (!item.HasUniqueRoleAssignments && changeList.Equals(item.FirstUniqueAncestor))
             {
                 itemIDs.Add("" + item.ID);
             }
@@ -827,9 +835,9 @@ public class GssAclUtility
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from the web application security policies
     /// </summary>
-    /// <param name="webApp"> web application from which the security policies are to be rtracked </param>
+    /// <param name="webApp"> web application from which the security policies are to be tracked </param>
     /// <param name="userAceMap"> ACE map to be updated </param>
-    public void TrackSecurityPolicyForAcl(SPWebApplication webApp, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
+    public void FetchSecurityPolicyForAcl(SPWebApplication webApp, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
         SPPolicyCollection policies = webApp.Policies;
         foreach (SPPolicy policy in policies)
@@ -849,7 +857,7 @@ public class GssAclUtility
             else
             {
                 permission = new GssSharepointPermission();
-                aceMap.Add(principal, permission);                
+                aceMap.Add(principal, permission);
             }
 
             foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
@@ -864,7 +872,7 @@ public class GssAclUtility
     /// </summary>
     /// <param name="web"> SharePoint web site whose administrators are to be tracked </param>
     /// <param name="userAceMap"> ACE Map to be updated </param>
-    public void TrackSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
+    public void FetchSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
         foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
         {
@@ -883,7 +891,7 @@ public class GssAclUtility
             else
             {
                 permission = new GssSharepointPermission();
-                aceMap.Add(principal, permission);                
+                aceMap.Add(principal, permission);
             }
             // Administrators have Full Rights in the site collection.
             permission.UpdatePermission(SPBasePermissions.FullMask, SPBasePermissions.EmptyMask);
@@ -895,7 +903,7 @@ public class GssAclUtility
     /// </summary>
     /// <param name="roles"> list of role assignments </param>
     /// <param name="userAceMap"> ACE Map to be updated </param>
-    public void TrackRoleAssignmentsForAcl(SPRoleAssignmentCollection roles, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
+    public void FetchRoleAssignmentsForAcl(SPRoleAssignmentCollection roles, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
         foreach (SPRoleAssignment roleAssg in roles)
         {
@@ -914,7 +922,7 @@ public class GssAclUtility
             else
             {
                 permission = new GssSharepointPermission();
-                aceMap.Add(principal, permission);                
+                aceMap.Add(principal, permission);
             }
 
             foreach (SPRoleDefinition roledef in roleAssg.RoleDefinitionBindings)
@@ -1013,17 +1021,17 @@ public class GssAclUtility
     }
 
     /// <summary>
-    /// Tracks the list of ACL related changes that have happened on the SharePoint site (to which the request has been sent) from a given point of time, determined by the change token value.
+    /// Tracks the list of ACL related changes that have happened under the current site collection (to which the request has been sent) from a given point of time, determined by the change token value.
     /// These list of changes are not guaranteed to affect the ACL of every or a even a single entity in the SharePoint. Rather, it purely reflects what action has been performed.
     /// Caller should analyse the implications of these changes and work accordingly.
-    /// 
-    /// This method does not currently supports Item level tracking. This is not required becasue getListItemChangesSinceToken which connector already usees already does the same. 
+    ///
+    /// This method does not currently supports Item level tracking. This is not required becasue getListItemChangesSinceToken which connector already usees already does the same.
     /// This makes the web service implementation tightly coupled with the connector though, we can live with this limitation for now as the web service, for now, is to be used by the connector only.
     /// </summary>
     /// <param name="site"> The Site collection in which the changes are to be tracked </param>
     /// <param name="fromChangeToken"> The starting change token value from where the changes are to be scanned in the SharePoint's change log </param>
     /// <returns> list of changes that most likely expected to change the ACLs of the entities </returns>
-    public SPChangeCollection TrackAclChanges(SPSite site, SPChangeToken fromChangeToken)
+    public SPChangeCollection FetchAclChanges(SPSite site, SPChangeToken fromChangeToken)
     {
         SPChangeQuery query = new SPChangeQuery(false, false);
         query.ChangeTokenStart = fromChangeToken;
@@ -1140,5 +1148,5 @@ public class GssAclUtility
         return gssPrincipal;
     }
 }
-  
+
 
