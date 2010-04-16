@@ -106,8 +106,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      */
     private boolean toBeFed = true;
 
+    // To identify if the document represents a SharePoint List
     boolean list = false;
+
+    // List of users and their permissions to be sent in document's ACL
     private Map<String, List<RoleType>> usersAclMap;
+
+    // List of groups and their permissions to be sent in document's ACL
     private Map<String, List<RoleType>> groupsAclMap;
 
     /**

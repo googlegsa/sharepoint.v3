@@ -203,6 +203,7 @@ public class SharepointClient {
             }
         }
 
+        // Fetch ACL for all the documents crawled from the current WebState
         setAclForDocuments(resultSet, webState);
 
         if (LOGGER.isLoggable(Level.CONFIG)) {
@@ -214,6 +215,15 @@ public class SharepointClient {
         return resultSet;
     }
 
+    /**
+     * Gets a set of documents in the form of {@link SPDocumentList} crawled
+     * from a single SharePoint site {@link WebState} and fetches ACL for all
+     * the documents and set it the document's properties.
+     *
+     * @param resultSet {@link SPDocumentList} to be processed
+     * @param webState parent {@link WebState} from which documents have been
+     *            crawled
+     */
     private void setAclForDocuments(SPDocumentList resultSet, WebState webState) {
         if (null == resultSet) {
             return;

@@ -43,6 +43,13 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
+/**
+ * Java Client for calling GssAcl.asmx web service. Provides a layer to talk to
+ * the ACL Web Service on the SharePoint server. Any call to this Web Service
+ * must go through this layer.
+ *
+ * @author nitendra_thakur
+ */
 public class GssAclWS {
     private String endpoint;
     private GssAclMonitorSoap_BindingStub stub = null;
@@ -93,6 +100,16 @@ public class GssAclWS {
         stub.setPassword(strPassword);
     }
 
+    // TODO: It's better use command pattern for executing web services methods.
+    // This is applicable to all the WS Java clients in the current package.
+
+    /**
+     * Executes GetAclForUrls() web method of GssAcl web service. Used to get
+     * the ACL of a set of entities.
+     *
+     * @param urls Set of entity URLs whose ACLs are to be fetched
+     * @return web service response {@link GssGetAclForUrlsResult} as it is
+     */
     public GssGetAclForUrlsResult getAclForUrls(String[] urls) {
         GssGetAclForUrlsResult result = null;
         try {
@@ -121,6 +138,14 @@ public class GssAclWS {
         return result;
     }
 
+    /**
+     * Used to parse the response of {@link GssAclWS#getAclForUrls(String[])}
+     * and update the ACLs into the {@link SPDocument} The set of document
+     * objects must be passed in form of a map with theie URLs as keys.
+     *
+     * @param wsResult Web Service response to be parsed
+     * @param urlToDocMap Documents whose ACLs are to be set
+     */
     public void processWsResponse(GssGetAclForUrlsResult wsResult,
             Map<String, SPDocument> urlToDocMap) {
         if (null == wsResult || null == urlToDocMap) {
@@ -189,12 +214,27 @@ public class GssAclWS {
                         }
                     }
 
+                    // TODO:Stripping off the domain from UID is temporary as
+                    // GSA
+                    // does not support it currently. In future, domains will be
+                    // sent as namespace. This will also be useful for sending
+                    // SP Groups as they must be defined in the context of site
+                    // collection. Here is Max's comment about this:
+                    // A change is coming in the June train: user and group
+                    // names will be associated with a namespace. By default,
+                    // this will be the empty namespace, but other namespaces
+                    // will be possible. This is important for sharepoint-local
+                    // groups, but less so for user names - probably. In the
+                    // meantime, please use the simple name (with domain
+                    // stripped off) but later we will put the domain in the
+                    // namespace field of the principal (user or group) name.
+                    String prinicpalName = Util.getUserFromUsername(principal.getName());
                     List<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getGrantRightMask(), objectType);
                     if (PrincipalType.USER.equals(principal.getType())) {
-                        userPermissionMap.put(principal.getName(), allowedRoleTypes);
+                        userPermissionMap.put(prinicpalName, allowedRoleTypes);
                     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
                             || PrincipalType.SPGROUP.equals(principal.getType())) {
-                        groupPermissionMap.put(principal.getName(), allowedRoleTypes);
+                        groupPermissionMap.put(prinicpalName, allowedRoleTypes);
                     } else {
                         LOGGER.log(Level.WARNING, "Skipping ACE for principal [ "
                                 + principal.getName()
@@ -210,6 +250,16 @@ public class GssAclWS {
 
     }
 
+    /**
+     * Executes GetAclChangesSinceToken() web method of GssAcl web service Used
+     * for ACL change detection; change token is used for synchronization
+     * purpose.
+     *
+     * @param strChangeToken ChangeToken from where the change tracking should
+     *            initiate
+     * @return web service response {@link GssGetAclChangesSinceTokenResult} as
+     *         it is
+     */
     public GssGetAclChangesSinceTokenResult getAclChangesSinceToken(
             String strChangeToken) {
         GssGetAclChangesSinceTokenResult result = null;
@@ -239,6 +289,15 @@ public class GssAclWS {
         return result;
     }
 
+    /**
+     * Executes GetAffectedItemIDsForChangeList() web method of GssAcl web
+     * service. Used for getting all the Item IDs which are inheriting their
+     * role assignments from the parent List.
+     *
+     * @param listGuid GUID of the List to be processed
+     * @return Item IDs which are inheriting their role assignments from their
+     *         parent list whose GUID was passed in the argument
+     */
     public String[] getAffectedItemIDsForChangeList(String listGuid) {
         String[] result = null;
         try {
@@ -267,6 +326,15 @@ public class GssAclWS {
         return result;
     }
 
+    /**
+     * Executes GetAffectedListIDsForChangeWeb() web method of GssAcl web
+     * service. Used for getting all the List IDs which are inheriting their
+     * role assignments from the parent web site.
+     *
+     * @param webGuid GUID or URL of the SharePoint WebSite to be processed
+     * @return List IDs which are inheriting their role assignments from their
+     *         parent web site whose ID was passed in the argument
+     */
     public String[] getAffectedListIDsForChangeWeb(String webGuid) {
         String[] result = null;
         try {
@@ -295,6 +363,13 @@ public class GssAclWS {
         return result;
     }
 
+    /**
+     * Executes ResolveSPGroup() web method of GssAcl web service. Used for
+     * expanding SharePoint groups to get the members.
+     *
+     * @param groupIds IDs of the SP Groups to be resolved
+     * @return web service response {@link GssResolveSPGroupResult} as it is
+     */
     public GssResolveSPGroupResult resolveSPGroup(String[] groupIds) {
         GssResolveSPGroupResult result = null;
         try {
@@ -324,7 +399,8 @@ public class GssAclWS {
     }
 
     /**
-     * For checking the Web Service connectivity
+     * Executes CheckConnectivity() web method of GssAcl web service Used for
+     * checking the Web Service connectivity
      *
      * @return the Web Service connectivity status
      */

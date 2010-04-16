@@ -1165,6 +1165,20 @@ public final class Util {
         return true;
     }
 
+    /**
+     * Maps a set of SharePoint defined permissions to CM defined permissions.
+     * TODO: The logic used for mapping could be improved depending on the
+     * current discussions going on at this front with John Felton.
+     *
+     * @param permissions SharePoint Permissions
+     * @param objectType Kind of entity (List/List-Item/Web) for which the
+     *            mapping is to be done. This is required because SharePoint
+     *            defines multiple granular permissions for various entity types
+     *            and all these permissions may not be applicable to all the
+     *            entities. For Example, "ManageWeb" has nothing do with
+     *            ListItems.
+     * @return
+     */
     public static List<RoleType> getRoleTypesFor(String[] permissions,
             ObjectType objectType) {
         List<RoleType> roleTypes = new ArrayList<RoleType>();
