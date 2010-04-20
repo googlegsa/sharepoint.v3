@@ -57,6 +57,7 @@ public class UserProfileWS {
      *            URL stored in SharePointClientContext.
      * @throws SharepointException
      */
+
     public UserProfileWS(final SharepointClientContext inSharepointClientContext)
             throws SharepointException {
         if (inSharepointClientContext != null) {
@@ -143,6 +144,8 @@ public class UserProfileWS {
      * @return the list of personal sites
      * @throws SharepointException
      */
+
+    //TODO: Modify the implementation for supporting SP2010 mysites
     public Set<String> getPersonalSiteList() throws SharepointException {
         final Set<String> lstAllPersonalSites = new TreeSet<String>();
         final Collator collator = Util.getCollator();
@@ -151,6 +154,17 @@ public class UserProfileWS {
             return lstAllPersonalSites;
         }
 
+
+        //TODO:Need to remove the hard-coding of index.
+        /**
+         * High Level Steps:
+         * ================
+         * 1. Call method GetUserProfileCount-> returns the no: of profiles registered
+         * 2. Iterate through the profiles and get the corresponding URL
+         *
+         * Note: Current implementation to get mysites does not work for SP2010.
+         * The proposed approach should work for both SP2007 and SP2010
+         * */
         int index = 0;
         while (index >= 0) {
 
