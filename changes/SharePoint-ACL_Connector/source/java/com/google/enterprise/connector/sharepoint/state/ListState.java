@@ -135,6 +135,9 @@ public class ListState implements StatefulObject {
 
     WebState parentWeb;
 
+    // Does the ACl changed for this List?
+    private boolean aclChanged;
+
     /**
      * @param inInternalName
      * @param inTitle
@@ -1121,6 +1124,8 @@ public class ListState implements StatefulObject {
         atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastModString());
         atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
         atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_CDATA, getType());
+        atts.addAttribute("", "", SPConstants.STATE_ISACLCHANGED, SPConstants.STATE_ATTR_CDATA, String.valueOf(isAclChanged()));
+
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(getType())) {
             if (SPType.SP2007 == getParentWebState().getSharePointType()) {
                 if ((getChangeTokenForWSCall() != null)
@@ -1234,6 +1239,7 @@ public class ListState implements StatefulObject {
         }
 
         list.setLastCrawledDateTime(atts.getValue(SPConstants.LAST_CRAWLED_DATETIME));
+        list.setAclChanged(Boolean.getBoolean(atts.getValue(SPConstants.STATE_ISACLCHANGED)));
 
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(list.getType())) {
             if (SPType.SP2007 == web.getSharePointType()) {
@@ -1267,5 +1273,23 @@ public class ListState implements StatefulObject {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Resets the state of this List to initiate a complete re-crawl
+     */
+    public void resetState() {
+        saveNextChangeTokenForWSCall(null);
+        commitChangeTokenForWSCall();
+        setLastDocProcessedForWS(null);
+        setCrawlQueue(null);
+    }
+
+    public boolean isAclChanged() {
+        return aclChanged;
+    }
+
+    public void setAclChanged(boolean aclChanged) {
+        this.aclChanged = aclChanged;
     }
 }

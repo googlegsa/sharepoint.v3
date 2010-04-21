@@ -1775,4 +1775,36 @@ public class ListsWS {
         }
         return doc;
     }
+
+    public List<SPDocument> parseCustomWSResponseForListItemNodes(
+            final MessageElement wsElement, ListState list) {
+        final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
+
+        if (null == wsElement
+                || !SPConstants.GSSLISTITEMS.equals(wsElement.getNodeName())) {
+            return listItems;
+        }
+        for (final Iterator itChilds = wsElement.getChildElements(); itChilds.hasNext();) {
+            Object obj = itChilds.next();
+            if (null == obj || !(obj instanceof MessageElement)) {
+                continue;
+            }
+            try {
+                final MessageElement row = (MessageElement) obj;
+                final SPDocument doc = processListItemElement(row, list, null);
+                listItems.add(doc);
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "Problem occured while parsing node", e);
+                continue;
+            }
+        }
+
+        return listItems;
+    }
+
+    public List<SPDocument> parseCustomWSResponseForListItemNodes(String data,
+            ListState list) {
+        MessageElement wsElement = getMeFromString(data);
+        return parseCustomWSResponseForListItemNodes(wsElement, list);
+    }
 }

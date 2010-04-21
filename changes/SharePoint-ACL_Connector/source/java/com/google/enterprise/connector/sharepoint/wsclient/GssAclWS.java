@@ -14,9 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,18 +32,24 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAce;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAcl;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChange;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChangeCollection;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclMonitor;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclMonitorLocator;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclMonitorSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssSharepointPermission;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.SPChangeType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 /**
@@ -141,7 +150,13 @@ public class GssAclWS {
     /**
      * Used to parse the response of {@link GssAclWS#getAclForUrls(String[])}
      * and update the ACLs into the {@link SPDocument} The set of document
-     * objects must be passed in form of a map with theie URLs as keys.
+     * objects must be passed in form of a map with their URLs as keys. If a
+     * user have more than one permission assigned on SHarePoint, connector will
+     * include each of them in the ACE. Hence, the {@link RoleType} that is sent
+     * to CM may include a list of role types. Also, due to the current GSA
+     * limitation, deny permissions are not handled. We may include some logics
+     * to decide when to ignore a DENY when to skip. But, that would be an
+     * overkill as this limitation is going to be fixed in future GSA releases
      *
      * @param wsResult Web Service response to be parsed
      * @param urlToDocMap Documents whose ACLs are to be set
@@ -197,8 +212,10 @@ public class GssAclWS {
                     // documents. In future, if sites and pages are also
                     // sent, more checks will have to be added here
                     ObjectType objectType = ObjectType.ITEM;
-                    if (document.isList()) {
-                        objectType = ObjectType.LIST;
+                    if (null != document.getParentList()) {
+                        if (document.getParentList().getPrimaryKey().equals(Util.getOriginalDocId(document.getDocId(), document.getFeedType()))) {
+                            objectType = ObjectType.LIST;
+                        }
                     }
 
                     String[] deniedPermissions = permissions.getDenyRightMask();
@@ -261,10 +278,10 @@ public class GssAclWS {
      *         it is
      */
     public GssGetAclChangesSinceTokenResult getAclChangesSinceToken(
-            String strChangeToken) {
+            WebState webstate) {
         GssGetAclChangesSinceTokenResult result = null;
         try {
-            result = stub.getAclChangesSinceToken(strChangeToken);
+            result = stub.getAclChangesSinceToken(webstate.getAclChangeTokenForWsCall(), webstate.getNextAclChangeToken());
         } catch (final AxisFault af) {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
@@ -273,20 +290,136 @@ public class GssAclWS {
                         + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
-                    result = stub.getAclChangesSinceToken(strChangeToken);
+                    result = stub.getAclChangesSinceToken(webstate.getAclChangeTokenForWsCall(), webstate.getNextAclChangeToken());
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to getAclChangesSinceToken call failed. endpoint [ "
+                    LOGGER.log(Level.WARNING, "ACl change detection has failed. endpoint [ "
                             + endpoint + " ].", e);
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Call to getAclChangesSinceToken call failed. endpoint [ "
+                LOGGER.log(Level.WARNING, "ACl change detection has failed. endpoint [ "
                         + endpoint + " ].", af);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Call to getAclChangesSinceToken call failed. endpoint [ "
+            LOGGER.log(Level.WARNING, "ACl change detection has failed. endpoint [ "
                     + endpoint + " ].", e);
         }
         return result;
+    }
+
+    /**
+     * Analyze the set of changes returned by the Custom ACL web service and
+     * update the status of child ListStates reflecting the way crawl should
+     * proceed for them. Typically, any permission change at Web level will
+     * trigger a re-crawl of all the list and items which are inheriting role
+     * assignments.
+     *
+     * @param wsResult @link{GssGetAclChangesSinceTokenResult}
+     * @param webstate The {@link WebState} for which the change detection is
+     *            being done
+     */
+    public void processWsResponse(GssGetAclChangesSinceTokenResult wsResult,
+            WebState webstate) {
+        if (null == wsResult || null == webstate) {
+            return;
+        }
+
+        GssAclChangeCollection allChanges = wsResult.getAllChanges();
+        GssAclChange[] changes = (null == allChanges) ? null
+                : allChanges.getChanges();
+
+        if (null == changes) {
+            return;
+        }
+
+        // If permissions of the Web has changed due to role assignment changes
+        // at its first unique ancestor
+        boolean isWebChanged = false;
+
+        // If the Web has been reset to initiate a re-crawl due to a high level
+        // permission change like security policy change
+        boolean isWebReset = false;
+
+        Set<String> changedListsGuids = new HashSet<String>();
+        for (GssAclChange change : changes) {
+            if (null == change) {
+                continue;
+            }
+            ObjectType objType = change.getChangedObject();
+            SPChangeType changeType = change.getChangeType();
+            String changeObjectHint = change.getHint();
+            if (!change.isIsEffectiveInCurrentWeb()) {
+                continue;
+            }
+            LOGGER.log(Level.CONFIG, "Change detected changeType [ " + changeType + " ], objectType [ " + objType + " ]. ");
+
+            if (objType == ObjectType.SECURITY_POLICY) {
+                LOGGER.log(Level.INFO, "Resetting all list states under web [ "
+                        + webstate.getWebUrl()
+                        + " ] becasue of security policy change.");
+                webstate.resetState();
+                isWebReset = true;
+            } else if (objType == ObjectType.WEB && !isWebChanged
+                    && null != changeObjectHint) {
+                isWebChanged = true;
+                // Since, role assignment at web have changed, we need to
+                // re-crawl all the list/items which are inheriting the changed
+                // role assignments.
+                String[] allChangedListIds = getListsWithInheritingRoleAssignments(changeObjectHint);
+                if (null != allChangedListIds) {
+                    changedListsGuids.addAll(Arrays.asList(allChangedListIds));
+                }
+            } else if (objType == ObjectType.LIST && null != changeObjectHint) {
+                changedListsGuids.add(changeObjectHint);
+            } else if (objType == ObjectType.USER
+                    && changeType == SPChangeType.Delete) {
+                // For user-related changes, we only consider deletion changes.
+                // Rest all are covered as part of web/list/item/group specific
+                // changes. Refer to the WS impl. for more details
+                LOGGER.log(Level.INFO, "Resetting all list states under web [ "
+                        + webstate.getWebUrl()
+                        + " ] becasue a user has been deleted from the SharePoint.");
+                webstate.resetState();
+                isWebReset = true;
+                // TODO: Initiating a complete re-crawl due to USER deletion is
+                // not a good approach. Imagine a case when the deleted user
+                // did not have any permission on anything. The re-crawl would
+                // be completely unnecessary in that case.
+                // A better approach could be, GSA sending the authentication
+                // request to connector
+                // where the user existence in SharePoint will be verified. If
+                // the authentication succeeds, than only proceed with the ACL
+                // based authorization. This can be done along with the session
+                // creation channel approach.
+            } else if (objType == ObjectType.GROUP) {
+                // TODO: Group related changes are not being handled currently.
+                // The vision is to maintain a local DB of user group
+                // memberships. Once that is done, this change will be reflected
+                // in the local DB.
+            } else if (objType == ObjectType.ADMINISTRATORS) {
+                // Administrators are to be treated as another SharePoint groups
+                // so that any change on the administrators list does not
+                // enforce a re-crawl as we are doing for user deletion case.
+                // Hence, this case will also be handled with the implementation
+                // of local DB for user group memberships
+            }
+
+            if (isWebReset) {
+                break;
+            }
+        }
+
+        for (String listGuid : changedListsGuids) {
+            ListState listState = webstate.getListStateForGuid(listGuid);
+            if (null == listState) {
+                continue;
+            }
+            listState.setAclChanged(true);
+        }
+
+        if (null == webstate.getNextAclChangeToken()
+                || webstate.getNextAclChangeToken().trim().length() == 0) {
+            webstate.setNextAclChangeToken(allChanges.getChangeToken());
+        }
     }
 
     /**
@@ -298,10 +431,18 @@ public class GssAclWS {
      * @return Item IDs which are inheriting their role assignments from their
      *         parent list whose GUID was passed in the argument
      */
-    public String[] getAffectedItemIDsForChangeList(String listGuid) {
-        String[] result = null;
+    public GssGetListItemsWithInheritingRoleAssignments GetListItemsWithInheritingRoleAssignments(
+            String listGuid, String lastItemId) {
+        int intLastItemId = 0;
         try {
-            result = stub.getAffectedItemIDsForChangeList(listGuid);
+            intLastItemId = Integer.parseInt(lastItemId);
+        } catch (Exception e) {
+            // Eat up exception. This just mean that the last document sent was
+            // not a list item. It could be a list
+        }
+        GssGetListItemsWithInheritingRoleAssignments result = null;
+        try {
+            result = stub.getListItemsWithInheritingRoleAssignments(listGuid, sharepointClientContext.getBatchHint(), intLastItemId);
         } catch (final AxisFault af) {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
@@ -310,17 +451,17 @@ public class GssAclWS {
                         + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
-                    result = stub.getAffectedItemIDsForChangeList(listGuid);
+                    result = stub.getListItemsWithInheritingRoleAssignments(listGuid, sharepointClientContext.getBatchHint(), intLastItemId);
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to getAffectedItemIDsForChangeList call failed. endpoint [ "
+                    LOGGER.log(Level.WARNING, "Failed to get ListItems With Inheriting RoleAssignments. endpoint [ "
                             + endpoint + " ].", e);
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Call to getAffectedItemIDsForChangeList call failed. endpoint [ "
+                LOGGER.log(Level.WARNING, "Failed to get ListItems With Inheriting RoleAssignments. endpoint [ "
                         + endpoint + " ].", af);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Call to getAffectedItemIDsForChangeList call failed. endpoint [ "
+            LOGGER.log(Level.WARNING, "Failed to get ListItems With Inheriting RoleAssignments. endpoint [ "
                     + endpoint + " ].", e);
         }
         return result;
@@ -335,10 +476,10 @@ public class GssAclWS {
      * @return List IDs which are inheriting their role assignments from their
      *         parent web site whose ID was passed in the argument
      */
-    public String[] getAffectedListIDsForChangeWeb(String webGuid) {
+    public String[] getListsWithInheritingRoleAssignments(String webGuid) {
         String[] result = null;
         try {
-            result = stub.getAffectedListIDsForChangeWeb(webGuid);
+            result = stub.getListsWithInheritingRoleAssignments(webGuid);
         } catch (final AxisFault af) {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
@@ -347,17 +488,17 @@ public class GssAclWS {
                         + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
-                    result = stub.getAffectedListIDsForChangeWeb(webGuid);
+                    result = stub.getListsWithInheritingRoleAssignments(webGuid);
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to getAffectedListIDsForChangeWeb call failed. endpoint [ "
+                    LOGGER.log(Level.WARNING, "Failed to get List With Inheriting RoleAssignments. endpoint [ "
                             + endpoint + " ].", e);
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Call to getAffectedListIDsForChangeWeb call failed. endpoint [ "
+                LOGGER.log(Level.WARNING, "Failed to get List With Inheriting RoleAssignments. endpoint [ "
                         + endpoint + " ].", af);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Call to getAffectedListIDsForChangeWeb call failed. endpoint [ "
+            LOGGER.log(Level.WARNING, "Failed to get List With Inheriting RoleAssignments. endpoint [ "
                     + endpoint + " ].", e);
         }
         return result;

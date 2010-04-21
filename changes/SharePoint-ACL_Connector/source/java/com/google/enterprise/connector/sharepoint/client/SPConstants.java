@@ -167,6 +167,8 @@ public class SPConstants {
     public static final String LIST_ITEM_COLLECTION_POSITION_NEXT = "ListItemCollectionPositionNext";
     public static final String CONTENT_TYPE_FOLDER = "Folder";
 
+    public static final String GSSLISTITEMS = "GssListItems";
+
     // For Alerts
     public static final String ALERTS_TYPE = "Alerts";
 
@@ -250,6 +252,12 @@ public class SPConstants {
     // Keeping it as it is for now so that already running connectors does not
     // break
     public static final String STATE_CACHED_CHANGETOKEN = "CachedChangeToken";
+
+    public static final String STATE_ACLCHANGETOKEN = "AclChangeToken";
+    public static final String STATE_ACLNEXTCHANGETOKEN = "AclNextChangeToken";
+    public static final String STATE_ISACLCHANGED = "IsAclChanged";
+    public static final String STATE_DOACLCHANGEDETECTION = "DoAclChangeDetection";
+
     public static final String STATE_EXTRAIDS_FOLDERS = "FolderItemIDs";
     public static final String STATE_EXTRAIDS_ATTACHMENTS = "Attachments";
     public static final String STATE_EXTRAIDS_ALERTS = "Alerts";

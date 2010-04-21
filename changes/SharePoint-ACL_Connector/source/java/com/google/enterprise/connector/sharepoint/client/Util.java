@@ -1177,7 +1177,7 @@ public final class Util {
      *            and all these permissions may not be applicable to all the
      *            entities. For Example, "ManageWeb" has nothing do with
      *            ListItems.
-     * @return
+     * @return a list of {@link RoleType}
      */
     public static List<RoleType> getRoleTypesFor(String[] permissions,
             ObjectType objectType) {
@@ -1187,11 +1187,17 @@ public final class Util {
             return roleTypes;
         }
         if (permissions.length == 0
-                && permissions[0].equals(SPBasePermissions.EMPTYMASK)) {
+                || permissions[0].equals(SPBasePermissions.EMPTYMASK)) {
             return roleTypes;
         }
+
+        // The following two flags are to check if all the required permissions
+        // for WRITER access on a list are fulfilled or not. We may need to add
+        // more flags in future corresponding to any extra permissions that we
+        // agree to check to give a user WRITER access ona list
         boolean managelist = false;
         boolean additems = false;
+
         for(String permission : permissions) {
             if (SPBasePermissions.FULLMASK.equals(permission)) {
                 roleTypes.add(RoleType.OWNER);

@@ -291,6 +291,9 @@ public class GssAclChange
     // An additional hint to identify the exact object/entity that has changed. Most of the time, this would be the ID, GUID or URL.
     private string hint;
 
+    // A way to identify if the current change has its implication under the web site to whcih the request has been sent. This is useful becasue the web servcie processing is done at site collection level and all changes might not be relevant to all the web sites in the site collection.
+    private bool isEffectiveIncurrentWeb;
+
     public ObjectType ChangedObject
     {
         get { return changedObject; }
@@ -307,6 +310,12 @@ public class GssAclChange
     {
         get { return hint; }
         set { hint = value; }
+    }
+
+    public bool IsEffectiveInCurrentWeb
+    {
+        get { return isEffectiveIncurrentWeb; }
+        set { isEffectiveIncurrentWeb = value; }
     }
 
     public GssAclChange() { }
@@ -366,16 +375,11 @@ public class GssAclChangeCollection
         LogMessage = new StringBuilder();
     }
 
-    public void AddChange(GssAclChange change)
-    {
-        changes.Add(change);
-    }
-
     /// <summary>
     /// Construct an appropriate <see cref="GssAclChnage"/> object from a SharePoint's SPChange object and adds it to the list of changes
     /// </summary>
     /// <param name="change"> SharePoint's change object. This may not necessarily be a ACL related change. </param>
-    public void AddChange(SPChange change)
+    public void AddChange(SPChange change, SPSite site, SPWeb web)
     {
         if (change is SPChangeWeb)
         {
@@ -391,7 +395,13 @@ public class GssAclChangeCollection
                     // connector does the actual document discovery per list level. Sending the changed webId will force the connector to make an extra call to get the Lists that should be re-crawled.
                     // But, such implementation will become confusing when the connector will evolve in future to support site collection and web application level crawling.
                     // It's better to send the change web ID as hint and let the connector decide how to work on this.
-                    AddChange(new GssAclChange(ObjectType.WEB, changeWeb.ChangeType, changeWeb.Id.ToString()));
+                    GssAclChange gssChange = new GssAclChange(ObjectType.WEB, changeWeb.ChangeType, changeWeb.Id.ToString());
+                    SPWeb thisWeb = site.OpenWeb(changeWeb.Id);
+                    if (web.FirstUniqueAncestor.Equals(thisWeb.FirstUniqueAncestor))
+                    {
+                       gssChange.IsEffectiveInCurrentWeb = true;
+                    }
+                    changes.Add(gssChange);
                     break;
             }
         }
@@ -405,20 +415,32 @@ public class GssAclChangeCollection
                 case SPChangeType.RoleDelete:
                 case SPChangeType.RoleUpdate:
                     SPChangeList changeList = (SPChangeList)change;
-                    AddChange(new GssAclChange(ObjectType.LIST, changeList.ChangeType, changeList.Id.ToString()));
+                    GssAclChange gssChange = new GssAclChange(ObjectType.LIST, changeList.ChangeType, changeList.Id.ToString());
+                    SPWeb thisWeb = site.OpenWeb(changeList.WebId);
+                    if (web.FirstUniqueAncestor.Equals(thisWeb.FirstUniqueAncestor))
+                    {
+                        gssChange.IsEffectiveInCurrentWeb = true;
+                    }
+                    changes.Add(gssChange);
                     break;
             }
         }
         else if (change is SPChangeUser)
         {
             SPChangeUser changeUser = (SPChangeUser)change;
+            GssAclChange gssChange = null;
             if (changeUser.IsSiteAdminChange)
             {
-                AddChange(new GssAclChange(ObjectType.ADMINISTRATORS, changeUser.ChangeType, changeUser.Id.ToString()));
+                gssChange = new GssAclChange(ObjectType.ADMINISTRATORS, changeUser.ChangeType, changeUser.Id.ToString());
             }
             else if (changeUser.ChangeType == SPChangeType.Delete)
             {
-                AddChange(new GssAclChange(ObjectType.USER, changeUser.ChangeType, changeUser.Id.ToString()));
+                gssChange = new GssAclChange(ObjectType.USER, changeUser.ChangeType, changeUser.Id.ToString());
+            }
+            if (null != gssChange)
+            {
+                gssChange.IsEffectiveInCurrentWeb = true;
+                changes.Add(gssChange);
             }
         }
         else if (change is SPChangeGroup)
@@ -429,14 +451,18 @@ public class GssAclChangeCollection
                 case SPChangeType.MemberDelete:
                 case SPChangeType.Delete:
                     SPChangeGroup changeGroup = (SPChangeGroup)change;
-                    AddChange(new GssAclChange(ObjectType.GROUP, changeGroup.ChangeType, changeGroup.Id.ToString()));
+                    GssAclChange gssChange = new GssAclChange(ObjectType.GROUP, changeGroup.ChangeType, changeGroup.Id.ToString());
+                    gssChange.IsEffectiveInCurrentWeb = true;
+                    changes.Add(gssChange);
                     break;
             }
         }
         else if (change is SPChangeSecurityPolicy)
         {
             SPChangeSecurityPolicy changeSecurityPolicy = (SPChangeSecurityPolicy)change;
-            AddChange(new GssAclChange(ObjectType.SECURITY_POLICY, changeSecurityPolicy.ChangeType, ""));
+            GssAclChange gssChange = new GssAclChange(ObjectType.SECURITY_POLICY, changeSecurityPolicy.ChangeType, "");
+            gssChange.IsEffectiveInCurrentWeb = true;
+            changes.Add(gssChange);
         }
     }
 
@@ -531,6 +557,28 @@ public class GssResolveSPGroupResult : GssAclBaseResult
     {
         get { return prinicpals; }
         set { prinicpals = value; }
+    }
+}
+
+/// <summary>
+///
+/// </summary>
+[WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+[Serializable]
+public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
+{
+    private string docXml;
+    private bool moreDocs;
+    public string DocXml
+    {
+        get { return docXml; }
+        set { docXml = value; }
+    }
+    public bool MoreDocs
+    {
+        get { return moreDocs; }
+        set { moreDocs = value; }
     }
 }
 
@@ -647,10 +695,11 @@ public class GssAclMonitor
     /// A typical example could be when the permission hierarchy of a list/web is reset and immediately brought to its original state. In that case this API will return two changes but there is no ACL change on the SharePoint.
     /// Deletion of an empty group is another such case.
     /// </summary>
-    /// <param name="strChangeToken"> The change token from where the changes are to be scanned in the SharePoint's change log </param>
+    /// <param name="fromChangeToken"> The change token from where the changes are to be scanned in the SharePoint's change log. It defines the starting point in the change log </param>
+    /// <param name="toChangeToken"> Only those changes which have been registered in the change log with a token that appears before this token will be retrieved. It defines the ending pooint in the change log </param>
     /// <returns> a list of ACL specific changes </returns>
     [WebMethod]
-    public GssGetAclChangesSinceTokenResult GetAclChangesSinceToken(string strChangeToken)
+    public GssGetAclChangesSinceTokenResult GetAclChangesSinceToken(string fromChangeToken, string toChangeToken)
     {
         if (null == site || null == web)
         {
@@ -658,16 +707,22 @@ public class GssAclMonitor
         }
 
         GssAclChangeCollection allChanges = null;
-        if (null != strChangeToken && strChangeToken.Length != 0)
+        SPChangeToken changeTokenEnd = null;
+        if (null != fromChangeToken && fromChangeToken.Length != 0)
         {
-            SPChangeToken changeToken = new SPChangeToken(strChangeToken);
-            allChanges = new GssAclChangeCollection(changeToken);
+            if (null != toChangeToken && toChangeToken.Length != 0)
+            {
+                changeTokenEnd = new SPChangeToken(toChangeToken);
+            }
+
+            SPChangeToken changeTokenStart = new SPChangeToken(fromChangeToken);
+            allChanges = new GssAclChangeCollection(changeTokenStart);
             try
             {
-                SPChangeCollection spChanges = gssUtil.FetchAclChanges(site, changeToken);
+                SPChangeCollection spChanges = gssUtil.FetchAclChanges(site, changeTokenStart, changeTokenEnd);
                 foreach (SPChange change in spChanges)
                 {
-                    allChanges.AddChange(change);
+                    allChanges.AddChange(change, site, web);
                 }
             }
             catch (Exception e)
@@ -687,7 +742,14 @@ public class GssAclMonitor
         // The problem with the second approach is that if no ACL specific changes will occur, the change token will never gets updated and will become invalid after some time.
         // Another performance issue is is that, the scan will always start form the same token unless there is a ACL specific change.
         // Since, the change tracking logic ensures that all changes will be tracked (i.e there is no rowlimit kind of thing associated), it is safe to use the first approach.
-        allChanges.UpdateChangeToken(site.CurrentChangeToken);
+        if (null == changeTokenEnd)
+        {
+            allChanges.UpdateChangeToken(site.CurrentChangeToken);
+        }
+        else
+        {
+            allChanges.UpdateChangeToken(changeTokenEnd);
+        }
 
         GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         result.AllChanges = allChanges;
@@ -742,7 +804,7 @@ public class GssAclMonitor
     /// <param name="webGuId"> GUID of the SharePoint web site from which the Lists are to be returned </param>
     /// <returns> list of GUIDs of the lists </returns>
     [WebMethod]
-    public List<string> GetAffectedListIDsForChangeWeb(string webGuId)
+    public List<string> GetListsWithInheritingRoleAssignments(string webGuId)
     {
         if (null == site || null == web)
         {
@@ -767,7 +829,7 @@ public class GssAclMonitor
         SPListCollection lists = changeWeb.Lists;
         foreach (SPList list in lists)
         {
-            if (!list.HasUniqueRoleAssignments && changeWeb.Equals(list.FirstUniqueAncestor))
+            if (!list.HasUniqueRoleAssignments && changeWeb.FirstUniqueAncestor.Equals(list.FirstUniqueAncestor))
             {
                 listIDs.Add(list.ID.ToString());
             }
@@ -776,12 +838,14 @@ public class GssAclMonitor
     }
 
     /// <summary>
-    /// Returns the numeric IDs of all those ListItems which are inheriting their permissions from the passed in SharePoint List.
+    /// Returns the List Items (sorted in ascending order of their IDs) which are inheriting the role assignments from the passed in SharePoint List.
     /// </summary>
-    /// <param name="webGuId"> GUID of the SharePoint List from which the Items are to be returned. The list must belong to the the site in which the request has been sent </param>
+    /// <param name="listGuId"> GUID of the SharePoint List from which the Items are to be returned. The list must belong to the the site in which the request has been sent </param>
+    /// <param name="rowLimit"> Threshold value for the document count to be returned </param>
+    /// <param name="lastItemId"> Only document ahead of this ID should be returned </param>
     /// <returns> list of IDs of the items </returns>
     [WebMethod]
-    public List<string> GetAffectedItemIDsForChangeList(string listGuId)
+    public GssGetListItemsWithInheritingRoleAssignments GetListItemsWithInheritingRoleAssignments(string listGuId, int rowLimit, int lastItemId)
     {
         if (null == site || null == web)
         {
@@ -803,15 +867,45 @@ public class GssAclMonitor
         }
 
         List<string> itemIDs = new List<string>();
-        SPListItemCollection items = changeList.Items;
+        SPQuery query = new SPQuery();
+        query.Query =    "<Where>"
+                       +   "<Gt>"
+                       +       "<FieldRef Name=\"ID\"/>"
+                       +       "<Value Type=\"Counter\">" + lastItemId + "</Value>"
+                       +   "</Gt>"
+                       + "</Where>"
+                       + "<OrderBy>"
+                       +   "<FieldRef Name=\"ID\" Ascending=\"TRUE\" />"
+                       + "</OrderBy>";
+        if (changeList.BaseType == SPBaseType.DocumentLibrary
+            || changeList.BaseType == SPBaseType.GenericList
+            || changeList.BaseType == SPBaseType.Issue)
+        {
+            query.ViewAttributes = "Scope = 'Recursive'";
+        }
+
+        SPListItemCollection items = changeList.GetItems(query);
+
+        GssGetListItemsWithInheritingRoleAssignments result = new GssGetListItemsWithInheritingRoleAssignments();
+        StringBuilder docXml = new StringBuilder();
+        int i = 0;
         foreach (SPListItem item in items)
         {
-            if (!item.HasUniqueRoleAssignments && changeList.Equals(item.FirstUniqueAncestor))
+            if (i >= rowLimit)
             {
-                itemIDs.Add("" + item.ID);
+                result.MoreDocs = true;
+                break;
+            }
+            if (!item.HasUniqueRoleAssignments && changeList.FirstUniqueAncestor.Equals(item.FirstUniqueAncestor))
+            {
+                docXml.Append(item.Xml);
+                ++i;
             }
         }
-        return itemIDs;
+        result.DocXml = "<GssListItems Count=\"" + i + "\">" + docXml.ToString() + "</GssListItems>";
+        result.SiteCollectionUrl = site.Url;
+        result.SiteCollectionGuid = site.ID;
+        return result;
     }
 }
 
@@ -1029,12 +1123,14 @@ public class GssAclUtility
     /// This makes the web service implementation tightly coupled with the connector though, we can live with this limitation for now as the web service, for now, is to be used by the connector only.
     /// </summary>
     /// <param name="site"> The Site collection in which the changes are to be tracked </param>
-    /// <param name="fromChangeToken"> The starting change token value from where the changes are to be scanned in the SharePoint's change log </param>
+    /// <param name="changeTokenStart"> The starting change token value from where the changes are to be scanned in the SharePoint's change log </param>
+    /// <param name="changeTokenEnd"> The ending change token value until where the changes are to be scanned in the SharePoint's change log </param>
     /// <returns> list of changes that most likely expected to change the ACLs of the entities </returns>
-    public SPChangeCollection FetchAclChanges(SPSite site, SPChangeToken fromChangeToken)
+    public SPChangeCollection FetchAclChanges(SPSite site, SPChangeToken changeTokenStart, SPChangeToken changeTokenEnd)
     {
         SPChangeQuery query = new SPChangeQuery(false, false);
-        query.ChangeTokenStart = fromChangeToken;
+        query.ChangeTokenStart = changeTokenStart;
+        query.ChangeTokenEnd = changeTokenEnd;
 
         // Define objects on which changes are to be tracked
         query.SecurityPolicy = true;

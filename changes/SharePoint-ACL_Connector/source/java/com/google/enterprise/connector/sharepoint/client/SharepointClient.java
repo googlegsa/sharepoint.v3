@@ -29,7 +29,9 @@ import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -628,6 +630,24 @@ public class SharepointClient {
             Collections.rotate(listCollection, -(listCollection.indexOf(nextList)));
         }
 
+        GssAclWS aclWs = null;
+        try {
+            aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
+            if (webState.isDoAclChangeDetection()) {
+                GssGetAclChangesSinceTokenResult wsResult = aclWs.getAclChangesSinceToken(webState);
+                aclWs.processWsResponse(wsResult, webState);
+                // Do not re-attempt for ACL change detection in the same
+                // traversal cycle.
+                webState.setDoAclChangeDetection(false);
+            }
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
+                    + webState.getWebUrl() + " ]. ", e);
+        } catch (final Throwable t) {
+            LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. site [ "
+                    + webState.getWebUrl() + " ]. ", t);
+        }
+
         final ListsWS listsWS = new ListsWS(tempCtx);
         for (int i = 0; i < listCollection.size(); i++) {
             final ListState currentList = listCollection.get(i);
@@ -648,7 +668,7 @@ public class SharepointClient {
                 if (SPType.SP2007 == webState.getSharePointType()) {
                     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                         // In case of content feed, we need to keep track of
-                        // folders and the items under that. This is reaquired
+                        // folders and the items under that. This is required
                         // for sending delete feeds for the documents when their
                         // parent folder is deleted.
                         LOGGER.log(Level.INFO, "Discovering all the folders in the current list/library [ "
@@ -663,6 +683,7 @@ public class SharepointClient {
                                     + listState.getListURL() + " ]. ", t);
                         }
                     }
+
                     try {
                         listItems = listsWS.getListItemChangesSinceToken(listState, null, allWebs, null);
                     } catch (final Exception e) {
@@ -742,7 +763,39 @@ public class SharepointClient {
                         }
                         listState.updateList(currentList);
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
-                        listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
+
+                        // First Consider ACl Changes and any documents that
+                        // might need to be crawled
+                        List<SPDocument> aclChangedDocs = null;
+                        if(listState.isAclChanged()) {
+                            GssGetListItemsWithInheritingRoleAssignments wsResult = aclWs.GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), lastDocID);
+                            if (null != wsResult) {
+                                aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
+                                if (wsResult.isMoreDocs()) {
+                                    // TODO: NextPage type is confusing. Either
+                                    // use its value that is returned by the WS
+                                    // or make it a boolean.
+                                    listState.setNextPage("not null");
+                                } else {
+                                    listState.setAclChanged(false);
+                                }
+                            }
+                        }
+                        if(null != aclChangedDocs && aclChangedDocs.size() > 0) {
+                            listItems.addAll(aclChangedDocs);
+                        }
+
+                        if (null != aclChangedDocs
+                                && aclChangedDocs.size() >= sharepointClientContext.getBatchHint()) {
+                            listItems = aclChangedDocs;
+                        } else {
+                            // Do regular incremental crawl
+                            listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
+
+                            if (null != aclChangedDocs) {
+                                listItems.addAll(aclChangedDocs);
+                            }
+                        }
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                                 + listState.getListURL() + " ].", e);
@@ -810,7 +863,6 @@ public class SharepointClient {
                             webState.getSharePointType());
 
                     listDoc.setAllAttributes(listState.getAttrs());
-                    listDoc.setList(true);
 
                     if (!listState.isSendListAsDocument()) {
                         // send the listState as a feed only if it was
@@ -914,29 +966,22 @@ public class SharepointClient {
             }
 
             nextWeb = ws;
-
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Web [ " + webURL
+                        + " ] is getting crawled for documents....");
+            }
+            final int currDocCount = nDocuments;
             try {
-                final int currDocCount = nDocuments;
-                final String siteName = ws.getPrimaryKey();
-
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Web [ " + siteName
-                            + " ] is getting crawled for documents....");
-                }
-                sharePointClientContext.setSiteURL(siteName);
+                sharePointClientContext.setSiteURL(webURL);
 
                 // Process the web site, and add the link site info to allSites.
                 updateWebStateFromSite(sharePointClientContext, ws, nextList, allSites);
-
-                // This call is not required currently as there are no such information getting updated as per the crawl which can affect the ordering of WebStates. For detail, refer to the javadoc of
-                // {WebState.AddOrUpdateListStateInWebState}. Also, this is risky to call this method right here because this method may change the collection we are iterating over.
-                /* globalState.AddOrUpdateWebStateInGlobalState(ws); */
 
                 if (currDocCount == nDocuments) {
                     // get Alerts for the web and update webState. The above
                     // check is added to reduce the frequency with which
                     // getAlerts WS call is made.
-                    LOGGER.info("Web [ " + siteName
+                    LOGGER.info("Web [ " + webURL
                             + " ] is getting crawled for alerts....");
                     processAlerts(ws, sharePointClientContext);
                 }

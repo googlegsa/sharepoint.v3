@@ -106,9 +106,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      */
     private boolean toBeFed = true;
 
-    // To identify if the document represents a SharePoint List
-    boolean list = false;
-
     // List of users and their permissions to be sent in document's ACL
     private Map<String, List<RoleType>> usersAclMap;
 
@@ -802,14 +799,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     public void setFileref(String fileref) {
         this.fileref = fileref;
-    }
-
-    public boolean isList() {
-        return list;
-    }
-
-    public void setList(boolean list) {
-        this.list = list;
     }
 
     public Map<String, List<RoleType>> getUsersAclMap() {
