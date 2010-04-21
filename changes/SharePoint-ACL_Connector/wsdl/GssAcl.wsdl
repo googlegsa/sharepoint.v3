@@ -150,7 +150,8 @@
       <s:element name="GetAclChangesSinceToken">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="strChangeToken" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="fromChangeToken" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="toChangeToken" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -187,6 +188,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="ChangedObject" type="tns:ObjectType" />
           <s:element minOccurs="1" maxOccurs="1" name="ChangeType" type="tns:SPChangeType" />
           <s:element minOccurs="0" maxOccurs="1" name="Hint" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="IsEffectiveInCurrentWeb" type="s:boolean" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="ObjectType">
@@ -244,34 +246,46 @@
           </s:extension>
         </s:complexContent>
       </s:complexType>
-      <s:element name="GetAffectedListIDsForChangeWeb">
+      <s:element name="GetListsWithInheritingRoleAssignments">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="webGuId" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="GetAffectedListIDsForChangeWebResponse">
+      <s:element name="GetListsWithInheritingRoleAssignmentsResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="GetAffectedListIDsForChangeWebResult" type="tns:ArrayOfString" />
+            <s:element minOccurs="0" maxOccurs="1" name="GetListsWithInheritingRoleAssignmentsResult" type="tns:ArrayOfString" />
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="GetAffectedItemIDsForChangeList">
+      <s:element name="GetListItemsWithInheritingRoleAssignments">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="listGuId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="rowLimit" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="lastItemId" type="s:int" />
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="GetAffectedItemIDsForChangeListResponse">
+      <s:element name="GetListItemsWithInheritingRoleAssignmentsResponse">
         <s:complexType>
           <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="GetAffectedItemIDsForChangeListResult" type="tns:ArrayOfString" />
+            <s:element minOccurs="0" maxOccurs="1" name="GetListItemsWithInheritingRoleAssignmentsResult" type="tns:GssGetListItemsWithInheritingRoleAssignments" />
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:complexType name="GssGetListItemsWithInheritingRoleAssignments">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:GssAclBaseResult">
+            <s:sequence>
+              <s:element minOccurs="0" maxOccurs="1" name="DocXml" type="s:string" />
+              <s:element minOccurs="1" maxOccurs="1" name="MoreDocs" type="s:boolean" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
     </s:schema>
     <s:schema elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
       <s:simpleType name="guid">
@@ -305,17 +319,17 @@
   <wsdl:message name="ResolveSPGroupSoapOut">
     <wsdl:part name="parameters" element="tns:ResolveSPGroupResponse" />
   </wsdl:message>
-  <wsdl:message name="GetAffectedListIDsForChangeWebSoapIn">
-    <wsdl:part name="parameters" element="tns:GetAffectedListIDsForChangeWeb" />
+  <wsdl:message name="GetListsWithInheritingRoleAssignmentsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetListsWithInheritingRoleAssignments" />
   </wsdl:message>
-  <wsdl:message name="GetAffectedListIDsForChangeWebSoapOut">
-    <wsdl:part name="parameters" element="tns:GetAffectedListIDsForChangeWebResponse" />
+  <wsdl:message name="GetListsWithInheritingRoleAssignmentsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetListsWithInheritingRoleAssignmentsResponse" />
   </wsdl:message>
-  <wsdl:message name="GetAffectedItemIDsForChangeListSoapIn">
-    <wsdl:part name="parameters" element="tns:GetAffectedItemIDsForChangeList" />
+  <wsdl:message name="GetListItemsWithInheritingRoleAssignmentsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetListItemsWithInheritingRoleAssignments" />
   </wsdl:message>
-  <wsdl:message name="GetAffectedItemIDsForChangeListSoapOut">
-    <wsdl:part name="parameters" element="tns:GetAffectedItemIDsForChangeListResponse" />
+  <wsdl:message name="GetListItemsWithInheritingRoleAssignmentsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetListItemsWithInheritingRoleAssignmentsResponse" />
   </wsdl:message>
   <wsdl:portType name="GssAclMonitorSoap">
     <wsdl:operation name="CheckConnectivity">
@@ -334,13 +348,13 @@
       <wsdl:input message="tns:ResolveSPGroupSoapIn" />
       <wsdl:output message="tns:ResolveSPGroupSoapOut" />
     </wsdl:operation>
-    <wsdl:operation name="GetAffectedListIDsForChangeWeb">
-      <wsdl:input message="tns:GetAffectedListIDsForChangeWebSoapIn" />
-      <wsdl:output message="tns:GetAffectedListIDsForChangeWebSoapOut" />
+    <wsdl:operation name="GetListsWithInheritingRoleAssignments">
+      <wsdl:input message="tns:GetListsWithInheritingRoleAssignmentsSoapIn" />
+      <wsdl:output message="tns:GetListsWithInheritingRoleAssignmentsSoapOut" />
     </wsdl:operation>
-    <wsdl:operation name="GetAffectedItemIDsForChangeList">
-      <wsdl:input message="tns:GetAffectedItemIDsForChangeListSoapIn" />
-      <wsdl:output message="tns:GetAffectedItemIDsForChangeListSoapOut" />
+    <wsdl:operation name="GetListItemsWithInheritingRoleAssignments">
+      <wsdl:input message="tns:GetListItemsWithInheritingRoleAssignmentsSoapIn" />
+      <wsdl:output message="tns:GetListItemsWithInheritingRoleAssignmentsSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="GssAclMonitorSoap" type="tns:GssAclMonitorSoap">
@@ -381,8 +395,8 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="GetAffectedListIDsForChangeWeb">
-      <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAffectedListIDsForChangeWeb" style="document" />
+    <wsdl:operation name="GetListsWithInheritingRoleAssignments">
+      <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListsWithInheritingRoleAssignments" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -390,8 +404,8 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="GetAffectedItemIDsForChangeList">
-      <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAffectedItemIDsForChangeList" style="document" />
+    <wsdl:operation name="GetListItemsWithInheritingRoleAssignments">
+      <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListItemsWithInheritingRoleAssignments" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -438,8 +452,8 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="GetAffectedListIDsForChangeWeb">
-      <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAffectedListIDsForChangeWeb" style="document" />
+    <wsdl:operation name="GetListsWithInheritingRoleAssignments">
+      <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListsWithInheritingRoleAssignments" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -447,8 +461,8 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="GetAffectedItemIDsForChangeList">
-      <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAffectedItemIDsForChangeList" style="document" />
+    <wsdl:operation name="GetListItemsWithInheritingRoleAssignments">
+      <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListItemsWithInheritingRoleAssignments" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

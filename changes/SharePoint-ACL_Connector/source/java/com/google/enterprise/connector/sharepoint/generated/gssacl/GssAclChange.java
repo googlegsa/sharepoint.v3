@@ -14,16 +14,20 @@ public class GssAclChange  implements java.io.Serializable {
 
     private java.lang.String hint;
 
+    private boolean isEffectiveInCurrentWeb;
+
     public GssAclChange() {
     }
 
     public GssAclChange(
            com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType changedObject,
            com.google.enterprise.connector.sharepoint.generated.gssacl.SPChangeType changeType,
-           java.lang.String hint) {
+           java.lang.String hint,
+           boolean isEffectiveInCurrentWeb) {
            this.changedObject = changedObject;
            this.changeType = changeType;
            this.hint = hint;
+           this.isEffectiveInCurrentWeb = isEffectiveInCurrentWeb;
     }
 
 
@@ -86,6 +90,26 @@ public class GssAclChange  implements java.io.Serializable {
         this.hint = hint;
     }
 
+
+    /**
+     * Gets the isEffectiveInCurrentWeb value for this GssAclChange.
+     *
+     * @return isEffectiveInCurrentWeb
+     */
+    public boolean isIsEffectiveInCurrentWeb() {
+        return isEffectiveInCurrentWeb;
+    }
+
+
+    /**
+     * Sets the isEffectiveInCurrentWeb value for this GssAclChange.
+     *
+     * @param isEffectiveInCurrentWeb
+     */
+    public void setIsEffectiveInCurrentWeb(boolean isEffectiveInCurrentWeb) {
+        this.isEffectiveInCurrentWeb = isEffectiveInCurrentWeb;
+    }
+
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof GssAclChange)) return false;
@@ -106,7 +130,8 @@ public class GssAclChange  implements java.io.Serializable {
               this.changeType.equals(other.getChangeType()))) &&
             ((this.hint==null && other.getHint()==null) ||
              (this.hint!=null &&
-              this.hint.equals(other.getHint())));
+              this.hint.equals(other.getHint()))) &&
+            this.isEffectiveInCurrentWeb == other.isIsEffectiveInCurrentWeb();
         __equalsCalc = null;
         return _equals;
     }
@@ -127,6 +152,7 @@ public class GssAclChange  implements java.io.Serializable {
         if (getHint() != null) {
             _hashCode += getHint().hashCode();
         }
+        _hashCode += (isIsEffectiveInCurrentWeb() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         __hashCodeCalc = false;
         return _hashCode;
     }
@@ -154,6 +180,12 @@ public class GssAclChange  implements java.io.Serializable {
         elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "Hint"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("isEffectiveInCurrentWeb");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "IsEffectiveInCurrentWeb"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

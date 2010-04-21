@@ -47,7 +47,10 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("GetAclChangesSinceToken");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "strChangeToken"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "fromChangeToken"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param.setOmittable(true);
+        oper.addParameter(param);
+        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "toChangeToken"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         param.setOmittable(true);
         oper.addParameter(param);
         oper.setReturnType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GssGetAclChangesSinceTokenResult"));
@@ -71,13 +74,13 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
         _operations[3] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("GetAffectedListIDsForChangeWeb");
+        oper.setName("GetListsWithInheritingRoleAssignments");
         param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "webGuId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         param.setOmittable(true);
         oper.addParameter(param);
         oper.setReturnType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "ArrayOfString"));
         oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetAffectedListIDsForChangeWebResult"));
+        oper.setReturnQName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetListsWithInheritingRoleAssignmentsResult"));
         param = oper.getReturnParamDesc();
         param.setItemQName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "string"));
         oper.setStyle(org.apache.axis.constants.Style.WRAPPED);
@@ -85,15 +88,17 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
         _operations[4] = oper;
 
         oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("GetAffectedItemIDsForChangeList");
+        oper.setName("GetListItemsWithInheritingRoleAssignments");
         param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "listGuId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
         param.setOmittable(true);
         oper.addParameter(param);
-        oper.setReturnType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "ArrayOfString"));
-        oper.setReturnClass(java.lang.String[].class);
-        oper.setReturnQName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetAffectedItemIDsForChangeListResult"));
-        param = oper.getReturnParamDesc();
-        param.setItemQName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "string"));
+        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "rowLimit"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false);
+        oper.addParameter(param);
+        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "lastItemId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"), int.class, false, false);
+        oper.addParameter(param);
+        oper.setReturnType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GssGetListItemsWithInheritingRoleAssignments"));
+        oper.setReturnClass(com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetListItemsWithInheritingRoleAssignmentsResult"));
         oper.setStyle(org.apache.axis.constants.Style.WRAPPED);
         oper.setUse(org.apache.axis.constants.Use.LITERAL);
         _operations[5] = oper;
@@ -219,6 +224,13 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
             qName = new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GssGetAclForUrlsResult");
             cachedSerQNames.add(qName);
             cls = com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GssGetListItemsWithInheritingRoleAssignments");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments.class;
             cachedSerClasses.add(cls);
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
@@ -420,7 +432,7 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
 }
     }
 
-    public com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult getAclChangesSinceToken(java.lang.String strChangeToken) throws java.rmi.RemoteException {
+    public com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult getAclChangesSinceToken(java.lang.String fromChangeToken, java.lang.String toChangeToken) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -436,7 +448,7 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {strChangeToken});
+ try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {fromChangeToken, toChangeToken});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -488,19 +500,19 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
 }
     }
 
-    public java.lang.String[] getAffectedListIDsForChangeWeb(java.lang.String webGuId) throws java.rmi.RemoteException {
+    public java.lang.String[] getListsWithInheritingRoleAssignments(java.lang.String webGuId) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[4]);
         _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAffectedListIDsForChangeWeb");
+        _call.setSOAPActionURI("gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListsWithInheritingRoleAssignments");
         _call.setEncodingStyle(null);
         _call.setProperty(org.apache.axis.client.Call.SEND_TYPE_ATTR, Boolean.FALSE);
         _call.setProperty(org.apache.axis.AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP12_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetAffectedListIDsForChangeWeb"));
+        _call.setOperationName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetListsWithInheritingRoleAssignments"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
@@ -522,23 +534,23 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
 }
     }
 
-    public java.lang.String[] getAffectedItemIDsForChangeList(java.lang.String listGuId) throws java.rmi.RemoteException {
+    public com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments getListItemsWithInheritingRoleAssignments(java.lang.String listGuId, int rowLimit, int lastItemId) throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
         org.apache.axis.client.Call _call = createCall();
         _call.setOperation(_operations[5]);
         _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAffectedItemIDsForChangeList");
+        _call.setSOAPActionURI("gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListItemsWithInheritingRoleAssignments");
         _call.setEncodingStyle(null);
         _call.setProperty(org.apache.axis.client.Call.SEND_TYPE_ATTR, Boolean.FALSE);
         _call.setProperty(org.apache.axis.AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
         _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP12_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetAffectedItemIDsForChangeList"));
+        _call.setOperationName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetListItemsWithInheritingRoleAssignments"));
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {listGuId});
+ try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {listGuId, new java.lang.Integer(rowLimit), new java.lang.Integer(lastItemId)});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
@@ -546,9 +558,9 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
         else {
             extractAttachments(_call);
             try {
-                return (java.lang.String[]) _resp;
+                return (com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments) _resp;
             } catch (java.lang.Exception _exception) {
-                return (java.lang.String[]) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.String[].class);
+                return (com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments) org.apache.axis.utils.JavaUtils.convert(_resp, com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments.class);
             }
         }
   } catch (org.apache.axis.AxisFault axisFaultException) {
