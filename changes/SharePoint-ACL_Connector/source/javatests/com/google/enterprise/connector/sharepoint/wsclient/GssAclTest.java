@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import java.util.List;
+
 import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
@@ -21,55 +23,70 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 
 public class GssAclTest extends TestCase {
 
+    GlobalState globalState;
     SharepointClientContext sharepointClientContext;
     GssAclWS aclWS;
 
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username,
-                TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
-        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
-
+        globalState = TestConfiguration.initState(sharepointClientContext);
         System.out.println("Initializing GsAclWS ...");
         this.aclWS = new GssAclWS(this.sharepointClientContext, null);
     }
 
+
     public void testGetAclForUrls() {
-        String[] urls = {};
+        ListState listState = globalState.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID);
+        assertNotNull(listState);
+
+        List<SPDocument> testDocs = listState.getCrawlQueue();
+        assertNotNull(testDocs);
+
+        String[] urls = new String[testDocs.size()];
+        int i = 0;
+        for (SPDocument doc : testDocs) {
+            urls[i++] = doc.getUrl();
+        }
+
         GssGetAclForUrlsResult result = aclWS.getAclForUrls(urls);
         assertNotNull(result);
+        assertNotNull(result.getAllAcls());
+        assertEquals(urls.length, result.getAllAcls().length);
     }
 
-    public void testGetAclChangesSinceToken() {
-        String strChangeToken = "";
-        GssGetAclChangesSinceTokenResult result = aclWS.getAclChangesSinceToken(strChangeToken);
-        assertNotNull(result);
+    public void testGetAclChangesSinceToken() throws Exception {
+        WebState webstate = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
+        webstate.setNextAclChangeToken("");
+        webstate.commitAclChangeToken();
+        GssGetAclChangesSinceTokenResult wsResult = aclWS.getAclChangesSinceToken(webstate);
+        aclWS.processWsResponse(wsResult, webstate);
+        assertNotNull(wsResult);
     }
 
-    public void testGetAffectedItemIDsForChangeList() {
-        String listGuid = "";
-        String[] result = aclWS.getAffectedItemIDsForChangeList(listGuid);
+
+    public void testGetListItemsWithInheritingRoleAssignments()
+            throws SharepointException {
+        GssGetListItemsWithInheritingRoleAssignments result = aclWS.GetListItemsWithInheritingRoleAssignments(TestConfiguration.Site1_List1_GUID, "0");
         assertNotNull(result);
+        ListsWS listWs = new ListsWS(sharepointClientContext);
+        assertNotNull(listWs);
+        List<SPDocument> docs = listWs.parseCustomWSResponseForListItemNodes(result.getDocXml(), null);
+        assertNotNull(docs);
     }
 
-    public void testGetAffectedListIDsForChangeWeb() {
-        String webGuid = "";
-        String[] result = aclWS.getAffectedListIDsForChangeWeb(webGuid);
-        assertNotNull(result);
-    }
 
     public void testResolveSPGroup() {
         String[] groupIds = {};

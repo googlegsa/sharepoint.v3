@@ -206,7 +206,9 @@ public class SharepointClient {
         }
 
         // Fetch ACL for all the documents crawled from the current WebState
-        setAclForDocuments(resultSet, webState);
+        if (sharepointClientContext.isPushAcls()) {
+            setAclForDocuments(resultSet, webState);
+        }
 
         if (LOGGER.isLoggable(Level.CONFIG)) {
             LOGGER.config("No. of listStates scanned from site : "
@@ -631,21 +633,24 @@ public class SharepointClient {
         }
 
         GssAclWS aclWs = null;
-        try {
-            aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
-            if (webState.isDoAclChangeDetection()) {
-                GssGetAclChangesSinceTokenResult wsResult = aclWs.getAclChangesSinceToken(webState);
-                aclWs.processWsResponse(wsResult, webState);
-                // Do not re-attempt for ACL change detection in the same
-                // traversal cycle.
-                webState.setDoAclChangeDetection(false);
+        if (sharepointClientContext.isPushAcls()) {
+            try {
+                aclWs = new GssAclWS(sharepointClientContext,
+                        webState.getWebUrl());
+                if (webState.isDoAclChangeDetection()) {
+                    GssGetAclChangesSinceTokenResult wsResult = aclWs.getAclChangesSinceToken(webState);
+                    aclWs.processWsResponse(wsResult, webState);
+                    // Do not re-attempt for ACL change detection in the same
+                    // traversal cycle.
+                    webState.setDoAclChangeDetection(false);
+                }
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
+                        + webState.getWebUrl() + " ]. ", e);
+            } catch (final Throwable t) {
+                LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. site [ "
+                        + webState.getWebUrl() + " ]. ", t);
             }
-        } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
-                    + webState.getWebUrl() + " ]. ", e);
-        } catch (final Throwable t) {
-            LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. site [ "
-                    + webState.getWebUrl() + " ]. ", t);
         }
 
         final ListsWS listsWS = new ListsWS(tempCtx);
@@ -767,7 +772,8 @@ public class SharepointClient {
                         // First Consider ACl Changes and any documents that
                         // might need to be crawled
                         List<SPDocument> aclChangedDocs = null;
-                        if(listState.isAclChanged()) {
+                        if (sharepointClientContext.isPushAcls()
+                                && listState.isAclChanged()) {
                             GssGetListItemsWithInheritingRoleAssignments wsResult = aclWs.GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), lastDocID);
                             if (null != wsResult) {
                                 aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
@@ -780,9 +786,6 @@ public class SharepointClient {
                                     listState.setAclChanged(false);
                                 }
                             }
-                        }
-                        if(null != aclChangedDocs && aclChangedDocs.size() > 0) {
-                            listItems.addAll(aclChangedDocs);
                         }
 
                         if (null != aclChangedDocs

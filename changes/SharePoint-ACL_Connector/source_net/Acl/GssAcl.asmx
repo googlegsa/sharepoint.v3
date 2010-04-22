@@ -396,11 +396,7 @@ public class GssAclChangeCollection
                     // But, such implementation will become confusing when the connector will evolve in future to support site collection and web application level crawling.
                     // It's better to send the change web ID as hint and let the connector decide how to work on this.
                     GssAclChange gssChange = new GssAclChange(ObjectType.WEB, changeWeb.ChangeType, changeWeb.Id.ToString());
-                    SPWeb thisWeb = site.OpenWeb(changeWeb.Id);
-                    if (web.FirstUniqueAncestor.Equals(thisWeb.FirstUniqueAncestor))
-                    {
-                       gssChange.IsEffectiveInCurrentWeb = true;
-                    }
+                    gssChange.IsEffectiveInCurrentWeb = IsEffectiveForWeb(site, web, changeWeb.Id);                    
                     changes.Add(gssChange);
                     break;
             }
@@ -416,11 +412,7 @@ public class GssAclChangeCollection
                 case SPChangeType.RoleUpdate:
                     SPChangeList changeList = (SPChangeList)change;
                     GssAclChange gssChange = new GssAclChange(ObjectType.LIST, changeList.ChangeType, changeList.Id.ToString());
-                    SPWeb thisWeb = site.OpenWeb(changeList.WebId);
-                    if (web.FirstUniqueAncestor.Equals(thisWeb.FirstUniqueAncestor))
-                    {
-                        gssChange.IsEffectiveInCurrentWeb = true;
-                    }
+                    gssChange.IsEffectiveInCurrentWeb = IsEffectiveForWeb(site, web, changeList.WebId);   
                     changes.Add(gssChange);
                     break;
             }
@@ -466,6 +458,35 @@ public class GssAclChangeCollection
         }
     }
 
+    private bool IsEffectiveForWeb(SPSite site, SPWeb web, Guid changeWebId)
+    {
+        SPWeb thisWeb = site.OpenWeb(changeWebId);
+        if (null == thisWeb)
+        {
+            return false;
+        }
+
+        if (web.ID.Equals(thisWeb.ID))
+        {
+           return true;
+        }
+        else
+        {
+            ISecurableObject secObj1 = web.FirstUniqueAncestor;
+            ISecurableObject secObj2 = thisWeb.FirstUniqueAncestor;
+            if (secObj1 is SPWeb && secObj2 is SPWeb)
+            {
+                SPWeb web1 = (SPWeb)secObj1;
+                SPWeb web2 = (SPWeb)secObj2;
+                if (null != web1 && null != web2 && web1.ID.Equals(web2))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public void UpdateChangeToken(SPChangeToken inToken)
     {
         if (null != inToken)

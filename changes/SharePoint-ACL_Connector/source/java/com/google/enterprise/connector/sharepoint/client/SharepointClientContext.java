@@ -74,6 +74,9 @@ public class SharepointClientContext implements Cloneable {
     // The traversal context
     private TraversalContext traversalContext;
 
+    private boolean pushAcls = true;
+    private boolean stripDomainFromAces = true;
+
     /**
      * For cloning
      */
@@ -134,6 +137,8 @@ public class SharepointClientContext implements Cloneable {
 
             spCl.setFQDNConversion(bFQDNConversion);
             spCl.setBatchHint(batchHint);
+            spCl.setPushAcls(pushAcls);
+            spCl.setStripDomainFromAces(stripDomainFromAces);
 
             if (null != included_metadata) {
                 spCl.included_metadata.addAll(included_metadata);
@@ -861,5 +866,21 @@ public class SharepointClientContext implements Cloneable {
      */
     public void setTraversalContext(TraversalContext traversalContext) {
         this.traversalContext = traversalContext;
+    }
+
+    public boolean isPushAcls() {
+        return pushAcls;
+    }
+
+    public void setPushAcls(boolean pushAcls) {
+        this.pushAcls = pushAcls;
+    }
+
+    public boolean isStripDomainFromAces() {
+        return stripDomainFromAces;
+    }
+
+    public void setStripDomainFromAces(boolean stripDomainFromAces) {
+        this.stripDomainFromAces = stripDomainFromAces;
     }
 }

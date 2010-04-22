@@ -245,13 +245,16 @@ public class GssAclWS {
                     // meantime, please use the simple name (with domain
                     // stripped off) but later we will put the domain in the
                     // namespace field of the principal (user or group) name.
-                    String prinicpalName = Util.getUserFromUsername(principal.getName());
+                    String principalName = principal.getName();
+                    if (sharepointClientContext.isStripDomainFromAces()) {
+                        principalName = Util.getUserFromUsername(principalName);
+                    }
                     List<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getGrantRightMask(), objectType);
                     if (PrincipalType.USER.equals(principal.getType())) {
-                        userPermissionMap.put(prinicpalName, allowedRoleTypes);
+                        userPermissionMap.put(principalName, allowedRoleTypes);
                     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
                             || PrincipalType.SPGROUP.equals(principal.getType())) {
-                        groupPermissionMap.put(prinicpalName, allowedRoleTypes);
+                        groupPermissionMap.put(principalName, allowedRoleTypes);
                     } else {
                         LOGGER.log(Level.WARNING, "Skipping ACE for principal [ "
                                 + principal.getName()
