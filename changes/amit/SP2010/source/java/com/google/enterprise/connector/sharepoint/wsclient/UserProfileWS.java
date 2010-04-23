@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import java.rmi.RemoteException;
 import java.text.Collator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -94,10 +95,10 @@ public class UserProfileWS {
     }
 
     /**
-     * Checks to see if the current web to which the web service endpioint is
+     * Checks to see if the current web to which the web service end point is
      * set is an SPS site.
      *
-     * @return if the endpoint being used is an SPS site
+     * @return if the end point being used is an SPS site
      * @throws SharepointException
      */
     public boolean isSPS() throws SharepointException {
@@ -145,7 +146,6 @@ public class UserProfileWS {
      * @throws SharepointException
      */
 
-    //TODO: Modify the implementation for supporting SP2010 mysites
     public Set<String> getPersonalSiteList() throws SharepointException {
         final Set<String> lstAllPersonalSites = new TreeSet<String>();
         final Collator collator = Util.getCollator();
@@ -154,20 +154,36 @@ public class UserProfileWS {
             return lstAllPersonalSites;
         }
 
+        /*
+          Method 1: High Level Steps:
+          ============================
+          1. Call method GetUserProfileCount-> returns the no: of profiles registered
+          2. Iterate through the profiles and get the corresponding URL
 
-        //TODO:Need to remove the hard-coding of index.
-        /**
-         * High Level Steps:
-         * ================
-         * 1. Call method GetUserProfileCount-> returns the no: of profiles registered
-         * 2. Iterate through the profiles and get the corresponding URL
-         *
-         * Note: Current implementation to get mysites does not work for SP2010.
-         * The proposed approach should work for both SP2007 and SP2010
-         * */
-        int index = 0;
+          Method 2: High Level Steps (optimal as save extra WS call to get the user profile count)
+          =======================================================================================
+          Start with Index =0 i.e. Get the first user profile
+
+          [Loop]
+          1. Get the user profile using getUserProfileByIndex API for index
+          2. The above call should give you value of next index (to be used for getting next profile and so on]
+		  [End Loop]
+         */
+
+
+        /////////////////Sample method to get the user profile count ///////////////////////////
+        /*long index1=0;
+		try {
+			index1 = stub.getUserProfileCount();
+		} catch (RemoteException e1) {
+			e1.printStackTrace();
+		}
+		System.out.println("The total No: of user profiles are: "+index1);*/
+		////////////////////////////////////////////////////////////////////////////
+
+
+        int index =0;
         while (index >= 0) {
-
             GetUserProfileByIndexResult result = null;
             try {
                 result = stub.getUserProfileByIndex(index);
@@ -220,7 +236,7 @@ public class UserProfileWS {
                         if ((vd == null) || (vd.length < 1)) {
                             continue;
                         }
-                        space = (String) vd[0].getValue();
+                        space = (String) vd[0]. getValue();
                         String strMySiteBaseURL = sharepointClientContext.getMySiteBaseURL();
                         if (strMySiteBaseURL.endsWith(SPConstants.SLASH)) {
                             strMySiteBaseURL = strMySiteBaseURL.substring(0, strMySiteBaseURL.lastIndexOf(SPConstants.SLASH));
@@ -240,9 +256,6 @@ public class UserProfileWS {
                     LOGGER.log(Level.WARNING, e.getMessage(), e);
                     continue;
                 }
-            }
-            if (space == null) {
-                break;
             }
             final String next = result.getNextValue();
             index = Integer.parseInt(next);

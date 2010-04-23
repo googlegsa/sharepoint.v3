@@ -653,21 +653,21 @@ public class SharepointClientContext implements Cloneable {
             return null;
         }
 
-        /**
-         * Adding support for SharePoint 2010. For SP2010, version starts with 14.x.x.x<br/>
-         * Since SP2010 supports all web services of SP2007 return SP2007 as version
-         *
-         * Fix Details:
-         * ------------
-         * SharePoint connector requires to know the version of the SharePoint repository<br/>
-         * for following
-         * a) MySite\Personal Site handling which is different in SP2003 & SP2007
-         * 	  Note: current mysite handling fails for SP2010.<br/>
-         * 			However mysite URLs can be discovered using the custom site discovery WS.
-         * b) Content Feed\Bulk AuthZ: This is achieved through custom web services which is supported on SP2007
-         * 	  Note: Checked that same web services work for SP2010 as well
-         *
-         **/
+        /*
+          Adding support for SharePoint 2010. For SP2010, version starts with 14.x.x.x<br/>
+          Since SP2010 supports all web services of SP2007 return SP2007 as version
+
+          Fix Details:
+          ------------
+          SharePoint connector requires to know the version of the SharePoint repository<br/>
+          for following
+          a) MySite\Personal Site handling which is different in SP2003 & SP2007
+          	  Note: current mysite handling fails for SP2010.<br/>
+         			However mysite URLs can be discovered using the custom site discovery WS.
+          b) Content Feed\Bulk AuthZ: This is achieved through custom web services which is supported on SP2007
+          	  Note: Checked that same web services work for SP2010 as well
+
+         */
 
 
         if ((version.trim().startsWith("12"))||(version.trim().startsWith("14"))) {
