@@ -16,6 +16,8 @@
 using System;
 using System.Net;
 using System.Text;
+using System.Xml;
+using System.Collections;
 using System.Collections.Generic;
 using System.Web;
 using System.Web.Services;
@@ -597,8 +599,15 @@ public class GssResolveSPGroupResult : GssAclBaseResult
 [Serializable]
 public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
 {
+  // XML representaiotn of all the documents/items to be returned
     private string docXml;
+
+  // Are there more documents to be crawled?
     private bool moreDocs;
+
+    // From where the next set of documents should be requested. This info has to be sent explicitly in the response because, it may happen that WS crawl some documents but does not return any as none of the documents inherits the permission. In such case, this explicit info about the lastDocCraed will save the client from visiting the same set of documents again and again
+    private int lastIdVisited;
+
     public string DocXml
     {
         get { return docXml; }
@@ -608,6 +617,12 @@ public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
     {
         get { return moreDocs; }
         set { moreDocs = value; }
+    }
+
+    public int LastIdVisited
+    {
+        get { return lastIdVisited; }
+        set { lastIdVisited = value; }
     }
 }
 
@@ -624,6 +639,9 @@ public class GssAclMonitor
 
     // SharePoint site used for constructing the web service endpoint
     SPWeb web;
+
+    // A random guess about how many items should be query at a time. Such threashold is required to save the web service from being unresponsive for a long time
+    int ROWLIMIT = 500;
 
     public GssAclMonitor()
     {
@@ -897,13 +915,19 @@ public class GssAclMonitor
 
         List<string> itemIDs = new List<string>();
         SPQuery query = new SPQuery();
-
+        int maxToRetrieve = lastItemId + ROWLIMIT;
         // CAML query to do a progressive crawl of items in ascending order of their IDs. The prgression is controlled by lastItemId
         query.Query =    "<Where>"
+                       +  "<And>"
                        +   "<Gt>"
                        +       "<FieldRef Name=\"ID\"/>"
                        +       "<Value Type=\"Counter\">" + lastItemId + "</Value>"
                        +   "</Gt>"
+                       +   "<Lt>"
+                       +       "<FieldRef Name=\"ID\"/>"
+                       +       "<Value Type=\"Counter\">" + maxToRetrieve + "</Value>"
+                       +   "</Lt>"
+                       +  "</And>"
                        + "</Where>"
                        + "<OrderBy>"
                        +   "<FieldRef Name=\"ID\" Ascending=\"TRUE\" />"
@@ -918,7 +942,9 @@ public class GssAclMonitor
         SPListItemCollection items = changeList.GetItems(query);
 
         GssGetListItemsWithInheritingRoleAssignments result = new GssGetListItemsWithInheritingRoleAssignments();
-        StringBuilder docXml = new StringBuilder();
+        XmlDocument xmlDoc = new XmlDocument();
+        XmlNode rootNode = xmlDoc.CreateNode(XmlNodeType.Element, "GssListItems", "");
+
         int i = 0;
         foreach (SPListItem item in items)
         {
@@ -929,14 +955,58 @@ public class GssAclMonitor
             }
             if (!item.HasUniqueRoleAssignments && changeList.FirstUniqueAncestor.Equals(item.FirstUniqueAncestor))
             {
-                docXml.Append(item.Xml);
+                XmlNode node = handleOwsMetaInfo(item);
+                node = xmlDoc.ImportNode(node, true);
+                rootNode.AppendChild(node);
                 ++i;
             }
+            result.LastIdVisited = item.ID;
         }
-        result.DocXml = "<GssListItems Count=\"" + i + "\">" + docXml.ToString() + "</GssListItems>";
+        if (items.Count <= ROWLIMIT)
+        {
+            result.MoreDocs = true;
+        }
+        XmlAttributeCollection allAttrs = rootNode.Attributes;
+        XmlAttribute attr = xmlDoc.CreateAttribute("Count");
+        attr.Value = i.ToString();
+        allAttrs.Append(attr);
+
+        result.DocXml = rootNode.OuterXml;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
         return result;
+    }
+
+    /// <summary>
+    /// Return the XML representation of a ListItem. Handles the ows_MetaInfo attribute by taking these value explicitly from the item's property bag. This ensures that the (key, value) pairs stored inside the property bag will be returned as separate attributes.
+    /// </summary>
+    /// <param name="listItem"></param>
+    /// <returns></returns>
+    private XmlNode handleOwsMetaInfo(SPListItem listItem)
+    {
+        Hashtable props = listItem.Properties;
+        XmlDocument xmlDoc = new XmlDocument();
+        xmlDoc.LoadXml(listItem.Xml);
+        XmlNodeList nodeList = xmlDoc.GetElementsByTagName("z:row");
+        XmlNode node = nodeList[0];
+        if (null == node)
+        {
+            return null;
+        }
+        XmlAttributeCollection allAttrs = node.Attributes;
+        XmlAttribute ows_MetaInfo = node.Attributes["ows_MetaInfo"];
+        if (null == allAttrs || null == ows_MetaInfo)
+        {
+            return null;
+        }
+        allAttrs.Remove(ows_MetaInfo);
+        foreach (DictionaryEntry propEntry in props)
+        {
+            XmlAttribute attr = xmlDoc.CreateAttribute("ows_MetaInfo_" + propEntry.Key.ToString());
+            attr.Value = propEntry.Value.ToString();
+            allAttrs.Append(attr);
+        }
+        return node;
     }
 }
 

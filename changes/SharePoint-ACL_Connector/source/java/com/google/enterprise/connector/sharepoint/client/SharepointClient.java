@@ -725,17 +725,16 @@ public class SharepointClient {
                         listState.updateList(currentList);
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
-                        // It's safe not to mix the documents from the two set
-                        // of changes (ACL and regular item level changes). The
-                        // reason being, both updates the ListState and if both
-                        // gets executed, the info one may get overridden by
-                        // other.
-                        // First Consider ACl Changes and any documents that
-                        // might need to be crawled
-                        listItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS, lastDocID);
-                        if (null == listItems || listItems.size() == 0) {
+                        List<SPDocument> changedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS);
+                        // Any documents to be crawled because of ACl Changes
+
+                        if (null == changedItems
+                                || listItems.size() < sharepointClientContext.getBatchHint()) {
                             // Do regular incremental crawl
                             listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
+                            if (null != changedItems && null != listItems) {
+                                listItems.addAll(changedItems);
+                            }
                         }
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "

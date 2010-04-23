@@ -137,6 +137,7 @@ public class ListState implements StatefulObject {
 
     // Does the ACl changed for this List?
     private boolean aclChanged;
+    private int lastDocIdCrawledForAcl;
 
     /**
      * @param inInternalName
@@ -1125,7 +1126,7 @@ public class ListState implements StatefulObject {
         atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
         atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_CDATA, getType());
         atts.addAttribute("", "", SPConstants.STATE_ISACLCHANGED, SPConstants.STATE_ATTR_CDATA, String.valueOf(isAclChanged()));
-
+        atts.addAttribute("", "", SPConstants.STATE_LASTDOCIDCRAWLEDFORACL, SPConstants.STATE_ATTR_CDATA, String.valueOf(getLastDocIdCrawledForAcl()));
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(getType())) {
             if (SPType.SP2007 == getParentWebState().getSharePointType()) {
                 if ((getChangeTokenForWSCall() != null)
@@ -1240,6 +1241,11 @@ public class ListState implements StatefulObject {
 
         list.setLastCrawledDateTime(atts.getValue(SPConstants.LAST_CRAWLED_DATETIME));
         list.setAclChanged(Boolean.getBoolean(atts.getValue(SPConstants.STATE_ISACLCHANGED)));
+        try {
+            list.setLastDocIdCrawledForAcl(Integer.getInteger(atts.getValue(SPConstants.STATE_LASTDOCIDCRAWLEDFORACL)));
+        } catch (final Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to load LastDocIdCrawledForAcl. ", e);
+        }
 
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(list.getType())) {
             if (SPType.SP2007 == web.getSharePointType()) {
@@ -1291,5 +1297,13 @@ public class ListState implements StatefulObject {
 
     public void setAclChanged(boolean aclChanged) {
         this.aclChanged = aclChanged;
+    }
+
+    public int getLastDocIdCrawledForAcl() {
+        return lastDocIdCrawledForAcl;
+    }
+
+    public void setLastDocIdCrawledForAcl(int lastDocIdCrawledForAcl) {
+        this.lastDocIdCrawledForAcl = lastDocIdCrawledForAcl;
     }
 }

@@ -21,11 +21,9 @@ import junit.framework.TestCase;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
@@ -42,48 +40,49 @@ public class GssAclTest extends TestCase {
         System.out.println("Initializing SharepointClientContext ...");
         this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
+        sharepointClientContext.setPushAcls(true);
+        sharepointClientContext.setBatchHint(2);
         globalState = TestConfiguration.initState(sharepointClientContext);
         System.out.println("Initializing GsAclWS ...");
         this.aclWS = new GssAclWS(this.sharepointClientContext, null);
     }
 
-
     public void testGetAclForUrls() {
+        WebState webState = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
         ListState listState = globalState.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID);
         assertNotNull(listState);
 
         List<SPDocument> testDocs = listState.getCrawlQueue();
         assertNotNull(testDocs);
 
-        String[] urls = new String[testDocs.size()];
-        int i = 0;
-        for (SPDocument doc : testDocs) {
-            urls[i++] = doc.getUrl();
-        }
+        SPDocumentList docList = new SPDocumentList(testDocs, globalState);
+        assertNotNull(docList);
 
-        GssGetAclForUrlsResult result = aclWS.getAclForUrls(urls);
-        assertNotNull(result);
-        assertNotNull(result.getAllAcls());
-        assertEquals(urls.length, result.getAllAcls().length);
+        aclWS.fetchAclForDocuments(docList, webState);
+        for (SPDocument document : docList.getDocuments()) {
+            assertNotNull(document);
+            assertNotNull(document.getUsersAclMap());
+            assertNotNull(document.getUsersAclMap());
+        }
     }
 
     public void testGetAclChangesSinceToken() throws Exception {
         WebState webstate = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
-        webstate.setNextAclChangeToken("");
+        String changeToken = "";
+        webstate.setNextAclChangeToken(changeToken);
         webstate.commitAclChangeToken();
-        GssGetAclChangesSinceTokenResult wsResult = aclWS.getAclChangesSinceToken(webstate);
-        aclWS.processWsResponse(wsResult, webstate);
-        assertNotNull(wsResult);
+        aclWS.fetchAclChangesSinceTokenAndUpdateState(webstate);
+        assertNotSame("Change Token is not updated", changeToken, webstate.getNextAclChangeToken());
     }
-
 
     public void testGetListItemsWithInheritingRoleAssignments()
             throws SharepointException {
-        GssGetListItemsWithInheritingRoleAssignments result = aclWS.GetListItemsWithInheritingRoleAssignments(TestConfiguration.Site1_List1_GUID, "0");
-        assertNotNull(result);
+        ListState listState = globalState.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID);
+        assertNotNull(listState);
+        listState.setAclChanged(true);
         ListsWS listWs = new ListsWS(sharepointClientContext);
         assertNotNull(listWs);
-        List<SPDocument> docs = listWs.parseCustomWSResponseForListItemNodes(result.getDocXml(), null);
+        List<SPDocument> docs = aclWS.getListItemsForAclChangeAndUpdateState(listState, listWs);
         assertNotNull(docs);
     }
 

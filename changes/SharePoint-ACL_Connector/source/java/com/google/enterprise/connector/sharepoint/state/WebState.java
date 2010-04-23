@@ -94,23 +94,6 @@ public class WebState implements StatefulObject {
     // ordering approach than.
     private String nextAclChangeToken;
 
-    // Should change detection be done for this Web? Ideally, it make sense to
-    // do the change detection for a web only once in a traversal cycle. This
-    // way, in every traversal cycle, before a Web is crawled, connector will
-    // get all the list of ACL changes and manipulate the ListState of all the
-    // list in a way that the ACL-changed-documents get covered during the
-    // crawl. We do not need to fetch the same set of changes for this web in
-    // every batch traversal. Apart from a remote WS call, it also comes with a
-    // cost of analyzing the changes and manipulating the ListState's
-    // accordingly. Another implication could be the varying resulting data
-    // window which was there with change token. If we fetch changes in every
-    // batch traversal the set of changes can vary and will complicate the
-    // processing. Also, we can not update the change token value unless all the
-    // lists are crawled. And, doing the change detection (and updating the
-    // change token) once in a traversal cycle is a simple way to ensure the
-    // same.
-    private boolean doAclChangeDetection;
-
     /**
      * For the sole purpose of loading WebState nodes as WebState objects when
      * state file is loaded in-memory.
@@ -618,7 +601,6 @@ public class WebState implements StatefulObject {
 
         atts.addAttribute("", "", SPConstants.STATE_ACLNEXTCHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getNextAclChangeToken());
         atts.addAttribute("", "", SPConstants.STATE_ACLCHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getCurrentAclChangeToken());
-        atts.addAttribute("", "", SPConstants.STATE_DOACLCHANGEDETECTION, SPConstants.STATE_ATTR_CDATA, String.valueOf(isDoAclChangeDetection()));
 
         final String strInsertionTime = getInsertionTimeString();
         if (strInsertionTime != null) {
@@ -665,7 +647,6 @@ public class WebState implements StatefulObject {
 
         web.setNextAclChangeToken(atts.getValue(SPConstants.STATE_ACLNEXTCHANGETOKEN));
         web.setCurretAclChangeToken(atts.getValue(SPConstants.STATE_ACLCHANGETOKEN));
-        web.setDoAclChangeDetection(Boolean.getBoolean(atts.getValue(SPConstants.STATE_DOACLCHANGEDETECTION)));
         return web;
     }
 
@@ -695,6 +676,9 @@ public class WebState implements StatefulObject {
      * to be used in the future WS calls.
      */
     public void commitAclChangeToken() {
+        LOGGER.log(Level.CONFIG, "Before Commit... currentAclChangeToken [ "
+                + currentAclChangeToken + " ], nextAclChangeToken [ "
+                + nextAclChangeToken + " ] ");
         this.currentAclChangeToken = nextAclChangeToken;
         nextAclChangeToken = null;
     }
@@ -731,13 +715,5 @@ public class WebState implements StatefulObject {
             listState = lookupList("{" + listGuid + "}");
         }
         return listState;
-    }
-
-    public boolean isDoAclChangeDetection() {
-        return doAclChangeDetection;
-    }
-
-    public void setDoAclChangeDetection(boolean doAclChangeDetection) {
-        this.doAclChangeDetection = doAclChangeDetection;
     }
 }

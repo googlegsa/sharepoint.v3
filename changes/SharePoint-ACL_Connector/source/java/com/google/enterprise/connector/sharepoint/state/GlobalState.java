@@ -319,12 +319,6 @@ public class GlobalState {
             while (it.hasNext()) {
                 final WebState webs = (WebState) it.next();
                 webs.setExisting(false);
-                // If a WebState marks its doAclChangeDetection flag as
-                // FALSE immediately after the change detection, we can
-                // ensure that the ACL change detection will be done
-                // only once for a web in one traversal cycle.
-                webs.setDoAclChangeDetection(true);
-                webs.commitAclChangeToken();
             }
         }
     }
@@ -531,6 +525,11 @@ public class GlobalState {
     public void AddOrUpdateWebStateInGlobalState(final WebState state) {
         if (state != null) {
             keyMap.put(state.getPrimaryKey(), state);
+            // Deletion is required to ensure that both datastructures are
+            // keeping reference to the same stateful objects
+            if (dateMap.contains(state)) {
+                dateMap.remove(state);
+            }
             dateMap.add(state);
         }
     }

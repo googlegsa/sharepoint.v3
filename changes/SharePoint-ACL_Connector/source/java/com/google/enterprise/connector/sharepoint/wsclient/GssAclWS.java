@@ -315,23 +315,20 @@ public class GssAclWS {
      *
      * @param listState The list from which the items are to be retrieved
      * @param listsWS delegate for parsing the web service response
-     * @param lastDocID Used to progress the crawl to next set of documents
      * @return a list of {@link SPDocument}
      */
     public List<SPDocument> getListItemsForAclChangeAndUpdateState(
-            ListState listState, ListsWS listsWS, String lastDocID) {
+            ListState listState, ListsWS listsWS) {
         List<SPDocument> aclChangedDocs = null;
         if (sharepointClientContext.isPushAcls() && listState.isAclChanged()) {
-            GssGetListItemsWithInheritingRoleAssignments wsResult = GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), lastDocID);
+            GssGetListItemsWithInheritingRoleAssignments wsResult = GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), String.valueOf(listState.getLastDocIdCrawledForAcl()));
             if (null != wsResult) {
                 aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
                 if (wsResult.isMoreDocs()) {
-                    // TODO: NextPage type is confusing. Either
-                    // use its value that is returned by the WS
-                    // or make it a boolean.
-                    listState.setNextPage("not null");
+                    listState.setLastDocIdCrawledForAcl(wsResult.getLastIdVisited());
                 } else {
                     listState.setAclChanged(false);
+                    listState.setLastDocIdCrawledForAcl(0);
                 }
             }
         }
@@ -378,15 +375,30 @@ public class GssAclWS {
     }
 
     public void fetchAclChangesSinceTokenAndUpdateState(WebState webState) {
-        if (!sharepointClientContext.isPushAcls()
-                || !webState.isDoAclChangeDetection()) {
+        if (!sharepointClientContext.isPushAcls()) {
             return;
         }
+
+        // Do not initiate ACL change detection if all the list states have not
+        // yet been processed for the previously detected ACl changes
+        for (ListState listState : webState.getAllListStateSet()) {
+            if (listState.isAclChanged()) {
+                return;
+            }
+        }
+
+        // Commit the cached change token to be used for subsequent change
+        // detections before initiating the change detection
+        if (null != webState.getNextAclChangeToken()
+                && webState.getNextAclChangeToken().trim().length() != 0) {
+            webState.commitAclChangeToken();
+        }
+
+        LOGGER.log(Level.INFO, "Initiating ACL Change detection for web [ "
+                + webState.getWebUrl() + " ] from change token [ "
+                + webState.getAclChangeTokenForWsCall());
         GssGetAclChangesSinceTokenResult wsResult = getAclChangesSinceToken(webState);
         processWsResponse(wsResult, webState);
-        // Do not re-attempt for ACL change detection in the same
-        // traversal cycle.
-        webState.setDoAclChangeDetection(false);
     }
 
     /**
@@ -594,7 +606,7 @@ public class GssAclWS {
      * @param groupIds IDs of the SP Groups to be resolved
      * @return web service response {@link GssResolveSPGroupResult} as it is
      */
-    private GssResolveSPGroupResult resolveSPGroup(String[] groupIds) {
+    public GssResolveSPGroupResult resolveSPGroup(String[] groupIds) {
         GssResolveSPGroupResult result = null;
         try {
             result = stub.resolveSPGroup(groupIds);

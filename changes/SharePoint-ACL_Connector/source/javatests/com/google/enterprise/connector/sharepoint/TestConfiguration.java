@@ -332,7 +332,7 @@ public class TestConfiguration {
             WebState webstate1 = globalState.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
             if (null != Site1_List1_URL && Site1_List1_URL.trim().length() > 0) {
                 ListState liststate11 = new ListState(Site1_List1_GUID,
-                        "inTitle", SPConstants.GENERIC_LIST,
+                        "inTitle", SPConstants.DOC_LIB,
                         Calendar.getInstance(), "", Site1_List1_URL, webstate1);
                 List<SPDocument> docs = new ArrayList<SPDocument>();
                 if (null != Site1_List1_Item1_URL
@@ -380,7 +380,7 @@ public class TestConfiguration {
             WebState webstate2 = globalState.makeWebState(sharepointClientContext, TestConfiguration.Site2_URL);
             if (null != Site2_List1_URL && Site2_List1_URL.trim().length() > 0) {
                 ListState liststate21 = new ListState(Site2_List1_GUID,
-                        "inTitle", SPConstants.GENERIC_LIST,
+                        "inTitle", SPConstants.DOC_LIB,
                         Calendar.getInstance(), "", Site2_List1_URL, webstate2);
                 List<SPDocument> docs = new ArrayList<SPDocument>();
                 if (null != Site2_List1_Item1_URL) {
@@ -424,7 +424,7 @@ public class TestConfiguration {
             WebState webstate3 = globalState.makeWebState(sharepointClientContext, TestConfiguration.Site3_URL);
             if (null != Site3_List1_URL && Site3_List1_URL.trim().length() > 0) {
                 ListState liststate31 = new ListState(Site2_List1_GUID,
-                        "inTitle", SPConstants.GENERIC_LIST,
+                        "inTitle", SPConstants.DOC_LIB,
                         Calendar.getInstance(), "", Site3_List1_URL, webstate3);
                 List<SPDocument> docs = new ArrayList<SPDocument>();
                 if (null != Site3_List1_Item1_URL) {
