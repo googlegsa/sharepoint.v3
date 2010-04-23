@@ -1,10 +1,10 @@
-#summary Troubleshooting guide for SharePoint Connector 2.4
-= Troubleshooting guide for SharePoint Connector 2.4 =
+#summary Troubleshooting guide and FAQ for SharePoint Connector 2.4
+= Troubleshooting guide and FAQ for SharePoint Connector 2.4 =
 
 
 
 == Introduction ==
-This document has a list of FAQs and troubleshooting tips to quickly identify if connector has been configured correctly and is discovering & crawling as intended.
+This document has a list of troubleshooting tips and FAQ to quickly identify if connector has been configured correctly and is discovering & crawling as intended.
 
 All details will be applicable to both modes of authorization set for the connector: 
  * Handling authorization by appliance or SAML provider (metadata-and-URL feed mode)
@@ -103,7 +103,7 @@ This section describes some commonly encountered error messages and their likely
 
 
 ==Diagnosing the Connector Logs==
-Thsi section details some of the important log messages that are written into the connector’s log:
+This section details some of the important log messages that are written into the connector’s log:
 
 
 === Commmon to Both Content and Metadata-and-URL Feed Mode ===
@@ -148,7 +148,7 @@ Thsi section details some of the important log messages that are written into th
 
 
 
-== Frequently Asked Questions - FAQs ==
+== Frequently Asked Questions - FAQ ==
 This section lists some of the most commonly asked questions:
 
 
@@ -218,14 +218,16 @@ In order to allow any other host to connect to the Connector Manager, you need t
  No value is required. You can ignore this field. Even if you specify any value, connector will ignore this if the Crawl URL is of SharePoint 2003.
 
 
-*Q. Does connector discovers and crawl Personal Sites in SharePoint 2003?*
+*Q. Does connector discover and crawl Personal Sites in SharePoint 2003?*
 
- Yes. You need not specify it as part of connector configuration explicitly
+ Yes. You need not specify it as part of connector configuration explicitly. In SharePoint 2003, personal sites are always created under the same Web Application (also called Virtual Server) in SP2003.
 
 
-*Q. Why is it not needed to specify the Personal Site URLs just like for MySite in case of SharePoint 2007?*
+*Q. What value should I provide for MySite URL field on connector configuration to crawl MySite in case of SharePoint 2007?*
 
- You don't specify the complete MySite URL. Remember, what connector ask is for MySite Base URL. This information is required in case of SharePoint 2007 because, MySites can be hosted on different web application or even different SharePoint server. Connector needs the base URL where all the MySites are hosted using which it constructs the complete MySite URL dynamically. Since, in SharePoint 2003, personal sites are always created under the same Web Application, also called Virtual Server in SP2003.
+ Make sure that you do not specify the complete MySite URL. Remember, what connector expects is only MySite Base URL. For example, if the MySite URL is: http://server.domain/personal/someuser/default.aspx, enter http://server.domain/. 
+
+This information is required in case of SharePoint 2007 because, MySites can be hosted on different web application or even different SharePoint server. Connector needs the base URL where all the MySites are hosted using which it constructs the complete MySite URL dynamically using user credentials you specify.
 
 
 *Q. How can I search metadata for a document?*
