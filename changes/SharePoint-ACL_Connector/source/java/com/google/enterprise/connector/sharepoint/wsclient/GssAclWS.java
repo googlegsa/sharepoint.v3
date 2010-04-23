@@ -47,6 +47,7 @@ import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.SPChangeType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
@@ -81,6 +82,9 @@ public class GssAclWS {
                     "SharePointClient context cannot be null ");
         }
         sharepointClientContext = inSharepointClientContext;
+        if (!sharepointClientContext.isPushAcls()) {
+            return;
+        }
         if (null == siteurl) {
             siteurl = sharepointClientContext.getSiteURL();
         }
@@ -119,7 +123,7 @@ public class GssAclWS {
      * @param urls Set of entity URLs whose ACLs are to be fetched
      * @return web service response {@link GssGetAclForUrlsResult} as it is
      */
-    public GssGetAclForUrlsResult getAclForUrls(String[] urls) {
+    private GssGetAclForUrlsResult getAclForUrls(String[] urls) {
         GssGetAclForUrlsResult result = null;
         try {
             result = stub.getAclForUrls(urls);
@@ -161,7 +165,7 @@ public class GssAclWS {
      * @param wsResult Web Service response to be parsed
      * @param urlToDocMap Documents whose ACLs are to be set
      */
-    public void processWsResponse(GssGetAclForUrlsResult wsResult,
+    private void processWsResponse(GssGetAclForUrlsResult wsResult,
             Map<String, SPDocument> urlToDocMap) {
         if (null == wsResult || null == urlToDocMap) {
             return;
@@ -271,16 +275,80 @@ public class GssAclWS {
     }
 
     /**
+     * Gets a set of documents in the form of {@link SPDocumentList} crawled
+     * from a single SharePoint site {@link WebState} and fetches ACL for all
+     * the documents and set it the document's properties.
+     *
+     * @param resultSet {@link SPDocumentList} to be processed
+     * @param webState parent {@link WebState} from which documents have been
+     *            crawled
+     */
+    public void fetchAclForDocuments(SPDocumentList resultSet, WebState webState) {
+        if (!sharepointClientContext.isPushAcls() || null == resultSet) {
+            return;
+        }
+        List<SPDocument> documents = resultSet.getDocuments();
+        if (null != documents) {
+            Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
+            String[] allUrlsForAcl = new String[resultSet.size()];
+            try {
+                int i = 0;
+                for (SPDocument document : documents) {
+                    urlToDocMap.put(document.getUrl(), document);
+                    allUrlsForAcl[i++] = document.getUrl();
+                }
+                GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl);
+                processWsResponse(wsResult, urlToDocMap);
+            } catch (Exception e) {
+                LOGGER.log(Level.CONFIG, "Getting ACL for #"
+                        + urlToDocMap.size() + " entities crawled from site [ "
+                        + webState.getWebUrl() + " ]");
+            }
+        }
+    }
+
+    /**
+     * Works similar to
+     * {@link ListsWS#getListItems(ListState, java.util.Calendar, String, Set)}
+     * but is designed to be used only to get those list items whose ACLs have
+     * changed because of any security change at parent level.
+     *
+     * @param listState The list from which the items are to be retrieved
+     * @param listsWS delegate for parsing the web service response
+     * @param lastDocID Used to progress the crawl to next set of documents
+     * @return a list of {@link SPDocument}
+     */
+    public List<SPDocument> getListItemsForAclChangeAndUpdateState(
+            ListState listState, ListsWS listsWS, String lastDocID) {
+        List<SPDocument> aclChangedDocs = null;
+        if (sharepointClientContext.isPushAcls() && listState.isAclChanged()) {
+            GssGetListItemsWithInheritingRoleAssignments wsResult = GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), lastDocID);
+            if (null != wsResult) {
+                aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
+                if (wsResult.isMoreDocs()) {
+                    // TODO: NextPage type is confusing. Either
+                    // use its value that is returned by the WS
+                    // or make it a boolean.
+                    listState.setNextPage("not null");
+                } else {
+                    listState.setAclChanged(false);
+                }
+            }
+        }
+        return aclChangedDocs;
+    }
+
+    /**
      * Executes GetAclChangesSinceToken() web method of GssAcl web service Used
      * for ACL change detection; change token is used for synchronization
      * purpose.
      *
-     * @param strChangeToken ChangeToken from where the change tracking should
-     *            initiate
+     * @param webstate The {@link WebState} for which change detection is to be
+     *            done
      * @return web service response {@link GssGetAclChangesSinceTokenResult} as
      *         it is
      */
-    public GssGetAclChangesSinceTokenResult getAclChangesSinceToken(
+    private GssGetAclChangesSinceTokenResult getAclChangesSinceToken(
             WebState webstate) {
         GssGetAclChangesSinceTokenResult result = null;
         try {
@@ -309,6 +377,18 @@ public class GssAclWS {
         return result;
     }
 
+    public void fetchAclChangesSinceTokenAndUpdateState(WebState webState) {
+        if (!sharepointClientContext.isPushAcls()
+                || !webState.isDoAclChangeDetection()) {
+            return;
+        }
+        GssGetAclChangesSinceTokenResult wsResult = getAclChangesSinceToken(webState);
+        processWsResponse(wsResult, webState);
+        // Do not re-attempt for ACL change detection in the same
+        // traversal cycle.
+        webState.setDoAclChangeDetection(false);
+    }
+
     /**
      * Analyze the set of changes returned by the Custom ACL web service and
      * update the status of child ListStates reflecting the way crawl should
@@ -320,7 +400,7 @@ public class GssAclWS {
      * @param webstate The {@link WebState} for which the change detection is
      *            being done
      */
-    public void processWsResponse(GssGetAclChangesSinceTokenResult wsResult,
+    private void processWsResponse(GssGetAclChangesSinceTokenResult wsResult,
             WebState webstate) {
         if (null == wsResult || null == webstate) {
             return;
@@ -434,14 +514,14 @@ public class GssAclWS {
      * @return Item IDs which are inheriting their role assignments from their
      *         parent list whose GUID was passed in the argument
      */
-    public GssGetListItemsWithInheritingRoleAssignments GetListItemsWithInheritingRoleAssignments(
+    private GssGetListItemsWithInheritingRoleAssignments GetListItemsWithInheritingRoleAssignments(
             String listGuid, String lastItemId) {
         int intLastItemId = 0;
         try {
             intLastItemId = Integer.parseInt(lastItemId);
         } catch (Exception e) {
-            // Eat up exception. This just mean that the last document sent was
-            // not a list item. It could be a list
+            LOGGER.log(Level.FINEST, "The incoming lastItemId [ " + lastItemId
+                    + " ] is not of a list item. Returning...", e);
         }
         GssGetListItemsWithInheritingRoleAssignments result = null;
         try {
@@ -479,7 +559,7 @@ public class GssAclWS {
      * @return List IDs which are inheriting their role assignments from their
      *         parent web site whose ID was passed in the argument
      */
-    public String[] getListsWithInheritingRoleAssignments(String webGuid) {
+    private String[] getListsWithInheritingRoleAssignments(String webGuid) {
         String[] result = null;
         try {
             result = stub.getListsWithInheritingRoleAssignments(webGuid);
@@ -514,7 +594,7 @@ public class GssAclWS {
      * @param groupIds IDs of the SP Groups to be resolved
      * @return web service response {@link GssResolveSPGroupResult} as it is
      */
-    public GssResolveSPGroupResult resolveSPGroup(String[] groupIds) {
+    private GssResolveSPGroupResult resolveSPGroup(String[] groupIds) {
         GssResolveSPGroupResult result = null;
         try {
             result = stub.resolveSPGroup(groupIds);

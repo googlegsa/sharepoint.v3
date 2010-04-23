@@ -379,6 +379,8 @@ public class GssAclChangeCollection
     /// Construct an appropriate <see cref="GssAclChnage"/> object from a SharePoint's SPChange object and adds it to the list of changes
     /// </summary>
     /// <param name="change"> SharePoint's change object. This may not necessarily be a ACL related change. </param>
+    /// <param name="site"> The site collection from which the change has been found. </param>
+    /// <param name="web"> The web site from which the change has been found. </param>
     public void AddChange(SPChange change, SPSite site, SPWeb web)
     {
         if (change is SPChangeWeb)
@@ -396,7 +398,7 @@ public class GssAclChangeCollection
                     // But, such implementation will become confusing when the connector will evolve in future to support site collection and web application level crawling.
                     // It's better to send the change web ID as hint and let the connector decide how to work on this.
                     GssAclChange gssChange = new GssAclChange(ObjectType.WEB, changeWeb.ChangeType, changeWeb.Id.ToString());
-                    gssChange.IsEffectiveInCurrentWeb = IsEffectiveForWeb(site, web, changeWeb.Id);                    
+                    gssChange.IsEffectiveInCurrentWeb = IsEffectiveForWeb(site, web, changeWeb.Id);
                     changes.Add(gssChange);
                     break;
             }
@@ -412,7 +414,7 @@ public class GssAclChangeCollection
                 case SPChangeType.RoleUpdate:
                     SPChangeList changeList = (SPChangeList)change;
                     GssAclChange gssChange = new GssAclChange(ObjectType.LIST, changeList.ChangeType, changeList.Id.ToString());
-                    gssChange.IsEffectiveInCurrentWeb = IsEffectiveForWeb(site, web, changeList.WebId);   
+                    gssChange.IsEffectiveInCurrentWeb = IsEffectiveForWeb(site, web, changeList.WebId);
                     changes.Add(gssChange);
                     break;
             }
@@ -458,6 +460,12 @@ public class GssAclChangeCollection
         }
     }
 
+  /// <summary>
+    /// Determines if any change in SPWeb identified by changeWebId can affect the ACLs under SPWeb web
+    /// </summary>
+    /// <param name="site"> The site collection from which the change has been found. </param>
+    /// <param name="web"> The web site from which the change has been found. </param>
+    /// <param name="changeWebId"> Guid of the web site where the change has occured. </param>
     private bool IsEffectiveForWeb(SPSite site, SPWeb web, Guid changeWebId)
     {
         SPWeb thisWeb = site.OpenWeb(changeWebId);
@@ -486,7 +494,7 @@ public class GssAclChangeCollection
         }
         return false;
     }
-    
+
     public void UpdateChangeToken(SPChangeToken inToken)
     {
         if (null != inToken)
@@ -889,6 +897,8 @@ public class GssAclMonitor
 
         List<string> itemIDs = new List<string>();
         SPQuery query = new SPQuery();
+
+        // CAML query to do a progressive crawl of items in ascending order of their IDs. The prgression is controlled by lastItemId
         query.Query =    "<Where>"
                        +   "<Gt>"
                        +       "<FieldRef Name=\"ID\"/>"

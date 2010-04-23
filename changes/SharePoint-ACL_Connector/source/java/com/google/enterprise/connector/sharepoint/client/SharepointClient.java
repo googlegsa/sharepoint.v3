@@ -18,10 +18,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -29,9 +27,6 @@ import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -207,7 +202,14 @@ public class SharepointClient {
 
         // Fetch ACL for all the documents crawled from the current WebState
         if (sharepointClientContext.isPushAcls()) {
-            setAclForDocuments(resultSet, webState);
+            try {
+                GssAclWS aclWs = new GssAclWS(sharepointClientContext,
+                        webState.getWebUrl());
+                aclWs.fetchAclForDocuments(resultSet, webState);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Problem while fetching ACLs for documents crawled under WebState [ "
+                        + webState.getWebUrl() + " ] ");
+            }
         }
 
         if (LOGGER.isLoggable(Level.CONFIG)) {
@@ -217,41 +219,6 @@ public class SharepointClient {
         }
 
         return resultSet;
-    }
-
-    /**
-     * Gets a set of documents in the form of {@link SPDocumentList} crawled
-     * from a single SharePoint site {@link WebState} and fetches ACL for all
-     * the documents and set it the document's properties.
-     *
-     * @param resultSet {@link SPDocumentList} to be processed
-     * @param webState parent {@link WebState} from which documents have been
-     *            crawled
-     */
-    private void setAclForDocuments(SPDocumentList resultSet, WebState webState) {
-        if (null == resultSet) {
-            return;
-        }
-        List<SPDocument> documents = resultSet.getDocuments();
-        if (null != documents) {
-            Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
-            String[] allUrlsForAcl = new String[resultSet.size()];
-            try {
-                GssAclWS aclWs = new GssAclWS(sharepointClientContext,
-                        webState.getWebUrl());
-                int i = 0;
-                for (SPDocument document : documents) {
-                    urlToDocMap.put(document.getUrl(), document);
-                    allUrlsForAcl[i++] = document.getUrl();
-                }
-                GssGetAclForUrlsResult wsResult = aclWs.getAclForUrls(allUrlsForAcl);
-                aclWs.processWsResponse(wsResult, urlToDocMap);
-            } catch (Exception e) {
-                LOGGER.log(Level.CONFIG, "Getting ACL for #"
-                        + urlToDocMap.size() + " entities crawled from site [ "
-                        + webState.getWebUrl() + " ]");
-            }
-        }
     }
 
     /**
@@ -633,25 +600,14 @@ public class SharepointClient {
         }
 
         GssAclWS aclWs = null;
-        if (sharepointClientContext.isPushAcls()) {
-            try {
-                aclWs = new GssAclWS(sharepointClientContext,
-                        webState.getWebUrl());
-                if (webState.isDoAclChangeDetection()) {
-                    GssGetAclChangesSinceTokenResult wsResult = aclWs.getAclChangesSinceToken(webState);
-                    aclWs.processWsResponse(wsResult, webState);
-                    // Do not re-attempt for ACL change detection in the same
-                    // traversal cycle.
-                    webState.setDoAclChangeDetection(false);
-                }
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
-                        + webState.getWebUrl() + " ]. ", e);
-            } catch (final Throwable t) {
-                LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. site [ "
-                        + webState.getWebUrl() + " ]. ", t);
-            }
+        try {
+            aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
+            aclWs.fetchAclChangesSinceTokenAndUpdateState(webState);
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
+                    + webState.getWebUrl() + " ]. ", e);
         }
+
 
         final ListsWS listsWS = new ListsWS(tempCtx);
         for (int i = 0; i < listCollection.size(); i++) {
@@ -769,35 +725,17 @@ public class SharepointClient {
                         listState.updateList(currentList);
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
+                        // It's safe not to mix the documents from the two set
+                        // of changes (ACL and regular item level changes). The
+                        // reason being, both updates the ListState and if both
+                        // gets executed, the info one may get overridden by
+                        // other.
                         // First Consider ACl Changes and any documents that
                         // might need to be crawled
-                        List<SPDocument> aclChangedDocs = null;
-                        if (sharepointClientContext.isPushAcls()
-                                && listState.isAclChanged()) {
-                            GssGetListItemsWithInheritingRoleAssignments wsResult = aclWs.GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), lastDocID);
-                            if (null != wsResult) {
-                                aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
-                                if (wsResult.isMoreDocs()) {
-                                    // TODO: NextPage type is confusing. Either
-                                    // use its value that is returned by the WS
-                                    // or make it a boolean.
-                                    listState.setNextPage("not null");
-                                } else {
-                                    listState.setAclChanged(false);
-                                }
-                            }
-                        }
-
-                        if (null != aclChangedDocs
-                                && aclChangedDocs.size() >= sharepointClientContext.getBatchHint()) {
-                            listItems = aclChangedDocs;
-                        } else {
+                        listItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS, lastDocID);
+                        if (null == listItems || listItems.size() == 0) {
                             // Do regular incremental crawl
                             listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
-
-                            if (null != aclChangedDocs) {
-                                listItems.addAll(aclChangedDocs);
-                            }
                         }
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
