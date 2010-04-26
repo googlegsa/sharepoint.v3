@@ -830,7 +830,12 @@ public class SharepointClient {
             }
 
             listState.setCrawlQueue(listItems);
-            if (listItems != null) {
+            if (null == listItems || listItems.size() == 0) {
+                // If there are no documents to be fed from this list, commit
+                // the ACL crawl status right at this time without waiting for
+                // checkpoint
+                listState.commitAclCrawlStatus();
+            } else {
                 LOGGER.log(Level.INFO, "found " + listItems.size()
                         + " items to crawl in " + listState.getListURL());
                 nDocuments += listItems.size();

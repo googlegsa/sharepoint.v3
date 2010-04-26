@@ -482,17 +482,8 @@ public class GssAclChangeCollection
         }
         else
         {
-            ISecurableObject secObj1 = web.FirstUniqueAncestor;
-            ISecurableObject secObj2 = thisWeb.FirstUniqueAncestor;
-            if (secObj1 is SPWeb && secObj2 is SPWeb)
-            {
-                SPWeb web1 = (SPWeb)secObj1;
-                SPWeb web2 = (SPWeb)secObj2;
-                if (null != web1 && null != web2 && web1.ID.Equals(web2))
-                {
-                    return true;
-                }
-            }
+            GssAclUtility gssUtil = new GssAclUtility();
+            return gssUtil.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);            
         }
         return false;
     }
@@ -641,7 +632,7 @@ public class GssAclMonitor
     SPWeb web;
 
     // A random guess about how many items should be query at a time. Such threashold is required to save the web service from being unresponsive for a long time
-    int ROWLIMIT = 500;
+    public const int ROWLIMIT = 500;
 
     public GssAclMonitor()
     {
@@ -851,32 +842,18 @@ public class GssAclMonitor
     /// <param name="webGuId"> GUID of the SharePoint web site from which the Lists are to be returned </param>
     /// <returns> list of GUIDs of the lists </returns>
     [WebMethod]
-    public List<string> GetListsWithInheritingRoleAssignments(string webGuId)
+    public List<string> GetListsWithInheritingRoleAssignments()
     {
         if (null == site || null == web)
         {
             throw new Exception("SharePoint site not found! ");
         }
 
-        SPWeb changeWeb = null;
-        try
-        {
-            changeWeb = site.AllWebs[new Guid(webGuId)];
-            if (null == changeWeb)
-            {
-                throw new Exception("Passed in webId [ " + webGuId + " ] does not exist in the current SharePoint site context");
-            }
-        }
-        catch (Exception e)
-        {
-            throw new Exception("Passed in webId [ " + webGuId + " ] does not exist in the current SharePoint site context");
-        }
-
         List<string> listIDs = new List<string>();
-        SPListCollection lists = changeWeb.Lists;
+        SPListCollection lists = web.Lists;
         foreach (SPList list in lists)
         {
-            if (!list.HasUniqueRoleAssignments && changeWeb.FirstUniqueAncestor.Equals(list.FirstUniqueAncestor))
+            if (!list.HasUniqueRoleAssignments && gssUtil.isSame(web.FirstUniqueAncestor, list.FirstUniqueAncestor))
             {
                 listIDs.Add(list.ID.ToString());
             }
@@ -915,19 +892,13 @@ public class GssAclMonitor
 
         List<string> itemIDs = new List<string>();
         SPQuery query = new SPQuery();
-        int maxToRetrieve = lastItemId + ROWLIMIT;
+        query.RowLimit = GssAclMonitor.ROWLIMIT;
         // CAML query to do a progressive crawl of items in ascending order of their IDs. The prgression is controlled by lastItemId
         query.Query =    "<Where>"
-                       +  "<And>"
                        +   "<Gt>"
                        +       "<FieldRef Name=\"ID\"/>"
                        +       "<Value Type=\"Counter\">" + lastItemId + "</Value>"
                        +   "</Gt>"
-                       +   "<Lt>"
-                       +       "<FieldRef Name=\"ID\"/>"
-                       +       "<Value Type=\"Counter\">" + maxToRetrieve + "</Value>"
-                       +   "</Lt>"
-                       +  "</And>"
                        + "</Where>"
                        + "<OrderBy>"
                        +   "<FieldRef Name=\"ID\" Ascending=\"TRUE\" />"
@@ -953,7 +924,7 @@ public class GssAclMonitor
                 result.MoreDocs = true;
                 break;
             }
-            if (!item.HasUniqueRoleAssignments && changeList.FirstUniqueAncestor.Equals(item.FirstUniqueAncestor))
+            if (!item.HasUniqueRoleAssignments && gssUtil.isSame(changeList.FirstUniqueAncestor, item.FirstUniqueAncestor))
             {
                 XmlNode node = handleOwsMetaInfo(item);
                 node = xmlDoc.ImportNode(node, true);
@@ -962,7 +933,7 @@ public class GssAclMonitor
             }
             result.LastIdVisited = item.ID;
         }
-        if (items.Count <= ROWLIMIT)
+        if (null != items.ListItemCollectionPosition)
         {
             result.MoreDocs = true;
         }
@@ -1343,6 +1314,44 @@ public class GssAclUtility
             gssPrincipal.Type = GssPrincipal.PrincipalType.DOMAINGROUP;
         }
         return gssPrincipal;
+    }
+
+    /// <summary>
+    /// Check if the two ISecurable objects are same
+    /// </summary>
+    /// <param name="secObj1"> First Object </param>
+    /// <param name="secObj2"> Second Object </param>
+    /// <returns></returns>
+    public bool isSame(ISecurableObject secObj1, ISecurableObject secObj2)
+    {
+        if (secObj1 is SPWeb && secObj2 is SPWeb)
+        {
+            SPWeb web1 = (SPWeb)secObj1;
+            SPWeb web2 = (SPWeb)secObj2;
+            if (null != web1 && null != web2 && web1.ID.Equals(web2.ID))
+            {
+                return true;
+            }
+        }
+        else if (secObj1 is SPList && secObj2 is SPList)
+        {
+            SPList list1 = (SPList)secObj1;
+            SPList list2 = (SPList)secObj2;
+            if (null != list1 && null != list2 && list1.ID.Equals(list2.ID))
+            {
+                return true;
+            }
+        }
+        else if (secObj1 is SPListItem && secObj2 is SPListItem)
+        {
+            SPListItem listItem1 = (SPListItem)secObj1;
+            SPListItem listItem2 = (SPListItem)secObj2;
+            if (null != listItem1 && null != listItem2 && listItem1.ID.Equals(listItem2.ID))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

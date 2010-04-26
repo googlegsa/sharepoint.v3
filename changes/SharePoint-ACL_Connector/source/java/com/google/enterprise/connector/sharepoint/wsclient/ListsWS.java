@@ -1085,14 +1085,12 @@ public class ListsWS {
             // returning a new change token which would be valid at that point.
             // If we use that token, we will miss any changes that have happened
             // while the initial crawl was was in progress.
-            (null == list.getChangeTokenForWSCall() || list.getChangeTokenForWSCall().trim().length() == 0)
-                    && (null == list.getNextChangeTokenForSubsequectWSCalls() || list.getNextChangeTokenForSubsequectWSCalls().trim().length() == 0)
+            list.isCurrentChangeTokenBlank() && list.isNextChangeTokenBlank()
 
                     // Or, SECOOND CASE: If connector is running in an
                     // incremental crawl and all the documents are crawled for
                     // the current change token
-                    || (null != list.getChangeTokenForWSCall()
-                            && list.getChangeTokenForWSCall().trim().length() != 0 && null == list.getNextPage()))
+                    || (!list.isCurrentChangeTokenBlank() && null == list.getNextPage()))
             {
                 list.saveNextChangeTokenForWSCall(lastChangeToken);
             }

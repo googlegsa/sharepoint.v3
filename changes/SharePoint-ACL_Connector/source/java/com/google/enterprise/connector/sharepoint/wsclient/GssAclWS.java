@@ -324,6 +324,19 @@ public class GssAclWS {
             GssGetListItemsWithInheritingRoleAssignments wsResult = GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), String.valueOf(listState.getLastDocIdCrawledForAcl()));
             if (null != wsResult) {
                 aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
+                if (null != aclChangedDocs) {
+                    LOGGER.log(Level.INFO, "Found #"
+                            + aclChangedDocs.size()
+                            + " documents from list [ "
+                            + listState
+                            + " ] under ACL based crawling. Crawling status: FromID [ "
+                            + listState.getLastDocIdCrawledForAcl()
+                            + " ], ToID [ " + wsResult.getLastIdVisited()
+                            + " ], moreDocs [ " + wsResult.isMoreDocs() + " ] ");
+                    for (SPDocument document : aclChangedDocs) {
+                        document.setForAclChange(true);
+                    }
+                }
                 if (wsResult.isMoreDocs()) {
                     listState.setLastDocIdCrawledForAcl(wsResult.getLastIdVisited());
                 } else {
@@ -453,13 +466,12 @@ public class GssAclWS {
                         + " ] becasue of security policy change.");
                 webstate.resetState();
                 isWebReset = true;
-            } else if (objType == ObjectType.WEB && !isWebChanged
-                    && null != changeObjectHint) {
+            } else if (objType == ObjectType.WEB && !isWebChanged) {
                 isWebChanged = true;
                 // Since, role assignment at web have changed, we need to
                 // re-crawl all the list/items which are inheriting the changed
                 // role assignments.
-                String[] allChangedListIds = getListsWithInheritingRoleAssignments(changeObjectHint);
+                String[] allChangedListIds = getListsWithInheritingRoleAssignments();
                 if (null != allChangedListIds) {
                     changedListsGuids.addAll(Arrays.asList(allChangedListIds));
                 }
@@ -509,6 +521,10 @@ public class GssAclWS {
                 continue;
             }
             listState.setAclChanged(true);
+            listState.commitAclCrawlStatus();
+            LOGGER.log(Level.INFO, "Marking List [ "
+                    + listState
+                    + " ] as a candidate for ACL based crawl becasue the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
         }
 
         if (null == webstate.getNextAclChangeToken()
@@ -571,10 +587,10 @@ public class GssAclWS {
      * @return List IDs which are inheriting their role assignments from their
      *         parent web site whose ID was passed in the argument
      */
-    private String[] getListsWithInheritingRoleAssignments(String webGuid) {
+    private String[] getListsWithInheritingRoleAssignments() {
         String[] result = null;
         try {
-            result = stub.getListsWithInheritingRoleAssignments(webGuid);
+            result = stub.getListsWithInheritingRoleAssignments();
         } catch (final AxisFault af) {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
@@ -583,7 +599,7 @@ public class GssAclWS {
                         + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
-                    result = stub.getListsWithInheritingRoleAssignments(webGuid);
+                    result = stub.getListsWithInheritingRoleAssignments();
                 } catch (final Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to get List With Inheriting RoleAssignments. endpoint [ "
                             + endpoint + " ].", e);

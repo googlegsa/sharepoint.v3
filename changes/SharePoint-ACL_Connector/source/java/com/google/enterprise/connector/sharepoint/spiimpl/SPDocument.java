@@ -112,6 +112,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     // List of groups and their permissions to be sent in document's ACL
     private Map<String, List<RoleType>> groupsAclMap;
 
+    private boolean forAclChange = false;
+
     /**
      * @return the toBeFed
      */
@@ -815,5 +817,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     public void setGroupsAclMap(Map<String, List<RoleType>> groupsAclMap) {
         this.groupsAclMap = groupsAclMap;
+    }
+
+    public boolean isForAclChange() {
+        return forAclChange;
+    }
+
+    public void setForAclChange(boolean forAclChange) {
+        this.forAclChange = forAclChange;
     }
 }
