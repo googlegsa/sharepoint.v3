@@ -654,7 +654,7 @@ public class SharepointClientContext implements Cloneable {
         }
 
         /*
-          Adding support for SharePoint 2010. For SP2010, version starts with 14.x.x.x<br/>
+          Adding support for SharePoint 2010. For SP2010, version starts with 14.x.x.x
           Since SP2010 supports all web services of SP2007 return SP2007 as version
 
           Fix Details:

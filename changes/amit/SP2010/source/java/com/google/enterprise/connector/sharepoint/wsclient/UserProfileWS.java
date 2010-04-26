@@ -14,7 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.rmi.RemoteException;
 import java.text.Collator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -98,7 +97,7 @@ public class UserProfileWS {
      * Checks to see if the current web to which the web service end point is
      * set is an SPS site.
      *
-     * @return if the end point being used is an SPS site
+     * @return true, if the end point being used is an SPS site. Else value is false.
      * @throws SharepointException
      */
     public boolean isSPS() throws SharepointException {
@@ -171,17 +170,6 @@ public class UserProfileWS {
          */
 
 
-        /////////////////Sample method to get the user profile count ///////////////////////////
-        /*long index1=0;
-		try {
-			index1 = stub.getUserProfileCount();
-		} catch (RemoteException e1) {
-			e1.printStackTrace();
-		}
-		System.out.println("The total No: of user profiles are: "+index1);*/
-		////////////////////////////////////////////////////////////////////////////
-
-
         int index =0;
         while (index >= 0) {
             GetUserProfileByIndexResult result = null;
@@ -236,7 +224,7 @@ public class UserProfileWS {
                         if ((vd == null) || (vd.length < 1)) {
                             continue;
                         }
-                        space = (String) vd[0]. getValue();
+                        space = (String)vd[0].getValue();
                         String strMySiteBaseURL = sharepointClientContext.getMySiteBaseURL();
                         if (strMySiteBaseURL.endsWith(SPConstants.SLASH)) {
                             strMySiteBaseURL = strMySiteBaseURL.substring(0, strMySiteBaseURL.lastIndexOf(SPConstants.SLASH));
