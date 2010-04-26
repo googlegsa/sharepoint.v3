@@ -12,6 +12,8 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
 
     private boolean moreDocs;
 
+    private int lastIdVisited;
+
     public GssGetListItemsWithInheritingRoleAssignments() {
     }
 
@@ -19,12 +21,14 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
            java.lang.String siteCollectionUrl,
            java.lang.String siteCollectionGuid,
            java.lang.String docXml,
-           boolean moreDocs) {
+           boolean moreDocs,
+           int lastIdVisited) {
         super(
             siteCollectionUrl,
             siteCollectionGuid);
         this.docXml = docXml;
         this.moreDocs = moreDocs;
+        this.lastIdVisited = lastIdVisited;
     }
 
 
@@ -67,6 +71,26 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
         this.moreDocs = moreDocs;
     }
 
+
+    /**
+     * Gets the lastIdVisited value for this GssGetListItemsWithInheritingRoleAssignments.
+     *
+     * @return lastIdVisited
+     */
+    public int getLastIdVisited() {
+        return lastIdVisited;
+    }
+
+
+    /**
+     * Sets the lastIdVisited value for this GssGetListItemsWithInheritingRoleAssignments.
+     *
+     * @param lastIdVisited
+     */
+    public void setLastIdVisited(int lastIdVisited) {
+        this.lastIdVisited = lastIdVisited;
+    }
+
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof GssGetListItemsWithInheritingRoleAssignments)) return false;
@@ -82,7 +106,8 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
             ((this.docXml==null && other.getDocXml()==null) ||
              (this.docXml!=null &&
               this.docXml.equals(other.getDocXml()))) &&
-            this.moreDocs == other.isMoreDocs();
+            this.moreDocs == other.isMoreDocs() &&
+            this.lastIdVisited == other.getLastIdVisited();
         __equalsCalc = null;
         return _equals;
     }
@@ -98,6 +123,7 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
             _hashCode += getDocXml().hashCode();
         }
         _hashCode += (isMoreDocs() ? Boolean.TRUE : Boolean.FALSE).hashCode();
+        _hashCode += getLastIdVisited();
         __hashCodeCalc = false;
         return _hashCode;
     }
@@ -119,6 +145,12 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
         elemField.setFieldName("moreDocs");
         elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "MoreDocs"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("lastIdVisited");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "LastIdVisited"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

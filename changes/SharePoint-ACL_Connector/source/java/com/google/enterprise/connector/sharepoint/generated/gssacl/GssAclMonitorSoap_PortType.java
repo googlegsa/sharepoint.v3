@@ -12,6 +12,6 @@ public interface GssAclMonitorSoap_PortType extends java.rmi.Remote {
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult getAclForUrls(java.lang.String[] urls) throws java.rmi.RemoteException;
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult getAclChangesSinceToken(java.lang.String fromChangeToken, java.lang.String toChangeToken) throws java.rmi.RemoteException;
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult resolveSPGroup(java.lang.String[] groupId) throws java.rmi.RemoteException;
-    public java.lang.String[] getListsWithInheritingRoleAssignments(java.lang.String webGuId) throws java.rmi.RemoteException;
+    public java.lang.String[] getListsWithInheritingRoleAssignments() throws java.rmi.RemoteException;
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments getListItemsWithInheritingRoleAssignments(java.lang.String listGuId, int rowLimit, int lastItemId) throws java.rmi.RemoteException;
 }

@@ -249,11 +249,7 @@
         </s:complexContent>
       </s:complexType>
       <s:element name="GetListsWithInheritingRoleAssignments">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="webGuId" type="s:string" />
-          </s:sequence>
-        </s:complexType>
+        <s:complexType />
       </s:element>
       <s:element name="GetListsWithInheritingRoleAssignmentsResponse">
         <s:complexType>
@@ -284,6 +280,7 @@
             <s:sequence>
               <s:element minOccurs="0" maxOccurs="1" name="DocXml" type="s:string" />
               <s:element minOccurs="1" maxOccurs="1" name="MoreDocs" type="s:boolean" />
+              <s:element minOccurs="1" maxOccurs="1" name="LastIdVisited" type="s:int" />
             </s:sequence>
           </s:extension>
         </s:complexContent>
@@ -478,7 +475,7 @@
       <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
     <wsdl:port name="GssAclMonitorSoap12" binding="tns:GssAclMonitorSoap12">
-      <soap12:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
+      <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

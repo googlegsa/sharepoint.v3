@@ -75,9 +75,6 @@ public class GssAclMonitorSoap_BindingStub extends org.apache.axis.client.Stub i
 
         oper = new org.apache.axis.description.OperationDesc();
         oper.setName("GetListsWithInheritingRoleAssignments");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "webGuId"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
-        param.setOmittable(true);
-        oper.addParameter(param);
         oper.setReturnType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "ArrayOfString"));
         oper.setReturnClass(java.lang.String[].class);
         oper.setReturnQName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GetListsWithInheritingRoleAssignmentsResult"));
@@ -500,7 +497,7 @@ public class GssAclMonitorSoap_BindingStub extends org.apache.axis.client.Stub i
 }
     }
 
-    public java.lang.String[] getListsWithInheritingRoleAssignments(java.lang.String webGuId) throws java.rmi.RemoteException {
+    public java.lang.String[] getListsWithInheritingRoleAssignments() throws java.rmi.RemoteException {
         if (super.cachedEndpoint == null) {
             throw new org.apache.axis.NoEndPointException();
         }
@@ -516,7 +513,7 @@ public class GssAclMonitorSoap_BindingStub extends org.apache.axis.client.Stub i
 
         setRequestHeaders(_call);
         setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {webGuId});
+ try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {});
 
         if (_resp instanceof java.rmi.RemoteException) {
             throw (java.rmi.RemoteException)_resp;
