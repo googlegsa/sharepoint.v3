@@ -1,3 +1,4 @@
+#summary User Privileges required for crawling SharePoint content
 == User Privileges required for crawling SharePoint content ==
 
 Following are the details of precise user privileges required for crawling SharePoint content
