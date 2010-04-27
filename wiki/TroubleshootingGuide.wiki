@@ -220,7 +220,7 @@ In order to allow any other host to connect to the Connector Manager, you need t
 
 *Q. Does connector discover and crawl Personal Sites in SharePoint 2003?*
 
- Yes. You need not specify it as part of connector configuration explicitly. In SharePoint 2003, personal sites are always created under the same Web Application (also called Virtual Server) in SP2003.
+ Yes. You need not specify it as part of connector configuration explicitly. In SharePoint 2003, personal sites are always created under the same Web Application (also called Virtual Server).
 
 
 *Q. What value should I provide for MySite URL field on connector configuration to crawl MySite in case of SharePoint 2007?*
