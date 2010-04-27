@@ -80,6 +80,7 @@ public class GssAclTest extends TestCase {
         ListState listState = globalState.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID);
         assertNotNull(listState);
         listState.setAclChanged(true);
+        listState.commitAclCrawlStatus();
         ListsWS listWs = new ListsWS(sharepointClientContext);
         assertNotNull(listWs);
         List<SPDocument> docs = aclWS.getListItemsForAclChangeAndUpdateState(listState, listWs);

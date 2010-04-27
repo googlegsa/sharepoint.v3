@@ -112,6 +112,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     // List of groups and their permissions to be sent in document's ACL
     private Map<String, List<RoleType>> groupsAclMap;
 
+    // Check if the documents is discovered from ACL based crawling. An ACL
+    // based crawling happens when a security change occurs on site/list which
+    // affects the ACL of many list items
     private boolean forAclChange = false;
 
     /**

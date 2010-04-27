@@ -483,7 +483,7 @@ public class GssAclChangeCollection
         else
         {
             GssAclUtility gssUtil = new GssAclUtility();
-            return gssUtil.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);            
+            return gssUtil.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);
         }
         return false;
     }
@@ -837,9 +837,8 @@ public class GssAclMonitor
     }
 
     /// <summary>
-    /// Returns the GUIDs of all those Lists which are inheriting their permissions from the passed in SharePoint web site.
+    /// Returns the GUIDs of all those Lists which are inheriting their permissions from the SharePoint web site to which the request has been sent
     /// </summary>
-    /// <param name="webGuId"> GUID of the SharePoint web site from which the Lists are to be returned </param>
     /// <returns> list of GUIDs of the lists </returns>
     [WebMethod]
     public List<string> GetListsWithInheritingRoleAssignments()
