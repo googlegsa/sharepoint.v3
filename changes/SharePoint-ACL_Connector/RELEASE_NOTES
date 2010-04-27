@@ -17,12 +17,12 @@ Introduction
 This is an upgrade release with some enhancements and bug fixes. Users of previous releases are encouraged to upgrade.
 Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
 
-Summary of Changes
-------------------
+Summary of Changes / New Features
+---------------------------------
 - Added support for ACL. Connector now sends ACL as document metadata along with each document that it feeds to the GSA. It also keep track of any security changes happening on SharePoint which might affect the ACL of entities, the entities are re-crawled and re-fed to GSA in such cases.
   Google Services for SharePoint (GSS) are now shipped with one more service specific to ACL. You need to deploy this web service on SharePoint to get the ACl support.
 
-- Added support for SharePoint 2010
+- Issue 148: SharePoint connector should support SharePoint 2010
 
 Version Compatibility
 ---------------------
@@ -69,53 +69,6 @@ Enterprise x64 Edition
 Intel(R) Xeon(R) CPU
 E5504 @ 2.00GHz, 2.00 GB of RAM
 
-
-
-Performance Test details:
-Performance Test Results for Metadata & URL Feed mode:
-
-Test Environment Details:
-
-OS: Linux 32 bit
-Heap Size Settings 256M-1024M (Connector Default)
-Nos. of Web State: 9560
-Nos. of List State: 56784
-Feed Mode: metadata-and-URL
-
-
-Test Results:
-
-Memory Usage: 36 MB (Average)-63.2MB (Max)
-CPU Usage: 3.06% (Average)
-Size of State file: 30MB
-
-Observations:
-1. Memory consumption is low initially and increases gradually after state file size increases.
-2. The traversal rate was set to 500 documents per minute
-3. Memory consumption gradually becomes constant at end of the test cycle as no activity on SharePoint sever.
-4. During Test cycle, 0.6% of the readings are above 10% of CPU usage, few times CPU usage has also crossed 50% but dropped immediately to normal CPU usage.
-5. Average CPU usage is 3%.
-
-Performance Test Results for Content Feed mode:
-
-OS: Windows 2003 Server (64 bit)
-Heap Size Settings 256M-1024M (Connector Default)
-Nos. of Web State: 6610
-Nos. of List State: 14252
-Feed Mode: Content
-
-
-Test Results:
-Memory Usage: 120(Average)-404 MB (Max)
-CPU Usage 12%(Average)
-Size of State file: 10MB
-
-Observations:
-1. Memory utilization range 200-300 MB with a traversal rate of 200 Documents per Minute
-2. Memory utilization increase in case of content feed mode as Connector is involved in fetching content from documents.
-3. Average CPU usage is 12%, few times CPU usage has also crossed 50 % but dropped immediately to normal CPU usage. There was no constant increase in the CPU Usage.
-
-
 Known Issues/Limitations
 ------------------------
 1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
@@ -144,9 +97,12 @@ Workaround: Re-crawl all content by resetting the connector
 - Bulk Authorization by connector
 - ACL
 
-6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+6) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
 
-7) Issue 139: Upgrade HTTPCLient library and AXis to newer versions
+7) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+8) Issue 139: Upgrade HTTPCLient library and AXis to newer versions
 -- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
 document. One observation is that this exception occurs whenever the
 "java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
@@ -162,7 +118,7 @@ Possible workaround:
 -- Ensure that the SharePoint server is fast enough for serving content
 -- Also please see the workaround mentioned in Issue 59
 
-8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+9) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
 -- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
 Type1Message are not initialized properly and hence connector configuration does not gets saved.
 
