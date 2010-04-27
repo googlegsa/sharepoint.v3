@@ -344,10 +344,22 @@ public class GssAclWS {
                     }
                 }
                 if (wsResult.isMoreDocs()) {
-                    listState.setLastDocIdCrawledForAcl(wsResult.getLastIdVisited());
+                    listState.updateAclCrawlStatus(true, wsResult.getLastIdVisited());
+                } else if (null != aclChangedDocs && aclChangedDocs.size() > 0) {
+                    // We have crawled the last set of documents and there are
+                    // no more documents to be crawled. However, we can not say
+                    // listState.endAclCrawl() at this point because the crawled
+                    // documents are not yet fed to GSA. Once these documents
+                    // get fed, we'll call listState.commitAclCrawlStatus() and
+                    // the state will be updated with the same effect as if we
+                    // have
+                    // called listState.endAclCrawl().
+                    listState.updateAclCrawlStatus(false, 0);
                 } else {
-                    listState.setAclChanged(false);
-                    listState.setLastDocIdCrawledForAcl(0);
+                    // Since, the current crawled not return any document and
+                    // also, there are no more documents to be crawled, we can
+                    // safely end the ACL crawl for this list.
+                    listState.endAclCrawl();
                 }
             }
         }
@@ -526,8 +538,7 @@ public class GssAclWS {
             if (null == listState) {
                 continue;
             }
-            listState.setAclChanged(true);
-            listState.commitAclCrawlStatus();
+            listState.startAclCrawl();
             LOGGER.log(Level.INFO, "Marking List [ "
                     + listState
                     + " ] as a candidate for ACL based crawl becasue the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");

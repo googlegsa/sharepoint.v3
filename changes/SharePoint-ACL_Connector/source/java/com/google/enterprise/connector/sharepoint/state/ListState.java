@@ -1318,34 +1318,72 @@ public class ListState implements StatefulObject {
         commitChangeTokenForWSCall();
         setLastDocProcessedForWS(null);
         setCrawlQueue(null);
+        endAclCrawl();
     }
 
     public boolean isAclChanged() {
         return aclChanged;
     }
 
-    public void setAclChanged(boolean aclChanged) {
-        this.tmp_aclChanged = aclChanged;
+
+    private void setAclChanged(boolean aclChanged) {
+        this.aclChanged = aclChanged;
+    }
+
+    private void setLastDocIdCrawledForAcl(int lastDocIdCrawledForAcl) {
+        this.lastDocIdCrawledForAcl = lastDocIdCrawledForAcl;
     }
 
     public int getLastDocIdCrawledForAcl() {
         return lastDocIdCrawledForAcl;
     }
 
-    public void setLastDocIdCrawledForAcl(int lastDocIdCrawledForAcl) {
-        this.tmp_lastDocIdCrawledForAcl = lastDocIdCrawledForAcl;
+    /**
+     * Marks a list for a candidate for ACL based crawling. All such lists are
+     * queried for items with inheriting permissions during the crawl.
+     */
+    public void startAclCrawl() {
+        if (isAclChanged()) {
+            LOGGER.log(Level.WARNING, "Attempt to mark a list for Acl crawl when it is already under Acl crawling.");
+            return;
+        }
+        aclChanged = tmp_aclChanged = true;
+        lastDocIdCrawledForAcl = tmp_lastDocIdCrawledForAcl = 0;
+    }
+
+    /**
+     * Updates the ACL crawl status of the list to reflect that the ACL based
+     * crawling is finished for this list A call to this method will ensure that
+     * the current ACL crawl of the list has been completed and the list can be
+     * processed for the next set of ACL changes
+     */
+    public void endAclCrawl() {
+        if (!isAclChanged()) {
+            LOGGER.log(Level.WARNING, "Attempt to end the ACL crawl of a list when it is not under ACL crawling.");
+            return;
+        }
+        aclChanged = tmp_aclChanged = false;
+        lastDocIdCrawledForAcl = tmp_lastDocIdCrawledForAcl = 0;
+    }
+
+    public void updateAclCrawlStatus(boolean isMoreToCrawl, int lastDocIdCrawled) {
+        this.tmp_aclChanged = isMoreToCrawl;
+        this.tmp_lastDocIdCrawledForAcl = lastDocIdCrawled;
     }
 
     /**
      * Commits the updated info about ACL based crawling to be used latter.
-     * Typically, this info is updated at crawl time and committed once all the
-     * crawled docs are fed to GSA. Note: The current usage of committing the
-     * ACL crawl status is idempotent meaning, if i call this method
-     * consecutively more than once without setting a new crawl status (i.e
-     * without calling {@link ListState#setAclChanged(boolean)} or
-     * {@link ListState#setLastDocIdCrawledForAcl(int)} in between), it will not
-     * have any unforseen effect on the ACL based crawling. Do take of this if
-     * you make any change here
+     * {@link ListState#updateAclCrawlStatus(boolean, int)} along with this
+     * method gives an scope to update the crawling status but not using it
+     * until an specified time. These methods are helpful for the connectro
+     * where crawling and feeding of documents are not one atomic operation.
+     * <p/>
+     * Note: The current usage of committing the ACL crawl status is idempotent
+     * meaning, if i call this method consecutively more than once without
+     * setting a new crawl status (i.e without calling
+     * {@link ListState#updateAclCrawlStatus(boolean, int)} in between), it will
+     * not have any unforseen effect on the ACL based crawling. Do take of this
+     * if you make any change here
      */
     public void commitAclCrawlStatus() {
         aclChanged = tmp_aclChanged;
