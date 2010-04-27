@@ -225,7 +225,7 @@ In order to allow any other host to connect to the Connector Manager, you need t
 
 *Q. What value should I provide for MySite URL field on connector configuration to crawl MySite in case of SharePoint 2007?*
 
- Make sure that you do not specify the complete MySite URL. Remember, what connector expects is only MySite Base URL. For example, if the MySite URL is: http://server.domain/personal/someuser/default.aspx, enter http://server.domain/. 
+ Make sure that you do not specify the complete MySite URL. Remember, what connector expects is only MySite Base URL. For example, if the MySite URL is: http://server.domain:port/personal/someuser/default.aspx, enter http://server.domain:port/. 
 
 This information is required in case of SharePoint 2007 because, MySites can be hosted on different web application or even different SharePoint server. Connector needs the base URL where all the MySites are hosted using which it constructs the complete MySite URL dynamically using user credentials you specify.
 
