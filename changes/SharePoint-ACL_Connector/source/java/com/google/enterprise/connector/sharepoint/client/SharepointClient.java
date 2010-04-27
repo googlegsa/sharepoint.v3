@@ -126,15 +126,14 @@ public class SharepointClient {
     }
 
     /**
-     * Calls DocsFromDocLibPerSite for all the sites under the current site.
-     * It's possible that we're resuming traversal, because of batch hints. In
-     * this case, we rely on GlobalState's notion of "current". Each time we
-     * visit a List (whether or not it has docs to crawl), we mark it "current."
-     * On a subsequent call to traverse(), we start AFTER the current, if there
-     * is one. One might wonder why we don't just delete the crawl queue when
-     * done. The answer is, we don't consider it "done" until we're notified via
-     * the Connector Manager's call to checkpoint(). Until that time, it's
-     * possible we'd have to traverse() it again.
+     * Scans the crawl queue of all the ListStates from a given WebState and
+     * constructs a {@link SPDocumentList} object to be returned to CM.
+     * {@link WebState#getCurrentListstateIterator()} takes care of the fact
+     * that same list is not scanned twice in case the traversal has been
+     * resumed.
+     * <p/>
+     * At the end, fetches the ACL of all the documents contained in the
+     * {@link SPDocumentList} object.
      *
      * @return {@link SPDocumentList} containing crawled {@link SPDocument}.
      */
@@ -208,7 +207,7 @@ public class SharepointClient {
                 aclWs.fetchAclForDocuments(resultSet, webState);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Problem while fetching ACLs for documents crawled under WebState [ "
-                        + webState.getWebUrl() + " ] ");
+                        + webState.getWebUrl() + " ] ", e);
             }
         }
 
@@ -729,7 +728,7 @@ public class SharepointClient {
                         // Any documents to be crawled because of ACl Changes
 
                         if (null == changedItems
-                                || listItems.size() < sharepointClientContext.getBatchHint()) {
+                                || changedItems.size() < sharepointClientContext.getBatchHint()) {
                             // Do regular incremental crawl
                             listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
                             if (null != changedItems && null != listItems) {

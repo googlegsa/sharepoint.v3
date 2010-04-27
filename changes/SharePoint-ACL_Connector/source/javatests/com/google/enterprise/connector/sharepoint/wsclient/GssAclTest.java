@@ -62,7 +62,7 @@ public class GssAclTest extends TestCase {
         for (SPDocument document : docList.getDocuments()) {
             assertNotNull(document);
             assertNotNull(document.getUsersAclMap());
-            assertNotNull(document.getUsersAclMap());
+            assertNotNull(document.getGroupsAclMap());
         }
     }
 

@@ -125,6 +125,9 @@ public class GssAclWS {
      */
     private GssGetAclForUrlsResult getAclForUrls(String[] urls) {
         GssGetAclForUrlsResult result = null;
+        if (null == urls || urls.length == 0) {
+            return result;
+        }
         try {
             result = stub.getAclForUrls(urls);
         } catch (final AxisFault af) {
@@ -137,15 +140,15 @@ public class GssAclWS {
                 try {
                     result = stub.getAclForUrls(urls);
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to getAclForUrls call failed. endpoint [ "
+                    LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
                             + endpoint + " ].", e);
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Call to getAclForUrls call failed. endpoint [ "
+                LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
                         + endpoint + " ].", af);
             }
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Call to getAclForUrls call failed. endpoint [ "
+            LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
                     + endpoint + " ].", e);
         }
         return result;
@@ -163,7 +166,8 @@ public class GssAclWS {
      * overkill as this limitation is going to be fixed in future GSA releases
      *
      * @param wsResult Web Service response to be parsed
-     * @param urlToDocMap Documents whose ACLs are to be set
+     * @param urlToDocMap Documents whose ACLs are to be set. The keys in the
+     *            map represents the document URL
      */
     private void processWsResponse(GssGetAclForUrlsResult wsResult,
             Map<String, SPDocument> urlToDocMap) {
@@ -297,12 +301,14 @@ public class GssAclWS {
                     urlToDocMap.put(document.getUrl(), document);
                     allUrlsForAcl[i++] = document.getUrl();
                 }
-                GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl);
-                processWsResponse(wsResult, urlToDocMap);
-            } catch (Exception e) {
                 LOGGER.log(Level.CONFIG, "Getting ACL for #"
                         + urlToDocMap.size() + " entities crawled from site [ "
                         + webState.getWebUrl() + " ]");
+                GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl);
+                processWsResponse(wsResult, urlToDocMap);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Problem while getting ACL from site [ "
+                        + webState.getWebUrl() + " ]", e);
             }
         }
     }
