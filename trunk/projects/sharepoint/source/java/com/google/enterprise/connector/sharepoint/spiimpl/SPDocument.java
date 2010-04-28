@@ -22,7 +22,9 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,9 +44,12 @@ import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryDocumentException;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 import com.google.enterprise.connector.spiimpl.BinaryValue;
 import com.google.enterprise.connector.spiimpl.BooleanValue;
 import com.google.enterprise.connector.spiimpl.DateValue;
@@ -91,6 +96,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * A guess as to how many attributes we should allow for initially.
      */
+    // FIXME: Do we really need such guessing?
     private final int INITIALATTRLISTSIZE = 5;
     private final ArrayList<Attribute> attrs = new ArrayList<Attribute>(
             INITIALATTRLISTSIZE);
@@ -99,6 +105,17 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      * Flag to indicate if this document is to be sent as a feed
      */
     private boolean toBeFed = true;
+
+    // List of users and their permissions to be sent in document's ACL
+    private Map<String, List<RoleType>> usersAclMap;
+
+    // List of groups and their permissions to be sent in document's ACL
+    private Map<String, List<RoleType>> groupsAclMap;
+
+    // Check if the documents is discovered from ACL based crawling. An ACL
+    // based crawling happens when a security change occurs on site/list which
+    // affects the ACL of many list items
+    private boolean forAclChange = false;
 
     /**
      * @return the toBeFed
@@ -162,11 +179,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     /**
      * To be used while loading the lastDocument from the state file.
      */
-	public SPDocument(final String inDocId, final String inDocURL,
-			final Calendar inLastMod,
+    public SPDocument(final String inDocId, final String inDocURL,
+            final Calendar inLastMod,
             final String inFolderLevel, final ActionType inAction) {
         docId = inDocId;
-		url = inDocURL;
+        url = inDocURL;
         lastMod = inLastMod;
         folderLevel = inFolderLevel;
         action = inAction;
@@ -476,8 +493,41 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
             return new SPProperty(SpiConstants.PROPNAME_ISPUBLIC,
                     new StringValue(getAction().toString()));
+        } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLUSERS)) {
+            List<Value> values = new ArrayList<Value>(usersAclMap.size());
+            for (String user : usersAclMap.keySet()) {
+                values.add(Value.getStringValue(user));
+            }
+            return new SimpleProperty(values);
+        } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLGROUPS)) {
+            List<Value> values = new ArrayList<Value>(groupsAclMap.size());
+            for (String group : groupsAclMap.keySet()) {
+                values.add(Value.getStringValue(group));
+            }
+            return new SimpleProperty(values);
+        } else if (strPropertyName.startsWith(SpiConstants.USER_ROLES_PROPNAME_PREFIX)) {
+            String originalName = strPropertyName.substring(SpiConstants.USER_ROLES_PROPNAME_PREFIX.length());
+            List<RoleType> roleTypes = usersAclMap.get(originalName);
+            List<Value> values = new ArrayList<Value>(roleTypes.size());
+            for (RoleType roleType : roleTypes) {
+                values.add(Value.getStringValue(roleType.toString()));
+            }
+            return new SimpleProperty(values);
+        } else if (strPropertyName.startsWith(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX)) {
+            String originalName = strPropertyName.substring(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX.length());
+            List<RoleType> roleTypes = groupsAclMap.get(originalName);
+            List<Value> values = new ArrayList<Value>(roleTypes.size());
+            for (RoleType roleType : roleTypes) {
+                values.add(Value.getStringValue(roleType.toString()));
+            }
+            return new SimpleProperty(values);
         }
-
+        // FIXME: We can get rid of this if-else-if ladder here by setting all
+        // the relevant properties (in appropriate type) right at the time of
+        // document creation. After doing that, all that will be required is to
+        // maintain a map of all the properties with key as the prop name. This
+        // will also eliminate maintaining multiple member attributes in this
+        // class. All the attribute will be there in a common map.
         else {
             for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
                 final Attribute attr = (Attribute) iter.next();
@@ -503,6 +553,18 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         s.add(SPConstants.LIST_GUID);
         s.add(SPConstants.SPAUTHOR);
         s.add(SPConstants.PARENT_WEB_TITLE);
+        if (null != usersAclMap) {
+            s.add(SpiConstants.PROPNAME_ACLUSERS);
+            for (Entry<String, List<RoleType>> ace : usersAclMap.entrySet()) {
+                s.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX + ace.getKey());
+            }
+        }
+        if (null != groupsAclMap) {
+            s.add(SpiConstants.PROPNAME_ACLGROUPS);
+            for (Entry<String, List<RoleType>> ace : groupsAclMap.entrySet()) {
+                s.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
+            }
+        }
 
         // get the "extra" metadata fields, including those added by user:
         for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
@@ -742,5 +804,29 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     public void setFileref(String fileref) {
         this.fileref = fileref;
+    }
+
+    public Map<String, List<RoleType>> getUsersAclMap() {
+        return usersAclMap;
+    }
+
+    public void setUsersAclMap(Map<String, List<RoleType>> usersAclMap) {
+        this.usersAclMap = usersAclMap;
+    }
+
+    public Map<String, List<RoleType>> getGroupsAclMap() {
+        return groupsAclMap;
+    }
+
+    public void setGroupsAclMap(Map<String, List<RoleType>> groupsAclMap) {
+        this.groupsAclMap = groupsAclMap;
+    }
+
+    public boolean isForAclChange() {
+        return forAclChange;
+    }
+
+    public void setForAclChange(boolean forAclChange) {
+        this.forAclChange = forAclChange;
     }
 }

@@ -35,6 +35,7 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.AlertsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
+import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.UserProfileWS;
@@ -108,6 +109,7 @@ public class SharepointClient {
                 doc.setContentDwnldURL(doc.getUrl());
                 doc.setSharepointClientContext(sharepointClientContext);
             }
+
             newlist.add(doc);
             LOGGER.log(Level.FINEST, "[ DocId = " + doc.getDocId() + ", URL = "
                     + doc.getUrl() + " ]");
@@ -124,15 +126,14 @@ public class SharepointClient {
     }
 
     /**
-     * Calls DocsFromDocLibPerSite for all the sites under the current site.
-     * It's possible that we're resuming traversal, because of batch hints. In
-     * this case, we rely on GlobalState's notion of "current". Each time we
-     * visit a List (whether or not it has docs to crawl), we mark it "current."
-     * On a subsequent call to traverse(), we start AFTER the current, if there
-     * is one. One might wonder why we don't just delete the crawl queue when
-     * done. The answer is, we don't consider it "done" until we're notified via
-     * the Connector Manager's call to checkpoint(). Until that time, it's
-     * possible we'd have to traverse() it again.
+     * Scans the crawl queue of all the ListStates from a given WebState and
+     * constructs a {@link SPDocumentList} object to be returned to CM.
+     * {@link WebState#getCurrentListstateIterator()} takes care of the fact
+     * that same list is not scanned twice in case the traversal has been
+     * resumed.
+     * <p/>
+     * At the end, fetches the ACL of all the documents contained in the
+     * {@link SPDocumentList} object.
      *
      * @return {@link SPDocumentList} containing crawled {@link SPDocument}.
      */
@@ -161,6 +162,7 @@ public class SharepointClient {
             }
 
             SPDocumentList resultsList = null;
+
             try {
                 LOGGER.log(Level.INFO, "Handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ");
@@ -194,6 +196,18 @@ public class SharepointClient {
                         + sharepointClientContext.getBatchHint()
                         + " has been reached");
                 break;
+            }
+        }
+
+        // Fetch ACL for all the documents crawled from the current WebState
+        if (sharepointClientContext.isPushAcls()) {
+            try {
+                GssAclWS aclWs = new GssAclWS(sharepointClientContext,
+                        webState.getWebUrl());
+                aclWs.fetchAclForDocuments(resultSet, webState);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Problem while fetching ACLs for documents crawled under WebState [ "
+                        + webState.getWebUrl() + " ] ", e);
             }
         }
 
@@ -584,6 +598,16 @@ public class SharepointClient {
             Collections.rotate(listCollection, -(listCollection.indexOf(nextList)));
         }
 
+        GssAclWS aclWs = null;
+        try {
+            aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
+            aclWs.fetchAclChangesSinceTokenAndUpdateState(webState);
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
+                    + webState.getWebUrl() + " ]. ", e);
+        }
+
+
         final ListsWS listsWS = new ListsWS(tempCtx);
         for (int i = 0; i < listCollection.size(); i++) {
             final ListState currentList = listCollection.get(i);
@@ -604,7 +628,7 @@ public class SharepointClient {
                 if (SPType.SP2007 == webState.getSharePointType()) {
                     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                         // In case of content feed, we need to keep track of
-                        // folders and the items under that. This is reaquired
+                        // folders and the items under that. This is required
                         // for sending delete feeds for the documents when their
                         // parent folder is deleted.
                         LOGGER.log(Level.INFO, "Discovering all the folders in the current list/library [ "
@@ -619,6 +643,7 @@ public class SharepointClient {
                                     + listState.getListURL() + " ]. ", t);
                         }
                     }
+
                     try {
                         listItems = listsWS.getListItemChangesSinceToken(listState, null, allWebs, null);
                     } catch (final Exception e) {
@@ -698,7 +723,18 @@ public class SharepointClient {
                         }
                         listState.updateList(currentList);
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
-                        listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
+
+                        List<SPDocument> changedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS);
+                        // Any documents to be crawled because of ACl Changes
+
+                        if (null == changedItems
+                                || changedItems.size() < sharepointClientContext.getBatchHint()) {
+                            // Do regular incremental crawl
+                            listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
+                            if (null != changedItems && null != listItems) {
+                                listItems.addAll(changedItems);
+                            }
+                        }
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                                 + listState.getListURL() + " ].", e);
@@ -793,7 +829,7 @@ public class SharepointClient {
             }
 
             listState.setCrawlQueue(listItems);
-            if (listItems != null) {
+            if (null != listItems) {
                 LOGGER.log(Level.INFO, "found " + listItems.size()
                         + " items to crawl in " + listState.getListURL());
                 nDocuments += listItems.size();
@@ -869,29 +905,22 @@ public class SharepointClient {
             }
 
             nextWeb = ws;
-
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine("Web [ " + webURL
+                        + " ] is getting crawled for documents....");
+            }
+            final int currDocCount = nDocuments;
             try {
-                final int currDocCount = nDocuments;
-                final String siteName = ws.getPrimaryKey();
-
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("Web [ " + siteName
-                            + " ] is getting crawled for documents....");
-                }
-                sharePointClientContext.setSiteURL(siteName);
+                sharePointClientContext.setSiteURL(webURL);
 
                 // Process the web site, and add the link site info to allSites.
                 updateWebStateFromSite(sharePointClientContext, ws, nextList, allSites);
-
-                // This call is not required currently as there are no such information getting updated as per the crawl which can affect the ordering of WebStates. For detail, refer to the javadoc of
-                // {WebState.AddOrUpdateListStateInWebState}. Also, this is risky to call this method right here because this method may change the collection we are iterating over.
-                /* globalState.AddOrUpdateWebStateInGlobalState(ws); */
 
                 if (currDocCount == nDocuments) {
                     // get Alerts for the web and update webState. The above
                     // check is added to reduce the frequency with which
                     // getAlerts WS call is made.
-                    LOGGER.info("Web [ " + siteName
+                    LOGGER.info("Web [ " + webURL
                             + " ] is getting crawled for alerts....");
                     processAlerts(ws, sharePointClientContext);
                 }

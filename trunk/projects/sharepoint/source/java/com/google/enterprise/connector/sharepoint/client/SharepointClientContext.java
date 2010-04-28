@@ -74,6 +74,9 @@ public class SharepointClientContext implements Cloneable {
     // The traversal context
     private TraversalContext traversalContext;
 
+    private boolean pushAcls = true;
+    private boolean stripDomainFromAces = true;
+
     /**
      * For cloning
      */
@@ -134,6 +137,8 @@ public class SharepointClientContext implements Cloneable {
 
             spCl.setFQDNConversion(bFQDNConversion);
             spCl.setBatchHint(batchHint);
+            spCl.setPushAcls(pushAcls);
+            spCl.setStripDomainFromAces(stripDomainFromAces);
 
             if (null != included_metadata) {
                 spCl.included_metadata.addAll(included_metadata);
@@ -662,10 +667,10 @@ public class SharepointClientContext implements Cloneable {
           SharePoint connector requires to know the version of the SharePoint repository<br/>
           for following
           a) MySite\Personal Site handling which is different in SP2003 & SP2007
-          	  Note: current mysite handling fails for SP2010.<br/>
-         			However mysite URLs can be discovered using the custom site discovery WS.
+                Note: current mysite handling fails for SP2010.<br/>
+                     However mysite URLs can be discovered using the custom site discovery WS.
           b) Content Feed\Bulk AuthZ: This is achieved through custom web services which is supported on SP2007
-          	  Note: Checked that same web services work for SP2010 as well
+                Note: Checked that same web services work for SP2010 as well
 
          */
 
@@ -879,5 +884,21 @@ public class SharepointClientContext implements Cloneable {
      */
     public void setTraversalContext(TraversalContext traversalContext) {
         this.traversalContext = traversalContext;
+    }
+
+    public boolean isPushAcls() {
+        return pushAcls;
+    }
+
+    public void setPushAcls(boolean pushAcls) {
+        this.pushAcls = pushAcls;
+    }
+
+    public boolean isStripDomainFromAces() {
+        return stripDomainFromAces;
+    }
+
+    public void setStripDomainFromAces(boolean stripDomainFromAces) {
+        this.stripDomainFromAces = stripDomainFromAces;
     }
 }

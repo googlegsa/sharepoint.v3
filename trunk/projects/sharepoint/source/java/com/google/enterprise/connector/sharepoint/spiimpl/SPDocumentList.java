@@ -450,11 +450,17 @@ public class SPDocumentList implements DocumentList {
                 }
             }
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
-            listState.setLastDocProcessedForWS(spDocument);
+            // The pre-existing logic of checkpointing does not apply to the
+            // documents which are being crawled because of any ACL change.
+            // This is to keep the regular crawling separate from ACl based
+            // crawling.
+            if (!spDocument.isForAclChange()) {
+                listState.setLastDocProcessedForWS(spDocument);
 
-            // Update ExtraIDs
-            if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {
-                updateExtraIDs(listState, spDocument, currentID);
+                // Update ExtraIDs
+                if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {
+                    updateExtraIDs(listState, spDocument, currentID);
+                }
             }
         }
 
@@ -469,13 +475,15 @@ public class SPDocumentList implements DocumentList {
         // at the completion of this traversal.
         listState.removeDocFromCrawlQueue(spDocument);
 
-        if ((null == listState.getCrawlQueue() || listState.getCrawlQueue().size() == 0)
-                && null == listState.getNextPage()
-                && null != listState.getNextChangeTokenForSubsequectWSCalls()) {
-            // Since, all the docs are sent, commit the next suitable change
-            // token value as current change token which gets used for the
-            // subsequent WS calls.
-            listState.commitChangeTokenForWSCall();
+        if (listState.isCrawlQueueEmpty()) {
+            listState.commitAclCrawlStatus();
+            if (null == listState.getNextPage()
+                    && !listState.isNextChangeTokenBlank()) {
+                // Since, all the docs are sent, commit the next suitable change
+                // token value as current change token which gets used for the
+                // subsequent WS calls.
+                listState.commitChangeTokenForWSCall();
+            }
         }
     }
 
@@ -533,5 +541,9 @@ public class SPDocumentList implements DocumentList {
                         + " ]. ", se.getMessage());
             }
         }
+    }
+
+    public List<SPDocument> getDocuments() {
+        return documents;
     }
 }

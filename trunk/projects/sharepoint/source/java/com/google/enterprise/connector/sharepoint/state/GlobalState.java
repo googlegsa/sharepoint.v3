@@ -525,6 +525,11 @@ public class GlobalState {
     public void AddOrUpdateWebStateInGlobalState(final WebState state) {
         if (state != null) {
             keyMap.put(state.getPrimaryKey(), state);
+            // Deletion is required to ensure that both datastructures are
+            // keeping reference to the same stateful objects
+            if (dateMap.contains(state)) {
+                dateMap.remove(state);
+            }
             dateMap.add(state);
         }
     }

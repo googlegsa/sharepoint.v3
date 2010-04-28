@@ -57,35 +57,35 @@ public class TestConfiguration {
     public static String SearchDocID2;
     public static String SearchDocID3;
 
-	public static String Site1_URL;
-	public static String Site1_List1_GUID;
-	public static String Site1_List1_URL;
-	public static String Site1_List1_Item1_URL;
-	public static String Site1_List1_Item2_URL;
-	public static String Site1_List2_GUID;
-	public static String Site1_List2_URL;
-	public static String Site1_List2_Item1_URL;
-	public static String Site1_List2_Item2_URL;
+    public static String Site1_URL;
+    public static String Site1_List1_GUID;
+    public static String Site1_List1_URL;
+    public static String Site1_List1_Item1_URL;
+    public static String Site1_List1_Item2_URL;
+    public static String Site1_List2_GUID;
+    public static String Site1_List2_URL;
+    public static String Site1_List2_Item1_URL;
+    public static String Site1_List2_Item2_URL;
 
     public static String Site2_URL;
-	public static String Site2_List1_GUID;
-	public static String Site2_List1_URL;
-	public static String Site2_List1_Item1_URL;
-	public static String Site2_List1_Item2_URL;
-	public static String Site2_List2_GUID;
-	public static String Site2_List2_URL;
-	public static String Site2_List2_Item1_URL;
-	public static String Site2_List2_Item2_URL;
+    public static String Site2_List1_GUID;
+    public static String Site2_List1_URL;
+    public static String Site2_List1_Item1_URL;
+    public static String Site2_List1_Item2_URL;
+    public static String Site2_List2_GUID;
+    public static String Site2_List2_URL;
+    public static String Site2_List2_Item1_URL;
+    public static String Site2_List2_Item2_URL;
 
     public static String Site3_URL;
-	public static String Site3_List1_GUID;
-	public static String Site3_List1_URL;
-	public static String Site3_List1_Item1_URL;
-	public static String Site3_List1_Item2_URL;
-	public static String Site3_List2_GUID;
-	public static String Site3_List2_URL;
-	public static String Site3_List2_Item1_URL;
-	public static String Site3_List2_Item2_URL;
+    public static String Site3_List1_GUID;
+    public static String Site3_List1_URL;
+    public static String Site3_List1_Item1_URL;
+    public static String Site3_List1_Item2_URL;
+    public static String Site3_List2_GUID;
+    public static String Site3_List2_URL;
+    public static String Site3_List2_Item1_URL;
+    public static String Site3_List2_Item2_URL;
 
     public static ArrayList<String> blackList = new ArrayList<String>();
     public static ArrayList<String> whiteList = new ArrayList<String>();
@@ -118,35 +118,35 @@ public class TestConfiguration {
         SearchDocID2 = properties.getProperty("SearchDocID2");
         SearchDocID3 = properties.getProperty("SearchDocID3");
 
-		Site1_URL = properties.getProperty("Site1_URL");
-		Site1_List1_GUID = properties.getProperty("Site1_List1_GUID");
-		Site1_List1_URL = properties.getProperty("Site1_List1_URL");
-		Site1_List1_Item1_URL = properties.getProperty("Site1_List1_Item1_URL");
-		Site1_List1_Item2_URL = properties.getProperty("Site1_List1_Item2_URL");
-		Site1_List2_GUID = properties.getProperty("Site1_List2_GUID");
-		Site1_List2_URL = properties.getProperty("Site1_List2_URL");
-		Site1_List2_Item1_URL = properties.getProperty("Site1_List2_Item1_URL");
-		Site1_List2_Item2_URL = properties.getProperty("Site1_List2_Item2_URL");
+        Site1_URL = properties.getProperty("Site1_URL");
+        Site1_List1_GUID = properties.getProperty("Site1_List1_GUID");
+        Site1_List1_URL = properties.getProperty("Site1_List1_URL");
+        Site1_List1_Item1_URL = properties.getProperty("Site1_List1_Item1_URL");
+        Site1_List1_Item2_URL = properties.getProperty("Site1_List1_Item2_URL");
+        Site1_List2_GUID = properties.getProperty("Site1_List2_GUID");
+        Site1_List2_URL = properties.getProperty("Site1_List2_URL");
+        Site1_List2_Item1_URL = properties.getProperty("Site1_List2_Item1_URL");
+        Site1_List2_Item2_URL = properties.getProperty("Site1_List2_Item2_URL");
 
         Site2_URL = properties.getProperty("Site2_URL");
-		Site2_List1_GUID = properties.getProperty("Site2_List1_GUID");
-		Site2_List1_URL = properties.getProperty("Site2_List1_URL");
-		Site2_List1_Item1_URL = properties.getProperty("Site2_List1_Item1_URL");
-		Site2_List1_Item2_URL = properties.getProperty("Site2_List1_Item2_URL");
-		Site2_List2_GUID = properties.getProperty("Site2_List2_GUID");
-		Site2_List2_URL = properties.getProperty("Site2_List2_URL");
-		Site2_List2_Item1_URL = properties.getProperty("Site2_List2_Item1_URL");
-		Site2_List2_Item2_URL = properties.getProperty("Site2_List2_Item2_URL");
+        Site2_List1_GUID = properties.getProperty("Site2_List1_GUID");
+        Site2_List1_URL = properties.getProperty("Site2_List1_URL");
+        Site2_List1_Item1_URL = properties.getProperty("Site2_List1_Item1_URL");
+        Site2_List1_Item2_URL = properties.getProperty("Site2_List1_Item2_URL");
+        Site2_List2_GUID = properties.getProperty("Site2_List2_GUID");
+        Site2_List2_URL = properties.getProperty("Site2_List2_URL");
+        Site2_List2_Item1_URL = properties.getProperty("Site2_List2_Item1_URL");
+        Site2_List2_Item2_URL = properties.getProperty("Site2_List2_Item2_URL");
 
         Site3_URL = properties.getProperty("Site3_URL");
-		Site3_List1_GUID = properties.getProperty("Site3_List1_GUID");
-		Site3_List1_URL = properties.getProperty("Site3_List1_URL");
-		Site3_List1_Item1_URL = properties.getProperty("Site3_List1_Item1_URL");
-		Site3_List1_Item2_URL = properties.getProperty("Site3_List1_Item2_URL");
-		Site3_List2_GUID = properties.getProperty("Site3_List2_GUID");
-		Site3_List2_URL = properties.getProperty("Site3_List2_URL");
-		Site3_List2_Item1_URL = properties.getProperty("Site3_List2_Item1_URL");
-		Site3_List2_Item2_URL = properties.getProperty("Site3_List2_Item2_URL");
+        Site3_List1_GUID = properties.getProperty("Site3_List1_GUID");
+        Site3_List1_URL = properties.getProperty("Site3_List1_URL");
+        Site3_List1_Item1_URL = properties.getProperty("Site3_List1_Item1_URL");
+        Site3_List1_Item2_URL = properties.getProperty("Site3_List1_Item2_URL");
+        Site3_List2_GUID = properties.getProperty("Site3_List2_GUID");
+        Site3_List2_URL = properties.getProperty("Site3_List2_URL");
+        Site3_List2_Item1_URL = properties.getProperty("Site3_List2_Item1_URL");
+        Site3_List2_Item2_URL = properties.getProperty("Site3_List2_Item2_URL");
 
         blackList.add(".*cachedcustomprops$");
         blackList.add(".*parserversion$");
@@ -203,7 +203,7 @@ public class TestConfiguration {
 
         ls.setPrimaryKey(primaryKey);
         ls.setType(SPConstants.GENERIC_LIST);
-		SPDocument doc = new SPDocument(new Integer(docId).toString(), "X",
+        SPDocument doc = new SPDocument(new Integer(docId).toString(), "X",
                 Calendar.getInstance(), null, null);
         ls.setLastDocProcessedForWS(doc);
         ls.setUrl(url);
@@ -226,7 +226,7 @@ public class TestConfiguration {
             SharepointClientContext spContext, String url,
             int indexOfLastCrawledList) throws SharepointException {
         WebState ws = globalState.makeWebState(spContext, url);
-		ws.setPrimaryKey(url);
+        ws.setPrimaryKey(url);
         DateTime dt = new DateTime();
         ws.setInsertionTime(dt);
         ListState ls = getListState("http://testcase.com:22819/tempSite/Lists/Announcements/AllItems.aspx", 10, 156790, "{872819FC-6FA7-42AF-A71F-DCF7B8CD1E4A}", ws);
@@ -296,12 +296,12 @@ public class TestConfiguration {
             Integer docId = r.nextInt(200000);
             SPDocument doc = null;
             if (i % 3 == 0) {
-				doc = new SPDocument(docId.toString(), "X",
-						Calendar.getInstance(),
+                doc = new SPDocument(docId.toString(), "X",
+                        Calendar.getInstance(),
                         null, ActionType.DELETE);
             } else {
-				doc = new SPDocument(docId.toString(), "X",
-						Calendar.getInstance(),
+                doc = new SPDocument(docId.toString(), "X",
+                        Calendar.getInstance(),
                         null, ActionType.ADD);
             }
             doc.setParentWeb(web);
@@ -311,5 +311,158 @@ public class TestConfiguration {
         }
 
         return listOfDocs;
+    }
+
+    /**
+     * Creates a sample connector state {@link GlobalState} from the passed in
+     * values in TestConfig.properties
+     *
+     * @param sharepointClientContext
+     * @return
+     * @throws SharepointException
+     */
+    public static GlobalState initState(
+            SharepointClientContext sharepointClientContext)
+            throws SharepointException {
+        GlobalState globalState = new GlobalState(
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.feedType);
+
+        if (null != Site1_URL && Site1_URL.trim().length() > 0) {
+            WebState webstate1 = globalState.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
+            if (null != Site1_List1_URL && Site1_List1_URL.trim().length() > 0) {
+                ListState liststate11 = new ListState(Site1_List1_GUID,
+                        "inTitle", SPConstants.DOC_LIB,
+                        Calendar.getInstance(), "", Site1_List1_URL, webstate1);
+                List<SPDocument> docs = new ArrayList<SPDocument>();
+                if (null != Site1_List1_Item1_URL
+                        && Site1_List1_Item1_URL.trim().length() > 0) {
+                    SPDocument doc = new SPDocument("111",
+                            Site1_List1_Item1_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                if (null != Site1_List1_Item2_URL
+                        && Site1_List1_Item2_URL.trim().length() > 0) {
+                    SPDocument doc = new SPDocument("112",
+                            Site1_List1_Item2_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                liststate11.setCrawlQueue(docs);
+                webstate1.AddOrUpdateListStateInWebState(liststate11, new DateTime());
+            }
+            if (null != Site1_List2_URL && Site1_List2_URL.trim().length() > 0) {
+                ListState liststate12 = new ListState(Site1_List2_GUID,
+                        "inTitle", SPConstants.GENERIC_LIST,
+                        Calendar.getInstance(), "", Site1_List2_URL, webstate1);
+                List<SPDocument> docs = new ArrayList<SPDocument>();
+                if (null != Site1_List2_Item1_URL
+                        && Site1_List2_Item1_URL.trim().length() > 0) {
+                    SPDocument doc = new SPDocument("121",
+                            Site1_List2_Item1_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                if (null != Site1_List2_Item2_URL
+                        && Site1_List2_Item2_URL.trim().length() > 0) {
+                    SPDocument doc = new SPDocument("122",
+                            Site1_List2_Item2_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                liststate12.setCrawlQueue(docs);
+                webstate1.AddOrUpdateListStateInWebState(liststate12, new DateTime());
+            }
+        }
+
+        if (null != Site2_URL && Site2_URL.trim().length() > 0) {
+            WebState webstate2 = globalState.makeWebState(sharepointClientContext, TestConfiguration.Site2_URL);
+            if (null != Site2_List1_URL && Site2_List1_URL.trim().length() > 0) {
+                ListState liststate21 = new ListState(Site2_List1_GUID,
+                        "inTitle", SPConstants.DOC_LIB,
+                        Calendar.getInstance(), "", Site2_List1_URL, webstate2);
+                List<SPDocument> docs = new ArrayList<SPDocument>();
+                if (null != Site2_List1_Item1_URL) {
+                    SPDocument doc = new SPDocument("211",
+                            Site2_List1_Item1_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                if (null != Site2_List1_Item2_URL) {
+                    SPDocument doc = new SPDocument("212",
+                            Site2_List1_Item2_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                liststate21.setCrawlQueue(docs);
+                webstate2.AddOrUpdateListStateInWebState(liststate21, new DateTime());
+            }
+            if (null != Site2_List2_URL && Site2_List2_URL.trim().length() > 0) {
+                ListState liststate22 = new ListState(Site1_List2_GUID,
+                        "inTitle", SPConstants.GENERIC_LIST,
+                        Calendar.getInstance(), "", Site2_List2_URL, webstate2);
+                List<SPDocument> docs = new ArrayList<SPDocument>();
+                if (null != Site2_List2_Item1_URL) {
+                    SPDocument doc = new SPDocument("221",
+                            Site2_List2_Item1_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                if (null != Site2_List2_Item2_URL) {
+                    SPDocument doc = new SPDocument("222",
+                            Site2_List2_Item2_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                liststate22.setCrawlQueue(docs);
+                webstate2.AddOrUpdateListStateInWebState(liststate22, new DateTime());
+            }
+        }
+
+        if (null != Site3_URL && Site3_URL.trim().length() > 0) {
+            WebState webstate3 = globalState.makeWebState(sharepointClientContext, TestConfiguration.Site3_URL);
+            if (null != Site3_List1_URL && Site3_List1_URL.trim().length() > 0) {
+                ListState liststate31 = new ListState(Site2_List1_GUID,
+                        "inTitle", SPConstants.DOC_LIB,
+                        Calendar.getInstance(), "", Site3_List1_URL, webstate3);
+                List<SPDocument> docs = new ArrayList<SPDocument>();
+                if (null != Site3_List1_Item1_URL) {
+                    SPDocument doc = new SPDocument("311",
+                            Site3_List1_Item1_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                if (null != Site3_List1_Item2_URL) {
+                    SPDocument doc = new SPDocument("312",
+                            Site3_List1_Item2_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                liststate31.setCrawlQueue(docs);
+                webstate3.AddOrUpdateListStateInWebState(liststate31, new DateTime());
+            }
+            if (null != Site3_List2_URL && Site3_List2_URL.trim().length() > 0) {
+                ListState liststate32 = new ListState(Site3_List2_GUID,
+                        "inTitle", SPConstants.GENERIC_LIST,
+                        Calendar.getInstance(), "", Site3_List2_URL, webstate3);
+                List<SPDocument> docs = new ArrayList<SPDocument>();
+                if (null != Site3_List2_Item1_URL) {
+                    SPDocument doc = new SPDocument("321",
+                            Site3_List2_Item1_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                if (null != Site3_List2_Item2_URL) {
+                    SPDocument doc = new SPDocument("322",
+                            Site2_List2_Item2_URL, Calendar.getInstance(), "",
+                            ActionType.ADD);
+                    docs.add(doc);
+                }
+                liststate32.setCrawlQueue(docs);
+                webstate3.AddOrUpdateListStateInWebState(liststate32, new DateTime());
+            }
+        }
+        return globalState;
     }
 }

@@ -40,94 +40,94 @@ public class GlobalStateTest extends TestCase {
      *
      * @throws SharepointException
      */
-	public void testStateMaintenance() throws SharepointException {
-		GlobalState state = new GlobalState(
-				TestConfiguration.googleConnectorWorkDir,
-				FeedType.METADATA_URL_FEED);
-		WebState web1 = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
-		// Using invalid ListURL so that they could be deleted from state.
-		// Connector checks for an HTTP response of 404 before deletion.
-		ListState list1 = new ListState(TestConfiguration.Site1_List1_GUID,
-				"No Title", SPConstants.DOC_LIB, Calendar.getInstance(),
-				SPConstants.NO_TEMPLATE, TestConfiguration.Site1_List1_URL
-						+ "X", web1);
-		web1.AddOrUpdateListStateInWebState(list1, new DateTime());
-		ListState list2 = new ListState(TestConfiguration.Site1_List2_GUID,
-				"No Title", SPConstants.DOC_LIB, Calendar.getInstance(),
-				SPConstants.NO_TEMPLATE, TestConfiguration.Site1_List2_URL
-						+ "X", web1);
-		web1.AddOrUpdateListStateInWebState(list2, new DateTime());
+    public void testStateMaintenance() throws SharepointException {
+        GlobalState state = new GlobalState(
+                TestConfiguration.googleConnectorWorkDir,
+                FeedType.METADATA_URL_FEED);
+        WebState web1 = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
+        // Using invalid ListURL so that they could be deleted from state.
+        // Connector checks for an HTTP response of 404 before deletion.
+        ListState list1 = new ListState(TestConfiguration.Site1_List1_GUID,
+                "No Title", SPConstants.DOC_LIB, Calendar.getInstance(),
+                SPConstants.NO_TEMPLATE, TestConfiguration.Site1_List1_URL
+                        + "X", web1);
+        web1.AddOrUpdateListStateInWebState(list1, new DateTime());
+        ListState list2 = new ListState(TestConfiguration.Site1_List2_GUID,
+                "No Title", SPConstants.DOC_LIB, Calendar.getInstance(),
+                SPConstants.NO_TEMPLATE, TestConfiguration.Site1_List2_URL
+                        + "X", web1);
+        web1.AddOrUpdateListStateInWebState(list2, new DateTime());
 
-		WebState web2 = state.makeWebState(sharepointClientContext, TestConfiguration.Site2_URL);
-		ListState list3 = new ListState(TestConfiguration.Site2_List1_GUID,
-				"No Title", SPConstants.DOC_LIB, Calendar.getInstance(),
-				SPConstants.NO_TEMPLATE, TestConfiguration.Site2_List1_URL,
-				web2);
-		web2.AddOrUpdateListStateInWebState(list3, new DateTime());
-		ListState list4 = new ListState(TestConfiguration.Site2_List2_GUID,
-				"No Title", SPConstants.DOC_LIB, Calendar.getInstance(),
-				SPConstants.NO_TEMPLATE, TestConfiguration.Site2_List2_URL,
-				web2);
-		web2.AddOrUpdateListStateInWebState(list4, new DateTime());
+        WebState web2 = state.makeWebState(sharepointClientContext, TestConfiguration.Site2_URL);
+        ListState list3 = new ListState(TestConfiguration.Site2_List1_GUID,
+                "No Title", SPConstants.DOC_LIB, Calendar.getInstance(),
+                SPConstants.NO_TEMPLATE, TestConfiguration.Site2_List1_URL,
+                web2);
+        web2.AddOrUpdateListStateInWebState(list3, new DateTime());
+        ListState list4 = new ListState(TestConfiguration.Site2_List2_GUID,
+                "No Title", SPConstants.DOC_LIB, Calendar.getInstance(),
+                SPConstants.NO_TEMPLATE, TestConfiguration.Site2_List2_URL,
+                web2);
+        web2.AddOrUpdateListStateInWebState(list4, new DateTime());
 
-		assertEquals(web1, state.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext));
-		assertEquals(list1, state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID));
-		assertEquals(list2, state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List2_GUID));
+        assertEquals(web1, state.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext));
+        assertEquals(list1, state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID));
+        assertEquals(list2, state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List2_GUID));
 
-		state.setBFullReCrawl(true);
-		// This will ensure that all the lists/webs will be marked non-existent
-		state.startRecrawl();
+        state.setBFullReCrawl(true);
+        // This will ensure that all the lists/webs will be marked non-existent
+        state.startRecrawl();
 
-		// This will remove all those lists/webs which are non-existent and not
-		// found on SharePoint (HTTP 404)
-		state.endRecrawl(sharepointClientContext);
+        // This will remove all those lists/webs which are non-existent and not
+        // found on SharePoint (HTTP 404)
+        state.endRecrawl(sharepointClientContext);
 
-		// Parent Web, though, marked as non-existent during startRecrawl, might
-		// not be
-		// removed, because an HTTP 404 will might not be received for it. So,
-		// we assert only for lists.
-		assertNull(state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID));
-		assertNull(state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List2_GUID));
+        // Parent Web, though, marked as non-existent during startRecrawl, might
+        // not be
+        // removed, because an HTTP 404 will might not be received for it. So,
+        // we assert only for lists.
+        assertNull(state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID));
+        assertNull(state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List2_GUID));
 
-		// ////////////////////////////////////
-		// NOW, CHECK IN CASE OF CONTENT FEED
-		sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
+        // ////////////////////////////////////
+        // NOW, CHECK IN CASE OF CONTENT FEED
+        sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
 
-		web1.AddOrUpdateListStateInWebState(list1, new DateTime());
-		web1.AddOrUpdateListStateInWebState(list2, new DateTime());
+        web1.AddOrUpdateListStateInWebState(list1, new DateTime());
+        web1.AddOrUpdateListStateInWebState(list2, new DateTime());
 
-		assertEquals(web1, state.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext));
-		assertEquals(list1, state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID));
-		assertEquals(list2, state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List2_GUID));
+        assertEquals(web1, state.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext));
+        assertEquals(list1, state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID));
+        assertEquals(list2, state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List2_GUID));
 
-		state.setBFullReCrawl(true);
-		// This will ensure that all the lists/webs will be marked non-existent
-		state.startRecrawl();
+        state.setBFullReCrawl(true);
+        // This will ensure that all the lists/webs will be marked non-existent
+        state.startRecrawl();
 
-		assertTrue((null == list1.getCrawlQueue() || list1.getCrawlQueue().size() == 0));
-		assertTrue((null == list2.getCrawlQueue() || list2.getCrawlQueue().size() == 0));
+        assertTrue((null == list1.getCrawlQueue() || list1.getCrawlQueue().size() == 0));
+        assertTrue((null == list2.getCrawlQueue() || list2.getCrawlQueue().size() == 0));
 
-		list1.setBiggestID(2);
-		list2.setBiggestID(3);
-		sharepointClientContext.setBatchHint(10);
+        list1.setBiggestID(2);
+        list2.setBiggestID(3);
+        sharepointClientContext.setBatchHint(10);
 
-		// This will create DELETE feeds for documents that have been sent
-		// from the non-existent lists.
-		state.endRecrawl(sharepointClientContext);
+        // This will create DELETE feeds for documents that have been sent
+        // from the non-existent lists.
+        state.endRecrawl(sharepointClientContext);
 
-		// Since, the list is of type DocLib, no extra documents will be created
-		// for attachments or alerts. Total no. of document created should be
-		// 2(biggestID)+1(List as document) = 3
-		assertEquals(3, list1.getCrawlQueue().size());
-		for (SPDocument doc : list1.getCrawlQueue()) {
-			assertEquals(ActionType.DELETE, doc.getAction());
-		}
+        // Since, the list is of type DocLib, no extra documents will be created
+        // for attachments or alerts. Total no. of document created should be
+        // 2(biggestID)+1(List as document) = 3
+        assertEquals(3, list1.getCrawlQueue().size());
+        for (SPDocument doc : list1.getCrawlQueue()) {
+            assertEquals(ActionType.DELETE, doc.getAction());
+        }
 
-		assertEquals(4, list2.getCrawlQueue().size());
-		for (SPDocument doc : list2.getCrawlQueue()) {
-			assertEquals(ActionType.DELETE, doc.getAction());
-		}
-	}
+        assertEquals(4, list2.getCrawlQueue().size());
+        for (SPDocument doc : list2.getCrawlQueue()) {
+            assertEquals(ActionType.DELETE, doc.getAction());
+        }
+    }
 
     /**
      * This is to ensure that no information is lost while saving and loading
@@ -208,7 +208,7 @@ public class GlobalStateTest extends TestCase {
                 assertEquals(tmpList1.getLastDocForWSRefresh(), tmpList2.getLastDocForWSRefresh());
                 assertEquals(tmpList1.getLastDocForWSRefresh().getFolderLevel(), tmpList2.getLastDocForWSRefresh().getFolderLevel());
                 assertEquals(tmpList1.getLastDocForWSRefresh().getLastMod(), tmpList2.getLastDocForWSRefresh().getLastMod());
-				assertEquals(tmpList1.getLastDocForWSRefresh().getAction(), tmpList2.getLastDocForWSRefresh().getAction());
+                assertEquals(tmpList1.getLastDocForWSRefresh().getAction(), tmpList2.getLastDocForWSRefresh().getAction());
             }
         }
     }
