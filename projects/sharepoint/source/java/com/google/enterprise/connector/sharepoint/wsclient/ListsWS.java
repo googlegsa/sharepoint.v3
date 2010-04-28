@@ -1075,19 +1075,25 @@ public class ListsWS {
             }
         }
 
-        if (null != lastChangeToken
-                && (null == list.getNextChangeTokenForSubsequectWSCalls() || list.getNextChangeTokenForSubsequectWSCalls().trim().length() == 0)) {
-            // This is the first change token we have received for the first
-            // call to WS with the current change token. This first change
-            // token must only be used as the next change token for making
-            // subsequent WS calls. This is important because by the time we
-            // make another WS call with the same change token, some more
-            // changes could happen on the SharePoint and the change token
-            // that will be received in that case will be greater than the
-            // currently received first change token. Using the first change
-            // token as next token will ensure that we will not miss any
-            // such changes.
-            list.saveNextChangeTokenForWSCall(lastChangeToken);
+        if (null != lastChangeToken) {
+            if(
+            // FIRST CASE: This is the first change token we have received for
+            // the first call to WS. We need to save this change token because
+            // this will define the starting point for incremental crawl
+            // once the initial crawl gets completed. This is important because
+            // by the time we complete the initial crawl, web service would
+            // returning a new change token which would be valid at that point.
+            // If we use that token, we will miss any changes that have happened
+            // while the initial crawl was was in progress.
+            list.isCurrentChangeTokenBlank() && list.isNextChangeTokenBlank()
+
+                    // Or, SECOOND CASE: If connector is running in an
+                    // incremental crawl and all the documents are crawled for
+                    // the current change token
+                    || (!list.isCurrentChangeTokenBlank() && null == list.getNextPage()))
+            {
+                list.saveNextChangeTokenForWSCall(lastChangeToken);
+            }
         }
 
 
@@ -1774,5 +1780,37 @@ public class ListsWS {
             }
         }
         return doc;
+    }
+
+    public List<SPDocument> parseCustomWSResponseForListItemNodes(
+            final MessageElement wsElement, ListState list) {
+        final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
+
+        if (null == wsElement
+                || !SPConstants.GSSLISTITEMS.equals(wsElement.getNodeName())) {
+            return listItems;
+        }
+        for (final Iterator itChilds = wsElement.getChildElements(); itChilds.hasNext();) {
+            Object obj = itChilds.next();
+            if (null == obj || !(obj instanceof MessageElement)) {
+                continue;
+            }
+            try {
+                final MessageElement row = (MessageElement) obj;
+                final SPDocument doc = processListItemElement(row, list, null);
+                listItems.add(doc);
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "Problem occured while parsing node", e);
+                continue;
+            }
+        }
+
+        return listItems;
+    }
+
+    public List<SPDocument> parseCustomWSResponseForListItemNodes(String data,
+            ListState list) {
+        MessageElement wsElement = getMeFromString(data);
+        return parseCustomWSResponseForListItemNodes(wsElement, list);
     }
 }

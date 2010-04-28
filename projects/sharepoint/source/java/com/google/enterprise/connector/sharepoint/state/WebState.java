@@ -72,6 +72,28 @@ public class WebState implements StatefulObject {
      */
     private String lastCrawledDateTime;
 
+    // The current Change Token that should be used for synchronization.
+    private String currentAclChangeToken;
+
+    // The next Change Token Value that should be used. We need to maintain the
+    // next Change Token value because:
+    // Say for a given Change Token CT1, connector makes a WS call at time T1
+    // and gets the next Change Token CT2
+    // The data returned by the WS was partial and not complete. To get the
+    // remaining data, connector will make another WS call without changing the
+    // change token value.
+    // The second WS call which is being made at time T2 may return a
+    // Change Token CT3 (> CT2) because there were some more changes at
+    // SharePoint between T1 and T2.
+    // Now, for the third WS call that connector will make in future, it has to
+    // decide whether to use CT2 or CT3.
+    // In the current logic, it's CT2 because connector relies on an ordering
+    // which is based on document IDs. if the resulting data window varies after
+    // every WS call and adds more documents with different IDs, the ordering
+    // will also change. It will become hard to maintain and rely on the
+    // ordering approach than.
+    private String nextAclChangeToken;
+
     /**
      * For the sole purpose of loading WebState nodes as WebState objects when
      * state file is loaded in-memory.
@@ -576,6 +598,10 @@ public class WebState implements StatefulObject {
         atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
         atts.addAttribute("", "", SPConstants.STATE_WEB_TITLE, SPConstants.STATE_ATTR_CDATA, getTitle());
         atts.addAttribute("", "", SPConstants.STATE_SPTYPE, SPConstants.STATE_ATTR_CDATA, getSharePointType().toString());
+
+        atts.addAttribute("", "", SPConstants.STATE_ACLNEXTCHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getNextAclChangeToken());
+        atts.addAttribute("", "", SPConstants.STATE_ACLCHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getCurrentAclChangeToken());
+
         final String strInsertionTime = getInsertionTimeString();
         if (strInsertionTime != null) {
             atts.addAttribute("", "", SPConstants.STATE_INSERT_TIME, SPConstants.STATE_ATTR_CDATA, strInsertionTime);
@@ -618,6 +644,76 @@ public class WebState implements StatefulObject {
             LOGGER.log(Level.WARNING, "Could not load insertion time for web-state [ "
                     + web.getPrimaryKey() + " ]. ");
         }
+
+        web.setNextAclChangeToken(atts.getValue(SPConstants.STATE_ACLNEXTCHANGETOKEN));
+        web.setCurretAclChangeToken(atts.getValue(SPConstants.STATE_ACLCHANGETOKEN));
         return web;
+    }
+
+    private String getCurrentAclChangeToken() {
+        return currentAclChangeToken;
+    }
+
+
+    private void setCurretAclChangeToken(String aclChangeToken) {
+        this.currentAclChangeToken = aclChangeToken;
+    }
+
+    public String getNextAclChangeToken() {
+        return nextAclChangeToken;
+    }
+
+    public void setNextAclChangeToken(String aclChangeToken) {
+        this.nextAclChangeToken = aclChangeToken;
+    }
+
+    public String getAclChangeTokenForWsCall() {
+        return getCurrentAclChangeToken();
+    }
+
+    /**
+     * The saved nextChangetoken will be committed as the current change token
+     * to be used in the future WS calls.
+     */
+    public void commitAclChangeToken() {
+        LOGGER.log(Level.CONFIG, "Before Commit... currentAclChangeToken [ "
+                + currentAclChangeToken + " ], nextAclChangeToken [ "
+                + nextAclChangeToken + " ] ");
+        this.currentAclChangeToken = nextAclChangeToken;
+        nextAclChangeToken = null;
+    }
+
+    /**
+     * Resets the state of all the children Lists to initiate a complete
+     * re-crawl
+     */
+    public void resetState() {
+        for (ListState liststate : allListStateSet) {
+            liststate.resetState();
+        }
+    }
+
+    /**
+     * Looks-Up a ListState for a given GUID value as received by the custom web
+     * service
+     *
+     * @param listGuid
+     * @return
+     */
+    public ListState getListStateForGuid(String listGuid) {
+        // It has been observed that the GUID values are always returned in
+        // upper case by SP web services. But, the same is not the case with
+        // COM API. This is the most probabilistic case.
+        ListState listState = lookupList("{" + listGuid.toUpperCase() + "}");
+        if (null == listState) {
+            listState = lookupList("{" + listGuid + "}");
+        }
+        if (null == listState) {
+            // It has been observed that the GUID values as returned by
+            // SP web services are inside {}. But, the same is not the case with
+            // COM API.
+            listState = lookupList("{" + listGuid + "}");
+        }
+        return listState;
     }
 }

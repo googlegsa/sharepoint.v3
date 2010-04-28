@@ -135,6 +135,7 @@
             </fileset>
           </classpath>
     </java>
+
     <!--for UserProfileService.wsdl (SP2003)-->
     <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
              <arg line="${wsdl}/sp2003/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice -o ${src}"/>
@@ -144,9 +145,20 @@
             </fileset>
           </classpath>
     </java>
+
     <!--for Alerts.wsdl-->
     <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
              <arg line="${wsdl}/Alerts.wsdl -p com.google.enterprise.connector.sharepoint.generated.alerts -o ${src}"/>
+          <classpath>
+            <fileset dir="${lib.jar.dir}">
+                <include name="**/*.jar" />
+            </fileset>
+          </classpath>
+    </java>
+
+    <!--for GssAcl.wsdl-->
+    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+             <arg line="${wsdl}/GssAcl.wsdl -p com.google.enterprise.connector.sharepoint.generated.gssacl -o ${src}"/>
           <classpath>
             <fileset dir="${lib.jar.dir}">
                 <include name="**/*.jar" />

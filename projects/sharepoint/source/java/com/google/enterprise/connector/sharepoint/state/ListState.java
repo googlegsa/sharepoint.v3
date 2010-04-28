@@ -135,6 +135,16 @@ public class ListState implements StatefulObject {
 
     WebState parentWeb;
 
+    // Does the ACl changed for this List?
+    private boolean aclChanged;
+    // LastDocId crawled due to any ACL change
+    private int lastDocIdCrawledForAcl;
+    // We need to cache the values of above two fields till the time all the
+    // crawled documents are fed to GSA or at least there is no document to be
+    // fed.
+    private boolean tmp_aclChanged;
+    private int tmp_lastDocIdCrawledForAcl;
+
     /**
      * @param inInternalName
      * @param inTitle
@@ -560,6 +570,20 @@ public class ListState implements StatefulObject {
         return nextChangeToken;
     }
 
+    public boolean isNextChangeTokenBlank() {
+        if (null == nextChangeToken || nextChangeToken.length() == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isCurrentChangeTokenBlank() {
+        if (null == currentChangeToken || currentChangeToken.length() == 0) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @param inChangeToken save it as the next change token to be used for WS
      *            calls. Note that, this value is not picked up during the WS
@@ -575,7 +599,13 @@ public class ListState implements StatefulObject {
 
     /**
      * commits the internally saved next change token value as the current
-     * change token and reset the next change token.
+     * change token and reset the next change token. Note: The current usage of
+     * committing the Change Token is NOT idempotent meaning, calling this
+     * method once will update certain info internally and the result would not
+     * be same if the same method is called consecutively. Connector make use of
+     * this info by checking {@link ListState#isNextChangeTokenBlank()} to
+     * ensure if the change token is already committed. Do take care of this if
+     * you make any change here
      */
     public void commitChangeTokenForWSCall() {
         LOGGER.log(Level.CONFIG, "committing nextChangeToken [ "
@@ -1121,14 +1151,16 @@ public class ListState implements StatefulObject {
         atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastModString());
         atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
         atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_CDATA, getType());
+        atts.addAttribute("", "", SPConstants.STATE_ISACLCHANGED, SPConstants.STATE_ATTR_CDATA, String.valueOf(isAclChanged()));
+        if (isAclChanged()) {
+            atts.addAttribute("", "", SPConstants.STATE_LASTDOCIDCRAWLEDFORACL, SPConstants.STATE_ATTR_CDATA, String.valueOf(getLastDocIdCrawledForAcl()));
+        }
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(getType())) {
             if (SPType.SP2007 == getParentWebState().getSharePointType()) {
-                if ((getChangeTokenForWSCall() != null)
-                        && (getChangeTokenForWSCall().length() != 0)) {
+                if (!isCurrentChangeTokenBlank()) {
                     atts.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getChangeTokenForWSCall());
                 }
-                if ((getNextChangeTokenForSubsequectWSCalls() != null)
-                        && (getNextChangeTokenForSubsequectWSCalls().length() != 0)) {
+                if (!isNextChangeTokenBlank()) {
                     atts.addAttribute("", "", SPConstants.STATE_CACHED_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getNextChangeTokenForSubsequectWSCalls());
 
                 }
@@ -1234,6 +1266,15 @@ public class ListState implements StatefulObject {
         }
 
         list.setLastCrawledDateTime(atts.getValue(SPConstants.LAST_CRAWLED_DATETIME));
+        list.setAclChanged(Boolean.getBoolean(atts.getValue(SPConstants.STATE_ISACLCHANGED)));
+        if (list.isAclChanged()) {
+            try {
+                list.setLastDocIdCrawledForAcl(Integer.getInteger(atts.getValue(SPConstants.STATE_LASTDOCIDCRAWLEDFORACL)));
+            } catch (final Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to load LastDocIdCrawledForAcl. ", e);
+            }
+        }
+        list.commitAclCrawlStatus();
 
         if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(list.getType())) {
             if (SPType.SP2007 == web.getSharePointType()) {
@@ -1267,5 +1308,85 @@ public class ListState implements StatefulObject {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Resets the state of this List to initiate a complete re-crawl
+     */
+    public void resetState() {
+        saveNextChangeTokenForWSCall(null);
+        commitChangeTokenForWSCall();
+        setLastDocProcessedForWS(null);
+        setCrawlQueue(null);
+        endAclCrawl();
+    }
+
+    public boolean isAclChanged() {
+        return aclChanged;
+    }
+
+
+    private void setAclChanged(boolean aclChanged) {
+        this.aclChanged = aclChanged;
+    }
+
+    private void setLastDocIdCrawledForAcl(int lastDocIdCrawledForAcl) {
+        this.lastDocIdCrawledForAcl = lastDocIdCrawledForAcl;
+    }
+
+    public int getLastDocIdCrawledForAcl() {
+        return lastDocIdCrawledForAcl;
+    }
+
+    /**
+     * Marks a list for a candidate for ACL based crawling. All such lists are
+     * queried for items with inheriting permissions during the crawl.
+     */
+    public void startAclCrawl() {
+        if (isAclChanged()) {
+            LOGGER.log(Level.WARNING, "Attempt to mark a list for Acl crawl when it is already under Acl crawling.");
+            return;
+        }
+        aclChanged = tmp_aclChanged = true;
+        lastDocIdCrawledForAcl = tmp_lastDocIdCrawledForAcl = 0;
+    }
+
+    /**
+     * Updates the ACL crawl status of the list to reflect that the ACL based
+     * crawling is finished for this list A call to this method will ensure that
+     * the current ACL crawl of the list has been completed and the list can be
+     * processed for the next set of ACL changes
+     */
+    public void endAclCrawl() {
+        if (!isAclChanged()) {
+            LOGGER.log(Level.WARNING, "Attempt to end the ACL crawl of a list when it is not under ACL crawling.");
+            return;
+        }
+        aclChanged = tmp_aclChanged = false;
+        lastDocIdCrawledForAcl = tmp_lastDocIdCrawledForAcl = 0;
+    }
+
+    public void updateAclCrawlStatus(boolean isMoreToCrawl, int lastDocIdCrawled) {
+        this.tmp_aclChanged = isMoreToCrawl;
+        this.tmp_lastDocIdCrawledForAcl = lastDocIdCrawled;
+    }
+
+    /**
+     * Commits the updated info about ACL based crawling to be used latter.
+     * {@link ListState#updateAclCrawlStatus(boolean, int)} along with this
+     * method gives an scope to update the crawling status but not using it
+     * until an specified time. These methods are helpful for the connectro
+     * where crawling and feeding of documents are not one atomic operation.
+     * <p/>
+     * Note: The current usage of committing the ACL crawl status is idempotent
+     * meaning, if i call this method consecutively more than once without
+     * setting a new crawl status (i.e without calling
+     * {@link ListState#updateAclCrawlStatus(boolean, int)} in between), it will
+     * not have any unforseen effect on the ACL based crawling. Do take of this
+     * if you make any change here
+     */
+    public void commitAclCrawlStatus() {
+        aclChanged = tmp_aclChanged;
+        lastDocIdCrawledForAcl = tmp_lastDocIdCrawledForAcl;
     }
 }
