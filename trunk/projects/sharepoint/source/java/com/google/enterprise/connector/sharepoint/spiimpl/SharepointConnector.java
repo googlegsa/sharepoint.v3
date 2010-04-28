@@ -17,8 +17,10 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
@@ -99,6 +101,17 @@ public class SharepointConnector implements Connector {
      */
     public Session login() throws RepositoryException {
         LOGGER.info("login()");
+        // Check the availability of GSS services and set the flags in context
+        // so that connector does not attempt to make any calls to these
+        // services in the current session
+        // For now, checking for ACL only
+        if (sharepointClientContext.isPushAcls()) {
+            GssAclWS aclWs = new GssAclWS(sharepointClientContext, null);
+            String status = aclWs.checkConnectivity();
+            if (!SPConstants.CONNECTIVITY_SUCCESS.equals(status)) {
+                sharepointClientContext.setPushAcls(false);
+            }
+        }
         return new SharepointSession(this, sharepointClientContext);
     }
 
