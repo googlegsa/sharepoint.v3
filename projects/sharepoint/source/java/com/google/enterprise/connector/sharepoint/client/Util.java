@@ -1198,10 +1198,23 @@ public final class Util {
         boolean managelist = false;
         boolean additems = false;
 
+        // For checking Limited Access permission which will be mapped to the
+        // PEEKER in CM
+        boolean viewFormPages = false;
+        boolean open = false;
+
         for(String permission : permissions) {
             if (SPBasePermissions.FULLMASK.equals(permission)) {
                 roleTypes.add(RoleType.OWNER);
             }
+
+            if (SPBasePermissions.VIEWFORMPAGES.equals(permission)) {
+                viewFormPages = true;
+            }
+            if (SPBasePermissions.OPEN.equals(permission)) {
+                open = true;
+            }
+
             if (objectType.ITEM.equals(objectType)) {
                 if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
                     roleTypes.add(RoleType.WRITER);
@@ -1229,6 +1242,9 @@ public final class Util {
 
         if (objectType.LIST.equals(objectType) && managelist && additems) {
             roleTypes.add(RoleType.WRITER);
+        }
+        if (viewFormPages && open) {
+            roleTypes.add(RoleType.PEEKER);
         }
         return roleTypes;
     }
