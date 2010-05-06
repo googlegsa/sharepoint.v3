@@ -57,7 +57,7 @@ div.ms-areaseparatorright{
         public string myquery = "";
         public const String PREV = "Previous";
         public const String NEXT = "Next";
-        public const String PAGENAME = "searchresults.aspx";
+        public const String PAGENAME = "GSASearchresults.aspx";
         public string tempvar = "";
         public const string PREVSTMT = "";//initially prev should be hidden
         public const string NEXTSTMT = "";
