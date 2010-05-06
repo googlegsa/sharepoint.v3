@@ -34,6 +34,7 @@
 	    <add key="GSAStyle" value="false" />
 	    <add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\GSA2SP.xsl" />
 	    <add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\SP_Actual.xsl" />
+            <add key="logLocation" value="C:\program files\Common Files\Microsoft Shared\web server extensions\12\LOGS\" />
 	    <!--End of GSA search control section -->
 }}}
   # To setup SharePoint like frontend:
