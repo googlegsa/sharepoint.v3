@@ -12,7 +12,7 @@
 	SPWeb web = SPControl.GetContextWeb(Context);
     string strEncodedUrl = SPHttpUtility.EcmaScriptStringLiteralEncode(
         
-        SPHttpUtility.UrlPathEncode(web.Url + "/_layouts/1033/searchresults.aspx", false, false)
+        SPHttpUtility.UrlPathEncode(web.Url + "/_layouts/GSASearchresults.aspx", false, false)
         );
     
     
@@ -46,7 +46,6 @@ function SubmitSearchRedirect(strUrl)
 	}
 	if (frm !=null)
 	{
-		//strUrl=strUrl+"?k="+document.getElementById('idSearchString').value;
 		strUrl=strUrl+"?k="+escapeProperly(document.getElementById('idSearchString').value);
 		frm.action=strUrl;
 		document.forms
