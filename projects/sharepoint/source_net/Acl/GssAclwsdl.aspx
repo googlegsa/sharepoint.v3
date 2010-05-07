@@ -47,6 +47,7 @@
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="SiteCollectionUrl" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="SiteCollectionGuid" type="s1:guid" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAcl">
@@ -59,7 +60,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="EntityUrl" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="Owner" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="AllAce" type="tns:ArrayOfGssAce" />
-          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="tns:StringBuilder" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAce">
@@ -78,7 +79,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="Name" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="Type" type="tns:PrincipalType" />
           <s:element minOccurs="0" maxOccurs="1" name="Members" type="tns:ArrayOfGssPrincipal" />
-          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="tns:StringBuilder" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="PrincipalType">
@@ -92,12 +93,6 @@
       <s:complexType name="ArrayOfGssPrincipal">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="unbounded" name="GssPrincipal" nillable="true" type="tns:GssPrincipal" />
-        </s:sequence>
-      </s:complexType>
-      <s:complexType name="StringBuilder">
-        <s:sequence>
-          <s:element minOccurs="1" maxOccurs="1" name="Capacity" type="s:int" />
-          <s:element minOccurs="1" maxOccurs="1" name="Length" type="s:int" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="GssSharepointPermission">
@@ -177,7 +172,7 @@
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="ChangeToken" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="Changes" type="tns:ArrayOfGssAclChange" />
-          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="tns:StringBuilder" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAclChange">
@@ -475,7 +470,7 @@
       <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
     <wsdl:port name="GssAclMonitorSoap12" binding="tns:GssAclMonitorSoap12">
-      <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
+      <soap12:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

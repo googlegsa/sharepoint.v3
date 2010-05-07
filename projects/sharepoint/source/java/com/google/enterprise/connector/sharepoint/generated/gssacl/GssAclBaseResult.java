@@ -12,14 +12,18 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
 
     private java.lang.String siteCollectionGuid;
 
+    private java.lang.String logMessage;
+
     public GssAclBaseResult() {
     }
 
     public GssAclBaseResult(
            java.lang.String siteCollectionUrl,
-           java.lang.String siteCollectionGuid) {
+           java.lang.String siteCollectionGuid,
+           java.lang.String logMessage) {
            this.siteCollectionUrl = siteCollectionUrl;
            this.siteCollectionGuid = siteCollectionGuid;
+           this.logMessage = logMessage;
     }
 
 
@@ -62,6 +66,26 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
         this.siteCollectionGuid = siteCollectionGuid;
     }
 
+
+    /**
+     * Gets the logMessage value for this GssAclBaseResult.
+     *
+     * @return logMessage
+     */
+    public java.lang.String getLogMessage() {
+        return logMessage;
+    }
+
+
+    /**
+     * Sets the logMessage value for this GssAclBaseResult.
+     *
+     * @param logMessage
+     */
+    public void setLogMessage(java.lang.String logMessage) {
+        this.logMessage = logMessage;
+    }
+
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof GssAclBaseResult)) return false;
@@ -79,7 +103,10 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
               this.siteCollectionUrl.equals(other.getSiteCollectionUrl()))) &&
             ((this.siteCollectionGuid==null && other.getSiteCollectionGuid()==null) ||
              (this.siteCollectionGuid!=null &&
-              this.siteCollectionGuid.equals(other.getSiteCollectionGuid())));
+              this.siteCollectionGuid.equals(other.getSiteCollectionGuid()))) &&
+            ((this.logMessage==null && other.getLogMessage()==null) ||
+             (this.logMessage!=null &&
+              this.logMessage.equals(other.getLogMessage())));
         __equalsCalc = null;
         return _equals;
     }
@@ -96,6 +123,9 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
         }
         if (getSiteCollectionGuid() != null) {
             _hashCode += getSiteCollectionGuid().hashCode();
+        }
+        if (getLogMessage() != null) {
+            _hashCode += getLogMessage().hashCode();
         }
         __hashCodeCalc = false;
         return _hashCode;
@@ -118,6 +148,13 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
         elemField.setFieldName("siteCollectionGuid");
         elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "SiteCollectionGuid"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("logMessage");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "LogMessage"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

@@ -16,10 +16,12 @@ public class GssResolveSPGroupResult  extends com.google.enterprise.connector.sh
     public GssResolveSPGroupResult(
            java.lang.String siteCollectionUrl,
            java.lang.String siteCollectionGuid,
+           java.lang.String logMessage,
            com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] prinicpals) {
         super(
             siteCollectionUrl,
-            siteCollectionGuid);
+            siteCollectionGuid,
+            logMessage);
         this.prinicpals = prinicpals;
     }
 
