@@ -16,10 +16,12 @@ public class GssGetAclForUrlsResult  extends com.google.enterprise.connector.sha
     public GssGetAclForUrlsResult(
            java.lang.String siteCollectionUrl,
            java.lang.String siteCollectionGuid,
+           java.lang.String logMessage,
            com.google.enterprise.connector.sharepoint.generated.gssacl.GssAcl[] allAcls) {
         super(
             siteCollectionUrl,
-            siteCollectionGuid);
+            siteCollectionGuid,
+            logMessage);
         this.allAcls = allAcls;
     }
 

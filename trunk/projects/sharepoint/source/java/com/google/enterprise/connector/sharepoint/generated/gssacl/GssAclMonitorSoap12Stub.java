@@ -281,13 +281,6 @@ public class GssAclMonitorSoap12Stub extends org.apache.axis.client.Stub impleme
             cachedSerFactories.add(enumsf);
             cachedDeserFactories.add(enumdf);
 
-            qName = new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "StringBuilder");
-            cachedSerQNames.add(qName);
-            cls = com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder.class;
-            cachedSerClasses.add(cls);
-            cachedSerFactories.add(beansf);
-            cachedDeserFactories.add(beandf);
-
             qName = new javax.xml.namespace.QName("http://microsoft.com/wsdl/types/", "guid");
             cachedSerQNames.add(qName);
             cls = java.lang.String.class;

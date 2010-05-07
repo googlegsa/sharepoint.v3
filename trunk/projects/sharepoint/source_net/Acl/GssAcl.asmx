@@ -47,7 +47,7 @@ public class GssPrincipal
     /// Represents the member users If the current principal is a group
     /// </summary>
     List<GssPrincipal> members;
-    StringBuilder logMessage;
+    String logMessage;
 
     public string Name
     {
@@ -64,23 +64,19 @@ public class GssPrincipal
         get { return members; }
         set { members = value; }
     }
-    public StringBuilder LogMessage
+    public String LogMessage
     {
         get { return logMessage; }
         set { logMessage = value; }
     }
 
-    public GssPrincipal()
-    {
-        Members = new List<GssPrincipal>();
-        LogMessage = new StringBuilder();
-    }
+    // A web servcei always require a default constructor. But, we do not want to use it intentionally
+    private GssPrincipal() { }
 
     public GssPrincipal(string name)
     {
         Name = name;
-        Members = new List<GssPrincipal>();
-        LogMessage = new StringBuilder();
+        Members = new List<GssPrincipal>();        
     }
 
     public override bool Equals(object obj)
@@ -108,7 +104,7 @@ public class GssPrincipal
 
     public void AddLogMessage(string logMsg)
     {
-        logMessage.Append("\n" + logMsg);
+        LogMessage += ("\n" + logMsg);
     }
 }
 
@@ -166,10 +162,8 @@ public class GssAce
         set { permission = value; }
     }
 
-    public GssAce()
-    {
-        principal = new GssPrincipal();
-    }
+    // A web servcei always require a default constructor. But, we do not want to use it intentionally
+    private GssAce() { }
 
     public GssAce(GssPrincipal principal, GssSharepointPermission permission)
     {
@@ -214,7 +208,7 @@ public class GssAcl
     // List of all the ACEs
     private List<GssAce> allAce;
 
-    private StringBuilder logMessage;
+    private String logMessage;
 
     public string EntityUrl
     {
@@ -231,23 +225,19 @@ public class GssAcl
         get { return allAce; }
         set { allAce = value; }
     }
-    public StringBuilder LogMessage
+    public String LogMessage
     {
         get { return logMessage; }
         set { logMessage = value; }
     }
 
-    public GssAcl()
-    {
-        this.allAce = new List<GssAce>();
-        logMessage = new StringBuilder();
-    }
+    // A web servcei always require a default constructor. But, we do not want to use it intentionally
+    private GssAcl() { }
 
     public GssAcl(string entityUrl, int count)
     {
         this.entityUrl = entityUrl;
-        this.allAce = new List<GssAce>(count);
-        logMessage = new StringBuilder();
+        this.allAce = new List<GssAce>(count);      
     }
 
     public void AddAce(GssAce ace)
@@ -257,7 +247,7 @@ public class GssAcl
 
     public void AddLogMessage(string logMsg)
     {
-        logMessage.Append("\n" + logMsg);
+        LogMessage += ("\n" + logMsg);
     }
 }
 
@@ -320,7 +310,8 @@ public class GssAclChange
         set { isEffectiveIncurrentWeb = value; }
     }
 
-    public GssAclChange() { }
+    // A web servcei always require a default constructor. But, we do not want to use it intentionally
+    private GssAclChange() { }
 
     public GssAclChange(ObjectType inChangedObject, SPChangeType inChangeType, string inHint)
     {
@@ -341,7 +332,7 @@ public class GssAclChangeCollection
     // Next change token that should be used for synchronization
     private string changeToken;
     private List<GssAclChange> changes;
-    private StringBuilder logMessage;
+    private String logMessage;
 
     public string ChangeToken
     {
@@ -355,17 +346,14 @@ public class GssAclChangeCollection
         set { changes = value; }
     }
 
-    public StringBuilder LogMessage
+    public String LogMessage
     {
         get { return logMessage; }
         set { logMessage = value; }
     }
 
-    public GssAclChangeCollection()
-    {
-        Changes = new List<GssAclChange>();
-        LogMessage = new StringBuilder();
-    }
+    // A web servcei always require a default constructor. But, we do not want to use it intentionally
+    private GssAclChangeCollection() { }
 
     public GssAclChangeCollection(SPChangeToken changeToken)
     {
@@ -373,8 +361,11 @@ public class GssAclChangeCollection
         {
             ChangeToken = changeToken.ToString();
         }
-        Changes = new List<GssAclChange>();
-        LogMessage = new StringBuilder();
+        else
+        {
+            AddLogMessage("Invalid Token");
+        }
+        Changes = new List<GssAclChange>();        
     }
 
     /// <summary>
@@ -498,7 +489,7 @@ public class GssAclChangeCollection
 
     public void AddLogMessage(string logMsg)
     {
-        logMessage.Append("\n" + logMsg);
+        LogMessage += ("\n" + logMsg);
     }
 }
 
@@ -517,6 +508,7 @@ public abstract class GssAclBaseResult
 {
     private string siteCollectionUrl;
     private Guid siteCollectionGuid;
+    private String logMessage;
 
     public string SiteCollectionUrl
     {
@@ -527,6 +519,17 @@ public abstract class GssAclBaseResult
     {
         get { return siteCollectionGuid; }
         set { siteCollectionGuid = value; }
+    }
+
+    public String LogMessage
+    {
+        get { return logMessage; }
+        set { logMessage = value; }
+    }
+
+    public void AddLogMessage(string logMsg)
+    {
+        LogMessage += ("\n" + logMsg);
     }
 }
 
@@ -634,6 +637,13 @@ public class GssAclMonitor
     // A random guess about how many items should be query at a time. Such threashold is required to save the web service from being unresponsive for a long time
     public const int ROWLIMIT = 500;
 
+    // A hypothetical name given to the site collection administrator group. This is required becasue the web service treats 
+    // site collection administrators as one of the SharePoitn groups. This is in beneift of avoiding recrawling all the documents 
+    // when there is any change in the administrators list. Java connector sends ACL as document's metadata and any change in the 
+    // administrator requires re-crawlign all the documents in the site collection. Having a common group for the administrator will 
+    // just require updating the group membership info and no re-crawl will be required.
+    public const string GSSITEADMINGROUP = "[GsSiteCollectionAdministrator]";
+
     public GssAclMonitor()
     {
         SPContext spContext = SPContext.Current;
@@ -669,16 +679,18 @@ public class GssAclMonitor
             throw new Exception("SharePoint site not identified");
         }
 
+        GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
+        
         List<GssAcl> allAcls = new List<GssAcl>();
 
         Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
         try
         {
-            gssUtil.FetchSecurityPolicyForAcl(site.WebApplication, commonAceMap);
+            gssUtil.FetchSecurityPolicyForAcl(site, commonAceMap);
         }
         catch (Exception e)
         {
-            gssUtil.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
+            result.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
         }
 
         try
@@ -687,7 +699,7 @@ public class GssAclMonitor
         }
         catch (Exception e)
         {
-            gssUtil.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
+            result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
         }
 
         foreach (string url in urls)
@@ -713,17 +725,15 @@ public class GssAclMonitor
             }
             catch (Exception e)
             {
-                acl = new GssAcl();
+                acl = new GssAcl(url, 0);
                 acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
-            }
-
-            acl.AddLogMessage(gssUtil.CommonLogMessage.ToString());
+            }            
         }
 
-        GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
         result.AllAcls = allAcls;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
+        result.AddLogMessage(gssUtil.LogMessage);
         return result;
     }
 
@@ -743,7 +753,7 @@ public class GssAclMonitor
         {
             throw new Exception("SharePoint site not identified");
         }
-
+        GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         GssAclChangeCollection allChanges = null;
         SPChangeToken changeTokenEnd = null;
         if (null != fromChangeToken && fromChangeToken.Length != 0)
@@ -762,37 +772,41 @@ public class GssAclMonitor
                 {
                     allChanges.AddChange(change, site, web);
                 }
+
+                // There are two ways to get the next Change Token value that should be used for synchronization. 1) Get the last change token available for the site
+                // 2) Get the last change token corresponding to which changes have been tracked.
+                // The problem with the second approach is that if no ACL specific changes will occur, the change token will never gets updated and will become invalid after some time.
+                // Another performance issue is is that, the scan will always start form the same token unless there is a ACL specific change.
+                // Since, the change tracking logic ensures that all changes will be tracked (i.e there is no rowlimit kind of thing associated), it is safe to use the first approach.
+                if (null == changeTokenEnd)
+                {
+                    // Since all the canges have been detected till the time, use the current chage token of the site collection as the next token for synchronization
+                    allChanges.UpdateChangeToken(site.CurrentChangeToken);
+                }
+                else
+                {
+                    // Since cange detection was done only till changeTokenToEnd, we have to use the same token as next token for synchronization
+                    allChanges.UpdateChangeToken(changeTokenEnd);
+                }
             }
             catch (Exception e)
             {
                 // All the changes should be processed as one atomic operation. If any one fails, all should be ignored. This is in lieu of maintaining a single change token which will be used for executing change queries.
-                allChanges = new GssAclChangeCollection();
-                gssUtil.AddLogMessage("Exception occurred while change detection, Exception [ " + e.Message + " ] ");
+                // Since, we are not progressing, use the same change token that was received
+                allChanges = new GssAclChangeCollection(changeTokenStart);
+                result.AddLogMessage("Exception occurred while change detection, Exception [ " + e.Message + " ] ");
             }
         }
         else
         {
-            allChanges = new GssAclChangeCollection();
+            // It's the first request. Return the current chage token of the site collection as the next token for synchronization
+            allChanges = new GssAclChangeCollection(site.CurrentChangeToken);
         }
 
-        // There are two ways to get the next Change Token value that should be used for synchronization. 1) Get the last change token available for the site
-        // 2) Get the last change token corresponding to which changes have been tracked.
-        // The problem with the second approach is that if no ACL specific changes will occur, the change token will never gets updated and will become invalid after some time.
-        // Another performance issue is is that, the scan will always start form the same token unless there is a ACL specific change.
-        // Since, the change tracking logic ensures that all changes will be tracked (i.e there is no rowlimit kind of thing associated), it is safe to use the first approach.
-        if (null == changeTokenEnd)
-        {
-            allChanges.UpdateChangeToken(site.CurrentChangeToken);
-        }
-        else
-        {
-            allChanges.UpdateChangeToken(changeTokenEnd);
-        }
-
-        GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         result.AllChanges = allChanges;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
+        result.AddLogMessage(gssUtil.LogMessage);                
         return result;
     }
 
@@ -809,30 +823,57 @@ public class GssAclMonitor
         {
             throw new Exception("SharePoint site not found! ");
         }
-
+        GssResolveSPGroupResult result = new GssResolveSPGroupResult();
         List<GssPrincipal> prinicpals = new List<GssPrincipal>();
         if (null != groupId)
         {
             foreach (string id in groupId)
             {
-                GssPrincipal principal = new GssPrincipal();
-                SPGroup spGroup = web.Groups[id];
-                if (null == spGroup)
+                GssPrincipal principal = new GssPrincipal(id);
+                principal.Type = GssPrincipal.PrincipalType.SPGROUP;
+                try
+                {
+                    if (GSSITEADMINGROUP.Equals(id))
+                    {
+                        // Get all the administrator users as member of the GSSITEADMINGROUP.
+                        List<GssPrincipal> admins = new List<GssPrincipal>();
+                        foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
+                        {
+                            GssPrincipal admin = gssUtil.GetGssPrincipalFromSPPrincipal(spPrincipal);
+                            if (null == admin)
+                            {
+                                continue;
+                            }
+                            admins.Add(admin);
+                        }
+                        principal.Members = admins;
+                    }
+                    else
+                    {
+                        SPGroup spGroup = web.Groups[id];
+                        if (null == spGroup)
+                        {
+                            principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                        }
+                        else
+                        {
+                            principal.Members = gssUtil.ResolveSPGroup(spGroup);
+                        }
+                    }
+                }
+                catch (Exception e)
                 {
                     principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                    principal.Type = GssPrincipal.PrincipalType.NA;
                 }
-                else
-                {
-                    principal.Members = gssUtil.ResolveSPGroup(spGroup);
-                }
-                prinicpals.Add(principal);
+                prinicpals.Add(principal);                
             }
         }
 
-        GssResolveSPGroupResult result = new GssResolveSPGroupResult();
         result.Prinicpals = prinicpals;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
+        result.AddLogMessage(gssUtil.LogMessage);
         return result;
     }
 
@@ -985,29 +1026,58 @@ public class GssAclMonitor
 /// </summary>
 public class GssAclUtility
 {
-    StringBuilder commonLogMessage = new StringBuilder();
-    public StringBuilder CommonLogMessage
+    String logMessage;
+    public String LogMessage
     {
-        get { return commonLogMessage; }
-        set { commonLogMessage = value; }
+        get { return logMessage; }
+        set { logMessage = value; }
     }
 
-    public void AddLogMessage(string logMsg)
+    private void AddLogMessage(string logMsg)
     {
-        CommonLogMessage.Append("\n" + logMsg);
+        LogMessage += ("\n" + logMsg);
     }
-
+    
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from the web application security policies
     /// </summary>
-    /// <param name="webApp"> web application from which the security policies are to be tracked </param>
+    /// <param name="site"> Site Collection for which the security policies are to be tracked </param>
     /// <param name="userAceMap"> ACE map to be updated </param>
-    public void FetchSecurityPolicyForAcl(SPWebApplication webApp, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
+    public void FetchSecurityPolicyForAcl(SPSite site, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
-        SPPolicyCollection policies = webApp.Policies;
+        // policies apllied at web application level. This is applicable to all the zones
+        SPPolicyCollection policies = site.WebApplication.Policies;
         foreach (SPPolicy policy in policies)
         {
-            GssPrincipal principal = GetGssPrincipalFromLogin(webApp, policy.UserName);
+            GssPrincipal principal = GetGssPrincipalFromLogin(site.WebApplication, policy.UserName);
+            if (null == principal)
+            {
+                continue;
+            }
+
+            GssSharepointPermission permission = null;
+
+            if (aceMap.ContainsKey(principal))
+            {
+                permission = aceMap[principal];
+            }
+            else
+            {
+                permission = new GssSharepointPermission();
+                aceMap.Add(principal, permission);
+            }
+
+            foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
+            {
+                permission.UpdatePermission(policyRole.GrantRightsMask, policyRole.DenyRightsMask);
+            }
+        }
+
+        // policies applied on the current URL zone
+        policies = site.WebApplication.ZonePolicies(site.Zone);
+        foreach (SPPolicy policy in policies)
+        {
+            GssPrincipal principal = GetGssPrincipalFromLogin(site.WebApplication, policy.UserName);
             if (null == principal)
             {
                 continue;
@@ -1033,34 +1103,33 @@ public class GssAclUtility
     }
 
     /// <summary>
-    /// Update the incoming ACE Map with the users,permissions identified from the site collection administrators list
+    /// Update the incoming ACE Map with the users,permissions identified from the site collection administrators list. 
+    /// Site Collection Administrator is treated as another site collection group. All the users/groups are sent as members of this group
     /// </summary>
     /// <param name="web"> SharePoint web site whose administrators are to be tracked </param>
     /// <param name="userAceMap"> ACE Map to be updated </param>
     public void FetchSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
+        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP);
+        principal.Type = GssPrincipal.PrincipalType.SPGROUP;
+        GssSharepointPermission permission = new GssSharepointPermission();
+        // Administrators have Full Rights in the site collection.
+        permission.UpdatePermission(SPBasePermissions.FullMask, SPBasePermissions.EmptyMask);
+        aceMap.Add(principal, permission);
+
+        // Get all the administrator user as member of the GSSITEADMINGROUP.
+        List<GssPrincipal> admins = new List<GssPrincipal>();
         foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
         {
-            GssPrincipal principal = GetGssPrincipalFromSPPrincipal(spPrincipal);
-            GssSharepointPermission permission = null;
-
-            if (null == principal)
+            GssPrincipal admin = GetGssPrincipalFromSPPrincipal(spPrincipal);
+            if (null == admin)
             {
                 continue;
             }
-
-            if (aceMap.ContainsKey(principal))
-            {
-                permission = aceMap[principal];
-            }
-            else
-            {
-                permission = new GssSharepointPermission();
-                aceMap.Add(principal, permission);
-            }
-            // Administrators have Full Rights in the site collection.
-            permission.UpdatePermission(SPBasePermissions.FullMask, SPBasePermissions.EmptyMask);
+            admins.Add(admin);
         }
+
+        principal.Members = admins;
     }
 
     /// <summary>
@@ -1277,7 +1346,7 @@ public class GssAclUtility
         }
         else
         {
-            gssPrincipal = new GssPrincipal();
+            gssPrincipal = new GssPrincipal(spPrincipal.Name);
             gssPrincipal.AddLogMessage("could not create GssPrincipal for SPSprincipal [ " + spPrincipal.Name + " ] since it's neither a SPGroup nor a SPUser. ");
         }
 

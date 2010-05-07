@@ -14,7 +14,7 @@ public class GssPrincipal  implements java.io.Serializable {
 
     private com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] members;
 
-    private com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder logMessage;
+    private java.lang.String logMessage;
 
     public GssPrincipal() {
     }
@@ -23,7 +23,7 @@ public class GssPrincipal  implements java.io.Serializable {
            java.lang.String name,
            com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType type,
            com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] members,
-           com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder logMessage) {
+           java.lang.String logMessage) {
            this.name = name;
            this.type = type;
            this.members = members;
@@ -96,7 +96,7 @@ public class GssPrincipal  implements java.io.Serializable {
      *
      * @return logMessage
      */
-    public com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder getLogMessage() {
+    public java.lang.String getLogMessage() {
         return logMessage;
     }
 
@@ -106,7 +106,7 @@ public class GssPrincipal  implements java.io.Serializable {
      *
      * @param logMessage
      */
-    public void setLogMessage(com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder logMessage) {
+    public void setLogMessage(java.lang.String logMessage) {
         this.logMessage = logMessage;
     }
 
@@ -199,7 +199,7 @@ public class GssPrincipal  implements java.io.Serializable {
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("logMessage");
         elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "LogMessage"));
-        elemField.setXmlType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "StringBuilder"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);

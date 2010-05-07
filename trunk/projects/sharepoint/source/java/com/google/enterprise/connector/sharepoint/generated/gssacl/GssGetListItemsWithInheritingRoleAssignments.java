@@ -20,12 +20,14 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
     public GssGetListItemsWithInheritingRoleAssignments(
            java.lang.String siteCollectionUrl,
            java.lang.String siteCollectionGuid,
+           java.lang.String logMessage,
            java.lang.String docXml,
            boolean moreDocs,
            int lastIdVisited) {
         super(
             siteCollectionUrl,
-            siteCollectionGuid);
+            siteCollectionGuid,
+            logMessage);
         this.docXml = docXml;
         this.moreDocs = moreDocs;
         this.lastIdVisited = lastIdVisited;

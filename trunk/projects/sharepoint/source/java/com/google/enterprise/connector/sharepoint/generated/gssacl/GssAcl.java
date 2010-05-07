@@ -14,7 +14,7 @@ public class GssAcl  implements java.io.Serializable {
 
     private com.google.enterprise.connector.sharepoint.generated.gssacl.GssAce[] allAce;
 
-    private com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder logMessage;
+    private java.lang.String logMessage;
 
     public GssAcl() {
     }
@@ -23,7 +23,7 @@ public class GssAcl  implements java.io.Serializable {
            java.lang.String entityUrl,
            java.lang.String owner,
            com.google.enterprise.connector.sharepoint.generated.gssacl.GssAce[] allAce,
-           com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder logMessage) {
+           java.lang.String logMessage) {
            this.entityUrl = entityUrl;
            this.owner = owner;
            this.allAce = allAce;
@@ -96,7 +96,7 @@ public class GssAcl  implements java.io.Serializable {
      *
      * @return logMessage
      */
-    public com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder getLogMessage() {
+    public java.lang.String getLogMessage() {
         return logMessage;
     }
 
@@ -106,7 +106,7 @@ public class GssAcl  implements java.io.Serializable {
      *
      * @param logMessage
      */
-    public void setLogMessage(com.google.enterprise.connector.sharepoint.generated.gssacl.StringBuilder logMessage) {
+    public void setLogMessage(java.lang.String logMessage) {
         this.logMessage = logMessage;
     }
 
@@ -200,7 +200,7 @@ public class GssAcl  implements java.io.Serializable {
         elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("logMessage");
         elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "LogMessage"));
-        elemField.setXmlType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "StringBuilder"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);

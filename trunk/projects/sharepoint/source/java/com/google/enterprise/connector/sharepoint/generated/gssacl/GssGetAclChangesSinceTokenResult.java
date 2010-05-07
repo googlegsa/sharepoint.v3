@@ -16,10 +16,12 @@ public class GssGetAclChangesSinceTokenResult  extends com.google.enterprise.con
     public GssGetAclChangesSinceTokenResult(
            java.lang.String siteCollectionUrl,
            java.lang.String siteCollectionGuid,
+           java.lang.String logMessage,
            com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChangeCollection allChanges) {
         super(
             siteCollectionUrl,
-            siteCollectionGuid);
+            siteCollectionGuid,
+            logMessage);
         this.allChanges = allChanges;
     }
 
