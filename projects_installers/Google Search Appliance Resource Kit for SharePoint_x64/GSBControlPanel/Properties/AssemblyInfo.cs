@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("GSPControlPanel")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Persistent Systems Pvt. Ltd.")]
+[assembly: AssemblyCompany("Google Inc.")]
 [assembly: AssemblyProduct("GSPControlPanel")]
-[assembly: AssemblyCopyright("Copyright © Persistent Systems Pvt. Ltd. 2009")]
+[assembly: AssemblyCopyright("Copyright © Google Inc. 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

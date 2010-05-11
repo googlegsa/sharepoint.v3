@@ -19,6 +19,7 @@ using System.IO;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Administration;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 
 namespace GSBCleanUpGSASettings
@@ -29,13 +30,15 @@ namespace GSBCleanUpGSASettings
      */
     class GSBCleanUpGSASettings
     {
-        public const String SEARCHCONTROL = "TEMPLATE\\CONTROLTEMPLATES\\SearchArea.ascx";
-        public const String SEARCHRESULTS = "TEMPLATE\\LAYOUTS\\searchresults.aspx";
-        public const String SEARCHCONTROL_BACKUP = "TEMPLATE\\CONTROLTEMPLATES\\SearchArea.ascx.backup";
-        public const String SEARCHRESULTS_BACKUP = "TEMPLATE\\LAYOUTS\\searchresults.aspx.backup";
+        //public const String SEARCHCONTROL = "TEMPLATE\\CONTROLTEMPLATES\\GSASearchArea.ascx";
+        //public const String SEARCHRESULTS = "TEMPLATE\\LAYOUTS\\GSASearchresults.aspx";
+        //public const String SEARCHCONTROL_BACKUP = "TEMPLATE\\CONTROLTEMPLATES\\GSASearchArea.ascx.backup";
+        //public const String SEARCHRESULTS_BACKUP = "TEMPLATE\\LAYOUTS\\GSASearchresults.aspx.backup";
     
         static void Main(string[] args)
         {
+            MessageBox.Show("aa: " + SPWebService.AdministrationService);
+            MessageBox.Show("bb: " + SPWebService.AdministrationService.WebApplications);
             #region CleanupGsaWebApplicationSettings
             try
             {
@@ -57,6 +60,7 @@ namespace GSBCleanUpGSASettings
                                 {
                                     path += "web.config";
                                 }
+                                MessageBox.Show(path);
 
                                 #region delete APP setting nodes
                                 GSBApplicationConfigManager mgr = new GSBApplicationConfigManager();
@@ -77,10 +81,15 @@ namespace GSBCleanUpGSASettings
                             }
                         }//if (isLocalWebApplication(wa))
                     }
-                    catch { }
+                    catch{
+                        //MessageBox.Show("one: "+e.Message);
+                    }
                 }
             }
-            catch { }
+            catch{
+                //MessageBox.Show("ALL: " + eee.Message);
+                //MessageBox.Show("ALL: " + eee.StackTrace); 
+            }
 
             try
             {
@@ -159,24 +168,24 @@ namespace GSBCleanUpGSASettings
                  * Delete the newly added file only when you have a backup. 
                  **/
                 
-                if (File.Exists(myBasePath + SEARCHCONTROL))
-                {
-                    if (File.Exists(myBasePath + SEARCHCONTROL_BACKUP))
-                    {
-                        File.Delete(myBasePath + SEARCHCONTROL);//delete old file
-                        File.Move(myBasePath + SEARCHCONTROL_BACKUP, myBasePath + SEARCHCONTROL); //backup
-                    }
-                }
+                //if (File.Exists(myBasePath + SEARCHCONTROL))
+                //{
+                //    if (File.Exists(myBasePath + SEARCHCONTROL_BACKUP))
+                //    {
+                //        File.Delete(myBasePath + SEARCHCONTROL);//delete old file
+                //        File.Move(myBasePath + SEARCHCONTROL_BACKUP, myBasePath + SEARCHCONTROL); //backup
+                //    }
+                //}
 
-                ///////////////////////////Steps for SearchBox//////////////////////////////////////
-                if (File.Exists(myBasePath + SEARCHRESULTS))
-                {
-                    if (File.Exists(myBasePath + SEARCHRESULTS_BACKUP))
-                    {
-                        File.Delete(myBasePath + SEARCHRESULTS);//delete old file
-                        File.Move(myBasePath + SEARCHRESULTS_BACKUP, myBasePath + SEARCHRESULTS); //backup
-                    }
-                }
+                /////////////////////////////Steps for SearchBox//////////////////////////////////////
+                //if (File.Exists(myBasePath + SEARCHRESULTS))
+                //{
+                //    if (File.Exists(myBasePath + SEARCHRESULTS_BACKUP))
+                //    {
+                //        File.Delete(myBasePath + SEARCHRESULTS);//delete old file
+                //        File.Move(myBasePath + SEARCHRESULTS_BACKUP, myBasePath + SEARCHRESULTS); //backup
+                //    }
+                //}
 
             }
             catch (Exception )
