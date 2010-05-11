@@ -25,3 +25,8 @@ C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLin
 C:\Amit\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
 \\gdc06\c$\Amit\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb
+C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.exe
+C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.pdb
+C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache
+C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
+C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb

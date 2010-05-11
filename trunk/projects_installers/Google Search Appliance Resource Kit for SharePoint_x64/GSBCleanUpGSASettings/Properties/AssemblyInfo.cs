@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("GSBCleanUpGSASettings")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Persistent Systems Ltd.")]
+[assembly: AssemblyCompany("Google Inc.")]
 [assembly: AssemblyProduct("GSBCleanUpGSASettings")]
-[assembly: AssemblyCopyright("Copyright © Persistent Systems Ltd. 2009")]
+[assembly: AssemblyCopyright("Copyright © Google Inc. 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
