@@ -106,11 +106,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      */
     private boolean toBeFed = true;
 
+    // TODO: use Set instead of list
     // List of users and their permissions to be sent in document's ACL
-    private Map<String, List<RoleType>> usersAclMap;
+    private Map<String, Set<RoleType>> usersAclMap;
 
     // List of groups and their permissions to be sent in document's ACL
-    private Map<String, List<RoleType>> groupsAclMap;
+    private Map<String, Set<RoleType>> groupsAclMap;
 
     // Check if the documents is discovered from ACL based crawling. An ACL
     // based crawling happens when a security change occurs on site/list which
@@ -507,7 +508,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return new SimpleProperty(values);
         } else if (strPropertyName.startsWith(SpiConstants.USER_ROLES_PROPNAME_PREFIX)) {
             String originalName = strPropertyName.substring(SpiConstants.USER_ROLES_PROPNAME_PREFIX.length());
-            List<RoleType> roleTypes = usersAclMap.get(originalName);
+            Set<RoleType> roleTypes = usersAclMap.get(originalName);
             List<Value> values = new ArrayList<Value>(roleTypes.size());
             for (RoleType roleType : roleTypes) {
                 values.add(Value.getStringValue(roleType.toString()));
@@ -515,7 +516,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return new SimpleProperty(values);
         } else if (strPropertyName.startsWith(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX)) {
             String originalName = strPropertyName.substring(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX.length());
-            List<RoleType> roleTypes = groupsAclMap.get(originalName);
+            Set<RoleType> roleTypes = groupsAclMap.get(originalName);
             List<Value> values = new ArrayList<Value>(roleTypes.size());
             for (RoleType roleType : roleTypes) {
                 values.add(Value.getStringValue(roleType.toString()));
@@ -555,13 +556,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         s.add(SPConstants.PARENT_WEB_TITLE);
         if (null != usersAclMap) {
             s.add(SpiConstants.PROPNAME_ACLUSERS);
-            for (Entry<String, List<RoleType>> ace : usersAclMap.entrySet()) {
+            for (Entry<String, Set<RoleType>> ace : usersAclMap.entrySet()) {
                 s.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX + ace.getKey());
             }
         }
         if (null != groupsAclMap) {
             s.add(SpiConstants.PROPNAME_ACLGROUPS);
-            for (Entry<String, List<RoleType>> ace : groupsAclMap.entrySet()) {
+            for (Entry<String, Set<RoleType>> ace : groupsAclMap.entrySet()) {
                 s.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
             }
         }
@@ -806,19 +807,19 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         this.fileref = fileref;
     }
 
-    public Map<String, List<RoleType>> getUsersAclMap() {
+    public Map<String, Set<RoleType>> getUsersAclMap() {
         return usersAclMap;
     }
 
-    public void setUsersAclMap(Map<String, List<RoleType>> usersAclMap) {
+    public void setUsersAclMap(Map<String, Set<RoleType>> usersAclMap) {
         this.usersAclMap = usersAclMap;
     }
 
-    public Map<String, List<RoleType>> getGroupsAclMap() {
+    public Map<String, Set<RoleType>> getGroupsAclMap() {
         return groupsAclMap;
     }
 
-    public void setGroupsAclMap(Map<String, List<RoleType>> groupsAclMap) {
+    public void setGroupsAclMap(Map<String, Set<RoleType>> groupsAclMap) {
         this.groupsAclMap = groupsAclMap;
     }
 

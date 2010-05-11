@@ -65,7 +65,7 @@ public class GssAclTest extends TestCase {
                 assertNotNull(document.getGroupsAclMap());
             }
         } catch (Exception e) {
-            System.out.println(e);
+            fail(e.getMessage());
         }
     }
 

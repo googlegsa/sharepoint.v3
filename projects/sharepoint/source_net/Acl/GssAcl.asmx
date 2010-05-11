@@ -46,8 +46,8 @@ public class GssPrincipal
     /// <summary>
     /// Represents the member users If the current principal is a group
     /// </summary>
-    List<GssPrincipal> members;
-    String logMessage;
+    private List<GssPrincipal> members;
+    private StringBuilder logMessage = new StringBuilder();
 
     public string Name
     {
@@ -66,8 +66,8 @@ public class GssPrincipal
     }
     public String LogMessage
     {
-        get { return logMessage; }
-        set { logMessage = value; }
+        get { return logMessage.ToString(); }
+        set { logMessage = new StringBuilder(value); }
     }
 
     // A web servcei always require a default constructor. But, we do not want to use it intentionally
@@ -76,7 +76,7 @@ public class GssPrincipal
     public GssPrincipal(string name)
     {
         Name = name;
-        Members = new List<GssPrincipal>();        
+        Members = new List<GssPrincipal>();
     }
 
     public override bool Equals(object obj)
@@ -104,7 +104,7 @@ public class GssPrincipal
 
     public void AddLogMessage(string logMsg)
     {
-        LogMessage += ("\n" + logMsg);
+        logMessage.AppendLine(logMsg);
     }
 }
 
@@ -117,26 +117,49 @@ public class GssPrincipal
 public class GssSharepointPermission
 {
     // List of allowed permissions
-    private SPBasePermissions grantRightMask;
+    private List<string> allowedPermissions = new List<string>();
 
     // List denied permission
-    private SPBasePermissions denyRightMask;
+    private List<string> deniedPermission = new List<string>();
 
-    public SPBasePermissions GrantRightMask
+    public List<string> AllowedPermissions
     {
-        get { return grantRightMask; }
-        set { grantRightMask = value; }
+        get { return allowedPermissions; }
+        set { allowedPermissions = value; }
     }
-    public SPBasePermissions DenyRightMask
+    public List<string> DeniedPermission
     {
-        get { return denyRightMask; }
-        set { denyRightMask = value; }
+        get { return deniedPermission; }
+        set { deniedPermission = value; }
     }
 
+    /// <summary>
+    /// Converts a SPBasePermission object into a set of string represting the actual permission being used
+    /// </summary>
+    /// <param name="spPerms"></param>
+    /// <returns></returns>
+    private List<string> GetPermissions(SPBasePermissions spPerms)
+    {
+        List<string> perms = new List<string>();
+        foreach (SPBasePermissions value in Enum.GetValues(typeof(SPBasePermissions)))
+        {
+            if (value == (value & spPerms))
+            {
+                perms.Add(value.ToString());
+            }
+        }
+        return perms;
+    }
+
+    /// <summary>
+    /// Adds new grant and deny permission(s) to the current object
+    /// </summary>
+    /// <param name="allowedPermissions"></param>
+    /// <param name="deniedPermission"></param>
     public void UpdatePermission(SPBasePermissions allowedPermissions, SPBasePermissions deniedPermission)
     {
-        grantRightMask = grantRightMask | allowedPermissions;
-        denyRightMask = denyRightMask | deniedPermission;
+        this.allowedPermissions.AddRange(GetPermissions(allowedPermissions));
+        this.deniedPermission.AddRange(GetPermissions(deniedPermission));
     }
 }
 
@@ -208,7 +231,7 @@ public class GssAcl
     // List of all the ACEs
     private List<GssAce> allAce;
 
-    private String logMessage;
+    private StringBuilder logMessage = new StringBuilder();
 
     public string EntityUrl
     {
@@ -227,8 +250,8 @@ public class GssAcl
     }
     public String LogMessage
     {
-        get { return logMessage; }
-        set { logMessage = value; }
+        get { return logMessage.ToString(); }
+        set { logMessage = new StringBuilder(value); }
     }
 
     // A web servcei always require a default constructor. But, we do not want to use it intentionally
@@ -237,7 +260,7 @@ public class GssAcl
     public GssAcl(string entityUrl, int count)
     {
         this.entityUrl = entityUrl;
-        this.allAce = new List<GssAce>(count);      
+        this.allAce = new List<GssAce>(count);
     }
 
     public void AddAce(GssAce ace)
@@ -247,7 +270,7 @@ public class GssAcl
 
     public void AddLogMessage(string logMsg)
     {
-        LogMessage += ("\n" + logMsg);
+        logMessage.AppendLine(logMsg);
     }
 }
 
@@ -332,7 +355,7 @@ public class GssAclChangeCollection
     // Next change token that should be used for synchronization
     private string changeToken;
     private List<GssAclChange> changes;
-    private String logMessage;
+    private StringBuilder logMessage = new StringBuilder();
 
     public string ChangeToken
     {
@@ -348,8 +371,8 @@ public class GssAclChangeCollection
 
     public String LogMessage
     {
-        get { return logMessage; }
-        set { logMessage = value; }
+        get { return logMessage.ToString(); }
+        set { logMessage = new StringBuilder(value); }
     }
 
     // A web servcei always require a default constructor. But, we do not want to use it intentionally
@@ -365,7 +388,7 @@ public class GssAclChangeCollection
         {
             AddLogMessage("Invalid Token");
         }
-        Changes = new List<GssAclChange>();        
+        Changes = new List<GssAclChange>();
     }
 
     /// <summary>
@@ -489,7 +512,7 @@ public class GssAclChangeCollection
 
     public void AddLogMessage(string logMsg)
     {
-        LogMessage += ("\n" + logMsg);
+        logMessage.AppendLine(logMsg);
     }
 }
 
@@ -508,7 +531,7 @@ public abstract class GssAclBaseResult
 {
     private string siteCollectionUrl;
     private Guid siteCollectionGuid;
-    private String logMessage;
+    private StringBuilder logMessage = new StringBuilder();
 
     public string SiteCollectionUrl
     {
@@ -523,13 +546,13 @@ public abstract class GssAclBaseResult
 
     public String LogMessage
     {
-        get { return logMessage; }
-        set { logMessage = value; }
+        get { return logMessage.ToString(); }
+        set { logMessage = new StringBuilder(value); }
     }
 
     public void AddLogMessage(string logMsg)
     {
-        LogMessage += ("\n" + logMsg);
+        logMessage.AppendLine(logMsg);
     }
 }
 
@@ -637,12 +660,12 @@ public class GssAclMonitor
     // A random guess about how many items should be query at a time. Such threashold is required to save the web service from being unresponsive for a long time
     public const int ROWLIMIT = 500;
 
-    // A hypothetical name given to the site collection administrator group. This is required becasue the web service treats 
-    // site collection administrators as one of the SharePoitn groups. This is in beneift of avoiding recrawling all the documents 
-    // when there is any change in the administrators list. Java connector sends ACL as document's metadata and any change in the 
-    // administrator requires re-crawlign all the documents in the site collection. Having a common group for the administrator will 
+    // A hypothetical name given to the site collection administrator group. This is required becasue the web service treats
+    // site collection administrators as one of the SharePoitn groups. This is in beneift of avoiding recrawling all the documents
+    // when there is any change in the administrators list. Java connector sends ACL as document's metadata and any change in the
+    // administrator requires re-crawlign all the documents in the site collection. Having a common group for the administrator will
     // just require updating the group membership info and no re-crawl will be required.
-    public const string GSSITEADMINGROUP = "[GsSiteCollectionAdministrator]";
+    public const string GSSITEADMINGROUP = "[GSSiteCollectionAdministrator]";
 
     public GssAclMonitor()
     {
@@ -680,7 +703,7 @@ public class GssAclMonitor
         }
 
         GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
-        
+
         List<GssAcl> allAcls = new List<GssAcl>();
 
         Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
@@ -727,7 +750,7 @@ public class GssAclMonitor
             {
                 acl = new GssAcl(url, 0);
                 acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
-            }            
+            }
         }
 
         result.AllAcls = allAcls;
@@ -806,7 +829,7 @@ public class GssAclMonitor
         result.AllChanges = allChanges;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
-        result.AddLogMessage(gssUtil.LogMessage);                
+        result.AddLogMessage(gssUtil.LogMessage);
         return result;
     }
 
@@ -866,7 +889,7 @@ public class GssAclMonitor
                     principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
                     principal.Type = GssPrincipal.PrincipalType.NA;
                 }
-                prinicpals.Add(principal);                
+                prinicpals.Add(principal);
             }
         }
 
@@ -1026,18 +1049,18 @@ public class GssAclMonitor
 /// </summary>
 public class GssAclUtility
 {
-    String logMessage;
+    StringBuilder logMessage = new StringBuilder();
     public String LogMessage
     {
-        get { return logMessage; }
-        set { logMessage = value; }
+        get { return logMessage.ToString(); }
+        set { logMessage = new StringBuilder(value); }
     }
 
     private void AddLogMessage(string logMsg)
     {
-        LogMessage += ("\n" + logMsg);
+        logMessage.AppendLine(logMsg);
     }
-    
+
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from the web application security policies
     /// </summary>
@@ -1103,7 +1126,7 @@ public class GssAclUtility
     }
 
     /// <summary>
-    /// Update the incoming ACE Map with the users,permissions identified from the site collection administrators list. 
+    /// Update the incoming ACE Map with the users,permissions identified from the site collection administrators list.
     /// Site Collection Administrator is treated as another site collection group. All the users/groups are sent as members of this group
     /// </summary>
     /// <param name="web"> SharePoint web site whose administrators are to be tracked </param>

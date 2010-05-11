@@ -174,29 +174,37 @@ public class GssAclWS {
         if (null == wsResult || null == urlToDocMap) {
             return;
         }
+        LOGGER.log(Level.CONFIG, "Building ACLs from the WS response. WSLog [ "
+                + wsResult.getLogMessage() + " ]");
         GssAcl[] allAcls = wsResult.getAllAcls();
         if (null != allAcls && allAcls.length != 0) {
+            ACL:
             for (GssAcl acl : allAcls) {
                 String entityUrl = acl.getEntityUrl();
                 GssAce[] allAces = acl.getAllAce();
                 if (null == entityUrl || null == allAces) {
                     LOGGER.log(Level.WARNING, "Either entityUrl [ " + entityUrl
-                            + " ] is unavailable or No ACE found in the ACL");
+                            + " ] is unavailable or No ACE found in the ACL. WSLog [ "
+                            + acl.getLogMessage() + " ] ");
                     continue;
                 }
                 SPDocument document = urlToDocMap.get(entityUrl);
                 if (null == document) {
                     LOGGER.log(Level.WARNING, "No document found in urlToDocMap map for the entityUrl [ "
-                            + entityUrl + " ] ");
+                            + entityUrl
+                            + " ], WSLog [ "
+                            + acl.getLogMessage()
+                            + " ] ");
                     continue;
                 }
-                Map<String, List<RoleType>> userPermissionMap = new HashMap<String, List<RoleType>>();
-                Map<String, List<RoleType>> groupPermissionMap = new HashMap<String, List<RoleType>>();
+                LOGGER.log(Level.FINE, "WsLog [ " + acl.getLogMessage() + " ] ");
+                Map<String, Set<RoleType>> userPermissionMap = new HashMap<String, Set<RoleType>>();
+                Map<String, Set<RoleType>> groupPermissionMap = new HashMap<String, Set<RoleType>>();
                 for (GssAce ace : allAces) {
                     // Handle Principal
                     GssPrincipal principal = ace.getPrincipal();
                     if (null == principal) {
-                        LOGGER.log(Level.WARNING, "No Principal found in ace");
+                        LOGGER.log(Level.WARNING, "No Principal found in ace.");
                         continue;
                     }
                     if (null == principal.getType()
@@ -226,16 +234,18 @@ public class GssAclWS {
                         }
                     }
 
-                    String[] deniedPermissions = permissions.getDenyRightMask();
+                    String[] deniedPermissions = permissions.getDeniedPermission();
                     if (null != deniedPermissions) {
-                        List<RoleType> deniedRoleTypes = Util.getRoleTypesFor(deniedPermissions, objectType);
+                        Set<RoleType> deniedRoleTypes = Util.getRoleTypesFor(deniedPermissions, objectType);
                         if (null != deniedRoleTypes
                                 && deniedRoleTypes.size() > 0) {
-                            LOGGER.log(Level.WARNING, "Skipping the current ACE becasue it contains some deny permissions [ "
+                            LOGGER.log(Level.WARNING, "Skipping the ACL for entity URL [ "
+                                    + entityUrl
+                                    + " ] it contains some deny permissions [ "
                                     + deniedPermissions
                                     + " ] for Principal [ "
                                     + principal.getName() + " ] ");
-                            continue;
+                            continue ACL;
                         }
                     }
 
@@ -257,7 +267,7 @@ public class GssAclWS {
                     if (sharepointClientContext.isStripDomainFromAces()) {
                         principalName = Util.getUserFromUsername(principalName);
                     }
-                    List<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getGrantRightMask(), objectType);
+                    Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
                     if (PrincipalType.USER.equals(principal.getType())) {
                         userPermissionMap.put(principalName, allowedRoleTypes);
                     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
@@ -448,7 +458,8 @@ public class GssAclWS {
         if (null == wsResult || null == webstate) {
             return;
         }
-
+        LOGGER.log(Level.CONFIG, "Processing the received ACL changes. WsLog [ "
+                + wsResult.getLogMessage() + " ]");
         GssAclChangeCollection allChanges = wsResult.getAllChanges();
         GssAclChange[] changes = (null == allChanges) ? null
                 : allChanges.getChanges();
@@ -456,7 +467,9 @@ public class GssAclWS {
         if (null == changes) {
             return;
         }
-
+        LOGGER.log(Level.CONFIG, "Total changes to be oprocessed # "
+                + changes.length + " . WsLog [ " + allChanges.getLogMessage()
+                + " ]");
         // If permissions of the Web has changed due to role assignment changes
         // at its first unique ancestor
         boolean isWebChanged = false;
@@ -474,6 +487,11 @@ public class GssAclWS {
             SPChangeType changeType = change.getChangeType();
             String changeObjectHint = change.getHint();
             if (!change.isIsEffectiveInCurrentWeb()) {
+                LOGGER.log(Level.CONFIG, "Change changeType [ "
+                        + changeType
+                        + " ], objectType [ "
+                        + objType
+                        + " ] is not applicable to the current web. skipping tio the next change...");
                 continue;
             }
             LOGGER.log(Level.CONFIG, "Change detected changeType [ " + changeType + " ], objectType [ " + objType + " ]. ");
