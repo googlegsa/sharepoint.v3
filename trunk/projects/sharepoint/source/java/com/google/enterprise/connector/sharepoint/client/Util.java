@@ -33,12 +33,12 @@ import java.net.UnknownHostException;
 import java.text.Collator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -1179,22 +1179,22 @@ public final class Util {
      *            ListItems.
      * @return a list of {@link RoleType}
      */
-    public static List<RoleType> getRoleTypesFor(String[] permissions,
+    public static Set<RoleType> getRoleTypesFor(String[] permissions,
             ObjectType objectType) {
-        List<RoleType> roleTypes = new ArrayList<RoleType>();
+        Set<RoleType> roleTypes = new HashSet<RoleType>();
         if (null == permissions || permissions.length == 0
                 || null == objectType) {
             return roleTypes;
         }
         if (permissions.length == 0
-                || permissions[0].equals(SPBasePermissions.EMPTYMASK)) {
+                || (permissions.length == 1 && permissions[0].equals(SPBasePermissions.EMPTYMASK))) {
             return roleTypes;
         }
 
         // The following two flags are to check if all the required permissions
         // for WRITER access on a list are fulfilled or not. We may need to add
         // more flags in future corresponding to any extra permissions that we
-        // agree to check to give a user WRITER access ona list
+        // agree to check to give a user WRITER access on a list
         boolean managelist = false;
         boolean additems = false;
 
