@@ -239,6 +239,13 @@ public class GssAclWS {
                         Set<RoleType> deniedRoleTypes = Util.getRoleTypesFor(deniedPermissions, objectType);
                         if (null != deniedRoleTypes
                                 && deniedRoleTypes.size() > 0) {
+                            // GSA does not support DENY permissions in the ACL.
+                            // And, sending a partial ACL (by dropping just the
+                            // DENY ACEs) could be wrong because two ACEs,
+                            // directly or indirectly, might be refering to the
+                            // same single user. In such cases, dropping the
+                            // DENY will be wrong because DENY has a
+                            // preference over GRANT
                             LOGGER.log(Level.WARNING, "Skipping the ACL for entity URL [ "
                                     + entityUrl
                                     + " ] it contains some deny permissions [ "
@@ -355,21 +362,34 @@ public class GssAclWS {
                 }
                 if (wsResult.isMoreDocs()) {
                     listState.updateAclCrawlStatus(true, wsResult.getLastIdVisited());
-                } else if (null != aclChangedDocs && aclChangedDocs.size() > 0) {
-                    // We have crawled the last set of documents and there are
-                    // no more documents to be crawled. However, we can not say
-                    // listState.endAclCrawl() at this point because the crawled
-                    // documents are not yet fed to GSA. Once these documents
-                    // get fed, we'll call listState.commitAclCrawlStatus() and
-                    // the state will be updated with the same effect as if we
-                    // have
-                    // called listState.endAclCrawl().
-                    listState.updateAclCrawlStatus(false, 0);
                 } else {
-                    // Since, the current crawled not return any document and
-                    // also, there are no more documents to be crawled, we can
-                    // safely end the ACL crawl for this list.
-                    listState.endAclCrawl();
+                    SPDocument listDoc = listState.getDocumentInstance(sharepointClientContext.getFeedType());
+                    listDoc.setForAclChange(true);
+                    aclChangedDocs.add(listDoc);
+                    if (null != aclChangedDocs && aclChangedDocs.size() > 0) {
+                        // We have crawled the last set of documents and there
+                        // are
+                        // no more documents to be crawled. However, we can not
+                        // say
+                        // listState.endAclCrawl() at this point because the
+                        // crawled
+                        // documents are not yet fed to GSA. Once these
+                        // documents
+                        // get fed, we'll call listState.commitAclCrawlStatus()
+                        // and
+                        // the state will be updated with the same effect as if
+                        // we
+                        // have
+                        // called listState.endAclCrawl().
+                        listState.updateAclCrawlStatus(false, 0);
+                    } else {
+                        // Since, the current crawled not return any document
+                        // and
+                        // also, there are no more documents to be crawled, we
+                        // can
+                        // safely end the ACL crawl for this list.
+                        listState.endAclCrawl();
+                    }
                 }
             }
         }

@@ -607,7 +607,7 @@ public class SharepointClient {
                     + webState.getWebUrl() + " ]. ", e);
         }
 
-
+        List<SPDocument> aclChangedItems = null;
         final ListsWS listsWS = new ListsWS(tempCtx);
         for (int i = 0; i < listCollection.size(); i++) {
             final ListState currentList = listCollection.get(i);
@@ -616,7 +616,7 @@ public class SharepointClient {
             /*
              * If we already knew about this list, then only fetch docs that
              * have changed since the last doc we processed. If it's a new list
-             * (e.g. the first Sharepoint traversal), we fetch everything.
+             * (e.g. the first SharePoint traversal), we fetch everything.
              */
             if (listState == null) {
                 listState = currentList;
@@ -724,16 +724,13 @@ public class SharepointClient {
                         listState.updateList(currentList);
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
-                        List<SPDocument> changedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS);
+                        aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS);
                         // Any documents to be crawled because of ACl Changes
 
-                        if (null == changedItems
-                                || changedItems.size() < sharepointClientContext.getBatchHint()) {
+                        if (null == aclChangedItems
+                                || aclChangedItems.size() < sharepointClientContext.getBatchHint()) {
                             // Do regular incremental crawl
                             listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
-                            if (null != changedItems && null != listItems) {
-                                listItems.addAll(changedItems);
-                            }
                         }
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
@@ -789,31 +786,8 @@ public class SharepointClient {
             if (nextPage == null) {
                 if (((listItems != null) && (listItems.size() > 0))
                         || (listState.isNewList())) {
-                    String docId = listState.getPrimaryKey();
-                    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-                        docId = listState.getListURL() + SPConstants.DOC_TOKEN
-                                + docId;
-                    }
-                    final SPDocument listDoc = new SPDocument(docId,
-                            listState.getListURL(), listState.getLastModCal(),
-                            SPConstants.NO_AUTHOR, listState.getBaseTemplate(),
-                            listState.getParentWebState().getTitle(),
-                            sharepointClientContext.getFeedType(),
-                            webState.getSharePointType());
-
-                    listDoc.setAllAttributes(listState.getAttrs());
-
-                    if (!listState.isSendListAsDocument()) {
-                        // send the listState as a feed only if it was
-                        // included
-                        // (not excluded) in the URL pattern matching
-                        listDoc.setToBeFed(false);
-                        LOGGER.log(Level.FINE, "List Document marked as not to be fed");
-                    }
-
+                    final SPDocument listDoc = listState.getDocumentInstance(sharepointClientContext.getFeedType());
                     listItems.add(listDoc);
-
-                    Collections.sort(listItems);
 
                     /*
                      * The only purpose of list.isNewList to decide whether to
@@ -826,6 +800,22 @@ public class SharepointClient {
                 // If any of the list has not been traversed completely, doCrawl
                 // must not be set true.
                 doCrawl = false;
+            }
+
+            // Add aclChangedItems to the docs crawled under regular crawling.
+            // This is the right place to do this because all the operations
+            // pertaining to regular crawling have been made. But, the
+            // batch-hint check is yet to be done
+            if (null != aclChangedItems) {
+                if (null != listItems) {
+                    listItems.addAll(aclChangedItems);
+                } else {
+                    listItems = aclChangedItems;
+                }
+            }
+
+            if (null != listItems) {
+                Collections.sort(listItems);
             }
 
             listState.setCrawlQueue(listItems);

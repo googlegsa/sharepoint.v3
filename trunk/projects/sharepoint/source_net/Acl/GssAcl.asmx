@@ -116,6 +116,9 @@ public class GssPrincipal
 [Serializable]
 public class GssSharepointPermission
 {
+  // The type being used for permissions are a list of string. SPBasePermission which is an enumeration provided by the SharePoint can also be used over here and would make better sense to have. But, it has a problem when SOAP serialization occurs.
+  // The bitmask representing a set of permissions may not be serialized properly during SOAP serialization. One such case is when "Deny Write" is used in the security policy. The bitmask used in that case is 4611685812065333150.
+
     // List of allowed permissions
     private List<string> allowedPermissions = new List<string>();
 
