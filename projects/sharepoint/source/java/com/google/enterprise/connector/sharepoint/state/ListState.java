@@ -1389,4 +1389,34 @@ public class ListState implements StatefulObject {
         aclChanged = tmp_aclChanged;
         lastDocIdCrawledForAcl = tmp_lastDocIdCrawledForAcl;
     }
+
+    /**
+     * Create a {@link SPDocument} corresponding this list and return the same
+     *
+     * @param feedType FeedType to be considered while creating the
+     *            {@link SPDocument} object
+     * @return {@link SPDocument}
+     */
+    public SPDocument getDocumentInstance(FeedType feedType) {
+        String docId = getPrimaryKey();
+        if (FeedType.CONTENT_FEED == feedType) {
+            docId = getListURL() + SPConstants.DOC_TOKEN + getPrimaryKey();
+        }
+        final SPDocument listDoc = new SPDocument(docId, getListURL(),
+                getLastModCal(), SPConstants.NO_AUTHOR, getBaseTemplate(),
+                getParentWebState().getTitle(), feedType,
+                getParentWebState().getSharePointType());
+
+        listDoc.setAllAttributes(getAttrs());
+
+        if (!isSendListAsDocument()) {
+            // send the listState as a feed only if it was
+            // included
+            // (not excluded) in the URL pattern matching
+            listDoc.setToBeFed(false);
+            LOGGER.log(Level.FINE, "List Document marked as not to be fed");
+        }
+
+        return listDoc;
+    }
 }
