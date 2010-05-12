@@ -523,16 +523,43 @@ public class GssAclWS {
                 webstate.resetState();
                 isWebReset = true;
             } else if (objType == ObjectType.WEB && !isWebChanged) {
-                isWebChanged = true;
-                // Since, role assignment at web have changed, we need to
-                // re-crawl all the list/items which are inheriting the changed
-                // role assignments.
-                String[] allChangedListIds = getListsWithInheritingRoleAssignments();
-                if (null != allChangedListIds) {
-                    changedListsGuids.addAll(Arrays.asList(allChangedListIds));
+                if (changeType == SPChangeType.AssignmentDelete) {
+                    // Typically, deletion of a role affects the ACL of only
+                    // those entities down the hierarchy which are inheriting
+                    // the permission. But, limited access is a special case
+                    // where the ACL of all entities gets affected. Since, we do
+                    // not know what permission has been deleted, we have to
+                    // consider the worst case scenario and assume that the
+                    // deleted role was of limited access.
+                    LOGGER.log(Level.INFO, "Resetting all list states under web [ "
+                            + webstate.getWebUrl()
+                            + " ] becasue some role has been deleted and the deleted role could be Limited Access.");
+                    webstate.resetState();
+                    isWebReset = true;
+                } else {
+                    isWebChanged = true;
+                    // Since, role assignment at web have changed, we need to
+                    // re-crawl all the list/items which are inheriting the
+                    // changed
+                    // role assignments.
+                    String[] allChangedListIds = getListsWithInheritingRoleAssignments();
+                    if (null != allChangedListIds) {
+                        changedListsGuids.addAll(Arrays.asList(allChangedListIds));
+                    }
                 }
             } else if (objType == ObjectType.LIST && null != changeObjectHint) {
-                changedListsGuids.add(changeObjectHint);
+                ListState listState = webstate.getListStateForGuid(changeObjectHint);
+                if (null != listState) {
+                    if (changeType == SPChangeType.AssignmentDelete) {
+                        // Assuming the worst case scenario of Limited Access
+                        LOGGER.log(Level.INFO, "Resetting list state URL [ "
+                                + webstate.getWebUrl()
+                                + " ] becasue some role has been deleted and the deleted role could be Limited Access.");
+                        listState.resetState();
+                    } else {
+                        changedListsGuids.add(changeObjectHint);
+                    }
+                }
             } else if (objType == ObjectType.USER
                     && changeType == SPChangeType.Delete) {
                 // For user-related changes, we only consider deletion changes.
@@ -724,17 +751,17 @@ public class GssAclWS {
                 try {
                     stub.checkConnectivity();
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to checkConnectivity call failed. endpoint [ "
+                    LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
                             + endpoint + " ].", e);
                     return e.getLocalizedMessage();
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Call to checkConnectivity call failed. endpoint [ "
+                LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
                         + endpoint + " ].", af);
                 return af.getLocalizedMessage();
             }
         } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Call to checkConnectivity call failed. endpoint [ "
+            LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
                     + endpoint + " ].", e);
             return e.getLocalizedMessage();
         }

@@ -689,6 +689,10 @@ public class GssAclMonitor
     [WebMethod]
     public string CheckConnectivity()
     {
+        // Ensure that all the required APIs are accessible
+        SPUserCollection admins = web.SiteAdministrators;
+        SPPolicyCollection policies = site.WebApplication.Policies;
+        policies = site.WebApplication.ZonePolicies(site.Zone);
         return "success";
     }
 
