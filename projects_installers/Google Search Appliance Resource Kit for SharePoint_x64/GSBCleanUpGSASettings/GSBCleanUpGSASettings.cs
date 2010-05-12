@@ -19,8 +19,6 @@ using System.IO;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Administration;
 using System.Diagnostics;
-using System.Windows.Forms;
-
 
 namespace GSBCleanUpGSASettings
 {
@@ -30,15 +28,8 @@ namespace GSBCleanUpGSASettings
      */
     class GSBCleanUpGSASettings
     {
-        //public const String SEARCHCONTROL = "TEMPLATE\\CONTROLTEMPLATES\\GSASearchArea.ascx";
-        //public const String SEARCHRESULTS = "TEMPLATE\\LAYOUTS\\GSASearchresults.aspx";
-        //public const String SEARCHCONTROL_BACKUP = "TEMPLATE\\CONTROLTEMPLATES\\GSASearchArea.ascx.backup";
-        //public const String SEARCHRESULTS_BACKUP = "TEMPLATE\\LAYOUTS\\GSASearchresults.aspx.backup";
-    
         static void Main(string[] args)
         {
-            MessageBox.Show("aa: " + SPWebService.AdministrationService);
-            MessageBox.Show("bb: " + SPWebService.AdministrationService.WebApplications);
             #region CleanupGsaWebApplicationSettings
             try
             {
@@ -48,7 +39,7 @@ namespace GSBCleanUpGSASettings
                     {
                         if (GSBControlPanel.frmWebApplicationList.isLocalWebApplication(wa))
                         {
-                            //TODO: need to check if the web application are from the same machine
+                            //Check if the web application are from the same machine
                             string path = wa.IisSettings[0].Path.ToString();
                             if (null != path)
                             {
@@ -60,7 +51,6 @@ namespace GSBCleanUpGSASettings
                                 {
                                     path += "web.config";
                                 }
-                                MessageBox.Show(path);
 
                                 #region delete APP setting nodes
                                 GSBApplicationConfigManager mgr = new GSBApplicationConfigManager();
@@ -81,15 +71,10 @@ namespace GSBCleanUpGSASettings
                             }
                         }//if (isLocalWebApplication(wa))
                     }
-                    catch{
-                        //MessageBox.Show("one: "+e.Message);
-                    }
+                    catch{}
                 }
             }
-            catch{
-                //MessageBox.Show("ALL: " + eee.Message);
-                //MessageBox.Show("ALL: " + eee.StackTrace); 
-            }
+            catch{}
 
             try
             {

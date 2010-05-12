@@ -74,6 +74,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Web References\GSPAclWS\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
     <Compile Include="Web References\GSPBulkWS\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -89,6 +94,17 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
+    <WebReferenceUrl Include="http://10.88.45.94:29951/_vti_bin/GssAcl.asmx%3fWSDL">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\GSPAclWS\</RelPath>
+      <UpdateFromURL>http://10.88.45.94:29951/_vti_bin/GssAcl.asmx%3fWSDL</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>Verify_Installation_GSPAclWS_GssAclMonitor</CachedSettingsPropName>
+    </WebReferenceUrl>
     <WebReferenceUrl Include="http://gdc04.persistent.co.in:4444/_vti_bin/GSBulkAuthorization.asmx%3fWSDL">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPBulkWS\</RelPath>
@@ -113,6 +129,23 @@
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Web References\GSPAclWS\GssAcl.wsdl" />
+    <None Include="Web References\GSPAclWS\GssGetAclChangesSinceTokenResult.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\GSPAclWS\GssGetAclForUrlsResult.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\GSPAclWS\GssGetListItemsWithInheritingRoleAssignments.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\GSPAclWS\GssResolveSPGroupResult.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\GSPAclWS\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
     <None Include="Web References\GSPBulkWS\GSBulkAuthorization.wsdl" />
     <None Include="Web References\GSPSiteDiscoveryWS\GSSiteDiscovery.wsdl" />
     <None Include="Web References\GSPSiteDiscoveryWS\Reference.map">

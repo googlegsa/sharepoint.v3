@@ -53,9 +53,9 @@
 		<codepage>1252</codepage>
 		<title>##ID_STRING5##</title>
 		<subject>Google Search Appliance Resource Kit for SharePoint</subject>
-		<author>##ID_NAME##</author>
+		<author>##COMPANY_NAME##</author>
 		<keywords>Installer,MSI,Database</keywords>
-		<comments>Contact:  Your local administrator</comments>
+		<comments>##ID_STRING97##</comments>
 		<template>x64;1033</template>
 		<lastauthor>Administrator</lastauthor>
 		<revnumber>{A47AA3FA-EFE6-4F4A-96E0-1E222DEC69FB}</revnumber>
@@ -1954,6 +1954,9 @@
 		<row><td>gsbulkauthorization.asmx</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASM|GSBulkAuthorization.asmx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSBulkAuthorization.asmx</td><td>1</td><td/></row>
 		<row><td>gsbulkauthorizationdisco.asp</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASP|GSBulkAuthorizationdisco.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSBulkAuthorizationdisco.aspx</td><td>1</td><td/></row>
 		<row><td>gsbulkauthorizationwsdl.aspx</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASP|GSBulkAuthorizationwsdl.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSBulkAuthorizationwsdl.aspx</td><td>1</td><td/></row>
+		<row><td>gssacl.asmx</td><td>GoogleServicesComponent</td><td>GSSACL~1.ASM|GssAcl.asmx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GssAcl.asmx</td><td>1</td><td/></row>
+		<row><td>gssacldisco.aspx</td><td>GoogleServicesComponent</td><td>GSSACL~1.ASP|GssAcldisco.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GssAcldisco.aspx</td><td>1</td><td/></row>
+		<row><td>gssaclwsdl.aspx</td><td>GoogleServicesComponent</td><td>GSSACL~1.ASP|GssAclwsdl.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GssAclwsdl.aspx</td><td>1</td><td/></row>
 		<row><td>gssitediscovery.asmx</td><td>GoogleServicesComponent</td><td>GSSITE~1.ASM|GSSiteDiscovery.asmx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSSiteDiscovery.asmx</td><td>1</td><td/></row>
 		<row><td>gssitediscoverydisco.aspx</td><td>GoogleServicesComponent</td><td>GSSITE~1.ASP|GSSiteDiscoverydisco.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSSiteDiscoverydisco.aspx</td><td>1</td><td/></row>
 		<row><td>gssitediscoverywsdl.aspx</td><td>GoogleServicesComponent</td><td>GSSITE~1.ASP|GSSiteDiscoverywsdl.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\customwsfiles\GSSiteDiscoverywsdl.aspx</td><td>1</td><td/></row>
@@ -2965,7 +2968,7 @@
 		<col def="I2">Encoded</col>
 		<col def="S0">Comment</col>
 		<col def="I4">TimeStamp</col>
-		<row><td>COMPANY_NAME</td><td>1033</td><td>Google Inc.</td><td>0</td><td/><td>-711070037</td></row>
+		<row><td>COMPANY_NAME</td><td>1033</td><td>Google Inc.</td><td>0</td><td/><td>1520311437</td></row>
 		<row><td>DN_AlwaysInstall</td><td>1033</td><td>Always Install</td><td>0</td><td/><td>1394414478</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_COLOR</td><td>1033</td><td>The color settings of your system are not adequate for running [ProductName].</td><td>0</td><td/><td>1394414478</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_DOTNETVERSION10</td><td>1033</td><td>Microsoft .NET Framework 1.0 needs to be installed for this installation to continue.</td><td>0</td><td/><td>-325228978</td></row>
@@ -2974,7 +2977,7 @@
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_IE6FOUND</td><td>1033</td><td>Internet Explorer 6 or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>211660530</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_IE7FOUND</td><td>1033</td><td>Internet Explorer 7 or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>211662578</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_IE8FOUND</td><td>1033</td><td>Internet Explorer 8 or greater needs to be installed for this installation to continue.</td><td>0</td><td/><td>211662578</td></row>
-		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_OS</td><td>1033</td><td>The operating system is not adequate for running [ProductName]. You require Windows Server 2003 to run the setup.</td><td>0</td><td/><td>-979559500</td></row>
+		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_OS</td><td>1033</td><td>The operating system is not adequate for running [ProductName].</td><td>0</td><td/><td>1654582506</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_PROCESSOR</td><td>1033</td><td>The processor is not adequate for running [ProductName].</td><td>0</td><td/><td>1394414478</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_RAM</td><td>1033</td><td>The amount of RAM is not adequate for running [ProductName].</td><td>0</td><td/><td>1394414478</td></row>
 		<row><td>IDPROP_EXPRESS_LAUNCH_CONDITION_SCREEN</td><td>1033</td><td>The screen resolution is not adequate for running [ProductName].</td><td>0</td><td/><td>1394414478</td></row>
@@ -4136,7 +4139,7 @@
 		<row><td>ID_STRING67</td><td>1033</td><td>GSA Simulator for SharePoint</td><td>0</td><td/><td>1839030796</td></row>
 		<row><td>ID_STRING68</td><td>1033</td><td>Google Search Box Test Utility</td><td>0</td><td/><td>-451057426</td></row>
 		<row><td>ID_STRING69</td><td>1033</td><td>GSA Resource Kit for SharePoint</td><td>0</td><td/><td>-711092401</td></row>
-		<row><td>ID_STRING7</td><td>1033</td><td>http://www.google..com</td><td>0</td><td/><td>-711090485</td></row>
+		<row><td>ID_STRING7</td><td>1033</td><td>http://www.GoogleInc..com</td><td>0</td><td/><td>1520311437</td></row>
 		<row><td>ID_STRING70</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>-711088305</td></row>
 		<row><td>ID_STRING71</td><td>1033</td><td>GOOGLE~1|Google SAML Bridge for Windows</td><td>0</td><td/><td>1839028527</td></row>
 		<row><td>ID_STRING72</td><td>1033</td><td>SAMLBR~1|SAML Bridge Configuration Wizard</td><td>0</td><td/><td>362630958</td></row>
@@ -4166,6 +4169,7 @@
 		<row><td>ID_STRING94</td><td>1033</td><td>SAMLBR~1|SAML Bridge Login Page</td><td>0</td><td/><td>-1784827663</td></row>
 		<row><td>ID_STRING95</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-1113739436</td></row>
 		<row><td>ID_STRING96</td><td>1033</td><td>SharePoint 2010 Installation not found</td><td>0</td><td/><td>983455053</td></row>
+		<row><td>ID_STRING97</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>1520348015</td></row>
 		<row><td>ID_STRING_PORT_NUMBER</td><td>1033</td><td>GSA Resource Kit for SharePoint port number</td><td>0</td><td/><td>371005486</td></row>
 		<row><td>ID_SearchBoxLocation</td><td>1033</td><td>[INSTALLDIR]TEMPLATE\CONTROLTEMPLATES</td><td>0</td><td>Search Box Location</td><td>-191036691</td></row>
 		<row><td>ID_SearchResultsLocation</td><td>1033</td><td>[INSTALLDIR]TEMPLATE\LAYOUTS</td><td>0</td><td>Search Results location</td><td>-191005555</td></row>
