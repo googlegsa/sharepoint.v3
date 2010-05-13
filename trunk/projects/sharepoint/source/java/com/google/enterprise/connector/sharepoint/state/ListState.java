@@ -145,6 +145,9 @@ public class ListState implements StatefulObject {
     private boolean tmp_aclChanged;
     private int tmp_lastDocIdCrawledForAcl;
 
+    // To check if the list inherits permission from the parent web
+    private boolean inheritedSecurity;
+
     /**
      * @param inInternalName
      * @param inTitle
@@ -983,6 +986,7 @@ public class ListState implements StatefulObject {
             listTitle = inList.getListTitle();
             listConst = inList.getListConst();
             sendListAsDocument = inList.isSendListAsDocument();
+            inheritedSecurity = inList.isInheritedSecurity();
         }
     }
 
@@ -1418,5 +1422,13 @@ public class ListState implements StatefulObject {
         }
 
         return listDoc;
+    }
+
+    public boolean isInheritedSecurity() {
+        return inheritedSecurity;
+    }
+
+    public void setInheritedSecurity(boolean inheritedSecurity) {
+        this.inheritedSecurity = inheritedSecurity;
     }
 }
