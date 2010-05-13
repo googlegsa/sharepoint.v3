@@ -70,7 +70,7 @@ public class GssPrincipal
         set { logMessage = new StringBuilder(value); }
     }
 
-    // A web servcei always require a default constructor. But, we do not want to use it intentionally
+    // A web service always require a default constructor. But, we do not want to use it intentionally
     private GssPrincipal() { }
 
     public GssPrincipal(string name)
@@ -137,7 +137,7 @@ public class GssSharepointPermission
     }
 
     /// <summary>
-    /// Converts a SPBasePermission object into a set of string represting the actual permission being used
+    /// Converts a SPBasePermission object into a set of string representing the actual permission being used
     /// </summary>
     /// <param name="spPerms"></param>
     /// <returns></returns>
@@ -257,7 +257,7 @@ public class GssAcl
         set { logMessage = new StringBuilder(value); }
     }
 
-    // A web servcei always require a default constructor. But, we do not want to use it intentionally
+    // A web service always require a default constructor. But, we do not want to use it intentionally
     private GssAcl() { }
 
     public GssAcl(string entityUrl, int count)
@@ -309,7 +309,7 @@ public class GssAclChange
     // An additional hint to identify the exact object/entity that has changed. Most of the time, this would be the ID, GUID or URL.
     private string hint;
 
-    // A way to identify if the current change has its implication under the web site to whcih the request has been sent. This is useful becasue the web servcie processing is done at site collection level and all changes might not be relevant to all the web sites in the site collection.
+    // A way to identify if the current change has its implication under the web site to which the request has been sent. This is useful because the web service processing is done at site collection level and all changes might not be relevant to all the web sites in the site collection.
     private bool isEffectiveIncurrentWeb;
 
     public ObjectType ChangedObject
@@ -522,7 +522,7 @@ public class GssAclChangeCollection
 /// <summary>
 /// Represents a basic response object containing minimal information that can be used by all other web methods.
 /// For now, site collection information has been identified as one such information. The reason being, Java connector
-/// uses SharePoint site's URL to access this web servcie. However, the operation GetAclForURLs, GetAclChangeSinceToken,
+/// uses SharePoint site's URL to access this web service. However, the operation GetAclForURLs, GetAclChangeSinceToken,
 /// ResolveSPGroup etc works at site collection level. Returning this site collection info in the web service response will
 /// tell the client (Java connector) about the actual site collection which was used by the web service for serving the request.
 /// This info can be used for various purposes like maintaining users/groups membership as they are defined at site collection level.
@@ -619,7 +619,7 @@ public class GssResolveSPGroupResult : GssAclBaseResult
 [Serializable]
 public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
 {
-  // XML representaiotn of all the documents/items to be returned
+  // XML representation of all the documents/items to be returned
     private string docXml;
 
   // Are there more documents to be crawled?
@@ -666,7 +666,7 @@ public class GssAclMonitor
     // A hypothetical name given to the site collection administrator group. This is required because the web service treats
     // site collection administrators as one of the SharePoitn groups. This is in benefit of avoiding re-crawling all the documents
     // when there is any change in the administrators list. Java connector sends ACL as document's metadata and any change in the
-    // administrator requires re-crawlign all the documents in the site collection. Having a common group for the administrator will
+    // administrator requires re-crawling all the documents in the site collection. Having a common group for the administrator will
     // just require updating the group membership info and no re-crawl will be required.
     public const string GSSITEADMINGROUP = "[GSSiteCollectionAdministrator]";
 
@@ -691,8 +691,14 @@ public class GssAclMonitor
 
     ~GssAclMonitor()
     {
-        web.Dispose();
-        site.Dispose();
+        if (null != web)
+        {
+          web.Dispose();
+        }
+        if (null != site)
+        {
+          site.Dispose();
+        }
     }
 
     /// <summary>
