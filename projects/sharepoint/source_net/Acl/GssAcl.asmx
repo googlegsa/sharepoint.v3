@@ -660,11 +660,11 @@ public class GssAclMonitor
     // SharePoint site used for constructing the web service endpoint
     SPWeb web;
 
-    // A random guess about how many items should be query at a time. Such threashold is required to save the web service from being unresponsive for a long time
+    // A random guess about how many items should be query at a time. Such threshold is required to save the web service from being unresponsive for a long time
     public const int ROWLIMIT = 500;
 
-    // A hypothetical name given to the site collection administrator group. This is required becasue the web service treats
-    // site collection administrators as one of the SharePoitn groups. This is in beneift of avoiding recrawling all the documents
+    // A hypothetical name given to the site collection administrator group. This is required because the web service treats
+    // site collection administrators as one of the SharePoitn groups. This is in benefit of avoiding re-crawling all the documents
     // when there is any change in the administrators list. Java connector sends ACL as document's metadata and any change in the
     // administrator requires re-crawlign all the documents in the site collection. Having a common group for the administrator will
     // just require updating the group membership info and no re-crawl will be required.
@@ -673,8 +673,20 @@ public class GssAclMonitor
     public GssAclMonitor()
     {
         SPContext spContext = SPContext.Current;
+        if (null == spContext)
+        {
+            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to a valid SharePoitn site. ");
+        }
         site = spContext.Site;
+        if (null == site)
+        {
+            throw new Exception("SharePoint site collection not found");
+        }
         web = site.OpenWeb();
+        if (null == web)
+        {
+            throw new Exception("SharePoint site not found");
+        }
     }
 
     ~GssAclMonitor()
@@ -704,11 +716,6 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
     {
-        if (null == site || null == web)
-        {
-            throw new Exception("SharePoint site not identified");
-        }
-
         GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
 
         List<GssAcl> allAcls = new List<GssAcl>();
@@ -779,10 +786,6 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclChangesSinceTokenResult GetAclChangesSinceToken(string fromChangeToken, string toChangeToken)
     {
-        if (null == site || null == web)
-        {
-            throw new Exception("SharePoint site not identified");
-        }
         GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         GssAclChangeCollection allChanges = null;
         SPChangeToken changeTokenEnd = null;
@@ -849,10 +852,6 @@ public class GssAclMonitor
     [WebMethod]
     public GssResolveSPGroupResult ResolveSPGroup(string[] groupId)
     {
-        if (null == site || null == web)
-        {
-            throw new Exception("SharePoint site not found! ");
-        }
         GssResolveSPGroupResult result = new GssResolveSPGroupResult();
         List<GssPrincipal> prinicpals = new List<GssPrincipal>();
         if (null != groupId)
@@ -914,11 +913,6 @@ public class GssAclMonitor
     [WebMethod]
     public List<string> GetListsWithInheritingRoleAssignments()
     {
-        if (null == site || null == web)
-        {
-            throw new Exception("SharePoint site not found! ");
-        }
-
         List<string> listIDs = new List<string>();
         SPListCollection lists = web.Lists;
         foreach (SPList list in lists)
@@ -941,11 +935,6 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetListItemsWithInheritingRoleAssignments GetListItemsWithInheritingRoleAssignments(string listGuId, int rowLimit, int lastItemId)
     {
-        if (null == site || null == web)
-        {
-            throw new Exception("SharePoint site not found! ");
-        }
-
         SPList changeList = null;
         try
         {
