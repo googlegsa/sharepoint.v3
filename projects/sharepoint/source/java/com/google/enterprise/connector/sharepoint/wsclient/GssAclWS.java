@@ -14,7 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -498,7 +497,10 @@ public class GssAclWS {
         // permission change like security policy change
         boolean isWebReset = false;
 
-        Set<String> changedListsGuids = new HashSet<String>();
+        // To keep track of all the lists which have been processed. This is to
+        // avoid re-processing of the same list due to multiple changes
+        Set<ListState> processedLists = new HashSet<ListState>();
+
         for (GssAclChange change : changes) {
             if (null == change) {
                 continue;
@@ -540,26 +542,46 @@ public class GssAclWS {
                     isWebChanged = true;
                     // Since, role assignment at web have changed, we need to
                     // re-crawl all the list/items which are inheriting the
-                    // changed
-                    // role assignments.
-                    String[] allChangedListIds = getListsWithInheritingRoleAssignments();
-                    if (null != allChangedListIds) {
-                        changedListsGuids.addAll(Arrays.asList(allChangedListIds));
+                    // changed role assignments.
+                    for (ListState listState : webstate.getAllListStateSet()) {
+                        if (!listState.isInheritedSecurity()) {
+                            continue;
+                        }
+                        if (!processedLists.contains(listState)) {
+                            LOGGER.log(Level.INFO, "Marking List [ "
+                                    + listState
+                                    + " ] as a candidate for ACL based crawl becasue the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
+                            listState.startAclCrawl();
+                            processedLists.add(listState);
+                        }
                     }
                 }
             } else if (objType == ObjectType.LIST && null != changeObjectHint) {
                 ListState listState = webstate.getListStateForGuid(changeObjectHint);
-                if (null != listState) {
-                    if (changeType == SPChangeType.AssignmentDelete) {
-                        // Assuming the worst case scenario of Limited Access
-                        LOGGER.log(Level.INFO, "Resetting list state URL [ "
-                                + webstate.getWebUrl()
-                                + " ] becasue some role has been deleted and the deleted role could be Limited Access.");
-                        listState.resetState();
-                    } else {
-                        changedListsGuids.add(changeObjectHint);
+                if (null == listState) {
+                    LOGGER.log(Level.WARNING, "Changed List ID [ "
+                            + changeObjectHint
+                            + " ] is not found in the WebState. Skipping to the next change..");
+                    continue;
+                }
+
+                if (changeType == SPChangeType.AssignmentDelete) {
+                    // Assuming the worst case scenario of Limited Access
+                    // deletion
+                    LOGGER.log(Level.INFO, "Resetting list state URL [ "
+                            + webstate.getWebUrl()
+                            + " ] becasue some role has been deleted and the deleted role could be Limited Access.");
+                    listState.resetState();
+                } else {
+                    if (!processedLists.contains(listState)) {
+                        LOGGER.log(Level.INFO, "Marking List [ "
+                                + listState
+                                + " ] as a candidate for ACL based crawl becasue the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
+                        listState.startAclCrawl();
+                        processedLists.add(listState);
                     }
                 }
+
             } else if (objType == ObjectType.USER
                     && changeType == SPChangeType.Delete) {
                 // For user-related changes, we only consider deletion changes.
@@ -596,17 +618,6 @@ public class GssAclWS {
             if (isWebReset) {
                 break;
             }
-        }
-
-        for (String listGuid : changedListsGuids) {
-            ListState listState = webstate.getListStateForGuid(listGuid);
-            if (null == listState) {
-                continue;
-            }
-            listState.startAclCrawl();
-            LOGGER.log(Level.INFO, "Marking List [ "
-                    + listState
-                    + " ] as a candidate for ACL based crawl becasue the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
         }
 
         if (null == webstate.getNextAclChangeToken()

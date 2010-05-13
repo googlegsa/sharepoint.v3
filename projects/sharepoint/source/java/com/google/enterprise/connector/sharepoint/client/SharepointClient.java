@@ -586,8 +586,25 @@ public class SharepointClient {
         List<ListState> listCollection = siteDataWS.getNamedLists(webState);
 
         // Remove duplicate lists, if any.
+        // TODO: We do not need to do this. Web Service does not return
+        // duplicate lists.
         listCollection = new ArrayList<ListState>(new TreeSet<ListState>(
                 listCollection));
+
+        // Updating the latest metadata info for all list states. We may do this
+        // updation when the crawl will begin; that will save this extra
+        // iteration over the ListStates. But, there is one metadata which
+        // must be updated before the change (ACL) detection and crawl begins.
+        // That metadata is ListState.InheritiedSecurity flag which is very
+        // important while processing ACL related changes.
+        // TODO: with some re-structuring of code, we can still avoid this extra
+        // iteration.
+        for (ListState currentListState : listCollection) {
+            ListState listState = webState.lookupList(currentListState.getPrimaryKey());
+            if (null != listState) {
+                listState.updateList(currentListState);
+            }
+        }
 
         /*
          * If the nextList belongs the current web and is still existing on the
@@ -721,11 +738,10 @@ public class SharepointClient {
                             lastDocID = Util.getOriginalDocId(lastDoc.getDocId(), sharepointClientContext.getFeedType());
                             lastDocFolderLevel = lastDoc.getFolderLevel();
                         }
-                        listState.updateList(currentList);
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
-                        aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS);
                         // Any documents to be crawled because of ACl Changes
+                        aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS);
 
                         if (null == aclChangedItems
                                 || aclChangedItems.size() < sharepointClientContext.getBatchHint()) {
@@ -742,8 +758,6 @@ public class SharepointClient {
                 } else {
                     try {
                         final Calendar dateSince = listState.getDateForWSRefresh();
-
-                        listState.updateList(currentList);
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
                         LOGGER.info("fetching changes since "
                                 + Util.formatDate(dateSince) + " for list [ "
