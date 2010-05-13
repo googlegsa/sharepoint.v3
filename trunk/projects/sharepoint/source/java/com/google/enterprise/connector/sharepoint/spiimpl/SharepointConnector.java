@@ -111,7 +111,7 @@ public class SharepointConnector implements Connector {
             String status = aclWs.checkConnectivity();
             if (!SPConstants.CONNECTIVITY_SUCCESS.equals(status)) {
                 sharepointClientContext.setPushAcls(false);
-                LOGGER.log(Level.WARNING, "ACL will not be sent for the documents because the ACL web servcei is not accessible.");
+                LOGGER.log(Level.WARNING, "ACL will not be sent for the documents because the ACL web service is not accessible.");
             }
         }
         return new SharepointSession(this, sharepointClientContext);
