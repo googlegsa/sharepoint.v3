@@ -405,3 +405,32 @@ Following are the probable reasons for content not being fed to Search Appliance
   # Target document size > maximum file size (default 30MB)
   # Unknown MIME type
 Please check supported MIME types at: CONNECTOR_HOME\Tomcat\webapps\connector-manager\WEB-INF\applicationContext.xml
+
+*Q. What if I have dual authenitcation enabled on SharePoint?*
+
+http://msdn.microsoft.com/en-us/library/cc441429.aspx
+http://grounding.co.za/blogs/brett/archive/2008/01/09/setting-up-dual-authentication-on-windows-sharepoint-services-3-0-forms-and-ntlm.aspx
+http://www.andrewconnell.com/blog/articles/HowToConfigPublishingSiteWithDualAuthProvidersAndAnonAccess.aspx 
+http://sharenotes.wordpress.com/2007/10/19/multiple-or-dual-authentication-for-a-single-site-in-sharepoint-office-system-2007/
+http://www.andrewconnell.com/blog/articles/HowToConfigPublishingSiteWithDualAuthProvidersAndAnonAccess.aspx
+
+Setting up dual authentication basically means setting up FBA for internet users and IWA for intranet users. In such cases the connector should be configured with crawl URL that is protected by IWA and not FBA
+
+*Q. What if I have host-header based sites?*
+The host-header based sites, is a different way of creating sites:
+
+http://technet.microsoft.com/en-us/library/cc424952.aspx
+http://sharepointguys.com/matt/sharepoint-administration/sharepoint-for-web-hosters-host-header-based-site-collections/
+http://bloggingabout.net/blogs/mglaser/archive/2007/01/31/hosting-sharepoint-on-a-fully-qualified-domain-name-fqdn.aspx
+http://sharepoint.microsoft.com/blogs/zach/Lists/Posts/Post.aspx?ID=38
+
+Host-header based sites are popular where you require to setup a separate domain for each site. These are not path based sites which are created from SharePoint's central admin, but using the command line tool 'stsadm.exe'. The Alternate Access Mappings are not applicable to these.
+
+The connector is able to crawl only one host header based site. This is because SharePoint treats path based site collection and host header based site collections differently.
+
+However, you can still crawl all the sites using the Google Services for SharePoint that need to be deployed on the SharePoint server. You can download the installer from the connectors download page: http://code.google.com/p/googlesearchapplianceconnectors/
+
+Two important points to note:
+
+    * The Include URL patterns should be broad enough to cover all the host header based sites, or else the connector will exclude them from crawling even though they are being discovered by the custom web service
+    * All the site URLs should be able to be resolved using Windows authentication. 
