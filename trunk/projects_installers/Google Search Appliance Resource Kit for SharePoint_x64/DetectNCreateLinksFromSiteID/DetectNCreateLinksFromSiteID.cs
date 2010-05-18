@@ -20,6 +20,7 @@ using System.Windows.Forms;
 
 namespace GoogleResourceKitForSharePoint
 {
+    /*Author: Amit Agrawal*/
     class DetectNCreateLinksFromSiteID
     {
         static void Main(string[] args)
@@ -62,8 +63,6 @@ namespace GoogleResourceKitForSharePoint
 
                 }
             }
-            //MessageBox.Show(url, "url:");
-
             System.Diagnostics.Process.Start(url);//launch a web site in default browser
         }
 
