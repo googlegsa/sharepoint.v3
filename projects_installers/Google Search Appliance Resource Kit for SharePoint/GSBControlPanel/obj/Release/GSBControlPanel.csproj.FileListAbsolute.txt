@@ -18,3 +18,13 @@ C:\Amit\Google Search Appliance Resource Kit for SharePoint\GSBControlPanel\obj\
 C:\Amit\Google Search Appliance Resource Kit for SharePoint\GSBControlPanel\obj\Release\GSBControlPanel.csproj.GenerateResource.Cache
 C:\Amit\Google Search Appliance Resource Kit for SharePoint\GSBControlPanel\obj\Release\Configuration Wizard.exe
 C:\Amit\Google Search Appliance Resource Kit for SharePoint\GSBControlPanel\obj\Release\Configuration Wizard.pdb
+C:\GSARK_32 bit\GSBControlPanel\bin\Release\Configuration Wizard.exe
+C:\GSARK_32 bit\GSBControlPanel\bin\Release\Configuration Wizard.pdb
+C:\GSARK_32 bit\GSBControlPanel\bin\Release\Microsoft.SharePoint.Search.dll
+C:\GSARK_32 bit\GSBControlPanel\bin\Release\Microsoft.SharePoint.Search.xml
+C:\GSARK_32 bit\GSBControlPanel\obj\Release\ResolveAssemblyReference.cache
+C:\GSARK_32 bit\GSBControlPanel\obj\Release\GSBControlPanel.frmWebApplicationList.resources
+C:\GSARK_32 bit\GSBControlPanel\obj\Release\GSBControlPanel.frmGSAParams.resources
+C:\GSARK_32 bit\GSBControlPanel\obj\Release\GSBControlPanel.csproj.GenerateResource.Cache
+C:\GSARK_32 bit\GSBControlPanel\obj\Release\Configuration Wizard.exe
+C:\GSARK_32 bit\GSBControlPanel\obj\Release\Configuration Wizard.pdb

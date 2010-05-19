@@ -178,6 +178,48 @@ namespace WindowsApplication1
                         lblWarning.Visible = true;
                     }
                 }
+
+                //case of ACL WS
+                if (lblWarning.Visible == false)
+                {
+                    if (txtUrl.Text.EndsWith("/"))
+                    {
+                        webServiceEndPointURL = txtUrl.Text + "_vti_bin/GssAcl.asmx";
+                    }
+                    else
+                    {
+                        webServiceEndPointURL = txtUrl.Text + "/_vti_bin/GssAcl.asmx";
+                    }
+                    try
+                    {
+
+                        GSPAclWS.GssAclMonitor aclWS = new GSPAclWS.GssAclMonitor();
+                        aclWS.Url = webServiceEndPointURL;
+
+                        //Check: if the user is using the default credentials
+                        if (cbUseWindowsSessionCreds.Checked == true)
+                        {
+                            aclWS.Credentials = CredentialCache.DefaultCredentials;
+                        }
+                        else
+                        {
+                            aclWS.Credentials = new NetworkCredential(txtUserName.Text, txtPassword.Text, txtDomain.Text);
+                        }
+
+                        String val = aclWS.CheckConnectivity();
+                        if (!val.ToLower().Equals("success"))
+                        {
+                            lblWarning.Text = "ERROR: Connection to Google Services for SharePoint failed";
+                            lblWarning.Visible = true;
+                        }
+                    }
+                    catch (Exception ee)
+                    {
+                        lblWarning.Text = ee.Message;
+                        lblWarning.Visible = true;
+                    }
+                }
+
             }
 
             if (lblWarning.Visible == false)

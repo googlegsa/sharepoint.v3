@@ -57,7 +57,7 @@ div.ms-areaseparatorright{
         public string myquery = "";
         public const String PREV = "Previous";
         public const String NEXT = "Next";
-        public const String PAGENAME = "searchresults.aspx";
+        public const String PAGENAME = "GSASearchresults.aspx";
         public string tempvar = "";
         public const string PREVSTMT = "";//initially prev should be hidden
         public const string NEXTSTMT = "";
@@ -366,12 +366,10 @@ div.ms-areaseparatorright{
                     requestHeaderKeys = HttpContext.Current.Request.Headers.AllKeys;//add headers available in current request to the GSA request
                 }
 
-
                 for (int i = 0; i < requestHeaderKeys.Length - 1; i++)
                 {
                     try
                     {
-                        
                         /*Logging the header key and value*/
                         log("Request Header Key="+requestHeaderKeys[i]+"| Value= " + HttpContext.Current.Request.Headers[requestHeaderKeys[i]], LOG_LEVEL.INFO);
 		                
@@ -807,40 +805,90 @@ else if(document.attachEvent)
                             }
                             
                             
-                            /**
-                             * We need to check if there is a cookie or not. 
-                             * For the initial request to GSA in case of SAML it will be there. Forget it for afterwards
-                             **/
+                            /*
+                               We need to check if there is a cookie or not. This check is for the 
+                               initial request to GSA in case of SAML is configured with GSA. 
+                             */
+                            gProps.log("Adding cookies: " + GSASessionCookie, LOG_LEVEL.INFO);
                             
-                            Char[] seps = {'='};//Adding the session cookie
-
+                            /*Break multiple cookie based on semi-colon as separator*/
+                            Char[] seps = {';'};
                             if (GSASessionCookie != null)
                             {
-                                gProps.log("GSA Session cookie is: " + GSASessionCookie, LOG_LEVEL.INFO);
+                                
                                 String[] key_val = GSASessionCookie.Split(seps);
-
+                                
+                                /*check if there is atleast one cookie in the set-cookie header*/
                                 if ((key_val != null) && (key_val[0] != null))
                                 {
-                                    responseCookies.Name = objResp.Cookies[0].Name;
-                                    responseCookies.Value = key_val[1];
-                                    //responseCookies.Domain = objReq.RequestUri.Host;
+                                    foreach(String one_cookie in key_val)
+                                    {
+                                        /*
+                                          Get the key and value for each cookie. 
+                                          Encode the value of the cookie while adding the cookie for new request
+                                        */
+                                        Char[] Seps_Each_Cookie = { '=' };
 
-                                    Uri GoogleUri = new Uri(GSASearchUrl);
-                                    responseCookies.Domain = GoogleUri.Host;
+                                        /*
+                                          Problem
+                                          ========
+                                          You can have cookie values containing '=' which is also the separator 
+                                          for the key and value of the cookie. 
+                                          
+                                          Solution
+                                          ========
+                                          Parse the cookies and get 1st part as keyName and remaing part as value. 
+                                          Get only 2 tokens as value could also contain '='. E.g. String one_cookie = "aa=bb=cc=dd";
+                                        */
+                                        
+                                        string name; 
+                                        string value;
+                                        
+                                        /*
+                                            Problem:
+                                            =========
+                                            Cookie may or may not have a value.
+                                            E.g. GSA_SESSION_ID=7d8b50eb55a1c077159657da24e5b71d; secure
+                                            'secure' does not have any value.
+                                            
+                                            Solution:
+                                            ========
+                                            Check if the cookie contains '='/cookie key-value separator. 
+                                            If so get the value. 
+                                            If not value should be empty;
+                                        */
 
-                                    responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
-                                    newcc.Add(responseCookies);
+                                        if(one_cookie.Contains("="))
+                    					{
+                        					String[] Cookie_Key_Val = one_cookie.Trim().Split(Seps_Each_Cookie, 2);
+                                            name = Cookie_Key_Val[0];
+                        					value = Cookie_Key_Val[1];
+                    					}
+                                        else
+                                        {
+                                            name=one_cookie.Trim();
+                                            gProps.log("The cookie contains only key '"+name+"'without any value", LOG_LEVEL.INFO);
+                                            value="";
+                                        }
+                                        /////////////////////////
+                                        responseCookies.Name = name;
+                                        Encoding utf8 = Encoding.GetEncoding("utf-8");
+                                        responseCookies.Value = HttpUtility.UrlEncode(value, utf8); 
+                                        Uri GoogleUri = new Uri(GSASearchUrl);
+                                        responseCookies.Domain = GoogleUri.Host;
+                                        responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
+                                        newcc.Add(responseCookies);
 
-                                    /*Cookie Information*/
-                                    gProps.log("Cookie Name= " + responseCookies.Name
-                                        + "| Value= " + key_val[1]
-                                        + "| Domain= " + GoogleUri.Host
-                                        + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
-                                }
+                                        /*Cookie Information*/
+                                        gProps.log("Cookie Name= " + responseCookies.Name
+                                            + "| Value= " + value
+                                            + "| Domain= " + GoogleUri.Host
+                                            + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
+                                    }
+                                }//end: if ((key_val != null) && (key_val[0] != null))
                             }
 
                             HttpWebResponse objNewResp =  (HttpWebResponse)gProps.GetResponse(true, GSASearchUrl, newcc, objResp);//fire getresponse
-
                             contentEncoding = objResp.Headers["Content-Encoding"];
                             returnstring = "";//initialize the return string
                             Stream objNewStream = objNewResp.GetResponseStream();//if the request is successful, get the results in returnstring

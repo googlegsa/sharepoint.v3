@@ -30,7 +30,7 @@ public partial class _Default : System.Web.UI.Page
         PrintCookies();
 
         ////////////////////////////////////////////
-        Response.Write("<strong>Request <a href='http://code.google.com/apis/searchappliance/documentation/62/xml_reference.html#request_parametershttp://code.google.com/apis/searchappliance/documentation/62/xml_reference.html#request_parameters'>Query String</a> Parameters:</strong>");
+        Response.Write("<strong>Request <a href='http://code.google.com/apis/searchappliance/documentation/62/xml_reference.html#request_parameters'>Query String</a> Parameters:</strong>");
         Response.Write("<br/>");
         Response.Write("<br/>");
         NameValueCollection nvc = HttpContext.Current.Request.QueryString;//print the request query string
