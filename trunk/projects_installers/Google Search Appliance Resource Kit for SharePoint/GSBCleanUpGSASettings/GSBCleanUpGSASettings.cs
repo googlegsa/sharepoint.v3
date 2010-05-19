@@ -20,7 +20,6 @@ using Microsoft.SharePoint;
 using Microsoft.SharePoint.Administration;
 using System.Diagnostics;
 
-
 namespace GSBCleanUpGSASettings
 {
     /*
@@ -29,11 +28,6 @@ namespace GSBCleanUpGSASettings
      */
     class GSBCleanUpGSASettings
     {
-        public const String SEARCHCONTROL = "TEMPLATE\\CONTROLTEMPLATES\\SearchArea.ascx";
-        public const String SEARCHRESULTS = "TEMPLATE\\LAYOUTS\\searchresults.aspx";
-        public const String SEARCHCONTROL_BACKUP = "TEMPLATE\\CONTROLTEMPLATES\\SearchArea.ascx.backup";
-        public const String SEARCHRESULTS_BACKUP = "TEMPLATE\\LAYOUTS\\searchresults.aspx.backup";
-    
         static void Main(string[] args)
         {
             #region CleanupGsaWebApplicationSettings
@@ -45,7 +39,7 @@ namespace GSBCleanUpGSASettings
                     {
                         if (GSBControlPanel.frmWebApplicationList.isLocalWebApplication(wa))
                         {
-                            //TODO: need to check if the web application are from the same machine
+                            //Check if the web application are from the same machine
                             string path = wa.IisSettings[0].Path.ToString();
                             if (null != path)
                             {
@@ -114,6 +108,7 @@ namespace GSBCleanUpGSASettings
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslGSA2SP']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslSP2result']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSAStyle']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='logLocation']");
 
                                 mgr.SaveXML();
                                 #endregion delete APP setting nodes
@@ -145,41 +140,8 @@ namespace GSBCleanUpGSASettings
                 }
                 catch (Exception)
                 { }
-
-                
-                //DO FILE OPERATIONS...... 
-                /* *************************************************************
-                 * 1. Delete the GSA Search Box file(s)
-                 * 2. Restore the original Search Box file(s) to the respective location
-                 * *************************************************************/
-            
-                ///////////////////////////Steps for SearchControl//////////////////////////////////////
-
-                /**
-                 * Delete the newly added file only when you have a backup. 
-                 **/
-                
-                if (File.Exists(myBasePath + SEARCHCONTROL))
-                {
-                    if (File.Exists(myBasePath + SEARCHCONTROL_BACKUP))
-                    {
-                        File.Delete(myBasePath + SEARCHCONTROL);//delete old file
-                        File.Move(myBasePath + SEARCHCONTROL_BACKUP, myBasePath + SEARCHCONTROL); //backup
-                    }
-                }
-
-                ///////////////////////////Steps for SearchBox//////////////////////////////////////
-                if (File.Exists(myBasePath + SEARCHRESULTS))
-                {
-                    if (File.Exists(myBasePath + SEARCHRESULTS_BACKUP))
-                    {
-                        File.Delete(myBasePath + SEARCHRESULTS);//delete old file
-                        File.Move(myBasePath + SEARCHRESULTS_BACKUP, myBasePath + SEARCHRESULTS); //backup
-                    }
-                }
-
             }
-            catch (Exception )
+            catch (Exception)
             {
                 //do nothing ... as can't log exception while installation
             }
