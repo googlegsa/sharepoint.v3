@@ -22,12 +22,6 @@ namespace GSBControlPanel
 {
     static class GSBMain
     {
-        public const String SEARCHCONTROL = "TEMPLATE\\CONTROLTEMPLATES\\SearchArea.ascx";
-        public const String SEARCHRESULTS = "TEMPLATE\\LAYOUTS\\searchresults.aspx";
-        public const String SEARCHCONTROL_BACKUP = "TEMPLATE\\CONTROLTEMPLATES\\SearchArea.ascx.backup";
-        public const String SEARCHRESULTS_BACKUP = "TEMPLATE\\LAYOUTS\\searchresults.aspx.backup";
-        public const String CURRENT_SEARCHRESULTS = "TEMPLATE\\searchresults.aspx";
-        public const String CURRENT_SEARCHCONTROL = "TEMPLATE\\SearchArea.ascx";
         public const String TEMPLATE = "TEMPLATE";
 
         /// <summary>
@@ -63,38 +57,6 @@ namespace GSBControlPanel
                 {
                     //do nothing...as can't do much when running from installer
                 }
-
-                //DO FILE OPERATIONS...... 
-                /* *************************************************************
-                 * 1. Backup the older file(s)
-                 * 2. Copy the new search file(s) to the respective location
-                 * *************************************************************/
-                try
-                {
-                    ///////////////////////////STEPS FOR SEARCHCONTROL//////////////////////////////////////
-                    if (File.Exists(myBasePath + SEARCHCONTROL))
-                    {
-                        File.Move(myBasePath+SEARCHCONTROL,myBasePath+SEARCHCONTROL_BACKUP); //backup
-                    }
-                    if (File.Exists(myBasePath + CURRENT_SEARCHCONTROL))
-                    {
-                        File.Copy(myBasePath + CURRENT_SEARCHCONTROL, myBasePath + SEARCHCONTROL);//new search control
-                    }
-
-                    ///////////////////////////Steps for SearchBox//////////////////////////////////////
-                    if (File.Exists(myBasePath + SEARCHRESULTS))
-                    {
-                        File.Move(myBasePath + SEARCHRESULTS, myBasePath + SEARCHRESULTS_BACKUP); //backup
-                    }
-                    if (File.Exists(myBasePath + CURRENT_SEARCHRESULTS))
-                    {
-                        File.Copy(myBasePath + CURRENT_SEARCHRESULTS, myBasePath + SEARCHRESULTS);//new search control
-                    }
-                }
-                catch (Exception){
-                    //do nothing ... as can't log exception while installation
-                }
-
                 webAppForm = new frmWebApplicationList(myBasePath /*+ TEMPLATE*/, true);//set the search box deployment location
             }
 
@@ -103,7 +65,6 @@ namespace GSBControlPanel
                 webAppForm = new frmWebApplicationList("c:", false);
             }
             Application.Run(webAppForm);
-            //webAppForm.ShowDialog();
         }
 
 
