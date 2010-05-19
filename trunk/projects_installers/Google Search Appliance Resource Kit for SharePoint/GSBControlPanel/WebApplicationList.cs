@@ -111,7 +111,7 @@ namespace GSBControlPanel
 
             flowLayoutPanel1.Controls.Add(tlpWebAppEntry);//add controls to the panel
         }
-        
+
         public void SaveAllWebAppConfigurationsToFile(GSAConfiguration gc)
         {
             string webConfigFilePath = null;
@@ -139,8 +139,8 @@ namespace GSBControlPanel
 
                             //SaveConfigurationsToFile(gc, webConfigFilePath);
                             gc.SaveConfigurationsToFile(webConfigFilePath, true); //change the settings of the web application as per the "GSA Settings panel"
-                                                                                    //This will always be called during installation
-                            
+                            //This will always be called during installation
+
                         }
                         #endregion update all checked web applications
 
@@ -173,7 +173,7 @@ namespace GSBControlPanel
                 btnEdit.WebConfigPath = wa.IisSettings[0].Path.ToString();
                 tlpWebAppEntry.Controls.Add(btnEdit, 2, i);
             }
-            
+
         }
 
 
@@ -184,7 +184,7 @@ namespace GSBControlPanel
         {
             int i = -1;
             bool isNoWebApps = true;
-            
+
             try
             {
                 //get the site collection for the central administration
@@ -209,10 +209,11 @@ namespace GSBControlPanel
                         //need to check if the web application are from the same machine.useful for farm scenario
                         if (isLocalWebApplication(wa))
                         {
-                            AddNewWebApplication(wa,++i);
+                            AddNewWebApplication(wa, ++i);
                             isNoWebApps = false;
                         }
-                    }catch{}
+                    }
+                    catch { }
                 }
             }
             catch (Exception)
@@ -222,7 +223,7 @@ namespace GSBControlPanel
 
             //handling for blank web apps
             if (isNoWebApps == true)
-            { 
+            {
                 /*
                  * 1. change the display message
                  * 2. disable the OK button.. user should not be allowed to proceed further
@@ -249,19 +250,19 @@ namespace GSBControlPanel
 
         }
 
-       
-         private void button2_Click_1(object sender, EventArgs e)
+
+        private void button2_Click_1(object sender, EventArgs e)
         {
             if (isInstaller == true)
             {
                 this.Visible = false;//hide the form
-                                    //retain the form as it contains the information about all web applications
+                //retain the form as it contains the information about all web applications
 
                 frmGSAParams GSAParamForm = new frmGSAParams();
                 DialogResult result = GSAParamForm.ShowDialog();
 
                 //check if OK was clicked
-                if(result == DialogResult.OK)
+                if (result == DialogResult.OK)
                 {
                     GSAConfiguration gc = GSAParamForm.PopulateGSAConfiguration(myBasePath);
                     SaveAllWebAppConfigurationsToFile(gc);//save the form
@@ -271,7 +272,7 @@ namespace GSBControlPanel
             this.DialogResult = DialogResult.OK;//indicates that OK is clicked
             this.Close();//close the form
         }
-               
+
         private void btnCancel_Click_1(object sender, EventArgs e)
         {
             //throw new Exception("Cancelling Installation...");
@@ -285,13 +286,18 @@ namespace GSBControlPanel
             {
                 //btnCancel.Visible = false;
                 button2.Text = "&Ok";
-                button2.SetBounds(button2.Location.X+44, button2.Location.Y, button2.Width+4, button2.Height+3);
+                button2.SetBounds(button2.Location.X + 44, button2.Location.Y, button2.Width + 4, button2.Height + 3);
                 pictureBox1.Visible = false;
                 lblWarning.Text = "Following is the list of SharePoint web applications. Select Edit to change the Google Search Appliance parameters for a given web application";
                 lblWarning.SetBounds(lblWarning.Location.X - 8, lblWarning.Location.Y, lblWarning.Width, lblWarning.Height);
             }
         }
 
-       
+        private void lblWarning_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
     }
 }
