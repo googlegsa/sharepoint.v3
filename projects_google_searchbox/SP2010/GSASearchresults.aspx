@@ -1,15 +1,24 @@
-<%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
-<%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
-    MasterPageFile="/_layouts/application.master" EnableViewState="false" EnableViewStateMac="false"
-    ValidateRequest="false" %>
-<%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+﻿<%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
-    Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+    Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SearchWC" Namespace="Microsoft.SharePoint.Search.Internal.WebControls"
-    Assembly="Microsoft.SharePoint.Search, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+    Assembly="Microsoft.SharePoint.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
-    Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
-<%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+    Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+
+<%@ Assembly Name="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c"%> 
+<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults"   EnableViewState="false" EnableViewStateMac="false"    %> 
+<%@ Import Namespace="Microsoft.Office.Server.Search.Internal.UI" %> <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
+<%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Import Namespace="Microsoft.SharePoint" %> 
+<%@ Assembly Name="Microsoft.Web.CommandUI, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
+
+<%@ Register Tagprefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+
+<%@ Register Tagprefix="SearchWC" Namespace="Microsoft.Office.Server.Search.WebControls" Assembly="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register Tagprefix="SPSWC" Namespace="Microsoft.SharePoint.Portal.WebControls" Assembly="Microsoft.SharePoint.Portal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register Tagprefix="MSSWC" Namespace="Microsoft.SharePoint.Portal.WebControls" Assembly="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
 <%@ Import Namespace="Microsoft.SharePoint.ApplicationPages" %>
 <%@ Import Namespace="Microsoft.SharePoint" %>
@@ -48,10 +57,7 @@ div.ms-areaseparatorright{
 }
 </style>
     <script runat="server">
-    /**
-     * Author: Amit Agrawal
-     * Email: amit.persistent@gmail.com
-     **/
+		/*Author: Amit Agrawal*/
         
         public const int num = 10;//page size
         public string myquery = "";
@@ -96,7 +102,7 @@ div.ms-areaseparatorright{
              * The default location points to the 12 hive location where SharePoint usually logs all its messages
              * User can always override this location and point to a different location.
              */
-            public const String DEFAULT_LOG_LOCATION = @"C:\program files\Common Files\Microsoft Shared\web server extensions\12\LOGS\";
+            public const String DEFAULT_LOG_LOCATION = @"C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\";
             public string LogLocation = DEFAULT_LOG_LOCATION;
 
             /*For Internal Transformations*/
@@ -425,7 +431,6 @@ div.ms-areaseparatorright{
                 return sb.ToString();//get result
             }
            
-            
             /// <summary>
             /// For logging the search box messages.
             /// </summary>
@@ -529,36 +534,35 @@ div.ms-areaseparatorright{
                 
 </script>
 
-    <!--custom script-->
-
-    <script type="text/javascript">
-   
+<script type="text/javascript">
   	function _spFormOnSubmit()
 	{
-		return GoSearch();
+		//return GoSearch();
 	}
 	function SetPageTitle()
 	{
 	   var Query = "";
+	   
 	   if (window.top.location.search != 0)
 	   {
 		  Query = window.top.location.search;
 		  var keywordQuery = getParameter(Query, 'k');
+		  
 		  if(keywordQuery != null)
 		  {
-            
-            //set the value of query
-            var myTextField = document.getElementById('idSearchString');
-        	if(myTextField.value != "")
+			//To show the search query in the search box after the search
+            var myTextField = document.getElementById('ctl00_PlaceHolderSearchArea_ctl01_txtSearch');
+        	if(myTextField.value == "")
         	{
 		        myTextField.value=keywordQuery;
 		    }
-
-		    if(keywordQuery!="")
+			 
+			//set the title of the document
+			if(keywordQuery!="")
 		    {
 			 var titlePrefix = '<asp:Literal runat="server" text="<%$Resources:wss,searchresults_pagetitle%>"/>';
 			 document.title = titlePrefix + ": " +keywordQuery;
-			 }
+			}
 		  }
 	   }	 
 	}
@@ -579,9 +583,8 @@ div.ms-areaseparatorright{
 			}
 			var x = document.getElementById("idSearchString");
 			var mystring = decodeURIComponent(queryString.substring (begin, end))
-			x.value=mystring;
-			
 			var myindex = mystring.indexOf('cache:');
+
 			if(myindex>-1)
 			{
 			    x.value="";//for cached result do not show the search string as it looks wierd
@@ -592,19 +595,19 @@ div.ms-areaseparatorright{
 	   return null;
 	}
 	
-if (document.addEventListener)
-{
-	document.addEventListener("DOMContentLoaded", SetPageTitle, false);
-}
-else if(document.attachEvent)
-{
-	document.attachEvent("onreadystatechange", SetPageTitle);
-}
+	if (document.addEventListener)
+	{
+		document.addEventListener("DOMContentLoaded", SetPageTitle, false);
+	}
+	else if(document.attachEvent)
+	{
+		document.attachEvent("onreadystatechange", SetPageTitle);
+	}
 </script>
 
 </asp:content>
 <asp:content id="Content3" contentplaceholderid="PlaceHolderTitleAreaClass" runat="server">
-    ms-searchresultsareaSeparator
+  
 </asp:content>
 <asp:content id="Content4" contentplaceholderid="PlaceHolderNavSpacer" runat="server">
 </asp:content>
@@ -665,6 +668,8 @@ else if(document.attachEvent)
     </table>
 </asp:content>
 <asp:content id="Content6" contentplaceholderid="PlaceHolderMain" runat="server">
+ <a name="mainContent"></a>
+	
     <asp:PlaceHolder runat="server" ID="SearchSummary">
         
         <table id="TABLE1" width="100%" cellpadding="4" cellspacing="0" border="0">
@@ -847,15 +852,11 @@ else if(document.attachEvent)
                                         /*
                                             Problem:
                                             =========
-                                            Cookie may or may not have a value.
-                                            E.g. GSA_SESSION_ID=7d8b50eb55a1c077159657da24e5b71d; secure
-                                            'secure' does not have any value.
+                                            Cookie may or may not have a value
                                             
                                             Solution:
                                             ========
-                                            Check if the cookie contains '='/cookie key-value separator. 
-                                            If so get the value. 
-                                            If not value should be empty;
+                                            Check if the cookie contains '=' separator. If so get the value. If not value is empty;
                                         */
 
                                         if(one_cookie.Contains("="))
@@ -871,11 +872,21 @@ else if(document.attachEvent)
                                             value="";
                                         }
                                         /////////////////////////
+                                        
+                                        
+                                        //String[] Cookie_Key_Val = one_cookie.Split(Seps_Each_Cookie, 2);
+                                        
+                                        
+                                        //responseCookies.Name = Cookie_Key_Val[0];
                                         responseCookies.Name = name;
                                         Encoding utf8 = Encoding.GetEncoding("utf-8");
+                                      
+                                        //string value = Cookie_Key_Val[1];
                                         responseCookies.Value = HttpUtility.UrlEncode(value, utf8); 
+                                        
                                         Uri GoogleUri = new Uri(GSASearchUrl);
                                         responseCookies.Domain = GoogleUri.Host;
+
                                         responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
                                         newcc.Add(responseCookies);
 
@@ -1091,4 +1102,5 @@ else if(document.attachEvent)
         </tr>
         </table>
     </asp:PlaceHolder>
+	
 </asp:content>
