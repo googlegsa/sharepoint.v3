@@ -56,10 +56,6 @@
                 /_layouts/images/ICDOC.GIF
               </xsl:when>
 
-              <xsl:when test="$FExtn = '.pdf'">
-				/_layouts/images/ICdoc.GIF
-              </xsl:when>
-
               <xsl:when test="$FExtn = '.zip'">
                 /_layouts/images/ICzip.GIF
               </xsl:when>
