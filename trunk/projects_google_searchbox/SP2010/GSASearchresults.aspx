@@ -431,6 +431,7 @@ div.ms-areaseparatorright{
                 return sb.ToString();//get result
             }
            
+            
             /// <summary>
             /// For logging the search box messages.
             /// </summary>
@@ -537,22 +538,20 @@ div.ms-areaseparatorright{
 <script type="text/javascript">
   	function _spFormOnSubmit()
 	{
-		//return GoSearch();
+		return GoSearch();
 	}
 	function SetPageTitle()
 	{
 	   var Query = "";
-	   
 	   if (window.top.location.search != 0)
 	   {
 		  Query = window.top.location.search;
 		  var keywordQuery = getParameter(Query, 'k');
-		  
 		  if(keywordQuery != null)
 		  {
-			//To show the search query in the search box after the search
-            var myTextField = document.getElementById('ctl00_PlaceHolderSearchArea_ctl01_txtSearch');
-        	if(myTextField.value == "")
+            
+            //set the value of query
+            var myTextField = document.getElementById('idSearchString');
         	{
 		        myTextField.value=keywordQuery;
 		    }
@@ -562,7 +561,7 @@ div.ms-areaseparatorright{
 		    {
 			 var titlePrefix = '<asp:Literal runat="server" text="<%$Resources:wss,searchresults_pagetitle%>"/>';
 			 document.title = titlePrefix + ": " +keywordQuery;
-			}
+			 }
 		  }
 	   }	 
 	}
@@ -584,7 +583,6 @@ div.ms-areaseparatorright{
 			var x = document.getElementById("idSearchString");
 			var mystring = decodeURIComponent(queryString.substring (begin, end))
 			var myindex = mystring.indexOf('cache:');
-
 			if(myindex>-1)
 			{
 			    x.value="";//for cached result do not show the search string as it looks wierd
@@ -595,14 +593,14 @@ div.ms-areaseparatorright{
 	   return null;
 	}
 	
-	if (document.addEventListener)
-	{
-		document.addEventListener("DOMContentLoaded", SetPageTitle, false);
-	}
-	else if(document.attachEvent)
-	{
-		document.attachEvent("onreadystatechange", SetPageTitle);
-	}
+if (document.addEventListener)
+{
+	document.addEventListener("DOMContentLoaded", SetPageTitle, false);
+}
+else if(document.attachEvent)
+{
+	document.attachEvent("onreadystatechange", SetPageTitle);
+}
 </script>
 
 </asp:content>
@@ -668,8 +666,6 @@ div.ms-areaseparatorright{
     </table>
 </asp:content>
 <asp:content id="Content6" contentplaceholderid="PlaceHolderMain" runat="server">
- <a name="mainContent"></a>
-	
     <asp:PlaceHolder runat="server" ID="SearchSummary">
         
         <table id="TABLE1" width="100%" cellpadding="4" cellspacing="0" border="0">
@@ -852,11 +848,15 @@ div.ms-areaseparatorright{
                                         /*
                                             Problem:
                                             =========
-                                            Cookie may or may not have a value
+                                            Cookie may or may not have a value.
+                                            E.g. GSA_SESSION_ID=7d8b50eb55a1c077159657da24e5b71d; secure
+                                            'secure' does not have any value.
                                             
                                             Solution:
                                             ========
-                                            Check if the cookie contains '=' separator. If so get the value. If not value is empty;
+                                            Check if the cookie contains '='/cookie key-value separator. 
+                                            If so get the value. 
+                                            If not value should be empty;
                                         */
 
                                         if(one_cookie.Contains("="))
@@ -872,21 +872,11 @@ div.ms-areaseparatorright{
                                             value="";
                                         }
                                         /////////////////////////
-                                        
-                                        
-                                        //String[] Cookie_Key_Val = one_cookie.Split(Seps_Each_Cookie, 2);
-                                        
-                                        
-                                        //responseCookies.Name = Cookie_Key_Val[0];
                                         responseCookies.Name = name;
                                         Encoding utf8 = Encoding.GetEncoding("utf-8");
-                                      
-                                        //string value = Cookie_Key_Val[1];
                                         responseCookies.Value = HttpUtility.UrlEncode(value, utf8); 
-                                        
                                         Uri GoogleUri = new Uri(GSASearchUrl);
                                         responseCookies.Domain = GoogleUri.Host;
-
                                         responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
                                         newcc.Add(responseCookies);
 
@@ -1102,5 +1092,4 @@ div.ms-areaseparatorright{
         </tr>
         </table>
     </asp:PlaceHolder>
-	
 </asp:content>
