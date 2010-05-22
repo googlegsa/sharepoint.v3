@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,7 @@ import org.apache.axis.AxisFault;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAce;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAcl;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChange;
@@ -279,6 +281,27 @@ public class GssAclWS {
                     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
                             || PrincipalType.SPGROUP.equals(principal.getType())) {
                         groupPermissionMap.put(principalName, allowedRoleTypes);
+                        // If it's a SharePoint group, add the membership info
+                        // into the User Data Store
+                        if (PrincipalType.SPGROUP.equals(principal.getType()) && null != sharepointClientContext.getUserDataStoreDAO()) {
+                            GssPrincipal[] members = principal.getMembers();
+                            for(GssPrincipal member : members) {
+                                try {
+                                    UserGroupMembership membership = new UserGroupMembership(
+                                            member.getName(), principalName,
+                                            wsResult.getSiteCollectionUrl());
+                                    sharepointClientContext.getUserDataStoreDAO().addMembership(membership);
+                                } catch (SharepointException e) {
+                                    LOGGER.log(Level.WARNING, "Failed to add the following entry into user data store UserId [ "
+                                            + member.getName()
+                                            + " ], GroupId [ "
+                                            + principalName
+                                            + " ], Namespace [ "
+                                            + wsResult.getSiteCollectionUrl()
+                                            + " ] ", e);
+                                }
+                            }
+                        }
                     } else {
                         LOGGER.log(Level.WARNING, "Skipping ACE for principal [ "
                                 + principal.getName()
@@ -291,7 +314,6 @@ public class GssAclWS {
                 document.setGroupsAclMap(groupPermissionMap);
             }
         }
-
     }
 
     /**
@@ -501,6 +523,9 @@ public class GssAclWS {
         // avoid re-processing of the same list due to multiple changes
         Set<ListState> processedLists = new HashSet<ListState>();
 
+        // All groups where there are some membership changes
+        List<String> changedGroups = new ArrayList<String>();
+
         for (GssAclChange change : changes) {
             if (null == change) {
                 continue;
@@ -603,16 +628,9 @@ public class GssAclWS {
                 // based authorization. This can be done along with the session
                 // creation channel approach.
             } else if (objType == ObjectType.GROUP) {
-                // TODO: Group related changes are not being handled currently.
-                // The vision is to maintain a local DB of user group
-                // memberships. Once that is done, this change will be reflected
-                // in the local DB.
+                changedGroups.add(changeObjectHint);
             } else if (objType == ObjectType.ADMINISTRATORS) {
-                // Administrators are to be treated as another SharePoint groups
-                // so that any change on the administrators list does not
-                // enforce a re-crawl as we are doing for user deletion case.
-                // Hence, this case will also be handled with the implementation
-                // of local DB for user group memberships
+                changedGroups.add(changeObjectHint);
             }
 
             if (isWebReset) {
@@ -620,9 +638,48 @@ public class GssAclWS {
             }
         }
 
+        // Sync the membership of all changed groups
+        syncGroupMembership(changedGroups);
+
         if (null == webstate.getNextAclChangeToken()
                 || webstate.getNextAclChangeToken().trim().length() == 0) {
             webstate.setNextAclChangeToken(allChanges.getChangeToken());
+        }
+    }
+
+    /**
+     * Removes all the existing membership information for the group and add the
+     * incoming ones
+     */
+    private void syncGroupMembership(List<String> groupIdsToSync) {
+        if (null == sharepointClientContext.getUserDataStoreDAO()
+                || null == groupIdsToSync) {
+            return;
+        }
+        String[] groupIds = new String[groupIdsToSync.size()];
+        int i = 0;
+        for (String groupId : groupIdsToSync) {
+            groupIds[i++] = groupId;
+        }
+
+        GssResolveSPGroupResult wsResult = resolveSPGroup(groupIds);
+        if (null == wsResult) {
+            return;
+        }
+        GssPrincipal[] groups = wsResult.getPrinicpals();
+        for (GssPrincipal group : groups) {
+            try {
+                sharepointClientContext.getUserDataStoreDAO().removeGroupMemberships(group.getName(), wsResult.getSiteCollectionUrl());
+                for(GssPrincipal member : group.getMembers()) {
+                    UserGroupMembership membership = new UserGroupMembership(member.getName(), group.getName(), wsResult.getSiteCollectionUrl());
+                    sharepointClientContext.getUserDataStoreDAO().addMembership(membership);
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Exception occurred while syncing the membership of group GroupId [ "
+                        + group.getName()
+                        + " ], Namespace [ "
+                        + wsResult.getSiteCollectionUrl() + " ] ");
+            }
         }
     }
 

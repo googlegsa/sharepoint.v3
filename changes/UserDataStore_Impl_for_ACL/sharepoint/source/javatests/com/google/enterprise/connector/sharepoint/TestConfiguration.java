@@ -92,6 +92,11 @@ public class TestConfiguration {
     public static boolean FQDNflag;
     public static FeedType feedType;
 
+	public static String driverClass;
+	public static String dbUrl;
+	public static String dbUsername;
+	public static String dbPassword;
+
     static {
         final Properties properties = new Properties();
         try {
@@ -166,6 +171,11 @@ public class TestConfiguration {
          */
         FQDNflag = false;
         feedType = FeedType.METADATA_URL_FEED;
+
+		driverClass = properties.getProperty("DriverClass");
+		dbUrl = properties.getProperty("DBURL");
+		dbUsername = properties.getProperty("DBUsername");
+		dbPassword = properties.getProperty("DBPassword");
     }
 
     public static Map<String, String> getConfigMap() {
