@@ -16,7 +16,7 @@ public class SiteDiscoverySoap_BindingStub extends org.apache.axis.client.Stub i
     static org.apache.axis.description.OperationDesc [] _operations;
 
     static {
-        _operations = new org.apache.axis.description.OperationDesc[2];
+        _operations = new org.apache.axis.description.OperationDesc[5];
         _initOperationDesc1();
     }
 
@@ -42,6 +42,42 @@ public class SiteDiscoverySoap_BindingStub extends org.apache.axis.client.Stub i
         oper.setStyle(org.apache.axis.constants.Style.WRAPPED);
         oper.setUse(org.apache.axis.constants.Use.LITERAL);
         _operations[1] = oper;
+
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("GetWebCrawlInfo");
+        oper.setReturnType(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "WebCrawlInfo"));
+        oper.setReturnClass(com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "GetWebCrawlInfoResult"));
+        oper.setStyle(org.apache.axis.constants.Style.WRAPPED);
+        oper.setUse(org.apache.axis.constants.Use.LITERAL);
+        _operations[2] = oper;
+
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("GetListCrawlInfo");
+        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "listGuids"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ArrayOfString"), java.lang.String[].class, false, false);
+        param.setItemQName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "string"));
+        param.setOmittable(true);
+        oper.addParameter(param);
+        oper.setReturnType(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ArrayOfListCrawlInfo"));
+        oper.setReturnClass(com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo[].class);
+        oper.setReturnQName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "GetListCrawlInfoResult"));
+        param = oper.getReturnParamDesc();
+        param.setItemQName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ListCrawlInfo"));
+        oper.setStyle(org.apache.axis.constants.Style.WRAPPED);
+        oper.setUse(org.apache.axis.constants.Use.LITERAL);
+        _operations[3] = oper;
+
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("IsCrawlableList");
+        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "listGUID"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
+        param.setOmittable(true);
+        oper.addParameter(param);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
+        oper.setReturnClass(boolean.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "IsCrawlableListResult"));
+        oper.setStyle(org.apache.axis.constants.Style.WRAPPED);
+        oper.setUse(org.apache.axis.constants.Use.LITERAL);
+        _operations[4] = oper;
 
     }
 
@@ -102,6 +138,48 @@ public class SiteDiscoverySoap_BindingStub extends org.apache.axis.client.Stub i
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
 
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", ">GetListCrawlInfo");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.GetListCrawlInfo.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", ">GetListCrawlInfoResponse");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.GetListCrawlInfoResponse.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", ">GetWebCrawlInfo");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.GetWebCrawlInfo.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", ">GetWebCrawlInfoResponse");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.GetWebCrawlInfoResponse.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", ">IsCrawlableList");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.IsCrawlableList.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", ">IsCrawlableListResponse");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.IsCrawlableListResponse.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
             qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ArrayOfAnyType");
             cachedSerQNames.add(qName);
             cls = java.lang.Object[].class;
@@ -110,6 +188,38 @@ public class SiteDiscoverySoap_BindingStub extends org.apache.axis.client.Stub i
             qName2 = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "anyType");
             cachedSerFactories.add(new org.apache.axis.encoding.ser.ArraySerializerFactory(qName, qName2));
             cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ArrayOfListCrawlInfo");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo[].class;
+            cachedSerClasses.add(cls);
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ListCrawlInfo");
+            qName2 = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ListCrawlInfo");
+            cachedSerFactories.add(new org.apache.axis.encoding.ser.ArraySerializerFactory(qName, qName2));
+            cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ArrayOfString");
+            cachedSerQNames.add(qName);
+            cls = java.lang.String[].class;
+            cachedSerClasses.add(cls);
+            qName = new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string");
+            qName2 = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "string");
+            cachedSerFactories.add(new org.apache.axis.encoding.ser.ArraySerializerFactory(qName, qName2));
+            cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "ListCrawlInfo");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "WebCrawlInfo");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
 
     }
 
@@ -238,6 +348,108 @@ public class SiteDiscoverySoap_BindingStub extends org.apache.axis.client.Stub i
                 return (java.lang.Object[]) _resp;
             } catch (java.lang.Exception _exception) {
                 return (java.lang.Object[]) org.apache.axis.utils.JavaUtils.convert(_resp, java.lang.Object[].class);
+            }
+        }
+  } catch (org.apache.axis.AxisFault axisFaultException) {
+  throw axisFaultException;
+}
+    }
+
+    public com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo getWebCrawlInfo() throws java.rmi.RemoteException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[2]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("gssitediscovery.generated.sharepoint.connector.enterprise.google.com/GetWebCrawlInfo");
+        _call.setEncodingStyle(null);
+        _call.setProperty(org.apache.axis.client.Call.SEND_TYPE_ATTR, Boolean.FALSE);
+        _call.setProperty(org.apache.axis.AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "GetWebCrawlInfo"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+ try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo) org.apache.axis.utils.JavaUtils.convert(_resp, com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo.class);
+            }
+        }
+  } catch (org.apache.axis.AxisFault axisFaultException) {
+  throw axisFaultException;
+}
+    }
+
+    public com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo[] getListCrawlInfo(java.lang.String[] listGuids) throws java.rmi.RemoteException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[3]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("gssitediscovery.generated.sharepoint.connector.enterprise.google.com/GetListCrawlInfo");
+        _call.setEncodingStyle(null);
+        _call.setProperty(org.apache.axis.client.Call.SEND_TYPE_ATTR, Boolean.FALSE);
+        _call.setProperty(org.apache.axis.AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "GetListCrawlInfo"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+ try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {listGuids});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return (com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo[]) _resp;
+            } catch (java.lang.Exception _exception) {
+                return (com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo[]) org.apache.axis.utils.JavaUtils.convert(_resp, com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo[].class);
+            }
+        }
+  } catch (org.apache.axis.AxisFault axisFaultException) {
+  throw axisFaultException;
+}
+    }
+
+    public boolean isCrawlableList(java.lang.String listGUID) throws java.rmi.RemoteException {
+        if (super.cachedEndpoint == null) {
+            throw new org.apache.axis.NoEndPointException();
+        }
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[4]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPActionURI("gssitediscovery.generated.sharepoint.connector.enterprise.google.com/IsCrawlableList");
+        _call.setEncodingStyle(null);
+        _call.setProperty(org.apache.axis.client.Call.SEND_TYPE_ATTR, Boolean.FALSE);
+        _call.setProperty(org.apache.axis.AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "IsCrawlableList"));
+
+        setRequestHeaders(_call);
+        setAttachments(_call);
+ try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {listGUID});
+
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException)_resp;
+        }
+        else {
+            extractAttachments(_call);
+            try {
+                return ((java.lang.Boolean) _resp).booleanValue();
+            } catch (java.lang.Exception _exception) {
+                return ((java.lang.Boolean) org.apache.axis.utils.JavaUtils.convert(_resp, boolean.class)).booleanValue();
             }
         }
   } catch (org.apache.axis.AxisFault axisFaultException) {

@@ -53,6 +53,11 @@
     <property name="pushAcls"><value>true</value></property>
       <property name="stripDomainFromAces"><value>true</value></property>
       -->
+
+    <!-- If true, connector will respect the site/page search visibility configuration done on SharePoint -->
+    <!--
+      <property name="useSPSearchVisibility"><value>true</value></property>
+    -->
   </bean>
 
 </beans>
