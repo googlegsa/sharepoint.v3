@@ -77,6 +77,8 @@ public class SharepointClientContext implements Cloneable {
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
 
+    private boolean useSPSearchVisibility = true;
+
     /**
      * For cloning
      */
@@ -150,6 +152,8 @@ public class SharepointClientContext implements Cloneable {
             if (null != excludedURL_ParentDir) {
                 spCl.excludedURL_ParentDir = excludedURL_ParentDir;
             }
+
+            spCl.useSPSearchVisibility = useSPSearchVisibility;
 
             return spCl;
         } catch (final Throwable e) {
@@ -900,5 +904,13 @@ public class SharepointClientContext implements Cloneable {
 
     public void setStripDomainFromAces(boolean stripDomainFromAces) {
         this.stripDomainFromAces = stripDomainFromAces;
+    }
+
+    public boolean isUseSPSearchVisibility() {
+        return useSPSearchVisibility;
+    }
+
+    public void setUseSPSearchVisibility(boolean useSPSearchVisibility) {
+        this.useSPSearchVisibility = useSPSearchVisibility;
     }
 }

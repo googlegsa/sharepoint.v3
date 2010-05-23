@@ -20,6 +20,10 @@ import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 
 public class GSSiteDiscoveryWSTest extends TestCase {
 
@@ -61,4 +65,30 @@ public class GSSiteDiscoveryWSTest extends TestCase {
         System.out.println("[ getFQDNHost() ] Test Completed.");
     }
 
+    public final void testUpdateWebCrawlInfo() throws Exception {
+        GlobalState globalState = TestConfiguration.initState(sharepointClientContext);
+        WebState ws = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
+        if (null != ws) {
+            WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
+            webCrawlInfo.setNoCrawl(true);
+            siteDisc.updateWebCrawlInfo(ws);
+            assertFalse(ws.isNoCrawl());
+        }
+    }
+
+    public final void testUpdateListCrawlInfo() throws Exception {
+        GlobalState globalState = TestConfiguration.initState(sharepointClientContext);
+        WebState ws = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
+        if (null != ws && null != ws.getAllListStateSet()) {
+            for (ListState listState : ws.getAllListStateSet()) {
+                listState.setNoCrawl(true);
+            }
+            WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
+            webCrawlInfo.setNoCrawl(true);
+            siteDisc.updateListCrawlInfo(ws.getAllListStateSet());
+            for (ListState listState : ws.getAllListStateSet()) {
+                assertFalse(listState.isNoCrawl());
+            }
+        }
+    }
 }

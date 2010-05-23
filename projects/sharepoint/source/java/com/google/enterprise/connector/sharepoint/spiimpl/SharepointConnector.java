@@ -53,6 +53,7 @@ public class SharepointConnector implements Connector {
     private String authorizationAsfeedType = null;
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
+    private boolean useSPSearchVisibility = true;
 
     public SharepointConnector() {
 
@@ -301,6 +302,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
+        sharepointClientContext.setUseSPSearchVisibility(useSPSearchVisibility);
     }
 
     /**
@@ -339,5 +341,13 @@ public String getKdcserver() {
 
     public void setStripDomainFromAces(boolean stripDomainFromAces) {
         this.stripDomainFromAces = stripDomainFromAces;
+    }
+
+    public boolean isUseSPSearchVisibility() {
+        return useSPSearchVisibility;
+    }
+
+    public void setUseSPSearchVisibility(boolean useSPSerachVisibility) {
+        this.useSPSearchVisibility = useSPSerachVisibility;
     }
 }

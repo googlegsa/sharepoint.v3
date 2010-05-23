@@ -281,6 +281,7 @@ public class SPConstants {
     public static final String STATE_ATTR_CDATA = "CDATA";
     public static final String STATE_ATTR_ID = "ID";
     public static final String STATE_ATTR_IDREF = "IDREF";
+    public static final String STATE_NOCRAWL = "NoCrawl";
 
     public static final String CONNECTOR_NAME = "Sharepoint";
     public static final String CONNECTOR_PREFIX = "_state.xml";
