@@ -15,12 +15,14 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -39,6 +41,8 @@ import org.apache.commons.httpclient.protocol.Protocol;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.dao.SharePointDAO.DBConfig;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
 
@@ -76,6 +80,8 @@ public class SharepointClientContext implements Cloneable {
 
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
+
+    private UserDataStoreDAO userDataStoreDAO;
 
     /**
      * For cloning
@@ -151,6 +157,10 @@ public class SharepointClientContext implements Cloneable {
                 spCl.excludedURL_ParentDir = excludedURL_ParentDir;
             }
 
+            if (null != userDataStoreDAO) {
+                // It's ok if we do a shallow copy here
+                spCl.userDataStoreDAO = this.userDataStoreDAO;
+            }
             return spCl;
         } catch (final Throwable e) {
             LOGGER.log(Level.FINEST, "Unable to clone client context.", e);
@@ -280,6 +290,31 @@ public class SharepointClientContext implements Cloneable {
                 + "] , mySiteBaseURL = [" + inMySiteBaseURL
                 + "], aliasMapString = [" + inAliasMapString + "], FeedType ["
                 + inFeedType + "]. ");
+
+        // FIXME:This is a temporary code snippet for integration testing. The
+        // DBConfig values are actually to be come from the connector
+        // configuration page or CM spi.
+        // Create a property file named UserDataStoreConfig.properties inside
+        // the connector instance directory and
+        // specify the folowing values:
+        /*
+         * DriverClass=com.mysql.jdbc.Driver
+         * DBURL=jdbc:mysql://localhost:3306/UserDataStore DBUsername=root
+         * DBPassword=pspl!@#
+         */
+        try {
+             Properties properties = new Properties();
+             properties.load(new FileInputStream(googleConnectorWorkDir + "/UserDataStoreConfig.properties"));
+            DBConfig dbConfig = new DBConfig(
+                    properties.getProperty("DriverClass"),
+                    properties.getProperty("DBURL"),
+                    properties.getProperty("DBUsername"),
+                    properties.getProperty("DBPassword"));
+            userDataStoreDAO = UserDataStoreDAO.getInstance(dbConfig);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -900,5 +935,13 @@ public class SharepointClientContext implements Cloneable {
 
     public void setStripDomainFromAces(boolean stripDomainFromAces) {
         this.stripDomainFromAces = stripDomainFromAces;
+    }
+
+    public UserDataStoreDAO getUserDataStoreDAO() {
+        return userDataStoreDAO;
+    }
+
+    public void setUserDataStoreDAO(UserDataStoreDAO userDataStoreDAO) {
+        this.userDataStoreDAO = userDataStoreDAO;
     }
 }

@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import java.sql.CallableStatement;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,40 +28,63 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 public class UserDataStoreDAO extends SharePointDAO {
     private final Logger LOGGER = Logger.getLogger(UserDataStoreDAO.class.getName());
     private static UserDataStoreDAO instance;
+
+    // TODO: Externalize table / column / function names
     private final String TABLENAME = "UserGroupMemberships";
+
+    // For creating the user group membership relation
     private final String CREATETABLEQUERY = "CREATE TABLE "
             + TABLENAME
             + "( UserId varchar(50), GroupId varchar(40), Namespace varchar(200), PRIMARY KEY(UserId,GroupId,Namespace) )";
 
+    // For deleting the user group membership relation
+    private final String DROPTABLEQUERY = "DROP TABLE IF EXISTS " + TABLENAME;
+
+    // For creating the function to check if a group exists in the membership
+    // table
+    private final String CREATEGROUPCHKFUNCQUERY = "CREATE FUNCTION DoesGroupExist(InGroupId varchar(40), InNamespace varchar(200)) RETURNS BOOLEAN "
+            + " RETURN EXISTS(SELECT GroupId FROM usergroupmemberships WHERE GroupId LIKE InGroupId AND Namespace=InNamespace)";
+    private final String DROPGROUPCHKFUNCQUERY = "DROP FUNCTION IF EXISTS DoesGroupExist";
+    private final String GROUPCHKFUNCALL = "{? = call DoesGroupExist(?,?) }";
+    private CallableStatement grpChkStmt;
+
+    // For function to check if a user exists in the membership table
+    private final String CREATEUSERCHKFUNCQUERY = "CREATE FUNCTION DoesUserExist(InUserId varchar(40), InNamespace varchar(200)) RETURNS BOOLEAN "
+            + " RETURN EXISTS(SELECT UserId FROM usergroupmemberships WHERE UserId LIKE InUserId AND Namespace=InNamespace)";
+    private final String DROPUSERCHKFUNCQUERY = "DROP FUNCTION IF EXISTS DoesUserExist";
+    private final String USERCHKFUNCALL = "{? = call DoesUserExist(?,?) }";
+    private CallableStatement userChkStmt;
+
+
+
+    // For adding records into UserGroupMembership table
     private final String INSERTQUERY = "INSERT INTO " + TABLENAME
             + " VALUES(?,?,?)";
+    private PreparedStatement insertQuery;
 
     // When the deletion is based on UserId and Namespace
     private final String DELETEQUERY1 = "DELETE FROM " + TABLENAME
-            + " WHERE UserId=? AND Namespace=?";
+            + " WHERE UserId LIKE ? AND Namespace=?";
+    private PreparedStatement deleteQuery1;
 
     // When the deletion is based on GroupId and Namespace
     private final String DELETEQUERY2 = "DELETE FROM " + TABLENAME
-            + " WHERE GroupId=? AND Namespace=?";
+            + " WHERE GroupId LIKE ? AND Namespace=?";
+    private PreparedStatement deleteQuery2;
 
     // When the deletion is based on Namespace only
     private final String DELETEQUERY3 = "DELETE FROM " + TABLENAME
             + " WHERE Namespace=?";
+    private PreparedStatement deleteQuery3;
 
     // When the selection is based on UserId only
-    private final String SELECTQUERY1 = "SELECT GroupId FROM " + TABLENAME
-            + " WHERE UserId=?";
+    private final String SELECTQUERY1 = "SELECT * FROM " + TABLENAME
+            + " WHERE UserId LIKE ?";
+    private PreparedStatement selectQuery1;
 
     // When the selection is based on all the keys
     private final String SELECTQUERY2 = "SELECT * FROM " + TABLENAME
             + " WHERE UserId=? AND GroupId=? AND Namespace=?";
-
-    private PreparedStatement createQuery;
-    private PreparedStatement insertQuery;
-    private PreparedStatement deleteQuery1;
-    private PreparedStatement deleteQuery2;
-    private PreparedStatement deleteQuery3;
-    private PreparedStatement selectQuery1;
     private PreparedStatement selectQuery2;
 
     public static UserDataStoreDAO getInstance(DBConfig dbConfig)
@@ -81,11 +105,10 @@ public class UserDataStoreDAO extends SharePointDAO {
         DatabaseMetaData dbm = getDatabaseMetadata();
         ResultSet tables = null;
         boolean createNewMembershipTable = false;
-        // TODO: Externalize table name
+        PreparedStatement createQuery = null;
         try {
             tables = dbm.getTables(null, null, TABLENAME, null);
             if (null == tables || !tables.next()) {
-                createQuery = con.prepareStatement(CREATETABLEQUERY);
                 createNewMembershipTable = true;
             }
         } catch (Exception e) {
@@ -94,15 +117,30 @@ public class UserDataStoreDAO extends SharePointDAO {
                     e);
         }
 
-        if (createNewMembershipTable) {
-            LOGGER.log(Level.INFO, "Creating new UserGroupMemberships table...");
-            try {
+        try {
+            if (createNewMembershipTable) {
+                LOGGER.log(Level.INFO, "Creating new UserGroupMemberships table...");
+                createQuery = con.prepareStatement(DROPTABLEQUERY);
                 createQuery.execute();
-            } catch (Throwable e) {
-                throw new SharepointException(
-                        "Exception occurred when trying to create UserGroupMemberships Table.. ",
-                        e);
+                createQuery = con.prepareStatement(CREATETABLEQUERY);
+                createQuery.execute();
+
+                LOGGER.log(Level.INFO, "Creating UserGroupMemberships.DoesGroupExist() function...");
+                createQuery = con.prepareStatement(DROPGROUPCHKFUNCQUERY);
+                createQuery.execute();
+                createQuery = con.prepareStatement(CREATEGROUPCHKFUNCQUERY);
+                createQuery.execute();
+
+                LOGGER.log(Level.INFO, "Creating UserGroupMemberships.DoesUserExist() function...");
+                createQuery = con.prepareStatement(DROPUSERCHKFUNCQUERY);
+                createQuery.execute();
+                createQuery = con.prepareStatement(CREATEUSERCHKFUNCQUERY);
+                createQuery.execute();
             }
+        } catch (Exception e) {
+            throw new SharepointException(
+                    "Exception occurred while creating the UserGroupMemberships schema. ",
+                    e);
         }
 
         try {
@@ -112,6 +150,10 @@ public class UserDataStoreDAO extends SharePointDAO {
             deleteQuery3 = con.prepareStatement(DELETEQUERY3);
             selectQuery1 = con.prepareStatement(SELECTQUERY1);
             selectQuery2 = con.prepareStatement(SELECTQUERY2);
+            grpChkStmt = con.prepareCall(GROUPCHKFUNCALL);
+            grpChkStmt.registerOutParameter(1, java.sql.Types.BOOLEAN);
+            userChkStmt = con.prepareCall(USERCHKFUNCALL);
+            userChkStmt.registerOutParameter(1, java.sql.Types.BOOLEAN);
         } catch (Exception e) {
             throw new SharepointException(
                     "Exception occurred while initializing the prepared statements... ",
@@ -119,19 +161,43 @@ public class UserDataStoreDAO extends SharePointDAO {
         }
     }
 
+    @Override
+    public void closeConnection() {
+        try {
+            if (null != insertQuery)
+                insertQuery.close();
+            if (null != deleteQuery1)
+                deleteQuery1.close();
+            if (null != deleteQuery2)
+                deleteQuery2.close();
+            if (null != deleteQuery3)
+                deleteQuery3.close();
+            if (null != selectQuery1)
+                selectQuery1.close();
+            if (null != selectQuery2)
+                selectQuery2.close();
+            if (null != grpChkStmt)
+                grpChkStmt.close();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to close connection. ", e);
+        }
+        super.closeConnection();
+    }
+
     /**
-     * Retrieves all the groups to which a user belongs
+     * Retrieves all the records pertaining to a user
      *
      * @param userId
      * @return
      * @throws SharepointException
      */
-    public List<String> getAllGroupsForUser(String userId)
+    // TODO: get UserGroupMembership as arguement
+    public List<UserGroupMembership> getAllGroupsForUser(String username)
             throws SharepointException {
-        List<String> groupIds = new ArrayList<String>();
+        List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
         ResultSet result = null;
         try {
-            selectQuery1.setString(1, userId);
+            selectQuery1.setString(1, UserGroupMembership.getNamePattern(username));
             result = selectQuery1.executeQuery();
         } catch (Exception e) {
             throw new SharepointException(
@@ -139,23 +205,27 @@ public class UserDataStoreDAO extends SharePointDAO {
                     e);
         }
         if(null == result) {
-            return groupIds;
+            return memberships;
         }
 
-        // TODO: Externalize the column name
         try {
-            int columnIndex = result.findColumn("GroupId");
+            int columnIndexUserId = result.findColumn("UserId");
+            int columnIndexGroupId = result.findColumn("GroupId");
+            int columnIndexNamespace = result.findColumn("Namespace");
             for (int i = 0; result.next(); ++i) {
-                String groupId = result.getString(columnIndex);
-                groupIds.add(groupId);
+                UserGroupMembership membership = new UserGroupMembership(
+                        result.getString(columnIndexUserId),
+                        result.getString(columnIndexGroupId),
+                        result.getString(columnIndexNamespace));
+                memberships.add(membership);
             }
         } catch (Exception e) {
             throw new SharepointException(
                     "Failed to parse the result set to get GroupIds. ", e);
         }
-        LOGGER.log(Level.CONFIG, "Groups identified for user [ " + userId
-                + " ] are " + groupIds);
-        return groupIds;
+        LOGGER.log(Level.CONFIG, memberships.size()
+                + " Memberships identified for user [ " + username + " ]. ");
+        return memberships;
     }
 
     /**
@@ -174,13 +244,13 @@ public class UserDataStoreDAO extends SharePointDAO {
             // We must first check if the entry already exists. During the
             // connector's crawl, case of duplicate insertion is going to occur
             // very frequently
-            selectQuery2.setString(1, membership.getUserId());
-            selectQuery2.setString(2, membership.getGroupId());
+            selectQuery2.setString(1, membership.getComplexUserId());
+            selectQuery2.setString(2, membership.getComplexGroupId());
             selectQuery2.setString(3, membership.getNameSpace());
             ResultSet result = selectQuery2.executeQuery();
             if (!result.next()) {
-                insertQuery.setString(1, membership.getUserId());
-                insertQuery.setString(2, membership.getGroupId());
+                insertQuery.setString(1, membership.getComplexUserId());
+                insertQuery.setString(2, membership.getComplexGroupId());
                 insertQuery.setString(3, membership.getNameSpace());
                 insertQuery.execute();
                 commit();
@@ -196,17 +266,18 @@ public class UserDataStoreDAO extends SharePointDAO {
     }
 
     /**
-     * Remove all the memberships of a user
+     * Remove all the memberships of a user. The passed in UserGroupMembership
+     * object must have the UserId and Namespace value set
      *
      * @param userId
      * @param namespace
      * @return
      * @throws SharepointException
      */
-    public int removeUserMemberships(String userId, String namespace)
+    public int removeUserMemberships(int userId, String namespace)
             throws SharepointException {
         try {
-            deleteQuery1.setString(1, userId);
+            deleteQuery1.setString(1, UserGroupMembership.getIdPattern(userId));
             deleteQuery1.setString(2, namespace);
             int count = deleteQuery1.executeUpdate();
             commit();
@@ -216,23 +287,24 @@ public class UserDataStoreDAO extends SharePointDAO {
             return count;
         } catch (Exception e) {
             throw new SharepointException(
-                    "Could not get the membership information due to following exception ",
+                    "Could not get the user membership information due to following exception ",
                     e);
         }
     }
 
     /**
-     * Remove all the memberships of a group
+     * Remove all the memberships of a group. The passed in UserGroupMembership
+     * object must have the GroupId, GroupName and Namespace value set
      *
-     * @param groupId
+     * @param userId
      * @param namespace
      * @return
      * @throws SharepointException
      */
-    public int removeGroupMemberships(String groupId, String namespace)
+    public int removeGroupMemberships(int groupId, String namespace)
             throws SharepointException {
         try {
-            deleteQuery2.setString(1, groupId);
+            deleteQuery2.setString(1, UserGroupMembership.getIdPattern(groupId));
             deleteQuery2.setString(2, namespace);
             int count = deleteQuery2.executeUpdate();
             LOGGER.log(Level.INFO, "#" + count
@@ -241,13 +313,13 @@ public class UserDataStoreDAO extends SharePointDAO {
             return count;
         } catch (Exception e) {
             throw new SharepointException(
-                    "Could not get the membership information due to following exception ",
+                    "Could not get the group membership information due to following exception ",
                     e);
         }
     }
 
     /**
-     * Remove all the memberships that belongs to a namespace
+     * Remove all the memberships that belongs to a Namespace
      *
      * @param namespace
      * @return
@@ -255,6 +327,9 @@ public class UserDataStoreDAO extends SharePointDAO {
      */
     public int removeAllMembershipsFromNamespace(String namespace)
             throws SharepointException {
+        if (null == namespace) {
+            return 0;
+        }
         try {
             deleteQuery3.setString(1, namespace);
             int count = deleteQuery3.executeUpdate();
@@ -265,6 +340,50 @@ public class UserDataStoreDAO extends SharePointDAO {
         } catch (Exception e) {
             throw new SharepointException(
                     "Could not get the membership information due to following exception ",
+                    e);
+        }
+    }
+
+    /**
+     * Check whether a group exists in the UserGroupMemberships relation. The
+     * GroupId and Namespace value must be set in the passed-in membership
+     *
+     * @param membership
+     * @return
+     * @throws SharepointException
+     */
+    public boolean doesGroupExist(int groupId, String namespace)
+            throws SharepointException {
+        try {
+            grpChkStmt.setString(2, UserGroupMembership.getIdPattern(groupId));
+            grpChkStmt.setString(3, namespace);
+            grpChkStmt.execute();
+            return grpChkStmt.getBoolean(1);
+        } catch (Exception e) {
+            throw new SharepointException(
+                    "Could not confirm the group existance due to following exception ",
+                    e);
+        }
+    }
+
+    /**
+     * Check whether a group exists in the UserGroupMemberships relation. The
+     * GroupId and Namespace value must be set in the passed-in membership
+     *
+     * @param membership
+     * @return
+     * @throws SharepointException
+     */
+    public boolean doesUserExist(int userId, String namespace)
+            throws SharepointException {
+        try {
+            userChkStmt.setString(2, UserGroupMembership.getIdPattern(userId));
+            userChkStmt.setString(3, namespace);
+            userChkStmt.execute();
+            return userChkStmt.getBoolean(1);
+        } catch (Exception e) {
+            throw new SharepointException(
+                    "Could not confirm the user existance due to following exception ",
                     e);
         }
     }

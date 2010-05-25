@@ -8,6 +8,8 @@
 package com.google.enterprise.connector.sharepoint.generated.gssacl;
 
 public class GssPrincipal  implements java.io.Serializable {
+    private int ID;
+
     private java.lang.String name;
 
     private com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType type;
@@ -20,14 +22,36 @@ public class GssPrincipal  implements java.io.Serializable {
     }
 
     public GssPrincipal(
+           int ID,
            java.lang.String name,
            com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType type,
            com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] members,
            java.lang.String logMessage) {
+           this.ID = ID;
            this.name = name;
            this.type = type;
            this.members = members;
            this.logMessage = logMessage;
+    }
+
+
+    /**
+     * Gets the ID value for this GssPrincipal.
+     *
+     * @return ID
+     */
+    public int getID() {
+        return ID;
+    }
+
+
+    /**
+     * Sets the ID value for this GssPrincipal.
+     *
+     * @param ID
+     */
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
 
@@ -122,6 +146,7 @@ public class GssPrincipal  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true &&
+            this.ID == other.getID() &&
             ((this.name==null && other.getName()==null) ||
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
@@ -145,6 +170,7 @@ public class GssPrincipal  implements java.io.Serializable {
         }
         __hashCodeCalc = true;
         int _hashCode = 1;
+        _hashCode += getID();
         if (getName() != null) {
             _hashCode += getName().hashCode();
         }
@@ -176,6 +202,12 @@ public class GssPrincipal  implements java.io.Serializable {
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GssPrincipal"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("ID");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "ID"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("name");
         elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "Name"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));

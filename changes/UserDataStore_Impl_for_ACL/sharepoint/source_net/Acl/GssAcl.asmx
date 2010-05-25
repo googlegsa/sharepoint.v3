@@ -33,6 +33,10 @@ using Microsoft.SharePoint.Utilities;
 [Serializable]
 public class GssPrincipal
 {
+    // Site Collection specific ID. This is very useful to track such users/groups which have been deleted
+    // A -1 value is used for the hypoyhetical site collection group and anything smaller than -1 is considered to be unknown
+    private int id;
+
     // Name of the prinicpal
     private string name;
 
@@ -49,6 +53,11 @@ public class GssPrincipal
     private List<GssPrincipal> members;
     private StringBuilder logMessage = new StringBuilder();
 
+    public int ID
+    {
+        get { return id; }
+        set { id = value; }
+    }
     public string Name
     {
         get { return name; }
@@ -73,8 +82,9 @@ public class GssPrincipal
     // A web service always require a default constructor. But, we do not want to use it intentionally
     private GssPrincipal() { }
 
-    public GssPrincipal(string name)
+    public GssPrincipal(string name, int id)
     {
+        ID = id;
         Name = name;
         Members = new List<GssPrincipal>();
     }
@@ -89,7 +99,7 @@ public class GssPrincipal
                 return false;
             }
 
-            if (principal.Name.Equals(this.Name) && principal.Type == this.Type)
+            if (principal.ID == this.ID && principal.Name.Equals(this.Name) && principal.Type == this.Type)
             {
                 return true;
             }
@@ -99,7 +109,7 @@ public class GssPrincipal
 
     public override int GetHashCode()
     {
-        return 13 * (this.Name.GetHashCode() + this.Type.GetHashCode());
+        return 13 * (this.Name.GetHashCode() + this.Type.GetHashCode() + ID);
     }
 
     public void AddLogMessage(string logMsg)
@@ -864,12 +874,12 @@ public class GssAclMonitor
         {
             foreach (string id in groupId)
             {
-                GssPrincipal principal = new GssPrincipal(id);
-                principal.Type = GssPrincipal.PrincipalType.SPGROUP;
+                GssPrincipal principal = null;
                 try
                 {
                     if (GSSITEADMINGROUP.Equals(id))
                     {
+                        principal = new GssPrincipal(GSSITEADMINGROUP, -1);
                         // Get all the administrator users as member of the GSSITEADMINGROUP.
                         List<GssPrincipal> admins = new List<GssPrincipal>();
                         foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
@@ -885,20 +895,24 @@ public class GssAclMonitor
                     }
                     else
                     {
-                        SPGroup spGroup = web.Groups[id];
-                        if (null == spGroup)
+                        SPGroup spGroup = web.SiteGroups.GetByID(int.Parse(id));
+                        if(null != spGroup)
                         {
-                            principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                            principal = new GssPrincipal(spGroup.Name, spGroup.ID);
+                            principal.Members = gssUtil.ResolveSPGroup(spGroup);
                         }
                         else
                         {
-                            principal.Members = gssUtil.ResolveSPGroup(spGroup);
+                            principal = new GssPrincipal(id, -2);
+                            principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
                         }
                     }
+                    principal.Type = GssPrincipal.PrincipalType.SPGROUP;
                 }
                 catch (Exception e)
                 {
-                    principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                    principal = new GssPrincipal(id, -2);
+                    principal.AddLogMessage("Could not resolve Group Id [ " + id + " ]. Exception: " + e.Message);
                     principal.Type = GssPrincipal.PrincipalType.NA;
                 }
                 prinicpals.Add(principal);
@@ -1074,7 +1088,7 @@ public class GssAclUtility
         SPPolicyCollection policies = site.WebApplication.Policies;
         foreach (SPPolicy policy in policies)
         {
-            GssPrincipal principal = GetGssPrincipalFromLogin(site.WebApplication, policy.UserName);
+            GssPrincipal principal = GetGssPrincipalForSecPolicyUser(site, policy.UserName);
             if (null == principal)
             {
                 continue;
@@ -1102,7 +1116,7 @@ public class GssAclUtility
         policies = site.WebApplication.ZonePolicies(site.Zone);
         foreach (SPPolicy policy in policies)
         {
-            GssPrincipal principal = GetGssPrincipalFromLogin(site.WebApplication, policy.UserName);
+            GssPrincipal principal = GetGssPrincipalForSecPolicyUser(site, policy.UserName);
             if (null == principal)
             {
                 continue;
@@ -1135,7 +1149,7 @@ public class GssAclUtility
     /// <param name="userAceMap"> ACE Map to be updated </param>
     public void FetchSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
-        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP);
+        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP, -1);
         principal.Type = GssPrincipal.PrincipalType.SPGROUP;
         GssSharepointPermission permission = new GssSharepointPermission();
         // Administrators have Full Rights in the site collection.
@@ -1356,7 +1370,7 @@ public class GssAclUtility
         if (spPrincipal is SPUser)
         {
             SPUser user = (SPUser)spPrincipal;
-            gssPrincipal = new GssPrincipal(user.LoginName);
+            gssPrincipal = new GssPrincipal(user.LoginName, user.ID);
             if (user.IsDomainGroup)
             {
                 gssPrincipal.Type = GssPrincipal.PrincipalType.DOMAINGROUP;
@@ -1365,13 +1379,13 @@ public class GssAclUtility
         else if (spPrincipal is SPGroup)
         {
             SPGroup group = (SPGroup)spPrincipal;
-            gssPrincipal = new GssPrincipal(group.Name);
+            gssPrincipal = new GssPrincipal(group.Name, group.ID);
             gssPrincipal.Type = GssPrincipal.PrincipalType.SPGROUP;
             gssPrincipal.Members = ResolveSPGroup(group);
         }
         else
         {
-            gssPrincipal = new GssPrincipal(spPrincipal.Name);
+            gssPrincipal = new GssPrincipal(spPrincipal.Name, -2);
             gssPrincipal.AddLogMessage("could not create GssPrincipal for SPSprincipal [ " + spPrincipal.Name + " ] since it's neither a SPGroup nor a SPUser. ");
         }
 
@@ -1379,28 +1393,29 @@ public class GssAclUtility
     }
 
     /// <summary>
-    /// Creates a GssPrincipal object from the user's login name. The login name must e identifiable in the passed in web application
+    /// Creates a GssPrincipal object from the user's login name. The login name must e identifiable in the web application and UrlZone to which the specified site belongs
     /// </summary>
-    /// <param name="webApp"></param>
-    /// <param name="login"></param>
+    /// <param name="site">SharePoint Site Collection whose context is to be used for constructing the prinicpal</param>
+    /// <param name="login">user login name for which the prinicipal is to be created</param>
     /// <returns></returns>
-    public GssPrincipal GetGssPrincipalFromLogin(SPWebApplication webApp, string login)
+    public GssPrincipal GetGssPrincipalForSecPolicyUser(SPSite site, string login)
     {
-        if (null == webApp || null == login)
+        if (null == site || null == login)
         {
             return null;
         }
         GssPrincipal gssPrincipal = null;
-        SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(webApp, login, SPPrincipalType.All, false);
+        SPPrincipalInfo userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, login, SPPrincipalType.All, SPPrincipalSource.All, false);
         if (null == userInfo)
         {
-            gssPrincipal = new GssPrincipal(login);
+            gssPrincipal = new GssPrincipal(login, -2);
             gssPrincipal.AddLogMessage("[ " + login + " ] could not be resolved a valid windows principal. ");
             gssPrincipal.Type = GssPrincipal.PrincipalType.NA;
             return gssPrincipal;
         }
 
-        gssPrincipal = new GssPrincipal(userInfo.LoginName);
+        // There is no concept of ID for security policy users. IDs are an offset defined in context of a site collection and policies are defined at web application level
+        gssPrincipal = new GssPrincipal(userInfo.LoginName, -2);
 
         if (userInfo.PrincipalType.Equals(SPPrincipalType.DistributionList) || userInfo.PrincipalType.Equals(SPPrincipalType.SecurityGroup))
         {

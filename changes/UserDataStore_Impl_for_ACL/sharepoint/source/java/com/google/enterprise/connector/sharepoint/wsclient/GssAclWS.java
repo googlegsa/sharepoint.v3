@@ -161,10 +161,13 @@ public class GssAclWS {
      * objects must be passed in form of a map with their URLs as keys. If a
      * user have more than one permission assigned on SHarePoint, connector will
      * include each of them in the ACE. Hence, the {@link RoleType} that is sent
-     * to CM may include a list of role types. Also, due to the current GSA
-     * limitation, deny permissions are not handled. We may include some logics
-     * to decide when to ignore a DENY when to skip. But, that would be an
-     * overkill as this limitation is going to be fixed in future GSA releases
+     * to CM may include a list of role types.
+     * <p/>
+     * Also, due to the current GSA limitation, deny permissions are not
+     * handled. We may include some logics to decide when to ignore a DENY when
+     * to skip. But, that would be an overkill as this limitation is going to be
+     * fixed in future GSA releases
+     * <p/>
      *
      * @param wsResult Web Service response to be parsed
      * @param urlToDocMap Documents whose ACLs are to be set. The keys in the
@@ -288,7 +291,8 @@ public class GssAclWS {
                             for(GssPrincipal member : members) {
                                 try {
                                     UserGroupMembership membership = new UserGroupMembership(
-                                            member.getName(), principalName,
+                                            member.getName(), member.getID(),
+                                            principalName, principal.getID(),
                                             wsResult.getSiteCollectionUrl());
                                     sharepointClientContext.getUserDataStoreDAO().addMembership(membership);
                                 } catch (SharepointException e) {
@@ -608,29 +612,91 @@ public class GssAclWS {
                 }
 
             } else if (objType == ObjectType.USER
+            // For user-related changes, we only consider deletion changes.
+                    // Rest all are covered as part of web/list/item/group
+                    // specific changes. Refer to the WS impl. for more details
                     && changeType == SPChangeType.Delete) {
-                // For user-related changes, we only consider deletion changes.
-                // Rest all are covered as part of web/list/item/group specific
-                // changes. Refer to the WS impl. for more details
+                int userId = 0;
+                try {
+                    userId = Integer.parseInt(changeObjectHint);
+                } catch(Exception e) {
+                    LOGGER.log(Level.WARNING, "UserId [ " + changeObjectHint + " ] is invalid. skipping... ", e);
+                    continue;
+                }
+
+                try {
+                    boolean knownUser = sharepointClientContext.getUserDataStoreDAO().doesUserExist(userId, wsResult.getSiteCollectionUrl());
+                    if (knownUser) {
+                        int count = sharepointClientContext.getUserDataStoreDAO().removeUserMemberships(userId, wsResult.getSiteCollectionUrl());
+                        LOGGER.log(Level.INFO, "Total "
+                                + count
+                                + " records deleted corresponding to the deleted user ID [ "
+                                + userId + " ] ");
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Filed to update userdata store for the deleted user ID [ "
+                            + userId + " ]. ", e);
+                }
+
+                // TODO: Even if the user is not known to the user data store,
+                // we would proceed here. This is because, the user data store,
+                // currently, stores only those users who are member of some
+                // groups. A re-crawl due to user deletion can be avoided
+                // by storing all the SharePoint users (sent into ACLs in past)
+                // in the local data store.
+
                 LOGGER.log(Level.INFO, "Resetting all list states under web [ "
                         + webstate.getWebUrl()
                         + " ] becasue a user has been deleted from the SharePoint.");
                 webstate.resetState();
                 isWebReset = true;
-                // TODO: Initiating a complete re-crawl due to USER deletion is
-                // not a good approach. Imagine a case when the deleted user
-                // did not have any permission on anything. The re-crawl would
-                // be completely unnecessary in that case.
-                // A better approach could be, GSA sending the authentication
-                // request to connector
-                // where the user existence in SharePoint will be verified. If
-                // the authentication succeeds, than only proceed with the ACL
-                // based authorization. This can be done along with the session
-                // creation channel approach.
-            } else if (objType == ObjectType.GROUP) {
-                changedGroups.add(changeObjectHint);
-            } else if (objType == ObjectType.ADMINISTRATORS) {
-                changedGroups.add(changeObjectHint);
+                // TODO: A re-crawl due to User deletion can be avoided
+                // by storing more ACL information in the local data
+                // store.
+            }
+            // Administrators are treated as another SPGroup
+            else if (objType == ObjectType.GROUP || objType == ObjectType.ADMINISTRATORS) {
+                int groupId = 0;
+                try {
+                    groupId = Integer.parseInt(changeObjectHint);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "GroupId [ " + changeObjectHint
+                            + " ] is invalid. skipping... ", e);
+                    continue;
+                }
+                // We process the changed group only if it is already known to
+                // the connector. There might be some groups which has never
+                // been sent into the ACLS. We do not need to worry about the
+                // changes of such groups. Also, checking if the group
+                // is a known group requires a trip to the user data store.
+                // In case of any failure, we assume the worst case scenario;
+                // hence, marking true by default.
+                try {
+                    boolean knownGroup = sharepointClientContext.getUserDataStoreDAO().doesGroupExist(Integer.parseInt(changeObjectHint), wsResult.getSiteCollectionUrl());
+                    if (!knownGroup) {
+                        continue;
+                    } else {
+                        int count = sharepointClientContext.getUserDataStoreDAO().removeGroupMemberships(groupId, wsResult.getSiteCollectionUrl());
+                        LOGGER.log(Level.INFO, "Total "
+                                + count
+                                + " records deleted corresponding to the deleted group ID [ "
+                                + groupId + " ] ");
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Attempt to check the existance of the group ID [ "
+                            + changeObjectHint
+                            + " ] in user data store has failed. ", e);
+                }
+
+                if(changeType == SPChangeType.Delete) {
+                    // TODO: A re-crawl due to Group deletion can be avoided
+                    // by storing more ACL information in the local data
+                    // store.
+                    webstate.resetState();
+                    isWebReset = true;
+                } else {
+                    changedGroups.add(changeObjectHint);
+                }
             }
 
             if (isWebReset) {
@@ -653,15 +719,11 @@ public class GssAclWS {
      */
     private void syncGroupMembership(List<String> groupIdsToSync) {
         if (null == sharepointClientContext.getUserDataStoreDAO()
-                || null == groupIdsToSync) {
+                || null == groupIdsToSync || groupIdsToSync.size() == 0) {
             return;
         }
         String[] groupIds = new String[groupIdsToSync.size()];
-        int i = 0;
-        for (String groupId : groupIdsToSync) {
-            groupIds[i++] = groupId;
-        }
-
+        groupIdsToSync.toArray(groupIds);
         GssResolveSPGroupResult wsResult = resolveSPGroup(groupIds);
         if (null == wsResult) {
             return;
@@ -669,9 +731,11 @@ public class GssAclWS {
         GssPrincipal[] groups = wsResult.getPrinicpals();
         for (GssPrincipal group : groups) {
             try {
-                sharepointClientContext.getUserDataStoreDAO().removeGroupMemberships(group.getName(), wsResult.getSiteCollectionUrl());
+                sharepointClientContext.getUserDataStoreDAO().removeGroupMemberships(group.getID(), wsResult.getSiteCollectionUrl());
                 for(GssPrincipal member : group.getMembers()) {
-                    UserGroupMembership membership = new UserGroupMembership(member.getName(), group.getName(), wsResult.getSiteCollectionUrl());
+                    UserGroupMembership membership = new UserGroupMembership(
+                            member.getName(), member.getID(), group.getName(),
+                            group.getID(), wsResult.getSiteCollectionUrl());
                     sharepointClientContext.getUserDataStoreDAO().addMembership(membership);
                 }
             } catch (Exception e) {
