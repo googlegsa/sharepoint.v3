@@ -1,11 +1,11 @@
 Release Notes
 ==============
 
-This document contains the release notes for Google Search Box for SharePoint 1.1.1. The following sections describe the release in detail and provide information that supplements the main documentation.  See the Issues Tab on the Code Site for the current list of known issues and workarounds.
+This document contains the release notes for Google Search Box for SharePoint 2.6.0 The following sections describe the release in detail and provide information that supplements the main documentation.  See the Issues Tab on the Code Site for the current list of known issues and workarounds.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 1.1.1, 5 Dec, 2009
+Release 2.6.0, 5 Dec, 2009
 ==========================
 
 Introduction
@@ -17,15 +17,15 @@ Summary of Changes
 ------------------
 New features:
 -------------
-1. Google Search Box for SharePoint 1.1.1 supports search on NTLM contents. This is possible by	configuring SAML Bridge on GSA (http://code.google.com/apis/searchappliance/documentation/50/admin/wia.html#deployment) along with 'Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007' configured in content-feed mode.
-2. Google Search Box for SharePoint 1.1.1 is bundled with "Google Search Appliance Resource Kit for SharePoint" installer which also bundles other related components such as
+1. Google Search Box for SharePoint 2.6.0 supports search on NTLM contents. This is possible by	configuring SAML Bridge on GSA (http://code.google.com/apis/searchappliance/documentation/50/admin/wia.html#deployment) along with 'Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007' configured in content-feed mode.
+2. Google Search Box for SharePoint 2.6.0 is bundled with "Google Search Appliance Resource Kit for SharePoint" installer which also bundles other related components such as
 		* Google Services for SharePoint : It includes SharePoint custom web services which are used by SharePoint connector for traversal, Authentication & Authorization.
 		* GSA Resource Kit for SharePoint : It includes:
 			-Google Search Box for SharePoint Test Utility : It is used to verify the Google Search Box parameters, cookies and headers.
 			-GSA Security SPI Simulator: It is used to test "Google SAML Bridge for Windows" without involving the complexity of the GSA. Once you know that the SAML Bridge works, you can reconfigure it to work with the search appliance.
-			-Google SAML Bridge for Windows: It enables "Google Search Box for SharePoint 1.1.1" to perform search on NTLM contents.
+			-Google SAML Bridge for Windows: It enables "Google Search Box for SharePoint 2.6.0" to perform search on NTLM contents.
 			
-   For a farm setup, you need to install the Google Search Box on all the SharePoint 1.1.1 Installations (machines).
+   For a farm setup, you need to install the Google Search Box on all the SharePoint 2.6.0 Installations (machines).
 
 Issues fixed from last release:
 -------------------------------
@@ -35,7 +35,7 @@ Issues fixed from last release:
 
 Version Compatibility
 ---------------------
-The Google Search Box for SharePoint 1.1.1 is supported on the following SharePoint versions:
+The Google Search Box for SharePoint 2.6.0 is supported on the following SharePoint versions:
 * Microsoft Office SharePoint Server 2007 (MOSS 2007) 
 * Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
 
@@ -47,14 +47,14 @@ Users who have deployed the 1.0.0 version of Google Search Box, should follow th
 
 Browser Compatibility
 ---------------------
-The Google Search Box for SharePoint 1.1.1 is certified on following browsers:
+The Google Search Box for SharePoint 2.6.0 is certified on following browsers:
 * Microsoft Internet Explorer 6.0
 * Microsoft Internet Explorer 7.0
 * Mozilla Firefox 3.0.5
 
 Platform Support
 ------------------
-Google Search Box for SharePoint 1.1.1 can be installed on both 32-bit and 64-bit Windows Server 2003 Enterprise Operating System.
+Google Search Box for SharePoint 2.6.0 can be installed on both 32-bit and 64-bit Windows Server 2003 Enterprise Operating System.
 
 Certified Against
 -------------------
