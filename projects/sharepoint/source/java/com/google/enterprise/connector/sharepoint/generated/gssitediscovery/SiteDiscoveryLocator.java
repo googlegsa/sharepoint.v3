@@ -22,7 +22,7 @@ public class SiteDiscoveryLocator extends org.apache.axis.client.Service impleme
     }
 
     // Use to get a proxy class for SiteDiscoverySoap12
-    private java.lang.String SiteDiscoverySoap12_address = "http://gdc04.gdc-psl.net:5555/_vti_bin/GSSiteDiscovery.asmx";
+    private java.lang.String SiteDiscoverySoap12_address = "http://gdc04.persistent.co.in:15000/testsite/_vti_bin/GSSiteDiscovery.asmx";
 
     public java.lang.String getSiteDiscoverySoap12Address() {
         return SiteDiscoverySoap12_address;
@@ -67,7 +67,7 @@ public class SiteDiscoveryLocator extends org.apache.axis.client.Service impleme
 
 
     // Use to get a proxy class for SiteDiscoverySoap
-    private java.lang.String SiteDiscoverySoap_address = "http://gdc04.gdc-psl.net:5555/_vti_bin/GSSiteDiscovery.asmx";
+    private java.lang.String SiteDiscoverySoap_address = "http://gdc04.persistent.co.in:15000/testsite/_vti_bin/GSSiteDiscovery.asmx";
 
     public java.lang.String getSiteDiscoverySoapAddress() {
         return SiteDiscoverySoap_address;

@@ -35,7 +35,6 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
@@ -94,9 +93,6 @@ public class WebState implements StatefulObject {
     // will also change. It will become hard to maintain and rely on the
     // ordering approach than.
     private String nextAclChangeToken;
-
-    // for determining the crawl behavior of the web
-    private WebCrawlInfo webCrawlInfo;
 
     /**
      * For the sole purpose of loading WebState nodes as WebState objects when
@@ -611,14 +607,13 @@ public class WebState implements StatefulObject {
             atts.addAttribute("", "", SPConstants.STATE_INSERT_TIME, SPConstants.STATE_ATTR_CDATA, strInsertionTime);
         }
 
-        if (isNoCrawl()) {
-            atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
-        }
-
         handler.startElement("", "", SPConstants.WEB_STATE, atts);
 
         // dump the actual ListStates:
-        if (null != allListStateSet || !isNoCrawl()) {
+        if (null == allListStateSet) {
+            LOGGER.log(Level.WARNING, "No ListStates found in the WebState [ "
+                    + webUrl + " ]. " + "");
+        } else {
             for (ListState list : allListStateSet) {
                 list.dumpStateToXML(handler, feedType);
             }
@@ -652,11 +647,6 @@ public class WebState implements StatefulObject {
 
         web.setNextAclChangeToken(atts.getValue(SPConstants.STATE_ACLNEXTCHANGETOKEN));
         web.setCurretAclChangeToken(atts.getValue(SPConstants.STATE_ACLCHANGETOKEN));
-
-        WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
-        webCrawlInfo.setNoCrawl(Boolean.getBoolean(atts.getValue(SPConstants.STATE_NOCRAWL)));
-        web.setWebCrawlInfo(webCrawlInfo);
-
         return web;
     }
 
@@ -725,19 +715,5 @@ public class WebState implements StatefulObject {
             listState = lookupList("{" + listGuid + "}");
         }
         return listState;
-    }
-
-    // This info is not used currently but can be a probable feature request
-    // in future
-    public boolean isCrawlAspaxPages() {
-        return webCrawlInfo.isCrawlAspaxPages();
-    }
-
-    public boolean isNoCrawl() {
-        return webCrawlInfo.isNoCrawl();
-    }
-
-    public void setWebCrawlInfo(WebCrawlInfo webCrawlInfo) {
-        this.webCrawlInfo = webCrawlInfo;
     }
 }
