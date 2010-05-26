@@ -47,6 +47,7 @@
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="SiteCollectionUrl" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="SiteCollectionGuid" type="s1:guid" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAcl">
@@ -59,7 +60,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="EntityUrl" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="Owner" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="AllAce" type="tns:ArrayOfGssAce" />
-          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="tns:StringBuilder" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAce">
@@ -78,7 +79,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="Name" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="Type" type="tns:PrincipalType" />
           <s:element minOccurs="0" maxOccurs="1" name="Members" type="tns:ArrayOfGssPrincipal" />
-          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="tns:StringBuilder" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:simpleType name="PrincipalType">
@@ -94,61 +95,12 @@
           <s:element minOccurs="0" maxOccurs="unbounded" name="GssPrincipal" nillable="true" type="tns:GssPrincipal" />
         </s:sequence>
       </s:complexType>
-      <s:complexType name="StringBuilder">
-        <s:sequence>
-          <s:element minOccurs="1" maxOccurs="1" name="Capacity" type="s:int" />
-          <s:element minOccurs="1" maxOccurs="1" name="Length" type="s:int" />
-        </s:sequence>
-      </s:complexType>
       <s:complexType name="GssSharepointPermission">
         <s:sequence>
-          <s:element minOccurs="1" maxOccurs="1" name="GrantRightMask" type="tns:SPBasePermissions" />
-          <s:element minOccurs="1" maxOccurs="1" name="DenyRightMask" type="tns:SPBasePermissions" />
+          <s:element minOccurs="0" maxOccurs="1" name="AllowedPermissions" type="tns:ArrayOfString" />
+          <s:element minOccurs="0" maxOccurs="1" name="DeniedPermission" type="tns:ArrayOfString" />
         </s:sequence>
       </s:complexType>
-      <s:simpleType name="SPBasePermissions">
-        <s:list>
-          <s:simpleType>
-            <s:restriction base="s:string">
-              <s:enumeration value="EmptyMask" />
-              <s:enumeration value="ViewListItems" />
-              <s:enumeration value="AddListItems" />
-              <s:enumeration value="EditListItems" />
-              <s:enumeration value="DeleteListItems" />
-              <s:enumeration value="ApproveItems" />
-              <s:enumeration value="OpenItems" />
-              <s:enumeration value="ViewVersions" />
-              <s:enumeration value="DeleteVersions" />
-              <s:enumeration value="CancelCheckout" />
-              <s:enumeration value="ManagePersonalViews" />
-              <s:enumeration value="ManageLists" />
-              <s:enumeration value="ViewFormPages" />
-              <s:enumeration value="Open" />
-              <s:enumeration value="ViewPages" />
-              <s:enumeration value="AddAndCustomizePages" />
-              <s:enumeration value="ApplyThemeAndBorder" />
-              <s:enumeration value="ApplyStyleSheets" />
-              <s:enumeration value="ViewUsageData" />
-              <s:enumeration value="CreateSSCSite" />
-              <s:enumeration value="ManageSubwebs" />
-              <s:enumeration value="CreateGroups" />
-              <s:enumeration value="ManagePermissions" />
-              <s:enumeration value="BrowseDirectories" />
-              <s:enumeration value="BrowseUserInfo" />
-              <s:enumeration value="AddDelPrivateWebParts" />
-              <s:enumeration value="UpdatePersonalWebParts" />
-              <s:enumeration value="ManageWeb" />
-              <s:enumeration value="UseClientIntegration" />
-              <s:enumeration value="UseRemoteAPIs" />
-              <s:enumeration value="ManageAlerts" />
-              <s:enumeration value="CreateAlerts" />
-              <s:enumeration value="EditMyUserInfo" />
-              <s:enumeration value="EnumeratePermissions" />
-              <s:enumeration value="FullMask" />
-            </s:restriction>
-          </s:simpleType>
-        </s:list>
-      </s:simpleType>
       <s:element name="GetAclChangesSinceToken">
         <s:complexType>
           <s:sequence>
@@ -177,7 +129,7 @@
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="ChangeToken" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="Changes" type="tns:ArrayOfGssAclChange" />
-          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="tns:StringBuilder" />
+          <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAclChange">
@@ -475,7 +427,7 @@
       <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
     <wsdl:port name="GssAclMonitorSoap12" binding="tns:GssAclMonitorSoap12">
-      <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
+      <soap12:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

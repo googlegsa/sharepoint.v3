@@ -1,7 +1,4 @@
-﻿<soapenv:Envelope
-  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-  <soapenv:Body>
-    <samlp:Response
+﻿    <samlp:Response
       xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
       xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
       ID="%RESPONSE_ID"
@@ -29,6 +26,3 @@
         </saml:AuthzDecisionStatement>
       </saml:Assertion>
     </samlp:Response>
-  </soapenv:Body>
-</soapenv:Envelope>
-
