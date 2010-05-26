@@ -39,7 +39,7 @@ Summary of Changes / New Features
 After restarting, connector will send document's ACLs as part of the metadata which will be parsed by the GSA and uploaded as Policy ACLs under Serving section of the GSA.
 Connector would not make any attempt to send ACLs for the documents that it had crawled before the restart.
 
-Note: For ACL, the minimum required permission is either a "Full Read" at web application level or, the user should be the site collection administrator. The user credential that you use to configure the connector must have either of these two permissions if you are willing to use ACL bases authorization of search results.
+Note: For ACL, the minimum required permission is either a "Full Read" at web application level or, the user should be the site collection administrator. The user credential that you use to configure the connector must have either of these two permissions if you are willing to use ACL based authorization of search results.
 Note: The current ACL support does not have the handling of SharePoint groups. Please refer to the 6th point under Known Issues/Limitations section.
 
 - Issue 148: SharePoint connector should support SharePoint 2010
@@ -49,7 +49,7 @@ Version Compatibility
 This version works with Connector Manager Version 2.4.0 and above. It is recommended to upgrade to Connector Manager 2.4.4
 Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
 
-Steps to manually deploy the patch release on 2.4.2
+Steps to manually deploy the patch release on 2.4.4
 ---------------------------------------------------
 1. Stop the SharePoint Connector Service.
 2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
