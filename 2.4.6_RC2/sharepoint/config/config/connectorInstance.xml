@@ -50,7 +50,7 @@
         pushAcls: Whether ACLs should be sent for the documents. If true, ACLs will be sent as metadata with each document.
         stripDomainFromAces: the domain will be stripped off from username send in the ACLs. -->
     <!--
-    <property name="pushAcls"><value>true</value></property>
+    <property name="pushAcls"><value>false</value></property>
       <property name="stripDomainFromAces"><value>true</value></property>
       -->
   </bean>
