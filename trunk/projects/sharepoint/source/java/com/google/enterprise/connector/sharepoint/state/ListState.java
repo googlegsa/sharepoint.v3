@@ -148,9 +148,6 @@ public class ListState implements StatefulObject {
     // To check if the list inherits permission from the parent web
     private boolean inheritedSecurity;
 
-    // Flag to determine the crawl behavior of the list
-    private boolean noCrawl;
-
     /**
      * @param inInternalName
      * @param inTitle
@@ -990,7 +987,6 @@ public class ListState implements StatefulObject {
             listConst = inList.getListConst();
             sendListAsDocument = inList.isSendListAsDocument();
             inheritedSecurity = inList.isInheritedSecurity();
-            noCrawl = inList.isNoCrawl();
         }
     }
 
@@ -1195,11 +1191,6 @@ public class ListState implements StatefulObject {
                 }
             }
         }
-
-        if (isNoCrawl()) {
-            atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
-        }
-
         handler.startElement("", "", SPConstants.LIST_STATE, atts);
 
         // Creating child nodes of ListState node
@@ -1312,9 +1303,6 @@ public class ListState implements StatefulObject {
                 }
             }
         }
-
-        list.setNoCrawl(Boolean.getBoolean(atts.getValue(SPConstants.STATE_NOCRAWL)));
-
         return list;
     }
 
@@ -1442,13 +1430,5 @@ public class ListState implements StatefulObject {
 
     public void setInheritedSecurity(boolean inheritedSecurity) {
         this.inheritedSecurity = inheritedSecurity;
-    }
-
-    public boolean isNoCrawl() {
-        return noCrawl;
-    }
-
-    public void setNoCrawl(boolean noCrawl) {
-        this.noCrawl = noCrawl;
     }
 }

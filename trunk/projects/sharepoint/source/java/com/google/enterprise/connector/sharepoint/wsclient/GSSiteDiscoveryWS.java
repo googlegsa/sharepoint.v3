@@ -18,9 +18,6 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -33,13 +30,10 @@ import org.apache.axis.AxisFault;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscovery;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoveryLocator;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoverySoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
 
 /**
  * Java Client for calling GSSiteDiscovery.asmx. Provides a layer to talk to the
@@ -183,96 +177,5 @@ public class GSSiteDiscoveryWS {
             }
         }
         return hostName;
-    }
-
-    /**
-     * Retrieves the information about crawl behavior of a web and set it into
-     * the passed in {@link WebState}
-     *
-     * @param webState
-     */
-    public void updateWebCrawlInfo(WebState webState) {
-        try {
-            webState.setWebCrawlInfo(stub.getWebCrawlInfo());
-        } catch (final AxisFault af) {
-            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-                    && (sharepointClientContext.getDomain() != null)) {
-                final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
-                stub.setUsername(username);
-                try {
-                    webState.setWebCrawlInfo(stub.getWebCrawlInfo());
-                } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetWebCrawlInfo() failed with the following exception: ", e);
-                }
-            } else {
-                LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetWebCrawlInfo() failed with the following exception: ", af);
-            }
-        } catch (final Throwable e) {
-            LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetWebCrawlInfo() failed with the following exception: ", e);
-        }
-    }
-
-    /**
-     * Retrieves the information about crawl behavior of a the lists and set it
-     * into the passed in {@link ListState}
-     *
-     * @param listCollection ListStates to be be updated
-     */
-    public void updateListCrawlInfo(Collection<ListState> listCollection) {
-        if(null == listCollection) {
-            return;
-        }
-        Map<String, ListState> listCrawlInfoMap = new HashMap<String, ListState>();
-        String[] listGuids = new String[listCollection.size()];
-        int i= 0;
-        for(ListState listState : listCollection) {
-            listGuids[i++] = listState.getPrimaryKey();
-            listCrawlInfoMap.put(listState.getPrimaryKey(), listState);
-        }
-        ListCrawlInfo[] listCrawlInfo = null;
-        try {
-            listCrawlInfo = stub.getListCrawlInfo(listGuids);
-        } catch (final AxisFault af) {
-            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-                    && (sharepointClientContext.getDomain() != null)) {
-                final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
-                stub.setUsername(username);
-                try {
-                    listCrawlInfo = stub.getListCrawlInfo(listGuids);
-                } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetListCrawlInfo() failed with the following exception: ", e);
-                }
-            } else {
-                LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetListCrawlInfo() failed with the following exception: ", af);
-            }
-        } catch (final Throwable e) {
-            LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetListCrawlInfo() failed with the following exception: ", e);
-        }
-
-        if(null == listCrawlInfo) {
-            return;
-        }
-
-        for(ListCrawlInfo info : listCrawlInfo) {
-            ListState listState = listCrawlInfoMap.get(info.getListGuid());
-            if(null == listState) {
-                LOGGER.log(Level.SEVERE, "One of the List GUID [ " + info.getListGuid() + " ] can not be found in the parentWebState. ");
-                continue;
-            }
-            if(!info.isStatus()) {
-                LOGGER.log(Level.WARNING, "GSSiteDiscovery has encountered following problem while getting the crawl info for list URL [ "
-                        + listState.getListURL()
-                        + " ]. WS error -> "
-                        + info.getError());
-                continue;
-            }
-            listState.setNoCrawl(info.isNoCrawl());
-        }
     }
 }

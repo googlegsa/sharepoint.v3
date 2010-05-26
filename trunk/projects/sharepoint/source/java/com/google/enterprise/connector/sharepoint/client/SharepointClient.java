@@ -591,17 +591,6 @@ public class SharepointClient {
         listCollection = new ArrayList<ListState>(new TreeSet<ListState>(
                 listCollection));
 
-        if (sharepointClientContext.isUseSPSearchVisibility()) {
-            try {
-                GSSiteDiscoveryWS gssd = new GSSiteDiscoveryWS(
-                        sharepointClientContext);
-                gssd.updateListCrawlInfo(listCollection);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Exception occurred when trying to to update the ListCrawlInfo for web [ "
-                        + webState.getWebUrl() + " ] ", e);
-            }
-        }
-
         // Updating the latest metadata info for all list states. We may do this
         // updation when the crawl will begin; that will save this extra
         // iteration over the ListStates. But, there is one metadata which
@@ -640,29 +629,6 @@ public class SharepointClient {
         for (int i = 0; i < listCollection.size(); i++) {
             final ListState currentList = listCollection.get(i);
             ListState listState = webState.lookupList(currentList.getPrimaryKey());
-
-            if (sharepointClientContext.isUseSPSearchVisibility()) {
-                // If this list is marked for No Crawling, do not crawl this
-                // list.
-                // Please note that, if this list is already known to the
-                // connector, it'll keep existing in the connector's state. This
-                // implies that if a list is marked as NoCrawl list on
-                // SharePoint in between the connector's traversal, crawling of
-                // this list will be paused at whatever state it is in. As soon
-                // as the NoCrawl flag on SharePoint is reverted, the crawling
-                // will be resumed from the saved state.
-                if (currentList.isNoCrawl()) {
-                    LOGGER.log(Level.WARNING, "Skipping List URL [ "
-                            + currentList.getListURL()
-                            + " ] while crawling because it has been marked for No Crawling on SharePoint. ");
-                    if (null == listState) {
-                        // Make this list known by keeping it in the state. But,
-                        // do not crawl
-                        webState.AddOrUpdateListStateInWebState(currentList, currentList.getLastMod());
-                    }
-                    continue;
-                }
-            }
 
             /*
              * If we already knew about this list, then only fetch docs that
@@ -917,10 +883,6 @@ public class SharepointClient {
      * @return Last Web crawled. This helps caller an idea about from where the
      *         next crawl should begin.
      */
-    // TODO: Why do we pass SharePointClientContext object as argument here?
-    // It's already available as a member of this class. Is there any
-    // intentional differences between the states of these two
-    // SharePointClientContexts?
     private WebState traverseSites(GlobalState globalState,
             Set<String> allSites,
             SharepointClientContext sharePointClientContext, WebState nextWeb,
@@ -946,36 +908,6 @@ public class SharepointClient {
                 lstLookupForWebs.add(webURL);
             }
 
-            try {
-                sharePointClientContext.setSiteURL(webURL);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Exception occurred when trying to set the webUrl [ "
-                        + webURL + " ] context", e);
-                continue;
-            }
-
-            if (sharepointClientContext.isUseSPSearchVisibility()) {
-                try {
-                    GSSiteDiscoveryWS gssd = new GSSiteDiscoveryWS(
-                            sharePointClientContext);
-                    gssd.updateWebCrawlInfo(ws);
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Exception occurred when trying to to update the WebCrawlInfo for web [ "
-                            + webURL + " ] ", e);
-                }
-
-                // Even if a web is not crawled due to the SP search visibility,
-                // it's reference is kept in the connector's state. This is to
-                // avoid unnecessary discovery (and WebState construction) of
-                // these webs again and again.
-                if (ws.isNoCrawl()) {
-                    LOGGER.log(Level.WARNING, "Skipping Web URL [ "
-                            + webURL
-                            + " ] while crawling because it has been marked for No Crawling on SharePoint. ");
-                    continue;
-                }
-            }
-
             nextWeb = ws;
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Web [ " + webURL
@@ -983,6 +915,8 @@ public class SharepointClient {
             }
             final int currDocCount = nDocuments;
             try {
+                sharePointClientContext.setSiteURL(webURL);
+
                 // Process the web site, and add the link site info to allSites.
                 updateWebStateFromSite(sharePointClientContext, ws, nextList, allSites);
 
