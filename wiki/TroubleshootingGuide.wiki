@@ -435,6 +435,6 @@ Two important points to note:
     * The Include URL patterns should be broad enough to cover all the host header based sites, or else the connector will exclude them from crawling even though they are being discovered by the custom web service
     * All the site URLs should be able to be resolved using Windows authentication. 
 
-*Q. I have configured connector authN with Security Manager for content fed in Meta-data and URL feed mode. I am unable to get search results, what could be the reason?*
+*Q. I have configured connector authN with Security Manager for content fed in Meta-data and URL feed mode, I am unable to get search results*
 
 Metadata and URL feed is an invalid feed mode for connector authN with Security Manager so you don't get search results. Content feed is an appropriate feed mode for using Security Manager Connector authN. 
