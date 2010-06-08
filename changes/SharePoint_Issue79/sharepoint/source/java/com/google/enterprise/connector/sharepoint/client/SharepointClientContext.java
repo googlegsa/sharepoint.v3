@@ -14,17 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.TraversalContext;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -37,10 +30,17 @@ import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.TraversalContext;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class to hold the context information for sharepoint client connection. The
@@ -204,7 +204,8 @@ public class SharepointClientContext implements Cloneable {
             final String inPassword, final String inGoogleConnectorWorkDir,
             final String includedURls, final String excludedURls,
             final String inMySiteBaseURL, final String inAliasMapString,
-            final FeedType inFeedType) throws SharepointException {
+            final FeedType inFeedType, String useSPSearchVisibility)
+            throws SharepointException {
 
         Protocol.registerProtocol("https", new Protocol("https",
                 new EasySSLProtocolSocketFactory(),
@@ -276,6 +277,14 @@ public class SharepointClientContext implements Cloneable {
         LOGGER.finest("feedType set to " + feedType);
         LOGGER.finest("bFQDNConversion set to " + bFQDNConversion);
 
+        if (useSPSearchVisibility == null
+                || useSPSearchVisibility.length() == 0) {
+            LOGGER.config("No vlaue specified for useSPSearchVisibility. Settting it to true");
+            this.useSPSearchVisibility = true;
+        } else {
+            this.useSPSearchVisibility = new Boolean(useSPSearchVisibility).booleanValue();
+        }
+
         LOGGER.config(" sharepointUrl = [" + sharepointUrl + "] , domain = ["
                 + inDomain + "] , username = [" + inUsername
                 + "] , googleConnectorWorkDir = [" + inGoogleConnectorWorkDir
@@ -283,7 +292,8 @@ public class SharepointClientContext implements Cloneable {
                 + "] , excludedURls = [" + excludedURls
                 + "] , mySiteBaseURL = [" + inMySiteBaseURL
                 + "], aliasMapString = [" + inAliasMapString + "], FeedType ["
-                + inFeedType + "]. ");
+                + inFeedType + "], useSPSearchVisibility = ["
+                + useSPSearchVisibility + "]");
     }
 
     /**

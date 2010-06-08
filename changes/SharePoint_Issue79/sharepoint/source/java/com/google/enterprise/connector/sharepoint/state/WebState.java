@@ -14,22 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.joda.time.DateTime;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -40,6 +24,22 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.joda.time.DateTime;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a SharePoint Web Site as a stateful object
@@ -417,12 +417,17 @@ public class WebState implements StatefulObject {
                                     list.getParentWebState().getTitle(),
                                     FeedType.CONTENT_FEED, SPType.SP2007);
                             doc.setAction(ActionType.DELETE);
-                            if (!list.isSendListAsDocument()) {
+                            if (!list.isSendListAsDocument()
+                                    || !isCrawlAspxPages()) {
                                 // send the listState as a feed only if it was
                                 // included (not excluded) in the URL pattern
                                 // matching
+                                // The other case is SharePoint admin has set a
+                                // flag at site level to exclude ASPX pages from
+                                // being crawled and indexed and hence no need
+                                // send DELETE feed for List
                                 doc.setToBeFed(false);
-                                LOGGER.log(Level.FINE, "List Document marked as not to be fed");
+                                LOGGER.log(Level.FINE, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
                             }
                             deletedDocs.add(doc);
                         }
@@ -618,6 +623,10 @@ public class WebState implements StatefulObject {
         handler.startElement("", "", SPConstants.WEB_STATE, atts);
 
         // dump the actual ListStates:
+        // Dump the "NoCrawl" flag for liststates only if the current site is
+        // set to true for crawling. If the current site itself is supposed to
+        // be not crawled, the lists will not be discovered and hence no need to
+        // dump the "NoCrawl" flag for liststates
         if (null != allListStateSet || !isNoCrawl()) {
             for (ListState list : allListStateSet) {
                 list.dumpStateToXML(handler, feedType);
@@ -727,17 +736,23 @@ public class WebState implements StatefulObject {
         return listState;
     }
 
-    // This info is not used currently but can be a probable feature request
-    // in future
-    public boolean isCrawlAspaxPages() {
-        return webCrawlInfo.isCrawlAspaxPages();
+    public boolean isCrawlAspxPages() {
+        if (webCrawlInfo != null) {
+            return webCrawlInfo.isCrawlAspaxPages();
+        }
+        return true;
     }
 
     public boolean isNoCrawl() {
-        return webCrawlInfo.isNoCrawl();
+        if (webCrawlInfo != null) {
+            return webCrawlInfo.isNoCrawl();
+        }
+
+        return false;
     }
 
     public void setWebCrawlInfo(WebCrawlInfo webCrawlInfo) {
         this.webCrawlInfo = webCrawlInfo;
     }
+
 }

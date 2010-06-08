@@ -14,6 +14,11 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.common.I18NUtil;
+import com.google.enterprise.connector.servlet.ServletUtil;
+import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.spi.ConfigureResponse;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,11 +28,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
-
-import com.google.enterprise.connector.common.I18NUtil;
-import com.google.enterprise.connector.servlet.ServletUtil;
-import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.spi.ConfigureResponse;
 
 public class SharepointConnectorTypeTest extends TestCase {
 
@@ -98,7 +98,7 @@ public class SharepointConnectorTypeTest extends TestCase {
         assertTrue(match.find());
 
         System.out.println("Checking for AliasMap field...");
-        strPattern = "<input.*id=\"AliasMap\".*>";
+        strPattern = "<input.*id=\"aliasMap\".*>";
         pattern = Pattern.compile(strPattern);
         match = pattern.matcher(configForm);
         assertTrue(match.find());
@@ -123,6 +123,18 @@ public class SharepointConnectorTypeTest extends TestCase {
 
         System.out.println("Checking for mySiteBaseURL field...");
         strPattern = "<input.*id=\"mySiteBaseURL\".*>";
+        pattern = Pattern.compile(strPattern);
+        match = pattern.matcher(configForm);
+        assertTrue(match.find());
+
+        System.out.println("Checking for authorization field...");
+        strPattern = "<input.*id=\"authorization\".*>";
+        pattern = Pattern.compile(strPattern);
+        match = pattern.matcher(configForm);
+        assertTrue(match.find());
+
+        System.out.println("Checking for useSPSearchVisibility field...");
+        strPattern = "<input.*id=\"useSPSearchVisibility\".*>";
         pattern = Pattern.compile(strPattern);
         match = pattern.matcher(configForm);
         assertTrue(match.find());

@@ -14,10 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -25,6 +21,10 @@ import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of the Connector interface from the spi for SharePoint This is
@@ -68,7 +68,8 @@ public class SharepointConnector implements Connector {
             final String username, final String password,
             final String googleConnectorWorkDir, final String includedURls,
             final String excludedURls, final String mySiteBaseURL,
-            final String aliasMapString, final String feedType)
+            final String aliasMapString, final String feedType,
+            final String useSPSearchVisibility)
             throws SharepointException {
 
         LOGGER.config("sharepointUrl = [" + sharepointUrl + "] , domain = ["
@@ -77,11 +78,11 @@ public class SharepointConnector implements Connector {
                 + "] , includedURls = [" + includedURls + "] , "
                 + "excludedURls = [" + excludedURls + "] , mySiteBaseURL = ["
                 + mySiteBaseURL + "] , aliasHostPort = [" + aliasMapString
-                + "]");
+                + "], useSPSearchVisibility = [" + useSPSearchVisibility + "]");
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMapString,
-                FeedType.getFeedType(feedType));
+                FeedType.getFeedType(feedType), useSPSearchVisibility);
     }
 
     /**
@@ -296,13 +297,13 @@ public class SharepointConnector implements Connector {
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMap,
-                FeedType.getFeedType(authorizationAsfeedType));
+                FeedType.getFeedType(authorizationAsfeedType), new Boolean(
+                        useSPSearchVisibility).toString());
         sharepointClientContext.setFQDNConversion(FQDNConversion);
         sharepointClientContext.setIncluded_metadata(included_metadata);
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
-        sharepointClientContext.setUseSPSearchVisibility(useSPSearchVisibility);
     }
 
     /**

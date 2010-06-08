@@ -14,6 +14,18 @@
 
 package com.google.enterprise.connector.sharepoint;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.joda.time.DateTime;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,18 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-
-import org.joda.time.DateTime;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 public class TestConfiguration {
     public static String googleConnectorWorkDir;
@@ -50,6 +50,8 @@ public class TestConfiguration {
     public static String mySiteBaseURL;
     public static String includedURls;
     public static String excludedURls;
+    public static String authorization;
+    public static String useSPSearchVisibility;
 
     public static String searchUserID;
     public static String searchUserPwd;
@@ -96,7 +98,7 @@ public class TestConfiguration {
         final Properties properties = new Properties();
         try {
             properties.load(new FileInputStream(
-                    "source/javatests/TestConfig.properties"));
+					"source/javatests/TestConfig.properties"));
         } catch (final IOException e) {
             System.out.println("Unable to load the property file." + e);
         }
@@ -107,10 +109,12 @@ public class TestConfiguration {
         domain = properties.getProperty("domain");
         kdcserver = properties.getProperty("kdcserver");
         username = properties.getProperty("username");
-        Password = properties.getProperty("Password");
+        Password = properties.getProperty("password");
         mySiteBaseURL = properties.getProperty("mySiteBaseURL");
         includedURls = properties.getProperty("includedURls");
         excludedURls = properties.getProperty("excludedURls");
+        authorization = properties.getProperty("authorization");
+        useSPSearchVisibility = properties.getProperty("useSPSearchVisibility");
 
         searchUserID = properties.getProperty("SearchUserID");
         searchUserPwd = properties.getProperty("SearchUserPwd");
@@ -172,14 +176,16 @@ public class TestConfiguration {
         final Map<String, String> configMap = new HashMap<String, String>();
 
         configMap.put("sharepointUrl", sharepointUrl);
-        configMap.put("AliasMap", AliasMap);
+        configMap.put("aliasMap", AliasMap);
         configMap.put("domain", domain);
         configMap.put("kdcserver", kdcserver);
         configMap.put("username", username);
-        configMap.put("Password", Password);
+        configMap.put("password", Password);
         configMap.put("mySiteBaseURL", mySiteBaseURL);
         configMap.put("includedURls", includedURls);
         configMap.put("excludedURls", excludedURls);
+        configMap.put("authorization", authorization);
+        configMap.put("useSPSearchVisibility", useSPSearchVisibility);
 
         return configMap;
     }
@@ -272,7 +278,7 @@ public class TestConfiguration {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+                TestConfiguration.feedType, useSPSearchVisibility);
 
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
