@@ -92,6 +92,10 @@ public class SiteDiscovery : System.Web.Services.WebService
         private bool crawlAspxPages;
         private bool noCrawl;
 
+        // status indicates whether the CrawlInfo is valid or not. If invalid, error contains the possible reason.
+        private bool status;
+        private string error;
+
         public bool CrawlAspaxPages
         {
             get { return crawlAspxPages; }
@@ -102,6 +106,18 @@ public class SiteDiscovery : System.Web.Services.WebService
         {
             get { return noCrawl; }
             set { noCrawl = value; }
+        }
+
+        public bool Status
+        {
+            get { return status; }
+            set { status = value; }
+        }
+
+        public string Error
+        {
+            get { return error; }
+            set { error = value; }
         }
     }
 
@@ -128,6 +144,7 @@ public class SiteDiscovery : System.Web.Services.WebService
             WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
             webCrawlInfo.CrawlAspaxPages = web.AllowAutomaticASPXPageIndexing;
             webCrawlInfo.NoCrawl = web.NoCrawl;
+            webCrawlInfo.Status = true;
             return webCrawlInfo;
         }
         catch (Exception e)
@@ -141,6 +158,66 @@ public class SiteDiscovery : System.Web.Services.WebService
     }
 
     /// <summary>
+    /// To get the <see cref="WebCrawlInfo"/> of a list of webs
+    /// </summary>
+    /// <returns></returns>
+    [WebMethod]
+    public List<WebCrawlInfo> GetWebCrawlInfoInBatch(List<string> webUrls)
+    {
+        List<WebCrawlInfo> wsResult = new List<WebCrawlInfo>();
+        if (null == webUrls || webUrls.Count == 0)
+        {
+            return wsResult;
+        }
+
+        foreach (string webUrl in webUrls)
+        {
+            WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
+            SPSite site = null;
+            SPWeb web = null;
+            try
+            {
+                site = new SPSite(webUrl);
+                if (null == site)
+                {
+                    webCrawlInfo.Status = false;
+                    webCrawlInfo.Error = "SharePoint site collection not found for url " + webUrl;
+                }
+                else
+                {
+                    web = site.OpenWeb();
+                    if (null == web)
+                    {
+                        webCrawlInfo.Status = false;
+                        webCrawlInfo.Error = "SharePoint site not found for url " + webUrl;
+                    }
+                    else
+                    {
+                        webCrawlInfo.CrawlAspaxPages = web.AllowAutomaticASPXPageIndexing;
+                        webCrawlInfo.NoCrawl = web.NoCrawl;
+                        webCrawlInfo.Status = true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                webCrawlInfo.Status = false;
+                webCrawlInfo.Error = "Could not get the required information for for url " + webUrl + " . Exception: " + e.Message;
+            }
+            finally
+            {
+                if (null != web)
+                    web.Dispose();
+
+                if (null != site)
+                    site.Dispose();
+            }
+            wsResult.Add(webCrawlInfo);
+        }
+        return wsResult;
+    }
+
+    /// <summary>
     /// Stores the information about the crawl behavior of a list
     /// </summary>
     [WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
@@ -150,6 +227,8 @@ public class SiteDiscovery : System.Web.Services.WebService
     {
         private string listGuid;
         private bool noCrawl;
+
+        // status indicates whether the CrawlInfo is valid or not. If invalid, error contains the possible reason.
         private bool status;
         private string error;
 

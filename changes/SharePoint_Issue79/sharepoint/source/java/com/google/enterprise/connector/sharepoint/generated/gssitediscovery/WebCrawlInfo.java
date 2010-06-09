@@ -12,14 +12,22 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     private boolean noCrawl;
 
+    private boolean status;
+
+    private java.lang.String error;
+
     public WebCrawlInfo() {
     }
 
     public WebCrawlInfo(
            boolean crawlAspaxPages,
-           boolean noCrawl) {
+           boolean noCrawl,
+           boolean status,
+           java.lang.String error) {
            this.crawlAspaxPages = crawlAspaxPages;
            this.noCrawl = noCrawl;
+           this.status = status;
+           this.error = error;
     }
 
 
@@ -62,6 +70,46 @@ public class WebCrawlInfo  implements java.io.Serializable {
         this.noCrawl = noCrawl;
     }
 
+
+    /**
+     * Gets the status value for this WebCrawlInfo.
+     *
+     * @return status
+     */
+    public boolean isStatus() {
+        return status;
+    }
+
+
+    /**
+     * Sets the status value for this WebCrawlInfo.
+     *
+     * @param status
+     */
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+
+    /**
+     * Gets the error value for this WebCrawlInfo.
+     *
+     * @return error
+     */
+    public java.lang.String getError() {
+        return error;
+    }
+
+
+    /**
+     * Sets the error value for this WebCrawlInfo.
+     *
+     * @param error
+     */
+    public void setError(java.lang.String error) {
+        this.error = error;
+    }
+
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof WebCrawlInfo)) return false;
@@ -75,7 +123,11 @@ public class WebCrawlInfo  implements java.io.Serializable {
         boolean _equals;
         _equals = true &&
             this.crawlAspaxPages == other.isCrawlAspaxPages() &&
-            this.noCrawl == other.isNoCrawl();
+            this.noCrawl == other.isNoCrawl() &&
+            this.status == other.isStatus() &&
+            ((this.error==null && other.getError()==null) ||
+             (this.error!=null &&
+              this.error.equals(other.getError())));
         __equalsCalc = null;
         return _equals;
     }
@@ -89,6 +141,10 @@ public class WebCrawlInfo  implements java.io.Serializable {
         int _hashCode = 1;
         _hashCode += (isCrawlAspaxPages() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         _hashCode += (isNoCrawl() ? Boolean.TRUE : Boolean.FALSE).hashCode();
+        _hashCode += (isStatus() ? Boolean.TRUE : Boolean.FALSE).hashCode();
+        if (getError() != null) {
+            _hashCode += getError().hashCode();
+        }
         __hashCodeCalc = false;
         return _hashCode;
     }
@@ -109,6 +165,19 @@ public class WebCrawlInfo  implements java.io.Serializable {
         elemField.setFieldName("noCrawl");
         elemField.setXmlName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "NoCrawl"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("status");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "Status"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("error");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "Error"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

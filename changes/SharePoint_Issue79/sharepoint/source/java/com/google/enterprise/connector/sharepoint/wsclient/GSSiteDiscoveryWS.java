@@ -14,19 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscovery;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoveryLocator;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoverySoap_BindingStub;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
-
-import org.apache.axis.AxisFault;
-
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,6 +27,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
+
+import org.apache.axis.AxisFault;
+
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscovery;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoveryLocator;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoverySoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 
 /**
  * Java Client for calling GSSiteDiscovery.asmx. Provides a layer to talk to the
@@ -215,6 +216,43 @@ public class GSSiteDiscoveryWS {
         } catch (final Throwable e) {
             LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetWebCrawlInfo() failed with the following exception: ", e);
         }
+    }
+
+    /**
+     * Retrieves the information about crawl behavior of a list of webs
+     * corresponding to the passed in web urls
+     *
+     * @param weburls All web URLs whose crawl info is to be found
+     */
+    public WebCrawlInfo[] getWebCrawlInfoInBatch(String[] weburls) {
+        WebCrawlInfo[] wsResult = null;
+        if (null == weburls || weburls.length == 0) {
+            return wsResult;
+        }
+        LOGGER.config("Fetching SharePoint indexing options for "
+                + weburls.length + " web urls");
+        try {
+            wsResult = stub.getWebCrawlInfoInBatch(weburls);
+        } catch (final AxisFault af) {
+            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+                    && (sharepointClientContext.getDomain() != null)) {
+                final String username = Util.switchUserNameFormat(stub.getUsername());
+                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ].");
+                LOGGER.log(Level.INFO, "Trying with " + username);
+                stub.setUsername(username);
+                try {
+                    wsResult = stub.getWebCrawlInfoInBatch(weburls);
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.getWebCrawlInfoInBatch() failed with the following exception: ", e);
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.getWebCrawlInfoInBatch() failed with the following exception: ", af);
+            }
+        } catch (final Throwable e) {
+            LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.getWebCrawlInfoInBatch() failed with the following exception: ", e);
+        }
+        return wsResult;
     }
 
     /**

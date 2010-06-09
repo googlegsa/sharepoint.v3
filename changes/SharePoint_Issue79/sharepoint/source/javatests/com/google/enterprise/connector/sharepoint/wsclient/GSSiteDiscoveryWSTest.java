@@ -14,16 +14,16 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import java.util.Set;
+
+import junit.framework.TestCase;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
-
-import java.util.Set;
-
-import junit.framework.TestCase;
 
 public class GSSiteDiscoveryWSTest extends TestCase {
 
@@ -84,5 +84,15 @@ public class GSSiteDiscoveryWSTest extends TestCase {
                 assertFalse(listState.isNoCrawl());
             }
         }
+    }
+
+    public final void testGetWebCrawlInfoInBatch() throws Exception {
+        String[] weburls = { TestConfiguration.Site1_URL };
+        WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
+        webCrawlInfo.setNoCrawl(true);
+        WebCrawlInfo[] wsResult = siteDisc.getWebCrawlInfoInBatch(weburls);
+        assertNotNull(wsResult);
+        assertEquals(wsResult.length, weburls.length);
+        assertEquals(false, wsResult[0].isNoCrawl());
     }
 }

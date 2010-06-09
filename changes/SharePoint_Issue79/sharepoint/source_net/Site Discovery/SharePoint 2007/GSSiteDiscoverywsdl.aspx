@@ -36,12 +36,38 @@
         <s:sequence>
           <s:element minOccurs="1" maxOccurs="1" name="CrawlAspaxPages" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="NoCrawl" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="Status" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="Error" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:element name="GetWebCrawlInfoResponse">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="GetWebCrawlInfoResult" type="tns:WebCrawlInfo" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetWebCrawlInfoInBatch">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="webUrls" type="tns:ArrayOfString" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="ArrayOfString">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:complexType name="ArrayOfWebCrawlInfo">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="unbounded" name="WebCrawlInfo" nillable="true" type="tns:WebCrawlInfo" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="GetWebCrawlInfoInBatchResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetWebCrawlInfoInBatchResult" type="tns:ArrayOfWebCrawlInfo" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -52,11 +78,6 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:complexType name="ArrayOfString">
-        <s:sequence>
-          <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
-        </s:sequence>
-      </s:complexType>
       <s:complexType name="ListCrawlInfo">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="ListGuid" type="s:string" />
@@ -111,6 +132,12 @@
   <wsdl:message name="GetWebCrawlInfoSoapOut">
     <wsdl:part name="parameters" element="tns:GetWebCrawlInfoResponse" />
   </wsdl:message>
+  <wsdl:message name="GetWebCrawlInfoInBatchSoapIn">
+    <wsdl:part name="parameters" element="tns:GetWebCrawlInfoInBatch" />
+  </wsdl:message>
+  <wsdl:message name="GetWebCrawlInfoInBatchSoapOut">
+    <wsdl:part name="parameters" element="tns:GetWebCrawlInfoInBatchResponse" />
+  </wsdl:message>
   <wsdl:message name="GetListCrawlInfoSoapIn">
     <wsdl:part name="parameters" element="tns:GetListCrawlInfo" />
   </wsdl:message>
@@ -135,6 +162,10 @@
     <wsdl:operation name="GetWebCrawlInfo">
       <wsdl:input message="tns:GetWebCrawlInfoSoapIn" />
       <wsdl:output message="tns:GetWebCrawlInfoSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetWebCrawlInfoInBatch">
+      <wsdl:input message="tns:GetWebCrawlInfoInBatchSoapIn" />
+      <wsdl:output message="tns:GetWebCrawlInfoInBatchSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="GetListCrawlInfo">
       <wsdl:input message="tns:GetListCrawlInfoSoapIn" />
@@ -167,6 +198,15 @@
     </wsdl:operation>
     <wsdl:operation name="GetWebCrawlInfo">
       <soap:operation soapAction="gssitediscovery.generated.sharepoint.connector.enterprise.google.com/GetWebCrawlInfo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetWebCrawlInfoInBatch">
+      <soap:operation soapAction="gssitediscovery.generated.sharepoint.connector.enterprise.google.com/GetWebCrawlInfoInBatch" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -215,6 +255,15 @@
     </wsdl:operation>
     <wsdl:operation name="GetWebCrawlInfo">
       <soap12:operation soapAction="gssitediscovery.generated.sharepoint.connector.enterprise.google.com/GetWebCrawlInfo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetWebCrawlInfoInBatch">
+      <soap12:operation soapAction="gssitediscovery.generated.sharepoint.connector.enterprise.google.com/GetWebCrawlInfoInBatch" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
