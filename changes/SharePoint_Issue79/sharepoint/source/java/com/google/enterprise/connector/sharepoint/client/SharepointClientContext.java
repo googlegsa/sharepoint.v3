@@ -204,7 +204,7 @@ public class SharepointClientContext implements Cloneable {
             final String inPassword, final String inGoogleConnectorWorkDir,
             final String includedURls, final String excludedURls,
             final String inMySiteBaseURL, final String inAliasMapString,
-            final FeedType inFeedType, String useSPSearchVisibility)
+            final FeedType inFeedType, boolean useSPSearchVisibility)
             throws SharepointException {
 
         Protocol.registerProtocol("https", new Protocol("https",
@@ -277,13 +277,8 @@ public class SharepointClientContext implements Cloneable {
         LOGGER.finest("feedType set to " + feedType);
         LOGGER.finest("bFQDNConversion set to " + bFQDNConversion);
 
-        if (useSPSearchVisibility == null
-                || useSPSearchVisibility.length() == 0) {
-            LOGGER.config("No vlaue specified for useSPSearchVisibility. Settting it to true");
-            this.useSPSearchVisibility = true;
-        } else {
-            this.useSPSearchVisibility = new Boolean(useSPSearchVisibility).booleanValue();
-        }
+
+        this.useSPSearchVisibility = useSPSearchVisibility;
 
         LOGGER.config(" sharepointUrl = [" + sharepointUrl + "] , domain = ["
                 + inDomain + "] , username = [" + inUsername

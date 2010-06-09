@@ -14,6 +14,19 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscovery;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoveryLocator;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoverySoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
+
+import org.apache.axis.AxisFault;
+
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,19 +40,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscovery;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoveryLocator;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoverySoap_BindingStub;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
 
 /**
  * Java Client for calling GSSiteDiscovery.asmx. Provides a layer to talk to the
@@ -193,6 +193,8 @@ public class GSSiteDiscoveryWS {
      */
     public void updateWebCrawlInfo(WebState webState) {
         try {
+            LOGGER.config("Fetching SharePoint indexing options for site : "
+                    + webState.getWebUrl());
             webState.setWebCrawlInfo(stub.getWebCrawlInfo());
         } catch (final AxisFault af) {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)

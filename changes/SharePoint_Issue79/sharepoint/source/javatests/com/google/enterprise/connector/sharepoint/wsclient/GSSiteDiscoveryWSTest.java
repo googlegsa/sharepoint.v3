@@ -14,16 +14,16 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.util.Set;
-
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+
+import java.util.Set;
+
+import junit.framework.TestCase;
 
 public class GSSiteDiscoveryWSTest extends TestCase {
 
@@ -34,13 +34,7 @@ public class GSSiteDiscoveryWSTest extends TestCase {
         super.setUp();
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        this.sharepointClientContext = TestConfiguration.getSharePointClientContext();
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);

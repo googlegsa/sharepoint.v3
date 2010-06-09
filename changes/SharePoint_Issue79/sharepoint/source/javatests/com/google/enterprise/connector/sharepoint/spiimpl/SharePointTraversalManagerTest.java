@@ -14,13 +14,13 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
+
+import junit.framework.TestCase;
 
 public class SharePointTraversalManagerTest extends TestCase {
 
@@ -30,13 +30,7 @@ public class SharePointTraversalManagerTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        this.sharepointClientContext = TestConfiguration.getSharePointClientContext();
 
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
@@ -49,7 +43,8 @@ public class SharePointTraversalManagerTest extends TestCase {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-				FeedType.METADATA_URL_FEED.toString());
+                FeedType.METADATA_URL_FEED.toString(),
+                Boolean.toString(TestConfiguration.useSPSearchVisibility));
         connector.setFQDNConversion(TestConfiguration.FQDNflag);
         System.out.println("Initializing SharepointTraversalManager ...");
         this.travMan = new SharepointTraversalManager(connector,

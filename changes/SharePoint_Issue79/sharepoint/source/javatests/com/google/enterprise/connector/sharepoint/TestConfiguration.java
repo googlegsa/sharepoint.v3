@@ -51,7 +51,7 @@ public class TestConfiguration {
     public static String includedURls;
     public static String excludedURls;
     public static String authorization;
-    public static String useSPSearchVisibility;
+    public static boolean useSPSearchVisibility;
 
     public static String searchUserID;
     public static String searchUserPwd;
@@ -98,7 +98,7 @@ public class TestConfiguration {
         final Properties properties = new Properties();
         try {
             properties.load(new FileInputStream(
-					"source/javatests/TestConfig.properties"));
+                    "source/javatests/TestConfig.properties"));
         } catch (final IOException e) {
             System.out.println("Unable to load the property file." + e);
         }
@@ -114,7 +114,8 @@ public class TestConfiguration {
         includedURls = properties.getProperty("includedURls");
         excludedURls = properties.getProperty("excludedURls");
         authorization = properties.getProperty("authorization");
-        useSPSearchVisibility = properties.getProperty("useSPSearchVisibility");
+        useSPSearchVisibility = new Boolean(
+                properties.getProperty("useSPSearchVisibility")).booleanValue();
 
         searchUserID = properties.getProperty("SearchUserID");
         searchUserPwd = properties.getProperty("SearchUserPwd");
@@ -185,7 +186,7 @@ public class TestConfiguration {
         configMap.put("includedURls", includedURls);
         configMap.put("excludedURls", excludedURls);
         configMap.put("authorization", authorization);
-        configMap.put("useSPSearchVisibility", useSPSearchVisibility);
+        configMap.put("useSPSearchVisibility", Boolean.toString(useSPSearchVisibility));
 
         return configMap;
     }
@@ -278,7 +279,8 @@ public class TestConfiguration {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType, useSPSearchVisibility);
+                TestConfiguration.feedType,
+                new Boolean(useSPSearchVisibility).booleanValue());
 
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
@@ -470,5 +472,23 @@ public class TestConfiguration {
             }
         }
         return globalState;
+    }
+
+    /**
+     * Returns an instance of the client context with the given parameters
+     *
+     * @return Instance of client context
+     * @throws SharepointException
+     */
+    public static SharepointClientContext getSharePointClientContext()
+            throws SharepointException {
+        return new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType,
+                TestConfiguration.useSPSearchVisibility);
     }
 }

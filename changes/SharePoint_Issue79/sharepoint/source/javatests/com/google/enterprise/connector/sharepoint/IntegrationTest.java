@@ -14,10 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import javax.security.auth.login.LoginException;
-
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.instantiator.MockInstantiator;
 import com.google.enterprise.connector.manager.Context;
 import com.google.enterprise.connector.persist.ConnectorStateStore;
@@ -35,6 +31,10 @@ import com.google.enterprise.connector.traversal.BatchSize;
 import com.google.enterprise.connector.traversal.QueryTraverser;
 import com.google.enterprise.connector.traversal.Traverser;
 
+import javax.security.auth.login.LoginException;
+
+import junit.framework.TestCase;
+
 public class IntegrationTest extends TestCase {
 
     private SharepointConnector connector;
@@ -51,7 +51,8 @@ public class IntegrationTest extends TestCase {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-				FeedType.METADATA_URL_FEED.toString());
+                FeedType.METADATA_URL_FEED.toString(),
+                Boolean.toString(TestConfiguration.useSPSearchVisibility));
         this.connector.setIncluded_metadata(TestConfiguration.whiteList);
         this.connector.setExcluded_metadata(TestConfiguration.blackList);
         this.connector.setFQDNConversion(true);

@@ -257,6 +257,7 @@ public class SharepointConnectorType implements ConnectorType {
                     buf.append(rb.getString(SPConstants.AUTHZ_BY_CONNECTOR));
                 } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
                     // Handles the flag for Using SharePoint indexing options
+                    buf.append(SPConstants.BREAK_LINE);
                     buf.append(SPConstants.OPEN_ELEMENT);
                     buf.append(SPConstants.INPUT);
                     appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
@@ -600,7 +601,7 @@ public class SharepointConnectorType implements ConnectorType {
             sharepointClientContext = new SharepointClientContext(
                     sharepointUrl, domain, kdcServer, username, password, "",
                     includeURL, excludeURL, mySiteUrl, "", feedType,
-                    useSPSearchVisibility);
+                    new Boolean(useSPSearchVisibility).booleanValue());
         } catch (final Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to create SharePointClientContext with the received configuration values. ");
         }
@@ -1389,22 +1390,22 @@ public class SharepointConnectorType implements ConnectorType {
         }
     }
 
-	/**
-	 * Returns the flag if SharePoint search visibility options are to be
-	 * fetched and used
-	 * 
-	 * @return the useSPSearchVisibility The search visibility flag
-	 */
+    /**
+     * Returns the flag if SharePoint search visibility options are to be
+     * fetched and used
+     *
+     * @return the useSPSearchVisibility The search visibility flag
+     */
     public String getUseSPSearchVisibility() {
         return useSPSearchVisibility;
     }
 
-	/**
-	 * Sets the flag if SharePoint search visibility options are to be fetched
-	 * and used
-	 * 
-	 * @param useSPSearchVisibility The useSPSearchVisibility flag to set
-	 */
+    /**
+     * Sets the flag if SharePoint search visibility options are to be fetched
+     * and used
+     *
+     * @param useSPSearchVisibility The useSPSearchVisibility flag to set
+     */
     public void setUseSPSearchVisibility(String useSPSearchVisibility) {
         this.useSPSearchVisibility = useSPSearchVisibility;
     }

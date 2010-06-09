@@ -40,7 +40,7 @@
     </property>
 
     <property name="FQDNConversion"><value>false</value></property>
-    <property name="pushAcls"><value>true</value></property>
+    <property name="pushAcls"><value>false</value></property>
     <property name="stripDomainFromAces"><value>true</value></property>
   </bean>
 

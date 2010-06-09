@@ -1196,10 +1196,8 @@ public class ListState implements StatefulObject {
             }
         }
 
-        // Dump the "Nocrawl" flag only if its true
-        if (isNoCrawl()) {
-            atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
-        }
+        // Dump the "Nocrawl" flag
+        atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
 
         handler.startElement("", "", SPConstants.LIST_STATE, atts);
 

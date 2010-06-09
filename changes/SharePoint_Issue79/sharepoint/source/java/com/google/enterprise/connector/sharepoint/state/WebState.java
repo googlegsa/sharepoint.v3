@@ -616,18 +616,19 @@ public class WebState implements StatefulObject {
             atts.addAttribute("", "", SPConstants.STATE_INSERT_TIME, SPConstants.STATE_ATTR_CDATA, strInsertionTime);
         }
 
-        if (isNoCrawl()) {
             atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
-        }
 
         handler.startElement("", "", SPConstants.WEB_STATE, atts);
 
         // dump the actual ListStates:
-        // Dump the "NoCrawl" flag for liststates only if the current site is
-        // set to true for crawling. If the current site itself is supposed to
-        // be not crawled, the lists will not be discovered and hence no need to
-        // dump the "NoCrawl" flag for liststates
-        if (null != allListStateSet || !isNoCrawl()) {
+        // Dump the "NoCrawl" flag for liststates irrespective of whether the
+        // site is set to index no content. The main reason is to cater
+        // use-cases where the content is indexed first, then admin sets the
+        // configuration to not index and then decides to re-index. We dont want
+        // the content to be re-crawled from start but from the point where it
+        // had stopped. Having the liststates persisted to state file will
+        // ensure the same
+        if (null != allListStateSet || !allListStateSet.isEmpty()) {
             for (ListState list : allListStateSet) {
                 list.dumpStateToXML(handler, feedType);
             }
