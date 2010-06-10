@@ -14,6 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -21,10 +25,6 @@ import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
-
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Implementation of the Connector interface from the spi for SharePoint This is
@@ -57,33 +57,6 @@ public class SharepointConnector implements Connector {
 
     public SharepointConnector() {
 
-    }
-
-    /**
-     * All the arguments required to create an instance of this class are
-     * defined in the file connector_Instance.xml The argument supplied here
-     * must match those specified under connector_Instance.xml and vice-versa
-     */
-    public SharepointConnector(final String sharepointUrl, final String domain,
-            final String username, final String password,
-            final String googleConnectorWorkDir, final String includedURls,
-            final String excludedURls, final String mySiteBaseURL,
-            final String aliasMapString, final String feedType,
-            final String useSPSearchVisibility)
-            throws SharepointException {
-
-        LOGGER.config("sharepointUrl = [" + sharepointUrl + "] , domain = ["
-                + domain + "] , username = [" + username + "] , "
-                + "googleConnectorWorkDir = [" + googleConnectorWorkDir
-                + "] , includedURls = [" + includedURls + "] , "
-                + "excludedURls = [" + excludedURls + "] , mySiteBaseURL = ["
-                + mySiteBaseURL + "] , aliasHostPort = [" + aliasMapString
-                + "], useSPSearchVisibility = [" + useSPSearchVisibility + "]");
-        sharepointClientContext = new SharepointClientContext(sharepointUrl,
-                domain, kdcserver, username, password, googleConnectorWorkDir,
-                includedURls, excludedURls, mySiteBaseURL, aliasMapString,
-                FeedType.getFeedType(feedType), new Boolean(
-                        useSPSearchVisibility).booleanValue());
     }
 
     /**

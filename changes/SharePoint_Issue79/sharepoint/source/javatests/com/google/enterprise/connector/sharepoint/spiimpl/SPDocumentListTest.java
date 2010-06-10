@@ -14,6 +14,11 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import java.util.Iterator;
+import java.util.List;
+
+import junit.framework.TestCase;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -25,11 +30,6 @@ import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 
-import java.util.Iterator;
-import java.util.List;
-
-import junit.framework.TestCase;
-
 public class SPDocumentListTest extends TestCase {
     SPDocumentList docs;
     SharepointClientContext sharepointClientContext;
@@ -38,7 +38,7 @@ public class SPDocumentListTest extends TestCase {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SPDocumentList ...");
 
-        sharepointClientContext = TestConfiguration.getSharePointClientContext();
+        sharepointClientContext = TestConfiguration.initContext();
 
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,

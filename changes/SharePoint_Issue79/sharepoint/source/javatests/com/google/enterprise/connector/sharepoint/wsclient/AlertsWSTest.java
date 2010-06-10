@@ -14,18 +14,18 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+
+import junit.framework.TestCase;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-
-import junit.framework.TestCase;
 
 public class AlertsWSTest extends TestCase {
     SharepointClientContext sharepointClientContext;
@@ -34,7 +34,7 @@ public class AlertsWSTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = TestConfiguration.getSharePointClientContext();
+        this.sharepointClientContext = TestConfiguration.initContext();
 
         assertNotNull(this.sharepointClientContext);
         System.out.println("Initializing AlertsWS ...");

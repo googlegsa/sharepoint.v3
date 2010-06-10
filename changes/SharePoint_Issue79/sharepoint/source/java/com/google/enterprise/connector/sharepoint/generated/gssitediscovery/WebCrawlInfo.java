@@ -8,7 +8,7 @@
 package com.google.enterprise.connector.sharepoint.generated.gssitediscovery;
 
 public class WebCrawlInfo  implements java.io.Serializable {
-    private boolean crawlAspaxPages;
+    private boolean crawlAspxPages;
 
     private boolean noCrawl;
 
@@ -20,11 +20,11 @@ public class WebCrawlInfo  implements java.io.Serializable {
     }
 
     public WebCrawlInfo(
-           boolean crawlAspaxPages,
+           boolean crawlAspxPages,
            boolean noCrawl,
            boolean status,
            java.lang.String error) {
-           this.crawlAspaxPages = crawlAspaxPages;
+           this.crawlAspxPages = crawlAspxPages;
            this.noCrawl = noCrawl;
            this.status = status;
            this.error = error;
@@ -32,22 +32,22 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
 
     /**
-     * Gets the crawlAspaxPages value for this WebCrawlInfo.
+     * Gets the crawlAspxPages value for this WebCrawlInfo.
      *
-     * @return crawlAspaxPages
+     * @return crawlAspxPages
      */
-    public boolean isCrawlAspaxPages() {
-        return crawlAspaxPages;
+    public boolean isCrawlAspxPages() {
+        return crawlAspxPages;
     }
 
 
     /**
-     * Sets the crawlAspaxPages value for this WebCrawlInfo.
+     * Sets the crawlAspxPages value for this WebCrawlInfo.
      *
-     * @param crawlAspaxPages
+     * @param crawlAspxPages
      */
-    public void setCrawlAspaxPages(boolean crawlAspaxPages) {
-        this.crawlAspaxPages = crawlAspaxPages;
+    public void setCrawlAspxPages(boolean crawlAspxPages) {
+        this.crawlAspxPages = crawlAspxPages;
     }
 
 
@@ -122,7 +122,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true &&
-            this.crawlAspaxPages == other.isCrawlAspaxPages() &&
+            this.crawlAspxPages == other.isCrawlAspxPages() &&
             this.noCrawl == other.isNoCrawl() &&
             this.status == other.isStatus() &&
             ((this.error==null && other.getError()==null) ||
@@ -139,7 +139,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
         }
         __hashCodeCalc = true;
         int _hashCode = 1;
-        _hashCode += (isCrawlAspaxPages() ? Boolean.TRUE : Boolean.FALSE).hashCode();
+        _hashCode += (isCrawlAspxPages() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         _hashCode += (isNoCrawl() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         _hashCode += (isStatus() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         if (getError() != null) {
@@ -156,8 +156,8 @@ public class WebCrawlInfo  implements java.io.Serializable {
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "WebCrawlInfo"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("crawlAspaxPages");
-        elemField.setXmlName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "CrawlAspaxPages"));
+        elemField.setFieldName("crawlAspxPages");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "CrawlAspxPages"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);

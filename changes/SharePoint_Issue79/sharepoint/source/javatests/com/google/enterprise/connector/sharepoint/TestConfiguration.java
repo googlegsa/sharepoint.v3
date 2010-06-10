@@ -14,18 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-
-import org.joda.time.DateTime;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +24,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+
+import org.joda.time.DateTime;
+
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 public class TestConfiguration {
     public static String googleConnectorWorkDir;
@@ -270,6 +271,12 @@ public class TestConfiguration {
         return ws;
     }
 
+    /**
+     * Returns an instance of the client context with the given parameters
+     *
+     * @return Instance of client context
+     * @throws SharepointException
+     */
     public static SharepointClientContext initContext()
             throws SharepointException {
         final SharepointClientContext sharepointClientContext = new SharepointClientContext(
@@ -475,20 +482,26 @@ public class TestConfiguration {
     }
 
     /**
-     * Returns an instance of the client context with the given parameters
+     * Returns an instance of {@link SharepointConnector} for testing purpose
      *
-     * @return Instance of client context
-     * @throws SharepointException
+     * @return Instance of {@link SharepointConnector}
      */
-    public static SharepointClientContext getSharePointClientContext()
-            throws SharepointException {
-        return new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType,
-                TestConfiguration.useSPSearchVisibility);
+    public static SharepointConnector getConnectorInstance() {
+        SharepointConnector connector = new SharepointConnector();
+        connector.setSharepointUrl(TestConfiguration.sharepointUrl);
+        connector.setDomain(TestConfiguration.domain);
+        connector.setUsername(TestConfiguration.username);
+        connector.setPassword(TestConfiguration.Password);
+        connector.setGoogleConnectorWorkDir(TestConfiguration.googleConnectorWorkDir);
+        connector.setIncludedURls(TestConfiguration.includedURls);
+        connector.setExcludedURls(TestConfiguration.excludedURls);
+        connector.setMySiteBaseURL(TestConfiguration.mySiteBaseURL);
+        connector.setAliasMap(TestConfiguration.AliasMap);
+        connector.setAuthorization(FeedType.METADATA_URL_FEED.toString());
+        connector.setUseSPSearchVisibility(TestConfiguration.useSPSearchVisibility);
+        connector.setIncluded_metadata(TestConfiguration.whiteList);
+        connector.setExcluded_metadata(TestConfiguration.blackList);
+        connector.setFQDNConversion(true);
+        return connector;
     }
 }

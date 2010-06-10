@@ -14,14 +14,14 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import java.util.StringTokenizer;
+
+import junit.framework.TestCase;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData;
-
-import java.util.StringTokenizer;
-
-import junit.framework.TestCase;
 
 public class GSBulkAuthorizationWSTest extends TestCase {
 
@@ -31,7 +31,7 @@ public class GSBulkAuthorizationWSTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = TestConfiguration.getSharePointClientContext();
+        this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);

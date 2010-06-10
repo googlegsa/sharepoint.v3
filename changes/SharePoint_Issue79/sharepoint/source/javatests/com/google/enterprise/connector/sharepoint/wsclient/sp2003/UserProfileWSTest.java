@@ -14,14 +14,14 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.sp2003;
 
-import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.spi.RepositoryException;
-
 import java.net.MalformedURLException;
 import java.util.Set;
 
 import junit.framework.TestCase;
+
+import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.spi.RepositoryException;
 
 /**
  * Test the functionaltily of UserProfile web service (SP2007).
@@ -35,7 +35,7 @@ public class UserProfileWSTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = TestConfiguration.getSharePointClientContext();
+        this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);

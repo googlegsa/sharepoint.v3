@@ -14,6 +14,22 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.joda.time.DateTime;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -24,22 +40,6 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-
-import org.joda.time.DateTime;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Represents a SharePoint Web Site as a stateful object
@@ -739,7 +739,7 @@ public class WebState implements StatefulObject {
 
     public boolean isCrawlAspxPages() {
         if (webCrawlInfo != null) {
-            return webCrawlInfo.isCrawlAspaxPages();
+            return webCrawlInfo.isCrawlAspxPages();
         }
         return true;
     }

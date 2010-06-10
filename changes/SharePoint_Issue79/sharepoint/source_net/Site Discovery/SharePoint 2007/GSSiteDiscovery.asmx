@@ -96,7 +96,7 @@ public class SiteDiscovery : System.Web.Services.WebService
         private bool status;
         private string error;
 
-        public bool CrawlAspaxPages
+        public bool CrawlAspxPages
         {
             get { return crawlAspxPages; }
             set { crawlAspxPages = value; }
@@ -142,7 +142,7 @@ public class SiteDiscovery : System.Web.Services.WebService
         try
         {
             WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
-            webCrawlInfo.CrawlAspaxPages = web.AllowAutomaticASPXPageIndexing;
+            webCrawlInfo.CrawlAspxPages = web.AllowAutomaticASPXPageIndexing;
             webCrawlInfo.NoCrawl = web.NoCrawl;
             webCrawlInfo.Status = true;
             return webCrawlInfo;
@@ -193,7 +193,7 @@ public class SiteDiscovery : System.Web.Services.WebService
                     }
                     else
                     {
-                        webCrawlInfo.CrawlAspaxPages = web.AllowAutomaticASPXPageIndexing;
+                        webCrawlInfo.CrawlAspxPages = web.AllowAutomaticASPXPageIndexing;
                         webCrawlInfo.NoCrawl = web.NoCrawl;
                         webCrawlInfo.Status = true;
                     }
