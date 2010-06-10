@@ -34,6 +34,7 @@
       </s:element>
       <s:complexType name="WebCrawlInfo">
         <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="WebKey" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="CrawlAspxPages" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="NoCrawl" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="Status" type="s:boolean" />

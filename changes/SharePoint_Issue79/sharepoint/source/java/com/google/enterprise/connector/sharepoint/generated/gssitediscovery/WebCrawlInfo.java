@@ -8,6 +8,8 @@
 package com.google.enterprise.connector.sharepoint.generated.gssitediscovery;
 
 public class WebCrawlInfo  implements java.io.Serializable {
+    private java.lang.String webKey;
+
     private boolean crawlAspxPages;
 
     private boolean noCrawl;
@@ -20,14 +22,36 @@ public class WebCrawlInfo  implements java.io.Serializable {
     }
 
     public WebCrawlInfo(
+           java.lang.String webKey,
            boolean crawlAspxPages,
            boolean noCrawl,
            boolean status,
            java.lang.String error) {
+           this.webKey = webKey;
            this.crawlAspxPages = crawlAspxPages;
            this.noCrawl = noCrawl;
            this.status = status;
            this.error = error;
+    }
+
+
+    /**
+     * Gets the webKey value for this WebCrawlInfo.
+     *
+     * @return webKey
+     */
+    public java.lang.String getWebKey() {
+        return webKey;
+    }
+
+
+    /**
+     * Sets the webKey value for this WebCrawlInfo.
+     *
+     * @param webKey
+     */
+    public void setWebKey(java.lang.String webKey) {
+        this.webKey = webKey;
     }
 
 
@@ -122,6 +146,9 @@ public class WebCrawlInfo  implements java.io.Serializable {
         __equalsCalc = obj;
         boolean _equals;
         _equals = true &&
+            ((this.webKey==null && other.getWebKey()==null) ||
+             (this.webKey!=null &&
+              this.webKey.equals(other.getWebKey()))) &&
             this.crawlAspxPages == other.isCrawlAspxPages() &&
             this.noCrawl == other.isNoCrawl() &&
             this.status == other.isStatus() &&
@@ -139,6 +166,9 @@ public class WebCrawlInfo  implements java.io.Serializable {
         }
         __hashCodeCalc = true;
         int _hashCode = 1;
+        if (getWebKey() != null) {
+            _hashCode += getWebKey().hashCode();
+        }
         _hashCode += (isCrawlAspxPages() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         _hashCode += (isNoCrawl() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         _hashCode += (isStatus() ? Boolean.TRUE : Boolean.FALSE).hashCode();
@@ -156,6 +186,13 @@ public class WebCrawlInfo  implements java.io.Serializable {
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "WebCrawlInfo"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("webKey");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "WebKey"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setMinOccurs(0);
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("crawlAspxPages");
         elemField.setXmlName(new javax.xml.namespace.QName("gssitediscovery.generated.sharepoint.connector.enterprise.google.com", "CrawlAspxPages"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));

@@ -89,6 +89,9 @@ public class SiteDiscovery : System.Web.Services.WebService
     [Serializable]
     public class WebCrawlInfo
     {
+        // An identification of the web whose information is contained in the current WebCrawlInfo
+        private string webKey;
+        
         private bool crawlAspxPages;
         private bool noCrawl;
 
@@ -96,6 +99,12 @@ public class SiteDiscovery : System.Web.Services.WebService
         private bool status;
         private string error;
 
+        public string WebKey
+        {
+            get { return webKey; }
+            set { webKey = value; }
+        }
+        
         public bool CrawlAspxPages
         {
             get { return crawlAspxPages; }
@@ -142,6 +151,7 @@ public class SiteDiscovery : System.Web.Services.WebService
         try
         {
             WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
+            webCrawlInfo.WebKey = web.Url;
             webCrawlInfo.CrawlAspxPages = web.AllowAutomaticASPXPageIndexing;
             webCrawlInfo.NoCrawl = web.NoCrawl;
             webCrawlInfo.Status = true;
@@ -173,6 +183,7 @@ public class SiteDiscovery : System.Web.Services.WebService
         foreach (string webUrl in webUrls)
         {
             WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
+            webCrawlInfo.WebKey = webUrl;
             SPSite site = null;
             SPWeb web = null;
             try
