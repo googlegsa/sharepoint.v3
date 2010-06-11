@@ -14,10 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+
+import junit.framework.TestCase;
 
 public class SharePointClientContextTest extends TestCase {
 
@@ -31,7 +31,8 @@ public class SharePointClientContextTest extends TestCase {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+                TestConfiguration.feedType,
+                TestConfiguration.useSPSearchVisibility);
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
@@ -61,7 +62,7 @@ public class SharePointClientContextTest extends TestCase {
     public void testCheckSharePointType() {
         System.out.println("Testing checkSharePointVersion()...");
         try {
-			final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.Site1_URL);
+            final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.Site1_URL);
             assertEquals(spType, SPConstants.CONNECTIVITY_SUCCESS);
         } catch (Exception e) {
             System.out.println(e);

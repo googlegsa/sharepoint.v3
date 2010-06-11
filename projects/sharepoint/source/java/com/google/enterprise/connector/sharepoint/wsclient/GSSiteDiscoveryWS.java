@@ -18,8 +18,14 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,10 +36,14 @@ import org.apache.axis.AxisFault;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscovery;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoveryLocator;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoverySoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 
 /**
  * Java Client for calling GSSiteDiscovery.asmx. Provides a layer to talk to the
@@ -43,7 +53,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
  * @author nitendra_thakur
  */
 public class GSSiteDiscoveryWS {
-    private final Logger LOGGER = Logger.getLogger(GSSiteDiscoveryWS.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GSSiteDiscoveryWS.class.getName());
     private SharepointClientContext sharepointClientContext;
     private String endpoint;
     private SiteDiscoverySoap_BindingStub stub = null;
@@ -177,5 +187,203 @@ public class GSSiteDiscoveryWS {
             }
         }
         return hostName;
+    }
+
+    /**
+     * Retrieves the information about crawl behavior of the web whose URL was
+     * used to construct the endpoint
+     *
+     * @return WebCrawlInfo of the web whose URL was used to construct the
+     *         endpoint
+     */
+    public WebCrawlInfo getCurrentWebCrawlInfo() {
+        try {
+            LOGGER.config("Fetching SharePoint indexing options for site : "
+                    + sharepointClientContext.getSiteURL());
+            return stub.getWebCrawlInfo();
+        } catch (final AxisFault af) {
+            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+                    && (sharepointClientContext.getDomain() != null)) {
+                final String username = Util.switchUserNameFormat(stub.getUsername());
+                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ].");
+                LOGGER.log(Level.INFO, "Trying with " + username);
+                stub.setUsername(username);
+                try {
+                    return stub.getWebCrawlInfo();
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetWebCrawlInfo() failed with the following exception: ", e);
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetWebCrawlInfo() failed with the following exception: ", af);
+            }
+        } catch (final Throwable e) {
+            LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetWebCrawlInfo() failed with the following exception: ", e);
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the information about crawl behavior of a list of webs
+     * corresponding to the passed in web urls
+     *
+     * @param weburls All web URLs whose crawl info is to be found
+     */
+    public WebCrawlInfo[] getWebCrawlInfoInBatch(String[] weburls) {
+        WebCrawlInfo[] wsResult = null;
+        if (null == weburls || weburls.length == 0) {
+            return wsResult;
+        }
+        LOGGER.config("Fetching SharePoint indexing options for "
+                + weburls.length + " web urls");
+        try {
+            wsResult = stub.getWebCrawlInfoInBatch(weburls);
+        } catch (final AxisFault af) {
+            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+                    && (sharepointClientContext.getDomain() != null)) {
+                final String username = Util.switchUserNameFormat(stub.getUsername());
+                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ].");
+                LOGGER.log(Level.INFO, "Trying with " + username);
+                stub.setUsername(username);
+                try {
+                    wsResult = stub.getWebCrawlInfoInBatch(weburls);
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.getWebCrawlInfoInBatch() failed with the following exception: ", e);
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.getWebCrawlInfoInBatch() failed with the following exception: ", af);
+            }
+        } catch (final Throwable e) {
+            LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.getWebCrawlInfoInBatch() failed with the following exception: ", e);
+        }
+        return wsResult;
+    }
+
+    /**
+     * Retrieves and update the information about crawl behavior of a set of
+     * webs
+     *
+     * @param webs
+     */
+    public void updateWebCrawlInfoInBatch(Set<WebState> webs) {
+        if (null == webs || webs.size() == 0) {
+            return;
+        }
+        final Map<String, List<WebState>> webappToWeburlMap = arrangeWebUrlPerWebApp(webs);
+        LOGGER.log(Level.INFO, "a total of #"
+                + webappToWeburlMap.size()
+                + " WS call will be made to get the WebCrawlInfo of all the webs. Total webs are #"
+                + webs.size());
+
+        for (Entry<String, List<WebState>> entry : webappToWeburlMap.entrySet()) {
+            Map<String, WebState> webUrlMap = new HashMap<String, WebState>();
+            String[] weburls = new String[webs.size()];
+            int i = 0;
+            for (WebState web : entry.getValue()) {
+                weburls[i++] = web.getWebUrl();
+                webUrlMap.put(web.getWebUrl(), web);
+            }
+            WebCrawlInfo[] webCrawlInfos = getWebCrawlInfoInBatch(weburls);
+            if (null == webCrawlInfos) {
+                return;
+            }
+            for (WebCrawlInfo webCrawlInfo : webCrawlInfos) {
+                if (webCrawlInfo.isStatus()) {
+                    WebState webState = webUrlMap.get(webCrawlInfo.getWebKey());
+                    webState.setWebCrawlInfo(webCrawlInfo);
+                } else {
+                    LOGGER.log(Level.WARNING, "WS encountered problem while fetching the crawl info of one of the web. WS ERROR -> "
+                            + webCrawlInfo.getError());
+                }
+            }
+        }
+    }
+
+    /**
+     * Retrieves the information about crawl behavior of a the lists and set it
+     * into the passed in {@link ListState}
+     *
+     * @param listCollection ListStates to be be updated
+     */
+    public void updateListCrawlInfo(Collection<ListState> listCollection) {
+        if(null == listCollection) {
+            return;
+        }
+        Map<String, ListState> listCrawlInfoMap = new HashMap<String, ListState>();
+        String[] listGuids = new String[listCollection.size()];
+        int i= 0;
+        for(ListState listState : listCollection) {
+            listGuids[i++] = listState.getPrimaryKey();
+            listCrawlInfoMap.put(listState.getPrimaryKey(), listState);
+        }
+        ListCrawlInfo[] listCrawlInfo = null;
+        try {
+            listCrawlInfo = stub.getListCrawlInfo(listGuids);
+        } catch (final AxisFault af) {
+            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+                    && (sharepointClientContext.getDomain() != null)) {
+                final String username = Util.switchUserNameFormat(stub.getUsername());
+                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ].");
+                LOGGER.log(Level.INFO, "Trying with " + username);
+                stub.setUsername(username);
+                try {
+                    listCrawlInfo = stub.getListCrawlInfo(listGuids);
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetListCrawlInfo() failed with the following exception: ", e);
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetListCrawlInfo() failed with the following exception: ", af);
+            }
+        } catch (final Throwable e) {
+            LOGGER.log(Level.WARNING, "Call to GSSiteDiscovery.GetListCrawlInfo() failed with the following exception: ", e);
+        }
+
+        if(null == listCrawlInfo) {
+            return;
+        }
+
+        for(ListCrawlInfo info : listCrawlInfo) {
+            ListState listState = listCrawlInfoMap.get(info.getListGuid());
+            if(null == listState) {
+                LOGGER.log(Level.SEVERE, "One of the List GUID [ " + info.getListGuid() + " ] can not be found in the parentWebState. ");
+                continue;
+            }
+            if(!info.isStatus()) {
+                LOGGER.log(Level.WARNING, "GSSiteDiscovery has encountered following problem while getting the crawl info for list URL [ "
+                        + listState.getListURL()
+                        + " ]. WS error -> "
+                        + info.getError());
+                continue;
+            }
+            listState.setNoCrawl(info.isNoCrawl());
+        }
+    }
+
+    /**
+     * Arranges URLs of all the webs according to their web application.
+     *
+     * @param webs
+     * @return A map where the web application is mapped to the hosted webstates
+     */
+    private Map<String, List<WebState>> arrangeWebUrlPerWebApp(
+            final Set<WebState> webs) {
+        final Map<String, List<WebState>> webappToWeburlMap = new HashMap<String, List<WebState>>();
+        for (WebState web : webs) {
+            // We need to arrange all the URLs according to their web
+            // application because the WS call for batch processing of URLs can
+            // be made per web application only. If a url do not belongs to the
+            // web app that was used while setting the endpoint, ws call will
+            // fail
+            final String webApp = Util.getWebApp(web.getWebUrl());
+            List<WebState> lstWebs = webappToWeburlMap.get(webApp);
+            if (null == lstWebs) {
+                lstWebs = new ArrayList<WebState>();
+                webappToWeburlMap.put(webApp, lstWebs);
+            }
+            lstWebs.add(web);
+        }
+        return webappToWeburlMap;
     }
 }

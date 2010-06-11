@@ -31,6 +31,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
@@ -50,6 +51,8 @@ public class TestConfiguration {
     public static String mySiteBaseURL;
     public static String includedURls;
     public static String excludedURls;
+    public static String authorization;
+    public static boolean useSPSearchVisibility;
 
     public static String searchUserID;
     public static String searchUserPwd;
@@ -107,10 +110,13 @@ public class TestConfiguration {
         domain = properties.getProperty("domain");
         kdcserver = properties.getProperty("kdcserver");
         username = properties.getProperty("username");
-        Password = properties.getProperty("Password");
+        Password = properties.getProperty("password");
         mySiteBaseURL = properties.getProperty("mySiteBaseURL");
         includedURls = properties.getProperty("includedURls");
         excludedURls = properties.getProperty("excludedURls");
+        authorization = properties.getProperty("authorization");
+        useSPSearchVisibility = new Boolean(
+                properties.getProperty("useSPSearchVisibility")).booleanValue();
 
         searchUserID = properties.getProperty("SearchUserID");
         searchUserPwd = properties.getProperty("SearchUserPwd");
@@ -172,14 +178,16 @@ public class TestConfiguration {
         final Map<String, String> configMap = new HashMap<String, String>();
 
         configMap.put("sharepointUrl", sharepointUrl);
-        configMap.put("AliasMap", AliasMap);
+        configMap.put("aliasMap", AliasMap);
         configMap.put("domain", domain);
         configMap.put("kdcserver", kdcserver);
         configMap.put("username", username);
-        configMap.put("Password", Password);
+        configMap.put("password", Password);
         configMap.put("mySiteBaseURL", mySiteBaseURL);
         configMap.put("includedURls", includedURls);
         configMap.put("excludedURls", excludedURls);
+        configMap.put("authorization", authorization);
+        configMap.put("useSPSearchVisibility", Boolean.toString(useSPSearchVisibility));
 
         return configMap;
     }
@@ -263,6 +271,12 @@ public class TestConfiguration {
         return ws;
     }
 
+    /**
+     * Returns an instance of the client context with the given parameters
+     *
+     * @return Instance of client context
+     * @throws SharepointException
+     */
     public static SharepointClientContext initContext()
             throws SharepointException {
         final SharepointClientContext sharepointClientContext = new SharepointClientContext(
@@ -272,7 +286,8 @@ public class TestConfiguration {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+                TestConfiguration.feedType,
+                new Boolean(useSPSearchVisibility).booleanValue());
 
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
@@ -464,5 +479,29 @@ public class TestConfiguration {
             }
         }
         return globalState;
+    }
+
+    /**
+     * Returns an instance of {@link SharepointConnector} for testing purpose
+     *
+     * @return Instance of {@link SharepointConnector}
+     */
+    public static SharepointConnector getConnectorInstance() {
+        SharepointConnector connector = new SharepointConnector();
+        connector.setSharepointUrl(TestConfiguration.sharepointUrl);
+        connector.setDomain(TestConfiguration.domain);
+        connector.setUsername(TestConfiguration.username);
+        connector.setPassword(TestConfiguration.Password);
+        connector.setGoogleConnectorWorkDir(TestConfiguration.googleConnectorWorkDir);
+        connector.setIncludedURls(TestConfiguration.includedURls);
+        connector.setExcludedURls(TestConfiguration.excludedURls);
+        connector.setMySiteBaseURL(TestConfiguration.mySiteBaseURL);
+        connector.setAliasMap(TestConfiguration.AliasMap);
+        connector.setAuthorization(FeedType.METADATA_URL_FEED.toString());
+        connector.setUseSPSearchVisibility(TestConfiguration.useSPSearchVisibility);
+        connector.setIncluded_metadata(TestConfiguration.whiteList);
+        connector.setExcluded_metadata(TestConfiguration.blackList);
+        connector.setFQDNConversion(true);
+        return connector;
     }
 }

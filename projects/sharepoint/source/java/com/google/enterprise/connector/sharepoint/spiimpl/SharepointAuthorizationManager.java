@@ -104,9 +104,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         String userName = identity.getUsername();
         String domain = identity.getDomain();
 
-		LOGGER.log(Level.INFO, "Received #" + docIDs.size()
-				+ " documents for authorization. Username [ " + userName
-				+ " ], domain [ " + domain + " ]. ");
+        LOGGER.log(Level.INFO, "Received #" + docIDs.size()
+                + " documents for authorization. Username [ " + userName
+                + " ], domain [ " + domain + " ]. ");
 
         // If domain is not received as part of the authorization request, use
         // the one from SharePointClientContext
@@ -129,7 +129,10 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
             throw new SharepointException(
                     "Problem while creating authData and sorting them per Web App. docPerWebApp is null. ");
         }
-
+        LOGGER.log(Level.INFO, "A total of #"
+                + docPerWebApp.size()
+                + " WS call will be made to the authZ web service to authorize all the incoming docIds. Total docIds are #"
+                + docIDs.size());
         for (Entry<String, Set<AuthData>> webAppToAuthData : docPerWebApp) {
             final String key_webapp = webAppToAuthData.getKey();
             final Set<AuthData> authDocs = webAppToAuthData.getValue();
@@ -177,35 +180,29 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
      */
     private Map<String, Set<AuthData>> createAuthDataFromDocIDsPerWebApp(
             final Collection<String> docIDs) {
-        final Map<String, Set<AuthData>> hmSortedDocuments = new HashMap<String, Set<AuthData>>();// documents
-                                                                                                    // are
-                                                                                                    // arranged
-                                                                                                    // per
-                                                                                                    // web
-                                                                                                    // application
+        // documents are arranged per web application
+        final Map<String, Set<AuthData>> hmSortedDocuments = new HashMap<String, Set<AuthData>>();
         String logMessage = "";
         if ((docIDs == null) || (docIDs.size() == 0)) {
             return null;
         }
 
         for (Object element : docIDs) {
-            final String complex_docID = (String) element;// tokenize the docID
+            final String complex_docID = (String) element;
             LOGGER.log(Level.FINEST, "Complex Document ID: " + complex_docID);
             if ((complex_docID == null) || (complex_docID.trim().length() == 0)) {
                 LOGGER.log(Level.SEVERE, "One of the docID is found to be null...");
                 continue;
             }
 
-            String original = null;
-            try {
-                original = URLDecoder.decode(complex_docID, "UTF-8");// Decode
-                                                                        // encoded
-                                                                        // characters
-                                                                        // in
-                                                                        // docID
-            } catch (final UnsupportedEncodingException e1) {
-                logMessage = "Unable to Decode.";
-                LOGGER.log(Level.WARNING, logMessage, e1);
+            String original = complex_docID;
+            if (!complex_docID.contains("|")) {
+                try {
+                    original = URLDecoder.decode(complex_docID, "UTF-8");
+                } catch (final UnsupportedEncodingException e1) {
+                    LOGGER.log(Level.WARNING, "Unable to Decode [ "
+                            + complex_docID + " ]", e1);
+                }
             }
 
             final StringTokenizer strTok = new StringTokenizer(original,
@@ -262,7 +259,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         for (AuthData element : authDocs) {
             if ((element.getError() != null)
                     && (element.getError().length() != 0)) {
-				LOGGER.log(Level.WARNING, "Web Service has thrown the following error while authorizing. \n Error: "
+                LOGGER.log(Level.WARNING, "Web Service has thrown the following error while authorizing. \n Error: "
                         + element.getError());
             }
             final boolean status = element.isIsAllowed();

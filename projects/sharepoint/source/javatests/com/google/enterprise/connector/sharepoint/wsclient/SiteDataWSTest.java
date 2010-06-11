@@ -34,13 +34,7 @@ public class SiteDataWSTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        this.sharepointClientContext = TestConfiguration.initContext();
 
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
@@ -52,7 +46,7 @@ public class SiteDataWSTest extends TestCase {
 
     public final void testSiteDataWS() throws Throwable {
         System.out.println("Testing SiteDataWS(SharepointClientContext, siteName)...");
-		sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
+        sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
         this.siteDataWS = new SiteDataWS(this.sharepointClientContext);
         assertNotNull(this.siteDataWS);
         System.out.println("[ SiteDataWS(SharepointClientContext, siteName) ] Test Passed");
@@ -64,7 +58,7 @@ public class SiteDataWSTest extends TestCase {
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
  FeedType.CONTENT_FEED);
-		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
+        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
         final List items = this.siteDataWS.getNamedLists(ws);
         assertNotNull(items);
         System.out.println("[ getNamedLists() ] Test Passed.");

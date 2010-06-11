@@ -38,18 +38,12 @@ public class SPDocumentListTest extends TestCase {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SPDocumentList ...");
 
-        sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        sharepointClientContext = TestConfiguration.initContext();
 
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
  FeedType.CONTENT_FEED);
-		WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
+        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
 
         final SiteDataWS siteDataWS = new SiteDataWS(
                 this.sharepointClientContext);
@@ -62,13 +56,13 @@ public class SPDocumentListTest extends TestCase {
             if (listItems.size() > 0) {
                 for (Iterator itr = listItems.iterator(); itr.hasNext();) {
                     SPDocument spdoc = (SPDocument) itr.next();
-					spdoc.setParentWeb(ws);
-					spdoc.setParentList(baseList);
+                    spdoc.setParentWeb(ws);
+                    spdoc.setParentList(baseList);
                 }
                 System.out.println("Using " + baseList.getListURL()
                         + " as test list...");
                 this.docs = new SPDocumentList(listItems, state);
-				ws.AddOrUpdateListStateInWebState(baseList, baseList.getLastMod());
+                ws.AddOrUpdateListStateInWebState(baseList, baseList.getLastMod());
                 break;
             }
         }

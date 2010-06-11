@@ -13,6 +13,7 @@
        <property name="mySiteBaseURL" value="${mySiteBaseURL}"/>
        <property name="aliasMap" value="${aliasMap}"/>
      <property name="authorization" value="${authorization}"/>
+     <property name="useSPSearchVisibility" value="${useSPSearchVisibility}"/>
 
      <property name="included_metadata">
     <list>
@@ -39,7 +40,7 @@
     </property>
 
     <property name="FQDNConversion"><value>false</value></property>
-    <property name="pushAcls"><value>true</value></property>
+    <property name="pushAcls"><value>false</value></property>
     <property name="stripDomainFromAces"><value>true</value></property>
   </bean>
 
@@ -58,6 +59,7 @@
                 <prop key="mySiteBaseURL"></prop>
                 <prop key="aliasMap"></prop>
                 <prop key="authorization">Metadata-and-URL</prop>
+                <prop key="useSPSearchVisibility">true</prop>
             </props>
         </property>
     </bean>

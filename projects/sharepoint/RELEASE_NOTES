@@ -1,7 +1,7 @@
 Release Notes:
 ===============
 
-Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007
+Google Search Appliance Connector for Microsoft SharePoint 2003, Microsoft SharePoint 2007 and Microsoft SharePoint 2010
 
 This document contains the release notes for Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007.
 The following sections describe the release in detail and provide information that supplements the main documentation.
@@ -9,7 +9,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
-Release 2.4.6 , 27 April, 2010
+Release 2.6.0 , 11 June, 2010
 =======================================
 
 Introduction
@@ -20,16 +20,43 @@ Users of previous releases should check the "Version Compatibility" section belo
 Summary of Changes / New Features
 ---------------------------------
 - Added support for ACL. Connector now sends ACL as document metadata along with each document that it feeds to the GSA. It also keep track of any security changes happening on SharePoint which might affect the ACL of entities, the entities are re-crawled and re-fed to GSA in such cases.
-  Google Services for SharePoint (GSS) are now shipped with one more service specific to ACL. You need to deploy this web service on SharePoint to get the ACl support.
+Google Services for SharePoint (GSS) are now shipped with one more service specific to ACL. You need to deploy this web service on SharePoint to get the ACl support.
+The support for ACL is turned off by default. Following are the steps to turn this feature on:
+1. Go to the connector instance directory of the connector for which you want to turn on ACL.
+The connector instance directory can be found under $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/CONNECTOR
+Replace CONNECTOR with the actual name of your connector
+2. Open connectorInstance.xml
+3. Scroll down to the end until you find the ACL Related flags
+4. Uncomment the following
+<!--
+<property name="pushAcls"><value>false</value></property>
+<property name="stripDomainFromAces"><value>true</value></property>
+-->
+5. Change the value of the pushAcls property (the first flag) to true.
+6. Save the updated connectorInstance.xml
+7. Restart the connector
+
+After restarting, connector will send document's ACLs as part of the metadata which will be parsed by the GSA and uploaded as Policy ACLs under Serving section of the GSA.
+Connector would not make any attempt to send ACLs for the documents that it had crawled before the restart.
+
+Note: For ACL, the minimum required permission is either a "Full Read" at web application level or, the user should be the site collection administrator. The user credential that you use to configure the connector must have either of these two permissions if you are willing to use ACL based authorization of search results.
+Note: The current ACL support does not have the handling of SharePoint groups. Please refer to the 6th point under Known Issues/Limitations section.
 
 - Issue 148: SharePoint connector should support SharePoint 2010
+
+- Issue 79: Support for include/exclude a site/page in the search results
+Connector, during the crawl checks if a site/list search visibility is turned on. If not, it pauses the crawling of that particular site/list. If it is a new site/list, no crawling is done for this.
+Note: For this feature, You need to install the custom GSSiteDiscovery web service on every SharePoint front end server where the sites to be crawled are hosted. This web service comes as part of Google Services for SharePoint. The steps for manual installation is same as of the ACL web service with the files being changed. In this case the files to be copied in the ISAPI directory are:
+GSSiteDiscovery.asmx
+GSSiteDiscoverydisco.aspx
+GSSiteDiscoverywsdl.aspx
 
 Version Compatibility
 ---------------------
 This version works with Connector Manager Version 2.4.0 and above. It is recommended to upgrade to Connector Manager 2.4.4
 Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
 
-Steps to manually deploy the patch release on 2.4.2
+Steps to manually deploy the patch release on 2.4.4
 ---------------------------------------------------
 1. Stop the SharePoint Connector Service.
 2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
@@ -41,9 +68,11 @@ Steps to manually deploy the ACL web service on SharePoint
 1. Go to the SharePoint front server which is serving the sites
 2. Open the directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI
 3. Copy the following three files under the ISAPI directory opened above
-  GssAcl.asmx
-  GssAcldisco.aspx
-  GssAclwsdl.aspx
+GssAcl.asmx
+GssAcldisco.aspx
+GssAclwsdl.aspx
+
+Note: In case of a SharePoint farm environment, the web service has to be deployed on all front-end servers which are hosting sites that you want the connector to crawl.
 
 Platform Support
 ------------------
@@ -176,6 +205,7 @@ E5504 @ 2.00GHz, 2.00 GB of RAM
 
 Performance Test details:
 Performance Test Results for Metadata & URL Feed mode:
+
 
 Test Environment Details:
 
@@ -377,6 +407,7 @@ Workaround: Stop the connector and restart it after some time to avoid this issu
 3) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
 the credentials used are of a local machine user.
 
+
 4) Issue 108: Connector is unable to traverse the repository upon restart if the state file is very large
 -- If the size of the state file is >= 100 MB, then connector fails to load the state file due to insufficient memory. An
 OutOfMemory Error is thrown while parsing the state XML.
@@ -577,6 +608,7 @@ ISSUES FIXED IN THIS RELEASE:
 -issue#44: Make "Domain" field optional
 -issue#45: Incorrect URL generation when SharePoint web service returns DefaultViewUrl for List as empty
 -issue#46: Incorrect URL formation for list items when the List name is changed after creation
+
 
 KNOWN ISSUES/LIMITATIONS:
 =============================

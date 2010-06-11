@@ -24,7 +24,6 @@ import com.google.enterprise.connector.persist.ConnectorStateStore;
 import com.google.enterprise.connector.persist.MockConnectorStateStore;
 import com.google.enterprise.connector.persist.StoreContext;
 import com.google.enterprise.connector.pusher.MockPusher;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointTraversalManager;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -45,16 +44,7 @@ public class IntegrationTest extends TestCase {
         super.setUp();
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing Sharepoint Connector Instance ...");
-        this.connector = new SharepointConnector(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-				FeedType.METADATA_URL_FEED.toString());
-        this.connector.setIncluded_metadata(TestConfiguration.whiteList);
-        this.connector.setExcluded_metadata(TestConfiguration.blackList);
-        this.connector.setFQDNConversion(true);
+        this.connector = TestConfiguration.getConnectorInstance();
     }
 
     /**

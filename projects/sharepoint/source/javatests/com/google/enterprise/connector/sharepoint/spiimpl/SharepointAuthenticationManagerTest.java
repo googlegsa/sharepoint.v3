@@ -14,13 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticationManager;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
+
+import junit.framework.TestCase;
 
 public class SharepointAuthenticationManagerTest extends TestCase {
 
@@ -37,7 +36,8 @@ public class SharepointAuthenticationManagerTest extends TestCase {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+                TestConfiguration.feedType,
+                TestConfiguration.useSPSearchVisibility);
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);

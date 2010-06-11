@@ -281,6 +281,8 @@ public class SPConstants {
     public static final String STATE_ATTR_CDATA = "CDATA";
     public static final String STATE_ATTR_ID = "ID";
     public static final String STATE_ATTR_IDREF = "IDREF";
+    public static final String STATE_NOCRAWL = "NoCrawl";
+    public static final String STATE_CRAWLASPXPAGES = "CrawlASPXPages";
 
     public static final String CONNECTOR_NAME = "Sharepoint";
     public static final String CONNECTOR_PREFIX = "_state.xml";
@@ -322,6 +324,7 @@ public class SPConstants {
     public static final String TITLE = "title";
     public static final String CONFIG_ID = "id";
     public static final String CHECKED = "checked";
+    public static final String CHECKBOX = "checkbox";
 
     public static final String TABLE = "table";
     public static final String END_TABLE = "</table>\r\n";
@@ -383,6 +386,9 @@ public class SPConstants {
     public static final String INVALID_EXCLUDE_PATTERN = "Invalid_Exclude_Pattern";
     public static final String REASON = "Reason";
     public static final String KERBEROS_KDC_HOST_BLANK="Kerberos_Kdc_Hostname_Blank";
+    public static final String USE_SP_SEARCH_VISIBILITY = "useSPSearchVisibility";
+    public static final String USE_SP_SEARCH_VISIBILITY_LABEL = "Use_SP_SearchVisibility";
+    public static final String USE_SP_SEARCH_VISIBILITY_HELP = "Use_SP_SearchVisibility_Help";
 
     public static final String CHECKPOINT_VALUE = "SharePoint";
     public static final int MAX_PORT_VALUE = 65535;

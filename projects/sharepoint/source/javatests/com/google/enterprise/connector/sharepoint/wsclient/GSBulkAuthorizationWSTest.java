@@ -31,13 +31,7 @@ public class GSBulkAuthorizationWSTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
@@ -48,7 +42,7 @@ public class GSBulkAuthorizationWSTest extends TestCase {
 
     public final void testGSBulkAuthorizationWS() throws Throwable {
         System.out.println("Testing GSBulkAuthorizationWS(SharepointClientContext, siteName)...");
-		sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
+        sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
         this.bulkAuth = new GSBulkAuthorizationWS(this.sharepointClientContext);
         assertNotNull(this.bulkAuth);
         System.out.println("[ GSBulkAuthorizationWS(SharepointClientContext, siteName) ] Test Passed");

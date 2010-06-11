@@ -13,6 +13,21 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
+import com.google.enterprise.connector.sharepoint.client.Attribute;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.joda.time.DateTime;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,21 +40,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.joda.time.DateTime;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
-import com.google.enterprise.connector.sharepoint.client.Attribute;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
  * Represents a SharePoint List/Library as a stateful object
@@ -147,6 +147,9 @@ public class ListState implements StatefulObject {
 
     // To check if the list inherits permission from the parent web
     private boolean inheritedSecurity;
+
+    // Flag to determine the crawl behavior of the list
+    private boolean noCrawl;
 
     /**
      * @param inInternalName
@@ -987,6 +990,7 @@ public class ListState implements StatefulObject {
             listConst = inList.getListConst();
             sendListAsDocument = inList.isSendListAsDocument();
             inheritedSecurity = inList.isInheritedSecurity();
+            noCrawl = inList.isNoCrawl();
         }
     }
 
@@ -1191,6 +1195,10 @@ public class ListState implements StatefulObject {
                 }
             }
         }
+
+        // Dump the "Nocrawl" flag
+        atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
+
         handler.startElement("", "", SPConstants.LIST_STATE, atts);
 
         // Creating child nodes of ListState node
@@ -1303,6 +1311,9 @@ public class ListState implements StatefulObject {
                 }
             }
         }
+
+        list.setNoCrawl(Boolean.getBoolean(atts.getValue(SPConstants.STATE_NOCRAWL)));
+
         return list;
     }
 
@@ -1413,12 +1424,16 @@ public class ListState implements StatefulObject {
 
         listDoc.setAllAttributes(getAttrs());
 
-        if (!isSendListAsDocument()) {
+        if (!isSendListAsDocument() || !getParentWebState().isCrawlAspxPages()) {
             // send the listState as a feed only if it was
             // included
             // (not excluded) in the URL pattern matching
+            // The other case is SharePoint admin has set a
+            // flag at site level to exclude ASPX pages from
+            // being crawled and indexed and hence need to
+            // honor the same
             listDoc.setToBeFed(false);
-            LOGGER.log(Level.FINE, "List Document marked as not to be fed");
+            LOGGER.log(Level.FINE, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
         }
 
         return listDoc;
@@ -1430,5 +1445,13 @@ public class ListState implements StatefulObject {
 
     public void setInheritedSecurity(boolean inheritedSecurity) {
         this.inheritedSecurity = inheritedSecurity;
+    }
+
+    public boolean isNoCrawl() {
+        return noCrawl;
+    }
+
+    public void setNoCrawl(boolean noCrawl) {
+        this.noCrawl = noCrawl;
     }
 }
