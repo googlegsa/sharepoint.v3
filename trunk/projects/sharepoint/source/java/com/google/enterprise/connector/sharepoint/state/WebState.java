@@ -35,6 +35,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
@@ -93,6 +94,9 @@ public class WebState implements StatefulObject {
     // will also change. It will become hard to maintain and rely on the
     // ordering approach than.
     private String nextAclChangeToken;
+
+    // for determining the crawl behavior of the web
+    private WebCrawlInfo webCrawlInfo;
 
     /**
      * For the sole purpose of loading WebState nodes as WebState objects when
@@ -413,12 +417,17 @@ public class WebState implements StatefulObject {
                                     list.getParentWebState().getTitle(),
                                     FeedType.CONTENT_FEED, SPType.SP2007);
                             doc.setAction(ActionType.DELETE);
-                            if (!list.isSendListAsDocument()) {
+                            if (!list.isSendListAsDocument()
+                                    || !isCrawlAspxPages()) {
                                 // send the listState as a feed only if it was
                                 // included (not excluded) in the URL pattern
                                 // matching
+                                // The other case is SharePoint admin has set a
+                                // flag at site level to exclude ASPX pages from
+                                // being crawled and indexed and hence no need
+                                // send DELETE feed for List
                                 doc.setToBeFed(false);
-                                LOGGER.log(Level.FINE, "List Document marked as not to be fed");
+                                LOGGER.log(Level.FINE, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
                             }
                             deletedDocs.add(doc);
                         }
@@ -607,13 +616,20 @@ public class WebState implements StatefulObject {
             atts.addAttribute("", "", SPConstants.STATE_INSERT_TIME, SPConstants.STATE_ATTR_CDATA, strInsertionTime);
         }
 
+        atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
+        atts.addAttribute("", "", SPConstants.STATE_CRAWLASPXPAGES, SPConstants.STATE_ATTR_CDATA, String.valueOf(isCrawlAspxPages()));
+
         handler.startElement("", "", SPConstants.WEB_STATE, atts);
 
         // dump the actual ListStates:
-        if (null == allListStateSet) {
-            LOGGER.log(Level.WARNING, "No ListStates found in the WebState [ "
-                    + webUrl + " ]. " + "");
-        } else {
+        // Dump the "NoCrawl" flag for liststates irrespective of whether the
+        // site is set to index no content. The main reason is to cater
+        // use-cases where the content is indexed first, then admin sets the
+        // configuration to not index and then decides to re-index. We dont want
+        // the content to be re-crawled from start but from the point where it
+        // had stopped. Having the liststates persisted to state file will
+        // ensure the same
+        if (null != allListStateSet || !allListStateSet.isEmpty()) {
             for (ListState list : allListStateSet) {
                 list.dumpStateToXML(handler, feedType);
             }
@@ -647,6 +663,12 @@ public class WebState implements StatefulObject {
 
         web.setNextAclChangeToken(atts.getValue(SPConstants.STATE_ACLNEXTCHANGETOKEN));
         web.setCurretAclChangeToken(atts.getValue(SPConstants.STATE_ACLCHANGETOKEN));
+
+        WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
+        webCrawlInfo.setNoCrawl(Boolean.getBoolean(atts.getValue(SPConstants.STATE_NOCRAWL)));
+        webCrawlInfo.setCrawlAspxPages(Boolean.getBoolean(atts.getValue(SPConstants.STATE_CRAWLASPXPAGES)));
+        web.setWebCrawlInfo(webCrawlInfo);
+
         return web;
     }
 
@@ -716,4 +738,24 @@ public class WebState implements StatefulObject {
         }
         return listState;
     }
+
+    public boolean isCrawlAspxPages() {
+        if (webCrawlInfo != null) {
+            return webCrawlInfo.isCrawlAspxPages();
+        }
+        return true;
+    }
+
+    public boolean isNoCrawl() {
+        if (webCrawlInfo != null) {
+            return webCrawlInfo.isNoCrawl();
+        }
+
+        return false;
+    }
+
+    public void setWebCrawlInfo(WebCrawlInfo webCrawlInfo) {
+        this.webCrawlInfo = webCrawlInfo;
+    }
+
 }

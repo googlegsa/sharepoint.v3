@@ -16,10 +16,6 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.util.Set;
-
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
@@ -29,6 +25,10 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants;
+
+import java.util.Set;
+
+import junit.framework.TestCase;
 
 public class SharepointClientTest extends TestCase {
 
@@ -44,7 +44,8 @@ public class SharepointClientTest extends TestCase {
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+                TestConfiguration.feedType,
+                TestConfiguration.useSPSearchVisibility);
 
         assertNotNull(sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
@@ -164,9 +165,9 @@ public class SharepointClientTest extends TestCase {
      */
     public void testTraverseToCheckValidLists() throws SharepointException {
 
-		GlobalState gs = new GlobalState(
-				TestConfiguration.googleConnectorWorkDir,
-				TestConfiguration.feedType);
+        GlobalState gs = new GlobalState(
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.feedType);
         SharepointClientContext spContext = TestConfiguration.initContext();
         WebState ws = TestConfiguration.createWebState(gs, spContext, TestConfiguration.sharepointUrl, 1);
         gs.AddOrUpdateWebStateInGlobalState(ws);

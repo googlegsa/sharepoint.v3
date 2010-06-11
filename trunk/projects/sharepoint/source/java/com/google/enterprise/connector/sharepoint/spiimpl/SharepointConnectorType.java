@@ -14,6 +14,22 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.common.StringUtils;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
+import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
+import com.google.enterprise.connector.spi.ConfigureResponse;
+import com.google.enterprise.connector.spi.ConnectorFactory;
+import com.google.enterprise.connector.spi.ConnectorType;
+import com.google.enterprise.connector.spi.XmlUtils;
+
+import org.apache.commons.httpclient.auth.AuthPolicy;
+import org.apache.commons.httpclient.contrib.auth.NegotiateScheme;
+
 import gnu.regexp.RE;
 import gnu.regexp.REMatch;
 
@@ -38,22 +54,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.httpclient.auth.AuthPolicy;
-import org.apache.commons.httpclient.contrib.auth.NegotiateScheme;
-
-import com.google.enterprise.connector.common.StringUtils;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
-import com.google.enterprise.connector.spi.ConfigureResponse;
-import com.google.enterprise.connector.spi.ConnectorFactory;
-import com.google.enterprise.connector.spi.ConnectorType;
-import com.google.enterprise.connector.spi.XmlUtils;
-
 /**
  * ConnectorType implementation for Sharepoint This class is mainly desinged for
  * controlling the connector configuration which incompasses creation of
@@ -74,6 +74,7 @@ public class SharepointConnectorType implements ConnectorType {
     private String excludeURL = null;
     private String mySiteUrl = null;
     private Map<String, ArrayList<String>> aliasMap = null;
+    private String useSPSearchVisibility = null;
 
     // Create dummy context for doing validations.
     private SharepointClientContext sharepointClientContext = null;
@@ -254,6 +255,23 @@ public class SharepointConnectorType implements ConnectorType {
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
                     buf.append(rb.getString(SPConstants.AUTHZ_BY_CONNECTOR));
+                } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
+                    // Handles the flag for Using SharePoint indexing options
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_HELP));
+                    // The value can be true if its a pre-configured connector
+                    // being edited and blank if the default connector form is
+                    // being displayed.
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
                 } else if ((collator.equals(key, SPConstants.EXCLUDED_URLS))
                         || (collator.equals(key, SPConstants.INCLUDED_URLS))) {
                     buf.append(SPConstants.OPEN_ELEMENT);
@@ -469,6 +487,8 @@ public class SharepointConnectorType implements ConnectorType {
             excludeURL = val;
         } else if (collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
             mySiteUrl = val.trim();
+        } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
+            useSPSearchVisibility = val.trim();
         }
     }
 
@@ -558,6 +578,18 @@ public class SharepointConnectorType implements ConnectorType {
             setSharepointCredentials(key, val);
         }
 
+        // The Use SP indexing options is a checkbox which is turned on by
+        // default. In case the user unchecks it, no HTML form element is
+        // returned for the same and hence the connector should add to the
+        // config map with a value of "false" indicating that the SP indexing
+        // options are not to be considered by the connector. If it is
+        // available, overwrite its value "on" with "true".
+        if (!configData.containsKey(SPConstants.USE_SP_SEARCH_VISIBILITY)) {
+            configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(true));
+        }
+
         if ((username != null)
                 && ((username.indexOf("@") != -1) || (username.indexOf("\\") != -1))
                 && (domain != null) && !domain.equals(SPConstants.BLANK_STRING)) {
@@ -568,7 +600,8 @@ public class SharepointConnectorType implements ConnectorType {
         try {
             sharepointClientContext = new SharepointClientContext(
                     sharepointUrl, domain, kdcServer, username, password, "",
-                    includeURL, excludeURL, mySiteUrl, "", feedType);
+                    includeURL, excludeURL, mySiteUrl, "", feedType,
+                    new Boolean(useSPSearchVisibility).booleanValue());
         } catch (final Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to create SharePointClientContext with the received configuration values. ");
         }
@@ -1355,5 +1388,25 @@ public class SharepointConnectorType implements ConnectorType {
         if (fileLogin != null && fileLogin.exists()) {
             fileLogin.delete();
         }
+    }
+
+    /**
+     * Returns the flag if SharePoint search visibility options are to be
+     * fetched and used
+     *
+     * @return the useSPSearchVisibility The search visibility flag
+     */
+    public String getUseSPSearchVisibility() {
+        return useSPSearchVisibility;
+    }
+
+    /**
+     * Sets the flag if SharePoint search visibility options are to be fetched
+     * and used
+     *
+     * @param useSPSearchVisibility The useSPSearchVisibility flag to set
+     */
+    public void setUseSPSearchVisibility(String useSPSearchVisibility) {
+        this.useSPSearchVisibility = useSPSearchVisibility;
     }
 }

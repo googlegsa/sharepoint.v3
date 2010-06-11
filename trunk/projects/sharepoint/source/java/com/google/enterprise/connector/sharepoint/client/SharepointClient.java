@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -293,22 +294,23 @@ public class SharepointClient {
      *
      * @param globalState
      * @param allSites
+     * @return a set of all new webs that have been added to the globalstate
      */
-    private boolean updateGlobalState(final GlobalState globalState,
+    private Set<WebState> updateGlobalState(final GlobalState globalState,
             final Set<String> allSites) {
-        boolean isGSUpdated = false;
+        Set<WebState> newWebs = new HashSet<WebState>();
         if ((null == allSites) || (allSites.size() == 0)) {
-            return isGSUpdated;
+            return newWebs;
         }
         final Iterator<String> itAllSites = allSites.iterator();
         while ((itAllSites != null) && (itAllSites.hasNext())) {
             final String url = (String) itAllSites.next();
-            final WebState webStatus = updateGlobalState(globalState, url);
-            if (null != webStatus) {
-                isGSUpdated = true;
+            final WebState webState = updateGlobalState(globalState, url);
+            if (null != webState) {
+                newWebs.add(webState);
             }
         }
-        return isGSUpdated;
+        return newWebs;
     }
 
     /**
@@ -317,7 +319,9 @@ public class SharepointClient {
      *
      * @param globalState
      * @param url
-     * @return {@link WebState}
+     * @return {@link WebState} null if the webstate was already existing in the
+     *         globalstate. Otherwise a valid reference to the newly created
+     *         WebState
      */
     private WebState updateGlobalState(final GlobalState globalState,
             final String url) {
@@ -371,7 +375,7 @@ public class SharepointClient {
      * Discovers the child sites, MySites, Personal Sites, Sites discovered by
      * GSSite discovery. State information is updated as and when the webs are
      * discovered. A further call to updateWebStateFromSite is made to discover
-     * the lists/libraries and the documenst from each discovered web.
+     * the lists/libraries and the documents from each discovered web.
      *
      * @param globalState The recent state information
      */
@@ -387,6 +391,21 @@ public class SharepointClient {
             return;
         }
         SharepointClientContext tempCtx = (SharepointClientContext) sharepointClientContext.clone();
+
+        GSSiteDiscoveryWS webCrawlInfoFetcher = null;
+        if (sharepointClientContext.isUseSPSearchVisibility()) {
+            try {
+                webCrawlInfoFetcher = new GSSiteDiscoveryWS(tempCtx);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Exception occured while initializing GSSiteDiscoveryWS", e);
+            }
+        }
+
+        // At the start of a new traversal cycle, we update the WebCrawlInfo of
+        // all the webs
+        if (globalState.isBFullReCrawl() && null != webCrawlInfoFetcher) {
+            webCrawlInfoFetcher.updateWebCrawlInfoInBatch(globalState.getAllWebStateSet());
+        }
 
         nDocuments = 0;
         doCrawl = true;
@@ -405,6 +424,13 @@ public class SharepointClient {
 
         if (null == nextWeb) {
             nextWeb = updateGlobalState(globalState, sharepointClientContext.getSiteURL());
+            if (null == nextWeb) {
+                throw new SharepointException(
+                        "Starting WebState for the current traversal can not be ddetermined.");
+            }
+            if (null != webCrawlInfoFetcher) {
+                nextWeb.setWebCrawlInfo(webCrawlInfoFetcher.getCurrentWebCrawlInfo());
+            }
         }
 
         if (LOGGER.isLoggable(Level.CONFIG)) {
@@ -412,13 +438,7 @@ public class SharepointClient {
                     + nextWeb + " ]. ");
         }
 
-        SPType spType = null;
-        if (null != nextWeb) {
-            spType = nextWeb.getSharePointType();
-        } else {
-            throw new SharepointException(
-                    "Starting WebState for the current traversal can not be ddetermined.");
-        }
+        SPType spType = nextWeb.getSharePointType();
 
         // To store the intermediate webs discovered during crawl
         Set<String> allSites = new TreeSet<String>();
@@ -429,11 +449,15 @@ public class SharepointClient {
         // batch hint # of docs
         nextWeb = traverseSites(globalState, allSites, tempCtx, nextWeb, nextList, lstLookupForWebs);
 
-        // Update all the web info into the globalstate. Try and discover some
-        // intermediate webs e.g, linked sites. These will be processed in the
-        // same batch traversal in case the batch hint # of documents have not
-        // been discovered
-        boolean isGSupdated = updateGlobalState(globalState, allSites);
+        // This will contain all the newly discovered webs and is used to
+        // identify those webs which should be queried for their search
+        // visibility options set on SharePoint.
+        Set<WebState> newWebs = new HashSet<WebState>();
+
+        // Update all the web info into the globalstate. The newly discovered
+        // webs, if any, will be processed in the same batch traversal in case
+        // the batch hint # of documents have not been discovered
+        newWebs.addAll(updateGlobalState(globalState, allSites));
 
         // Cases being handled here:
         // 1. Batch hint # of documents have not been discovered, but there are
@@ -441,13 +465,13 @@ public class SharepointClient {
         // the batch hint # of docs
         // 2. Batch hint # of documents have not been discovered and no new
         // sites have been discovered. In such cases get any new
-        // personal/mysites, sites discoevered by GSS. Add them to the global
+        // personal/mysites, sites discovered by GSS. Add them to the global
         // state and crawl them till batch hint # of documents is reached.
         if (doCrawl && spType != null) {
             // If the first check has passed, it might mean Case 1. If the
             // following if block is skipped, it means this is Case 1, else it
             // will be Case 2
-            if (!isGSupdated) {
+            if (newWebs.size() == 0) {
                 // If this check passed, it means Case 2
                 if (LOGGER.isLoggable(Level.CONFIG)) {
                     LOGGER.log(Level.CONFIG, "Discovering new sites");
@@ -462,17 +486,24 @@ public class SharepointClient {
 
                 // Initiate the discovery of new sites
                 discoverExtraWebs(allSites, spType);
-                isGSupdated = updateGlobalState(globalState, allSites);
+                newWebs.addAll(updateGlobalState(globalState, allSites));
             }
 
             // The following does not care if the sites are discovered for Case
             // 1 or Case 2. It will simply go ahead and crawl batch hint no. of
             // docs from the new sites
-            if (isGSupdated) {
-                LOGGER.log(Level.INFO, "global state has been updated with newly discovered sites. About to traverse them for docs");
+            if (newWebs.size() > 0) {
+                LOGGER.log(Level.INFO, "global state has been updated with #"
+                        + newWebs.size()
+                        + " newly discovered sites. About to traverse them for docs");
+                if (null != webCrawlInfoFetcher) {
+                    webCrawlInfoFetcher.updateWebCrawlInfoInBatch(newWebs);
+                }
+
                 // Traverse sites and lists under them to fetch batch hint # of
                 // docs
                 traverseSites(globalState, allSites, tempCtx, nextWeb, nextList, lstLookupForWebs);
+                newWebs.clear();
 
                 // There are chances that new sites are discovered (child sites
                 // OR linked sites) during the traversal of sites discovered as
@@ -480,16 +511,28 @@ public class SharepointClient {
                 // such cases, the connector should just create webstates and
                 // add them to the global state. The next batch traversal will
                 // take them up for traversal
-                isGSupdated = updateGlobalState(globalState, allSites);
-                if (isGSupdated) {
+                newWebs.addAll(updateGlobalState(globalState, allSites));
+                if (newWebs.size() > 0) {
+                    if (null != webCrawlInfoFetcher) {
+                        webCrawlInfoFetcher.updateWebCrawlInfoInBatch(newWebs);
+                    }
                     doCrawl = false;
                 }
 
             }
+        } else if (newWebs.size() > 0 && null != webCrawlInfoFetcher) {
+            // This is the case when we have reached the batch-hint while
+            // crawling the first web itself and hence no further discovery
+            // has been done. At this point, we must update the WebcrawlInfo of
+            // all the child/linked sites that might have been discovered as
+            // part of the site's crawling. If we do not do this here, these
+            // webs will become known webs in the next batch traversal and we do
+            // not query WebCrawlInfo of known webs in between a traversal
+            // cycle.
+            webCrawlInfoFetcher.updateWebCrawlInfoInBatch(newWebs);
         }
 
-        globalState.setBFullReCrawl(doCrawl); // indicate if complete\Partial
-        // crawlcycle
+        globalState.setBFullReCrawl(doCrawl);
         globalState.endRecrawl(sharepointClientContext);
 
         LOGGER.log(Level.INFO, "Returning after crawl cycle.. ");
@@ -570,8 +613,8 @@ public class SharepointClient {
      * @param tempCtx Current connector context
      * @param webState The state information of the web which is ti be crawled
      *            for documents
-     * @param nextLastListID Last List traversed. If the current web contains
-     *            this list, the traversal will start from here.
+     * @param nextList Last List traversed. If the current web contains this
+     *            list, the traversal will start from here.
      * @param allWebs Contains all the webs that has been doscovered from link
      *            sites/Site directory.
      */
@@ -590,6 +633,17 @@ public class SharepointClient {
         // duplicate lists.
         listCollection = new ArrayList<ListState>(new TreeSet<ListState>(
                 listCollection));
+
+        if (sharepointClientContext.isUseSPSearchVisibility()) {
+            try {
+                GSSiteDiscoveryWS gssd = new GSSiteDiscoveryWS(
+                        sharepointClientContext);
+                gssd.updateListCrawlInfo(listCollection);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Exception occurred when trying to to update the ListCrawlInfo for web [ "
+                        + webState.getWebUrl() + " ] ", e);
+            }
+        }
 
         // Updating the latest metadata info for all list states. We may do this
         // updation when the crawl will begin; that will save this extra
@@ -629,6 +683,29 @@ public class SharepointClient {
         for (int i = 0; i < listCollection.size(); i++) {
             final ListState currentList = listCollection.get(i);
             ListState listState = webState.lookupList(currentList.getPrimaryKey());
+
+            if (sharepointClientContext.isUseSPSearchVisibility()) {
+                // If this list is marked for No Crawling, do not crawl this
+                // list.
+                // Please note that, if this list is already known to the
+                // connector, it'll keep existing in the connector's state. This
+                // implies that if a list is marked as NoCrawl list on
+                // SharePoint in between the connector's traversal, crawling of
+                // this list will be paused at whatever state it is in. As soon
+                // as the NoCrawl flag on SharePoint is reverted, the crawling
+                // will be resumed from the saved state.
+                if (currentList.isNoCrawl()) {
+                    LOGGER.log(Level.WARNING, "Skipping List URL [ "
+                            + currentList.getListURL()
+                            + " ] while crawling because it has been marked for No Crawling on SharePoint. ");
+                    if (null == listState) {
+                        // Make this list known by keeping it in the state. But,
+                        // do not crawl
+                        webState.AddOrUpdateListStateInWebState(currentList, currentList.getLastMod());
+                    }
+                    continue;
+                }
+            }
 
             /*
              * If we already knew about this list, then only fetch docs that
@@ -877,12 +954,18 @@ public class SharepointClient {
      * @param allSites The list of sites
      * @param sharePointClientContext The current connector context. Instance of
      *            {@link SharepointClientContext}
-     * @param nextLastWebID The id of the last site (webstate) that was crawled
-     * @param nextLastListID The id of the last liststate that as crawled
+     * @param nextWeb last site (webstate) that was crawled
+     * @param nextList last liststate that as crawled
+     * @param lstLookupForWebs webs which are already traversed and should not
+     *            be traversed again
      * @throws SharepointException In case of any problems fetching documents
      * @return Last Web crawled. This helps caller an idea about from where the
      *         next crawl should begin.
      */
+    // TODO: Why do we pass SharePointClientContext object as argument here?
+    // It's already available as a member of this class. Is there any
+    // intentional differences between the states of these two
+    // SharePointClientContexts?
     private WebState traverseSites(GlobalState globalState,
             Set<String> allSites,
             SharepointClientContext sharePointClientContext, WebState nextWeb,
@@ -908,6 +991,27 @@ public class SharepointClient {
                 lstLookupForWebs.add(webURL);
             }
 
+            try {
+                sharePointClientContext.setSiteURL(webURL);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Exception occurred when trying to set the webUrl [ "
+                        + webURL + " ] context", e);
+                continue;
+            }
+
+            if (sharepointClientContext.isUseSPSearchVisibility()) {
+                // Even if a web is not crawled due to the SP search visibility,
+                // it's reference is kept in the connector's state. This is to
+                // avoid unnecessary discovery (and WebState construction) of
+                // these webs again and again.
+                if (ws.isNoCrawl()) {
+                    LOGGER.log(Level.WARNING, "Skipping Web URL [ "
+                            + webURL
+                            + " ] while crawling because it has been marked for No Crawling on SharePoint. ");
+                    continue;
+                }
+            }
+
             nextWeb = ws;
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Web [ " + webURL
@@ -915,8 +1019,6 @@ public class SharepointClient {
             }
             final int currDocCount = nDocuments;
             try {
-                sharePointClientContext.setSiteURL(webURL);
-
                 // Process the web site, and add the link site info to allSites.
                 updateWebStateFromSite(sharePointClientContext, ws, nextList, allSites);
 
