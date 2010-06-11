@@ -616,7 +616,8 @@ public class WebState implements StatefulObject {
             atts.addAttribute("", "", SPConstants.STATE_INSERT_TIME, SPConstants.STATE_ATTR_CDATA, strInsertionTime);
         }
 
-            atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
+        atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
+        atts.addAttribute("", "", SPConstants.STATE_CRAWLASPXPAGES, SPConstants.STATE_ATTR_CDATA, String.valueOf(isCrawlAspxPages()));
 
         handler.startElement("", "", SPConstants.WEB_STATE, atts);
 
@@ -665,6 +666,7 @@ public class WebState implements StatefulObject {
 
         WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
         webCrawlInfo.setNoCrawl(Boolean.getBoolean(atts.getValue(SPConstants.STATE_NOCRAWL)));
+        webCrawlInfo.setCrawlAspxPages(Boolean.getBoolean(atts.getValue(SPConstants.STATE_CRAWLASPXPAGES)));
         web.setWebCrawlInfo(webCrawlInfo);
 
         return web;

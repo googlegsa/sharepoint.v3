@@ -521,6 +521,14 @@ public class SharepointClient {
 
             }
         } else if (newWebs.size() > 0 && null != webCrawlInfoFetcher) {
+            // This is the case when we have reached the batch-hint while
+            // crawling the first web itself and hence no further discovery
+            // has been done. At this point, we must update the WebcrawlInfo of
+            // all the child/linked sites that might have been discovered as
+            // part of the site's crawling. If we do not do this here, these
+            // webs will become known webs in the next batch traversal and we do
+            // not query WebCrawlInfo of known webs in between a traversal
+            // cycle.
             webCrawlInfoFetcher.updateWebCrawlInfoInBatch(newWebs);
         }
 

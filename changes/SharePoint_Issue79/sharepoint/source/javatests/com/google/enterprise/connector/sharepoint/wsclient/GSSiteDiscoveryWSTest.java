@@ -59,15 +59,11 @@ public class GSSiteDiscoveryWSTest extends TestCase {
         System.out.println("[ getFQDNHost() ] Test Completed.");
     }
 
-    public final void testUpdateWebCrawlInfo() throws Exception {
-        GlobalState globalState = TestConfiguration.initState(sharepointClientContext);
-        WebState ws = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
-        if (null != ws) {
-            WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
-            webCrawlInfo.setNoCrawl(true);
-            siteDisc.updateWebCrawlInfo(ws);
-            assertFalse(ws.isNoCrawl());
-        }
+    public final void testGetCurrentWebCrawlInfo() throws Exception {
+        WebCrawlInfo webCrawlInfo = siteDisc.getCurrentWebCrawlInfo();
+        assertNotNull(webCrawlInfo);
+        // Assuming the initial crawl URL will never be marked for NoCrawl.
+        assertFalse(webCrawlInfo.isNoCrawl());
     }
 
     public final void testUpdateListCrawlInfo() throws Exception {
@@ -94,5 +90,15 @@ public class GSSiteDiscoveryWSTest extends TestCase {
         assertNotNull(wsResult);
         assertEquals(wsResult.length, weburls.length);
         assertEquals(false, wsResult[0].isNoCrawl());
+    }
+
+    public final void testUpdateWebCrawlInfoInBatch() throws Exception {
+        GlobalState globalState = TestConfiguration.initState(sharepointClientContext);
+        siteDisc.updateWebCrawlInfoInBatch(globalState.getAllWebStateSet());
+        for (WebState web : globalState.getAllWebStateSet()) {
+            // Assuming the site URL being used for testing are not marked for
+            // NoCrawl.
+            assertFalse(web.isNoCrawl());
+        }
     }
 }
