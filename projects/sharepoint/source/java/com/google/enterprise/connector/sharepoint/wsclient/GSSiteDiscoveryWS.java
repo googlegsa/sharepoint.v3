@@ -66,11 +66,15 @@ public class GSSiteDiscoveryWS {
      * @throws SharepointException
      */
     public GSSiteDiscoveryWS(
-            final SharepointClientContext inSharepointClientContext)
+            final SharepointClientContext inSharepointClientContext,
+            String siteUrl)
             throws SharepointException {
         if (inSharepointClientContext != null) {
             sharepointClientContext = inSharepointClientContext;
-            endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
+            if (null == siteUrl) {
+                siteUrl = sharepointClientContext.getSiteURL();
+            }
+            endpoint = Util.encodeURL(siteUrl)
                     + SPConstants.GSPSITEDISCOVERYWS_END_POINT;
             LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
 
@@ -277,6 +281,15 @@ public class GSSiteDiscoveryWS {
                 + webs.size());
 
         for (Entry<String, List<WebState>> entry : webappToWeburlMap.entrySet()) {
+            GSSiteDiscoveryWS sitews = null;
+            try {
+                sitews = new GSSiteDiscoveryWS(sharepointClientContext,
+                        entry.getKey());
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to initialize stub for "
+                        + entry.getKey(), e);
+                continue;
+            }
             Map<String, WebState> webUrlMap = new HashMap<String, WebState>();
             String[] weburls = new String[webs.size()];
             int i = 0;
@@ -284,7 +297,7 @@ public class GSSiteDiscoveryWS {
                 weburls[i++] = web.getWebUrl();
                 webUrlMap.put(web.getWebUrl(), web);
             }
-            WebCrawlInfo[] webCrawlInfos = getWebCrawlInfoInBatch(weburls);
+            WebCrawlInfo[] webCrawlInfos = sitews.getWebCrawlInfoInBatch(weburls);
             if (null == webCrawlInfos) {
                 return;
             }

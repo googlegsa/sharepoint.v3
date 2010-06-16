@@ -238,13 +238,7 @@ public class SharepointClient {
                     sharepointClientContext);
             if (userProfileWS.isSPS()) {// Check if SPS2003 or WSS 2.0
                 try {
-                    final Set<String> personalSites = userProfileWS.getPersonalSiteList();// Get
-                    // the
-                    // list
-                    // of
-                    // my
-                    // sites/personal
-                    // sites
+                    final Set<String> personalSites = userProfileWS.getPersonalSiteList();
                     allSites.addAll(personalSites);
                 } catch (final Exception e) {
                     LOGGER.log(Level.WARNING, "Unable to get MySites for the Context URL [ "
@@ -252,10 +246,7 @@ public class SharepointClient {
                 }
             }
         } else if (SPType.SP2007 == spType) {
-            final String strMySiteURL = sharepointClientContext.getMySiteBaseURL(); // --GET
-            // THE
-            // MYSITE
-            // URL
+            final String strMySiteURL = sharepointClientContext.getMySiteBaseURL();
             if ((strMySiteURL != null) && (!strMySiteURL.trim().equals(""))) {
                 LOGGER.log(Level.INFO, "Getting the initial list of MySites for SharePoint type SP2007 from MySiteBaseURL [ "
                         + strMySiteURL + " ]");
@@ -282,7 +273,7 @@ public class SharepointClient {
 
             // Get all top level sites from the farm. Supported only in SP2007.
             final GSSiteDiscoveryWS gspSiteDiscoveryWS = new GSSiteDiscoveryWS(
-                    sharepointClientContext);
+                    sharepointClientContext, null);
             final Set<String> sitecollection = gspSiteDiscoveryWS.getMatchingSiteCollections();
             allSites.addAll(sitecollection);
         }
@@ -395,7 +386,7 @@ public class SharepointClient {
         GSSiteDiscoveryWS webCrawlInfoFetcher = null;
         if (sharepointClientContext.isUseSPSearchVisibility()) {
             try {
-                webCrawlInfoFetcher = new GSSiteDiscoveryWS(tempCtx);
+                webCrawlInfoFetcher = new GSSiteDiscoveryWS(tempCtx, null);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Exception occured while initializing GSSiteDiscoveryWS", e);
             }
@@ -637,7 +628,7 @@ public class SharepointClient {
         if (sharepointClientContext.isUseSPSearchVisibility()) {
             try {
                 GSSiteDiscoveryWS gssd = new GSSiteDiscoveryWS(
-                        sharepointClientContext);
+                        sharepointClientContext, null);
                 gssd.updateListCrawlInfo(listCollection);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Exception occurred when trying to to update the ListCrawlInfo for web [ "
