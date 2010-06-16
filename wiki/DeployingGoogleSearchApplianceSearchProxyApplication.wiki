@@ -38,3 +38,8 @@ This document covers the steps for deploying Google Search Appliance Search Prox
   # Uncheck "Allow anonymous access to this web site". Click Next.
   # Check options Read, Run scripts, Browse and Execute. Click Next.
   # Click Finish.
+
+==Customization of Proxy Application==
+
+This is a general search proxy application. You can create you own custom search box and then fire a get request on GSASearchProxy.aspx with query parameters same as GSA. The proxy application will internally fire this query to GSA  and return secure results with the same user context.
+
