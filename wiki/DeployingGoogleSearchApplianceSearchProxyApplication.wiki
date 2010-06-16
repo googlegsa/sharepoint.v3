@@ -1,0 +1,42 @@
+DeployingGoogleSearchApplianceSearchProxyApplication
+
+# Deploying Google Search Appliance Search Proxy Application.
+
+=Intoduction=
+
+This document covers the steps for deploying Google Search Appliance Search Proxy Application on IIS 6.0.
+
+==Instructions for manual deployment of Google Search Appliance Search Proxy Application==
+
+  * The Google Search Appliance Search Proxy Application can be deployed on machine with Internet Information Services (IIS) installed.
+  * The documents should be fed and indexed on appliance before performing search .
+  * Modify web.config file to include your GSA specific settings to be used by the Google Search Appliance Search Proxy Application.
+  {{{
+        <appSettings>
+		<add key="siteCollection" value="default_collection" />
+		<add key="GSALocation" value="http://myappliance.mydomain.com" />
+		<add key="frontEnd" value="default_frontend" />
+
+                <!--Optional parameter: Cookie domain parameter gives you the flexibility to change\configure the domain of the newly added cookies -->
+		<!--add key="cookieDomain" value=".mydomain.com" /-->
+
+                <!--set verbose value="True" to enable information level logs-->
+		<add key="verbose" value="False" />
+
+                <!--Specify location for the log files -->
+		<add key="logLocation" value="C:\" />
+	</appSettings>
+   }}}
+
+==Steps:==
+
+  # Open IIS Manager.
+  # In IIS, right click on the "Web Sites" folder and click New->Web Site..
+  # Click on Next.
+  # Enter "Google Search Appliance Search Proxy Application" under Description.
+  # Enter port number.
+  # Enter port number. Click on Next
+  # Enter the Path to point to the proxy application directory.
+  # Uncheck "Allow anonymous access to this web site". Click Next.
+  # Check options Read, Run scripts, Browse and Execute. Click Next.
+  # Click Finish.
