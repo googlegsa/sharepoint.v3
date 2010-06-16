@@ -1,7 +1,9 @@
 Welcome to the Google Search Appliance Search Proxy Application (Unsupported)
 
-Google Search Appliance Search Proxy Application enables user to perfrom secure search over Google Search Appliance with the context ogf the currently logged in user. It supports HTTP Basic, NTLM & Kerberos authentication protocols, with some constraints.
-   
+Google Search Appliance Search Proxy Application enables user to perform secure search over Google Search Appliance with the context of the currently logged in user. It supports HTTP Basic, NTLM & Kerberos authentication protocols, with some constraints.
+
+Google Search Appliance Search Proxy Application can customized for creating a custom search box for your application to have Google Search Appliance powered search from the context of your application.
+
 Licensing
 ---------
       This product is licensed under the Apache Software Foundation (http://www.apache.org/).
