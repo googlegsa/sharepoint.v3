@@ -1,6 +1,4 @@
-DeployingGoogleSearchApplianceSearchProxyApplication
-
-# Deploying Google Search Appliance Search Proxy Application.
+#summary Deploying Google Search Appliance Search Proxy Application.
 
 =Intoduction=
 
