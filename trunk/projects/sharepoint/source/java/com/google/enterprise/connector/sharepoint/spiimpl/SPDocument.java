@@ -437,28 +437,30 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
             if (FeedType.CONTENT_FEED == getFeedType()
                     && ActionType.ADD.equals(getAction())) {
-                if (null == content) {
+                if (null == content && null == content_type) {
                     String status = downloadContents();
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-                        LOGGER.log(Level.WARNING, "Following response received while downloading contents: "
+                        LOGGER.log(Level.WARNING, "Following response received while downloading contents (for getting contents): "
                                 + status);
                     }
                 }
-                return new SPProperty(SpiConstants.PROPNAME_CONTENT,
-                        new BinaryValue(content));
+                return (null == content) ? null
+                        : new SPProperty(SpiConstants.PROPNAME_CONTENT,
+                                new BinaryValue(content));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_MIMETYPE)) {
             if (FeedType.CONTENT_FEED == getFeedType()
                     && ActionType.ADD.equals(getAction())) {
-                if (null == content) {
+                if (null == content && null == content_type) {
                     String status = downloadContents();
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-                        LOGGER.log(Level.WARNING, "Following response recieved while downloading contents: "
+                        LOGGER.log(Level.WARNING, "Following response recieved while downloading contents (for getting content type): "
                                 + status);
                     }
                 }
-                return new SPProperty(SpiConstants.PROPNAME_MIMETYPE,
-                        new StringValue(content_type));
+                return (null == content_type) ? null : new SPProperty(
+                        SpiConstants.PROPNAME_MIMETYPE, new StringValue(
+                                content_type));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
             if (FeedType.CONTENT_FEED != getFeedType()) {
