@@ -1,9 +1,9 @@
 Release Notes:
 ===============
 
-Google Search Appliance Connector for Microsoft SharePoint 2003, Microsoft SharePoint 2007 and Microsoft SharePoint 2010
+Google Search Appliance Connector for Microsoft SharePoint
 
-This document contains the release notes for Google Search Appliance Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007.
+This document contains the release notes for Google Search Appliance Connector for Microsoft SharePoint.
 The following sections describe the release in detail and provide information that supplements the main documentation.
 See the Issues Tab on the Code Site for the current list of known issues and workarounds.
 
@@ -43,6 +43,7 @@ Note: For ACL, the minimum required permission is either a "Full Read" at web ap
 Note: The current ACL support does not have the handling of SharePoint groups. Please refer to the 6th point under Known Issues/Limitations section.
 
 - Issue 148: SharePoint connector should support SharePoint 2010
+  All the entities which are supported on SP 2007 are now also supported on SP 2010
 
 - Issue 79: Support for include/exclude a site/page in the search results
 Connector, during the crawl checks if a site/list search visibility is turned on. If not, it pauses the crawling of that particular site/list. If it is a new site/list, no crawling is done for this.
@@ -55,6 +56,12 @@ Version Compatibility
 ---------------------
 This version works with Connector Manager Version 2.4.0 and above. It is recommended to upgrade to Connector Manager 2.4.4
 Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Supported SharePoint versions
+-----------------------------
+SharePoint 2003
+SharePoint 2007
+SharePoint 2010
 
 Steps to manually deploy the patch release on 2.4.4
 ---------------------------------------------------
