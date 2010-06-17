@@ -171,12 +171,12 @@ public partial class GSASearchProxy : System.Web.UI.Page
         cc = SetCookies(cc, HttpContext.Current.Request.Cookies, cookiedomain);
 
         /*Add a dummy cookie*/
-        Cookie dummyCookie = new Cookie();
-        dummyCookie.Path = "/";
-        dummyCookie.Name = "dummy";
-        dummyCookie.Value = "dummy";
-        dummyCookie.Domain = cookiedomain;
-        cc.Add(dummyCookie);
+        //Cookie dummyCookie = new Cookie();
+        //dummyCookie.Path = "/";
+        //dummyCookie.Name = "dummy";
+        //dummyCookie.Value = "dummy";
+        //dummyCookie.Domain = cookiedomain;
+        //cc.Add(dummyCookie);
 
         objReq.CookieContainer = cc;//Set GSA request cookiecontainer
         requestHeaderKeys = null;
@@ -276,7 +276,7 @@ public partial class GSASearchProxy : System.Web.UI.Page
             the domain of the newly added cookies
          */
         cookiedomain = WebConfigurationManager.AppSettings["cookieDomain"];
-        if ((siteCollection == null) || (siteCollection.Trim().Equals("")))
+        if ((cookiedomain == null) || (cookiedomain.Trim().Equals("")))
         {
             /*
                 Case: when user does not specify the value of the cookie domain explicitly
@@ -342,7 +342,26 @@ public partial class GSASearchProxy : System.Web.UI.Page
         {
             ++redirectCount;
             log("Redirect # " + redirectCount, LOG_LEVEL.INFO);
-            searchurl = GSALocation + "/search?" + HttpContext.Current.Request.QueryString;
+
+
+            
+            String currentQuery = HttpContext.Current.Request.QueryString.ToString();
+            if ((currentQuery != null) && (!currentQuery.Trim().Equals("")))
+            {
+                /*if valid query string is entered make GSA call with the entered query string*/
+                searchurl = GSALocation + "/search?" + HttpContext.Current.Request.QueryString;
+            }
+            else
+            {
+                /* When the Search Proxy is called with empty query string, formulate the GSA querystring from the GSA parameters */
+                searchurl = GSALocation+ "/search?q=&client=" + frontEnd
+                                + "&access=a" 
+                                + "&proxystylesheet=" + frontEnd
+                                + "&sort=date%3AD%3AL%3Ad1"
+                                + "&site=" + siteCollection
+                                + "&getfields=*";
+            }
+            
             HttpContext.Current.Response.Clear();
             log("Search Request to URL: " + searchurl, LOG_LEVEL.INFO);
 
