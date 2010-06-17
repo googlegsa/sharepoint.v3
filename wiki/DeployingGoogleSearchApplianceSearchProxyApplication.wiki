@@ -1,6 +1,6 @@
 #summary Deploying Google Search Appliance Search Proxy Application.
 
-=Intoduction=
+=Introduction=
 
 This document covers the steps for deploying Google Search Appliance Search Proxy Application on IIS 6.0.
 
@@ -11,7 +11,7 @@ This document covers the steps for deploying Google Search Appliance Search Prox
   * Modify web.config file to include your GSA specific settings to be used by the Google Search Appliance Search Proxy Application.
   {{{
         <appSettings>
-		<add key="siteCollection" value="default_collection" />
+		<add key="GSACollection" value="default_collection" />
 		<add key="GSALocation" value="http://myappliance.mydomain.com" />
 		<add key="frontEnd" value="default_frontend" />
 
@@ -41,4 +41,12 @@ This document covers the steps for deploying Google Search Appliance Search Prox
 
 ==Customization of Proxy Application==
 
-This is a general search proxy application. You can create you own custom search box and then fire a HTTP GET request on GSASearchProxy.aspx with query parameters same as GSA. The proxy application will internally fire this query to GSA  and return secure results with the same user context.
+This is a general search proxy application. You can create you own custom search box and then fire a HTTP GET request on GSASearchProxy.aspx with query parameters same as GSA. If no query parameters are entered then search proxy application constructs the GSA query from the parameters mentioned in web.config file
+
+The proxy application will internally fire this query to GSA  and return secure results with the same user context.
+
+The search proxy application handles redirects from GSA internally and renders the final search results from GSA.
+
+If you want to customize the rendered results, you can directly modify the GSA Frontend and configure the search proxy application with the new frontend.
+
+The web.config exposes parameters such as GSA frontend, target cookie domain, log location etc. which is used internally by the search proxy application while firing search to GSA.
