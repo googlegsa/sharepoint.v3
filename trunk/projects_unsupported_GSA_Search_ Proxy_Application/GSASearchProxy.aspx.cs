@@ -29,7 +29,7 @@ public partial class GSASearchProxy : System.Web.UI.Page
 {
     public string GSALocation = "";
     public string accessLevel = "a";//do a Public and Secured search 
-    public string siteCollection = "";
+    public string gsaCollection = "";
     public string frontEnd = "";
     public string cookiedomain = "";
     public LOG_LEVEL LogLevel = LOG_LEVEL.ERROR;
@@ -257,12 +257,12 @@ public partial class GSASearchProxy : System.Web.UI.Page
             HttpContext.Current.Response.End();
         }
 
-        /*Site Collection URL*/
-        siteCollection = WebConfigurationManager.AppSettings["siteCollection"];
-        if ((siteCollection == null) || (siteCollection.Trim().Equals("")))
+        /*GSA collection*/
+        gsaCollection = WebConfigurationManager.AppSettings["GSACollection"];
+        if ((gsaCollection == null) || (gsaCollection.Trim().Equals("")))
         {
-            log("Site collection value for Google Search Appliance is not specified", LOG_LEVEL.ERROR);//log error
-            HttpContext.Current.Response.Write("Site collection value for Google Search Appliance is not specified");
+            log("GSA collection value for Google Search Appliance is not specified", LOG_LEVEL.ERROR);//log error
+            HttpContext.Current.Response.Write("GSA collection value for Google Search Appliance is not specified");
             HttpContext.Current.Response.End();
         }
 
@@ -358,7 +358,7 @@ public partial class GSASearchProxy : System.Web.UI.Page
                                 + "&access=a" 
                                 + "&proxystylesheet=" + frontEnd
                                 + "&sort=date%3AD%3AL%3Ad1"
-                                + "&site=" + siteCollection
+                                + "&site=" + gsaCollection
                                 + "&getfields=*";
             }
             
