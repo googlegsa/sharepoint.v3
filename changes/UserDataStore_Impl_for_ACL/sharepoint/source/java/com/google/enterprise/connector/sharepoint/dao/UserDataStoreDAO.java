@@ -15,376 +15,367 @@
 package com.google.enterprise.connector.sharepoint.dao;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.sql.DataSource;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.CallableStatementCallback;
+import org.springframework.jdbc.core.CallableStatementCreator;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.core.support.JdbcDaoSupport;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPDAOConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
-public class UserDataStoreDAO extends SharePointDAO {
+/**
+ * Data Access Object layer for accessing the user data store
+ *
+ * @author nitendra_thakur
+ */
+public class UserDataStoreDAO extends JdbcDaoSupport {
     private final Logger LOGGER = Logger.getLogger(UserDataStoreDAO.class.getName());
-    private static UserDataStoreDAO instance;
-
-    // TODO: Externalize table / column / function names
-    private final String TABLENAME = "UserGroupMemberships";
-
-    // For creating the user group membership relation
-    private final String CREATETABLEQUERY = "CREATE TABLE "
-            + TABLENAME
-            + "( UserId varchar(50), GroupId varchar(40), Namespace varchar(200), PRIMARY KEY(UserId,GroupId,Namespace) )";
-
-    // For deleting the user group membership relation
-    private final String DROPTABLEQUERY = "DROP TABLE IF EXISTS " + TABLENAME;
-
-    // For creating the function to check if a group exists in the membership
-    // table
-    private final String CREATEGROUPCHKFUNCQUERY = "CREATE FUNCTION DoesGroupExist(InGroupId varchar(40), InNamespace varchar(200)) RETURNS BOOLEAN "
-            + " RETURN EXISTS(SELECT GroupId FROM usergroupmemberships WHERE GroupId LIKE InGroupId AND Namespace=InNamespace)";
-    private final String DROPGROUPCHKFUNCQUERY = "DROP FUNCTION IF EXISTS DoesGroupExist";
-    private final String GROUPCHKFUNCALL = "{? = call DoesGroupExist(?,?) }";
-    private CallableStatement grpChkStmt;
-
-    // For function to check if a user exists in the membership table
-    private final String CREATEUSERCHKFUNCQUERY = "CREATE FUNCTION DoesUserExist(InUserId varchar(40), InNamespace varchar(200)) RETURNS BOOLEAN "
-            + " RETURN EXISTS(SELECT UserId FROM usergroupmemberships WHERE UserId LIKE InUserId AND Namespace=InNamespace)";
-    private final String DROPUSERCHKFUNCQUERY = "DROP FUNCTION IF EXISTS DoesUserExist";
-    private final String USERCHKFUNCALL = "{? = call DoesUserExist(?,?) }";
-    private CallableStatement userChkStmt;
-
-
-
-    // For adding records into UserGroupMembership table
-    private final String INSERTQUERY = "INSERT INTO " + TABLENAME
-            + " VALUES(?,?,?)";
-    private PreparedStatement insertQuery;
-
-    // When the deletion is based on UserId and Namespace
-    private final String DELETEQUERY1 = "DELETE FROM " + TABLENAME
-            + " WHERE UserId LIKE ? AND Namespace=?";
-    private PreparedStatement deleteQuery1;
-
-    // When the deletion is based on GroupId and Namespace
-    private final String DELETEQUERY2 = "DELETE FROM " + TABLENAME
-            + " WHERE GroupId LIKE ? AND Namespace=?";
-    private PreparedStatement deleteQuery2;
-
-    // When the deletion is based on Namespace only
-    private final String DELETEQUERY3 = "DELETE FROM " + TABLENAME
-            + " WHERE Namespace=?";
-    private PreparedStatement deleteQuery3;
-
-    // When the selection is based on UserId only
-    private final String SELECTQUERY1 = "SELECT * FROM " + TABLENAME
-            + " WHERE UserId LIKE ?";
-    private PreparedStatement selectQuery1;
-
-    // When the selection is based on all the keys
-    private final String SELECTQUERY2 = "SELECT * FROM " + TABLENAME
-            + " WHERE UserId=? AND GroupId=? AND Namespace=?";
-    private PreparedStatement selectQuery2;
-
-    public static UserDataStoreDAO getInstance(DBConfig dbConfig)
-            throws SharepointException {
-        return (null == instance) ? new UserDataStoreDAO(dbConfig) : instance;
-    }
-
-    protected UserDataStoreDAO(DBConfig dbConfig) throws SharepointException {
-        super(dbConfig);
-        init();
-    }
+    private SimpleJdbcTemplate simpleJdbcTemplate;
+    private TransactionTemplate transactionTemplate;
 
     /**
-     * Initializes all the PreparedStatements. Checks whether all the required
-     * tables exists or not. If not, creates them
-     */
-    private void init() throws SharepointException {
-        DatabaseMetaData dbm = getDatabaseMetadata();
-        ResultSet tables = null;
-        boolean createNewMembershipTable = false;
-        PreparedStatement createQuery = null;
-        try {
-            tables = dbm.getTables(null, null, TABLENAME, null);
-            if (null == tables || !tables.next()) {
-                createNewMembershipTable = true;
-            }
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Exception occurred while getting the table information from the database metadata. ",
-                    e);
-        }
-
-        try {
-            if (createNewMembershipTable) {
-                LOGGER.log(Level.INFO, "Creating new UserGroupMemberships table...");
-                createQuery = con.prepareStatement(DROPTABLEQUERY);
-                createQuery.execute();
-                createQuery = con.prepareStatement(CREATETABLEQUERY);
-                createQuery.execute();
-
-                LOGGER.log(Level.INFO, "Creating UserGroupMemberships.DoesGroupExist() function...");
-                createQuery = con.prepareStatement(DROPGROUPCHKFUNCQUERY);
-                createQuery.execute();
-                createQuery = con.prepareStatement(CREATEGROUPCHKFUNCQUERY);
-                createQuery.execute();
-
-                LOGGER.log(Level.INFO, "Creating UserGroupMemberships.DoesUserExist() function...");
-                createQuery = con.prepareStatement(DROPUSERCHKFUNCQUERY);
-                createQuery.execute();
-                createQuery = con.prepareStatement(CREATEUSERCHKFUNCQUERY);
-                createQuery.execute();
-            }
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Exception occurred while creating the UserGroupMemberships schema. ",
-                    e);
-        }
-
-        try {
-            insertQuery = con.prepareStatement(INSERTQUERY);
-            deleteQuery1 = con.prepareStatement(DELETEQUERY1);
-            deleteQuery2 = con.prepareStatement(DELETEQUERY2);
-            deleteQuery3 = con.prepareStatement(DELETEQUERY3);
-            selectQuery1 = con.prepareStatement(SELECTQUERY1);
-            selectQuery2 = con.prepareStatement(SELECTQUERY2);
-            grpChkStmt = con.prepareCall(GROUPCHKFUNCALL);
-            grpChkStmt.registerOutParameter(1, java.sql.Types.BOOLEAN);
-            userChkStmt = con.prepareCall(USERCHKFUNCALL);
-            userChkStmt.registerOutParameter(1, java.sql.Types.BOOLEAN);
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Exception occurred while initializing the prepared statements... ",
-                    e);
-        }
-    }
-
-    @Override
-    public void closeConnection() {
-        try {
-            if (null != insertQuery)
-                insertQuery.close();
-            if (null != deleteQuery1)
-                deleteQuery1.close();
-            if (null != deleteQuery2)
-                deleteQuery2.close();
-            if (null != deleteQuery3)
-                deleteQuery3.close();
-            if (null != selectQuery1)
-                selectQuery1.close();
-            if (null != selectQuery2)
-                selectQuery2.close();
-            if (null != grpChkStmt)
-                grpChkStmt.close();
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to close connection. ", e);
-        }
-        super.closeConnection();
-    }
-
-    /**
-     * Retrieves all the records pertaining to a user
+     * Returns an instance of this class for the passed in data source
      *
-     * @param userId
+     * @param dataSource
      * @return
      * @throws SharepointException
      */
-    // TODO: get UserGroupMembership as arguement
-    public List<UserGroupMembership> getAllGroupsForUser(String username)
+    public static UserDataStoreDAO getInstance(DataSource dataSource)
             throws SharepointException {
-        List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
-        ResultSet result = null;
+        return new UserDataStoreDAO(dataSource);
+    }
+
+    UserDataStoreDAO(DataSource dataSource)
+            throws SharepointException {
+        setDataSource(dataSource);
+        setJdbcTemplate(new JdbcTemplate(dataSource));
+        this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
+        confirmDBExistence();
+
+        // Once, the existence of the user_data_store db is confirmed, now
+        // append the db name in the db url so that actual queries can be
+        // executed
+        /*
+         * XXX: This currently is not needed as the connector does not have to
+         * create the database
+         */
+        /*
+         * DriverManagerDataSource dbDatSource = (DriverManagerDataSource)
+         * dataSource; dbDatSource.setUrl(dbDatSource.getUrl() +
+         * SPDAOConstants.DBNAME); setDataSource(dbDatSource);
+         * setJdbcTemplate(new JdbcTemplate(dbDatSource));
+         * this.simpleJdbcTemplate = new SimpleJdbcTemplate(dbDatSource);
+         */
+        this.transactionTemplate = new TransactionTemplate(
+                new DataSourceTransactionManager(dataSource));
+        this.transactionTemplate.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRED);
+        confirmEntitiesExistence();
+    }
+
+    /**
+     * Check if the user data store DB exists or not. If not, creates one.
+     *
+     * @throws SharepointException
+     */
+    private void confirmDBExistence() throws SharepointException {
+        DatabaseMetaData dbm = null;
         try {
-            selectQuery1.setString(1, UserGroupMembership.getNamePattern(username));
-            result = selectQuery1.executeQuery();
+            dbm = getConnection().getMetaData();
+            ResultSet dbs = dbm.getCatalogs();
+            if (null != dbs) {
+                boolean dbExists = false;
+                while (dbs.next()) {
+                    if (SPDAOConstants.DBNAME.equalsIgnoreCase(dbs.getString("TABLE_CAT"))) {
+                        dbExists = true;
+                    }
+                }
+                if (!dbExists) {
+                    /*
+                     * LOGGER.log(Level.INFO, "Creating database... " +
+                     * SPDAOConstants.DBNAME);
+                     * this.simpleJdbcTemplate.update(SPDAOConstants
+                     * .CREATEDBQUERY);
+                     */
+                    throw new SharepointException("Database does not exist");
+                }
+            }
         } catch (Exception e) {
             throw new SharepointException(
-                    "Could not get the membership information due to following exception ",
+                    "Exception occurred while confirming the existance of the user_data_store database ",
                     e);
         }
-        if(null == result) {
-            return memberships;
+    }
+
+    /**
+     * Checks if all the required entities exist in the user data store DB. If
+     * not, creates them. The currently supported entities are
+     * <ul>
+     * <li>user_group_memberships table and two functions:</li>
+     * <li>DoesGroupExists</li>
+     * <li>DoesUserExists</li>
+     * </ul>
+     *
+     * @throws SharepointException
+     */
+    private void confirmEntitiesExistence() throws SharepointException {
+        DatabaseMetaData dbm = null;
+        try {
+            dbm = getConnection().getMetaData();
+            ResultSet resultSet = dbm.getTables(SPDAOConstants.DBNAME, null, SPDAOConstants.TABLENAME, null);
+            if (null == resultSet || !resultSet.next()) {
+                this.simpleJdbcTemplate.getJdbcOperations().batchUpdate(new String[] {
+                        SPDAOConstants.CREATETABLEQUERY,
+                        SPDAOConstants.CREATEGROUPCHKFUNCQUERY,
+                        SPDAOConstants.CREATEUSERCHKFUNCQUERY });
+            }
+            resultSet.close();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
+        }
+    }
+
+    /**
+     * A utility class used to create CallableStatements for calling functions
+     * and procedures using Spring's jdbcTemplate or simpleJdbcTemplate
+     *
+     * @author nitendra_thakur
+     */
+    class CustomCallableStatementCreator implements CallableStatementCreator {
+        String idPattern;
+        String namespace;
+
+        public CustomCallableStatementCreator(String idPattern, String namespace) {
+            this.idPattern = idPattern;
+            this.namespace = namespace;
         }
 
-        try {
-            int columnIndexUserId = result.findColumn("UserId");
-            int columnIndexGroupId = result.findColumn("GroupId");
-            int columnIndexNamespace = result.findColumn("Namespace");
-            for (int i = 0; result.next(); ++i) {
+        public CallableStatement createCallableStatement(Connection con)
+                throws SQLException {
+            CallableStatement cs = con.prepareCall(SPDAOConstants.GROUPCHKFUNCALL);
+            cs.registerOutParameter(1, java.sql.Types.BOOLEAN);
+            cs.setString(2, idPattern);
+            cs.setString(3, namespace);
+            return cs;
+        }
+    }
+
+    /**
+     * A utility class used to create CallableStatementsCallback for calling
+     * functions and procedures using Spring's jdbcTemplate or
+     * simpleJdbcTemplate
+     *
+     * @author nitendra_thakur
+     */
+    class CustomCallableStatementCallback implements CallableStatementCallback {
+        public Boolean doInCallableStatement(CallableStatement cs)
+                throws SQLException, DataAccessException {
+            cs.execute();
+            return cs.getBoolean(1);
+        }
+    }
+
+    /**
+     * Creates a custom transaction callback class to be used while executing
+     * the update queries to user data store as a transaction. This also handles
+     * the table lock by acquiring a WRITE lock on the table before executing
+     * the update query
+     *
+     * @author nitendra_thakur
+     */
+    class CustomTransactionCallback implements TransactionCallback {
+        String sqlQuery;
+        SqlParameterSource param;
+
+        CustomTransactionCallback(String sqlQuery, SqlParameterSource param) {
+            this.sqlQuery = sqlQuery;
+            this.param = param;
+        }
+
+        public Integer doInTransaction(TransactionStatus status) {
+            UserDataStoreDAO.this.simpleJdbcTemplate.update(SPDAOConstants.LOCKTABLEFORWRITE);
+            int count = UserDataStoreDAO.this.simpleJdbcTemplate.update(sqlQuery, param);
+            return count;
+        }
+    }
+
+    /**
+     * A utility class to create the {@link UserGroupMembership} bean from
+     * Result Set
+     *
+     * @author nitendra_thakur
+     */
+    class CustomRowMapper implements
+            ParameterizedRowMapper<UserGroupMembership> {
+        public UserGroupMembership mapRow(ResultSet result, int rowNum)
+                throws SQLException {
+            try {
+                int columnIndexUserId = result.findColumn(SPDAOConstants.COLUMNUSER);
+                int columnIndexGroupId = result.findColumn(SPDAOConstants.COLUMNGROUP);
+                int columnIndexNamespace = result.findColumn(SPDAOConstants.COLUMNNAMESPACE);
                 UserGroupMembership membership = new UserGroupMembership(
                         result.getString(columnIndexUserId),
                         result.getString(columnIndexGroupId),
                         result.getString(columnIndexNamespace));
-                memberships.add(membership);
+                return membership;
+
+            } catch (SharepointException e) {
+                LOGGER.log(Level.WARNING, "Failed to parse and map the result set. ", e);
+                return null;
             }
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Failed to parse the result set to get GroupIds. ", e);
         }
+    }
+
+    /**
+     * Retrieves all the membership information pertaining to a user. This would
+     * be useful to serve the GSA -> CM requests during session channel creation
+     *
+     * @param username the user's login name, NOT the ID
+     * @return list of {@link UserGroupMembership} representing memberships of
+     *         the user
+     */
+    public List<UserGroupMembership> getAllGroupsForUser(final String username) {
+        List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
+        SqlParameterSource namedParams = new MapSqlParameterSource(
+                SPDAOConstants.COLUMNUSER,
+                UserGroupMembership.getNamePattern(username));
+        memberships = simpleJdbcTemplate.query(SPDAOConstants.SELECTQUERYFORUSER, new CustomRowMapper(), namedParams);
         LOGGER.log(Level.CONFIG, memberships.size()
                 + " Memberships identified for user [ " + username + " ]. ");
         return memberships;
     }
 
     /**
-     * Add a user group membership into the User Data Store
+     * Adds a new membership information.
      *
      * @param membership
      * @return
-     * @throws SharepointException
      */
-    public boolean addMembership(UserGroupMembership membership)
-            throws SharepointException {
+    public boolean addMembership(UserGroupMembership membership) {
         if (null == membership || !membership.isValid()) {
             return false;
         }
+        MapSqlParameterSource namedParams = new MapSqlParameterSource(
+                SPDAOConstants.COLUMNUSER, membership.getComplexUserId());
+        namedParams.addValue(SPDAOConstants.COLUMNGROUP, membership.getComplexGroupId());
+        namedParams.addValue(SPDAOConstants.COLUMNNAMESPACE, membership.getNameSpace());
+        int count = 0;
         try {
-            // We must first check if the entry already exists. During the
-            // connector's crawl, case of duplicate insertion is going to occur
-            // very frequently
-            selectQuery2.setString(1, membership.getComplexUserId());
-            selectQuery2.setString(2, membership.getComplexGroupId());
-            selectQuery2.setString(3, membership.getNameSpace());
-            ResultSet result = selectQuery2.executeQuery();
-            if (!result.next()) {
-                insertQuery.setString(1, membership.getComplexUserId());
-                insertQuery.setString(2, membership.getComplexGroupId());
-                insertQuery.setString(3, membership.getNameSpace());
-                insertQuery.execute();
-                commit();
-                return true;
-            } else {
-                return false;
-            }
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Could not get the membership information due to following exception ",
-                    e);
+            count = (Integer) this.transactionTemplate.execute(new CustomTransactionCallback(
+                    SPDAOConstants.INSERTQUERY, namedParams));
+        } catch (DataIntegrityViolationException e) {
+            // During the connector's crawl, case of duplicate insertion is
+            // going to occur very frequently. This need not be considered as a
+            // severe case.
+            LOGGER.log(Level.FINE, "entry already exists for " + membership, e);
+        }
+        if (count > 0) {
+            return true;
+        } else {
+            return false;
         }
     }
 
     /**
-     * Remove all the memberships of a user. The passed in UserGroupMembership
-     * object must have the UserId and Namespace value set
+     * Remove all the memberships from an specified namespace pertaining to a
+     * given of a user.
      *
-     * @param userId
+     * @param userId user ID, NOT the login name
      * @param namespace
-     * @return
-     * @throws SharepointException
+     * @return no. of records deleted
      */
-    public int removeUserMemberships(int userId, String namespace)
-            throws SharepointException {
-        try {
-            deleteQuery1.setString(1, UserGroupMembership.getIdPattern(userId));
-            deleteQuery1.setString(2, namespace);
-            int count = deleteQuery1.executeUpdate();
-            commit();
-            LOGGER.log(Level.INFO, "#" + count
-                    + " rows deleted corresponding to UserId [ " + userId
-                    + " ], Namespace [ " + namespace + " ] ");
-            return count;
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Could not get the user membership information due to following exception ",
-                    e);
-        }
-    }
-
-    /**
-     * Remove all the memberships of a group. The passed in UserGroupMembership
-     * object must have the GroupId, GroupName and Namespace value set
-     *
-     * @param userId
-     * @param namespace
-     * @return
-     * @throws SharepointException
-     */
-    public int removeGroupMemberships(int groupId, String namespace)
-            throws SharepointException {
-        try {
-            deleteQuery2.setString(1, UserGroupMembership.getIdPattern(groupId));
-            deleteQuery2.setString(2, namespace);
-            int count = deleteQuery2.executeUpdate();
-            LOGGER.log(Level.INFO, "#" + count
-                    + " rows deleted corresponding to GroupId [ " + groupId
-                    + " ], Namespace [ " + namespace + " ] ");
-            return count;
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Could not get the group membership information due to following exception ",
-                    e);
-        }
-    }
-
-    /**
-     * Remove all the memberships that belongs to a Namespace
-     *
-     * @param namespace
-     * @return
-     * @throws SharepointException
-     */
-    public int removeAllMembershipsFromNamespace(String namespace)
-            throws SharepointException {
+    public int removeUserMemberships(final int userId, final String namespace) {
         if (null == namespace) {
             return 0;
         }
-        try {
-            deleteQuery3.setString(1, namespace);
-            int count = deleteQuery3.executeUpdate();
-            LOGGER.log(Level.INFO, "#" + count
-                    + " rows deleted corresponding to Namespace [ " + namespace
-                    + " ] ");
-            return count;
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Could not get the membership information due to following exception ",
-                    e);
-        }
+        final MapSqlParameterSource namedParams = new MapSqlParameterSource(
+                SPDAOConstants.COLUMNUSER,
+                UserGroupMembership.getIdPattern(userId));
+        namedParams.addValue(SPDAOConstants.COLUMNNAMESPACE, namespace);
+        return (Integer) this.transactionTemplate.execute(new CustomTransactionCallback(
+                SPDAOConstants.DELETE_QUERY_FOR_USER_NAMESPACE, namedParams));
     }
 
     /**
-     * Check whether a group exists in the UserGroupMemberships relation. The
-     * GroupId and Namespace value must be set in the passed-in membership
+     * Remove all the memberships from an specified namespace pertaining to a
+     * given of a group.
      *
-     * @param membership
-     * @return
-     * @throws SharepointException
+     * @param groupId group ID, NOT the group name
+     * @param namespace
+     * @return no. of records deleted
      */
-    public boolean doesGroupExist(int groupId, String namespace)
-            throws SharepointException {
-        try {
-            grpChkStmt.setString(2, UserGroupMembership.getIdPattern(groupId));
-            grpChkStmt.setString(3, namespace);
-            grpChkStmt.execute();
-            return grpChkStmt.getBoolean(1);
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Could not confirm the group existance due to following exception ",
-                    e);
+    public int removeGroupMemberships(final int groupId, final String namespace) {
+        if (null == namespace) {
+            return 0;
         }
+        MapSqlParameterSource namedParams = new MapSqlParameterSource(
+                SPDAOConstants.COLUMNGROUP,
+                UserGroupMembership.getIdPattern(groupId));
+        namedParams.addValue(SPDAOConstants.COLUMNNAMESPACE, namespace);
+        return (Integer) this.transactionTemplate.execute(new CustomTransactionCallback(
+                SPDAOConstants.DELETE_QUERY_FOR_GROUP_NAMESPACE, namedParams));
     }
 
     /**
-     * Check whether a group exists in the UserGroupMemberships relation. The
-     * GroupId and Namespace value must be set in the passed-in membership
+     * Remove all the memberships that belongs to as specified namespace
      *
-     * @param membership
-     * @return
-     * @throws SharepointException
+     * @param namespace
+     * @return no. of records deleted
      */
-    public boolean doesUserExist(int userId, String namespace)
-            throws SharepointException {
-        try {
-            userChkStmt.setString(2, UserGroupMembership.getIdPattern(userId));
-            userChkStmt.setString(3, namespace);
-            userChkStmt.execute();
-            return userChkStmt.getBoolean(1);
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Could not confirm the user existance due to following exception ",
-                    e);
+    public int removeAllMembershipsFromNamespace(final String namespace) {
+        if (null == namespace) {
+            return 0;
         }
+        MapSqlParameterSource namedParams = new MapSqlParameterSource(
+                SPDAOConstants.COLUMNNAMESPACE, namespace);
+        return (Integer) this.transactionTemplate.execute(new CustomTransactionCallback(
+                SPDAOConstants.DELETE_QUERY_FOR_NAMESPACE, namedParams));
+    }
+
+    /**
+     * Check whether a group-namespace pair exists in user data store.
+     *
+     * @param groupId group ID, NOT the group name
+     * @param namespace
+     * @return
+     */
+    public boolean doesGroupExist(final int groupId, final String namespace) {
+        return (null == namespace) ? null
+                : (Boolean) this.simpleJdbcTemplate.getJdbcOperations().execute(new CustomCallableStatementCreator(
+                UserGroupMembership.getIdPattern(groupId), namespace), new CustomCallableStatementCallback());
+    }
+
+    /**
+     * Check whether a user-namespace pair exists in user data store.
+     *
+     * @param userId user ID, NOT the user's login name
+     * @param namespace
+     * @return
+     */
+    public boolean doesUserExist(final int userId, final String namespace) {
+        return (null == namespace) ? false
+                : (Boolean) this.simpleJdbcTemplate.getJdbcOperations().execute(new CustomCallableStatementCreator(
+                UserGroupMembership.getIdPattern(userId), namespace), new CustomCallableStatementCallback());
     }
 }

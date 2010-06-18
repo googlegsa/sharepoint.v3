@@ -814,6 +814,9 @@ public class SharepointConnectorType implements ConnectorType {
 
             js += "\r\n function trim(s) {return s.replace( /^\\s*/, \"\" ).replace( /\\s*$/, \"\" );}";
 
+            js += "document.getElementById('" + SPConstants.SHAREPOINT_URL
+                    + "').focus()";
+
             js += "\r\n ]]> \r\n </script> \r\n";
             buf.append(js);
         }

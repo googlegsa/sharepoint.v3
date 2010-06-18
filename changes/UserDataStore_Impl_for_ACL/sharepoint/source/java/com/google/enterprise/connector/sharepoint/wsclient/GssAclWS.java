@@ -90,7 +90,9 @@ public class GssAclWS {
             siteurl = sharepointClientContext.getSiteURL();
         }
 
-    endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
+        endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
+        // TODO: these endpoint setting log message should at CONFIG level in
+        // all WS client classes
         LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
 
 
@@ -289,20 +291,16 @@ public class GssAclWS {
                         if (PrincipalType.SPGROUP.equals(principal.getType()) && null != sharepointClientContext.getUserDataStoreDAO()) {
                             GssPrincipal[] members = principal.getMembers();
                             for(GssPrincipal member : members) {
+                                UserGroupMembership membership = null;
                                 try {
-                                    UserGroupMembership membership = new UserGroupMembership(
+                                    membership = new UserGroupMembership(
                                             member.getName(), member.getID(),
                                             principalName, principal.getID(),
                                             wsResult.getSiteCollectionUrl());
                                     sharepointClientContext.getUserDataStoreDAO().addMembership(membership);
-                                } catch (SharepointException e) {
-                                    LOGGER.log(Level.WARNING, "Failed to add the following entry into user data store UserId [ "
-                                            + member.getName()
-                                            + " ], GroupId [ "
-                                            + principalName
-                                            + " ], Namespace [ "
-                                            + wsResult.getSiteCollectionUrl()
-                                            + " ] ", e);
+                                } catch (Exception e) {
+                                    LOGGER.log(Level.WARNING, "User Data Store failure while trying to add new membership [ "
+                                            + membership + " ] ", e);
                                 }
                             }
                         }
@@ -634,7 +632,7 @@ public class GssAclWS {
                                 + userId + " ] ");
                     }
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Filed to update userdata store for the deleted user ID [ "
+                    LOGGER.log(Level.WARNING, "User Data Store failure while trying to remove one of the membership for user ID [ "
                             + userId + " ]. ", e);
                 }
 
@@ -683,9 +681,8 @@ public class GssAclWS {
                                 + groupId + " ] ");
                     }
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Attempt to check the existance of the group ID [ "
-                            + changeObjectHint
-                            + " ] in user data store has failed. ", e);
+                    LOGGER.log(Level.WARNING, "User Data Store failure while trying to remove one of the membership. group ID [ "
+                            + changeObjectHint + " ]. ", e);
                 }
 
                 if(changeType == SPChangeType.Delete) {
@@ -732,17 +729,23 @@ public class GssAclWS {
         for (GssPrincipal group : groups) {
             try {
                 sharepointClientContext.getUserDataStoreDAO().removeGroupMemberships(group.getID(), wsResult.getSiteCollectionUrl());
-                for(GssPrincipal member : group.getMembers()) {
-                    UserGroupMembership membership = new UserGroupMembership(
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "User Data Store failure while trying to remove one of the memerships for GroupId [ "
+                        + group.getID()
+                        + " ], Namespace [ "
+                        + wsResult.getSiteCollectionUrl() + " ] ");
+            }
+            for(GssPrincipal member : group.getMembers()) {
+                UserGroupMembership membership = null;
+                try {
+                    membership = new UserGroupMembership(
                             member.getName(), member.getID(), group.getName(),
                             group.getID(), wsResult.getSiteCollectionUrl());
                     sharepointClientContext.getUserDataStoreDAO().addMembership(membership);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "User Data Store failure while trying to add a membership [ "
+                            + membership + " ] ");
                 }
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Exception occurred while syncing the membership of group GroupId [ "
-                        + group.getName()
-                        + " ], Namespace [ "
-                        + wsResult.getSiteCollectionUrl() + " ] ");
             }
         }
     }

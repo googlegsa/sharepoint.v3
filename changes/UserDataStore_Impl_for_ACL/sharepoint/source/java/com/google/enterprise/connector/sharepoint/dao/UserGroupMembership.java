@@ -127,7 +127,6 @@ public class UserGroupMembership {
         return false;
     }
 
-    @Override
     public int hashCode() {
         int len = (null != nameSpace) ? 0 : nameSpace.length();
         return 13 * ((userId * groupId) / len);
@@ -195,4 +194,9 @@ public class UserGroupMembership {
         return "%" + name;
     }
 
+    public String toString() {
+        return "UserId [ " + getComplexUserId() + " ], GroupId [ "
+                + getComplexGroupId() + " ], Namespace [ " + getNameSpace()
+                + " ] ";
+    }
 }

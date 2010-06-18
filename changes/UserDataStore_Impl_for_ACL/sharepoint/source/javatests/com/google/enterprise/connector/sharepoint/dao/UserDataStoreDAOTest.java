@@ -18,8 +18,9 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.dao.SharePointDAO.DBConfig;
 
 /**
  * @author nitendra_thakur
@@ -35,10 +36,12 @@ public class UserDataStoreDAOTest extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-        DBConfig dbConfig = new DBConfig(TestConfiguration.driverClass,
-                TestConfiguration.dbUrl, TestConfiguration.dbUsername,
-                TestConfiguration.dbPassword);
-        userDataStoreDAO = new UserDataStoreDAO(dbConfig);
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(TestConfiguration.driverClass);
+        dataSource.setUrl(TestConfiguration.dbUrl);
+        dataSource.setUsername(TestConfiguration.dbUsername);
+        dataSource.setPassword(TestConfiguration.dbPassword);
+        userDataStoreDAO = new UserDataStoreDAO(dataSource);
     }
 
     /**
@@ -47,16 +50,17 @@ public class UserDataStoreDAOTest extends TestCase {
      * .
      */
     public void testMemberships() {
-        UserGroupMembership membership = new UserGroupMembership(
-                "gdc04\\nitin", "Users", "http://persistent.co.in");
         try {
-
+            UserGroupMembership membership = new UserGroupMembership("[1]user",
+                    "[2]group", "namespace");
             userDataStoreDAO.addMembership(membership);
 
-            List<String> testGroups = userDataStoreDAO.getAllGroupsForUser(membership.getUserId());
+            List<UserGroupMembership> testGroups = userDataStoreDAO.getAllGroupsForUser(membership.getUserName());
             assertNotNull(testGroups);
+            // Assuming there were no data in the table when the earlier record
+            // was added
             assertEquals(testGroups.size(), 1);
-            assertEquals("Users", testGroups.get(0));
+            assertEquals(membership, testGroups.get(0));
 
             int i = userDataStoreDAO.removeUserMemberships(membership.getUserId(), membership.getNameSpace());
             assertEquals(1, i);
@@ -69,7 +73,7 @@ public class UserDataStoreDAOTest extends TestCase {
             i = userDataStoreDAO.removeAllMembershipsFromNamespace(membership.getNameSpace());
             assertEquals(1, i);
 
-            testGroups = userDataStoreDAO.getAllGroupsForUser("domain\\nitin");
+            testGroups = userDataStoreDAO.getAllGroupsForUser(membership.getUserName());
             assertNotNull(testGroups);
             assertEquals(testGroups.size(), 0);
         } catch (Exception e) {

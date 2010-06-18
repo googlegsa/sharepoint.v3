@@ -443,4 +443,68 @@ public class SPConstants {
         public static final String ENUMERATEPERMISSIONS = "EnumeratePermissions";
         public static final String FULLMASK = "FullMask";
     }
+
+    public static class SPDAOConstants {
+        public static final String DBNAME = "user_data_store";
+        public static final String TABLENAME = "user_group_memberships";
+        public static final String COLUMNUSER = "SPUser";
+        public static final String COLUMNGROUP = "SPGroup";
+        public static final String COLUMNNAMESPACE = "NameSpace";
+
+        // DDL queries for creating the schema. contains one main table and two
+        // functions for checking whether a user/group exists
+        public static final String CREATEDBQUERY = "CREATE DATABASE " + DBNAME;
+        public static final String CREATETABLEQUERY = "CREATE TABLE "
+                + TABLENAME + " ( " + COLUMNUSER + " varchar(50), "
+                + COLUMNGROUP + " varchar(40), " + COLUMNNAMESPACE
+                + " varchar(200), PRIMARY KEY(" + COLUMNUSER + ","
+                + COLUMNGROUP + "," + COLUMNNAMESPACE + ") )";
+        public static final String CREATEGROUPCHKFUNCQUERY = "CREATE FUNCTION DoesGroupExist(InGroup varchar(40), InNamespace varchar(200)) RETURNS BOOLEAN "
+                + " RETURN EXISTS(SELECT "
+                + COLUMNGROUP
+                + " FROM "
+                + TABLENAME
+                + " WHERE "
+                + COLUMNGROUP
+                + " LIKE InGroup AND "
+                + COLUMNNAMESPACE + "=InNamespace)";
+        public static final String CREATEUSERCHKFUNCQUERY = "CREATE FUNCTION DoesUserExist(InUser varchar(40), InNamespace varchar(200)) RETURNS BOOLEAN "
+                + " RETURN EXISTS(SELECT "
+                + COLUMNUSER
+                + " FROM "
+                + TABLENAME
+                + " WHERE "
+                + COLUMNUSER
+                + " LIKE InUser AND "
+                + COLUMNNAMESPACE + "=InNamespace)";
+
+        public static final String GROUPCHKFUNCALL = "{? = call DoesGroupExist(?,?) }";
+        public static final String USERCHKFUNCALL = "{? = call DoesUserExist(?,?) }";
+
+        public static final String SELECTQUERYFORUSER = "SELECT * FROM "
+                + TABLENAME + " WHERE " + COLUMNUSER + " LIKE :" + COLUMNUSER;
+        public static final String INSERTQUERY = "INSERT INTO " + TABLENAME
+                + " VALUES(:" + COLUMNUSER + ",:" + COLUMNGROUP + ",:"
+                + COLUMNNAMESPACE + ")";
+        public static final String DELETE_QUERY_FOR_USER_NAMESPACE = "DELETE FROM "
+                + TABLENAME
+                + " WHERE "
+                + COLUMNUSER
+                + " LIKE :"
+                + COLUMNUSER
+                + " AND " + COLUMNNAMESPACE + "=:" + COLUMNNAMESPACE;
+        public static final String DELETE_QUERY_FOR_GROUP_NAMESPACE = "DELETE FROM "
+                + TABLENAME
+                + " WHERE "
+                + COLUMNGROUP
+                + " LIKE :"
+                + COLUMNGROUP
+                + " AND " + COLUMNNAMESPACE + "=:" + COLUMNNAMESPACE;
+        public static final String DELETE_QUERY_FOR_NAMESPACE = "DELETE FROM "
+                + TABLENAME + " WHERE " + COLUMNNAMESPACE + "=:"
+                + COLUMNNAMESPACE;
+
+        public static final String LOCKTABLEFORWRITE = "LOCK TABLES user_group_memberships WRITE";
+        public static final String UNLOCKTABLE = "UNLOCK TABLES";
+    }
 }

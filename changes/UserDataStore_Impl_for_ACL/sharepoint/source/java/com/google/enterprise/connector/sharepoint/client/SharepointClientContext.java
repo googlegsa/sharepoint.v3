@@ -38,11 +38,11 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
-import com.google.enterprise.connector.sharepoint.dao.SharePointDAO.DBConfig;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
 
@@ -295,22 +295,25 @@ public class SharepointClientContext implements Cloneable {
         // DBConfig values are actually to be come from the connector
         // configuration page or CM spi.
         // Create a property file named UserDataStoreConfig.properties inside
-        // the connector instance directory and
-        // specify the folowing values:
-        /*
-         * DriverClass=com.mysql.jdbc.Driver
-         * DBURL=jdbc:mysql://localhost:3306/UserDataStore DBUsername=root
-         * DBPassword=pspl!@#
-         */
+        // the sharepoint-connector directory which is parent directory where
+        // connector instance directory is created. And, specify the following
+        // values:
+
+        // DriverClass=com.mysql.jdbc.Driver
+        // DBURL=jdbc:mysql://localhost:3306/user_data_store
+        // DBUsername=root
+        // DBPassword=pspl!@#
+
         try {
-             Properties properties = new Properties();
-             properties.load(new FileInputStream(googleConnectorWorkDir + "/UserDataStoreConfig.properties"));
-            DBConfig dbConfig = new DBConfig(
-                    properties.getProperty("DriverClass"),
-                    properties.getProperty("DBURL"),
-                    properties.getProperty("DBUsername"),
-                    properties.getProperty("DBPassword"));
-            userDataStoreDAO = UserDataStoreDAO.getInstance(dbConfig);
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(googleConnectorWorkDir
+                    + "/../UserDataStoreConfig.properties"));
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName(properties.getProperty("DriverClass"));
+            dataSource.setUrl(properties.getProperty("DBURL"));
+            dataSource.setUsername(properties.getProperty("DBUsername"));
+            dataSource.setPassword(properties.getProperty("DBPassword"));
+            userDataStoreDAO = UserDataStoreDAO.getInstance(dataSource);
         } catch (Throwable e) {
             e.printStackTrace();
         }

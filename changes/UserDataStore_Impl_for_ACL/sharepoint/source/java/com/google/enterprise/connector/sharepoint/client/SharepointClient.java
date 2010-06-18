@@ -200,7 +200,9 @@ public class SharepointClient {
         }
 
         // Fetch ACL for all the documents crawled from the current WebState
-        if (sharepointClientContext.isPushAcls()) {
+        if (sharepointClientContext.isPushAcls() && null != resultSet && resultSet.size() > 0) {
+            LOGGER.log(Level.INFO, "Fetching ACls for #" + resultSet.size()
+                    + " documents crawled from web " + webState.getWebUrl());
             try {
                 GssAclWS aclWs = new GssAclWS(sharepointClientContext,
                         webState.getWebUrl());
