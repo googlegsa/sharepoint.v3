@@ -40,7 +40,8 @@ public class GSSiteDiscoveryWSTest extends TestCase {
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
         System.out.println("Initializing GSSiteDiscoveryWS ...");
-        this.siteDisc = new GSSiteDiscoveryWS(this.sharepointClientContext);
+        this.siteDisc = new GSSiteDiscoveryWS(this.sharepointClientContext,
+                TestConfiguration.sharepointUrl);
     }
 
     public final void testGetMatchingSiteCollections() {
