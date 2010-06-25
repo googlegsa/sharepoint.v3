@@ -1,21 +1,21 @@
-Release Notes
+﻿Release Notes
 =============
 
-Google Search Appliance Resource Kit for SharePoint 2.4.6 (32-bit)
+Google Search Appliance Resource Kit for SharePoint 2.6.0 (32-bit)
 
-This document contains the release notes for Google Search Appliance Resource Kit for SharePoint 2.4.6 (32-bit).
+This document contains the release notes for Google Search Appliance Resource Kit for SharePoint 2.6.0 (32-bit).
 The following sections describe the release in detail and provide information that supplements the main documentation.
 See the Issues Tab on the Code Site for the current list of known issues and workarounds.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 2.4.6, 18 Jan, 2010
+Release 2.6.0, 25 June, 2010
 ===========================
 
 INTRODUCTION
 ------------
-This is an early access release for wide evaluation and usage. Your feedback is important to us. Keep in mind that we are continuing to work on Google Search Appliance Resource Kit for SharePoint 2.4.6 (32-bit) and things may change in the future.
+This is an early access release for wide evaluation and usage. Your feedback is important to us. Keep in mind that we are continuing to work on Google Search Appliance Resource Kit for SharePoint 2.6.0 (32-bit) and things may change in the future.
 
 Pre-requisites
 ---------------
@@ -26,11 +26,11 @@ Pre-requisites
 
 Note:
 -----
-If you have already installed Google Services for SharePoint or Google Search Box for SharePoint earlier using the old installer (i.e. GSS.msi or GSBI.msi or Google Search Appliance Resource Kit for SharePoint 1.x.x), please uninstall them before trying the Google Search Appliance Resource Kit for SharePoint 2.4.6 installer.
+If you have already installed Google Services for SharePoint or Google Search Box for SharePoint earlier using the old installer (i.e. GSS.msi or GSBI.msi or Google Search Appliance Resource Kit for SharePoint 1.x.x), please uninstall them before trying the Google Search Appliance Resource Kit for SharePoint 2.6.0 installer.
 
 Features
 ---------
-1. Google Search Appliance Resource Kit for SharePoint 2.4.6 (32-bit) installer bundles following components:
+1. Google Search Appliance Resource Kit for SharePoint 2.6.0 (32-bit) installer bundles following components:
 	a) Google Search Box for SharePoint: It represents Google Search Box for SharePoint. When selected, the Google Search Box for SharePoint is enabled on all SharePoint web applications on a machine, which share the same search control.
 	b) Google Services for SharePoint: The Google Services for SharePoint are custom web services used by the Google Search Appliance Connector for Microsoft SharePoint 2007 and Microsoft SharePoint 2010.
 	c) GSA Resource Kit for SharePoint: It represents the following utilities:
@@ -40,8 +40,9 @@ Features
 
 Issues fixed from last release:
 -------------------------------
-Issue 130: GSA Resource Kit for SharePoint fails to install on Windows Server 2008.
-
+1. Issue 12:  Support batch authZ  
+   Bundles new SAML bridge which supports batch authorization and is compatible with GSA 6.4 Security Manager.
+2. Bundles new version of GSS which have web service to fetch ACLs and fetch SharePoint search indexing flags.
 
 Version Compatibility
 ---------------------
@@ -52,7 +53,7 @@ The Google Services for SharePoint are supported on the following SharePoint ver
 
 Platform Support
 -----------------
-Google Resource Kit for SharePoint 2.4.6 (32-bit) can be installed on Windows Server 2003 Enterprise (32-bit)/Windows Server 2008 Enterprise (32-bit) Operating System.
+Google Resource Kit for SharePoint 2.6.0 (32-bit) can be installed on Windows Server 2003 Enterprise (32-bit)/Windows Server 2008 Enterprise (32-bit) Operating System.
 
 Note: 
 -----
