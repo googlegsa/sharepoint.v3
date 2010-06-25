@@ -10,7 +10,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 2.6.0, 18 Jan, 2010
+Release 2.6.0, 25 June, 2010
 ===========================
 
 INTRODUCTION
@@ -40,7 +40,9 @@ Features
 
 Issues fixed from last release:
 -------------------------------
-Issue 130: GSA Resource Kit for SharePoint fails to install on Windows Server 2008
+1. Issue 12:  Support batch authZ  
+   Bundles new SAML bridge which supports batch authorization and is compatible with GSA 6.4 Security Manager.
+2. Bundles new version of GSS which have web service to fetch ACLs and fetch SharePoint search indexing flags.
 
 
 Version Compatibility
@@ -48,6 +50,7 @@ Version Compatibility
 The Google Services for SharePoint are supported on the following SharePoint versions:
 * Microsoft Office SharePoint Server 2007 (MOSS 2007) 
 * Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
+* Microsoft Office SharePoint Server 2010 (MOSS 2010)  
 
 Platform Support
 ------------------
