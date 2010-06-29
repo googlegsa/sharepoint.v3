@@ -89,6 +89,12 @@ Certified Against
 -------------------
 32-bit:
 -------
+Microsoft Windows Server 2008
+Windows Server Standard Service Pack 2
+Processor: Intel(R) Xeon(R) CPU    E5504 @ 2.00 GHz 2.00 GHz
+Memory (RAM): 2.00 GB
+System Type: 32-bit Operating System
+
 Microsoft Windows Server 2003
 Enterprise Edition
 Intel(R) Xeon(R) CPU
@@ -100,6 +106,12 @@ E5504 @ 2.00GHz, 2.00 GB of RAM
 
 64-bit:
 --------
+Microsoft Windows Server 2008
+Windows Server Standard Service Pack 2
+Processor: Intel(R) Xeon(R) CPU    E5620 @ 2.40 GHz 2.39 GHz
+Memory (RAM): 4.00 GB
+System Type: 64-bit Operating System
+
 Microsoft Windows Server 2003
 Enterprise x64 Edition
 Intel(R) Xeon(R) CPU
