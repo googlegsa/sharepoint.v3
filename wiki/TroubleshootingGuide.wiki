@@ -51,8 +51,7 @@ This section describes some commonly encountered error messages and their likely
  Possible reasons:
   * 401 Unauthorized: Check the credential (domain/username/password) for the correctness and the privilege that is assigned to this on the SharePoint URL.
   * 404 Not Found: The requested SharePoint URL could not be found but may be available again in the future.
-  * 403 Forbidden: Often caused by the SharePoint site being configured to use Forms
-Based Authentication.
+  * 403 Forbidden: Often caused by the SharePoint site being configured to use Forms Based Authentication.
 
 
  For a complete listing of the response codes, refer to http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html 
