@@ -43,6 +43,8 @@ Issues fixed from last release:
 1. Issue 12:  Support batch authZ  
    Bundles new SAML bridge which supports batch authorization and is compatible with GSA 6.4 Security Manager.
 2. Bundles new version of GSS which have web service to fetch ACLs and fetch SharePoint search indexing flags.
+3. Issue 151:  Google Search Appliance Resource Kit for SharePoint 2010  
+   The Google Search Appliance Resource Kit for SharePoint 2.6.0 installer release contains support for Sharepoint 2010.
 
 
 Version Compatibility
