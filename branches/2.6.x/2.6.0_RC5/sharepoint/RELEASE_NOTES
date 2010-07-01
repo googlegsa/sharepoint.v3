@@ -57,6 +57,8 @@ Version Compatibility
 This version works with Connector Manager Version 2.4.0 and above. It is recommended to upgrade to Connector Manager 2.4.4
 Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
 
+Upgrade on an existing connector is allowed only for 2.4.X and above versions of the connector.
+
 Supported SharePoint versions
 -----------------------------
 SharePoint 2003
