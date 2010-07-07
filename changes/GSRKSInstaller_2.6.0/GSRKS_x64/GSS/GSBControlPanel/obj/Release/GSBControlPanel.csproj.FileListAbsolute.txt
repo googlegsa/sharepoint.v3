@@ -46,3 +46,13 @@ C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\R
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\GSBControlPanel.frmWebApplicationList.resources
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\GSBControlPanel.frmGSAParams.resources
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\GSBControlPanel.csproj.GenerateResource.Cache
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\bin\Release\Configuration Wizard.exe
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\bin\Release\Configuration Wizard.pdb
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\bin\Release\Microsoft.SharePoint.Search.dll
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\bin\Release\Microsoft.SharePoint.Search.xml
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Release\ResolveAssemblyReference.cache
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Release\GSBControlPanel.frmWebApplicationList.resources
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Release\GSBControlPanel.frmGSAParams.resources
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Release\GSBControlPanel.csproj.GenerateResource.Cache
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Release\Configuration Wizard.exe
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Release\Configuration Wizard.pdb

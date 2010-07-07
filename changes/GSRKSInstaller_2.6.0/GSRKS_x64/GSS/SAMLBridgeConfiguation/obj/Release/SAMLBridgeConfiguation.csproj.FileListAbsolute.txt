@@ -75,3 +75,12 @@ C:\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguatio
 C:\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
 C:\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
 C:\Google Search Appliance Resource Kit for SharePoint_x64\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\bin\Release\SAMLConfigurationManager.cs
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.exe
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.pdb
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\obj\Release\ResolveAssemblyReference.cache
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\obj\Release\SAMLConfiguration.frmSAMLConfiguration.resources
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.Properties.Resources.resources
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
+C:\priya\GSS Installer from SVN\GSS\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb

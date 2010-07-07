@@ -7,6 +7,7 @@ using Microsoft.SharePoint.Utilities;
 
 [WebService(Namespace = "gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com")]
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+
 public class BulkAuthorization : System.Web.Services.WebService
 {
     /// <summary>
@@ -22,24 +23,24 @@ public class BulkAuthorization : System.Web.Services.WebService
         try
         {
             bool isAlert = false;
-      String listURL = authData.listURL;
+            String listURL = authData.listURL;
 
-      SPSecurity.RunWithElevatedPrivileges(delegate()
+            SPSecurity.RunWithElevatedPrivileges(delegate()
             {
                 // Let's try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.
-            try
-            {
-              site = new SPSite(listURL);
+                try
+                {
+                    site = new SPSite(listURL);
                     if (site == null)
                     {
                         site = new SPSite(SwitchURLFormat(listURL));
                     }
-            }
-            catch (Exception e)
-            {
+                }
+                catch (Exception e)
+                {
                     site = new SPSite(SwitchURLFormat(listURL));
-            }
-          });
+                }
+            });
 
             web = site.OpenWeb();
             SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, loginId, SPPrincipalType.All, false);
@@ -100,7 +101,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             if (authData.listItemId == null || authData.listItemId == "" || authData.listItemId.StartsWith("{"))
             {
                 bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                authData.isAllowed = isAllowed;                
+                authData.isAllowed = isAllowed;
             }
             else
             {
@@ -113,7 +114,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         catch (Exception e)
         {
             string logMsg = "Following error occurred while authorizing user [ " + loginId + " ] against docid [ " + authData.complexDocId + " ] :" + e.Message;
-            authData.error += logMsg;            
+            authData.error += logMsg;
         }
         finally
         {
@@ -139,7 +140,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         foreach (AuthData ad in authData)
         {
-            Authorize(ad, loginId);            
+            Authorize(ad, loginId);
         }
         return authData;
     }
@@ -149,18 +150,21 @@ public class BulkAuthorization : System.Web.Services.WebService
     /// </summary>
     /// <returns></returns>
     [WebMethod]
-    public string CheckConnectivity() {
+    public string CheckConnectivity()
+    {
         // All the pre-requisites for running this web service should be checked here. 
         // Currently, we are ensuring that RunWithElevatedPrivileges works.
-      try {
-        SPSecurity.RunWithElevatedPrivileges(delegate() {        
-        });
-      }
-      catch (Exception e)
-      {
-        return e.Message;
-      }
-      return "success";
+        try
+        {
+            SPSecurity.RunWithElevatedPrivileges(delegate()
+            {
+            });
+        }
+        catch (Exception e)
+        {
+            return e.Message;
+        }
+        return "success";
     }
 
     /// <summary>
@@ -215,7 +219,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         }
         SiteURL = url.Scheme + "://" + host + ":" + url.Port + url.AbsolutePath;
         return SiteURL;
-    }   
+    }
 }
 
 /// <summary>
@@ -226,9 +230,34 @@ public class BulkAuthorization : System.Web.Services.WebService
 [Serializable]
 public class AuthData
 {
-    public string listURL;
-    public string listItemId;
-    public bool isAllowed;
-    public string error;
-    public string complexDocId;
+    public String listURL
+    {
+        get { return _listURL; }
+        set { _listURL = value; }
+    }
+    public String listItemId
+    {
+        get { return _listItemId; }
+        set { _listItemId = value; }
+    }
+    public Boolean isAllowed
+    {
+        get { return _isAllowed; }
+        set { _isAllowed = value; }
+    }
+    public String error
+    {
+        get { return _error; }
+        set { _error = value; }
+    }
+    public String complexDocId
+    {
+        get { return _complexDocId; }
+        set { _complexDocId = value; }
+    }
+    private string _listURL;
+    private string _listItemId;
+    private bool _isAllowed;
+    private string _error;
+    private string _complexDocId;
 }

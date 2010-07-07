@@ -113,3 +113,13 @@ C:\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\
 C:\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\Verify Installation.exe
 C:\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\Verify Installation.pdb
 C:\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\bin\Release\Verify Installation.exe.config
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\bin\Release\Verify Installation.exe
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\bin\Release\Verify Installation.XmlSerializers.dll
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\bin\Release\Verify Installation.pdb
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\obj\Release\ResolveAssemblyReference.cache
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\obj\Release\WindowsApplication1.frmVerifyInstallation.resources
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\obj\Release\CheckConnectivity.csproj.GenerateResource.Cache
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\obj\Release\Verify Installation.exe
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\obj\Release\Verify Installation.pdb
+C:\priya\GSS Installer from SVN\GSS\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll

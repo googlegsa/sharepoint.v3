@@ -53,3 +53,12 @@ C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.dll
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.xml
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.pdb
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.exe
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.dll
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.xml
+C:\priya\GSS Installer from SVN\GSS\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.pdb

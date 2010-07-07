@@ -8,3 +8,13 @@ C:\GSBControlPanel\obj\Debug\GSBControlPanel.frmGSAParams.resources
 C:\GSBControlPanel\obj\Debug\GSBControlPanel.csproj.GenerateResource.Cache
 C:\GSBControlPanel\obj\Debug\Configuration Wizard.exe
 C:\GSBControlPanel\obj\Debug\Configuration Wizard.pdb
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\bin\Debug\Configuration Wizard.exe
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\bin\Debug\Configuration Wizard.pdb
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\bin\Debug\Microsoft.SharePoint.Search.dll
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\bin\Debug\Microsoft.SharePoint.Search.xml
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Debug\ResolveAssemblyReference.cache
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Debug\GSBControlPanel.frmWebApplicationList.resources
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Debug\GSBControlPanel.frmGSAParams.resources
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Debug\GSBControlPanel.csproj.GenerateResource.Cache
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Debug\Configuration Wizard.exe
+C:\priya\GSS Installer from SVN\GSS\GSBControlPanel\obj\Debug\Configuration Wizard.pdb
