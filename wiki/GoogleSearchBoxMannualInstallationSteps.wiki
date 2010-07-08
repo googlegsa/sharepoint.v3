@@ -9,13 +9,13 @@
 ==Steps:== 
   
    # Place GSASearchresults.aspx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS 
-(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\LAYOUTS directory) 
+     (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\LAYOUTS directory) 
    # Place GSASearchArea.ascx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES 
-(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES directory)
+    (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES directory)
    # Place file google_custom_search_watermark.gif in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\IMAGES 
-(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\IMAGES directory)
+    (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\IMAGES directory)
    # Place Folder "GSAFeature" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\FEATURES
-(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\FEATURES directory)
+    (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\FEATURES directory)
    # For installation and activatation of the "GSAFeature" 
       {{{ 
          * Open Windows Command prompt. 
