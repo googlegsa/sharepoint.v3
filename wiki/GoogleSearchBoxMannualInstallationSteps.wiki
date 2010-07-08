@@ -1,5 +1,5 @@
 #summary Manual installation steps for Google Search Box
-==Instructions for manual deployment of Google Search Box for SharePoint== 
+==Instructions for manual deployment of Google Search Box for SharePoint 2007== 
   
    * The search Box can be deployed on machine with WSS 3.0 or MOSS 2007 installed. 
    * The documents should be fed and indexed on appliance before doing search  
@@ -44,4 +44,58 @@
          * copy the contents of file "SPS_frontend.xslt" 
          * save it 
  }}} 
+
+
+
+
+
+
+
+#summary Manual installation steps for Google Search Box
+==Instructions for manual deployment of Google Search Box for SharePoint 2010== 
+  
+   * The search Box can be deployed on machine with WSS 4.0 or MOSS 2010 installed. 
+   * The documents should be fed and indexed on appliance before doing search  
+   * For a SharePoint farm scenario, you need to install the Search Box for all the SharePoint server machines connected to the farm. 
+  
+==Steps:== 
+  
+   # Place searchresults.aspx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\LAYOUTS 
+   # Place SearchArea.ascx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\CONTROLTEMPLATES 
+   # Place file google_custom_search_watermark.gif in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\IMAGES 
+   # Place Folder "GSAFeature" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\FEATURES 
+   # For installation and activatation of the "GSAFeature" 
+      {{{ 
+         * Open Windows Command prompt. 
+         * Go to directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\BIN 
+         * Run following commands  
+                 stsadm.exe -o installfeature -name GSAFeature -force 
+                 stsadm.exe -o activatefeature -name GSAFeature -force 
+      }}} 
+   # To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application. 
+ {{{ 
+         * In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened 
+         * In the Windows Explorer, right click on web.config -> Edit 
+         * Go to "<appSettings>" section (For MOSS 2010). In case of WSS 4.0 you need to create a new "<appSettings>" section 
+         * Add following keys under it. (Following are sample values for reference) 
+          
+             <!--Beginning of GSA search control section --> 
+             <add key="GSALocation" value="http://gsa.mycompany.mydomain.com" /> 
+             <add key="siteCollection" value="default_collection" /> 
+             <add key="frontEnd" value="SPS_frontend" /> 
+             <add key="verbose" value="True" /> 
+             <add key="GSAStyle" value="false" /> 
+             <add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\GSA2SP.xsl" /> 
+             <add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\SP_Actual.xsl" /> 
+             <add key="logLocation" value="C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\" /> 
+             <!--End of GSA search control section --> 
+ }}} 
+   # To setup SharePoint like frontend: 
+ {{{ 
+         * open GSA Admin page->Serving->FrontEnd 
+         * create a new frontend "SPS_frontend" 
+         * copy the contents of file "SPS_frontend.xslt" 
+         * save it 
+ }}} 
+ 
  
