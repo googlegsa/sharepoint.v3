@@ -8,8 +8,8 @@
   
 ==Steps:== 
   
-   # Place GSASearchresults.aspx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\LAYOUTS directory) 
-   # Place GSASearchArea.ascx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES directory)
+   # Place GSASearchresults.aspx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS {{(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\LAYOUTS directory) 
+   # Place GSASearchArea.ascx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES {{(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES directory)
    # Place file google_custom_search_watermark.gif in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\IMAGES 
    # Place Folder "GSAFeature" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\FEATURES 
    # For installation and activatation of the "GSAFeature" 
@@ -45,5 +45,3 @@
          * copy the contents of file "SPS_frontend.xslt" 
          * save it 
  }}} 
-
-
