@@ -97,21 +97,6 @@ public class UserGroupMembership {
         return false;
     }
 
-    /**
-     * Checks if all the required values are present or not
-     *
-     * @return
-     */
-    public boolean isValid() {
-        if (null == userName || userName.trim().length() == 0
-                || null == groupName || groupName.trim().length() == 0
-                || null == nameSpace
-                || nameSpace.trim().length() == 0) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     public boolean equals(Object obj) {
         UserGroupMembership inMembership = null;

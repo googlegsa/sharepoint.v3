@@ -116,9 +116,6 @@ public class GssAclWS {
         stub.setPassword(strPassword);
     }
 
-    // TODO: It's better use command pattern for executing web services methods.
-    // This is applicable to all the WS Java clients in the current package.
-
     /**
      * Executes GetAclForUrls() web method of GssAcl web service. Used to get
      * the ACL of a set of entities.
@@ -184,6 +181,7 @@ public class GssAclWS {
                 + wsResult.getLogMessage() + " ]");
         GssAcl[] allAcls = wsResult.getAllAcls();
         if (null != allAcls && allAcls.length != 0) {
+            List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
             ACL:
             for (GssAcl acl : allAcls) {
                 String entityUrl = acl.getEntityUrl();
@@ -292,16 +290,13 @@ public class GssAclWS {
                             GssPrincipal[] members = principal.getMembers();
                             for(GssPrincipal member : members) {
                                 UserGroupMembership membership = null;
-                                try {
-                                    membership = new UserGroupMembership(
-                                            member.getName(), member.getID(),
-                                            principalName, principal.getID(),
-                                            wsResult.getSiteCollectionUrl());
-                                    sharepointClientContext.getUserDataStoreDAO().addMembership(membership);
-                                } catch (Exception e) {
-                                    LOGGER.log(Level.WARNING, "User Data Store failure while trying to add new membership [ "
-                                            + membership + " ] ", e);
-                                }
+                                membership = new UserGroupMembership(
+                                        member.getName(), member.getID(),
+                                        principalName, principal.getID(),
+                                        wsResult.getSiteCollectionUrl());
+
+                                // TODO Check from the local cache if it could be already there in the db. If not, than only add.
+                                memberships.add(membership);
                             }
                         }
                     } else {
@@ -314,6 +309,13 @@ public class GssAclWS {
                 }
                 document.setUsersAclMap(userPermissionMap);
                 document.setGroupsAclMap(groupPermissionMap);
+            }
+            try {
+                sharepointClientContext.getUserDataStoreDAO().addMemberships(memberships);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to add #"
+                        + memberships.size()
+                        + " memberships in user data store. ", e);
             }
         }
     }
@@ -526,8 +528,10 @@ public class GssAclWS {
         Set<ListState> processedLists = new HashSet<ListState>();
 
         // All groups where there are some membership changes
+        // TODO: why not this is integer?
         List<String> changedGroups = new ArrayList<String>();
-
+        List<Integer> deletedGroups = new ArrayList<Integer>();
+        List<Integer> deletedUsers = new ArrayList<Integer>();
         for (GssAclChange change : changes) {
             if (null == change) {
                 continue;
@@ -614,26 +618,11 @@ public class GssAclWS {
                     // Rest all are covered as part of web/list/item/group
                     // specific changes. Refer to the WS impl. for more details
                     && changeType == SPChangeType.Delete) {
-                int userId = 0;
                 try {
-                    userId = Integer.parseInt(changeObjectHint);
+                    deletedUsers.add(new Integer(changeObjectHint));
                 } catch(Exception e) {
                     LOGGER.log(Level.WARNING, "UserId [ " + changeObjectHint + " ] is invalid. skipping... ", e);
                     continue;
-                }
-
-                try {
-                    boolean knownUser = sharepointClientContext.getUserDataStoreDAO().doesUserExist(userId, wsResult.getSiteCollectionUrl());
-                    if (knownUser) {
-                        int count = sharepointClientContext.getUserDataStoreDAO().removeUserMemberships(userId, wsResult.getSiteCollectionUrl());
-                        LOGGER.log(Level.INFO, "Total "
-                                + count
-                                + " records deleted corresponding to the deleted user ID [ "
-                                + userId + " ] ");
-                    }
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "User Data Store failure while trying to remove one of the membership for user ID [ "
-                            + userId + " ]. ", e);
                 }
 
                 // TODO: Even if the user is not known to the user data store,
@@ -654,38 +643,15 @@ public class GssAclWS {
             }
             // Administrators are treated as another SPGroup
             else if (objType == ObjectType.GROUP || objType == ObjectType.ADMINISTRATORS) {
-                int groupId = 0;
-                try {
-                    groupId = Integer.parseInt(changeObjectHint);
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "GroupId [ " + changeObjectHint
-                            + " ] is invalid. skipping... ", e);
-                    continue;
-                }
-                // We process the changed group only if it is already known to
-                // the connector. There might be some groups which has never
-                // been sent into the ACLS. We do not need to worry about the
-                // changes of such groups. Also, checking if the group
-                // is a known group requires a trip to the user data store.
-                // In case of any failure, we assume the worst case scenario;
-                // hence, marking true by default.
-                try {
-                    boolean knownGroup = sharepointClientContext.getUserDataStoreDAO().doesGroupExist(Integer.parseInt(changeObjectHint), wsResult.getSiteCollectionUrl());
-                    if (!knownGroup) {
-                        continue;
-                    } else {
-                        int count = sharepointClientContext.getUserDataStoreDAO().removeGroupMemberships(groupId, wsResult.getSiteCollectionUrl());
-                        LOGGER.log(Level.INFO, "Total "
-                                + count
-                                + " records deleted corresponding to the deleted group ID [ "
-                                + groupId + " ] ");
-                    }
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "User Data Store failure while trying to remove one of the membership. group ID [ "
-                            + changeObjectHint + " ]. ", e);
-                }
-
                 if(changeType == SPChangeType.Delete) {
+                    try {
+                        deletedGroups.add(Integer.parseInt(changeObjectHint));
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "GroupId [ "
+                                + changeObjectHint
+                                + " ] is invalid. skipping... ", e);
+                        continue;
+                    }
                     // TODO: A re-crawl due to Group deletion can be avoided
                     // by storing more ACL information in the local data
                     // store.
@@ -702,7 +668,7 @@ public class GssAclWS {
         }
 
         // Sync the membership of all changed groups
-        syncGroupMembership(changedGroups);
+        syncGroupMembership(deletedUsers, deletedGroups, changedGroups, wsResult.getSiteCollectionUrl());
 
         if (null == webstate.getNextAclChangeToken()
                 || webstate.getNextAclChangeToken().trim().length() == 0) {
@@ -711,43 +677,87 @@ public class GssAclWS {
     }
 
     /**
-     * Removes all the existing membership information for the group and add the
-     * incoming ones
+     * Updates all the deleted/changed user group membership information into
+     * the user data store.
+     *
+     * @param deletedUsers
+     * @param deletedGroups
+     * @param changedGroups
+     * @param siteCollectionUrl
      */
-    private void syncGroupMembership(List<String> groupIdsToSync) {
-        if (null == sharepointClientContext.getUserDataStoreDAO()
-                || null == groupIdsToSync || groupIdsToSync.size() == 0) {
+    private void syncGroupMembership(List<Integer> deletedUsers,
+            List<Integer> deletedGroups, List<String> changedGroups,
+            String siteCollectionUrl) {
+        if (null == sharepointClientContext.getUserDataStoreDAO()) {
             return;
         }
-        String[] groupIds = new String[groupIdsToSync.size()];
-        groupIdsToSync.toArray(groupIds);
-        GssResolveSPGroupResult wsResult = resolveSPGroup(groupIds);
-        if (null == wsResult) {
-            return;
-        }
-        GssPrincipal[] groups = wsResult.getPrinicpals();
-        for (GssPrincipal group : groups) {
+
+        if (null != deletedUsers && deletedUsers.size() > 0) {
             try {
-                sharepointClientContext.getUserDataStoreDAO().removeGroupMemberships(group.getID(), wsResult.getSiteCollectionUrl());
+                sharepointClientContext.getUserDataStoreDAO().removeUserMembershipsFromNamespace(deletedUsers, siteCollectionUrl);
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "User Data Store failure while trying to remove one of the memerships for GroupId [ "
-                        + group.getID()
-                        + " ], Namespace [ "
-                        + wsResult.getSiteCollectionUrl() + " ] ");
+                LOGGER.log(Level.WARNING, "Failed to remove user memberships from namespace [ "
+                        + siteCollectionUrl + " ] ");
             }
-            for(GssPrincipal member : group.getMembers()) {
-                UserGroupMembership membership = null;
-                try {
-                    membership = new UserGroupMembership(
-                            member.getName(), member.getID(), group.getName(),
-                            group.getID(), wsResult.getSiteCollectionUrl());
-                    sharepointClientContext.getUserDataStoreDAO().addMembership(membership);
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "User Data Store failure while trying to add a membership [ "
-                            + membership + " ] ");
+        }
+
+        List<UserGroupMembership> newMemberships = processChangedGroupsToSync(deletedGroups, changedGroups);
+
+        // First, remove the existing membership
+        if (null != deletedGroups && deletedGroups.size() > 0) {
+            try {
+                sharepointClientContext.getUserDataStoreDAO().removeGroupMembershipsFromNamespace(deletedGroups, siteCollectionUrl);
+                // Now, add the updated membership
+                if (null != newMemberships && newMemberships.size() > 0) {
+                    try {
+                        sharepointClientContext.getUserDataStoreDAO().addMemberships(newMemberships);
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "Failed to add #"
+                                + newMemberships
+                                + " memberships under namespace [ "
+                                + siteCollectionUrl + " ]");
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to remove group memberships from namespace [ "
+                        + siteCollectionUrl + " ] ");
+            }
+        }
+    }
+
+    /**
+     * Add all the changed groups in the list of deleted groups and return them
+     * as a list of newMembership. Deleting and re-inserting the membership is
+     * the way to keep group membership info synchronized
+     *
+     * @param deletedGroups
+     * @param changedGroups
+     * @return
+     */
+    private List<UserGroupMembership> processChangedGroupsToSync(
+            List<Integer> deletedGroups, List<String> changedGroups) {
+        List<UserGroupMembership> newMemberships = new ArrayList<UserGroupMembership>();
+        if (null != changedGroups && changedGroups.size() > 0) {
+            String[] groupIds = new String[changedGroups.size()];
+            changedGroups.toArray(groupIds);
+            GssResolveSPGroupResult wsResult = resolveSPGroup(groupIds);
+            if (null != wsResult) {
+                GssPrincipal[] groups = wsResult.getPrinicpals();
+                if (null != groups && groups.length > 0) {
+                    for (GssPrincipal group : groups) {
+                        deletedGroups.add(group.getID());
+
+                        for (GssPrincipal member : group.getMembers()) {
+                            newMemberships.add(new UserGroupMembership(
+                                    member.getName(), member.getID(),
+                                    group.getName(), group.getID(),
+                                    wsResult.getSiteCollectionUrl()));
+                        }
+                    }
                 }
             }
         }
+        return newMemberships;
     }
 
     /**

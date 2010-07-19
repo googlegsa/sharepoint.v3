@@ -55,4 +55,15 @@
       -->
   </bean>
 
+  <!-- Use this bean to configure the literals in user data store -->
+  <!--
+  <bean id="udsQueryBuilder" class="com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder">
+    <property name="database"><value>User_Data_Store</value></property>
+    <property name="table"><value>User_Group_Memberships</value></property>
+    <property name="user"><value>SPUser</value></property>
+    <property name="group"><value>SPGroup</value></property>
+    <property name="namespace"><value>NameSpace</value></property>
+  </bean>
+  -->
+
 </beans>

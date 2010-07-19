@@ -42,6 +42,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.dao.QueryBuilder;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
@@ -82,6 +83,7 @@ public class SharepointClientContext implements Cloneable {
     private boolean stripDomainFromAces = true;
 
     private UserDataStoreDAO userDataStoreDAO;
+    private QueryBuilder udsQueryBuilder;
 
     /**
      * For cloning
@@ -290,7 +292,11 @@ public class SharepointClientContext implements Cloneable {
                 + "] , mySiteBaseURL = [" + inMySiteBaseURL
                 + "], aliasMapString = [" + inAliasMapString + "], FeedType ["
                 + inFeedType + "]. ");
+    }
 
+    // XXX this can be a part of constructor. Currently, i want to avoid lots
+    // many dependent changes
+    public void init() {
         // FIXME:This is a temporary code snippet for integration testing. The
         // DBConfig values are actually to be come from the connector
         // configuration page or CM spi.
@@ -313,13 +319,18 @@ public class SharepointClientContext implements Cloneable {
             dataSource.setUrl(properties.getProperty("DBURL"));
             dataSource.setUsername(properties.getProperty("DBUsername"));
             dataSource.setPassword(properties.getProperty("DBPassword"));
-            userDataStoreDAO = UserDataStoreDAO.getInstance(dataSource);
+            // XXX Using a default query builder.
+            /*
+             * QueryBuilder queryBuilder = new UserDataStoreQueryBuilder(
+             * "User_Data_Store", "User_Group_Memberships", "SPUser", "SPGroup",
+             * "NameSpace");
+             */
+            userDataStoreDAO = new UserDataStoreDAO(dataSource,
+                    this.udsQueryBuilder);
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
     }
-
     /**
      * @param sharepointUrl
      * @throws SharepointException
@@ -946,5 +957,14 @@ public class SharepointClientContext implements Cloneable {
 
     public void setUserDataStoreDAO(UserDataStoreDAO userDataStoreDAO) {
         this.userDataStoreDAO = userDataStoreDAO;
+    }
+
+    public QueryBuilder getUdsQueryBuilder() {
+        return udsQueryBuilder;
+    }
+
+    public void setUdsQueryBuilder(QueryBuilder queryBuilder) {
+        this.udsQueryBuilder = queryBuilder;
+        this.udsQueryBuilder.addSuffix(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir));
     }
 }

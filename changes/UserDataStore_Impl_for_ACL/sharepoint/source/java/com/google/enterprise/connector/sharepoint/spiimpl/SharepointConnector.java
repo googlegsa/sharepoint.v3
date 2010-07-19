@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.dao.QueryBuilder;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -53,6 +54,7 @@ public class SharepointConnector implements Connector {
     private String authorizationAsfeedType = null;
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
+    private QueryBuilder udsQueryBuilder;
 
     public SharepointConnector() {
 
@@ -301,6 +303,8 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
+        sharepointClientContext.setUdsQueryBuilder(udsQueryBuilder);
+        sharepointClientContext.init();
     }
 
     /**
@@ -317,7 +321,7 @@ public class SharepointConnector implements Connector {
         return excluded_metadata;
     }
 
-public String getKdcserver() {
+    public String getKdcserver() {
         return kdcserver;
     }
 
@@ -339,5 +343,13 @@ public String getKdcserver() {
 
     public void setStripDomainFromAces(boolean stripDomainFromAces) {
         this.stripDomainFromAces = stripDomainFromAces;
+    }
+
+    public QueryBuilder getUdsQueryBuilder() {
+        return udsQueryBuilder;
+    }
+
+    public void setUdsQueryBuilder(QueryBuilder queryBuilder) {
+        this.udsQueryBuilder = queryBuilder;
     }
 }

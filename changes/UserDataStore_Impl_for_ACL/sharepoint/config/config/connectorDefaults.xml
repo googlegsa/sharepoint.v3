@@ -41,6 +41,7 @@
     <property name="FQDNConversion"><value>false</value></property>
     <property name="pushAcls"><value>true</value></property>
     <property name="stripDomainFromAces"><value>true</value></property>
+    <property name="udsQueryBuilder" ref="udsQueryBuilder" />
   </bean>
 
   <bean id="propertyPlaceholderConfigurer"
@@ -61,5 +62,13 @@
             </props>
         </property>
     </bean>
+
+  <bean id="udsQueryBuilder" class="com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder">
+    <constructor-arg index="0" type="java.lang.String" value="User_Data_Store"/>
+    <constructor-arg index="1" type="java.lang.String" value="User_Group_Memberships"/>
+    <constructor-arg index="2" type="java.lang.String" value="SPUser"/>
+    <constructor-arg index="3" type="java.lang.String" value="SPGroup"/>
+    <constructor-arg index="4" type="java.lang.String" value="NameSpace"/>
+  </bean>
 
 </beans>

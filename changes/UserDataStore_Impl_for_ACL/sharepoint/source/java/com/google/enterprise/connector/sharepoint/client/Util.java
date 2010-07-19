@@ -39,6 +39,7 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -1215,14 +1216,14 @@ public final class Util {
                 open = true;
             }
 
-            if (objectType.ITEM.equals(objectType)) {
+            if (ObjectType.ITEM.equals(objectType)) {
                 if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
                     roleTypes.add(RoleType.WRITER);
                 }
                 if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
                     roleTypes.add(RoleType.READER);
                 }
-            } else if (objectType.LIST.equals(objectType)) {
+            } else if (ObjectType.LIST.equals(objectType)) {
                 if (!managelist
                         && SPBasePermissions.MANAGELISTS.equals(permission)) {
                     managelist = true;
@@ -1240,12 +1241,30 @@ public final class Util {
             // to be added here
         }
 
-        if (objectType.LIST.equals(objectType) && managelist && additems) {
+        if (ObjectType.LIST.equals(objectType) && managelist && additems) {
             roleTypes.add(RoleType.WRITER);
         }
         if (viewFormPages && open) {
             roleTypes.add(RoleType.PEEKER);
         }
         return roleTypes;
+    }
+
+    /**
+     * Finds the connector name from googleconnectorURL by tokenizing the URL
+     * and getting the leaf directory name
+     *
+     * @param googleConnectorWorkDir
+     * @return
+     */
+    public static String getConnectorNameFromDirectoryUrl(
+            String googleConnectorWorkDir) {
+        String directory = null;
+        StringTokenizer tokenizer = new StringTokenizer(googleConnectorWorkDir,
+                File.separator);
+        while (tokenizer.hasMoreTokens()) {
+            directory = tokenizer.nextToken();
+        }
+        return directory;
     }
 }
