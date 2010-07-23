@@ -15,8 +15,6 @@
 package com.google.enterprise.connector.sharepoint.dao;
 
 import java.sql.BatchUpdateException;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +27,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
+import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.Query;
 import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.QueryType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
@@ -37,7 +36,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
  * Currently, there is only one DAO extending this class,
  * {@link UserDataStoreDAO}
  * <p>
- * The most highlighted feature of this class is the fallback implementation in
+ * The most highlighted feature of this class is the fall-back implementation in
  * case a batch update fails. The class provides appropriate APIs for executing
  * update queries in batch and also ensures that no loss should occur to other
  * queries when any one of them fails. This is achieved by falling back to
@@ -54,6 +53,9 @@ public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
     SimpleJdbcTemplate simpleJdbcTemplate;
     QueryBuilder queryBuilder;
 
+    SimpleSharePointDAO(int i) {
+    }
+
     SimpleSharePointDAO(DataSource dataSource, QueryBuilder queryBuilder)
             throws SharepointException {
         if (null == dataSource || null == queryBuilder) {
@@ -65,57 +67,14 @@ public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
         setDataSource(dataSource);
         setJdbcTemplate(new JdbcTemplate(dataSource));
         this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
-        confirmDBExistence();
-
-        // Once, the existence of database is confirmed, now
-        // append the db name in the db url so that actual queries can be
-        // executed
-        /*
-         * XXX: This currently is not needed as the connector does not have to
-         * create the database
-         */
-        /*
-         * DriverManagerDataSource dbDatSource = (DriverManagerDataSource)
-         * dataSource; dbDatSource.setUrl(dbDatSource.getUrl() +
-         * SPDAOConstants.DBNAME); setDataSource(dbDatSource);
-         * setJdbcTemplate(new JdbcTemplate(dbDatSource));
-         * this.simpleJdbcTemplate = new SimpleJdbcTemplate(dbDatSource);
-         */
-        confirmEntitiesExistence();
-    }
-
-    /**
-     * Check if the database exists or not.
-     *
-     * @throws SharepointException
-     */
-    void confirmDBExistence() throws SharepointException {
-        DatabaseMetaData dbm = null;
         try {
-            dbm = getConnection().getMetaData();
-            ResultSet dbs = dbm.getCatalogs();
-            if (null != dbs) {
-                boolean dbExists = false;
-                while (dbs.next()) {
-                    if (queryBuilder.getDatabase().equalsIgnoreCase(dbs.getString("TABLE_CAT"))) {
-                        dbExists = true;
-                    }
-                }
-                if (!dbExists) {
-                    /*
-                     * LOGGER.log(Level.INFO, "Creating database... " +
-                     * SPDAOConstants.DBNAME);
-                     * this.simpleJdbcTemplate.update(SPDAOConstants
-                     * .CREATEDBQUERY);
-                     */
-                    throw new SharepointException("Database does not exist");
-                }
-            }
+            getConnection();
         } catch (Exception e) {
             throw new SharepointException(
-                    "Exception occurred while confirming the existance of the user_data_store database ",
+                    "Could not create the database conection for specified data source",
                     e);
         }
+        confirmEntitiesExistence();
     }
 
     /**
@@ -126,25 +85,7 @@ public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
      *
      * @throws SharepointException
      */
-    void confirmEntitiesExistence() throws SharepointException {
-        if (null == queryBuilder.getTables()
-                || queryBuilder.getTables().length == 0) {
-            return;
-        }
-        DatabaseMetaData dbm = null;
-        try {
-            dbm = getConnection().getMetaData();
-            for (String table : queryBuilder.getTables()) {
-                ResultSet resultSet = dbm.getTables(queryBuilder.getDatabase(), null, table, null);
-                if (null == resultSet || !resultSet.next()) {
-                    this.simpleJdbcTemplate.update(queryBuilder.createQuery(QueryType.CREATETABLEQUERY).getQuery());
-                }
-                resultSet.close();
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
-        }
-    }
+    abstract void confirmEntitiesExistence() throws SharepointException;
 
     /**
      * Uses Spring's SimpleJdbcTemplate's batch update feature for executing
@@ -173,110 +114,143 @@ public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
      * does is to log such events and proceed. Such scenarios, of course, can
      * leave the user data store in a bad state.
      *
-     * @param params query parameters
-     * @param query SQL query
+     * @param params an array of {@link SqlParameterSource}; each representing
+     *            the parameters to construct one SQL query. Hence, The length
+     *            of the array will indicate the number of SQL queries executed
+     *            in batch.
+     * @param query query to be executed specified as {@link Query}
      * @return status of each query execution (=no. of rows updated) in the same
      *         order in which the queries were specified
      * @throws SharepointException
      */
-    int[] batchUpdate(SqlParameterSource[] params, QueryType query)
+    int[] batchUpdate(SqlParameterSource[] params, Query query)
             throws SharepointException {
         if (null == params || 0 == params.length) {
-            return null;
+            throw new SharepointException(
+                    "No parameter found for executing query [ "
+                            + query
+                            + " ]. Such query should not be executed as a batchUpdate");
         }
-        // used when the batch update fails
+
         int[] batchStatus = null;
-
-        // the position where the failure occurred
-        int[] initPos = new int[1];
-
-        // the execution status received after the batch execution. This can be
-        // the final status if the batch execution completed successfully
-        int[] optimisticBatchStatus = null;
-
         try {
-            optimisticBatchStatus = simpleJdbcTemplate.batchUpdate(queryBuilder.createQuery(query).getQuery(), params);
+            batchStatus = simpleJdbcTemplate.batchUpdate(query.getQuery(), params);
             LOGGER.info("BatchUpdate completed successfully for #"
-                    + optimisticBatchStatus.length + " records. Query [ "
-                    + query + " ] ");
-            return optimisticBatchStatus;
+                    + batchStatus.length + " records. Query [ " + query + " ] ");
         } catch (Exception e) {
             if (null == e.getCause()
                     || !(e.getCause() instanceof BatchUpdateException)) {
                 LOGGER.log(Level.WARNING, "BatchUpdate failed for query [  "
                         + query + " ]", e);
             } else {
-                BatchUpdateException batchUpdateException = (BatchUpdateException) e.getCause();
-                batchStatus = handleBatchUpdateException(batchUpdateException, optimisticBatchStatus, params.length, initPos);
-                if (null != batchStatus && batchStatus.length == params.length) {
-                    return batchStatus;
-                }
+                batchStatus = handleBatchUpdateException((BatchUpdateException) e.getCause(), params, query);
+                LOGGER.info("BatchUpdate completed with a fallback for #"
+                        + batchStatus.length + " records. Query [ " + query
+                        + " ] ");
             }
         } catch (Throwable t) {
             // This would be an error. No point in retrying, so no
-            // fallback..
+            // fall-back..
             throw new SharepointException("Batch execution failed abruptly!! ",
                     t);
         }
 
-        LOGGER.log(Level.WARNING, "Falling back to individual query execution. starting from index "
-                + initPos[0]);
-        return fallbackAddMemerbships(batchStatus, params, initPos[0], query);
+        return batchStatus;
     }
 
     /**
-     * fall back the query execution from batch mode to individual mode
+     * Creates the {@link Query} from specified {@link QueryType} and call
+     * {@link SimpleSharePointDAO#batchUpdate(SqlParameterSource, Query)}
      *
-     * @param batchStatus the final status to be returned at the end
-     * @param params query parameters
-     * @param initPos position from where the queries are to be executed
-     *            individually
-     * @param query SQL query
+     * @param params an array of {@link SqlParameterSource}; each representing
+     *            the parameters to construct one SQL query. Hence, The length
+     *            of the array will indicate the number of SQL queries executed
+     *            in batch.
+     * @param query type of query to be executed specified as {@link QueryType}
+     * @return status of each query execution (=no. of rows updated) in the same
+     *         order in which the queries were specified
+     * @throws SharepointException
+     */
+    int[] batchUpdate(SqlParameterSource[] params, QueryType queryType)
+            throws SharepointException {
+        return batchUpdate(params, queryBuilder.createQuery(queryType));
+    }
+
+    /**
+     * Analyze the batch exception, identifies the exact position where the
+     * execution was stopped. Fall-back to individual query execution from this
+     * index
+     *
+     * @param batchUpdateException the exception to be handled
+     * @param params an array of {@link SqlParameterSource}; each representing
+     *            the parameters to construct one SQL query. Hence, The length
+     *            of the array will indicate the number of SQL queries executed
+     *            in batch.
+     * @param query query to be executed specified as {@link Query}
      * @return status of each query execution (=no. of rows updated) in the same
      *         order in which the queries were specified
      */
-    int[] fallbackAddMemerbships(int[] batchStatus,
-            SqlParameterSource[] params, int initPos, QueryType query) {
-        if (null == batchStatus) {
-            LOGGER.warning("batch status is null after batch update. Initializing it for fallback. All the queries will be executed individually");
+    int[] handleBatchUpdateException(BatchUpdateException batchUpdateException,
+            SqlParameterSource[] params, Query query) {
+        // the position where batch execution was stopped
+        int initPos = 0;
+        int[] batchStatus = null;
+        int[] optimisticBatchStatus = batchUpdateException.getUpdateCounts();
+        if (null != optimisticBatchStatus) {
+            if (optimisticBatchStatus.length == params.length) {
+                // TODO after caching is implemented, logging the
+                // exception here will make sense
+                LOGGER.log(Level.FINE, "Not all the queries executed successfully however, the attempt for execution was made for all of them.", batchUpdateException);
+                return optimisticBatchStatus;
+            } else {
+                LOGGER.log(Level.WARNING, "Batch update processing was stopped at index "
+                        + (optimisticBatchStatus.length - 1)
+                        + " of "
+                        + (params.length - 1), batchUpdateException);
+                initPos = optimisticBatchStatus.length;
+                batchStatus = new int[params.length];
+                System.arraycopy(optimisticBatchStatus, 0, batchStatus, 0, optimisticBatchStatus.length);
+            }
+        } else {
             batchStatus = new int[params.length];
         }
+
+        LOGGER.log(Level.WARNING, "Falling back to individual query execution. starting from index "
+                + initPos);
 
         while (initPos < params.length) {
             try {
                 batchStatus[initPos] = update(params[initPos], query);
             } catch (SharepointException e) {
-                LOGGER.log(Level.WARNING, "", e);
+                LOGGER.log(Level.WARNING, "Execution failed for query [ "
+                        + query + " ]", e);
                 batchStatus[initPos] = Statement.EXECUTE_FAILED;
             }
             ++initPos;
         }
+
         return batchStatus;
     }
 
     /**
      * Executes a single update query. Used after the fall back from batch mode
      *
-     * @param params query parameters
-     * @param query SQL query
+     * @param param {@link SqlParameterSource} query parameter to construct the
+     *            SQL query
+     * @param query query to be executed specified as {@link Query}
      * @return status of the query execution (=no. of rows updated)
      * @throws SharepointException
      */
-    int update(SqlParameterSource param, QueryType query)
+    int update(SqlParameterSource param, Query query)
             throws SharepointException {
         int count = -1;
         if (null == param) {
             LOGGER.log(Level.WARNING, "Specified record is Invalid [ " + param
                     + " ] ");
-            return Statement.EXECUTE_FAILED;
         }
         try {
-            count = this.simpleJdbcTemplate.update(queryBuilder.createQuery(query).getQuery(), param);
+            count = this.simpleJdbcTemplate.update(query.getQuery(), param);
         } catch (DataIntegrityViolationException e) {
-            // During the connector's crawl, case of duplicate insertion is
-            // going to occur very frequently. This need not be considered as a
-            // severe case.
-            // TODO: implement a cache to reduce the integrity violation
             LOGGER.log(Level.FINE, "entry already exists for " + param, e);
         } catch (Throwable e) {
             throw new SharepointException(
@@ -287,48 +261,17 @@ public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
     }
 
     /**
-     * Analyze the batch exception, identifies the exact position where the
-     * execution was stopped to determine how and from where the fall back
-     * should proceed. Initiates the fall back based on its finding
+     * Creates the {@link Query} from specified {@link QueryType} and call
+     * {@link SimpleSharePointDAO#update(SqlParameterSource, Query)}
      *
-     * @param batchUpdateException the exception to be handled
-     * @param optimisticBatchStatus the status as retrieved after the batch
-     *            execution
-     * @param totalQueries total no. of queries that was passed for batch
-     *            execution
-     * @param initPos an array with of length one tends to store the position at
-     *            which the batch execution was stopped
-     * @return status of each query execution (=no. of rows updated) in the same
-     *         order in which the queries were specified
+     * @param param {@link SqlParameterSource} query parameter to construct the
+     *            SQL query
+     * @param query type of query to be executed specified as {@link QueryType}
+     * @return status of the query execution (=no. of rows updated)
+     * @throws SharepointException
      */
-    int[] handleBatchUpdateException(
-            BatchUpdateException batchUpdateException,
-            int[] optimisticBatchStatus, int totalQueries, int[] initPos) {
-        optimisticBatchStatus = batchUpdateException.getUpdateCounts();
-        if (null == optimisticBatchStatus) {
-            return null;
-        }
-        if (totalQueries == optimisticBatchStatus.length) {
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Not all the queries executed successfully however, the attempt for execution was made for all of them.", batchUpdateException);
-            } else {
-                LOGGER.log(Level.WARNING, "Not all the queries executed successfully however, the attempt for execution was made for all of them.");
-            }
-            return optimisticBatchStatus;
-        }
-
-        while (initPos[0] < optimisticBatchStatus.length
-                && optimisticBatchStatus[++initPos[0]] != Statement.EXECUTE_FAILED)
-            ;
-        LOGGER.log(Level.WARNING, "Batch update processing was stopped at index "
-                + initPos
-                + " of "
-                + totalQueries
-                + " because the command at this index could not be executed.  ", batchUpdateException);
-        int[] batchStatus = new int[totalQueries];
-        for (int i = 0; i < optimisticBatchStatus.length; ++i) {
-            batchStatus[i] = optimisticBatchStatus[i];
-        }
-        return batchStatus;
+    int update(SqlParameterSource param, QueryType queryType)
+            throws SharepointException {
+        return update(param, queryBuilder.createQuery(queryType));
     }
 }

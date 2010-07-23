@@ -55,6 +55,7 @@ public class SharepointConnector implements Connector {
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
     private QueryBuilder udsQueryBuilder;
+    private int udsCacheSize;
 
     public SharepointConnector() {
 
@@ -303,8 +304,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
-        sharepointClientContext.setUdsQueryBuilder(udsQueryBuilder);
-        sharepointClientContext.init();
+        sharepointClientContext.init(udsCacheSize);
     }
 
     /**
@@ -351,5 +351,13 @@ public class SharepointConnector implements Connector {
 
     public void setUdsQueryBuilder(QueryBuilder queryBuilder) {
         this.udsQueryBuilder = queryBuilder;
+    }
+
+    public int getUdsCacheSize() {
+        return udsCacheSize;
+    }
+
+    public void setUdsCacheSize(int udsCacheSize) {
+        this.udsCacheSize = udsCacheSize;
     }
 }

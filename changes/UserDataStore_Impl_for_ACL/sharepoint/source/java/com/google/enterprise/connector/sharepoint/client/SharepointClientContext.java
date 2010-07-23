@@ -44,6 +44,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.dao.QueryBuilder;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
 
@@ -83,7 +84,6 @@ public class SharepointClientContext implements Cloneable {
     private boolean stripDomainFromAces = true;
 
     private UserDataStoreDAO userDataStoreDAO;
-    private QueryBuilder udsQueryBuilder;
 
     /**
      * For cloning
@@ -296,7 +296,7 @@ public class SharepointClientContext implements Cloneable {
 
     // XXX this can be a part of constructor. Currently, i want to avoid lots
     // many dependent changes
-    public void init() {
+    public void init(int cacheSize) {
         // FIXME:This is a temporary code snippet for integration testing. The
         // DBConfig values are actually to be come from the connector
         // configuration page or CM spi.
@@ -319,18 +319,21 @@ public class SharepointClientContext implements Cloneable {
             dataSource.setUrl(properties.getProperty("DBURL"));
             dataSource.setUsername(properties.getProperty("DBUsername"));
             dataSource.setPassword(properties.getProperty("DBPassword"));
-            // XXX Using a default query builder.
-            /*
-             * QueryBuilder queryBuilder = new UserDataStoreQueryBuilder(
-             * "User_Data_Store", "User_Group_Memberships", "SPUser", "SPGroup",
-             * "NameSpace");
-             */
+
+            // TODO Currently, the sqlQueries property file is picked up from
+            // sharepoint-connector directory. This may change.
+            QueryBuilder udsQueryBuilder = new UserDataStoreQueryBuilder(
+                    new File(googleConnectorWorkDir
+                            + "/../sqlQueries.properties"),
+                    "User_Group_Memberships");
+            udsQueryBuilder.addSuffix(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir));
             userDataStoreDAO = new UserDataStoreDAO(dataSource,
-                    this.udsQueryBuilder);
+                    udsQueryBuilder, cacheSize);
         } catch (Throwable e) {
             e.printStackTrace();
         }
     }
+
     /**
      * @param sharepointUrl
      * @throws SharepointException
@@ -957,14 +960,5 @@ public class SharepointClientContext implements Cloneable {
 
     public void setUserDataStoreDAO(UserDataStoreDAO userDataStoreDAO) {
         this.userDataStoreDAO = userDataStoreDAO;
-    }
-
-    public QueryBuilder getUdsQueryBuilder() {
-        return udsQueryBuilder;
-    }
-
-    public void setUdsQueryBuilder(QueryBuilder queryBuilder) {
-        this.udsQueryBuilder = queryBuilder;
-        this.udsQueryBuilder.addSuffix(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir));
     }
 }

@@ -28,7 +28,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
  *
  * @author nitendra_thakur
  */
-public class UserGroupMembership {
+public class UserGroupMembership implements Comparable<UserGroupMembership> {
     private int userId;
     private String userName;
     private int groupId;
@@ -40,7 +40,7 @@ public class UserGroupMembership {
      * @param group
      * @param nameSpace
      */
-    protected UserGroupMembership(String user, String group, String nameSpace)
+    public UserGroupMembership(String user, String group, String nameSpace)
             throws SharepointException {
         final Pattern pattern = Pattern.compile("^\\[\\-{0,1}\\d+\\]");
         Matcher matcher = null;
@@ -114,7 +114,7 @@ public class UserGroupMembership {
 
     public int hashCode() {
         int len = (null != nameSpace) ? 0 : nameSpace.length();
-        return 13 * ((userId * groupId) / len);
+        return (11 * ((userId * 3) + (groupId * 7)) + len);
     }
 
     public int getUserId() {
@@ -183,5 +183,21 @@ public class UserGroupMembership {
         return "UserId [ " + getComplexUserId() + " ], GroupId [ "
                 + getComplexGroupId() + " ], Namespace [ " + getNameSpace()
                 + " ] ";
+    }
+
+    public int compareTo(UserGroupMembership o) {
+        if(getUserId() != o.getUserId()) {
+            return (getUserId() > o.getUserId()) ? 1 : -1;
+        } else if(getGroupId() != o.getGroupId()) {
+            return (getGroupId() > o.getGroupId()) ? 1 : -1;
+        } else {
+            int len1 = (null != getNameSpace()) ? 0 : nameSpace.length();
+            int len2 = (null != o.getNameSpace()) ? 0 : nameSpace.length();
+            if (len1 != len2) {
+                return (len1 > len2) ? 1 : -1;
+            } else {
+                return 0;
+            }
+        }
     }
 }

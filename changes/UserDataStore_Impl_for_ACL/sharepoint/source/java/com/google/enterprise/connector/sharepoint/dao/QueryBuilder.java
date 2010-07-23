@@ -33,7 +33,7 @@ public interface QueryBuilder {
      * @author nitendra_thakur
      */
     enum QueryType {
-        CREATEDBQUERY, CREATETABLEQUERY, SELECTQUERYFORUSER, INSERTQUERY, DELETE_QUERY_FOR_USER_NAMESPACE, DELETE_QUERY_FOR_GROUP_NAMESPACE, DELETE_QUERY_FOR_NAMESPACE
+        UDS_CREATE_TABLE, UDS_SELECT_FOR_USER, UDS_INSERT, UDS_DELETE_FOR_USER_NAMESPACE, UDS_DELETE_FOR_GROUP_NAMESPACE, UDS_DELETE_FOR_NAMESPACE, UDS_DROP_TABLE
     }
 
     /**
@@ -52,7 +52,7 @@ public interface QueryBuilder {
             return query;
         }
 
-        public QueryType getQueryName() {
+        public QueryType getQueryType() {
             return queryType;
         }
 
@@ -62,6 +62,10 @@ public interface QueryBuilder {
 
         public void setQueryType(QueryType queryType) {
             this.queryType = queryType;
+        }
+
+        public String toString() {
+            return query;
         }
     }
 
@@ -78,11 +82,10 @@ public interface QueryBuilder {
     // A suffix can be specified after initialization.
     void addSuffix(String suffix);
 
-    // XXX This, actually, should not be a part of the QueryBuilder. It's been
-    // kept
-    // here just because the way database info is passed to the connector and
-    // the way database is created is still in dark. At the end, this API should
-    // be removed from this interface.
+    // FIXME This, actually, should not be a part of the QueryBuilder. It's been
+    // kept here just because the way database info is passed to the connector
+    // and the way database is created is still in dark. At the end, this API
+    // should be removed from this interface.
     String getDatabase();
 
     /**

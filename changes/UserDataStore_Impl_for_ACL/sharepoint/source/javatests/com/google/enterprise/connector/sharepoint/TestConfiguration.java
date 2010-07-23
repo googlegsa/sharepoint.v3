@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,11 +26,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.sql.DataSource;
+
 import org.joda.time.DateTime;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.dao.QueryBuilder;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -92,10 +99,10 @@ public class TestConfiguration {
     public static boolean FQDNflag;
     public static FeedType feedType;
 
-	public static String driverClass;
-	public static String dbUrl;
-	public static String dbUsername;
-	public static String dbPassword;
+    public static String driverClass;
+    public static String dbUrl;
+    public static String dbUsername;
+    public static String dbPassword;
 
     static {
         final Properties properties = new Properties();
@@ -172,10 +179,10 @@ public class TestConfiguration {
         FQDNflag = false;
         feedType = FeedType.METADATA_URL_FEED;
 
-		driverClass = properties.getProperty("DriverClass");
-		dbUrl = properties.getProperty("DBURL");
-		dbUsername = properties.getProperty("DBUsername");
-		dbPassword = properties.getProperty("DBPassword");
+        driverClass = properties.getProperty("DriverClass");
+        dbUrl = properties.getProperty("DBURL");
+        dbUsername = properties.getProperty("DBUsername");
+        dbPassword = properties.getProperty("DBPassword");
     }
 
     public static Map<String, String> getConfigMap() {
@@ -474,5 +481,42 @@ public class TestConfiguration {
             }
         }
         return globalState;
+    }
+
+    /**
+     * gets a sample data source for user data store
+     *
+     * @return
+     */
+    public static DataSource getUserDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(TestConfiguration.driverClass);
+        dataSource.setUrl(TestConfiguration.dbUrl);
+        dataSource.setUsername(TestConfiguration.dbUsername);
+        dataSource.setPassword(TestConfiguration.dbPassword);
+        return dataSource;
+    }
+
+    public static QueryBuilder getUserDataStoreQueryBuilder()
+            throws SharepointException {
+        return new UserDataStoreQueryBuilder(new File(
+                "config\\config\\sqlQueries.properties"),
+                "User_Group_Memberships");
+    }
+
+    public static List<UserGroupMembership> getMembershipsForNameSpace(
+            String namespace) throws SharepointException {
+        List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
+        UserGroupMembership membership1 = new UserGroupMembership("[1]user1",
+                "[2]group1", namespace);
+        memberships.add(membership1);
+        UserGroupMembership membership2 = new UserGroupMembership("[2]user2",
+                "[2]group1", namespace);
+        memberships.add(membership2);
+        UserGroupMembership membership3 = new UserGroupMembership("[3]user3",
+                "[2]group2", namespace);
+        memberships.add(membership3);
+
+        return memberships;
     }
 }

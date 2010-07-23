@@ -14,6 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.text.MessageFormat;
+import java.util.Properties;
+
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 /**
@@ -22,80 +28,75 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
  * @author nitendra_thakur
  */
 public class UserDataStoreQueryBuilder implements QueryBuilder {
-    // The encoding scheme to be used in the table
-    private static final String characterSet = "UTF8";
-
     // names used to indicate the columns when the values are passed to a query.
     // Typically used for constructing named parameters, to avoid traditional ?
     // in prepared statements. Hence, these should not be confused with the
     // actual names of the column which are passed at run time
-    public static final String COLUMNUSER = "user";
-    public static final String COLUMNGROUP = "group";
-    public static final String COLUMNNAMESPACE = "namespace";
+    public static final String COLUMNUSER = "SPUser";
+    public static final String COLUMNGROUP = "SPGroup";
+    public static final String COLUMNNAMESPACE = "NameSpace";
 
-    // Various literals used for constructing queries. These all are just names
-    // and not the actual entities
-    private String database;
     private String table;
-    private String user;
-    private String group;
-    public String namespace;
+    Properties sqlQueries;
 
-    public UserDataStoreQueryBuilder(String database, String table,
-            String user,
-            String group, String namespace) {
+    public UserDataStoreQueryBuilder(File fileSqlQueries, String table)
+            throws SharepointException {
         super();
-        this.database = database;
+        if (null == fileSqlQueries) {
+            throw new SharepointException(
+                    "No sqlQueries.properties file specified! ");
+        }
+        if (table == null || table.trim().length() == 0) {
+            throw new SharepointException("Invalid table name! ");
+        }
         this.table = table;
-        this.user = user;
-        this.group = group;
-        this.namespace = namespace;
+        try {
+            sqlQueries = new Properties();
+            InputStream inQuery = new FileInputStream(fileSqlQueries);
+            sqlQueries.load(inQuery);
+        } catch (Exception e) {
+            throw new SharepointException(
+                    "Could not load sqlQueries.properties file from "
+                            + fileSqlQueries.getAbsolutePath());
+        }
     }
 
-    public Query createQuery(QueryType type)
-            throws SharepointException {
+    public Query createQuery(QueryType type) throws SharepointException {
         Query udsQuery = new Query();
         udsQuery.setQueryType(type);
         switch (type) {
-        case CREATEDBQUERY:
-            udsQuery.setQuery("CREATE DATABASE " + database);
+        case UDS_CREATE_TABLE:
+            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table));
             break;
 
-            case CREATETABLEQUERY:
-            udsQuery.setQuery("CREATE TABLE " + table + " ( " + user
-                    + " varchar(40) NOT NULL, " + group
-                    + " varchar(40) NOT NULL, " + namespace
-                    + " varchar(200) NOT NULL, PRIMARY KEY(" + user + ","
-                    + group + "," + namespace + ") )  CHARACTER SET "
-                    + characterSet);
+        case UDS_SELECT_FOR_USER:
+            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
+                    + COLUMNUSER));
             break;
 
-            case SELECTQUERYFORUSER:
-            udsQuery.setQuery("SELECT " + user + ", " + group + ", "
-                    + namespace + " FROM " + table + " WHERE " + user
-                    + " LIKE :" + COLUMNUSER);
+        case UDS_INSERT:
+            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
+                    + COLUMNUSER, ":" + COLUMNGROUP, ":" + COLUMNNAMESPACE));
             break;
 
-            case INSERTQUERY:
-            udsQuery.setQuery("INSERT INTO " + table + " VALUES(:" + COLUMNUSER
-                    + ",:" + COLUMNGROUP + ",:" + COLUMNNAMESPACE + ")");
+        case UDS_DELETE_FOR_USER_NAMESPACE:
+            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
+                    + COLUMNUSER, ":" + COLUMNNAMESPACE));
             break;
 
-            case DELETE_QUERY_FOR_USER_NAMESPACE:
-            udsQuery.setQuery("DELETE FROM " + table + " WHERE " + user
-                    + " LIKE :" + COLUMNUSER + " AND " + namespace + "=:"
-                    + COLUMNNAMESPACE);
+        case UDS_DELETE_FOR_GROUP_NAMESPACE:
+            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
+                    + COLUMNGROUP, ":" + COLUMNNAMESPACE));
             break;
 
-            case DELETE_QUERY_FOR_GROUP_NAMESPACE:
-            udsQuery.setQuery("DELETE FROM " + table + " WHERE " + group
-                    + " LIKE :" + COLUMNGROUP + " AND " + namespace + "=:"
-                    + COLUMNNAMESPACE);
+        case UDS_DELETE_FOR_NAMESPACE:
+            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
+                    + COLUMNNAMESPACE));
             break;
 
-            case DELETE_QUERY_FOR_NAMESPACE:
-            udsQuery.setQuery("DELETE FROM " + table + " WHERE " + namespace
-                    + "=:" + COLUMNNAMESPACE);
+        case UDS_DROP_TABLE:
+            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
+                    + table));
             break;
 
             default:
@@ -104,16 +105,13 @@ public class UserDataStoreQueryBuilder implements QueryBuilder {
         return udsQuery;
     }
 
+    // XXX This is temporary
+    public String getDatabase() {
+        return "User_Data_Store";
+    }
+
     public void addSuffix(String suffix) {
         this.table += "_" + suffix;
-
-    }
-    public String getDatabase() {
-        return database;
-    }
-
-    public void setDatabase(String database) {
-        this.database = database;
     }
 
     public String[] getTables() {
@@ -122,29 +120,5 @@ public class UserDataStoreQueryBuilder implements QueryBuilder {
 
     public void setTable(String table) {
         this.table = table;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
     }
 }
