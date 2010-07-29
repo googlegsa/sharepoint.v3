@@ -174,6 +174,7 @@ public class SPConstants {
 
     // Constants used by SiteDataWS while processing the list data as returned
     // by the Web Service.
+    public static final String NOREDIRECT = "NoRedirect=true";
     public static final String DOC_LIB = "DocumentLibrary";// BaseType=1 (In
                                                             // SPS2003)
     public static final String DISCUSSION_BOARD = "DiscussionBoard";// BaseType=3

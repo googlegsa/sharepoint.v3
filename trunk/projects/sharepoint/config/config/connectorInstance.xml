@@ -53,7 +53,7 @@
     <property name="pushAcls"><value>true</value></property>
       <property name="stripDomainFromAces"><value>true</value></property>
       -->
-
+  <!-- <property name="infoPathBaseTemplate"><value>XMLForm</value></property> -->
   </bean>
 
 </beans>

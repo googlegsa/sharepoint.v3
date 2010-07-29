@@ -54,6 +54,7 @@ public class SharepointConnector implements Connector {
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
     private boolean useSPSearchVisibility = true;
+    private String infoPathBaseTemplate = SPConstants.ORIGINAL_BT_FORMLIBRARY;
 
     public SharepointConnector() {
 
@@ -278,6 +279,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
+        sharepointClientContext.setInfoPathBaseTemplate(infoPathBaseTemplate);
     }
 
     /**
@@ -324,5 +326,13 @@ public String getKdcserver() {
 
     public void setUseSPSearchVisibility(boolean useSPSerachVisibility) {
         this.useSPSearchVisibility = useSPSerachVisibility;
+    }
+
+    public String getInfoPathBaseTemplate() {
+        return infoPathBaseTemplate;
+    }
+
+    public void setInfoPathBaseTemplate(String infoPathBaseTemplate) {
+        this.infoPathBaseTemplate = infoPathBaseTemplate;
     }
 }

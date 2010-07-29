@@ -1677,6 +1677,10 @@ public class ListsWS {
             url.append(urlPrefix);
             url.append(SPConstants.SLASH);
             url.append(fileref);
+            if (list.isInfoPathLibrary()) {
+                url.append("?");
+                url.append(SPConstants.NOREDIRECT);
+            }
         } else {
             final String urlPrefix = Util.getWebApp(sharepointClientContext.getSiteURL());
             url.setLength(0);
@@ -1684,6 +1688,10 @@ public class ListsWS {
             url.append(SPConstants.SLASH);
             url.append(list.getListConst() + SPConstants.DISPFORM);
             url.append(docId);
+            if (list.isInfoPathLibrary()) {
+                url.append("&");
+                url.append(SPConstants.NOREDIRECT);
+            }
         }
 
         LOGGER.config("URL :" + url);

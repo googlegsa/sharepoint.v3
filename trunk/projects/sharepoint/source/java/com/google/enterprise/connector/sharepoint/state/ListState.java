@@ -13,21 +13,6 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
-import com.google.enterprise.connector.sharepoint.client.Attribute;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-
-import org.joda.time.DateTime;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,6 +25,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.joda.time.DateTime;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import com.google.enterprise.connector.sharepoint.client.Attribute;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
  * Represents a SharePoint List/Library as a stateful object
@@ -1453,5 +1453,9 @@ public class ListState implements StatefulObject {
 
     public void setNoCrawl(boolean noCrawl) {
         this.noCrawl = noCrawl;
+    }
+
+    public boolean isInfoPathLibrary() {
+        return SPConstants.BT_FORMLIBRARY.equals(baseTemplate);
     }
 }
