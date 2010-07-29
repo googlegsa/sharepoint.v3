@@ -184,7 +184,7 @@ public class SiteDataWS {
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_SLIDELIBRARY)) {// for
                         // SlideLibrary
                         strBaseTemplate = SPConstants.BT_SLIDELIBRARY;
-                    } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_FORMLIBRARY)) {// for
+                    } else if (collator.equals(strBaseTemplate, sharepointClientContext.getInfoPathBaseTemplate())) {// for
                         // FormLibrary
                         strBaseTemplate = SPConstants.BT_FORMLIBRARY;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_TRANSLATIONMANAGEMENTLIBRARY)) {// for

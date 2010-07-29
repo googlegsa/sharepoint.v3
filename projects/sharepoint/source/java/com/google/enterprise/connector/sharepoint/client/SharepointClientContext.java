@@ -14,10 +14,17 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.TraversalContext;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -30,17 +37,10 @@ import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.TraversalContext;
 
 /**
  * Class to hold the context information for sharepoint client connection. The
@@ -78,6 +78,7 @@ public class SharepointClientContext implements Cloneable {
     private boolean stripDomainFromAces = true;
 
     private boolean useSPSearchVisibility = true;
+    private String infoPathBaseTemplate = SPConstants.ORIGINAL_BT_FORMLIBRARY;
 
     /**
      * For cloning
@@ -154,7 +155,7 @@ public class SharepointClientContext implements Cloneable {
             }
 
             spCl.useSPSearchVisibility = useSPSearchVisibility;
-
+            spCl.infoPathBaseTemplate = infoPathBaseTemplate;
             return spCl;
         } catch (final Throwable e) {
             LOGGER.log(Level.FINEST, "Unable to clone client context.", e);
@@ -917,5 +918,13 @@ public class SharepointClientContext implements Cloneable {
 
     public void setUseSPSearchVisibility(boolean useSPSearchVisibility) {
         this.useSPSearchVisibility = useSPSearchVisibility;
+    }
+
+    public String getInfoPathBaseTemplate() {
+        return infoPathBaseTemplate;
+    }
+
+    public void setInfoPathBaseTemplate(String infoPathBaseTemplate) {
+        this.infoPathBaseTemplate = infoPathBaseTemplate;
     }
 }
