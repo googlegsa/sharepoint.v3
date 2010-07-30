@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,7 +79,7 @@ public class SharepointClientContext implements Cloneable {
     private boolean stripDomainFromAces = true;
 
     private boolean useSPSearchVisibility = true;
-    private String infoPathBaseTemplate = SPConstants.ORIGINAL_BT_FORMLIBRARY;
+    private List<String> infoPathBaseTemplate = null;
 
     /**
      * For cloning
@@ -920,11 +921,15 @@ public class SharepointClientContext implements Cloneable {
         this.useSPSearchVisibility = useSPSearchVisibility;
     }
 
-    public String getInfoPathBaseTemplate() {
+    public List<String> getInfoPathBaseTemplate() {
+        if (null == infoPathBaseTemplate) {
+            infoPathBaseTemplate = new ArrayList<String>();
+            infoPathBaseTemplate.add(SPConstants.ORIGINAL_BT_FORMLIBRARY);
+        }
         return infoPathBaseTemplate;
     }
 
-    public void setInfoPathBaseTemplate(String infoPathBaseTemplate) {
+    public void setInfoPathBaseTemplate(List<String> infoPathBaseTemplate) {
         this.infoPathBaseTemplate = infoPathBaseTemplate;
     }
 }

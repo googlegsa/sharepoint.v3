@@ -41,7 +41,7 @@
 
       <!-- FQDNCONVERSION:
         true: connector will try to resolve the host names of the document URLs in FQDN format.
-        false: docuemnt URLs are sent to GSA as discovered. -->
+        false: document URLs are sent to GSA as discovered. -->
     <!--
     <property name="FQDNConversion"><value>false</value></property>
        -->
@@ -53,7 +53,13 @@
     <property name="pushAcls"><value>true</value></property>
       <property name="stripDomainFromAces"><value>true</value></property>
       -->
-  <!-- <property name="infoPathBaseTemplate"><value>XMLForm</value></property> -->
+  <!--
+  <property name="infoPathBaseTemplate">
+      <list>
+        <value>XMLForm</value>
+      </list>
+    </property>
+  -->
   </bean>
 
 </beans>

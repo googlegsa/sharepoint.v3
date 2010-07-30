@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,7 +55,7 @@ public class SharepointConnector implements Connector {
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
     private boolean useSPSearchVisibility = true;
-    private String infoPathBaseTemplate = SPConstants.ORIGINAL_BT_FORMLIBRARY;
+    private List<String> infoPathBaseTemplate;
 
     public SharepointConnector() {
 
@@ -328,11 +329,11 @@ public String getKdcserver() {
         this.useSPSearchVisibility = useSPSerachVisibility;
     }
 
-    public String getInfoPathBaseTemplate() {
+    public List<String> getInfoPathBaseTemplate() {
         return infoPathBaseTemplate;
     }
 
-    public void setInfoPathBaseTemplate(String infoPathBaseTemplate) {
+    public void setInfoPathBaseTemplate(List<String> infoPathBaseTemplate) {
         this.infoPathBaseTemplate = infoPathBaseTemplate;
     }
 }
