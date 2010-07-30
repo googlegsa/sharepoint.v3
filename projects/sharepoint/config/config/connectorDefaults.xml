@@ -42,7 +42,11 @@
     <property name="FQDNConversion"><value>false</value></property>
     <property name="pushAcls"><value>false</value></property>
     <property name="stripDomainFromAces"><value>true</value></property>
-    <property name="infoPathBaseTemplate"><value>XMLForm</value></property>
+    <property name="infoPathBaseTemplate">
+      <list>
+        <value>XMLForm</value>
+      </list>
+    </property>
   </bean>
 
   <bean id="propertyPlaceholderConfigurer"

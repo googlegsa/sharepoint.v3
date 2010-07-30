@@ -184,9 +184,6 @@ public class SiteDataWS {
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_SLIDELIBRARY)) {// for
                         // SlideLibrary
                         strBaseTemplate = SPConstants.BT_SLIDELIBRARY;
-                    } else if (collator.equals(strBaseTemplate, sharepointClientContext.getInfoPathBaseTemplate())) {// for
-                        // FormLibrary
-                        strBaseTemplate = SPConstants.BT_FORMLIBRARY;
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_TRANSLATIONMANAGEMENTLIBRARY)) {// for
                         // TranslationManagementLibrary
                         strBaseTemplate = SPConstants.BT_TRANSLATIONMANAGEMENTLIBRARY;
@@ -202,6 +199,14 @@ public class SiteDataWS {
                     } else if (collator.equals(strBaseTemplate, SPConstants.ORIGINAL_BT_SITESLIST)) {// for
                         // ReportLibrary
                         strBaseTemplate = SPConstants.BT_SITESLIST;
+                    } else {
+                        // for FormLibrary
+                        for(String formTemplate : sharepointClientContext.getInfoPathBaseTemplate()) {
+                            if (collator.equals(strBaseTemplate, formTemplate)) {
+                                strBaseTemplate = SPConstants.BT_FORMLIBRARY;
+                                break;
+                            }
+                        }
                     }
 
                     LOGGER.config("URL :" + url);
