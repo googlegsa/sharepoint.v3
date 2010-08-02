@@ -14,27 +14,106 @@ Release 2.6.2 , 2 Aug, 2010
 
 Introduction
 ------------
-This is an upgrade release with some enhancements. Users of previous releases are encouraged to upgrade.
+This is a patch release for wide evaluation and usage.  Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint and things may change in the future.
 
 Summary of Changes / New Features
 ---------------------------------
-- Added support for InfoPath form.
+- Support for crawling InfoPath forms
+Connector appends "?NoRedorect=true" in the display URLs of the InfoPath forms. By doing this, all the javascript processing (required for
+displaying InfoPath forms in HTML) is bypassed and connector directly gets the XML content.
 
 Version Compatibility
 ---------------------
-Same as 2.6.0
+This version works with Connector Manager Version 2.4.0 and above. It is recommended to upgrade to Connector Manager 2.4.4
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Connectors with version 2.6.0 can be safely upgraded using the steps given below.
 
 Steps to manually deploy the patch release on 2.6.0
 ---------------------------------------------------
-Same as 2.6.0
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Start the SharePoint Connector Service.
 
 Platform Support
 ------------------
-Same as 2.6.0
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
-Same as 2.6.0
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+-- With 2.0 release, the connector used to re-crawl all documents from the SharePoint list which has documents with
+invalid XML character in its metadata. From 2.4 release, the connector will not crawl any new documents from the
+list unless the document is removed from the SharePoint list OR the metadata is corrected
+Workaround:
+Remove the problematic document from the SharePoint list OR the remove the invalid characters from metadata
+
+2) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+3) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+4) Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
+-- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
+by SharePoint's Change log. In such cases the connector logs as WARNING message. The connector will have to be reset and crawl
+and index all content once more
+Workaround: Re-crawl all content by resetting the connector
+
+5) In this release, following features are not supported on SharePoint versions prior to SP2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+- ACL
+
+6) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
+
+7) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+8) Issue 139: Upgrade HTTPCLient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+9) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not gets saved.
+
 _______________________________________________________________________
 
 Release 2.6.0 , 22 June, 2010
