@@ -9,6 +9,34 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
+Release 2.6.2 , 2 Aug, 2010
+=======================================
+
+Introduction
+------------
+This is an upgrade release with some enhancements. Users of previous releases are encouraged to upgrade.
+
+Summary of Changes / New Features
+---------------------------------
+- Added support for InfoPath form.
+
+Version Compatibility
+---------------------
+Same as 2.6.0
+
+Steps to manually deploy the patch release on 2.6.0
+---------------------------------------------------
+Same as 2.6.0
+
+Platform Support
+------------------
+Same as 2.6.0
+
+Certified Against
+-------------------
+Same as 2.6.0
+_______________________________________________________________________
+
 Release 2.6.0 , 22 June, 2010
 =======================================
 
