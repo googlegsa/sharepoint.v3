@@ -25,13 +25,14 @@ displaying InfoPath forms in HTML) is bypassed and connector directly gets the X
 
 Version Compatibility
 ---------------------
-This version works with Connector Manager Version 2.4.0 and above. It is recommended to upgrade to Connector Manager 2.4.4
+This version works with Connector Manager Version 2.4.0 and above.
+It is recommended to upgrade to the latest Connector Manager version which is 2.6.0
 Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
 
-Connectors with version 2.6.0 can be safely upgraded using the steps given below.
+Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
 
-Steps to manually deploy the patch release on 2.6.0
----------------------------------------------------
+Steps to manually deploy the patch release
+------------------------------------------
 1. Stop the SharePoint Connector Service.
 2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
 3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
