@@ -14,24 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.io.InputStream;
-import java.net.URLDecoder;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.GetMethod;
-
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -54,6 +36,24 @@ import com.google.enterprise.connector.spiimpl.BinaryValue;
 import com.google.enterprise.connector.spiimpl.BooleanValue;
 import com.google.enterprise.connector.spiimpl.DateValue;
 import com.google.enterprise.connector.spiimpl.StringValue;
+
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.methods.GetMethod;
+
+import java.io.InputStream;
+import java.net.URLDecoder;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class to hold data regarding a sharepoint document. Anything that is sent ot
@@ -117,6 +117,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     // based crawling happens when a security change occurs on site/list which
     // affects the ACL of many list items
     private boolean forAclChange = false;
+
+    private String displayUrl;
+    private String title;
 
     /**
      * @return the toBeFed
@@ -259,6 +262,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public void setAttribute(final String key, final String value) {
         if (key != null) {
             attrs.add(new Attribute(key, value));
+            if (key.equalsIgnoreCase(SPConstants.TITLE)) {
+                title = value;
+            }
         }
     }
 
@@ -468,8 +474,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         new StringValue(getUrl()));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_DISPLAYURL)) {
+            String displayUrl = (null == getDisplayUrl()) ? getUrl()
+                    : this.getDisplayUrl();
             return new SPProperty(SpiConstants.PROPNAME_DISPLAYURL,
-                    new StringValue(getUrl()));
+                    new StringValue(displayUrl));
         } else if (collator.equals(strPropertyName, SPConstants.PARENT_WEB_TITLE)) {
             return new SPProperty(SPConstants.PARENT_WEB_TITLE,
                     new StringValue(getParentWebTitle()));
@@ -524,6 +532,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 values.add(Value.getStringValue(roleType.toString()));
             }
             return new SimpleProperty(values);
+        } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_TITLE)) {
+            return new SPProperty(SpiConstants.PROPNAME_TITLE, new StringValue(
+                    title));
         }
         // FIXME: We can get rid of this if-else-if ladder here by setting all
         // the relevant properties (in appropriate type) right at the time of
@@ -567,6 +578,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             for (Entry<String, Set<RoleType>> ace : groupsAclMap.entrySet()) {
                 s.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
             }
+        }
+
+        if (null != title) {
+            s.add(SpiConstants.PROPNAME_TITLE);
         }
 
         // get the "extra" metadata fields, including those added by user:
@@ -831,5 +846,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     public void setForAclChange(boolean forAclChange) {
         this.forAclChange = forAclChange;
+    }
+
+    public String getDisplayUrl() {
+        return displayUrl;
+    }
+
+    public void setDisplayUrl(String displayUrl) {
+        this.displayUrl = displayUrl;
     }
 }
