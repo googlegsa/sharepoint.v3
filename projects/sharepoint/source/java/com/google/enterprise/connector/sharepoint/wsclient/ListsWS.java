@@ -14,6 +14,36 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetAttachmentCollectionResponseGetAttachmentCollectionResult;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenContains;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQuery;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQueryOptions;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenViewFields;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsQuery;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsQueryOptions;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsResponseGetListItemsResult;
+import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsViewFields;
+import com.google.enterprise.connector.sharepoint.generated.lists.Lists;
+import com.google.enterprise.connector.sharepoint.generated.lists.ListsLocator;
+import com.google.enterprise.connector.sharepoint.generated.lists.ListsSoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.spi.Value;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.apache.axis.AxisFault;
+import org.apache.axis.message.MessageElement;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
@@ -38,36 +68,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPFactory;
-
-import org.apache.axis.AxisFault;
-import org.apache.axis.message.MessageElement;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetAttachmentCollectionResponseGetAttachmentCollectionResult;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenContains;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQuery;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQueryOptions;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenViewFields;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsQuery;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsQueryOptions;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsResponseGetListItemsResult;
-import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemsViewFields;
-import com.google.enterprise.connector.sharepoint.generated.lists.Lists;
-import com.google.enterprise.connector.sharepoint.generated.lists.ListsLocator;
-import com.google.enterprise.connector.sharepoint.generated.lists.ListsSoap_BindingStub;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.spi.Value;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
  * Java Client for calling Lists.asmx Provides a layer to talk to the Lists Web
@@ -1663,6 +1663,7 @@ public class ListsWS {
         }
 
         final StringBuffer url = new StringBuffer();
+        String displayUrl = null;
         if (list.isDocumentLibrary()) {
             if (fileref == null) {
                 return null;
@@ -1677,6 +1678,7 @@ public class ListsWS {
             url.append(urlPrefix);
             url.append(SPConstants.SLASH);
             url.append(fileref);
+            displayUrl = url.toString();
             if (list.isInfoPathLibrary()) {
                 url.append("?");
                 url.append(SPConstants.NOREDIRECT);
@@ -1688,6 +1690,7 @@ public class ListsWS {
             url.append(SPConstants.SLASH);
             url.append(list.getListConst() + SPConstants.DISPFORM);
             url.append(docId);
+            displayUrl = url.toString();
             if (list.isInfoPathLibrary()) {
                 url.append("&");
                 url.append(SPConstants.NOREDIRECT);
@@ -1722,7 +1725,7 @@ public class ListsWS {
         try {
             calMod = Value.iso8601ToCalendar(lastModified);
         } catch (final ParseException pe) {
-            LOGGER.log(Level.INFO, "Unable to parse the document's last modified date vale. Using parent's last modified.");
+            LOGGER.log(Level.WARNING, "Unable to parse the document's last modified date vale. Using parent's last modified.");
             calMod = list.getLastModCal();
         }
 
@@ -1734,6 +1737,7 @@ public class ListsWS {
                 sharepointClientContext.getFeedType(),
                 list.getParentWebState().getSharePointType());
         doc.setFileref(fileref);
+        doc.setDisplayUrl(displayUrl);
 
         if (fileSize != null && !fileSize.equals("")) {
             try {
