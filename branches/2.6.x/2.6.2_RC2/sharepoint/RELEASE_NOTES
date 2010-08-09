@@ -9,7 +9,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
-Release 2.6.2 , 5 Aug, 2010
+Release 2.6.2 , 9 Aug, 2010
 =======================================
 
 Introduction
@@ -61,6 +61,8 @@ Microsoft Windows Server 2003
 Enterprise x64 Edition
 Intel(R) Xeon(R) CPU
 E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Note: This patch release has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
 
 Known Issues/Limitations
 ------------------------
