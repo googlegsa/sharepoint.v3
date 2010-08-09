@@ -372,7 +372,7 @@ Disallow:
 
 === Connector-Kerberos Configuration ===
 
-*Q. How can I verify that which type of Autehntication Scheme is being used by Sharepoint Connector at crawl time?*
+*Q. How can I verify that which type of Authentication Scheme is being used by SharePoint Connector at crawl time?*
 
 Selected authentication scheme is listed in the logs. To enable it, you need to follow the steps below:
    # Open CONNECTOR_HOME\Tomcat\webapps\connector-manager\WEB-INF\classes\logging.properties and under the section #####  HTTPCLIENT LOGS #####, reset property "org.apache.commons.httpclient.level" to INFO
