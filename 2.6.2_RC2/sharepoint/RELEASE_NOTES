@@ -62,7 +62,7 @@ Enterprise x64 Edition
 Intel(R) Xeon(R) CPU
 E5504 @ 2.00GHz, 2.00 GB of RAM
 
-Note: This patch release has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
+Note: This patch has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
 
 Known Issues/Limitations
 ------------------------
