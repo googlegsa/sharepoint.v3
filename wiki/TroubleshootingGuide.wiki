@@ -1,5 +1,5 @@
-#summary Troubleshooting guide and FAQ for SharePoint Connector 2.4
-= Troubleshooting guide and FAQ for SharePoint Connector 2.4 =
+#summary Troubleshooting guide and FAQ for SharePoint Connector
+= Troubleshooting guide and FAQ for SharePoint Connector =
 
 
 
