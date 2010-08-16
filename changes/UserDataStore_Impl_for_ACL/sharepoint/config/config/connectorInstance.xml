@@ -53,10 +53,13 @@
     <property name="pushAcls"><value>true</value></property>
       <property name="stripDomainFromAces"><value>true</value></property>
       -->
-
-      <!-- Define the user data store cache limit-->
-      <!--
-      <property name="udsCacheSize" value="100" />
-      -->
+  <!-- Use it for configuring entities and index names for User Data Store -->
+  <!--
+  <bean id="userDataStoreQueryBuilder" class="com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder">
+      <constructor-arg value="User_Group_Memberships" />
+      <constructor-arg value="UDS_Index_SPUserId" />
+      <property name="basename" value="SQL/sqlQueries" />
+  </bean>
+  -->
   </bean>
 </beans>

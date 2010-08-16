@@ -41,7 +41,13 @@
     <property name="FQDNConversion"><value>false</value></property>
     <property name="pushAcls"><value>true</value></property>
     <property name="stripDomainFromAces"><value>true</value></property>
-    <property name="udsCacheSize" value="100" />
+    <property name="userDataStoreQueryBuilder" ref="userDataStoreQueryBuilder" />
+  </bean>
+
+  <bean id="userDataStoreQueryBuilder" class="com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder">
+      <constructor-arg value="User_Group_Memberships" />
+      <constructor-arg value="UDS_Index_SPUserId" />
+      <property name="basename" value="SQL/sqlQueries" />
   </bean>
 
   <bean id="propertyPlaceholderConfigurer"
