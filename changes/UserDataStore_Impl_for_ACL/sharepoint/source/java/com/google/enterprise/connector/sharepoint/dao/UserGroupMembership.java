@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -14,10 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+
 
 /**
  * A java bean to store the results of UserDataStore table.
@@ -33,68 +31,19 @@ public class UserGroupMembership implements Comparable<UserGroupMembership> {
     private String userName;
     private int groupId;
     private String groupName;
-    private String nameSpace;
+    private String namespace;
 
-    /**
-     * @param user if not null, must be in a format [int]string
-     * @param group
-     * @param nameSpace
-     */
-    public UserGroupMembership(String user, String group, String nameSpace)
-            throws SharepointException {
-        final Pattern pattern = Pattern.compile("^\\[\\-{0,1}\\d+\\]");
-        Matcher matcher = null;
-        try {
-            if (null != user) {
-                matcher = pattern.matcher(user);
-                if (matcher.find()) {
-                    String strId = matcher.group();
-                    this.userId = Integer.parseInt(strId.substring(matcher.start() + 1, matcher.end() - 1));
-                    this.userName = user.substring(matcher.end());
-                } else {
-                    throw new SharepointException("Wrongly formatted value [ "
-                            + user + " ] for user. Expected format is [ID]Name");
-                }
-            }
-            if (null != group) {
-                matcher = pattern.matcher(group);
-                if (matcher.find()) {
-                    String strId = matcher.group();
-                    this.groupId = Integer.parseInt(strId.substring(matcher.start() + 1, matcher.end() - 1));
-                    this.groupName = group.substring(matcher.end());
-                } else {
-                    throw new SharepointException("Wrongly formatted value [ "
-                            + user + " ] for user. Expected format is [ID]Name");
-                }
-            }
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Unable to parse the paased-in user/group value");
-        }
-        this.nameSpace = nameSpace;
+    UserGroupMembership() {
+
     }
 
-    public UserGroupMembership(String userName, int userId, String groupName,
-            int groupId, String nameSpace) {
+    public UserGroupMembership(int userId, String userName, int groupId,
+            String groupName, String namespace) {
         this.userName = userName;
         this.userId = userId;
         this.groupId = groupId;
         this.groupName = groupName;
-        this.nameSpace = nameSpace;
-    }
-
-    /**
-     * Checks if this object is refering to a blank row
-     *
-     * @return
-     */
-    public boolean isEmpty() {
-        if ((null == userName || userName.trim().length() == 0)
-                && (null == groupName || groupName.trim().length() == 0)
-                && (null == nameSpace || nameSpace.trim().length() == 0)) {
-            return true;
-        }
-        return false;
+        this.namespace = namespace;
     }
 
     @Override
@@ -102,18 +51,55 @@ public class UserGroupMembership implements Comparable<UserGroupMembership> {
         UserGroupMembership inMembership = null;
         if(obj instanceof UserGroupMembership) {
             inMembership = (UserGroupMembership) obj;
-            if ((null != userName && userName.equals(inMembership.userName) && userId == inMembership.userId)
-                    && (null != groupName
-                            && groupName.equals(inMembership.groupName) && groupId == inMembership.groupId)
-                    && (null != nameSpace && nameSpace.equals(inMembership.nameSpace))) {
-                return true;
+
+            boolean status = false;
+
+            if (userId == inMembership.userId
+                    && groupId == inMembership.groupId) {
+                status = true;
+            } else {
+                return status;
             }
+
+            if (null == userName) {
+                if (null != inMembership.userName) {
+                    status = false;
+                }
+            } else if (!userName.equals(inMembership.userName)) {
+                status = false;
+            }
+
+            if (!status) {
+                return status;
+            }
+
+            if (null == groupName) {
+                if (null != inMembership.groupName) {
+                    status = false;
+                }
+            } else if (!groupName.equals(inMembership.groupName)) {
+                status = false;
+            }
+
+            if (!status) {
+                return status;
+            }
+
+            if (null == namespace) {
+                if (null != inMembership.namespace) {
+                    status = false;
+                }
+            } else if (!namespace.equals(inMembership.namespace)) {
+                status = false;
+            }
+
+            return status;
         }
         return false;
     }
 
     public int hashCode() {
-        int len = (null != nameSpace) ? 0 : nameSpace.length();
+        int len = (null == namespace) ? 0 : namespace.hashCode();
         return (11 * ((userId * 3) + (groupId * 7)) + len);
     }
 
@@ -133,55 +119,34 @@ public class UserGroupMembership implements Comparable<UserGroupMembership> {
         return groupName;
     }
 
-    public String getNameSpace() {
-        return nameSpace;
+    public String getNamespace() {
+        return namespace;
     }
 
-    /**
-     * Returns the complex userId which is a concatenation of actual UserId and
-     * UserName. This format is used to store the information into the user data
-     * store
-     *
-     * @return
-     */
-    public String getComplexUserId() {
-        return "[" + userId + "]" + userName;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    /**
-     * Returns the complex GroupId which is a concatenation of actual GroupId
-     * and GroupName. This format is used to store the information into the user
-     * data store
-     *
-     * @return
-     */
-    public String getComplexGroupId() {
-        return "[" + groupId + "]" + groupName;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    /**
-     * returns the id pattern to be used for selecting the specific user/group
-     * records from the user data store
-     *
-     * @return
-     */
-    public static String getIdPattern(int id) {
-        return "[" + id + "]%";
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
     }
 
-    /**
-     * returns the name pattern to be used for selecting the specific user/group
-     * records from the user data store
-     *
-     * @return
-     */
-    public static String getNamePattern(String name) {
-        return "%" + name;
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     public String toString() {
-        return "UserId [ " + getComplexUserId() + " ], GroupId [ "
-                + getComplexGroupId() + " ], Namespace [ " + getNameSpace()
+        return "userId [ " + getUserId() + " ], userName [ " + getUserName()
+                + " ], groupId [ " + getGroupId() + " ], groupName ["
+                + getGroupName() + " ], namespace [ " + getNamespace()
                 + " ] ";
     }
 
@@ -191,8 +156,8 @@ public class UserGroupMembership implements Comparable<UserGroupMembership> {
         } else if(getGroupId() != o.getGroupId()) {
             return (getGroupId() > o.getGroupId()) ? 1 : -1;
         } else {
-            int len1 = (null != getNameSpace()) ? 0 : nameSpace.length();
-            int len2 = (null != o.getNameSpace()) ? 0 : nameSpace.length();
+            int len1 = (null != getNamespace()) ? 0 : namespace.hashCode();
+            int len2 = (null != o.getNamespace()) ? 0 : namespace.hashCode();
             if (len1 != len2) {
                 return (len1 > len2) ? 1 : -1;
             } else {

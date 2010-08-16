@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -14,22 +14,26 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.Query;
+import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.QueryType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import java.sql.BatchUpdateException;
+import java.sql.Connection;
 import java.sql.Statement;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
-
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
-
-import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.Query;
-import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.QueryType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 /**
  * A basic DAO implementation that can be extended for multiple tyopes of DAOs.
@@ -47,34 +51,38 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
  *
  * @author nitendra_thakur
  */
-public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
-        SharePointDAO {
+public abstract class SimpleSharePointDAO extends SimpleJdbcDaoSupport
+        implements SharePointDAO {
     private final Logger LOGGER = Logger.getLogger(SimpleSharePointDAO.class.getName());
-    SimpleJdbcTemplate simpleJdbcTemplate;
     QueryBuilder queryBuilder;
+    private TransactionTemplate transactionTemplate;
 
-    SimpleSharePointDAO(int i) {
-    }
-
-    SimpleSharePointDAO(DataSource dataSource, QueryBuilder queryBuilder)
+    protected SimpleSharePointDAO(DataSource dataSource, QueryBuilder queryBuilder)
             throws SharepointException {
-        if (null == dataSource || null == queryBuilder) {
-            throw new SharepointException(
-                    "Either data source or query builder was null ");
+        if (null == dataSource) {
+            throw new SharepointException("data source is null ");
         }
-        this.queryBuilder = queryBuilder;
 
         setDataSource(dataSource);
-        setJdbcTemplate(new JdbcTemplate(dataSource));
-        this.simpleJdbcTemplate = new SimpleJdbcTemplate(dataSource);
+        Connection con = null;
         try {
-            getConnection();
+            con = getConnection();
         } catch (Exception e) {
             throw new SharepointException(
                     "Could not create the database conection for specified data source",
                     e);
         }
+        if(null == con) {
+            throw new SharepointException("Could not create the database conection for specified data source");
+        }
+
+        if (null == queryBuilder) {
+            throw new SharepointException("query builder is null ");
+        }
+        this.queryBuilder = queryBuilder;
+
         confirmEntitiesExistence();
+        this.transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
     }
 
     /**
@@ -134,7 +142,7 @@ public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
 
         int[] batchStatus = null;
         try {
-            batchStatus = simpleJdbcTemplate.batchUpdate(query.getQuery(), params);
+            batchStatus = getSimpleJdbcTemplate().batchUpdate(query.getQuery(), params);
             LOGGER.info("BatchUpdate completed successfully for #"
                     + batchStatus.length + " records. Query [ " + query + " ] ");
         } catch (Exception e) {
@@ -249,7 +257,7 @@ public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
                     + " ] ");
         }
         try {
-            count = this.simpleJdbcTemplate.update(query.getQuery(), param);
+            count = getSimpleJdbcTemplate().update(query.getQuery(), param);
         } catch (DataIntegrityViolationException e) {
             LOGGER.log(Level.FINE, "entry already exists for " + param, e);
         } catch (Throwable e) {
@@ -273,5 +281,61 @@ public abstract class SimpleSharePointDAO extends JdbcDaoSupport implements
     int update(SqlParameterSource param, QueryType queryType)
             throws SharepointException {
         return update(param, queryBuilder.createQuery(queryType));
+    }
+
+    /**
+     * Creates a custom transaction callback class to be used while executing
+     * the update queries to user data store as a transaction. This also handles
+     * the table lock by acquiring a WRITE lock on the table before executing
+     * the update query
+     *
+     * @author nitendra_thakur
+     */
+    class CustomTransactionCallback implements TransactionCallback {
+        List<QueryType> queryType;
+        List<SqlParameterSource[]> params;
+
+        CustomTransactionCallback(List<QueryType> queryType,
+                List<SqlParameterSource[]> params)
+                throws SharepointException {
+            if (null == queryType || null == params
+                    || queryType.size() != params.size()) {
+                throw new SharepointException(
+                        "Invalid or Incompatible query/parameters!! ");
+            }
+            this.queryType = queryType;
+            this.params = params;
+        }
+
+        public int[][] doInTransaction(TransactionStatus status) {
+            int[][] batchStatus = new int[queryType.size()][];
+            for (int i = 0; i < queryType.size(); ++i) {
+                try {
+                    batchStatus[i] = batchUpdate(params.get(i), queryType.get(i));
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Exception occured while executing batch query [ "
+                            + queryType.get(i) + " ] in transaction!! ");
+                }
+            }
+            return batchStatus;
+        }
+    }
+
+    /**
+     * Executes the specified queries (identified by the queryTypes) in one
+     * trasaction. QueryTypes and parameters should be specified in the same
+     * order
+     *
+     * @param queryTypes queryTypes used to identify the queries to be executed
+     * @param params parameters to be used with the queries. The sequence should
+     * @return
+     * @throws SharepointException
+     */
+    public int[][] executeAsTransaction(List<QueryType> queryTypes,
+            List<SqlParameterSource[]> params) throws SharepointException {
+
+        return (int[][]) this.transactionTemplate.execute(new CustomTransactionCallback(
+                queryTypes, params));
+
     }
 }

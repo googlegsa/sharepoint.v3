@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -33,7 +33,10 @@ public interface QueryBuilder {
      * @author nitendra_thakur
      */
     enum QueryType {
-        UDS_CREATE_TABLE, UDS_SELECT_FOR_USER, UDS_INSERT, UDS_DELETE_FOR_USER_NAMESPACE, UDS_DELETE_FOR_GROUP_NAMESPACE, UDS_DELETE_FOR_NAMESPACE, UDS_DROP_TABLE
+        UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_INSERT, UDS_SELECT_FOR_USERNAME,
+        UDS_SELECT_FOR_USERID_NAMESPACE, UDS_DELETE_FOR_USERID_NAMESPACE,
+        UDS_SELECT_FOR_GROUPID_NAMESPACE, UDS_DELETE_FOR_GROUPID_NAMESPACE,
+        UDS_SELECT_FOR_NAMESPACE, UDS_DELETE_FOR_NAMESPACE
     }
 
     /**
@@ -77,10 +80,6 @@ public interface QueryBuilder {
      * @throws SharepointException
      */
     Query createQuery(QueryType type) throws SharepointException;
-
-    // Adds the suffix into the table name whenever the table name is used in the query.
-    // A suffix can be specified after initialization.
-    void addSuffix(String suffix);
 
     // FIXME This, actually, should not be a part of the QueryBuilder. It's been
     // kept here just because the way database info is passed to the connector

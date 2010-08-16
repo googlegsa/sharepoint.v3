@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -14,97 +14,212 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.enterprise.connector.sharepoint.client.CacheProvider;
 
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A cache to hold {@link UserGroupMembership}
  *
  * @author nitendra_thakur
- * @param <T>
  */
-public class UserDataStoreCache<T extends UserGroupMembership> {
-    private final Logger LOGGER = Logger.getLogger(UserDataStoreCache.class.getName());
-    int capacity = 100;
-    Set<T> cachedMemberships;
+public class UserDataStoreCache<T extends UserGroupMembership> extends
+        CacheProvider<T> {
 
-    UserDataStoreCache(int capacity) {
-        this.capacity = capacity;
-        cachedMemberships = new HashSet<T>(capacity);
-        LOGGER.log(Level.INFO, "User Data Store Cache size set to " + capacity);
+    /**
+     * Provides the user-namespace view of the {@link UserGroupMembership}
+     *
+     * @author nitendra_thakur
+     */
+    class UserNamespaceView implements Comparable<UserNamespaceView>, View {
+        private T _membership;
+
+        private UserNamespaceView(T membership) {
+            _membership = membership;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof UserDataStoreCache.UserNamespaceView) {
+                UserNamespaceView view = (UserNamespaceView) obj;
+                if (getUserId() == view.getUserId()) {
+                    if (null == getNamespace()) {
+                        if (null == view.getNamespace()) {
+                            return true;
+                        }
+                    } else if (getNamespace().equals(view.getNamespace())) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public int compareTo(UserNamespaceView o) {
+            if (getUserId() != o.getUserId()) {
+                return (getUserId() > o.getUserId()) ? 1 : -1;
+            } else {
+                int len1 = (null != getNamespace()) ? 0
+                        : getNamespace().hashCode();
+                int len2 = (null != o.getNamespace()) ? 0
+                        : o.getNamespace().hashCode();
+                if (len1 != len2) {
+                    return (len1 > len2) ? 1 : -1;
+                } else {
+                    return 0;
+                }
+            }
+        }
+
+        public int getUserId() {
+            return _membership.getUserId();
+        }
+
+        public String getUserName() {
+            return _membership.getUserName();
+        }
+
+        public String getNamespace() {
+            return _membership.getNamespace();
+        }
     }
 
     /**
-     * Add a set of memberships into the cache. If the cache is full or
+     * Provides the group-namespace view of the {@link UserGroupMembership}
      *
-     * @param memberships
-     * @return
-     * @throws SharepointException
+     * @author nitendra_thakur
      */
-    public boolean addMemberships(Collection<? extends T> memberships)
-            throws SharepointException {
-        if (cachedMemberships.size() >= capacity
-                || memberships.size() > capacity) {
-            LOGGER.log(Level.WARNING, "UserDataStoreCache is full ");
+    class GroupNamespaceView implements Comparable<GroupNamespaceView>, View {
+        UserGroupMembership _membership;
+
+        private GroupNamespaceView(UserGroupMembership membership) {
+            _membership = membership;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof UserDataStoreCache.GroupNamespaceView) {
+                GroupNamespaceView view = (GroupNamespaceView) obj;
+                if (getGroupId() == view.getGroupId()) {
+                    if (null == getNamespace()) {
+                        if (null == view.getNamespace()) {
+                            return true;
+                        }
+                    } else if (getNamespace().equals(view.getNamespace())) {
+                        return true;
+                    }
+                }
+            }
             return false;
         }
-        return cachedMemberships.addAll(memberships);
-    }
 
-    public boolean contains(T t) {
-        return cachedMemberships.contains(t);
-    }
+        public int compareTo(GroupNamespaceView o) {
+            if (getGroupId() != o.getGroupId()) {
+                return (getGroupId() > o.getGroupId()) ? 1 : -1;
+            } else {
+                int len1 = (null != getNamespace()) ? 0 : getNamespace().hashCode();
+                int len2 = (null != o.getNamespace()) ? 0
+                        : o.getNamespace().hashCode();
+                if (len1 != len2) {
+                    return (len1 > len2) ? 1 : -1;
+                } else {
+                    return 0;
+                }
+            }
+        }
 
-    public void removeUserMembershipsFromNamespace(Collection<Integer> userIds,
-            String namespace) {
-        Iterator<T> itr = cachedMemberships.iterator();
-        while (itr.hasNext()) {
-            T membership = itr.next();
-            if (null == membership) {
-                continue;
-            }
-            String nmspc = membership.getNameSpace();
-            int userId = membership.getUserId();
-            if (userIds.contains(userId) && namespace.equals(nmspc)) {
-                itr.remove();
-            }
+        public int getGroupId() {
+            return _membership.getGroupId();
+        }
+
+        public String getGroupName() {
+            return _membership.getGroupName();
+        }
+
+        public String getNamespace() {
+            return _membership.getNamespace();
         }
     }
 
-    public void removeGroupMembershipsFromNamespace(
-            Collection<Integer> groupIds,
-            String namespace) {
-        Iterator<T> itr = cachedMemberships.iterator();
-        while (itr.hasNext()) {
-            T membership = itr.next();
-            if (null == membership) {
-                continue;
+    /**
+     * Provides the namespace view of the {@link UserGroupMembership}
+     *
+     * @author nitendra_thakur
+     */
+    class NamespaceView implements Comparable<NamespaceView>, View {
+        UserGroupMembership _membership;
+
+        private NamespaceView(UserGroupMembership membership) {
+            _membership = membership;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof UserDataStoreCache.NamespaceView) {
+                NamespaceView view = (NamespaceView) obj;
+                if (null == getNamespace()) {
+                    if (null == view.getNamespace()) {
+                        return true;
+                    }
+                } else if (getNamespace().equals(view.getNamespace())) {
+                    return true;
+                }
             }
-            String nmspc = membership.getNameSpace();
-            int groupId = membership.getGroupId();
-            if (groupIds.contains(groupId) && namespace.equals(nmspc)) {
-                itr.remove();
+            return false;
+        }
+
+        public int compareTo(NamespaceView o) {
+            int len1 = (null != getNamespace()) ? 0 : getNamespace().hashCode();
+            int len2 = (null != o.getNamespace()) ? 0
+                    : o.getNamespace().hashCode();
+            if (len1 != len2) {
+                return (len1 > len2) ? 1 : -1;
+            } else {
+                return 0;
             }
+        }
+
+        public String getNamespace() {
+            return _membership.getNamespace();
         }
     }
 
-    public void removeAllMembershipsFromNamespace(Collection<String> namespaces) {
-        Iterator<T> itr = cachedMemberships.iterator();
-        while(itr.hasNext()) {
-            UserGroupMembership membership = itr.next();
-            if(null == membership) {
-                continue;
-            }
-            String namespace = membership.getNameSpace();
-            if (namespaces.contains(namespace)) {
-                itr.remove();
-            }
-        }
+    protected Set<View> getViews(T t) {
+        Set<View> supportedViews = new HashSet<View>();
+        supportedViews.add(new UserNamespaceView(t));
+        supportedViews.add(new GroupNamespaceView(t));
+        supportedViews.add(new NamespaceView(t));
+        return supportedViews;
+    }
+
+    /**
+     * removal of memberships from cache based on user-namespace view
+     *
+     * @param t
+     */
+    public void removeUsingUserNamespaceView(T t) {
+        UserNamespaceView view = new UserNamespaceView(t);
+        removeUsingView(view);
+    }
+
+    /**
+     * removal of memberships from cache based on user-namespace view
+     *
+     * @param t
+     */
+    public void removeUsingGroupNamespaceView(T t) {
+        GroupNamespaceView view = new GroupNamespaceView(t);
+        removeUsingView(view);
+    }
+
+    /**
+     * removal of memberships from cache based on user-namespace view
+     *
+     * @param t
+     */
+    public void removeUsingNamespaceView(T t) {
+        NamespaceView view = new NamespaceView(t);
+        removeUsingView(view);
     }
 }

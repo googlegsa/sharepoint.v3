@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -14,104 +14,155 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.text.MessageFormat;
-import java.util.Properties;
-
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Collection;
 
 /**
  * Query Builder for {@link UserDataStoreDAO}
  *
  * @author nitendra_thakur
  */
-public class UserDataStoreQueryBuilder implements QueryBuilder {
-    // names used to indicate the columns when the values are passed to a query.
-    // Typically used for constructing named parameters, to avoid traditional ?
-    // in prepared statements. Hence, these should not be confused with the
-    // actual names of the column which are passed at run time
-    public static final String COLUMNUSER = "SPUser";
-    public static final String COLUMNGROUP = "SPGroup";
-    public static final String COLUMNNAMESPACE = "NameSpace";
+public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
+    // Column Names of User Data Store Membership table.
+    private static final String COLUMNUSERID = "SPUserId";
+    private static final String COLUMNUSERNAME = "SPUserName";
+    private static final String COLUMNGROUPID = "SPGroupId";
+    private static final String COLUMNGROUPNAME = "SPGroupName";
+    private static final String COLUMNNAMESPACE = "SPSite";
 
     private String table;
-    Properties sqlQueries;
+    private String index;
 
-    public UserDataStoreQueryBuilder(File fileSqlQueries, String table)
+    public UserDataStoreQueryBuilder(String table, String index)
             throws SharepointException {
-        super();
-        if (null == fileSqlQueries) {
-            throw new SharepointException(
-                    "No sqlQueries.properties file specified! ");
-        }
         if (table == null || table.trim().length() == 0) {
             throw new SharepointException("Invalid table name! ");
         }
         this.table = table;
-        try {
-            sqlQueries = new Properties();
-            InputStream inQuery = new FileInputStream(fileSqlQueries);
-            sqlQueries.load(inQuery);
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Could not load sqlQueries.properties file from "
-                            + fileSqlQueries.getAbsolutePath());
+
+        if (index == null || index.trim().length() == 0) {
+            throw new SharepointException("Invalid index name! ");
         }
+        this.index = index;
     }
 
-    public Query createQuery(QueryType type) throws SharepointException {
+    public Query createQuery(QueryType queryType) throws SharepointException {
         Query udsQuery = new Query();
-        udsQuery.setQueryType(type);
-        switch (type) {
-        case UDS_CREATE_TABLE:
-            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table));
+        udsQuery.setQueryType(queryType);
+        switch (queryType) {
+            case UDS_CREATE_TABLE:
+            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table));
             break;
 
-        case UDS_SELECT_FOR_USER:
-            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
-                    + COLUMNUSER));
+            case UDS_CREATE_INDEX:
+            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), index, table));
+                break;
+
+            case UDS_SELECT_FOR_USERNAME:
+            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNUSERNAME)));
+                break;
+
+            case UDS_INSERT:
+            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNUSERID), (":" + COLUMNUSERNAME), (":" + COLUMNGROUPID), (":" + COLUMNGROUPNAME), (":" + COLUMNNAMESPACE)));
+                break;
+
+            case UDS_DELETE_FOR_USERID_NAMESPACE:
+            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNUSERID), (":" + COLUMNNAMESPACE)));
+                break;
+
+            case UDS_DELETE_FOR_GROUPID_NAMESPACE:
+            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNGROUPID), (":" + COLUMNNAMESPACE)));
+                break;
+
+            case UDS_DELETE_FOR_NAMESPACE:
+            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNNAMESPACE)));
+                break;
+
+            case UDS_DROP_TABLE:
+            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table));
+                break;
+
+            default:
+            throw new SharepointException("Query Type not supported!! ");
+        }
+        return udsQuery;
+    }
+
+    public static SqlParameterSource[] createParameter(QueryType queryType,
+            Collection<UserGroupMembership> memberships)
+            throws SharepointException {
+
+        SqlParameterSource[] namedParams = new SqlParameterSource[memberships.size()];
+        int count = 0;
+
+        switch (queryType) {
+        case UDS_SELECT_FOR_USERNAME:
+            for (UserGroupMembership membership : memberships) {
+                namedParams[count++] = new MapSqlParameterSource(
+                        UserDataStoreQueryBuilder.COLUMNUSERNAME,
+                        membership.getUserName());
+            }
             break;
 
         case UDS_INSERT:
-            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
-                    + COLUMNUSER, ":" + COLUMNGROUP, ":" + COLUMNNAMESPACE));
+            for (UserGroupMembership membership : memberships) {
+                MapSqlParameterSource param = new MapSqlParameterSource();
+                param.addValue(COLUMNUSERID, membership.getUserId());
+                param.addValue(COLUMNUSERNAME, membership.getUserName());
+                param.addValue(COLUMNGROUPID, membership.getGroupId());
+                param.addValue(COLUMNGROUPNAME, membership.getGroupName());
+                param.addValue(UserDataStoreQueryBuilder.COLUMNNAMESPACE, membership.getNamespace());
+                namedParams[count++] = param;
+            }
             break;
 
-        case UDS_DELETE_FOR_USER_NAMESPACE:
-            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
-                    + COLUMNUSER, ":" + COLUMNNAMESPACE));
+        case UDS_DELETE_FOR_USERID_NAMESPACE:
+            for (UserGroupMembership membership : memberships) {
+                MapSqlParameterSource param = new MapSqlParameterSource();
+                param.addValue(COLUMNUSERID, membership.getUserId());
+                param.addValue(COLUMNNAMESPACE, membership.getNamespace());
+                namedParams[count++] = param;
+            }
             break;
 
-        case UDS_DELETE_FOR_GROUP_NAMESPACE:
-            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
-                    + COLUMNGROUP, ":" + COLUMNNAMESPACE));
+        case UDS_DELETE_FOR_GROUPID_NAMESPACE:
+            for (UserGroupMembership membership : memberships) {
+                MapSqlParameterSource param = new MapSqlParameterSource();
+                param.addValue(COLUMNGROUPID, membership.getGroupId());
+                param.addValue(COLUMNNAMESPACE, membership.getNamespace());
+                namedParams[count++] = param;
+            }
             break;
 
         case UDS_DELETE_FOR_NAMESPACE:
-            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
-                    + COLUMNNAMESPACE));
+            for (UserGroupMembership membership : memberships) {
+                MapSqlParameterSource param = new MapSqlParameterSource();
+                param.addValue(COLUMNNAMESPACE, membership.getNamespace());
+                namedParams[count++] = param;
+            }
             break;
 
-        case UDS_DROP_TABLE:
-            udsQuery.setQuery(MessageFormat.format(sqlQueries.getProperty(type.name()), table, ":"
-                    + table));
-            break;
-
-            default:
-            throw new SharepointException("Query not supported!! ");
+        default:
+            throw new SharepointException("Query Type not supported!! ");
         }
-        return udsQuery;
+        return namedParams;
+    }
+
+    public void addSuffix(String suffix) {
+        this.table += "_" + suffix;
+        this.index += "_" + suffix;
     }
 
     // XXX This is temporary
     public String getDatabase() {
         return "User_Data_Store";
-    }
-
-    public void addSuffix(String suffix) {
-        this.table += "_" + suffix;
     }
 
     public String[] getTables() {
@@ -120,5 +171,22 @@ public class UserDataStoreQueryBuilder implements QueryBuilder {
 
     public void setTable(String table) {
         this.table = table;
+    }
+
+    /**
+     * Construct an instance of this class from a result set
+     *
+     * @param result
+     * @return
+     * @throws SQLException
+     */
+    public static UserGroupMembership getInstance(ResultSet result)
+            throws SQLException {
+        UserGroupMembership membership = new UserGroupMembership(
+                result.getInt(COLUMNUSERID), result.getString(COLUMNUSERNAME),
+                result.getInt(COLUMNGROUPID),
+                result.getString(COLUMNGROUPNAME),
+                result.getString(COLUMNNAMESPACE));
+        return membership;
     }
 }

@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
  * Used to store constants
  *
  * @author nitendra_thakur
- *
  */
 public class SPConstants {
     // used while parsing the alias string
@@ -443,4 +442,6 @@ public class SPConstants {
         public static final String ENUMERATEPERMISSIONS = "EnumeratePermissions";
         public static final String FULLMASK = "FullMask";
     }
+
+    public static final String sqlQueriesResourceName = "SQL/sqlQueries";
 }

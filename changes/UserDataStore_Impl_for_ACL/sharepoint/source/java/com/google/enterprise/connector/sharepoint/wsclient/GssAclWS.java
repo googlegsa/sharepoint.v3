@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -13,19 +13,6 @@
 //limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.wsclient;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -53,6 +40,19 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
+
+import org.apache.axis.AxisFault;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling GssAcl.asmx web service. Provides a layer to talk to
@@ -181,7 +181,7 @@ public class GssAclWS {
                 + wsResult.getLogMessage() + " ]");
         GssAcl[] allAcls = wsResult.getAllAcls();
         if (null != allAcls && allAcls.length != 0) {
-            List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
+            Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
             ACL:
             for (GssAcl acl : allAcls) {
                 String entityUrl = acl.getEntityUrl();
@@ -291,11 +291,10 @@ public class GssAclWS {
                             for(GssPrincipal member : members) {
                                 UserGroupMembership membership = null;
                                 membership = new UserGroupMembership(
-                                        member.getName(), member.getID(),
-                                        principalName, principal.getID(),
+                                        member.getID(), member.getName(),
+                                        principal.getID(), principalName,
                                         wsResult.getSiteCollectionUrl());
 
-                                // TODO Check from the local cache if it could be already there in the db. If not, than only add.
                                 memberships.add(membership);
                             }
                         }
@@ -310,12 +309,15 @@ public class GssAclWS {
                 document.setUsersAclMap(userPermissionMap);
                 document.setGroupsAclMap(groupPermissionMap);
             }
-            try {
-                sharepointClientContext.getUserDataStoreDAO().addMemberships(memberships);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to add #"
-                        + memberships.size()
-                        + " memberships in user data store. ", e);
+
+            if (null != sharepointClientContext.getUserDataStoreDAO()) {
+                try {
+                    sharepointClientContext.getUserDataStoreDAO().addMemberships(memberships);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to add #"
+                            + memberships.size()
+                            + " memberships in user data store. ", e);
+                }
             }
         }
     }
@@ -529,9 +531,9 @@ public class GssAclWS {
 
         // All groups where there are some membership changes
         // TODO: why not this is integer?
-        List<String> changedGroups = new ArrayList<String>();
-        List<Integer> deletedGroups = new ArrayList<Integer>();
-        List<Integer> deletedUsers = new ArrayList<Integer>();
+        Set<String> changedGroups = new TreeSet<String>();
+        Set<Integer> deletedGroups = new TreeSet<Integer>();
+        Set<Integer> deletedUsers = new TreeSet<Integer>();
         for (GssAclChange change : changes) {
             if (null == change) {
                 continue;
@@ -685,8 +687,8 @@ public class GssAclWS {
      * @param changedGroups
      * @param siteCollectionUrl
      */
-    private void syncGroupMembership(List<Integer> deletedUsers,
-            List<Integer> deletedGroups, List<String> changedGroups,
+    private void syncGroupMembership(Set<Integer> deletedUsers,
+            Set<Integer> deletedGroups, Set<String> changedGroups,
             String siteCollectionUrl) {
         if (null == sharepointClientContext.getUserDataStoreDAO()) {
             return;
@@ -701,25 +703,28 @@ public class GssAclWS {
             }
         }
 
-        List<UserGroupMembership> newMemberships = processChangedGroupsToSync(deletedGroups, changedGroups);
-
-        // First, remove the existing membership
         if (null != deletedGroups && deletedGroups.size() > 0) {
             try {
                 sharepointClientContext.getUserDataStoreDAO().removeGroupMembershipsFromNamespace(deletedGroups, siteCollectionUrl);
-                // Now, add the updated membership
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to remove group memberships from namespace [ "
+                        + siteCollectionUrl + " ] ");
+            }
+        }
+
+        if (null != changedGroups && changedGroups.size() > 0) {
+            try {
+                Set<UserGroupMembership> newMemberships = processChangedGroupsToSync(changedGroups);
                 if (null != newMemberships && newMemberships.size() > 0) {
                     try {
-                        sharepointClientContext.getUserDataStoreDAO().addMemberships(newMemberships);
+                        sharepointClientContext.getUserDataStoreDAO().syncGroupMemberships(newMemberships, siteCollectionUrl);
                     } catch (Exception e) {
-                        LOGGER.log(Level.WARNING, "Failed to add #"
-                                + newMemberships
-                                + " memberships under namespace [ "
+                        LOGGER.log(Level.WARNING, "Failure while syncing memberships from namespace [ "
                                 + siteCollectionUrl + " ]");
                     }
                 }
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to remove group memberships from namespace [ "
+                LOGGER.log(Level.WARNING, "Failed to update/sync group memberships from namespace [ "
                         + siteCollectionUrl + " ] ");
             }
         }
@@ -734,9 +739,9 @@ public class GssAclWS {
      * @param changedGroups
      * @return
      */
-    private List<UserGroupMembership> processChangedGroupsToSync(
-            List<Integer> deletedGroups, List<String> changedGroups) {
-        List<UserGroupMembership> newMemberships = new ArrayList<UserGroupMembership>();
+    private Set<UserGroupMembership> processChangedGroupsToSync(
+            Set<String> changedGroups) {
+        Set<UserGroupMembership> newMemberships = new TreeSet<UserGroupMembership>();
         if (null != changedGroups && changedGroups.size() > 0) {
             String[] groupIds = new String[changedGroups.size()];
             changedGroups.toArray(groupIds);
@@ -745,12 +750,10 @@ public class GssAclWS {
                 GssPrincipal[] groups = wsResult.getPrinicpals();
                 if (null != groups && groups.length > 0) {
                     for (GssPrincipal group : groups) {
-                        deletedGroups.add(group.getID());
-
                         for (GssPrincipal member : group.getMembers()) {
                             newMemberships.add(new UserGroupMembership(
-                                    member.getName(), member.getID(),
-                                    group.getName(), group.getID(),
+                                    member.getID(), member.getName(),
+                                    group.getID(), group.getName(),
                                     wsResult.getSiteCollectionUrl()));
                         }
                     }

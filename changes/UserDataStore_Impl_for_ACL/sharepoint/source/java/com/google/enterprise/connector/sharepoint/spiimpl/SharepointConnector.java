@@ -14,18 +14,25 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.dao.QueryBuilder;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of the Connector interface from the spi for SharePoint This is
@@ -54,8 +61,7 @@ public class SharepointConnector implements Connector {
     private String authorizationAsfeedType = null;
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
-    private QueryBuilder udsQueryBuilder;
-    private int udsCacheSize;
+    private UserDataStoreQueryBuilder userDataStoreQueryBuilder;
 
     public SharepointConnector() {
 
@@ -304,7 +310,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
-        sharepointClientContext.init(udsCacheSize);
+        initDataSource();
     }
 
     /**
@@ -345,19 +351,46 @@ public class SharepointConnector implements Connector {
         this.stripDomainFromAces = stripDomainFromAces;
     }
 
-    public QueryBuilder getUdsQueryBuilder() {
-        return udsQueryBuilder;
+    public UserDataStoreQueryBuilder getUserDataStoreQueryBuilder() {
+        return userDataStoreQueryBuilder;
     }
 
-    public void setUdsQueryBuilder(QueryBuilder queryBuilder) {
-        this.udsQueryBuilder = queryBuilder;
+    public void setUserDataStoreQueryBuilder(
+            UserDataStoreQueryBuilder userDataStoreQueryBuilder) {
+        this.userDataStoreQueryBuilder = userDataStoreQueryBuilder;
     }
 
-    public int getUdsCacheSize() {
-        return udsCacheSize;
-    }
+    // FIXME there is CM SPI dependency here.
+    // This is a temporary code snippet for integration testing. The
+    // DBConfig values are actually to be come from the connector
+    // configuration page or CM spi.
+    // Create a property file named UserDataStoreConfig.properties inside
+    // the sharepoint-connector directory which is parent directory where
+    // connector instance directory is created. And, specify the following
+    // values:
 
-    public void setUdsCacheSize(int udsCacheSize) {
-        this.udsCacheSize = udsCacheSize;
+    // DriverClass=com.mysql.jdbc.Driver
+    // DBURL=jdbc:mysql://localhost:3306/user_data_store
+    // DBUsername=root
+    // DBPassword=pspl!@#
+    public void initDataSource() {
+        try {
+         Properties properties = new Properties();
+         properties.load(new FileInputStream(googleConnectorWorkDir + "/../UserDataStoreConfig.properties"));
+         DriverManagerDataSource dataSource = new DriverManagerDataSource();
+         dataSource.setDriverClassName(properties.getProperty("DriverClass"));
+         dataSource.setUrl(properties.getProperty("DBURL"));
+         dataSource.setUsername(properties.getProperty("DBUsername"));
+         dataSource.setPassword(properties.getProperty("DBPassword"));
+
+            userDataStoreQueryBuilder.addSuffix(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir));
+            userDataStoreQueryBuilder.setLocale(new Locale("mssql"));
+
+            UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
+                    dataSource, userDataStoreQueryBuilder);
+            sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 }

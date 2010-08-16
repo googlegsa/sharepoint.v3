@@ -14,19 +14,11 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.TraversalContext;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -38,15 +30,18 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.dao.QueryBuilder;
-import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
-import com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.TraversalContext;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class to hold the context information for sharepoint client connection. The
@@ -292,46 +287,6 @@ public class SharepointClientContext implements Cloneable {
                 + "] , mySiteBaseURL = [" + inMySiteBaseURL
                 + "], aliasMapString = [" + inAliasMapString + "], FeedType ["
                 + inFeedType + "]. ");
-    }
-
-    // XXX this can be a part of constructor. Currently, i want to avoid lots
-    // many dependent changes
-    public void init(int cacheSize) {
-        // FIXME:This is a temporary code snippet for integration testing. The
-        // DBConfig values are actually to be come from the connector
-        // configuration page or CM spi.
-        // Create a property file named UserDataStoreConfig.properties inside
-        // the sharepoint-connector directory which is parent directory where
-        // connector instance directory is created. And, specify the following
-        // values:
-
-        // DriverClass=com.mysql.jdbc.Driver
-        // DBURL=jdbc:mysql://localhost:3306/user_data_store
-        // DBUsername=root
-        // DBPassword=pspl!@#
-
-        try {
-            Properties properties = new Properties();
-            properties.load(new FileInputStream(googleConnectorWorkDir
-                    + "/../UserDataStoreConfig.properties"));
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName(properties.getProperty("DriverClass"));
-            dataSource.setUrl(properties.getProperty("DBURL"));
-            dataSource.setUsername(properties.getProperty("DBUsername"));
-            dataSource.setPassword(properties.getProperty("DBPassword"));
-
-            // TODO Currently, the sqlQueries property file is picked up from
-            // sharepoint-connector directory. This may change.
-            QueryBuilder udsQueryBuilder = new UserDataStoreQueryBuilder(
-                    new File(googleConnectorWorkDir
-                            + "/../sqlQueries.properties"),
-                    "User_Group_Memberships");
-            udsQueryBuilder.addSuffix(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir));
-            userDataStoreDAO = new UserDataStoreDAO(dataSource,
-                    udsQueryBuilder, cacheSize);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
     }
 
     /**
