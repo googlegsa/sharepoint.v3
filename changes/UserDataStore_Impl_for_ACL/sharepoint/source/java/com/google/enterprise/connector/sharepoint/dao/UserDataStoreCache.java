@@ -33,10 +33,14 @@ public class UserDataStoreCache<T extends UserGroupMembership> extends
      * @author nitendra_thakur
      */
     class UserNamespaceView implements Comparable<UserNamespaceView>, View {
-        private T _membership;
+        int userId;
+        String userName;
+        String namespace;
 
         private UserNamespaceView(T membership) {
-            _membership = membership;
+            userId = membership.getUserId();
+            userName = membership.getUserName();
+            namespace = membership.getNamespace();
         }
 
         @Override
@@ -56,6 +60,12 @@ public class UserDataStoreCache<T extends UserGroupMembership> extends
             return false;
         }
 
+        @Override
+        public int hashCode() {
+            int len = (null == getNamespace()) ? 0 : getNamespace().hashCode();
+            return 11 * ((getUserId() * 3) + len);
+        }
+
         public int compareTo(UserNamespaceView o) {
             if (getUserId() != o.getUserId()) {
                 return (getUserId() > o.getUserId()) ? 1 : -1;
@@ -73,15 +83,15 @@ public class UserDataStoreCache<T extends UserGroupMembership> extends
         }
 
         public int getUserId() {
-            return _membership.getUserId();
+            return userId;
         }
 
         public String getUserName() {
-            return _membership.getUserName();
+            return userName;
         }
 
         public String getNamespace() {
-            return _membership.getNamespace();
+            return namespace;
         }
     }
 
@@ -91,10 +101,14 @@ public class UserDataStoreCache<T extends UserGroupMembership> extends
      * @author nitendra_thakur
      */
     class GroupNamespaceView implements Comparable<GroupNamespaceView>, View {
-        UserGroupMembership _membership;
+        int groupId;
+        String groupName;
+        String namespace;
 
         private GroupNamespaceView(UserGroupMembership membership) {
-            _membership = membership;
+            groupId = membership.getGroupId();
+            groupName = membership.getGroupName();
+            namespace = membership.getNamespace();
         }
 
         @Override
@@ -114,6 +128,12 @@ public class UserDataStoreCache<T extends UserGroupMembership> extends
             return false;
         }
 
+        @Override
+        public int hashCode() {
+            int len = (null == getNamespace()) ? 0 : getNamespace().hashCode();
+            return 17 * ((getGroupId() * 3) + len);
+        }
+
         public int compareTo(GroupNamespaceView o) {
             if (getGroupId() != o.getGroupId()) {
                 return (getGroupId() > o.getGroupId()) ? 1 : -1;
@@ -130,15 +150,15 @@ public class UserDataStoreCache<T extends UserGroupMembership> extends
         }
 
         public int getGroupId() {
-            return _membership.getGroupId();
+            return groupId;
         }
 
         public String getGroupName() {
-            return _membership.getGroupName();
+            return groupName;
         }
 
         public String getNamespace() {
-            return _membership.getNamespace();
+            return namespace;
         }
     }
 
@@ -167,6 +187,15 @@ public class UserDataStoreCache<T extends UserGroupMembership> extends
                 }
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            if (null == _membership) {
+                return super.hashCode();
+            }
+            int len = (null == getNamespace()) ? 0 : getNamespace().hashCode();
+            return 19 * len;
         }
 
         public int compareTo(NamespaceView o) {

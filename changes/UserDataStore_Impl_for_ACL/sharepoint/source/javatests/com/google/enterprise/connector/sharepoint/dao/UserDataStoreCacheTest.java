@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -14,163 +14,137 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.enterprise.connector.sharepoint.TestConfiguration;
+
+import java.util.Collection;
 
 import junit.framework.TestCase;
-
-import com.google.enterprise.connector.sharepoint.TestConfiguration;
 
 public class UserDataStoreCacheTest extends TestCase {
     UserDataStoreCache<UserGroupMembership> testCache;
 
     protected void setUp() throws Exception {
         super.setUp();
-        testCache = new UserDataStoreCache<UserGroupMembership>(3);
+        testCache = new UserDataStoreCache<UserGroupMembership>();
     }
 
     public void testAddMemberships() {
-        UserGroupMembership membership1 = null;
-        UserGroupMembership membership2 = null;
-        UserGroupMembership membership3 = null;
+        String namespace = TestConfiguration.sharepointUrl;
+        Collection<UserGroupMembership> memberships = null;
         try {
-            String namespace = TestConfiguration.sharepointUrl;
-
-            List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
-            membership1 = new UserGroupMembership("[1]user1", "[2]group1",
-                    namespace);
-            memberships.add(membership1);
-            membership2 = new UserGroupMembership("[2]user2", "[2]group1",
-                    namespace);
-            memberships.add(membership2);
-            membership3 = new UserGroupMembership("[3]user3", "[2]group2",
-                    namespace);
-            memberships.add(membership3);
-            testCache.addMemberships(memberships);
+            memberships = TestConfiguration.getMembershipsForNameSpace(namespace);
         } catch (Exception e) {
-            fail(e.getMessage());
+            fail("Could not get test memberships...");
         }
 
-        assertTrue(testCache.contains(membership1));
-        assertTrue(testCache.contains(membership2));
-        assertTrue(testCache.contains(membership3));
+        for (UserGroupMembership membership : memberships) {
+            testCache.add(membership);
+        }
+
+         for (UserGroupMembership membership : memberships) {
+            assertTrue(testCache.contains(membership));
+        }
     }
 
-    public void removeUserMembershipsFromNamespace() {
-        UserGroupMembership membership1 = null;
-        UserGroupMembership membership2 = null;
-        UserGroupMembership membership3 = null;
+    public void testRemoveUsingUserNamespaceView() {
         String namespace = TestConfiguration.sharepointUrl;
+        Collection<UserGroupMembership> memberships = null;
         try {
-            List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
-            membership1 = new UserGroupMembership("[1]user1", "[2]group1",
-                    namespace);
-            memberships.add(membership1);
-            membership2 = new UserGroupMembership("[2]user2", "[2]group1",
-                    namespace);
-            memberships.add(membership2);
-            membership3 = new UserGroupMembership("[3]user3", "[2]group2",
-                    namespace);
-            memberships.add(membership3);
-            testCache.addMemberships(memberships);
+            memberships = TestConfiguration.getMembershipsForNameSpace(namespace);
         } catch (Exception e) {
-            fail(e.getMessage());
+            fail("Could not get test memberships...");
         }
 
-        assertTrue(testCache.contains(membership1));
-        assertTrue(testCache.contains(membership2));
-        assertTrue(testCache.contains(membership3));
-
-        try {
-            List<Integer> userIds = new ArrayList<Integer>();
-            userIds.add(membership1.getUserId());
-            userIds.add(membership2.getUserId());
-            userIds.add(membership3.getUserId());
-            testCache.removeUserMembershipsFromNamespace(userIds, namespace);
-        } catch (Exception e) {
-            fail(e.getMessage());
+        for (UserGroupMembership membership : memberships) {
+            testCache.add(membership);
         }
 
-        assertFalse(testCache.contains(membership1));
-        assertFalse(testCache.contains(membership2));
-        assertFalse(testCache.contains(membership3));
+        for (UserGroupMembership membership : memberships) {
+            assertTrue(testCache.contains(membership));
+        }
+
+        UserGroupMembership membership = memberships.iterator().next();
+        UserGroupMembership tmpMembership = new UserGroupMembership();
+        tmpMembership.setUserId(membership.getUserId());
+        tmpMembership.setUserName(membership.getUserName());
+        tmpMembership.setNamespace(namespace);
+        testCache.removeUsingUserNamespaceView(tmpMembership);
+        assertFalse(testCache.contains(membership));
     }
 
-    public void removeGroupMembershipsFromNamespace() {
-        UserGroupMembership membership1 = null;
-        UserGroupMembership membership2 = null;
-        UserGroupMembership membership3 = null;
+    public void testRemoveUsingGroupNamespaceView() {
         String namespace = TestConfiguration.sharepointUrl;
+        Collection<UserGroupMembership> memberships = null;
         try {
-            List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
-            membership1 = new UserGroupMembership("[1]user1", "[2]group1",
-                    namespace);
-            memberships.add(membership1);
-            membership2 = new UserGroupMembership("[2]user2", "[2]group1",
-                    namespace);
-            memberships.add(membership2);
-            membership3 = new UserGroupMembership("[3]user3", "[2]group2",
-                    namespace);
-            memberships.add(membership3);
-            testCache.addMemberships(memberships);
+            memberships = TestConfiguration.getMembershipsForNameSpace(namespace);
         } catch (Exception e) {
-            fail(e.getMessage());
+            fail("Could not get test memberships...");
         }
 
-        assertTrue(testCache.contains(membership1));
-        assertTrue(testCache.contains(membership2));
-        assertTrue(testCache.contains(membership3));
-
-        try {
-            List<Integer> groupIds = new ArrayList<Integer>();
-            groupIds.add(membership1.getGroupId());
-            groupIds.add(membership2.getGroupId());
-            groupIds.add(membership3.getGroupId());
-            testCache.removeUserMembershipsFromNamespace(groupIds, namespace);
-        } catch (Exception e) {
-            fail(e.getMessage());
+        for (UserGroupMembership membership : memberships) {
+            testCache.add(membership);
         }
 
-        assertFalse(testCache.contains(membership1));
-        assertFalse(testCache.contains(membership2));
-        assertFalse(testCache.contains(membership3));
+        for (UserGroupMembership membership : memberships) {
+            assertTrue(testCache.contains(membership));
+        }
+
+        UserGroupMembership membership = memberships.iterator().next();
+        UserGroupMembership tmpMembership = new UserGroupMembership();
+        tmpMembership.setGroupId(membership.getGroupId());
+        tmpMembership.setGroupName(membership.getGroupName());
+        tmpMembership.setNamespace(namespace);
+        testCache.removeUsingGroupNamespaceView(tmpMembership);
+        assertFalse(testCache.contains(membership));
     }
 
-    public void removeAllMembershipsFromNamespace() {
-        UserGroupMembership membership1 = null;
-        UserGroupMembership membership2 = null;
-        UserGroupMembership membership3 = null;
+    public void testRemoveUsingNamespaceView() {
         String namespace = TestConfiguration.sharepointUrl;
+        Collection<UserGroupMembership> memberships = null;
         try {
-            List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
-            membership1 = new UserGroupMembership("[1]user1", "[2]group1",
-                    namespace);
-            memberships.add(membership1);
-            membership2 = new UserGroupMembership("[2]user2", "[2]group1",
-                    namespace);
-            memberships.add(membership2);
-            membership3 = new UserGroupMembership("[3]user3", "[2]group2",
-                    namespace);
-            memberships.add(membership3);
-            testCache.addMemberships(memberships);
+            memberships = TestConfiguration.getMembershipsForNameSpace(namespace);
         } catch (Exception e) {
-            fail(e.getMessage());
+            fail("Could not get test memberships...");
         }
 
-        assertTrue(testCache.contains(membership1));
-        assertTrue(testCache.contains(membership2));
-        assertTrue(testCache.contains(membership3));
-
-        try {
-            List<String> namespaces = new ArrayList<String>();
-            namespaces.add(namespace);
-            testCache.removeAllMembershipsFromNamespace(namespaces);
-        } catch (Exception e) {
-            fail(e.getMessage());
+        for (UserGroupMembership membership : memberships) {
+            testCache.add(membership);
         }
 
-        assertFalse(testCache.contains(membership1));
-        assertFalse(testCache.contains(membership2));
-        assertFalse(testCache.contains(membership3));
+        for (UserGroupMembership membership : memberships) {
+            assertTrue(testCache.contains(membership));
+        }
+
+        UserGroupMembership tmpMembership = new UserGroupMembership();
+        tmpMembership.setNamespace(namespace);
+        testCache.removeUsingNamespaceView(tmpMembership);
+
+        for (UserGroupMembership membership : memberships) {
+            assertFalse(testCache.contains(membership));
+        }
+    }
+
+    public void testGC() {
+        // try adding memberships till the time memory gets low. Ensure that no
+        // strong reference is kept for the memberships
+        int i = 1;
+        try {
+            do {
+                UserGroupMembership membership = new UserGroupMembership(1,
+                        "user" + i, i, "group" + i, "namespace" + (i % 50));
+                testCache.add(membership);
+                assertEquals(i, testCache.size());
+                if (i % 2000 == 0) {
+                    testCache.handleEnqued();
+                }
+                ++i;
+            } while (testCache.size() >= i);
+            // after handleEnqued, the elements in cache will go down and the
+            // loop will exit
+            assertTrue(true);
+        } catch (Throwable e) {
+            // probably OutOfMemory error
+            fail(e.getMessage());
+        }
     }
 }

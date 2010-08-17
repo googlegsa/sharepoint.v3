@@ -14,17 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
@@ -41,6 +30,17 @@ import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.UserProfileWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class provides a layer of abstraction between the SharePoint Traversal
@@ -494,6 +494,9 @@ public class SharepointClient {
         // crawlcycle
         globalState.endRecrawl(sharepointClientContext);
 
+        if (null != sharepointClientContext.getUserDataStoreDAO()) {
+            sharepointClientContext.getUserDataStoreDAO().cleanupCache();
+        }
         LOGGER.log(Level.INFO, "Returning after crawl cycle.. ");
     }
 

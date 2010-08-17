@@ -50,6 +50,10 @@ public abstract class CacheProvider<T> {
 
     /**
      * A marker interface for the views which can be used along with the cache
+     * The implementors are not supposed to keep any strong references of the
+     * objects being cached. Since, the cache relies on soft and weak
+     * references, if the caller will maintain any strong reference of the
+     * objects, the cache will keep on growing.
      *
      * @author nitendra_thakur
      */
@@ -65,16 +69,16 @@ public abstract class CacheProvider<T> {
      */
 
     private class SPSoftReference extends SoftReference<T> {
-        T t;
+        int hashcode;
 
         SPSoftReference(T t) {
             super(t);
-            this.t = t;
+            this.hashcode = t.hashCode();
         }
 
         SPSoftReference(T t, ReferenceQueue<? super T> refQueue) {
             super(t, refQueue);
-            this.t = t;
+            this.hashcode = t.hashCode();
         }
 
         @Override
@@ -96,11 +100,7 @@ public abstract class CacheProvider<T> {
 
         @Override
         public int hashCode() {
-            int part = super.hashCode();
-            if (null != t) {
-                part += t.hashCode();
-            }
-            return 11 * part;
+            return hashcode;
         }
     }
 
@@ -113,18 +113,16 @@ public abstract class CacheProvider<T> {
      */
 
     private class SPWeakReference extends WeakReference<T> {
-        T t;
-
+        int hashcode;
 
         SPWeakReference(T t) {
             super(t);
-            this.t = t;
+            this.hashcode = t.hashCode();
         }
-
 
         SPWeakReference(T t, ReferenceQueue<? super T> refQueue) {
             super(t, refQueue);
-            this.t = t;
+            this.hashcode = t.hashCode();
         }
 
         @Override
@@ -146,11 +144,7 @@ public abstract class CacheProvider<T> {
 
         @Override
         public int hashCode() {
-            int part = super.hashCode();
-            if (null != t) {
-                part += t.hashCode();
-            }
-            return 11 * part;
+            return hashcode;
         }
     }
 
@@ -205,6 +199,10 @@ public abstract class CacheProvider<T> {
                     viewRefs = new HashSet<SPWeakReference>();
                 }
                 viewRefs.add(new SPWeakReference(t, viewsRefQueue));
+            } else {
+                Set<? super SPWeakReference> viewRefs = new HashSet<SPWeakReference>();
+                viewRefs.add(new SPWeakReference(t, viewsRefQueue));
+                registeredViews.put(view, viewRefs);
             }
         }
     }
@@ -272,5 +270,9 @@ public abstract class CacheProvider<T> {
             registeredViews.remove(ref);
             ref = viewsRefQueue.poll();
         }
+    }
+
+    public int size() {
+        return cache.size();
     }
 }

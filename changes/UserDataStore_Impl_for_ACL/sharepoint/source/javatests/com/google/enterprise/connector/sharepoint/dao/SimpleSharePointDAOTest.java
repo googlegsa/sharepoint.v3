@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -14,18 +14,17 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-import java.sql.BatchUpdateException;
-import java.sql.Statement;
-import java.util.List;
-
-import junit.framework.TestCase;
-
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.QueryType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+
+import java.sql.BatchUpdateException;
+import java.sql.Statement;
+import java.util.Set;
+
+import junit.framework.TestCase;
 
 /**
  * @author nitendra_thakur
@@ -34,8 +33,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 public class SimpleSharePointDAOTest extends TestCase {
     SimpleSharePointDAO simpleSPDAO;
     QueryBuilder queryBuilder;
-    List<UserGroupMembership> memberships = null;
-    SqlParameterSource[] namedParams = null;
+    Set<UserGroupMembership> memberships = null;
     String namespace;
 
     /*
@@ -56,16 +54,6 @@ public class SimpleSharePointDAOTest extends TestCase {
 
         namespace = TestConfiguration.sharepointUrl;
         memberships = TestConfiguration.getMembershipsForNameSpace(namespace);
-        namedParams = new SqlParameterSource[memberships.size()];
-        int paramCount = 0;
-        for (UserGroupMembership membership : memberships) {
-            MapSqlParameterSource param = new MapSqlParameterSource(
-                    UserDataStoreQueryBuilder.COLUMNUSER,
-                    membership.getComplexUserId());
-            param.addValue(UserDataStoreQueryBuilder.COLUMNGROUP, membership.getComplexGroupId());
-            param.addValue(UserDataStoreQueryBuilder.COLUMNNAMESPACE, membership.getNameSpace());
-            namedParams[paramCount++] = param;
-        }
     }
 
     /**
@@ -74,8 +62,10 @@ public class SimpleSharePointDAOTest extends TestCase {
      * .
      */
     public void testBatchUpdate() {
+        QueryType queryType = QueryType.UDS_INSERT;
         try {
-            int[] status = simpleSPDAO.batchUpdate(namedParams, QueryType.UDS_INSERT);
+            SqlParameterSource[] namedParams = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
+            int[] status = simpleSPDAO.batchUpdate(namedParams, queryType);
             assertNotNull(status);
             assertEquals(status.length, namedParams.length);
         } catch (Exception e) {
@@ -84,8 +74,15 @@ public class SimpleSharePointDAOTest extends TestCase {
     }
 
     public void testHandleBatchUpdateException() {
-        String reason = "Testing.... ";
+        QueryType queryType = QueryType.UDS_INSERT;
+        SqlParameterSource[] namedParams = null;
+        try {
+            namedParams = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
+        } catch (Exception e) {
+            fail("Could not create query parameters");
+        }
         String sqlState = "";
+        String reason = "";
         int vendorCode = 0;
         int[] updateCounts = null;
         // Scenario 1: When driver executes all the queries

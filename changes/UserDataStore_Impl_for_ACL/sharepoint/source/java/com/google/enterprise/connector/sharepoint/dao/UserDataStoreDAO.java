@@ -303,4 +303,13 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             }
         }
     }
+
+    /**
+     * To cleanup the cache
+     */
+    public void cleanupCache() {
+        udsCache.handleEnqued();
+        LOGGER.log(Level.INFO, "Current cache size , after cleanup "
+                + udsCache.size());
+    }
 }
