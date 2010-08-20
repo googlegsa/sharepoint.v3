@@ -62,7 +62,6 @@ public class SharepointConnector implements Connector {
     private String authorizationAsfeedType = null;
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
-    private UserDataStoreQueryBuilder userDataStoreQueryBuilder;
 
     public SharepointConnector() {
 
@@ -350,15 +349,6 @@ public class SharepointConnector implements Connector {
 
     public void setStripDomainFromAces(boolean stripDomainFromAces) {
         this.stripDomainFromAces = stripDomainFromAces;
-    }
-
-    public UserDataStoreQueryBuilder getUserDataStoreQueryBuilder() {
-        return userDataStoreQueryBuilder;
-    }
-
-    public void setUserDataStoreQueryBuilder(
-            UserDataStoreQueryBuilder userDataStoreQueryBuilder) {
-        this.userDataStoreQueryBuilder = userDataStoreQueryBuilder;
     }
 
     // FIXME there is CM SPI dependency here.
