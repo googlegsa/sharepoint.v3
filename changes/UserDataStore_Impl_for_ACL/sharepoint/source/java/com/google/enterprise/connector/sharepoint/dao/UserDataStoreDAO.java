@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
 import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.Query;
 import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.QueryType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -25,10 +26,13 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -80,7 +84,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             ParameterizedRowMapper<UserGroupMembership> {
         public UserGroupMembership mapRow(ResultSet result, int rowNum)
                 throws SQLException {
-            return UserDataStoreQueryBuilder.getInstance(result);
+            return UserDataStoreQueryBuilder.createMembership(result);
         }
     }
 
@@ -134,26 +138,16 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
      */
     public void addMemberships(Set<UserGroupMembership> memberships)
             throws SharepointException {
+        if (null != udsCache) {
+            removeAllCached(memberships);
+        }
+
         QueryType queryType = QueryType.UDS_INSERT;
         SqlParameterSource[] params = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
         int[] status = batchUpdate(params, queryType);
 
-        Iterator<UserGroupMembership> itrMembership = memberships.iterator();
-        while (itrMembership.hasNext()) {
-            UserGroupMembership membership = itrMembership.next();
-            if (udsCache.contains(membership)) {
-                itrMembership.remove();
-                LOGGER.log(Level.FINE, "Duplicate! found in cache... membership [ "
-                        + membership + " ] ");
-            }
-        }
-        if(null != status && status.length == memberships.size()) {
-            int i = 0;
-            for (UserGroupMembership membership : memberships) {
-                if (status[i] > 0) {
-                    udsCache.add(membership);
-                }
-            }
+        if (null != udsCache) {
+            addAllSucceeded(status, memberships);
         }
     }
 
@@ -244,9 +238,9 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             return;
         }
 
-        QueryType queryType = QueryType.UDS_DELETE_FOR_GROUPID_NAMESPACE;
+        QueryType queryType = QueryType.UDS_DELETE_FOR_NAMESPACE;
         SqlParameterSource[] params = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
-        batchUpdate(params, QueryType.UDS_DELETE_FOR_NAMESPACE);
+        batchUpdate(params, queryType);
 
         for (UserGroupMembership membership : memberships) {
             udsCache.removeUsingNamespaceView(membership);
@@ -255,52 +249,61 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
 
     /**
      * Synchronizes the membership information of all groups identified by the
-     * passed in memberships. The groups are picked up as group-namespace view.
-     * The synchronization involves deleting all the persistend memberships and
-     * adding the most latest ones </p> This synchronization is performed as one
-     * atomic operation using transaction
+     * keyset of the passed in map. The groups are picked up as group-namespace
+     * view. The synchronization involves deleting all the persisted memberships
+     * and adding the most latest ones </p> This synchronization is performed as
+     * one atomic operation using transaction
      *
-     * @param memberships the most latest membership information of group(s)
+     * @param groupToMemberships identifies groups and their corresponding most
+     *            latest membership information
      * @param namespace
      * @throws SharepointException
      */
-    public void syncGroupMemberships(Set<UserGroupMembership> memberships,
+    public void syncGroupMemberships(
+            Map<Integer, Set<UserGroupMembership>> groupToMemberships,
             String namespace)
             throws SharepointException {
+
+        if (null == groupToMemberships || groupToMemberships.size() == 0) {
+            return;
+        }
+
+        Set<UserGroupMembership> membershipsToDelete = new TreeSet<UserGroupMembership>();
+        Set<UserGroupMembership> membershipsToInsert = new TreeSet<UserGroupMembership>();
+        for (Integer groupId : groupToMemberships.keySet()) {
+            UserGroupMembership membership = new UserGroupMembership();
+            membership.setGroupId(groupId);
+            membership.setNamespace(namespace);
+
+            membershipsToDelete.add(membership);
+            membershipsToInsert.addAll(groupToMemberships.get(membership));
+        }
 
         List<QueryType> queryType = new ArrayList<QueryType>();
         List<SqlParameterSource[]> params = new ArrayList<SqlParameterSource[]>();
 
-        if (memberships.size() != 0) {
-            QueryType type = QueryType.UDS_DELETE_FOR_GROUPID_NAMESPACE;
-            queryType.add(type);
-            params.add(UserDataStoreQueryBuilder.createParameter(type, memberships));
+        QueryType type = QueryType.UDS_DELETE_FOR_GROUPID_NAMESPACE;
+        queryType.add(type);
+        params.add(UserDataStoreQueryBuilder.createParameter(type, membershipsToDelete));
 
-            type = QueryType.UDS_INSERT;
-            queryType.add(type);
-            params.add(UserDataStoreQueryBuilder.createParameter(type, memberships));
-        }
+        type = QueryType.UDS_INSERT;
+        queryType.add(type);
+        params.add(UserDataStoreQueryBuilder.createParameter(type, membershipsToInsert));
+
 
         int[][] batchStatus = executeAsTransaction(queryType, params);
 
-        // Removal from cache is lenient because it does not harm ant
+        // Removal from cache is lenient because it does not harm any
         // functionality. At worst, duplicate insertion will occur
         if (batchStatus != null && batchStatus.length == 2) {
-            for (UserGroupMembership membership : memberships) {
+            for (UserGroupMembership membership : membershipsToDelete) {
                 udsCache.removeUsingGroupNamespaceView(membership);
             }
 
             // Unlike removal, adding into cache should be strict. A wrong
             // insertion will mean that such records will never be able to reach
             // up to the database.
-            if (batchStatus[1].length == memberships.size()) {
-                int i = 0;
-                for (UserGroupMembership membership : memberships) {
-                    if (batchStatus[1][i] > 0) {
-                        udsCache.add(membership);
-                    }
-                }
-            }
+            addAllSucceeded(batchStatus[1], membershipsToInsert);
         }
     }
 
@@ -308,8 +311,52 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
      * To cleanup the cache
      */
     public void cleanupCache() {
-        udsCache.handleEnqued();
+        udsCache.clearCache();
         LOGGER.log(Level.INFO, "Current cache size , after cleanup "
                 + udsCache.size());
+    }
+
+    /**
+     * cache can be disabled using this. By default, it's enabled.
+     *
+     * @param useCache
+     */
+    public void isUseCache(boolean useCache) {
+        if (!useCache) {
+            udsCache = null;
+        }
+    }
+
+    /**
+     * Removes all those elements from the passed-in collection that are found
+     * in cache
+     *
+     * @param elems
+     */
+    private void removeAllCached(Collection<UserGroupMembership> memberships) {
+        Iterator<UserGroupMembership> itr = memberships.iterator();
+        while (itr.hasNext()) {
+            UserGroupMembership membership = itr.next();
+            if (udsCache.contains(membership)) {
+                itr.remove();
+            }
+        }
+    }
+
+    /**
+     * Adds element into cache after performing strict checking about the status
+     * of the query execution.
+     */
+    private void addAllSucceeded(int[] status,
+            Collection<UserGroupMembership> memberships) {
+        if (null != udsCache && null != status
+                && status.length == memberships.size()) {
+            int i = 0;
+            for (UserGroupMembership membership : memberships) {
+                if (status[i] > 0) {
+                    udsCache.add(membership);
+                }
+            }
+        }
     }
 }

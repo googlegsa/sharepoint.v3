@@ -1,0 +1,286 @@
+//Copyright 2010 Google Inc.
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+
+package com.google.enterprise.connector.sharepoint.cache;
+
+
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Provides an abstract generic cache implementation which can be used to
+ * minimize disk IO operation. This, however, does not make any assumption about
+ * locality of reference, neither uses any specific algorithm for optimizing
+ * data storage and access.
+ * <p/>
+ * The cache does not impose any limits on the elements as such. Rather, leaves
+ * the concern of freeing up the memory to the JVM. Java references are used for
+ * this purpose which ensures that the cache size will never lead to any memory
+ * issues. Hence, elements in cache are stored as soft references.
+ * <p/>
+ * Views are used to optimize the access, updates and deletion of elements in
+ * cache. This, of course, comes with a cost of extra processing. Views, here,
+ * are analogous to the SQL views wherein it is used as a sub-representation of
+ * the actual record. Along with every view, a list of actual elements are
+ * stored. These are the actual elements that have been cached. Such data
+ * structure allows view based deletion which is a common case in User Data
+ * Store Cache implementation. Views are stored as weak references because their
+ * lifetime depends on the actual elements that are their in cache.
+ * <p/>
+ *
+ * @author nitendra_thakur
+ * @param <T>
+ */
+public abstract class CacheProvider<T> implements ICache<T> {
+
+    /**
+     * A marker interface for the views which can be used along with the cache
+     * The implementors are not supposed to keep any strong references of the
+     * objects being cached. Since, the cache relies on soft and weak
+     * references, if the caller will maintain any strong reference of the
+     * objects, the cache will keep on growing.
+     *
+     * @author nitendra_thakur
+     */
+    protected interface View {
+    }
+
+    /**
+     * A subclass of Java's SoftReference whose equality and ordering is decided
+     * by its referral and not by the reference itself. Hence, a new definition
+     * for equals() and compareTo() is given
+     *
+     * @author nitendra_thakur
+     */
+    private class SPSoftReference extends SoftReference<T> {
+        int hashcode;
+
+        SPSoftReference(T t) {
+            super(t);
+            this.hashcode = t.hashCode();
+        }
+
+        SPSoftReference(T t, ReferenceQueue<? super T> refQueue) {
+            super(t, refQueue);
+            this.hashcode = t.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (null == obj || !(obj instanceof CacheProvider.SPSoftReference)) {
+                return false;
+            }
+            SPSoftReference inViewSoftRef = (SPSoftReference) obj;
+            if (null == get()) {
+                if (null == inViewSoftRef.get()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return get().equals(inViewSoftRef.get());
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return hashcode;
+        }
+    }
+
+    /**
+     * A subclass of Java's WeakReference whose equality and ordering is decided
+     * by its referral and not by the reference itself. Hence, a new definition
+     * for equals() and compareTo() is given
+     *
+     * @author nitendra_thakur
+     */
+    private class SPWeakReference extends WeakReference<T> {
+        int hashcode;
+
+        SPWeakReference(T t) {
+            super(t);
+            this.hashcode = t.hashCode();
+        }
+
+        SPWeakReference(T t, ReferenceQueue<? super T> refQueue) {
+            super(t, refQueue);
+            this.hashcode = t.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (null == obj || !(obj instanceof CacheProvider.SPWeakReference)) {
+                return false;
+            }
+            SPWeakReference inViewWeakRef = (SPWeakReference) obj;
+            if (null == get()) {
+                if (null == inViewWeakRef.get()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return get().equals(inViewWeakRef.get());
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return hashcode;
+        }
+    }
+
+    /**
+     * The set being used as the cache. Elements are stored as soft reference
+     * and not as strong reference
+     */
+    Set<? super SPSoftReference> cache = new HashSet<SPSoftReference>();
+    /**
+     * The reference queue to collect the unused references
+     */
+    ReferenceQueue<T> cacheRefQueue = new ReferenceQueue<T>();
+
+    /**
+     * The map contains one entry for every view. Corresponding to every view,
+     * there are elements which satisfies this view and are in cache
+     */
+    Map<View, Set<? super SPWeakReference>> registeredViews = new HashMap<View, Set<? super SPWeakReference>>();
+    /**
+     * The reference queue to collect the unused references
+     */
+    ReferenceQueue<T> viewsRefQueue = new ReferenceQueue<T>();
+
+    /**
+     * Checks if the element is in cache
+     *
+     * @param t
+     * @return
+     */
+    public boolean contains(T t) {
+        if (null == t) {
+            return false;
+        }
+        return cache.contains(new SPSoftReference(t));
+    }
+
+    /**
+     * adds an element into the cache and updates the views. Views are
+     * maintained separate from the actual cache. Implementors can specify what
+     * all views are to be maintained by giving an appropriate implementation of
+     * {@link CacheProvider#getViews(Object)}
+     * <p/>
+     * After this method call returns, caller can get the cached element using
+     * any of the views that was registered.
+     *
+     * @param t
+     */
+    public void add(T t) {
+        if (null == t) {
+            return;
+        }
+        cache.add(new SPSoftReference(t, cacheRefQueue));
+        Set<View> views = getViews(t);
+        for (View view : views) {
+            if (registeredViews.containsKey(view)) {
+                Set<? super SPWeakReference> viewRefs = registeredViews.get(view);
+                if (null == viewRefs) {
+                    viewRefs = new HashSet<SPWeakReference>();
+                }
+                viewRefs.add(new SPWeakReference(t, viewsRefQueue));
+            } else {
+                Set<? super SPWeakReference> viewRefs = new HashSet<SPWeakReference>();
+                viewRefs.add(new SPWeakReference(t, viewsRefQueue));
+                registeredViews.put(view, viewRefs);
+            }
+        }
+    }
+
+    /**
+     * Removes the element from cache. Views are not updated at this point of
+     * time. Since, views only have weak references of the element, garbage
+     * collector will nullify their references. It is also not unsafe to keep
+     * these references in views till the time gc does its job. That is because,
+     * the existence of an element in cache in not determined by the views.
+     *
+     * @param t
+     */
+    public void remove(T t) {
+        if (null == t) {
+            return;
+        }
+        cache.remove(new SPSoftReference(t));
+    }
+
+    /**
+     * removes all the elements which satisfies one view. This is helpful in
+     * cases when records are deleted from database based on subset of columns
+     * and their values. An SQL WHERE predicate used in such cases can be
+     * thought of as a view. This, actually, is the single motivation behind the
+     * using views with cache
+     *
+     * @param view
+     */
+    protected void removeUsingView(View view) {
+        if (registeredViews.containsKey(view)) {
+            Set<? super SPWeakReference> viewRefs = registeredViews.get(view);
+            if (null != viewRefs) {
+                for (Object viewRef : viewRefs) {
+                    remove(((SPWeakReference) viewRef).get());
+                }
+            }
+            registeredViews.remove(view);
+        }
+    }
+
+    /**
+     * An abstract factory method to get all the views that are to be
+     * maintained. Views are requested for an element that is to be cached. The
+     * specified views can latter be used get the actual cached element that is
+     * the argument t of the method
+     *
+     * @param t the element that is cached
+     * @return All the views that should be maintained along with t
+     */
+    protected abstract Set<View> getViews(T t);
+
+    /**
+     * Calling this will delete all the references whose referent has been
+     * garbage collected. There is no point in keeping these references in
+     * cache.
+     */
+    public void clearCache() {
+        Reference<? extends T> ref = cacheRefQueue.poll();
+        while (null != ref) {
+            cache.remove(ref);
+            ref = cacheRefQueue.poll();
+        }
+
+        ref = viewsRefQueue.poll();
+        while (null != ref) {
+            registeredViews.remove(ref);
+            ref = viewsRefQueue.poll();
+        }
+    }
+
+    public int size() {
+        return cache.size();
+    }
+}

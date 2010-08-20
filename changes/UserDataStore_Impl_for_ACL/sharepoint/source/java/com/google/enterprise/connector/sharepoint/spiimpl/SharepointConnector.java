@@ -18,6 +18,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.dao.LocalizedQueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
@@ -310,7 +311,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
-        initDataSource();
+        initDao();
     }
 
     /**
@@ -373,18 +374,25 @@ public class SharepointConnector implements Connector {
     // DBURL=jdbc:mysql://localhost:3306/user_data_store
     // DBUsername=root
     // DBPassword=pspl!@#
-    public void initDataSource() {
+    public void initDao() {
         try {
-         Properties properties = new Properties();
-         properties.load(new FileInputStream(googleConnectorWorkDir + "/../UserDataStoreConfig.properties"));
-         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-         dataSource.setDriverClassName(properties.getProperty("DriverClass"));
-         dataSource.setUrl(properties.getProperty("DBURL"));
-         dataSource.setUsername(properties.getProperty("DBUsername"));
-         dataSource.setPassword(properties.getProperty("DBPassword"));
+            Properties properties = new Properties();
+            properties.load(new FileInputStream(googleConnectorWorkDir
+                    + "/../UserDataStoreConfig.properties"));
+            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+            dataSource.setDriverClassName(properties.getProperty("DriverClass"));
+            dataSource.setUrl(properties.getProperty("DBURL"));
+            dataSource.setUsername(properties.getProperty("DBUsername"));
+            dataSource.setPassword(properties.getProperty("DBPassword"));
 
+            LocalizedQueryProvider queryProvider = new LocalizedQueryProvider(
+                    "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
+            queryProvider.setLocale(new Locale("mssql"));
+            queryProvider.load();
+
+            UserDataStoreQueryBuilder userDataStoreQueryBuilder = new UserDataStoreQueryBuilder(
+                    queryProvider);
             userDataStoreQueryBuilder.addSuffix(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir));
-            userDataStoreQueryBuilder.setLocale(new Locale("mssql"));
 
             UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
                     dataSource, userDataStoreQueryBuilder);

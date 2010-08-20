@@ -714,10 +714,10 @@ public class GssAclWS {
 
         if (null != changedGroups && changedGroups.size() > 0) {
             try {
-                Set<UserGroupMembership> newMemberships = processChangedGroupsToSync(changedGroups);
-                if (null != newMemberships && newMemberships.size() > 0) {
+                Map<Integer, Set<UserGroupMembership>> groupToMemberships = processChangedGroupsToSync(changedGroups);
+                if (null != groupToMemberships && groupToMemberships.size() > 0) {
                     try {
-                        sharepointClientContext.getUserDataStoreDAO().syncGroupMemberships(newMemberships, siteCollectionUrl);
+                        sharepointClientContext.getUserDataStoreDAO().syncGroupMemberships(groupToMemberships, siteCollectionUrl);
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "Failure while syncing memberships from namespace [ "
                                 + siteCollectionUrl + " ]");
@@ -731,17 +731,16 @@ public class GssAclWS {
     }
 
     /**
-     * Add all the changed groups in the list of deleted groups and return them
-     * as a list of newMembership. Deleting and re-inserting the membership is
-     * the way to keep group membership info synchronized
+     * Resolves a set of groups identified by their IDs and returns a map
+     * <groupID, latest_memberships>. This is useful when a group has been
+     * changed and its membership is to be re-synced with the user data store.
      *
-     * @param deletedGroups
-     * @param changedGroups
+     * @param changedGroups IDs of the groups that is to be resolved
      * @return
      */
-    private Set<UserGroupMembership> processChangedGroupsToSync(
+    private Map<Integer, Set<UserGroupMembership>> processChangedGroupsToSync(
             Set<String> changedGroups) {
-        Set<UserGroupMembership> newMemberships = new TreeSet<UserGroupMembership>();
+        Map<Integer, Set<UserGroupMembership>> groupsToMemberships = new HashMap<Integer, Set<UserGroupMembership>>();
         if (null != changedGroups && changedGroups.size() > 0) {
             String[] groupIds = new String[changedGroups.size()];
             changedGroups.toArray(groupIds);
@@ -750,17 +749,19 @@ public class GssAclWS {
                 GssPrincipal[] groups = wsResult.getPrinicpals();
                 if (null != groups && groups.length > 0) {
                     for (GssPrincipal group : groups) {
+                        Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
                         for (GssPrincipal member : group.getMembers()) {
-                            newMemberships.add(new UserGroupMembership(
+                            memberships.add(new UserGroupMembership(
                                     member.getID(), member.getName(),
                                     group.getID(), group.getName(),
                                     wsResult.getSiteCollectionUrl()));
                         }
+                        groupsToMemberships.put(group.getID(), memberships);
                     }
                 }
             }
         }
-        return newMemberships;
+        return groupsToMemberships;
     }
 
     /**

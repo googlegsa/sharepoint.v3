@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -29,64 +30,59 @@ import java.util.Collection;
  *
  * @author nitendra_thakur
  */
-public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
-    // Column Names of User Data Store Membership table.
-    private static final String COLUMNUSERID = "SPUserId";
-    private static final String COLUMNUSERNAME = "SPUserName";
-    private static final String COLUMNGROUPID = "SPGroupId";
-    private static final String COLUMNGROUPNAME = "SPGroupName";
-    private static final String COLUMNNAMESPACE = "SPSite";
+public class UserDataStoreQueryBuilder implements QueryBuilder {
+    private QueryProvider queryProvider;
+    String tablename = SPConstants.UDS_TABLENAME;
+    String indexname = SPConstants.UDS_INDEXNAME;
 
-    private String table;
-    private String index;
-
-    public UserDataStoreQueryBuilder(String table, String index)
+    public UserDataStoreQueryBuilder(QueryProvider queryProvider)
             throws SharepointException {
-        if (table == null || table.trim().length() == 0) {
-            throw new SharepointException("Invalid table name! ");
+        if (null == queryProvider) {
+            throw new SharepointException("queryProvider cannot be null! ");
         }
-        this.table = table;
-
-        if (index == null || index.trim().length() == 0) {
-            throw new SharepointException("Invalid index name! ");
-        }
-        this.index = index;
+        this.queryProvider = queryProvider;
     }
 
+    /**
+     * Creates queries in a format as expected by Spring. The placeholsders are
+     * replaced by a literal which is in a format :literal. The actual value can
+     * be passed through named parameter see
+     * {@link UserDataStoreQueryBuilder#createParameter(com.google.enterprise.connector.sharepoint.dao.QueryBuilder.QueryType, Collection)}
+     */
     public Query createQuery(QueryType queryType) throws SharepointException {
         Query udsQuery = new Query();
         udsQuery.setQueryType(queryType);
         switch (queryType) {
             case UDS_CREATE_TABLE:
-            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table));
+            udsQuery.setQuery(MessageFormat.format(queryProvider.getQuery(queryType.name()), tablename));
             break;
 
             case UDS_CREATE_INDEX:
-            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), index, table));
+            udsQuery.setQuery(MessageFormat.format(queryProvider.getQuery(queryType.name()), tablename, indexname));
                 break;
 
             case UDS_SELECT_FOR_USERNAME:
-            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNUSERNAME)));
+            udsQuery.setQuery(MessageFormat.format(queryProvider.getQuery(queryType.name()), tablename, (":" + SPConstants.UDS_COLUMNUSERNAME)));
                 break;
 
             case UDS_INSERT:
-            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNUSERID), (":" + COLUMNUSERNAME), (":" + COLUMNGROUPID), (":" + COLUMNGROUPNAME), (":" + COLUMNNAMESPACE)));
+            udsQuery.setQuery(MessageFormat.format(queryProvider.getQuery(queryType.name()), tablename, (":" + SPConstants.UDS_COLUMNUSERID), (":" + SPConstants.UDS_COLUMNUSERNAME), (":" + SPConstants.UDS_COLUMNGROUPID), (":" + SPConstants.UDS_COLUMNGROUPNAME), (":" + SPConstants.UDS_COLUMNNAMESPACE)));
                 break;
 
             case UDS_DELETE_FOR_USERID_NAMESPACE:
-            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNUSERID), (":" + COLUMNNAMESPACE)));
+            udsQuery.setQuery(MessageFormat.format(queryProvider.getQuery(queryType.name()), tablename, (":" + SPConstants.UDS_COLUMNUSERID), (":" + SPConstants.UDS_COLUMNNAMESPACE)));
                 break;
 
             case UDS_DELETE_FOR_GROUPID_NAMESPACE:
-            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNGROUPID), (":" + COLUMNNAMESPACE)));
+            udsQuery.setQuery(MessageFormat.format(queryProvider.getQuery(queryType.name()), tablename, (":" + SPConstants.UDS_COLUMNGROUPID), (":" + SPConstants.UDS_COLUMNNAMESPACE)));
                 break;
 
             case UDS_DELETE_FOR_NAMESPACE:
-            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table, (":" + COLUMNNAMESPACE)));
+            udsQuery.setQuery(MessageFormat.format(queryProvider.getQuery(queryType.name()), tablename, (":" + SPConstants.UDS_COLUMNNAMESPACE)));
                 break;
 
             case UDS_DROP_TABLE:
-            udsQuery.setQuery(MessageFormat.format(getQueryString(queryType.name()), table));
+            udsQuery.setQuery(MessageFormat.format(queryProvider.getQuery(queryType.name()), tablename));
                 break;
 
             default:
@@ -106,7 +102,7 @@ public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
         case UDS_SELECT_FOR_USERNAME:
             for (UserGroupMembership membership : memberships) {
                 namedParams[count++] = new MapSqlParameterSource(
-                        UserDataStoreQueryBuilder.COLUMNUSERNAME,
+                        SPConstants.UDS_COLUMNUSERNAME,
                         membership.getUserName());
             }
             break;
@@ -114,11 +110,11 @@ public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
         case UDS_INSERT:
             for (UserGroupMembership membership : memberships) {
                 MapSqlParameterSource param = new MapSqlParameterSource();
-                param.addValue(COLUMNUSERID, membership.getUserId());
-                param.addValue(COLUMNUSERNAME, membership.getUserName());
-                param.addValue(COLUMNGROUPID, membership.getGroupId());
-                param.addValue(COLUMNGROUPNAME, membership.getGroupName());
-                param.addValue(UserDataStoreQueryBuilder.COLUMNNAMESPACE, membership.getNamespace());
+                param.addValue(SPConstants.UDS_COLUMNUSERID, membership.getUserId());
+                param.addValue(SPConstants.UDS_COLUMNUSERNAME, membership.getUserName());
+                param.addValue(SPConstants.UDS_COLUMNGROUPID, membership.getGroupId());
+                param.addValue(SPConstants.UDS_COLUMNGROUPNAME, membership.getGroupName());
+                param.addValue(SPConstants.UDS_COLUMNNAMESPACE, membership.getNamespace());
                 namedParams[count++] = param;
             }
             break;
@@ -126,8 +122,8 @@ public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
         case UDS_DELETE_FOR_USERID_NAMESPACE:
             for (UserGroupMembership membership : memberships) {
                 MapSqlParameterSource param = new MapSqlParameterSource();
-                param.addValue(COLUMNUSERID, membership.getUserId());
-                param.addValue(COLUMNNAMESPACE, membership.getNamespace());
+                param.addValue(SPConstants.UDS_COLUMNUSERID, membership.getUserId());
+                param.addValue(SPConstants.UDS_COLUMNNAMESPACE, membership.getNamespace());
                 namedParams[count++] = param;
             }
             break;
@@ -135,8 +131,8 @@ public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
         case UDS_DELETE_FOR_GROUPID_NAMESPACE:
             for (UserGroupMembership membership : memberships) {
                 MapSqlParameterSource param = new MapSqlParameterSource();
-                param.addValue(COLUMNGROUPID, membership.getGroupId());
-                param.addValue(COLUMNNAMESPACE, membership.getNamespace());
+                param.addValue(SPConstants.UDS_COLUMNGROUPID, membership.getGroupId());
+                param.addValue(SPConstants.UDS_COLUMNNAMESPACE, membership.getNamespace());
                 namedParams[count++] = param;
             }
             break;
@@ -144,7 +140,7 @@ public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
         case UDS_DELETE_FOR_NAMESPACE:
             for (UserGroupMembership membership : memberships) {
                 MapSqlParameterSource param = new MapSqlParameterSource();
-                param.addValue(COLUMNNAMESPACE, membership.getNamespace());
+                param.addValue(SPConstants.UDS_COLUMNNAMESPACE, membership.getNamespace());
                 namedParams[count++] = param;
             }
             break;
@@ -156,8 +152,8 @@ public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
     }
 
     public void addSuffix(String suffix) {
-        this.table += "_" + suffix;
-        this.index += "_" + suffix;
+        this.tablename += "_" + suffix;
+        this.indexname += "_" + suffix;
     }
 
     // XXX This is temporary
@@ -166,27 +162,25 @@ public class UserDataStoreQueryBuilder extends LocalizedQueryBuilder {
     }
 
     public String[] getTables() {
-        return new String[] { table };
-    }
-
-    public void setTable(String table) {
-        this.table = table;
+        return new String[] { tablename };
     }
 
     /**
-     * Construct an instance of this class from a result set
+     * Construct an instance of {@link UserGroupMembership} class from a DB
+     * result set
      *
      * @param result
      * @return
      * @throws SQLException
      */
-    public static UserGroupMembership getInstance(ResultSet result)
+    public static UserGroupMembership createMembership(ResultSet result)
             throws SQLException {
         UserGroupMembership membership = new UserGroupMembership(
-                result.getInt(COLUMNUSERID), result.getString(COLUMNUSERNAME),
-                result.getInt(COLUMNGROUPID),
-                result.getString(COLUMNGROUPNAME),
-                result.getString(COLUMNNAMESPACE));
+                result.getInt(SPConstants.UDS_COLUMNUSERID),
+                result.getString(SPConstants.UDS_COLUMNUSERNAME),
+                result.getInt(SPConstants.UDS_COLUMNGROUPID),
+                result.getString(SPConstants.UDS_COLUMNGROUPNAME),
+                result.getString(SPConstants.UDS_COLUMNNAMESPACE));
         return membership;
     }
 }

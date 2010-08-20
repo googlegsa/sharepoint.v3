@@ -308,6 +308,7 @@ public abstract class SimpleSharePointDAO extends SimpleJdbcDaoSupport
         }
 
         public int[][] doInTransaction(TransactionStatus status) {
+            Object savepoint = status.createSavepoint();
             int[][] batchStatus = new int[queryType.size()][];
             for (int i = 0; i < queryType.size(); ++i) {
                 try {
@@ -315,6 +316,7 @@ public abstract class SimpleSharePointDAO extends SimpleJdbcDaoSupport
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Exception occured while executing batch query [ "
                             + queryType.get(i) + " ] in transaction!! ");
+                    status.rollbackToSavepoint(savepoint);
                 }
             }
             return batchStatus;
