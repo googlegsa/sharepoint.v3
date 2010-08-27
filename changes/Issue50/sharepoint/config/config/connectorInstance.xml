@@ -60,6 +60,22 @@
       </list>
     </property>
   -->
+
+  <!-- rules for tracking and filtering invalid XML characters -->
+  <!--
+  <property name="invalidXMLFilterRules">
+      <map>
+        <entry>
+          <key>
+            <bean class="java.util.regex.Pattern" factory-method="compile">
+              <constructor-arg type="java.lang.String" value="&amp;"/>
+            </bean>
+        </key>
+        <value>&amp;amp;</value>
+        </entry>
+      </map>
+     </property>
+  -->
   </bean>
 
 </beans>

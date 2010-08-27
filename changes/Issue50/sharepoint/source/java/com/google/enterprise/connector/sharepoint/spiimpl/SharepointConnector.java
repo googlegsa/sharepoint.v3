@@ -14,18 +14,21 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
+import com.google.enterprise.connector.sharepoint.wsclient.InvalidXMLFilterHandler;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Implementation of the Connector interface from the spi for SharePoint This is
@@ -335,5 +338,10 @@ public String getKdcserver() {
 
     public void setInfoPathBaseTemplate(List<String> infoPathBaseTemplate) {
         this.infoPathBaseTemplate = infoPathBaseTemplate;
+    }
+
+    public void setInvalidXMLFilterRules(
+            Map<Pattern, String> invalidXMLFilterRules) {
+        InvalidXMLFilterHandler.setFilterRules(invalidXMLFilterRules);
     }
 }
