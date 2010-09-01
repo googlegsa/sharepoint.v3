@@ -17,8 +17,13 @@ xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
 </transport>
 
 <globalConfiguration>
+  <parameter name="ReplacementValue" value=" " />
+  <!--parameter name="FilterPattern_1" value="XXX" /-->
+  <!--parameter name="FilterPattern_2" value="XXX" /-->
   <responseFlow>
-    <handler type="java:com.google.enterprise.connector.sharepoint.wsclient.InvalidXMLFilterHandler" />
+    <handler type="java:com.google.enterprise.connector.sharepoint.handlers.InvalidXmlCharacterFilter">
+
+    </handler>
   </responseFlow>
 </globalConfiguration>
 
