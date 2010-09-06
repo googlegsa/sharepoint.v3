@@ -441,3 +441,21 @@ Two important points to note:
 *Q. I have configured connector authN with Security Manager for content fed in Meta-data and URL feed mode, I am unable to get search results*
 
 Metadata and URL feed is an invalid feed mode for connector authN with Security Manager so you don't get search results. Content feed is an appropriate feed mode for using Security Manager Connector authN. 
+
+*Q. How to enable ACL feature?*
+
+    1. Go to the connector instance directory of the connector for which you want to 
+       turn on ACL.The connector instance directory can be found under           
+        $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector 
+        /CONNECTOR
+        Replace CONNECTOR with the actual name of your connector
+    2. Open connectorInstance.xml
+    3. Scroll down to the end until you find the ACL Related flags
+    4. Uncomment the following
+       <!--
+       <property name="pushAcls"><value>true</value></property>
+       <property name="stripDomainFromAces"><value>true</value></property>
+        -->
+    5. If pushAcls value is false make it true.   
+    6. Save the updated connectorInstance.xml
+    7. Restart the connector
