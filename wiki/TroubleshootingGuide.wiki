@@ -452,10 +452,13 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
     2. Open connectorInstance.xml
     3. Scroll down to the end until you find the ACL Related flags
     4. Uncomment the following
-       <!--
        <property name="pushAcls"><value>true</value></property>
        <property name="stripDomainFromAces"><value>true</value></property>
-        -->
     5. If pushAcls value is false make it true.   
     6. Save the updated connectorInstance.xml
     7. Restart the connector
+
+*Q. Where can I see ACls on GSA?*
+    Go to the Crawl diagonostic page under Status and reports section.
+    Goto the URL for which you want to check the ACLs.
+    Here it shows the list of ACls
