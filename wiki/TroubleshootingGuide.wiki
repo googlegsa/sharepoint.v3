@@ -459,6 +459,13 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
     7. Restart the connector
 
 *Q. Where can I see ACls on GSA?*
-    Go to the Crawl diagonostic page under Status and reports section.
-    Goto the URL for which you want to check the ACLs.
-    Here it shows the list of ACls
+    You can see the Acls on Policy ACLs page under Serving section of the GSA.
+
+*Q. Do I require any special permission for Policy ACL AuthN ?*
+    For ACL, the minimum required permission is either a "Full Read" at web application  
+    level or, the user should be the site collection administrator. The user credential 
+    that you use to configure the connector must have either of these two permissions if  
+    you are willing to use ACL based authorization of search results.
+
+*Q. Do we support Share Point 2010 ?*
+     Yes, Connector now supports Share Point 2010.
