@@ -38,11 +38,11 @@ import javax.xml.transform.stream.StreamSource;
  * characters as per the filter rules
  * <p/>
  * The handler does its job only if the
- * {@link InvalidXmlCharacterFilter#identityHeader} SOAP header is present in
- * the request
+ * {@link InvalidXmlCharacterHandler#PRECONDITION_HEADER} SOAP header is present
+ * in the request
  * <p/>
  * Refer Code Site Issue50
- *
+ * 
  * @author nitendra_thakur
  */
 public class InvalidXmlCharacterHandler extends BasicHandler {
