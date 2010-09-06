@@ -458,6 +458,19 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
     6. Save the updated connectorInstance.xml
     7. Restart the connector
 
+*Q. How to deploy the ACL web service on SharePoint? *
+    1. Go to the SharePoint front server which is serving the sites
+    2. Open the directory C:\Program Files\Common Files\Microsoft Shared\web server  
+       extensions\12\ISAPI
+    3. Copy the following three files under the ISAPI directory opened above
+      GssAcl.asmx
+      GssAcldisco.aspx
+      GssAclwsdl.aspx
+
+*Q. I have Share Point farm Server. How to deploy the ACL web service on SharePoint? *
+     The web service has to be deployed on all front-end servers which are hosting sites  
+     that you want the connector to crawl. 
+
 *Q. Where can I see ACls on GSA?*
     You can see the Acls on Policy ACLs page under Serving section of the GSA.
 
@@ -469,3 +482,19 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
 
 *Q. Do we support Share Point 2010 ?*
      Yes, Connector now supports Share Point 2010.
+
+*Q. How to include/exclude a site/page in the search results? *
+    Connector, during the crawl checks if a site/list search visibility is turned on.  
+    If not, it pauses the crawling of that particular site/list. If it is a new 
+    site/list, no crawling is done for this.
+    You can turn on this from Connector Configuration Page under Authorization Handling  
+    section.
+
+     Note: For this feature, You need to install the custom GSSiteDiscovery web service  
+     on every SharePoint front end server where the sites to be crawled are hosted. This  
+     web service comes as part of Google Services for SharePoint. The steps for manual 
+     installation is same as of the ACL web service with the files being changed. In this 
+     case the files to be copied in the ISAPI directory are:
+     GSSiteDiscovery.asmx
+     GSSiteDiscoverydisco.aspx
+     GSSiteDiscoverywsdl.aspx
