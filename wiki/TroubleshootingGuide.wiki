@@ -507,4 +507,6 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
     > The Web part page gets crawled when we add a page viewer web part linked to a file. 
       However it does not get re-crawled when we update the contents of the Source file, 
       even if the changes are visible in target web part.
-      
+
+*Q. Do we support Crawling of Infopath Forms ?*
+    Yes, now the connector supports Infopath forms.
