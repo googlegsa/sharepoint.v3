@@ -42,7 +42,7 @@ import javax.xml.transform.stream.StreamSource;
  * in the request
  * <p/>
  * Refer Code Site Issue50
- * 
+ *
  * @author nitendra_thakur
  */
 public class InvalidXmlCharacterHandler extends BasicHandler {
@@ -141,7 +141,7 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
      *
      * @param messageContext
      */
-    private void initPatterns(MessageContext messageContext) {
+    void initPatterns(MessageContext messageContext) {
         if (null != customFilterPattern) {
             return;
         }
@@ -158,7 +158,7 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
             if (name.startsWith(rulesPrefix)) {
                 try {
                     Object pattern = messageContext.getProperty(name);
-                    if (null == obj) {
+                    if (null == pattern) {
                         continue;
                     }
                     if (strPattern.trim().length() != 0) {
@@ -207,6 +207,9 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
                     ref = Integer.parseInt(hexaDecimal, 16);
                 } else {
                     // This will never happen
+                    LOGGER.log(Level.SEVERE, "Matcher found an unexpected value [ "
+                            + matcher.group()
+                            + " ] in the matched reference. The value is neither decimal nor hexadecimal. ");
                     continue;
                 }
             } catch (Exception e) {
@@ -218,7 +221,8 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
             }
             if (isInavlidReference(ref)) {
                 LOGGER.info("replacing invalid reference " + matcher.group()
-                        + " from WS response");
+                        + " from WS response. replacement value [ "
+                        + replacementValue + " ] ");
                 matcher.appendReplacement(afterFilter, replacementValue);
             }
         }
@@ -240,7 +244,9 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
         StringBuffer afterFilter = new StringBuffer();
         Matcher matcher = customFilterPattern.matcher(messagePayload);
         while (matcher.find()) {
-            LOGGER.info("replacing " + matcher.group() + " from WS response");
+            LOGGER.info("replacing " + matcher.group()
+                    + " from WS response.  replacement value [ "
+                    + replacementValue + " ] ");
             matcher.appendReplacement(afterFilter, replacementValue);
         }
         matcher.appendTail(afterFilter);
@@ -269,7 +275,7 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
      * includes checking if the required SOAP header is present or not
      *
      * @param msgContext
-     * @return
+     * @return true if all preconditions are satisfied; false otherwise
      */
     static boolean checkPreconditions(MessageContext msgContext) {
         if (null == msgContext || null == msgContext.getResponseMessage()

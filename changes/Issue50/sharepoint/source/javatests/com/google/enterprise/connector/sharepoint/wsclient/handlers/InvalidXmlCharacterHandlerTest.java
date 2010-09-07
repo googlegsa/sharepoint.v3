@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.handlers;
 
+import org.apache.axis.MessageContext;
+
 import junit.framework.TestCase;
 
 public class InvalidXmlCharacterHandlerTest extends TestCase {
@@ -22,7 +24,10 @@ public class InvalidXmlCharacterHandlerTest extends TestCase {
         super.setUp();
     }
 
-    public void testParser() {
+    /**
+     * Test for handling of character entity references
+     */
+    public void testInvalidReferenceHandler() {
         int ref1 = 10, ref2 = 11;
         String charRef1 = "&#10;", hexCharRef1 = "&#xA;";
         String charRef2 = "&#11;", hexCharRef2 = "&#xB;";
@@ -48,5 +53,23 @@ public class InvalidXmlCharacterHandlerTest extends TestCase {
             assertTrue(str.contains(charRef2));
             assertTrue(str.contains(hexCharRef2));
         }
+    }
+
+    /**
+     * Test for handling of custom patterns
+     */
+    public void testCustomPatternHandler() {
+        MessageContext msgContext = new MessageContext(null);
+        msgContext.setProperty("FilterPattern_1", "ows_");
+        msgContext.setProperty("FilterPattern_2", "_x20_");
+
+        String msgPayload = "ows_Author_x20_Name=self";
+        InvalidXmlCharacterHandler handler = new InvalidXmlCharacterHandler();
+
+        handler.initPatterns(msgContext);
+
+        msgPayload = handler.filterCustomPatterns(msgPayload);
+        assertFalse(msgPayload.contains("ows_"));
+        assertFalse(msgPayload.contains("_x20_"));
     }
 }
