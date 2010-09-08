@@ -34,6 +34,7 @@ import com.google.enterprise.connector.sharepoint.generated.lists.ListsSoap_Bind
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.wsclient.handlers.InvalidXmlCharacterHandler;
 import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
@@ -68,6 +69,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPHeaderElement;
 
 /**
  * Java Client for calling Lists.asmx Provides a layer to talk to the Lists Web
@@ -108,6 +110,7 @@ public class ListsWS {
             loc.setListsSoapEndpointAddress(endpoint);
 
             final Lists listsService = loc;
+
             try {
                 stub = (ListsSoap_BindingStub) listsService.getListsSoap();
             } catch (final ServiceException e) {
@@ -1029,7 +1032,11 @@ public class ListsWS {
                     return listItems;
                 }
             } else {
-                handleListException(list, af);
+                boolean retry = handleListException(list, af);
+                if(retry) {
+                    LOGGER.log(Level.INFO, "Retrying WS call...");
+                    return getListItemChangesSinceToken(list, lastItemID, allWebs, folderLevel);
+                }
                 return listItems;
             }
         } catch (final Throwable e) {
@@ -1114,34 +1121,44 @@ public class ListsWS {
     /**
      * Called when the connector is not able proceed after the current state of
      * list (lastDoc+changetoken) because the web service call has failed.
-     * @param list List for which the exception occured
+     *
+     * @param list List for which the exception occurred
+     * @return an advice to the caller indicating whether the web service call
+     *         should be re-tried
      */
-    private void handleListException(final ListState list, Throwable te) {
-        if (te == null) {
-            return;
-        }
-        // As a quick fix, marking the list as partially crawled. Crawl will not proceed for the given list
+    private boolean handleListException(final ListState list, Throwable te) {
         LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                + list.getListURL()
-                + " ]. The list's state can not be updated and the crawl will not proceed for this list!!", te);
-        list.setNewList(false); // This will ensure that list will
-                                // not be sent as document and hence
-                                // can not be assumed completed.
+                + list.getListURL() + " ]. ", te);
 
-        // TODO: With the above logic, connector will get stuck at the current
-        // state of the list where the web service call has failed and
-        // will proceed only when the web service call can succeed.
-        // Better solutions for this is being worked out. We should
-        // recover from the exception gracefully and proceed with the
-        // crawl. Any problematic document should be skipped and list's
-        // state should be appropriately updated.
         if (te.getMessage().indexOf(SPConstants.SAXPARSEEXCEPTION) != -1) {
+            boolean isNew = true;
+            for (SOAPHeaderElement headerelem : stub.getHeaders()) {
+                if (InvalidXmlCharacterHandler.PRECONDITION_HEADER.equals(headerelem)) {
+                    isNew = false;
+                    break;
+                }
+            }
+            if (isNew) {
+                stub.setHeader(InvalidXmlCharacterHandler.PRECONDITION_HEADER);
+                LOGGER.log(Level.WARNING, "Web Service response seems to contain invalid XML characters. Retry with InvalidXmlCharacterHandler");
+                return true;
+            }
             LOGGER.log(Level.WARNING, "Could not parse the web service SOAP response for list [ "
                     + list.getListURL()
                     + " ]. This could happen becasue of invalid XML chanracters in the web service response. "
                     + "Check if any of your document's metadata has such characters in it. ");
         }
+
+        // If nothing can be done to recover from this exception, at least
+        // ensure that the crawl for this list will not proceed so that the user
+        // would not get any false impression afterwards. Following will ensure
+        // that list will not be sent as document and hence can not be assumed
+        // completed.
+        list.setNewList(false);
+
+        return false;
     }
+
     /**
      * Construct SPDocument for all those items which has been deleted.
      *
