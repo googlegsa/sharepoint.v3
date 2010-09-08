@@ -1,0 +1,1010 @@
+Release Notes:
+===============
+
+Google Search Appliance Connector for Microsoft SharePoint
+
+This document contains the release notes for Google Search Appliance Connector for Microsoft SharePoint.
+The following sections describe the release in detail and provide information that supplements the main documentation.
+See the Issues Tab on the Code Site for the current list of known issues and workarounds.
+
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
+
+Release 2.6.4 , 8 Sept, 2010
+=======================================
+
+Introduction
+------------
+This is a patch release for wide evaluation and usage.  Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint and things may change in the future.
+
+Summary of Changes / New Features
+---------------------------------
+This patch contains fix for the Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+Connector make use of a web service message handler which intercepts the WS response to check if it contains invalid XML characters. If found,
+replaces the same with a value that is configured in org.apache.axis.client.client-config.wsdd. In addition, additional patterns can also be provided
+in this file that the handler should filter out from WS response.
+
+Handler's filtering feature is not used for every WS call. Rather, connector decides to make use of it only when a WS call fails
+abruptly due to parsing error. In such cases, connector makes a second attempt to the WS call requesting handler to do its job.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager Version 2.4.0 and above.
+It is recommended to upgrade to the latest Connector Manager version which is 2.6.0
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
+
+Steps to manually deploy the patch release
+------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Start the SharePoint Connector Service.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Note: This patch has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
+
+Known Issues/Limitations
+------------------------
+1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+2) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+3) Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
+-- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
+by SharePoint's Change log. In such cases the connector logs as WARNING message. The connector will have to be reset and crawl
+and index all content once more
+Workaround: Re-crawl all content by resetting the connector
+
+4) In this release, following features are not supported on SharePoint versions prior to SP2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+- ACL
+
+5) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
+
+6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+7) Issue 139: Upgrade HTTPClient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not gets saved.
+
+_______________________________________________________________________
+
+Release 2.6.2 , 9 Aug, 2010
+=======================================
+
+Introduction
+------------
+This is a patch release for wide evaluation and usage.  Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint and things may change in the future.
+
+Summary of Changes / New Features
+---------------------------------
+- Support for crawling InfoPath forms
+Connector appends "?NoRedorect=true" in the display URLs of the InfoPath forms. By doing this, all the javascript processing (required for
+displaying InfoPath forms in HTML) is bypassed and connector directly gets the XML content.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager Version 2.4.0 and above.
+It is recommended to upgrade to the latest Connector Manager version which is 2.6.0
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
+
+Steps to manually deploy the patch release
+------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Start the SharePoint Connector Service.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Note: This patch has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+-- With 2.0 release, the connector used to re-crawl all documents from the SharePoint list which has documents with
+invalid XML character in its metadata. From 2.4 release, the connector will not crawl any new documents from the
+list unless the document is removed from the SharePoint list OR the metadata is corrected
+Workaround:
+Remove the problematic document from the SharePoint list OR the remove the invalid characters from metadata
+
+2) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+3) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+4) Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
+-- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
+by SharePoint's Change log. In such cases the connector logs as WARNING message. The connector will have to be reset and crawl
+and index all content once more
+Workaround: Re-crawl all content by resetting the connector
+
+5) In this release, following features are not supported on SharePoint versions prior to SP2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+- ACL
+
+6) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
+
+7) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+8) Issue 139: Upgrade HTTPCLient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+9) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not gets saved.
+
+_______________________________________________________________________
+
+Release 2.6.0 , 22 June, 2010
+=======================================
+
+Introduction
+------------
+This is an upgrade release with some enhancements and bug fixes. Users of previous releases are encouraged to upgrade.
+Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
+
+Summary of Changes / New Features
+---------------------------------
+- Added support for ACL. Connector now sends ACL as document metadata along with each document that it feeds to the GSA. It also keep track of any security changes happening on SharePoint which might affect the ACL of entities, the entities are re-crawled and re-fed to GSA in such cases.
+Google Services for SharePoint (GSS) are now shipped with one more service specific to ACL. You need to deploy this web service on SharePoint to get the ACl support.
+The support for ACL is turned off by default. Following are the steps to turn this feature on:
+1. Go to the connector instance directory of the connector for which you want to turn on ACL.
+The connector instance directory can be found under $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/CONNECTOR
+Replace CONNECTOR with the actual name of your connector
+2. Open connectorInstance.xml
+3. Scroll down to the end until you find the ACL Related flags
+4. Uncomment the following
+<!--
+<property name="pushAcls"><value>false</value></property>
+<property name="stripDomainFromAces"><value>true</value></property>
+-->
+5. Change the value of the pushAcls property (the first flag) to true.
+6. Save the updated connectorInstance.xml
+7. Restart the connector
+
+After restarting, connector will send document's ACLs as part of the metadata which will be parsed by the GSA and uploaded as Policy ACLs under Serving section of the GSA.
+Connector would not make any attempt to send ACLs for the documents that it had crawled before the restart.
+
+Note: For ACL, the minimum required permission is either a "Full Read" at web application level or, the user should be the site collection administrator. The user credential that you use to configure the connector must have either of these two permissions if you are willing to use ACL based authorization of search results.
+Note: The current ACL support does not have the handling of SharePoint groups. Please refer to the 6th point under Known Issues/Limitations section.
+
+- Issue 148: SharePoint connector should support SharePoint 2010
+  All the entities which are supported on SP 2007 are now also supported on SP 2010
+
+- Issue 79: Support for include/exclude a site/page in the search results
+Connector, during the crawl checks if a site/list search visibility is turned on. If not, it pauses the crawling of that particular site/list. If it is a new site/list, no crawling is done for this.
+Note: For this feature, You need to install the custom GSSiteDiscovery web service on every SharePoint front end server where the sites to be crawled are hosted. This web service comes as part of Google Services for SharePoint. The steps for manual installation is same as of the ACL web service with the files being changed. In this case the files to be copied in the ISAPI directory are:
+GSSiteDiscovery.asmx
+GSSiteDiscoverydisco.aspx
+GSSiteDiscoverywsdl.aspx
+
+Version Compatibility
+---------------------
+This version works with Connector Manager Version 2.4.0 and above. It is recommended to upgrade to Connector Manager 2.4.4
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Supported SharePoint versions
+-----------------------------
+SharePoint 2003
+SharePoint 2007
+SharePoint 2010
+
+Steps to manually deploy the patch release on 2.4.4
+---------------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Start the SharePoint Connector Service.
+
+Steps to manually deploy the ACL web service on SharePoint
+----------------------------------------------------------
+1. Go to the SharePoint front server which is serving the sites
+2. Open the directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI
+3. Copy the following three files under the ISAPI directory opened above
+GssAcl.asmx
+GssAcldisco.aspx
+GssAclwsdl.aspx
+
+Note: In case of a SharePoint farm environment, the web service has to be deployed on all front-end servers which are hosting sites that you want the connector to crawl.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+-- With 2.0 release, the connector used to re-crawl all documents from the SharePoint list which has documents with
+invalid XML character in its metadata. From 2.4 release, the connector will not crawl any new documents from the
+list unless the document is removed from the SharePoint list OR the metadata is corrected
+Workaround:
+Remove the problematic document from the SharePoint list OR the remove the invalid characters from metadata
+
+2) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+3) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+4) Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
+-- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
+by SharePoint's Change log. In such cases the connector logs as WARNING message. The connector will have to be reset and crawl
+and index all content once more
+Workaround: Re-crawl all content by resetting the connector
+
+5) In this release, following features are not supported on SharePoint versions prior to SP2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+- ACL
+
+6) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
+
+7) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+8) Issue 139: Upgrade HTTPCLient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+9) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not gets saved.
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Release 2.4.4 , 11 February, 2010
+=======================================
+
+Introduction
+------------
+This is a maintenance release that improves quality, reliability, and performance without adding any new functionality. All users of previous 2.4.0 releases should upgrade to this release.
+Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
+
+Summary of Changes
+------------------
+
+Issues fixed from last release:
+---------------------------------
+Issue 108 - Connector is unable to traverse the repository upon restart if the state file is very large.
+Connector now uses SAX based parsing instead of DOM which will reduce the heap memory consumption.
+Issue 132 - Connector stops responding while saving and loading state file.
+This is related to issue 108.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager Version 2.4.0 and above. It is recommended to upgrade to Connector Manager 2.4.4
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+
+
+Performance Test details:
+Performance Test Results for Metadata & URL Feed mode:
+
+
+Test Environment Details:
+
+OS: Linux 32 bit
+Heap Size Settings 256M-1024M (Connector Default)
+Nos. of Web State: 9560
+Nos. of List State: 56784
+Feed Mode: metadata-and-URL
+
+
+Test Results:
+
+Memory Usage: 36 MB (Average)-63.2MB (Max)
+CPU Usage: 3.06% (Average)
+Size of State file: 30MB
+
+Observations:
+1. Memory consumption is low initially and increases gradually after state file size increases.
+2. The traversal rate was set to 500 documents per minute
+3. Memory consumption gradually becomes constant at end of the test cycle as no activity on SharePoint sever.
+4. During Test cycle, 0.6% of the readings are above 10% of CPU usage, few times CPU usage has also crossed 50% but dropped immediately to normal CPU usage.
+5. Average CPU usage is 3%.
+
+Performance Test Results for Content Feed mode:
+
+OS: Windows 2003 Server (64 bit)
+Heap Size Settings 256M-1024M (Connector Default)
+Nos. of Web State: 6610
+Nos. of List State: 14252
+Feed Mode: Content
+
+
+Test Results:
+Memory Usage: 120(Average)-404 MB (Max)
+CPU Usage 12%(Average)
+Size of State file: 10MB
+
+Observations:
+1. Memory utilization range 200-300 MB with a traversal rate of 200 Documents per Minute
+2. Memory utilization increase in case of content feed mode as Connector is involved in fetching content from documents.
+3. Average CPU usage is 12%, few times CPU usage has also crossed 50 % but dropped immediately to normal CPU usage. There was no constant increase in the CPU Usage.
+
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+-- With 2.0 release, the connector used to re-crawl all documents from the SharePoint list which has documents with
+invalid XML character in its metadata. With 2.4 release the connector will not crawl any new documents from the
+list unless the document is removed from the SharePoint list OR the metadata is corrected
+Workaround:
+Remove the problematic document from the SharePoint list OR the remove the invalid characters from metadata
+
+2) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+3) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+4) Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
+-- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
+by SharePoint's Change log. In such cases the connector logs as WARNING message. The connector will have to be reset and crawl
+and index all content once more
+Workaround: Re-crawl all content by resetting the connector
+
+5) In this release, following features are supported only on SharePoint 2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+
+6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+7) Issue 139: Upgrade HTTPCLient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not gets saved.
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Release 2.4.0 Build5, 03 December, 2009
+=======================================
+
+Introduction
+------------
+This is an upgrade release with some enhancements and bug fixes. Users of previous releases are encouraged to upgrade.
+Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
+
+Summary of Changes
+------------------
+New features:
+---------------
+1) Support for Kerberos Authentication at crawl time
+2) Support for filtering of documents based on mimetype
+
+Issues fixed from last release:
+---------------------------------
+Issue 74 - Support traversal by Kerberos authentication.
+This is a new feature. This will mean that customers can now crawl SharePoint content which is protected by Kerberos.
+Earlier, NTLM was being used at crawl time. This will be useful for customers which require Kerberos to be used always.
+Issue 85 - The discovery of site collection should be initiated in the first crawl cycle even though no content is crawled.
+In case there were no sites/lists under the top level site mentioned as crawl URL, the connector did not initiate the discovery of other sites.
+This implied that the connector never initiated a traversal. This is resolved with this fix
+Issue 87 - Connector should canonicalize the URLs for child entities before applying include/exclude patterns.
+This is required to exclude all ASPX pages from indexing. Earlier this was not possible as the list URLs (which end with ASPX extension)
+would get excluded and hence no content was being discovered and fed to GSA. Users can configure the connector exclude all aspx pages
+Issue 90 - The time at which connector completes a crawl cycle should be logged in state file.
+This is an enhancement to the information logged in state file. It helps to precisely know when did the traversal cycle complete,
+when was the site/list queried last time for any updates
+Issue 101 - Sending metadata to GSA when doc size > 30M.
+GSA rejects any content > 30M. In content feed mode the connector has now added this check so that only metadata and URL are sent without content
+This avoids the task of feeding content which will be rejected by GSA eventually.
+It also adds support for filtering documents based on mimetype
+Issue 102 - Liststate entry is deleted from the connector state without checking if the list is deleted.
+The entry for a list was deleted without checking if the SharePoint server was temporarily unavailable or the list was actually deleted. This has been fixed
+so that the list entry is removed only if it has been deleted.
+Issue 106 - Connector should not remove/delete documents from its queue unless checkPoint() is called.
+The documents from crawl queue were deleted before checkpoint is called. Customers will not see any visible impact as this change
+is more to be in line with SPI specification unless any exception is encountered when documents are being sent to GSA by Connector Manager
+Issue 110 - Connector is not editable when password has ampersand (&) character. Connector configuration page throws XML error.
+From 1.3.2 version onwards the connector form is XHTML complaint. As part of this, every feild needs o be XHTML complaint else
+it will result in a XML parsing exception. The value of password field has now been XML encoded to be XHTML complaint
+Issue 116 - Return batchHint or little more docs from start/resumeTraversal and not 2* batchHint.
+Connector Manager now supports accepting more # documents than batchHint per batch traversal. Hence the connector tries to discover
+a little more than batchHint rather than 2*batchHint # of documents as done earlier. This will not have any impact on how fast the documents are being
+indexed. However, you will find that the connector will now index documents from list1, then list2 and so on. Earlier you would find that
+the connector would discover documents from list1, list2 simultaneously as long as the cap of (2*batchHint) was not reached.
+Issue 118 - All the extra IDs (URLs in case of attachments) which are used during the construction of delete feeds are updated before checkpoint
+This was required as part of fix for Issue 106 else, delete feeds for few attachments was not being sent earlier.
+Issue 120 - Use file level custom logging instead of event-log based logging
+The logging of custom web services (GSS) was done to the event viewer. Now it is logged in the main connector logs under Tomcat/logs folder
+Issue 123 - Initial changes on the SharePoint are not tracked if the connector is restarted before the first traversal completes
+If the connector was stopped before the first traversal was completed, then few docs from that folder/list were skipped.
+This has been fixed now.
+Issue 124 - ExtraIDs are un-necessarily updated in-memory in case of Metadata and URL feed mode.
+This does not have any visible change for the customers. The extraId is used in content feed only and not not be updated for metadata and URL feed mode
+
+
+Version Compatibility
+---------------------
+This version works with Connector Manager version 2.4.0 and above.
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+SUSE Linux Enterprise Server 11 (x86_64)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+-- With 2.0 release, the connector used to re-crawl all documents from the SharePoint list which has documents with
+invalid XML character in its metadata. With 2.4 release the connector will not crawl any new documents from the
+list unless the document is removed from the SharePoint list OR the metadata is corrected
+Workaround:
+Remove the problematic document from the SharePoint list OR the remove the invalid characters from metadata
+
+2) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue.
+
+3) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+
+4) Issue 108: Connector is unable to traverse the repository upon restart if the state file is very large
+-- If the size of the state file is >= 100 MB, then connector fails to load the state file due to insufficient memory. An
+OutOfMemory Error is thrown while parsing the state XML.
+Workaround:
+Increase the memory allocated to tomcat so that enough memory is available for parsing the state XML.
+To increase the memory allocated to the connector follow the steps given below:
+This change will allocate 2GB (i.e. 2048MB) of memory.
+LINUX
+======
+Open the file: <Connector Installation Path>/<Connector Name>/Tomcat/bin/catalina.sh
+Search for: JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx1024m
+Change it to: JAVA_OPTS="$JAVA_OPTS -Xms256m -Xmx2048m
+
+WINDOWS
+========
+Open the file: <Connector Installation Path>\<Connector Name>\Tomcat\bin\service.bat
+Search for (must be towards the end of the file) : --JvmMs 256 --JvmMx 1024
+Change it to: --JvmMs 256 --JvmMx 2048
+
+Note: To be able to allocate memory successfully, the system must have at least twice
+as much physical memory.
+
+5) Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
+-- This is the case when the SharePoint's Change log is reset OR the change tokens maintained by connector are no longer maintained
+by SharePoint's Change log. In such cases the connector logs as WARNING message. The connector will have to be reset and crawl
+and index all content once more
+Workaround: Re-crawl all content by resetting the conenctor
+
+6) In this release, following features are supported only on SharePoint 2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+
+7) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Release 2.0.2, Sep 02, 2009
+==========================
+
+Introduction
+------------
+This is a maintenance release that improves quality, reliability, and performance without adding any new functionality.
+All users of previous 2.0.0 release should upgrade to this release
+
+
+Summary of Changes
+------------------
+
+Issues fixed from last release:
+---------------------------------
+Issue 102: Liststate entry is deleted from the connector state without checking if the list is deleted
+
+Version Compatibility
+---------------------
+Connectors created with 2.0.0 version of the connector will work with this version. This version works with Connector Manager version 2.0.0.
+Earlier versions of the Connector Manager will not work correctly with this version of the connector.
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+2) In this release, following features are supported only on SharePoint 2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+3) Issue#70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and the credentials
+used are of a local machine user.
+
+STEPS TO DEPLOY THE PATCH RELEASE ON 2.0.0
+===========================================
+1. Stop the SharePoint Connector Service.
+2. Extract the downloaded connector-sharepoint-2.0.2.zip at some location on your machine.
+3. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+4. Replace the file "connector-sharepoint.jar" with the new jar found in the extracted connector-sharepoint-2.0.2 folder.
+If you want to back-up the older jar file, please back-it up to a folder other than the Tomcat folder. Leaving a back-up in the same directory can create issues.
+5. Start the SharePoint Connector Service.
+
+Note: $CATALINA_HOME stands for the folder where the connector's Tomcat is deployed. It is usually :
+C:\Program Files\GoogleConnectors\<%Installation name%>\Tomcat
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Release 2.0.0, June 22, 2009
+==========================
+
+Introduction
+------------
+This is a major release with new features. Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
+
+
+Summary of Changes
+------------------
+New features:
+---------------
+1) Support for selecting the authorization mode: Google Search Appliance/SAML provider OR by the connector
+2) Per site version detection which allows multiple sites of different SharePoint versions to be crawled using a single connector instance
+3) Discovering multiple site collection from a SharePoint farm installation
+4) Support for various security templates of NTLM V2
+5) Improved metadata control and indexing
+6) Improved Site Alias Mapping support
+
+Issues fixed from last release:
+---------------------------------
+Issue 21: Can we combine alias host & port?
+Issue 43: Detect SharePoint Server version from Crawl URL
+Issue 51: Connector does not validate the URL patterns for MySite URL
+Issue 52: Connector accepts crawl URL with repeated slashes
+Issue 53: connector should support SharePoint farm
+Issue 54: Does the connector configuration UI work in Chrome?
+Issue 55: The custom metadata fetched by the connector contains ows_ as its prefix.
+Issue 56: Connector accepts username in format user@domain for user when SharePoint site mentioned under crawl URL is a HTTP basic protected site
+Issue 63: Connector does not support the various strict Windows security templates that come up with NTLM Version 2.
+Issue 64: Log excluded URLs in a separate file
+Issue 65: Metadata values not fully-indexed (values originating from the ows_MetaInfo state-bag field)
+Issue 67: Error message should be shown to indicate that the prefix is incorrect for includeURLs and excludeURLs
+Issue 68: Connector does not detect renamed folders and send feeds for the same
+Issue 69: NullPointerException seen in logs when SharePoint version is selected as 2007 and Crawl URL is of SPS 2003 while configuring the connector instance.
+Issue 71: The connector configuration form should be XHTML compliant.
+
+
+Version Compatibility
+---------------------
+Connectors created with earlier versions of the connector will not work with this version. This version works with Connector Manager version 2.0.0. Earlier versions of the Connector Manager will not work correctly with this version of the connector.
+
+Known Issues/Limitations
+------------------------
+1) Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+2) In this release, following features are supported only on SharePoint 2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+3) Issue#59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue.
+4) Issue#70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and the credentials used are of a local machine
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Release 1.3.2, April 10, 2009
+=============================
+
+INTRODUCTION
+=============
+This is a maintenance release that improves quality, reliability, and performance without adding any new functionality. All users of previous 1.3.x releases should upgrade to this release. See the product website for a complete description.
+
+Version compatibility
+=============================
+
+This connector release is compatible with Connector Manager v1.3.2 and above. Earlier versions of the Connector Manager will not work correctly with this version of the connector.
+It is suggested that customers using SharePoint Connector versions 1.0.0 through 1.3.0 and considering upgrading 1.3.2 should do a clean install of Connector Manager v1.3.2 and then install Google SharePoint Connector v1.3.2. This product is designed to function with Microsoft SharePoint 2003, SharePoint 2007, WSS 2.0, WSS 3.0
+
+
+ISSUES FIXED IN THIS RELEASE:
+=============================
+- Issue 63: Connector does not support the various strict Windows security templates that come up with NTLM Version 2.
+- Issue 71: The connector configuration form should be XHTML compliant. Because of certain JavaScript dependecies introduced in this fix, this connector version will not support connector manager versions prior to 1.3.2.
+
+
+KNOWN ISSUES/LIMITATIONS:
+=========================
+Issue 51: Connector does not validate MySite against included/excluded URL patterns and connectivity on the connector configuration page.
+Issue 52: Crawl URL specified on the connector configuration page is not validated if it contains repeated slashes.
+Issue 69: NullPointerException seen in logs when SharePoint version is selected as 2007 and Crawl URL is of SPS 2003 while configuring the connector instance.
+Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme is HTTP Basic and the credentials used are of a local machine user.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Release 1.2.2, SEPT 10, 2008
+=============================
+
+INTRODUCTION
+=============
+This is a patch release for wide evaluation and usage.
+This patch can be deployed on the existing installation of Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 as per steps mentioned below.
+Your feedback is important to us. Keep in mind that we are continuing to work on Google Enterprise Connector 1.2.2 for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 and things may change in the future.
+
+ISSUES FIXED IN THIS RELEASE:
+===========================
+-Issue#23: Improve sharepoint connector logging
+-Issue#47: Clean up state files on startTraversal
+-Issue#48: Send site name as meta data
+-Fix for connector to allow crawling of Sharepoint List/Library containing large number of items (e.g. more than 2000)
+
+STEPS TO DEPLOY THE PATCH RELEASE ON 1.2.1
+=========================================
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Delete the SharePoint connector state file (Sharepoint_state.xml) from the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/<connector-name>
+5. Start the SharePoint Connector Service.
+-------------------------------------------------------------------------------------------------------------------------
+
+Release 1.2.1, JULY 2, 2008
+=============================
+
+Introduction
+------------
+This is an early access release for wide evaluation and usage. Your
+feedback is important to us. Keep in mind that we are continuing to
+work on Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.2.1 and things may change in the future.
+
+ISSUES FIXED IN THIS RELEASE:
+=============================
+-issue#42: startTraversal does not restart the traversal at the beginning - the connector will start the traversal from the begining when the start traversal is called.
+-issue#44: Make "Domain" field optional
+-issue#45: Incorrect URL generation when SharePoint web service returns DefaultViewUrl for List as empty
+-issue#46: Incorrect URL formation for list items when the List name is changed after creation
+
+
+KNOWN ISSUES/LIMITATIONS:
+=============================
+1. There may be inconsistency in crawl behavior when Sharepoint List/Library contains a large number of items (e.g. more than 2000)
+-------------------------------------------------------------------------------------------------------------------------
+
+
+Release 1.2.0, MAY 22, 2008
+==========================
+
+Introduction
+------------
+This is a patch release for wide evaluation.
+This patch can be deployed on the existing installation of Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.2.0 as per steps mentioned below.
+Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.2.0 and things may change in the future.
+
+ISSUES FIXED IN THIS RELEASE:
+=============================
+-issue#40: Out of memory error - When there are a very large number of items in a site, the connector could run out of memory
+
+STEPS TO DEPLOY THE PATCH RELEASE ON 1.1.2/1.1.3
+------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Delete the SharePoint connector state file (Sharepoint_state.xml) from the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/<connector-name>
+5. Start the SharePoint Connector Service.
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Release 1.1.3, APRIL 17, 2008
+==========================
+
+Introduction
+------------
+This is a patch release for wide evaluation.
+This patch can be deployed on the existing installation of Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.1.2 as per steps mentioned below.
+Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.1.3 and things may change in the future.
+
+ISSUES FIXED IN THIS RELEASE:
+=============================
+-issue#34: Support of JRE 1.5
+-issue#37: Connector does not crawl linked sites if the linked sites are on different host
+
+STEPS TO DEPLOY THE PATCH RELEASE ON 1.1.2
+------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Start the SharePoint Connector Service.
+
+Note: This release provides support for JRE 1.5 along with JRE 1.4. While using JRE 1.5 the Apache JDK 1.4 Compatibility Package for Apache Tomcat 5.5 should not be installed, however it is still required for JRE 1.4.
+If you intend to run the SharePoint Connector with JRE 1.5 after deploying the 1.1.3 patch, the files xercesImpl.jar, xml-apis.jar located in the directory $CATALINA_HOME/common/endorsed should be deleted before starting the Sharepoint Connector service.
+
+-------------------------------------------------------------------------------------------------------------------------
+
+
+Release 1.1.2, MARCH 05, 2008
+==========================
+
+Introduction
+------------
+This is an early access release for wide evaluation and usage. Your
+feedback is important to us. Keep in mind that we are continuing to
+work on Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.1.2 and things may change in the future.
+
+ISSUES FIXED IN THIS RELEASE:
+=============================
+-The java regex for include/exclude URL patterns is replaced with GNU regex implementation
+-Process linked sites
+-Find out dynamically the URL fragments of "lists" in MOSS.
+-Connector was unable to process state file and sends same documents in consecutive batches to CM, when the Sharepoint site have had batches of documents with different last modified dates. Fixed this issue.
+-Work around Microsoft Sharepoint Web service bug subsite greater than 1000
+
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Release 1.1.1, JAN 08, 2008
+==========================
+
+Introduction
+------------
+This is an early access release for wide evaluation and usage. Your
+feedback is important to us. Keep in mind that we are continuing to
+work on Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.1.1 and things may change in the future.
+
+ISSUES FIXED IN THIS RELEASE:
+=============================
+-Root objects (e.g. documentlibrary,wikilibrary,contacts) missing object type value
+-Logging level for file handler is set to ALL. Previously it was INFO
+
+-------------------------------------------------------------------------------------------------------------------------
+Release 1.1.0, DEC 19, 2007
+==========================
+
+Introduction
+------------
+This is an early access release for wide evaluation and usage. Your
+feedback is important to us. Keep in mind that we are continuing to
+work on Google Enterprise Connector for Microsoft SharePoint 2003 and Microsoft SharePoint 2007 1.1.0 and things may change in the future.
+
+Summary of Changes
+------------------
+1. Added support for Microsoft SharePoint 2003. The connector now supports SPS2003(SharePoint Portal Server), MOSS2007 (Microsoft Office SharePoint Server), WSS2.0 and WSS3.0 (Windows SharePoint Services).
+2. The connector supports following list of entities:
+[Microsoft SharePoint 2007]
+- Folder - File - Document Library
+- Discussion Boards - Site - Web
+- Attachment - Links - Wikipage Library
+- Tasks - Calendar - Contacts
+- Announcements - Issues - Alerts
+- Surveys - Custom - Picture Library
+- Unknown Document Type - Project Tasks
+- Administrative Tasks - Report Library
+- Translation Management Library
+- Data Connection Library
+- Slide Library - Form Library
+
+[Microsoft SharePoint 2003]
+- Folder - File - Document Library
+- Discussion Boards - Site - Web
+- Attachment - Links - Tasks
+- Calendar - Contacts
+- Announcements - Issues - Events
+- Surveys - Custom - Picture Library
+- Unknown Document Type - Project Tasks
+- Form Library - Alerts
+3. Metadata blacklist nand whitelist has been externalized.It is now made available through connectorInstance.xml
+
+
+ISSUES FIXED IN THIS RELEASE:
+=============================
+The MySite base URL requires to be specified without FQDN (Fully Qualified Domain Name). e.g. http://website is valid MySite URL. Where as http://website.domain.com wouldnt be crawled.
+
+
+-------------------------------------------------------------------------------------------------------------------------
+Release 1.0.0, OCT 10, 2007
+==========================
+
+Introduction
+------------
+This is an early access release for wide evaluation and usage. Your
+feedback is important to us. Keep in mind that we are continuing to
+work on Google Enterprise Connector for Microsoft SharePoint 2007 1.0.0 and things may change in the future.
+
+Summary of Changes
+------------------
+1. The connector supports MOSS2007 (Microsoft Office SharePoint Server) and WSS3.0 (Windows SharePoint Services).
+2. The connector supports only Metadata and URL based crawl
+3. The connector supports only incremental crawl.
+4. The connector supports following list of entities:
+- Folder - File
+- Document Library - Discussion Boards
+- Site - Web
+- Attachment - Links
+5. The connector supports pattern based URL inclusion and exclusion in which user can specify the URL patterns to crawl and the patterns to exclude while crawling SharePoint content repository.
+6. The connector supports NTLM and HTTP Basic authentication protected SharePoint repositories.
+7. The connector supports crawling Personal sites (or MySites) and personal Links (or MyLinks).
+8. The connector supports crawling Linked SharePoint sites.
+9. The connector supports aliasing for the SharePoint crawl URL where the SharePoint server may have a different IP/name for the users from external networks and a local IP/name for the internal systems.
+10. The connector has a built-in filtering on the selectively retrieving certain metadata attributes.
+
+
+KNOWN ISSUES/LIMITATIONS IN THIS RELEASE:
+=============================
+1. The MySite base URL requires to be specified without FQDN (Fully Qualified Domain Name). e.g. http://website is valid MySite URL. Where as http://website.domain.com wouldnt be crawled.
+2. The connector does not support multiple aliasing, where each site has a separate frontend server/port. The aliasing is only supported for the main site which is mentioned under Crawl URL (and sub-sites). Aliasing is not supported for MySites and other Linked Sites.
+
+Note: The connector also packages the modified commons-httpclient.jar to give a thorough NTLM support.
+
+Version Compatibility
+---------------------
+The connector is compatible with connector manager version 1.0.2.The connector supports SPS2003, MOSS 2007, WSS 2.0 and WSS 3.0.
