@@ -27,6 +27,13 @@ in this file that the handler should filter out from WS response.
 Handler's filtering feature is not used for every WS call. Rather, connector decides to make use of it only when a WS call fails
 abruptly due to parsing error. In such cases, connector makes a second attempt to the WS call requesting handler to do its job.
 
+As stated earlier, all configurations related to handler is stored in client.client-config.wsdd file. For example, to add/remove filter patterns
+You would need to modify this file. Unfortunately, this file is inside the connector jar and cannot be modified directly. Follow are the steps you need to follow:
+1. Extract client-config.wsdd from connector-sharepoint.jar
+2. Do the required changes
+3. Put the updated client-config.wsdd under $CATALINA_HOME/webapps/connector-manager/WEB-INF/classes
+4. Restart the connector
+
 Version Compatibility
 ---------------------
 This version works with Connector Manager Version 2.4.0 and above.
