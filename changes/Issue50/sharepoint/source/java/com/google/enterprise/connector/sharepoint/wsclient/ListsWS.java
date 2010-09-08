@@ -1140,7 +1140,7 @@ public class ListsWS {
             }
             if (isNew) {
                 stub.setHeader(InvalidXmlCharacterHandler.PRECONDITION_HEADER);
-                LOGGER.log(Level.WARNING, "Web Service response seems to contain invalid XML characters. Retry with InvalidXmlCharacterFilter");
+                LOGGER.log(Level.WARNING, "Web Service response seems to contain invalid XML characters. Retry with InvalidXmlCharacterHandler");
                 return true;
             }
             LOGGER.log(Level.WARNING, "Could not parse the web service SOAP response for list [ "
