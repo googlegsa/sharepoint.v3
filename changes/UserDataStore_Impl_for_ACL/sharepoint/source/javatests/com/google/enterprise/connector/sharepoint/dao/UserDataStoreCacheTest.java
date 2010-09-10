@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.dao;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
 
 import java.util.Collection;
 
@@ -135,7 +136,7 @@ public class UserDataStoreCacheTest extends TestCase {
                 testCache.add(membership);
                 assertEquals(i, testCache.size());
                 if (i % 2000 == 0) {
-                    testCache.handleEnqued();
+                    testCache.clearCache();
                 }
                 ++i;
             } while (testCache.size() >= i);

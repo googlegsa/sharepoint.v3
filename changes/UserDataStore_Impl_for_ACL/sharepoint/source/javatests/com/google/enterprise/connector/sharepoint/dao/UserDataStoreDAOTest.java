@@ -16,7 +16,10 @@ package com.google.enterprise.connector.sharepoint.dao;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -39,7 +42,8 @@ public class UserDataStoreDAOTest extends TestCase {
         super.setUp();
         userDataStoreDAO = new UserDataStoreDAO(
                 TestConfiguration.getUserDataSource(),
-                TestConfiguration.getUserDataStoreQueryBuilder());
+                TestConfiguration.getUserDataStoreQueryProvider(),
+                TestConfiguration.getUserGroupMembershipRowMapper());
         namespace = TestConfiguration.sharepointUrl;
         memberships = TestConfiguration.getMembershipsForNameSpace(namespace);
         userDataStoreDAO.addMemberships(memberships);
@@ -119,7 +123,17 @@ public class UserDataStoreDAOTest extends TestCase {
 
     public void testSyncGroupMembership() {
         try {
-            userDataStoreDAO.syncGroupMemberships(memberships, namespace);
+            Map<Integer, Set<UserGroupMembership>> membershipMap = new HashMap<Integer, Set<UserGroupMembership>>();
+            for (UserGroupMembership membership : memberships) {
+                if (membershipMap.containsKey(membership.getGroupId())) {
+                    membershipMap.get(membership.getGroupId()).add(membership);
+                } else {
+                    Set<UserGroupMembership> memberships = new HashSet<UserGroupMembership>();
+                    memberships.add(membership);
+                    membershipMap.put(membership.getGroupId(), memberships);
+                }
+            }
+            userDataStoreDAO.syncGroupMemberships(membershipMap, namespace);
             for (UserGroupMembership membership : memberships) {
                 List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
                 assertNotNull(userMemberships);

@@ -15,8 +15,6 @@
 package com.google.enterprise.connector.sharepoint.dao;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.QueryType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
@@ -32,7 +30,7 @@ import junit.framework.TestCase;
  */
 public class SimpleSharePointDAOTest extends TestCase {
     SimpleSharePointDAO simpleSPDAO;
-    QueryBuilder queryBuilder;
+    QueryProvider queryProvider;
     Set<UserGroupMembership> memberships = null;
     String namespace;
 
@@ -43,15 +41,9 @@ public class SimpleSharePointDAOTest extends TestCase {
      */
     protected void setUp() throws Exception {
         super.setUp();
-        queryBuilder = TestConfiguration.getUserDataStoreQueryBuilder();
+        queryProvider = TestConfiguration.getUserDataStoreQueryProvider();
         simpleSPDAO = new SimpleSharePointDAO(
-                TestConfiguration.getUserDataSource(), queryBuilder) {
-            @Override
-            void confirmEntitiesExistence() throws SharepointException {
-                // Assuming.. all the required entities exists
-            }
-        };
-
+                TestConfiguration.getUserDataSource(), queryProvider);
         namespace = TestConfiguration.sharepointUrl;
         memberships = TestConfiguration.getMembershipsForNameSpace(namespace);
     }
@@ -62,10 +54,14 @@ public class SimpleSharePointDAOTest extends TestCase {
      * .
      */
     public void testBatchUpdate() {
-        QueryType queryType = QueryType.UDS_INSERT;
+        Query query = Query.UDS_INSERT;
         try {
-            SqlParameterSource[] namedParams = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
-            int[] status = simpleSPDAO.batchUpdate(namedParams, queryType);
+            SqlParameterSource[] namedParams = new SqlParameterSource[memberships.size()];
+            int count = 0;
+            for (UserGroupMembership membership : memberships) {
+                namedParams[count++] = query.createParameter(membership.getUserId(), membership.getUserName(), membership.getGroupId(), membership.getGroupName(), membership.getNamespace());
+            }
+            int[] status = simpleSPDAO.batchUpdate(query, namedParams);
             assertNotNull(status);
             assertEquals(status.length, namedParams.length);
         } catch (Exception e) {
@@ -74,12 +70,11 @@ public class SimpleSharePointDAOTest extends TestCase {
     }
 
     public void testHandleBatchUpdateException() {
-        QueryType queryType = QueryType.UDS_INSERT;
-        SqlParameterSource[] namedParams = null;
-        try {
-            namedParams = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
-        } catch (Exception e) {
-            fail("Could not create query parameters");
+        Query query = Query.UDS_INSERT;
+        SqlParameterSource[] namedParams = new SqlParameterSource[memberships.size()];
+        int count = 0;
+        for (UserGroupMembership membership : memberships) {
+            namedParams[count++] = query.createParameter(membership.getUserId(), membership.getUserName(), membership.getGroupId(), membership.getGroupName(), membership.getNamespace());
         }
         String sqlState = "";
         String reason = "";
@@ -97,7 +92,7 @@ public class SimpleSharePointDAOTest extends TestCase {
             }
             BatchUpdateException batchUpdateException = new BatchUpdateException(
                     reason, sqlState, vendorCode, updateCounts);
-            int[] status = simpleSPDAO.handleBatchUpdateException(batchUpdateException, namedParams, queryBuilder.createQuery(QueryType.UDS_INSERT));
+            int[] status = simpleSPDAO.handleBatchUpdateException(batchUpdateException, Query.UDS_INSERT, namedParams);
             assertNotNull(status);
             assertEquals(status.length, namedParams.length);
         } catch (Exception e) {
@@ -117,7 +112,7 @@ public class SimpleSharePointDAOTest extends TestCase {
 
             BatchUpdateException batchUpdateException = new BatchUpdateException(reason,
                     sqlState, vendorCode, updateCounts);
-            int[] status = simpleSPDAO.handleBatchUpdateException(batchUpdateException, namedParams, queryBuilder.createQuery(QueryType.UDS_INSERT));
+            int[] status = simpleSPDAO.handleBatchUpdateException(batchUpdateException, Query.UDS_INSERT, namedParams);
             assertNotNull(status);
             assertEquals(status.length, namedParams.length);
         } catch (Exception e) {

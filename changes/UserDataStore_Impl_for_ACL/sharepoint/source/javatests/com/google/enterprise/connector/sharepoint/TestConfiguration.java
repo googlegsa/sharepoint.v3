@@ -14,7 +14,23 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import java.io.File;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
+import com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.joda.time.DateTime;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,24 +41,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.sql.DataSource;
-
-import org.joda.time.DateTime;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.dao.QueryBuilder;
-import com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder;
-import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 public class TestConfiguration {
     public static String googleConnectorWorkDir;
@@ -497,24 +499,37 @@ public class TestConfiguration {
         return dataSource;
     }
 
-    public static QueryBuilder getUserDataStoreQueryBuilder()
-            throws SharepointException {
-        return new UserDataStoreQueryBuilder(new File(
-                "config\\config\\sqlQueries.properties"),
-                "User_Group_Memberships");
+    public static UserGroupMembershipRowMapper getUserGroupMembershipRowMapper() {
+        UserGroupMembershipRowMapper rowMapper = new UserGroupMembershipRowMapper();
+        rowMapper.setUserID("SPUserID");
+        rowMapper.setUserName("SPUserName");
+        rowMapper.setGroupID("SPGroupID");
+        rowMapper.setGroupName("SPGroupName");
+        rowMapper.setNamespace("SPSite");
+        return rowMapper;
     }
 
-    public static List<UserGroupMembership> getMembershipsForNameSpace(
+    public static QueryProvider getUserDataStoreQueryProvider()
+            throws SharepointException {
+        SimpleQueryProvider queryProvider = new SimpleQueryProvider(
+                "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
+        queryProvider.setUdsTableName("User_Group_Memberships");
+        queryProvider.setUdsIndexName("UDS_Index_SPUserId");
+        queryProvider.init("Test", "mssql");
+        return queryProvider;
+    }
+
+    public static Set<UserGroupMembership> getMembershipsForNameSpace(
             String namespace) throws SharepointException {
-        List<UserGroupMembership> memberships = new ArrayList<UserGroupMembership>();
-        UserGroupMembership membership1 = new UserGroupMembership("[1]user1",
-                "[2]group1", namespace);
+        Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
+        UserGroupMembership membership1 = new UserGroupMembership(1, "user1",
+                2, "group1", namespace);
         memberships.add(membership1);
-        UserGroupMembership membership2 = new UserGroupMembership("[2]user2",
-                "[2]group1", namespace);
+        UserGroupMembership membership2 = new UserGroupMembership(2, "user2",
+                2, "group1", namespace);
         memberships.add(membership2);
-        UserGroupMembership membership3 = new UserGroupMembership("[3]user3",
-                "[2]group2", namespace);
+        UserGroupMembership membership3 = new UserGroupMembership(3, "user3",
+                2, "group2", namespace);
         memberships.add(membership3);
 
         return memberships;

@@ -18,9 +18,9 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.dao.LocalizedQueryProvider;
+import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
-import com.google.enterprise.connector.sharepoint.dao.UserDataStoreQueryBuilder;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -30,7 +30,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,6 +61,8 @@ public class SharepointConnector implements Connector {
     private String authorizationAsfeedType = null;
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
+    QueryProvider queryProvider;
+    UserGroupMembershipRowMapper userGroupMembershipRowMapper;
 
     public SharepointConnector() {
 
@@ -351,6 +352,15 @@ public class SharepointConnector implements Connector {
         this.stripDomainFromAces = stripDomainFromAces;
     }
 
+    public void setQueryProvider(QueryProvider queryProvider) {
+        this.queryProvider = queryProvider;
+    }
+
+    public void setUserGroupMembershipRowMapper(
+            UserGroupMembershipRowMapper userGroupMembershipRowMapper) {
+        this.userGroupMembershipRowMapper = userGroupMembershipRowMapper;
+    }
+
     // FIXME there is CM SPI dependency here.
     // This is a temporary code snippet for integration testing. The
     // DBConfig values are actually to be come from the connector
@@ -359,7 +369,6 @@ public class SharepointConnector implements Connector {
     // the sharepoint-connector directory which is parent directory where
     // connector instance directory is created. And, specify the following
     // values:
-
     // DriverClass=com.mysql.jdbc.Driver
     // DBURL=jdbc:mysql://localhost:3306/user_data_store
     // DBUsername=root
@@ -369,23 +378,17 @@ public class SharepointConnector implements Connector {
             Properties properties = new Properties();
             properties.load(new FileInputStream(googleConnectorWorkDir
                     + "/../UserDataStoreConfig.properties"));
+
             DriverManagerDataSource dataSource = new DriverManagerDataSource();
             dataSource.setDriverClassName(properties.getProperty("DriverClass"));
             dataSource.setUrl(properties.getProperty("DBURL"));
             dataSource.setUsername(properties.getProperty("DBUsername"));
             dataSource.setPassword(properties.getProperty("DBPassword"));
 
-            LocalizedQueryProvider queryProvider = new LocalizedQueryProvider(
-                    "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
-            queryProvider.setLocale(new Locale("mssql"));
-            queryProvider.load();
-
-            UserDataStoreQueryBuilder userDataStoreQueryBuilder = new UserDataStoreQueryBuilder(
-                    queryProvider);
-            userDataStoreQueryBuilder.addSuffix(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir));
+            queryProvider.init(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir), "mssql");
 
             UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
-                    dataSource, userDataStoreQueryBuilder);
+                    dataSource, queryProvider, userGroupMembershipRowMapper);
             sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
         } catch (Throwable e) {
             e.printStackTrace();

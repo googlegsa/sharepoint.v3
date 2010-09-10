@@ -20,6 +20,7 @@ package com.google.enterprise.connector.sharepoint.dao;
  *
  * @author nitendra_thakur
  */
+// XXX Do we need this interface?
 public interface SharePointDAO {
 
 }

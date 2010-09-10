@@ -15,16 +15,16 @@
 package com.google.enterprise.connector.sharepoint.dao;
 
 import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
-import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.Query;
-import com.google.enterprise.connector.sharepoint.dao.QueryBuilder.QueryType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -46,45 +46,48 @@ import javax.sql.DataSource;
 public class UserDataStoreDAO extends SimpleSharePointDAO {
     private final Logger LOGGER = Logger.getLogger(UserDataStoreDAO.class.getName());
     private UserDataStoreCache<UserGroupMembership> udsCache;
+    private DataSourceTransactionManager transactionManager;
+    private ParameterizedRowMapper<UserGroupMembership> rowMapper;
 
-    public UserDataStoreDAO(DataSource dataSource, QueryBuilder queryBuilder)
+    public UserDataStoreDAO(final DataSource dataSource,
+            final QueryProvider queryProvider,
+            final ParameterizedRowMapper<UserGroupMembership> rowMapper)
             throws SharepointException {
-        super(dataSource, queryBuilder);
+        super(dataSource, queryProvider);
+        if (null == rowMapper) {
+            throw new NullPointerException("RowMapper is null. ");
+        }
+        this.rowMapper = rowMapper;
+        confirmEntitiesExistence();
+        transactionManager = new DataSourceTransactionManager(dataSource);
         udsCache = new UserDataStoreCache<UserGroupMembership>();
-    }
-
-    void confirmEntitiesExistence() throws SharepointException {
-        if (null == queryBuilder.getTables()
-                || queryBuilder.getTables().length == 0) {
-            return;
-        }
-        DatabaseMetaData dbm = null;
-        try {
-            dbm = getConnection().getMetaData();
-            for (String table : queryBuilder.getTables()) {
-                ResultSet resultSet = dbm.getTables(queryBuilder.getDatabase(), null, table, null);
-                if (null == resultSet || !resultSet.next()) {
-                    getSimpleJdbcTemplate().update(queryBuilder.createQuery(QueryType.UDS_CREATE_TABLE).getQuery());
-                    getSimpleJdbcTemplate().update(queryBuilder.createQuery(QueryType.UDS_CREATE_INDEX).getQuery());
-                }
-                resultSet.close();
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
-        }
+        this.rowMapper = rowMapper;
     }
 
     /**
-     * A utility class to create the {@link UserGroupMembership} bean from
-     * Result Set
+     * Checks if all the required entities exist in the user data store DB. If
+     * not, creates them. As a minimal check, this method only checks for the
+     * existence of tables. Child of this class can extend this for various such
+     * checks
      *
-     * @author nitendra_thakur
+     * @throws SharepointException
      */
-    private class CustomRowMapper implements
-            ParameterizedRowMapper<UserGroupMembership> {
-        public UserGroupMembership mapRow(ResultSet result, int rowNum)
-                throws SQLException {
-            return UserDataStoreQueryBuilder.createMembership(result);
+    private void confirmEntitiesExistence()
+            throws SharepointException {
+        DatabaseMetaData dbm = null;
+        try {
+            // TODO Devise a better way for ensuring the availability of
+            // tables/indexes. Cann't this be incorporated in the query itself
+            // e.g CREATE IF NOT AVAILABLE
+            dbm = getConnection().getMetaData();
+            ResultSet resultSet = dbm.getTables(getQueryProvider().getDatabase(), null, getQueryProvider().getUdsTableName(), null);
+            if (null == resultSet || !resultSet.next()) {
+                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
+                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
+            }
+            resultSet.close();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
         }
     }
 
@@ -105,13 +108,12 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         List<UserGroupMembership> lstParamMembership = new ArrayList<UserGroupMembership>();
         lstParamMembership.add(paramMembership);
 
-        QueryType queryType = QueryType.UDS_SELECT_FOR_USERNAME;
-        Query query = queryBuilder.createQuery(queryType);
-        SqlParameterSource[] params = UserDataStoreQueryBuilder.createParameter(queryType, lstParamMembership);
+        Query query = Query.UDS_SELECT_FOR_USERNAME;
+        SqlParameterSource[] params = createParameter(query, lstParamMembership);
 
         List<UserGroupMembership> memberships = null;
         try {
-            memberships = getSimpleJdbcTemplate().query(query.getQuery(), new CustomRowMapper(), params[0]);
+            memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, params[0]);
         } catch (Throwable t) {
             throw new SharepointException(
                     "Query execution failed while getting the membership info of a given user ",
@@ -142,9 +144,9 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             removeAllCached(memberships);
         }
 
-        QueryType queryType = QueryType.UDS_INSERT;
-        SqlParameterSource[] params = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
-        int[] status = batchUpdate(params, queryType);
+        Query query = Query.UDS_INSERT;
+        SqlParameterSource[] params = createParameter(query, memberships);
+        int[] status = batchUpdate(query, params);
 
         if (null != udsCache) {
             addAllSucceeded(status, memberships);
@@ -173,9 +175,9 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             return;
         }
 
-        QueryType queryType = QueryType.UDS_DELETE_FOR_USERID_NAMESPACE;
-        SqlParameterSource[] params = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
-        batchUpdate(params, queryType);
+        Query query = Query.UDS_DELETE_FOR_USERID_NAMESPACE;
+        SqlParameterSource[] params = createParameter(query, memberships);
+        batchUpdate(query, params);
 
         for (UserGroupMembership membership : memberships) {
             udsCache.removeUsingNamespaceView(membership);
@@ -206,9 +208,9 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             return;
         }
 
-        QueryType queryType = QueryType.UDS_DELETE_FOR_GROUPID_NAMESPACE;
-        SqlParameterSource[] params = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
-        batchUpdate(params, queryType);
+        Query query = Query.UDS_DELETE_FOR_GROUPID_NAMESPACE;
+        SqlParameterSource[] params = createParameter(query, memberships);
+        batchUpdate(query, params);
 
         for (UserGroupMembership membership : memberships) {
             udsCache.removeUsingGroupNamespaceView(membership);
@@ -238,9 +240,9 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             return;
         }
 
-        QueryType queryType = QueryType.UDS_DELETE_FOR_NAMESPACE;
-        SqlParameterSource[] params = UserDataStoreQueryBuilder.createParameter(queryType, memberships);
-        batchUpdate(params, queryType);
+        Query query = Query.UDS_DELETE_FOR_NAMESPACE;
+        SqlParameterSource[] params = createParameter(query, memberships);
+        batchUpdate(query, params);
 
         for (UserGroupMembership membership : memberships) {
             udsCache.removeUsingNamespaceView(membership);
@@ -260,50 +262,58 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
      * @throws SharepointException
      */
     public void syncGroupMemberships(
-            Map<Integer, Set<UserGroupMembership>> groupToMemberships,
+            Map<Integer, Set<UserGroupMembership>> groupMembershipMap,
             String namespace)
             throws SharepointException {
 
-        if (null == groupToMemberships || groupToMemberships.size() == 0) {
+        if (null == groupMembershipMap || groupMembershipMap.size() == 0) {
             return;
         }
 
         Set<UserGroupMembership> membershipsToDelete = new TreeSet<UserGroupMembership>();
         Set<UserGroupMembership> membershipsToInsert = new TreeSet<UserGroupMembership>();
-        for (Integer groupId : groupToMemberships.keySet()) {
+        for (Integer groupId : groupMembershipMap.keySet()) {
             UserGroupMembership membership = new UserGroupMembership();
             membership.setGroupId(groupId);
             membership.setNamespace(namespace);
 
             membershipsToDelete.add(membership);
-            membershipsToInsert.addAll(groupToMemberships.get(membership));
+            membershipsToInsert.addAll(groupMembershipMap.get(groupId));
         }
 
-        List<QueryType> queryType = new ArrayList<QueryType>();
-        List<SqlParameterSource[]> params = new ArrayList<SqlParameterSource[]>();
+        Query query1 = Query.UDS_DELETE_FOR_GROUPID_NAMESPACE;
+        SqlParameterSource[] param1 = createParameter(query1, membershipsToDelete);
+        Query query2 = Query.UDS_INSERT;
+        SqlParameterSource[] param2 = createParameter(query2, membershipsToInsert);
 
-        QueryType type = QueryType.UDS_DELETE_FOR_GROUPID_NAMESPACE;
-        queryType.add(type);
-        params.add(UserDataStoreQueryBuilder.createParameter(type, membershipsToDelete));
+        int[][] batchStatus = new int[2][];
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
 
-        type = QueryType.UDS_INSERT;
-        queryType.add(type);
-        params.add(UserDataStoreQueryBuilder.createParameter(type, membershipsToInsert));
+        TransactionStatus status = transactionManager.getTransaction(def);
+        try {
+            batchStatus[0] = batchUpdate(query1, param1);
+            batchStatus[0] = batchUpdate(query2, param2);
+        } catch (Exception e) {
+            transactionManager.rollback(status);
+            LOGGER.log(Level.WARNING, "Exception occured in transaction processing. Rolling back... ");
+        }
+        transactionManager.commit(status);
 
-
-        int[][] batchStatus = executeAsTransaction(queryType, params);
-
-        // Removal from cache is lenient because it does not harm any
-        // functionality. At worst, duplicate insertion will occur
-        if (batchStatus != null && batchStatus.length == 2) {
-            for (UserGroupMembership membership : membershipsToDelete) {
-                udsCache.removeUsingGroupNamespaceView(membership);
+        if (batchStatus != null) {
+            // Removal from cache is lenient because it does not harm any
+            // functionality. At worst, duplicate insertion will occur
+            if (null != batchStatus[0]) {
+                for (UserGroupMembership membership : membershipsToDelete) {
+                    udsCache.removeUsingGroupNamespaceView(membership);
+                }
             }
 
             // Unlike removal, adding into cache should be strict. A wrong
             // insertion will mean that such records will never be able to reach
             // up to the database.
-            addAllSucceeded(batchStatus[1], membershipsToInsert);
+            if (null != batchStatus[1]) {
+                addAllSucceeded(batchStatus[1], membershipsToInsert);
+            }
         }
     }
 
@@ -358,5 +368,60 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
                 }
             }
         }
+    }
+
+    public void setUdsCache(UserDataStoreCache<UserGroupMembership> udsCache) {
+        this.udsCache = udsCache;
+    }
+
+    /**
+     * A helper method to create parameters values for the execution of queries.
+     *
+     * @param query
+     * @param memberships
+     * @return
+     * @throws SharepointException
+     */
+    private static SqlParameterSource[] createParameter(Query query,
+            Collection<UserGroupMembership> memberships)
+            throws SharepointException {
+        SqlParameterSource[] namedParams = new SqlParameterSource[memberships.size()];
+        int count = 0;
+
+        switch (query) {
+        case UDS_SELECT_FOR_USERNAME:
+            for (UserGroupMembership membership : memberships) {
+                namedParams[count++] = query.createParameter(membership.getUserName());
+            }
+            break;
+
+        case UDS_INSERT:
+            for (UserGroupMembership membership : memberships) {
+                namedParams[count++] = query.createParameter(membership.getUserId(), membership.getUserName(), membership.getGroupId(), membership.getGroupName(), membership.getNamespace());
+            }
+            break;
+
+        case UDS_DELETE_FOR_USERID_NAMESPACE:
+            for (UserGroupMembership membership : memberships) {
+                namedParams[count++] = query.createParameter(membership.getUserId(), membership.getNamespace());
+            }
+            break;
+
+        case UDS_DELETE_FOR_GROUPID_NAMESPACE:
+            for (UserGroupMembership membership : memberships) {
+                namedParams[count++] = query.createParameter(membership.getGroupId(), membership.getNamespace());
+            }
+            break;
+
+        case UDS_DELETE_FOR_NAMESPACE:
+            for (UserGroupMembership membership : memberships) {
+                namedParams[count++] = query.createParameter(membership.getNamespace());
+            }
+            break;
+
+        default:
+            throw new SharepointException("Query Not Supported!! ");
+        }
+        return namedParams;
     }
 }

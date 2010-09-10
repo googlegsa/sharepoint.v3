@@ -14,9 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-
-
-
 /**
  * A java bean to store the results of UserDataStore table.
  * <p>

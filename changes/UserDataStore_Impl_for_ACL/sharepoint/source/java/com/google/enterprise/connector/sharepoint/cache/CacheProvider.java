@@ -36,13 +36,12 @@ import java.util.Set;
  * issues. Hence, elements in cache are stored as soft references.
  * <p/>
  * Views are used to optimize the access, updates and deletion of elements in
- * cache. This, of course, comes with a cost of extra processing. Views, here,
- * are analogous to the SQL views wherein it is used as a sub-representation of
- * the actual record. Along with every view, a list of actual elements are
- * stored. These are the actual elements that have been cached. Such data
- * structure allows view based deletion which is a common case in User Data
- * Store Cache implementation. Views are stored as weak references because their
- * lifetime depends on the actual elements that are their in cache.
+ * cache. These are analogous to the SQL views in the sense that they gives a
+ * partial view of the original object. Along with every view, a list of
+ * elements are stored that are there in the cache. Such data structure allows
+ * view based deletion which is a common case in User Data Store DAO
+ * implementation. Views are stored as weak references because their lifetime
+ * depends on the actual elements that are their in the cache.
  * <p/>
  *
  * @author nitendra_thakur
@@ -253,8 +252,8 @@ public abstract class CacheProvider<T> implements ICache<T> {
     /**
      * An abstract factory method to get all the views that are to be
      * maintained. Views are requested for an element that is to be cached. The
-     * specified views can latter be used get the actual cached element that is
-     * the argument t of the method
+     * specified views can be used later to get the actual cached element that
+     * is the argument t of the method
      *
      * @param t the element that is cached
      * @return All the views that should be maintained along with t

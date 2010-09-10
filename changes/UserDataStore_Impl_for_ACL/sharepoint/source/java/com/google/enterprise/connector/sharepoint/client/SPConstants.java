@@ -442,15 +442,4 @@ public class SPConstants {
         public static final String ENUMERATEPERMISSIONS = "EnumeratePermissions";
         public static final String FULLMASK = "FullMask";
     }
-
-    public static final String sqlQueriesResourceName = "SQL/sqlQueries";
-
-    // Literals used in User Data Store schema
-    public static final String UDS_TABLENAME = "User_Group_Memberships";
-    public static final String UDS_INDEXNAME = "UDS_Index_SPUserId";
-    public static final String UDS_COLUMNUSERID = "SPUserId";
-    public static final String UDS_COLUMNUSERNAME = "SPUserName";
-    public static final String UDS_COLUMNGROUPID = "SPGroupId";
-    public static final String UDS_COLUMNGROUPNAME = "SPGroupName";
-    public static final String UDS_COLUMNNAMESPACE = "SPSite";
 }
