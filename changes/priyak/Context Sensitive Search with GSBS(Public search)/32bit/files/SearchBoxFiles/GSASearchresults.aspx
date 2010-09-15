@@ -79,7 +79,7 @@
         class GoogleSearchBox
         {
             public string GSALocation;
-            public string accessLevel = "a";//Do a Public and Secured search
+            public string accessLevel = "p";//Do a Public and Secured search
             public string siteCollection;
             public string frontEnd;
             public string enableInfoLogging;
