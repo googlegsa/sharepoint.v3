@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment name="commonsHTTPConfig"
+xmlns="http://xml.apache.org/axis/wsdd/"
+xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+
+<transport name="http" pivot="java:org.apache.axis.transport.http.CommonsHTTPSender">
+        <parameter name="http.protocol.expect-continue" >true</parameter>
+        <parameter name="http.authentication.preemptive" >false</parameter>
+</transport>
+<transport name="local" pivot="java:org.apache.axis.transport.local.LocalSender">
+        <parameter name="http.protocol.expect-continue" >true</parameter>
+        <parameter name="http.authentication.preemptive" >false</parameter>
+</transport>
+<transport name="java" pivot="java:org.apache.axis.transport.java.JavaSender">
+        <parameter name="http.protocol.expect-continue" >true</parameter>
+        <parameter name="http.authentication.preemptive" >false</parameter>
+</transport>
+
+<globalConfiguration>
+  <parameter name="ReplacementValue" value="_" />
+
+  <!-- Add custom filter patterns as follows: -->
+  <!--parameter name="FilterPattern_1" value="XXX" /-->
+  <!--parameter name="FilterPattern_2" value="XXX" /-->
+
+  <responseFlow>
+    <handler type="java:com.google.enterprise.connector.sharepoint.wsclient.handlers.InvalidXmlCharacterHandler" />
+  </responseFlow>
+</globalConfiguration>
+
+</deployment>
