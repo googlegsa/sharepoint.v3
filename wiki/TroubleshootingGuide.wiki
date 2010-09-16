@@ -510,3 +510,11 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
 
 *Q. Do we support Crawling of Infopath Forms ?*
     Yes, now the connector supports Infopath forms.
+
+*Q. My Crawl URL on GSA should follow any  specific pattern?
+    Your Crawl URL should match the pattern given in Alternate Access Mapping of Central  
+    Administration.
+    You can do so by going to
+    Central Admin -> Operations Tab -> Global Configuration Section -> Alternate Access 
+    Mapping 
+    Click on the Webapp and chage the URL.
