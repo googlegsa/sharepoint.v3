@@ -166,7 +166,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             final String inObjType, final String inParentWebTitle,
             final FeedType inFeedType, final SPType inSpType) {
         docId = inDocId;
-        url = inUrl;
+        displayUrl = url = inUrl;
         lastMod = inLastMod;
         author = inAuthor;
         objType = inObjType;
@@ -187,7 +187,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             final Calendar inLastMod,
             final String inFolderLevel, final ActionType inAction) {
         docId = inDocId;
-        url = inDocURL;
+        displayUrl = url = inDocURL;
         lastMod = inLastMod;
         folderLevel = inFolderLevel;
         action = inAction;
@@ -474,8 +474,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         new StringValue(getUrl()));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_DISPLAYURL)) {
-            String displayUrl = (null == getDisplayUrl()) ? getUrl()
-                    : this.getDisplayUrl();
             return new SPProperty(SpiConstants.PROPNAME_DISPLAYURL,
                     new StringValue(displayUrl));
         } else if (collator.equals(strPropertyName, SPConstants.PARENT_WEB_TITLE)) {
