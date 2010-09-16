@@ -14,16 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -34,6 +24,16 @@ import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An implementation of DocumentList Class to represents a list of SPDocuments
@@ -240,10 +240,10 @@ public class SPDocumentList implements DocumentList {
      *            be set with aliased URL
      */
     private void doAliasMapping(SPDocument spDocument) {
-        if ((null == spDocument) || (null == spDocument.getUrl())) {
+        if ((null == spDocument) || (null == spDocument.getDisplayUrl())) {
             return;
         }
-        final String url = spDocument.getUrl();
+        final String url = spDocument.getDisplayUrl();
         URL objURL = null;
         try {
             objURL = new URL(url);
@@ -355,7 +355,7 @@ public class SPDocumentList implements DocumentList {
             strUrl += objURL.getFile();
         }
 
-        spDocument.setUrl(strUrl);
+        spDocument.setDisplayUrl(strUrl);
     }
 
     /**
