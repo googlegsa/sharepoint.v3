@@ -9,7 +9,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
-Release 2.6.4 , 8 Sept, 2010
+Release 2.6.4 , 16 Sept, 2010
 =======================================
 
 Introduction
@@ -19,7 +19,9 @@ Keep in mind that we are continuing to work on Google Enterprise Connector for M
 
 Summary of Changes / New Features
 ---------------------------------
-This patch contains fix for the Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
+This patch contains fix for the following issues
+
+Issue 50: Connector does not crawl a SharePoint entity if it contains an invalid XML character in its metadata.
 Connector make use of a web service message handler which intercepts the WS response to check if it contains invalid XML characters. If found,
 replaces the same with a value that is configured in org.apache.axis.client.client-config.wsdd. In addition, additional patterns can also be provided
 in this file that the handler should filter out from WS response.
@@ -34,6 +36,9 @@ you need to execute for the same:
 2. Do the required changes
 3. Put the updated client-config.wsdd under $CATALINA_HOME/webapps/connector-manager/WEB-INF/classes
 4. Restart the connector
+
+issue 166: The Alias mapping is not working as expected for List items and Documents
+This was a bug in 2.6.2 that was causing alias mapping to fail for list items and documents. This has been resolved in the current 2.6.4 build.
 
 Version Compatibility
 ---------------------
