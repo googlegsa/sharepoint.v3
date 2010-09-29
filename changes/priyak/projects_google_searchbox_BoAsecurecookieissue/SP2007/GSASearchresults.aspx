@@ -273,7 +273,10 @@ div.ms-areaseparatorright{
                         c.Value = HttpUtility.UrlEncode(value, utf8);//Encoding the cookie value
                         c.Domain = domain;
                         c.Expires = CookieCollection[i].Expires;
-                        cc.Add(c);
+                        if(tempCookieName.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                        {
+                            cc.Add(c);
+                        }
 
                         /*Cookie Information*/
                         log("Cookie Name= " + tempCookieName+ "| Value= " + value+ "| Domain= " + domain+ "| Expires= " + c.Expires, LOG_LEVEL.INFO);
@@ -800,8 +803,10 @@ else if(document.attachEvent)
                                 /*Cookie Information*/
                                 gProps.log("Cookie Name= " + responseCookies.Name + "| Value= " + value + "| Domain= " + responseCookies.Domain
                                     + "| Expires= " + responseCookies.Expires.ToString(), LOG_LEVEL.INFO);
-                                
-                                newcc.Add(responseCookies);
+                                if(responseCookies.Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                                {
+                                    newcc.Add(responseCookies);
+                                }
                             }
                             
                             
@@ -877,7 +882,10 @@ else if(document.attachEvent)
                                         Uri GoogleUri = new Uri(GSASearchUrl);
                                         responseCookies.Domain = GoogleUri.Host;
                                         responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
-                                        newcc.Add(responseCookies);
+                                        if(responseCookies.Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                                        {
+                                            newcc.Add(responseCookies);
+                                        }
 
                                         /*Cookie Information*/
                                         gProps.log("Cookie Name= " + responseCookies.Name
@@ -905,7 +913,10 @@ else if(document.attachEvent)
                                 responseCookies.Value = objResp.Cookies[j].Value;
                                 responseCookies.Domain = objReq.RequestUri.Host;
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
-                                HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                if(objResp.Cookies[j].Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                                {
+                                    HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                }
                                 responseCookies = null;
 
                                 /*Cookie Information*/
