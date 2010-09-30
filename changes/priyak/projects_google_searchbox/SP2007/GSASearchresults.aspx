@@ -557,6 +557,18 @@
             // Code for carry forwarding the scope selected from the dropdown
             var dropdownScope = document.getElementById('idSearchScope');
             var scope = getParameter(Query, 'selectedScope');
+            var scopeURL = getParameter(Query, 'scopeUrl');
+            
+            if(scope == "Current List" || scope == "Current Folder" || scope == "Current Folder and all subfolders")
+            {
+                // Create an Option object        
+                var opt = document.createElement("option");
+                // Add an Option object to Drop Down/List Box
+                dropdownScope.options.add(opt);
+                // Assign text and value to Option object
+                opt.text = scope;
+                opt.value = scopeURL;
+            }   
             
             for(var i = 0;i <= dropdownScope.length-1 ; i = i+1)
             {
@@ -698,6 +710,8 @@ else if(document.attachEvent)
                         string searchReq = string.Empty;
                         string qQuery = string.Empty;
                         gProps.initGoogleSearchBox();//initialize the SearchBox parameters
+                        string finalURL = "";
+                        string strURL = "";
 
                         ////////////////////////////CONSTRUCT THE SEARCH QUERY FOR GOOGLE SEARCH APPLIANCE ///////////////////////////////////
                         //The search query comes in 'k' parameter
@@ -720,59 +734,33 @@ else if(document.attachEvent)
                                 string port = "";
                                 string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
                                 temp = temp.ToLower();
-                                string strURL = temp;
+                                strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
+
+                                temp = temp.Replace("http://", "");// Delete http from url
+                                qQuery += " inurl:\"" + temp + "\"";// Change functionality to use "&sitesearch=" - when GSA Bug 11882 has been closed
                                 
-                                if (inquery["selectedScope"] == "This List")
+                                string scopeText = inquery["selectedScope"]; // Getting the user selected, scope dropdown textual value 
+                                switch (scopeText)
                                 {
-                                    SPList list = SPContext.Current.List;
-                                    string listType = inquery["listType"]; // Get the list type and accordingly handle the directory path 
-                                                                           // for document library and folder
-                                    
-                                    switch (listType)
-                                    {
-                                        case "Microsoft.SharePoint.SPDocumentLibrary" :
-                                        
-                                        string isFolder = inquery["isFolder"];
-                                        if (isFolder == "false")
-                                        {
-                                            int iStartIndex = strURL.LastIndexOf("/");
-                                            strURL = strURL.Remove(iStartIndex);
-                                            int iStartIndex1 = strURL.LastIndexOf("/");
-                                            strURL = strURL.Remove(iStartIndex1);
-                                        }
+                                    case "Current Site":
+                                        finalURL = strURL + "/";
                                         break;
-                                            
-                                        case "Microsoft.SharePoint.SPList" :
-                                            
-                                        int iStartIndex2 = strURL.LastIndexOf("/");
-                                        strURL = strURL.Remove(iStartIndex2);
+
+                                    case "Current Site and all subsites":
+                                        finalURL = strURL;
                                         break;
-                                            
-                                        
-                                    }
-                                }
 
-                                string siteUrl = "";
+                                    case "Current List":
+                                        finalURL = strURL;
+                                        break;
 
-                                // Code to retrieve the site url if list is selected, as when list is selected, the 
-                                // site url is not retrieved.
-                                SPContext ctx = SPContext.Current;
-                                if (ctx != null)
-                                {
-                                    // Retrieve the URL of the SharePoint site collection
-                                    SPSite site = ctx.Site;
-                                    siteUrl = site.Url;
-                                }
+                                    case "Current Folder":
+                                        finalURL = strURL + "/";
+                                        break;
 
-                                string finalURL = "";
-
-                                if (inquery["selectedScope"] == "This List")
-                                {
-                                    finalURL = siteUrl + strURL;        
-                                }
-                                else
-                                {
-                                    finalURL = strURL;
+                                    case "Current Folder and all subfolders":
+                                        finalURL = strURL;
+                                        break;
                                 }
                                 finalURL = finalURL.Replace("'", "");
                                 qQuery += "&sitesearch=" + finalURL;
@@ -780,7 +768,6 @@ else if(document.attachEvent)
 
                             /*Get the user suppiled parameters from the web.config file*/
                             searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
-                            //searchReq = "?q=" + qQuery + "&access=p" + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
 
                             if (gProps.frontEnd.Trim() != "")
                             {
