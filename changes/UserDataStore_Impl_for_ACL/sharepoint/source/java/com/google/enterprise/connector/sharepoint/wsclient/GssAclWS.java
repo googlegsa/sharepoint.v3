@@ -283,7 +283,6 @@ public class GssAclWS {
                         userPermissionMap.put(principalName, allowedRoleTypes);
                     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
                             || PrincipalType.SPGROUP.equals(principal.getType())) {
-                        groupPermissionMap.put(principalName, allowedRoleTypes);
                         // If it's a SharePoint group, add the membership info
                         // into the User Data Store
                         if (PrincipalType.SPGROUP.equals(principal.getType()) && null != sharepointClientContext.getUserDataStoreDAO()) {
@@ -298,6 +297,15 @@ public class GssAclWS {
                                 memberships.add(membership);
                             }
                         }
+
+                        // FIXME This is temporary
+                        if (PrincipalType.SPGROUP.equals(principal.getType())) {
+                            principalName += "["
+                                    + wsResult.getSiteCollectionUrl() + "]"
+                                    + principalName;
+                        }
+
+                        groupPermissionMap.put(principalName, allowedRoleTypes);
                     } else {
                         LOGGER.log(Level.WARNING, "Skipping ACE for principal [ "
                                 + principal.getName()
