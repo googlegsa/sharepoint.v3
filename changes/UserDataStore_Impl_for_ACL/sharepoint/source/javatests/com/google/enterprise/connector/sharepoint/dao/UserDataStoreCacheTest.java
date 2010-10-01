@@ -126,6 +126,7 @@ public class UserDataStoreCacheTest extends TestCase {
     }
 
     public void testGC() {
+        int trial = 100000;
         // try adding memberships till the time memory gets low. Ensure that no
         // strong reference is kept for the memberships
         int i = 1;
@@ -134,12 +135,12 @@ public class UserDataStoreCacheTest extends TestCase {
                 UserGroupMembership membership = new UserGroupMembership(1,
                         "user" + i, i, "group" + i, "namespace" + (i % 50));
                 testCache.add(membership);
-                assertEquals(i, testCache.size());
+                assertTrue(testCache.size() <= i);
                 if (i % 2000 == 0) {
                     testCache.clearCache();
                 }
                 ++i;
-            } while (testCache.size() >= i);
+            } while (trial-- != 0);
             // after handleEnqued, the elements in cache will go down and the
             // loop will exit
             assertTrue(true);

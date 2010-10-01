@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 /**
  * Provides an abstract generic cache implementation which can be used to
@@ -64,11 +65,11 @@ public abstract class CacheProvider<T> implements ICache<T> {
     /**
      * A subclass of Java's SoftReference whose equality and ordering is decided
      * by its referral and not by the reference itself. Hence, a new definition
-     * for equals() and compareTo() is given
+     * for equals() and hasCode() is given
      *
      * @author nitendra_thakur
      */
-    private class SPSoftReference extends SoftReference<T> {
+    private static final class SPSoftReference<T> extends SoftReference<T> {
         int hashcode;
 
         SPSoftReference(T t) {
@@ -83,18 +84,18 @@ public abstract class CacheProvider<T> implements ICache<T> {
 
         @Override
         public boolean equals(Object obj) {
-            if (null == obj || !(obj instanceof CacheProvider.SPSoftReference)) {
+            if (null == obj || !(obj instanceof Reference)) {
                 return false;
             }
-            SPSoftReference inViewSoftRef = (SPSoftReference) obj;
+            Reference<T> inRef = (Reference) obj;
             if (null == get()) {
-                if (null == inViewSoftRef.get()) {
+                if (null == inRef.get()) {
                     return true;
                 } else {
                     return false;
                 }
             } else {
-                return get().equals(inViewSoftRef.get());
+                return get().equals(inRef.get());
             }
         }
 
@@ -107,11 +108,11 @@ public abstract class CacheProvider<T> implements ICache<T> {
     /**
      * A subclass of Java's WeakReference whose equality and ordering is decided
      * by its referral and not by the reference itself. Hence, a new definition
-     * for equals() and compareTo() is given
+     * for equals() and hasCodeTo() is given
      *
      * @author nitendra_thakur
      */
-    private class SPWeakReference extends WeakReference<T> {
+    private static final class SPWeakReference<T> extends WeakReference<T> {
         int hashcode;
 
         SPWeakReference(T t) {
@@ -126,18 +127,18 @@ public abstract class CacheProvider<T> implements ICache<T> {
 
         @Override
         public boolean equals(Object obj) {
-            if (null == obj || !(obj instanceof CacheProvider.SPWeakReference)) {
+            if (null == obj || !(obj instanceof Reference)) {
                 return false;
             }
-            SPWeakReference inViewWeakRef = (SPWeakReference) obj;
+            Reference<T> inRef = (Reference) obj;
             if (null == get()) {
-                if (null == inViewWeakRef.get()) {
+                if (null == inRef.get()) {
                     return true;
                 } else {
                     return false;
                 }
             } else {
-                return get().equals(inViewWeakRef.get());
+                return get().equals(inRef.get());
             }
         }
 
@@ -147,25 +148,21 @@ public abstract class CacheProvider<T> implements ICache<T> {
         }
     }
 
-    /**
-     * The set being used as the cache. Elements are stored as soft reference
-     * and not as strong reference
+    /*
+     * The KeySet of this map is used as the cache. Elements are stored as soft
+     * reference to let GC handle their life span.
      */
-    Set<? super SPSoftReference> cache = new HashSet<SPSoftReference>();
-    /**
-     * The reference queue to collect the unused references
-     */
-    ReferenceQueue<T> cacheRefQueue = new ReferenceQueue<T>();
+    private Map<SPSoftReference<T>, Set<View>> cacheMap = new HashMap<SPSoftReference<T>, Set<View>>();
+    /* Keep track of those element references which should be removed from cache */
+    private ReferenceQueue<T> cacheRefQueue = new ReferenceQueue<T>();
 
-    /**
-     * The map contains one entry for every view. Corresponding to every view,
-     * there are elements which satisfies this view and are in cache
+    /*
+     * Allows access to all elements corresponding to a view. Only those views
+     * that have at least one corresponding element stored in cache will be
+     * present here. A strong reference of view in the cacheMap assures this
+     * invariant.
      */
-    Map<View, Set<? super SPWeakReference>> registeredViews = new HashMap<View, Set<? super SPWeakReference>>();
-    /**
-     * The reference queue to collect the unused references
-     */
-    ReferenceQueue<T> viewsRefQueue = new ReferenceQueue<T>();
+    private Map<View, Set<SPWeakReference<T>>> viewRefsMap = new WeakHashMap<View, Set<SPWeakReference<T>>>();
 
     /**
      * Checks if the element is in cache
@@ -177,7 +174,7 @@ public abstract class CacheProvider<T> implements ICache<T> {
         if (null == t) {
             return false;
         }
-        return cache.contains(new SPSoftReference(t));
+        return cacheMap.containsKey(new SPSoftReference<T>(t));
     }
 
     /**
@@ -195,20 +192,22 @@ public abstract class CacheProvider<T> implements ICache<T> {
         if (null == t) {
             return;
         }
-        cache.add(new SPSoftReference(t, cacheRefQueue));
         Set<View> views = getViews(t);
+        cacheMap.put(new SPSoftReference<T>(t, cacheRefQueue), views);
+
         for (View view : views) {
-            if (registeredViews.containsKey(view)) {
-                Set<? super SPWeakReference> viewRefs = registeredViews.get(view);
-                if (null == viewRefs) {
-                    viewRefs = new HashSet<SPWeakReference>();
+            Set<SPWeakReference<T>> referents;
+            if (viewRefsMap.containsKey(view)) {
+                referents = viewRefsMap.get(view);
+                if (null == referents) {
+                    referents = new HashSet<SPWeakReference<T>>();
+                    viewRefsMap.put(view, referents);
                 }
-                viewRefs.add(new SPWeakReference(t, viewsRefQueue));
             } else {
-                Set<? super SPWeakReference> viewRefs = new HashSet<SPWeakReference>();
-                viewRefs.add(new SPWeakReference(t, viewsRefQueue));
-                registeredViews.put(view, viewRefs);
+                referents = new HashSet<SPWeakReference<T>>();
+                viewRefsMap.put(view, referents);
             }
+            referents.add(new SPWeakReference<T>(t));
         }
     }
 
@@ -225,7 +224,7 @@ public abstract class CacheProvider<T> implements ICache<T> {
         if (null == t) {
             return;
         }
-        cache.remove(new SPSoftReference(t));
+        cacheMap.remove(new SPSoftReference<T>(t));
     }
 
     /**
@@ -238,14 +237,8 @@ public abstract class CacheProvider<T> implements ICache<T> {
      * @param view
      */
     protected void removeUsingView(View view) {
-        if (registeredViews.containsKey(view)) {
-            Set<? super SPWeakReference> viewRefs = registeredViews.get(view);
-            if (null != viewRefs) {
-                for (Object viewRef : viewRefs) {
-                    remove(((SPWeakReference) viewRef).get());
-                }
-            }
-            registeredViews.remove(view);
+        for (SPWeakReference<T> ref : viewRefsMap.get(view)) {
+            remove(ref.get());
         }
     }
 
@@ -268,18 +261,12 @@ public abstract class CacheProvider<T> implements ICache<T> {
     public void clearCache() {
         Reference<? extends T> ref = cacheRefQueue.poll();
         while (null != ref) {
-            cache.remove(ref);
+            cacheMap.remove(ref);
             ref = cacheRefQueue.poll();
-        }
-
-        ref = viewsRefQueue.poll();
-        while (null != ref) {
-            registeredViews.remove(ref);
-            ref = viewsRefQueue.poll();
         }
     }
 
     public int size() {
-        return cache.size();
+        return cacheMap.size();
     }
 }
