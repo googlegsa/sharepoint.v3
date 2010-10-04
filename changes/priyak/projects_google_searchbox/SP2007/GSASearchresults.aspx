@@ -1,8 +1,9 @@
 <%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
+<%-- <% Here '~' is included in the MasterPageFile attribute. ~ refers to the root directory %>--%>
 <%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
     MasterPageFile="~/_layouts/application.master" EnableViewState="false" EnableViewStateMac="false"
-    ValidateRequest="false" %>
+    ValidateRequest="false" %> 
 
 <%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
@@ -68,6 +69,12 @@
         public int start = 0;/* E.g. start = 1 and num =5 (return 11-15 results)*/
         int endB = 0;
 
+        public const string currentSite = "Current Site";
+        public const string currentSiteAndAllSubsites = "Current Site and all subsites";
+        public const string currentList = "Current List";
+        public const string currentFolder = "Current Folder";
+        public const string currentFolderAndAllSubfolders = "Current Folder and all subfolders";
+        
         /*Enumeration which defines Search Box Log levels*/
         public enum LOG_LEVEL
         {
@@ -559,7 +566,13 @@
             var scope = getParameter(Query, 'selectedScope');
             var scopeURL = getParameter(Query, 'scopeUrl');
             
-            if(scope == "Current List" || scope == "Current Folder" || scope == "Current Folder and all subfolders")
+            var currentSite = "Current Site";
+            var currentSiteAndAllSubsites = "Current Site and all subsites";
+            var currentList = "Current List";
+            var currentFolder = "Current Folder";
+            var currentFolderAndAllSubfolders = "Current Folder and all subfolders";  
+            
+            if(scope == currentList || scope == currentFolder || scope == currentFolderAndAllSubfolders)
             {
                 // Create an Option object        
                 var opt = document.createElement("option");
@@ -742,23 +755,23 @@ else if(document.attachEvent)
                                 string scopeText = inquery["selectedScope"]; // Getting the user selected, scope dropdown textual value 
                                 switch (scopeText)
                                 {
-                                    case "Current Site":
+                                    case currentSite:
                                         finalURL = strURL + "/";
                                         break;
 
-                                    case "Current Site and all subsites":
+                                    case currentSiteAndAllSubsites:
                                         finalURL = strURL;
                                         break;
 
-                                    case "Current List":
+                                    case currentList:
                                         finalURL = strURL;
                                         break;
 
-                                    case "Current Folder":
+                                    case currentFolder:
                                         finalURL = strURL + "/";
                                         break;
 
-                                    case "Current Folder and all subfolders":
+                                    case currentFolderAndAllSubfolders:
                                         finalURL = strURL;
                                         break;
                                 }

@@ -49,8 +49,11 @@
         switch (listType)
         {
             case "Microsoft.SharePoint.SPDocumentLibrary":
-                int iStartIndex = listUrl.LastIndexOf("/") - 6;
+                int iStartIndex = listUrl.LastIndexOf("/"); //  Remove the string occurring after the last slash(/) i.e. "Alltems.aspx ", and then repeat the same all over once again, for removing the other string after the second last slash (/) i.e. "Forms"
+                                                            //  The last part of the string needs to be discarded so as to obtain the correct path for document library, till the name part.
                 listUrl = listUrl.Remove(iStartIndex);
+                int iStartIndex1 = listUrl.LastIndexOf("/");
+                listUrl = listUrl.Remove(iStartIndex1);
                 break;
 
             case "Microsoft.SharePoint.SPList":
