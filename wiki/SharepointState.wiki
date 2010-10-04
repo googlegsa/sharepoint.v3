@@ -14,8 +14,8 @@ While traversing, connector needs to keep track of things it has traversed so th
  <LastCrawledWebStateID ID=""/>   
  <LastCrawledListStateID ID=""/>    
 
- <WebState ID="" InsertionTime="" SPType="" URL="" WebTitle="">
-   <ListState BiggestID="" ChangeToken="" ID="" LastModified="" Type="" URL=""> 
+ <WebState ID="" InsertionTime="" SPType="" URL="" WebTitle="" AclNextChangeToken="" AclChangeToken="">
+   <ListState BiggestID="" ChangeToken="" ID="" LastModified="" Type="" URL="" IsAclChanged="" LastDocIdCrawledForAcl=""> 
      <Attachments> </Attachments>               
      <FolderItemIDs> </FolderItemIDs>
      <LastDocCrawled Action="" ID="" LastModified="" FolderLevel=””/> 
@@ -23,7 +23,7 @@ While traversing, connector needs to keep track of things it has traversed so th
     ……   
  </WebState>
 
- <WebState ID="" InsertionTime="" SPType="" URL="" WebTitle="">
+ <WebState ID="" InsertionTime="" SPType="" URL="" WebTitle="" AclNextChangeToken="" AclChangeToken="">
    <ListState BiggestID="" ChangeToken="" ID="" LastModified="" Type="" URL="">
      <Alerts> </Alerts>
      <LastDocCrawled Action="" ID="" LastModified=""/>
@@ -66,6 +66,10 @@ Following table describes the purpose and availability of attributes along with 
 ||URL||URL of the entity represented as the parent node||WebState, ListState, LastDocCrawled||Always||
 ||Action||Indicates whether the document has been sent as an ADD feed or DELETE feed||LastDocCrawled||Content Feed||
 ||FolderLevel||Indicates the path of the document relative to the library if the document is inside a folder||LastDocCrawled||SP2007||
+||AclNextChangeToken||The next change token to be used for ACL change detection||WebState||SP2007, SP2010||
+||AclChangeToken||Current change token being used for ACL change detection||WebState ||SP2007, SP2010||
+||IsAclChanged||True, ACL of this list has been changed and all the affected documents have not yet been crawled||SP2007, SP2010||
+||LastDocIdCrawledForAcl||Last document crawled from this list due to change in ACL||SP2007, SP2010||
 
  
  
