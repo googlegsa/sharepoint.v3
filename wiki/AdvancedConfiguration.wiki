@@ -49,10 +49,14 @@ The default value is set to false.
 
 Note: The FQDN resolution will happen using the Connector system's name resolution. Hosts not accesible from the connector machine will not be resolved.
 
-==== How ACL should be used ====
+==== How ACL should be used? ====
 following two properties in connectorInstance.xml will dictate the way ACLs will be fed to GSA.
 Should ACLs be fed to GSA?
-{{{ <property name="pushAcls"><value>false</value></property> }}}
+{{{ 
+<property name="pushAcls"><value>false</value></property> 
+}}}
 
 Should domain name be removed from domain\username?
-{{{ <property name="stripDomainFromAces"><value>true</value></property> }}}
+{{{ 
+<property name="stripDomainFromAces"><value>true</value></property> 
+}}}
