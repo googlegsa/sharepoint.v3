@@ -300,7 +300,7 @@ public class GssAclWS {
 
                         // FIXME This is temporary
                         if (PrincipalType.SPGROUP.equals(principal.getType())) {
-                            principalName += "["
+							principalName = "["
                                     + wsResult.getSiteCollectionUrl() + "]"
                                     + principalName;
                         }
