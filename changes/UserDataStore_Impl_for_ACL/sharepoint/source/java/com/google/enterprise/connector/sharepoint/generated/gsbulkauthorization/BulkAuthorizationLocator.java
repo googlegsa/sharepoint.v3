@@ -21,53 +21,8 @@ public class BulkAuthorizationLocator extends org.apache.axis.client.Service imp
         super(wsdlLoc, sName);
     }
 
-    // Use to get a proxy class for BulkAuthorizationSoap12
-    private java.lang.String BulkAuthorizationSoap12_address = "http://gdc04.persistent.co.in:4444/_vti_bin/GSBulkAuthorization.asmx";
-
-    public java.lang.String getBulkAuthorizationSoap12Address() {
-        return BulkAuthorizationSoap12_address;
-    }
-
-    // The WSDD service name defaults to the port name.
-    private java.lang.String BulkAuthorizationSoap12WSDDServiceName = "BulkAuthorizationSoap12";
-
-    public java.lang.String getBulkAuthorizationSoap12WSDDServiceName() {
-        return BulkAuthorizationSoap12WSDDServiceName;
-    }
-
-    public void setBulkAuthorizationSoap12WSDDServiceName(java.lang.String name) {
-        BulkAuthorizationSoap12WSDDServiceName = name;
-    }
-
-    public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_PortType getBulkAuthorizationSoap12() throws javax.xml.rpc.ServiceException {
-       java.net.URL endpoint;
-        try {
-            endpoint = new java.net.URL(BulkAuthorizationSoap12_address);
-        }
-        catch (java.net.MalformedURLException e) {
-            throw new javax.xml.rpc.ServiceException(e);
-        }
-        return getBulkAuthorizationSoap12(endpoint);
-    }
-
-    public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_PortType getBulkAuthorizationSoap12(java.net.URL portAddress) throws javax.xml.rpc.ServiceException {
-        try {
-            com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap12Stub _stub = new com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap12Stub(portAddress, this);
-            _stub.setPortName(getBulkAuthorizationSoap12WSDDServiceName());
-            return _stub;
-        }
-        catch (org.apache.axis.AxisFault e) {
-            return null;
-        }
-    }
-
-    public void setBulkAuthorizationSoap12EndpointAddress(java.lang.String address) {
-        BulkAuthorizationSoap12_address = address;
-    }
-
-
     // Use to get a proxy class for BulkAuthorizationSoap
-    private java.lang.String BulkAuthorizationSoap_address = "http://gdc04.persistent.co.in:4444/_vti_bin/GSBulkAuthorization.asmx";
+    private java.lang.String BulkAuthorizationSoap_address = "http://gdc04.gdc-psl.net:6666/_vti_bin/GSBulkAuthorization.asmx";
 
     public java.lang.String getBulkAuthorizationSoapAddress() {
         return BulkAuthorizationSoap_address;
@@ -110,6 +65,51 @@ public class BulkAuthorizationLocator extends org.apache.axis.client.Service imp
         BulkAuthorizationSoap_address = address;
     }
 
+
+    // Use to get a proxy class for BulkAuthorizationSoap12
+    private java.lang.String BulkAuthorizationSoap12_address = "http://gdc04.gdc-psl.net:6666/_vti_bin/GSBulkAuthorization.asmx";
+
+    public java.lang.String getBulkAuthorizationSoap12Address() {
+        return BulkAuthorizationSoap12_address;
+    }
+
+    // The WSDD service name defaults to the port name.
+    private java.lang.String BulkAuthorizationSoap12WSDDServiceName = "BulkAuthorizationSoap12";
+
+    public java.lang.String getBulkAuthorizationSoap12WSDDServiceName() {
+        return BulkAuthorizationSoap12WSDDServiceName;
+    }
+
+    public void setBulkAuthorizationSoap12WSDDServiceName(java.lang.String name) {
+        BulkAuthorizationSoap12WSDDServiceName = name;
+    }
+
+    public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_PortType getBulkAuthorizationSoap12() throws javax.xml.rpc.ServiceException {
+       java.net.URL endpoint;
+        try {
+            endpoint = new java.net.URL(BulkAuthorizationSoap12_address);
+        }
+        catch (java.net.MalformedURLException e) {
+            throw new javax.xml.rpc.ServiceException(e);
+        }
+        return getBulkAuthorizationSoap12(endpoint);
+    }
+
+    public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_PortType getBulkAuthorizationSoap12(java.net.URL portAddress) throws javax.xml.rpc.ServiceException {
+        try {
+            com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap12Stub _stub = new com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap12Stub(portAddress, this);
+            _stub.setPortName(getBulkAuthorizationSoap12WSDDServiceName());
+            return _stub;
+        }
+        catch (org.apache.axis.AxisFault e) {
+            return null;
+        }
+    }
+
+    public void setBulkAuthorizationSoap12EndpointAddress(java.lang.String address) {
+        BulkAuthorizationSoap12_address = address;
+    }
+
     /**
      * For the given interface, get the stub implementation.
      * If this service has no port for the given interface,
@@ -120,13 +120,13 @@ public class BulkAuthorizationLocator extends org.apache.axis.client.Service imp
     public java.rmi.Remote getPort(Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
         try {
             if (com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_PortType.class.isAssignableFrom(serviceEndpointInterface)) {
-                com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap12Stub _stub = new com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap12Stub(new java.net.URL(BulkAuthorizationSoap12_address), this);
-                _stub.setPortName(getBulkAuthorizationSoap12WSDDServiceName());
+                com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub _stub = new com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub(new java.net.URL(BulkAuthorizationSoap_address), this);
+                _stub.setPortName(getBulkAuthorizationSoapWSDDServiceName());
                 return _stub;
             }
             if (com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_PortType.class.isAssignableFrom(serviceEndpointInterface)) {
-                com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub _stub = new com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub(new java.net.URL(BulkAuthorizationSoap_address), this);
-                _stub.setPortName(getBulkAuthorizationSoapWSDDServiceName());
+                com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap12Stub _stub = new com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap12Stub(new java.net.URL(BulkAuthorizationSoap12_address), this);
+                _stub.setPortName(getBulkAuthorizationSoap12WSDDServiceName());
                 return _stub;
             }
         }
@@ -146,11 +146,11 @@ public class BulkAuthorizationLocator extends org.apache.axis.client.Service imp
             return getPort(serviceEndpointInterface);
         }
         java.lang.String inputPortName = portName.getLocalPart();
-        if ("BulkAuthorizationSoap12".equals(inputPortName)) {
-            return getBulkAuthorizationSoap12();
-        }
-        else if ("BulkAuthorizationSoap".equals(inputPortName)) {
+        if ("BulkAuthorizationSoap".equals(inputPortName)) {
             return getBulkAuthorizationSoap();
+        }
+        else if ("BulkAuthorizationSoap12".equals(inputPortName)) {
+            return getBulkAuthorizationSoap12();
         }
         else  {
             java.rmi.Remote _stub = getPort(serviceEndpointInterface);
@@ -168,8 +168,8 @@ public class BulkAuthorizationLocator extends org.apache.axis.client.Service imp
     public java.util.Iterator getPorts() {
         if (ports == null) {
             ports = new java.util.HashSet();
-            ports.add(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "BulkAuthorizationSoap12"));
             ports.add(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "BulkAuthorizationSoap"));
+            ports.add(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "BulkAuthorizationSoap12"));
         }
         return ports.iterator();
     }
@@ -179,12 +179,12 @@ public class BulkAuthorizationLocator extends org.apache.axis.client.Service imp
     */
     public void setEndpointAddress(java.lang.String portName, java.lang.String address) throws javax.xml.rpc.ServiceException {
 
-if ("BulkAuthorizationSoap12".equals(portName)) {
-            setBulkAuthorizationSoap12EndpointAddress(address);
-        }
-        else
 if ("BulkAuthorizationSoap".equals(portName)) {
             setBulkAuthorizationSoapEndpointAddress(address);
+        }
+        else
+if ("BulkAuthorizationSoap12".equals(portName)) {
+            setBulkAuthorizationSoap12EndpointAddress(address);
         }
         else
 { // Unknown Port Name
