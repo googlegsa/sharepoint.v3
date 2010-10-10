@@ -122,6 +122,27 @@ public class BulkAuthorizationSoap_BindingStub extends org.apache.axis.client.St
             cachedSerFactories.add(beansf);
             cachedDeserFactories.add(beandf);
 
+            qName = new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "Container");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(beansf);
+            cachedDeserFactories.add(beandf);
+
+            qName = new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "ContainerType");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.ContainerType.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(enumsf);
+            cachedDeserFactories.add(enumdf);
+
+            qName = new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "EntityType");
+            cachedSerQNames.add(qName);
+            cls = com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType.class;
+            cachedSerClasses.add(cls);
+            cachedSerFactories.add(enumsf);
+            cachedDeserFactories.add(enumdf);
+
     }
 
     protected org.apache.axis.client.Call createCall() throws java.rmi.RemoteException {

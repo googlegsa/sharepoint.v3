@@ -385,7 +385,12 @@ public class SharepointConnector implements Connector {
             dataSource.setUsername(properties.getProperty("DBUsername"));
             dataSource.setPassword(properties.getProperty("DBPassword"));
 
-            queryProvider.init(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir), "mssql");
+            String locale = properties.getProperty("LOCALE");
+            if(null == locale || locale.length() == 0) {
+                locale = "mssql";
+            }
+            queryProvider.init(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir), locale);
+            queryProvider.setDatabase(properties.getProperty("DATABASE"));
 
             UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
                     dataSource, queryProvider, userGroupMembershipRowMapper);

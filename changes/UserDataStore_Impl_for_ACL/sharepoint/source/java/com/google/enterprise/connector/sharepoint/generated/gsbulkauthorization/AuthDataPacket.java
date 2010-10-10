@@ -10,7 +10,7 @@ package com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization
 public class AuthDataPacket  implements java.io.Serializable {
     private com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData[] authDataArray;
 
-    private java.lang.String siteCollectionUrl;
+    private com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container container;
 
     private java.lang.String message;
 
@@ -21,11 +21,11 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     public AuthDataPacket(
            com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData[] authDataArray,
-           java.lang.String siteCollectionUrl,
+           com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container container,
            java.lang.String message,
            boolean isDone) {
            this.authDataArray = authDataArray;
-           this.siteCollectionUrl = siteCollectionUrl;
+           this.container = container;
            this.message = message;
            this.isDone = isDone;
     }
@@ -52,22 +52,22 @@ public class AuthDataPacket  implements java.io.Serializable {
 
 
     /**
-     * Gets the siteCollectionUrl value for this AuthDataPacket.
+     * Gets the container value for this AuthDataPacket.
      *
-     * @return siteCollectionUrl
+     * @return container
      */
-    public java.lang.String getSiteCollectionUrl() {
-        return siteCollectionUrl;
+    public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container getContainer() {
+        return container;
     }
 
 
     /**
-     * Sets the siteCollectionUrl value for this AuthDataPacket.
+     * Sets the container value for this AuthDataPacket.
      *
-     * @param siteCollectionUrl
+     * @param container
      */
-    public void setSiteCollectionUrl(java.lang.String siteCollectionUrl) {
-        this.siteCollectionUrl = siteCollectionUrl;
+    public void setContainer(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container container) {
+        this.container = container;
     }
 
 
@@ -125,9 +125,9 @@ public class AuthDataPacket  implements java.io.Serializable {
             ((this.authDataArray==null && other.getAuthDataArray()==null) ||
              (this.authDataArray!=null &&
               java.util.Arrays.equals(this.authDataArray, other.getAuthDataArray()))) &&
-            ((this.siteCollectionUrl==null && other.getSiteCollectionUrl()==null) ||
-             (this.siteCollectionUrl!=null &&
-              this.siteCollectionUrl.equals(other.getSiteCollectionUrl()))) &&
+            ((this.container==null && other.getContainer()==null) ||
+             (this.container!=null &&
+              this.container.equals(other.getContainer()))) &&
             ((this.message==null && other.getMessage()==null) ||
              (this.message!=null &&
               this.message.equals(other.getMessage()))) &&
@@ -154,8 +154,8 @@ public class AuthDataPacket  implements java.io.Serializable {
                 }
             }
         }
-        if (getSiteCollectionUrl() != null) {
-            _hashCode += getSiteCollectionUrl().hashCode();
+        if (getContainer() != null) {
+            _hashCode += getContainer().hashCode();
         }
         if (getMessage() != null) {
             _hashCode += getMessage().hashCode();
@@ -180,9 +180,9 @@ public class AuthDataPacket  implements java.io.Serializable {
         elemField.setItemQName(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "AuthData"));
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
-        elemField.setFieldName("siteCollectionUrl");
-        elemField.setXmlName(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "SiteCollectionUrl"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setFieldName("container");
+        elemField.setXmlName(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "Container"));
+        elemField.setXmlType(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "Container"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);

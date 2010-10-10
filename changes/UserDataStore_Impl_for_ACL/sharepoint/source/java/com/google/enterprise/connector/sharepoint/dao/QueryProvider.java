@@ -59,14 +59,14 @@ public interface QueryProvider {
      *
      * @return
      */
-    public String getDatabase();
-
+    String getDatabase();
+    void setDatabase(String database);
     /**
      * Name of the table representing User Group Memberships
      *
      * @return
      */
-    public String getUdsTableName();
+    String getUdsTableName();
 
     /**
      * Name of the index to be created in for user data store. Currently, there
@@ -74,7 +74,7 @@ public interface QueryProvider {
      *
      * @return
      */
-    public String getUdsIndexName();
+    String getUdsIndexName();
 }
 
 /**

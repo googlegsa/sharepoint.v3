@@ -108,10 +108,7 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport
     public int[] batchUpdate(Query query, SqlParameterSource[] params)
             throws SharepointException {
         if (null == params || 0 == params.length) {
-            throw new SharepointException(
-                    "No parameter found for executing query [ "
-                            + query
-                            + " ]. Such query should not be executed as a batchUpdate");
+            return null;
         }
 
         int[] batchStatus = null;

@@ -30,7 +30,7 @@
       <s:complexType name="AuthDataPacket">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="AuthDataArray" type="tns:ArrayOfAuthData" />
-          <s:element minOccurs="0" maxOccurs="1" name="SiteCollectionUrl" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Container" type="tns:Container" />
           <s:element minOccurs="0" maxOccurs="1" name="Message" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="IsDone" type="s:boolean" />
         </s:sequence>
@@ -42,14 +42,36 @@
       </s:complexType>
       <s:complexType name="AuthData">
         <s:sequence>
-          <s:element minOccurs="0" maxOccurs="1" name="Container" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Container" type="tns:Container" />
           <s:element minOccurs="0" maxOccurs="1" name="ItemId" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="IsAllowed" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="Message" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="ComplexDocId" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="IsDone" type="s:boolean" />
+          <s:element minOccurs="1" maxOccurs="1" name="Type" type="tns:EntityType" />
         </s:sequence>
       </s:complexType>
+      <s:complexType name="Container">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Url" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="Type" type="tns:ContainerType" />
+        </s:sequence>
+      </s:complexType>
+      <s:simpleType name="ContainerType">
+        <s:restriction base="s:string">
+          <s:enumeration value="NA" />
+          <s:enumeration value="SITE_COLLECTION" />
+          <s:enumeration value="SITE" />
+          <s:enumeration value="LIST" />
+        </s:restriction>
+      </s:simpleType>
+      <s:simpleType name="EntityType">
+        <s:restriction base="s:string">
+          <s:enumeration value="LISTITEM" />
+          <s:enumeration value="LIST" />
+          <s:enumeration value="ALERT" />
+        </s:restriction>
+      </s:simpleType>
       <s:element name="AuthorizeResponse">
         <s:complexType>
           <s:sequence>

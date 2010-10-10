@@ -8,7 +8,7 @@
 package com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization;
 
 public class AuthData  implements java.io.Serializable {
-    private java.lang.String container;
+    private com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container container;
 
     private java.lang.String itemId;
 
@@ -20,22 +20,26 @@ public class AuthData  implements java.io.Serializable {
 
     private boolean isDone;
 
+    private com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType type;
+
     public AuthData() {
     }
 
     public AuthData(
-           java.lang.String container,
+           com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container container,
            java.lang.String itemId,
            boolean isAllowed,
            java.lang.String message,
            java.lang.String complexDocId,
-           boolean isDone) {
+           boolean isDone,
+           com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType type) {
            this.container = container;
            this.itemId = itemId;
            this.isAllowed = isAllowed;
            this.message = message;
            this.complexDocId = complexDocId;
            this.isDone = isDone;
+           this.type = type;
     }
 
 
@@ -44,7 +48,7 @@ public class AuthData  implements java.io.Serializable {
      *
      * @return container
      */
-    public java.lang.String getContainer() {
+    public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container getContainer() {
         return container;
     }
 
@@ -54,7 +58,7 @@ public class AuthData  implements java.io.Serializable {
      *
      * @param container
      */
-    public void setContainer(java.lang.String container) {
+    public void setContainer(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container container) {
         this.container = container;
     }
 
@@ -158,6 +162,26 @@ public class AuthData  implements java.io.Serializable {
         this.isDone = isDone;
     }
 
+
+    /**
+     * Gets the type value for this AuthData.
+     *
+     * @return type
+     */
+    public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType getType() {
+        return type;
+    }
+
+
+    /**
+     * Sets the type value for this AuthData.
+     *
+     * @param type
+     */
+    public void setType(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType type) {
+        this.type = type;
+    }
+
     private java.lang.Object __equalsCalc = null;
     public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof AuthData)) return false;
@@ -183,7 +207,10 @@ public class AuthData  implements java.io.Serializable {
             ((this.complexDocId==null && other.getComplexDocId()==null) ||
              (this.complexDocId!=null &&
               this.complexDocId.equals(other.getComplexDocId()))) &&
-            this.isDone == other.isIsDone();
+            this.isDone == other.isIsDone() &&
+            ((this.type==null && other.getType()==null) ||
+             (this.type!=null &&
+              this.type.equals(other.getType())));
         __equalsCalc = null;
         return _equals;
     }
@@ -209,6 +236,9 @@ public class AuthData  implements java.io.Serializable {
             _hashCode += getComplexDocId().hashCode();
         }
         _hashCode += (isIsDone() ? Boolean.TRUE : Boolean.FALSE).hashCode();
+        if (getType() != null) {
+            _hashCode += getType().hashCode();
+        }
         __hashCodeCalc = false;
         return _hashCode;
     }
@@ -222,7 +252,7 @@ public class AuthData  implements java.io.Serializable {
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("container");
         elemField.setXmlName(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "Container"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlType(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "Container"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
@@ -257,6 +287,12 @@ public class AuthData  implements java.io.Serializable {
         elemField.setFieldName("isDone");
         elemField.setXmlName(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "IsDone"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("type");
+        elemField.setXmlName(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "Type"));
+        elemField.setXmlType(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "EntityType"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
     }

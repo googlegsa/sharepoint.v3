@@ -43,6 +43,8 @@ public class SimpleQueryProvider implements QueryProvider {
     // Queries that can be served
     private Map<Query, String> sqlQueryMap = new HashMap<Query, String>();
 
+    private String database;
+
     public SimpleQueryProvider(String basename) {
         this.basename = basename;
     }
@@ -134,7 +136,10 @@ public class SimpleQueryProvider implements QueryProvider {
 
     // XXX This is temporary
     public String getDatabase() {
-        return "User_Data_Store";
+        return database;
+    }
+    public void setDatabase(String database) {
+        this.database = database;
     }
 
     public String getUdsTableName() {

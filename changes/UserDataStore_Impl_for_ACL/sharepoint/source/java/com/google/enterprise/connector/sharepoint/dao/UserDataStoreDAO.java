@@ -140,6 +140,9 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
      */
     public void addMemberships(Set<UserGroupMembership> memberships)
             throws SharepointException {
+        if(null == memberships || memberships.size() == 0) {
+            return;
+        }
         if (null != udsCache) {
             removeAllCached(memberships);
         }
