@@ -511,8 +511,7 @@ public class GssAclChangeCollection
         {
             GssAclUtility gssUtil = new GssAclUtility();
             return gssUtil.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);
-        }
-        return false;
+        }       
     }
 
     public void UpdateChangeToken(SPChangeToken inToken)
@@ -663,15 +662,10 @@ public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
 public class GssAclMonitor
 {
-    GssAclUtility gssUtil = new GssAclUtility();
-    // Current site collection in which request is to be served
-    SPSite site;
-
-    // SharePoint site used for constructing the web service endpoint
-    SPWeb web;
-
+    private readonly GssAclUtility gssUtil = new GssAclUtility();
+    
     // A random guess about how many items should be query at a time. Such threshold is required to save the web service from being unresponsive for a long time
-    public const int ROWLIMIT = 500;
+    private const int ROWLIMIT = 500;
 
     // A hypothetical name given to the site collection administrator group. This is required because the web service treats
     // site collection administrators as one of the SharePoitn groups. This is in benefit of avoiding re-crawling all the documents
@@ -680,43 +674,30 @@ public class GssAclMonitor
     // just require updating the group membership info and no re-crawl will be required.
     public const string GSSITEADMINGROUP = "[GSSiteCollectionAdministrator]";
 
-    public GssAclMonitor()
-    {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
-        {
-            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to a valid SharePoitn site. ");
-        }
-        site = spContext.Site;
-        if (null == site)
-        {
-            throw new Exception("SharePoint site collection not found");
-        }
-        web = site.OpenWeb();
-        if (null == web)
-        {
-            throw new Exception("SharePoint site not found");
-        }
-    }
-
-    ~GssAclMonitor()
-    {
-        if (null != web)
-        {
-          web.Dispose();
-        }
-        if (null != site)
-        {
-          site.Dispose();
-        }
-    }
-
     /// <summary>
     /// A dummy method used mainly to test the availability and connectivity of the web service.
     /// </summary>
     [WebMethod]
     public string CheckConnectivity()
     {
+        SPContext spContext = SPContext.Current;
+        if (null == spContext)
+        {
+            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
+        }
+        
+        SPSite site = spContext.Site;
+        if (null == site)
+        {
+            throw new Exception("SharePoint site collection not found");
+        }
+        
+        SPWeb web = spContext.Web;
+        if (null == web)
+        {
+            throw new Exception("SharePoint site not found");
+        }
+        
         // Ensure that all the required APIs are accessible
         SPUserCollection admins = web.SiteAdministrators;
         SPPolicyCollection policies = site.WebApplication.Policies;
@@ -732,6 +713,24 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
     {
+        SPContext spContext = SPContext.Current;
+        if (null == spContext)
+        {
+            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
+        }
+
+        SPSite site = spContext.Site;
+        if (null == site)
+        {
+            throw new Exception("SharePoint site collection not found");
+        }
+
+        SPWeb web = spContext.Web;
+        if (null == web)
+        {
+            throw new Exception("SharePoint site not found");
+        }
+        
         GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
 
         List<GssAcl> allAcls = new List<GssAcl>();
@@ -770,11 +769,14 @@ public class GssAclMonitor
                 }
                 allAcls.Add(acl);
 
-                SPUser owner = gssUtil.GetOwner(secobj);
-                if (null != owner)
+                try
                 {
-                    acl.Owner = owner.LoginName;
+                    acl.Owner = gssUtil.GetOwner(secobj).LoginName;
                 }
+                catch (Exception e)
+                {
+                    acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                }                
             }
             catch (Exception e)
             {
@@ -786,7 +788,6 @@ public class GssAclMonitor
         result.AllAcls = allAcls;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
-        result.AddLogMessage(gssUtil.LogMessage);
         return result;
     }
 
@@ -802,6 +803,24 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclChangesSinceTokenResult GetAclChangesSinceToken(string fromChangeToken, string toChangeToken)
     {
+        SPContext spContext = SPContext.Current;
+        if (null == spContext)
+        {
+            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
+        }
+
+        SPSite site = spContext.Site;
+        if (null == site)
+        {
+            throw new Exception("SharePoint site collection not found");
+        }
+
+        SPWeb web = spContext.Web;
+        if (null == web)
+        {
+            throw new Exception("SharePoint site not found");
+        }
+        
         GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         GssAclChangeCollection allChanges = null;
         SPChangeToken changeTokenEnd = null;
@@ -855,7 +874,6 @@ public class GssAclMonitor
         result.AllChanges = allChanges;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
-        result.AddLogMessage(gssUtil.LogMessage);
         return result;
     }
 
@@ -868,6 +886,24 @@ public class GssAclMonitor
     [WebMethod]
     public GssResolveSPGroupResult ResolveSPGroup(string[] groupId)
     {
+        SPContext spContext = SPContext.Current;
+        if (null == spContext)
+        {
+            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
+        }
+
+        SPSite site = spContext.Site;
+        if (null == site)
+        {
+            throw new Exception("SharePoint site collection not found");
+        }
+
+        SPWeb web = spContext.Web;
+        if (null == web)
+        {
+            throw new Exception("SharePoint site not found");
+        }
+        
         GssResolveSPGroupResult result = new GssResolveSPGroupResult();
         List<GssPrincipal> prinicpals = new List<GssPrincipal>();
         if (null != groupId)
@@ -922,7 +958,6 @@ public class GssAclMonitor
         result.Prinicpals = prinicpals;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
-        result.AddLogMessage(gssUtil.LogMessage);
         return result;
     }
 
@@ -934,7 +969,8 @@ public class GssAclMonitor
     public List<string> GetListsWithInheritingRoleAssignments()
     {
         List<string> listIDs = new List<string>();
-        SPListCollection lists = web.Lists;
+        SPWeb web = SPContext.Current.Web;
+        SPListCollection lists = SPContext.Current.Web.Lists;
         foreach (SPList list in lists)
         {
             if (!list.HasUniqueRoleAssignments && gssUtil.isSame(web.FirstUniqueAncestor, list.FirstUniqueAncestor))
@@ -955,6 +991,24 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetListItemsWithInheritingRoleAssignments GetListItemsWithInheritingRoleAssignments(string listGuId, int rowLimit, int lastItemId)
     {
+        SPContext spContext = SPContext.Current;
+        if (null == spContext)
+        {
+            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
+        }
+
+        SPSite site = spContext.Site;
+        if (null == site)
+        {
+            throw new Exception("SharePoint site collection not found");
+        }
+
+        SPWeb web = spContext.Web;
+        if (null == web)
+        {
+            throw new Exception("SharePoint site not found");
+        }
+        
         SPList changeList = null;
         try
         {
@@ -1061,22 +1115,11 @@ public class GssAclMonitor
 }
 
 /// <summary>
-/// Provides general purpose utility methods
+/// Provides general purpose utility methods.
+/// This class must be stateless becasue it is a member instance of the web service
 /// </summary>
 public class GssAclUtility
 {
-    StringBuilder logMessage = new StringBuilder();
-    public String LogMessage
-    {
-        get { return logMessage.ToString(); }
-        set { logMessage = new StringBuilder(value); }
-    }
-
-    private void AddLogMessage(string logMsg)
-    {
-        logMessage.AppendLine(logMsg);
-    }
-
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from the web application security policies
     /// </summary>
@@ -1264,22 +1307,15 @@ public class GssAclUtility
             {
                 // Case of other generic lists
                 String key = "Created By";
-                try
+                SPFieldUser field = item.Fields[key] as SPFieldUser;
+                if (field != null)
                 {
-                    SPFieldUser field = item.Fields[key] as SPFieldUser;
-                    if (field != null)
+                    SPFieldUserValue fieldValue = field.GetFieldValue(item[key].ToString()) as SPFieldUserValue;
+                    if (fieldValue != null)
                     {
-                        SPFieldUserValue fieldValue = field.GetFieldValue(item[key].ToString()) as SPFieldUserValue;
-                        if (fieldValue != null)
-                        {
-                            owner = fieldValue.User;
-                        }
+                        owner = fieldValue.User;
                     }
-                }
-                catch (Exception e)
-                {
-                    AddLogMessage("Failed to detect Owner for the list item [ " + item.Url + " ] ");
-                }
+                }                
             }
         }
         else if (secobj is SPWeb)
@@ -1288,7 +1324,7 @@ public class GssAclUtility
         }
         else
         {
-            AddLogMessage("Failed to detect Owner becasue the entity is neither a listitem, list or a web. ");
+            throw new Exception("Uncompatible entity type. A listitem, list or a web is expected. ");
         }
         return owner;
     }
@@ -1409,7 +1445,7 @@ public class GssAclUtility
         if (null == userInfo)
         {
             gssPrincipal = new GssPrincipal(login, -2);
-            gssPrincipal.AddLogMessage("[ " + login + " ] could not be resolved a valid windows principal. ");
+            gssPrincipal.AddLogMessage("[ " + login + " ] could not be resolved to a valid windows principal. ");
             gssPrincipal.Type = GssPrincipal.PrincipalType.NA;
             return gssPrincipal;
         }
@@ -1462,5 +1498,3 @@ public class GssAclUtility
         return false;
     }
 }
-
-

@@ -252,9 +252,7 @@ public class GssAclWS {
                             // preference over GRANT
                             LOGGER.log(Level.WARNING, "Skipping the ACL for entity URL [ "
                                     + entityUrl
-                                    + " ] it contains some deny permissions [ "
-                                    + deniedPermissions
-                                    + " ] for Principal [ "
+                                    + " ] it contains some deny permissions for Principal [ "
                                     + principal.getName() + " ] ");
                             continue ACL;
                         }
@@ -300,7 +298,7 @@ public class GssAclWS {
 
                         // FIXME This is temporary
                         if (PrincipalType.SPGROUP.equals(principal.getType())) {
-							principalName = "["
+                            principalName = "["
                                     + wsResult.getSiteCollectionUrl() + "]"
                                     + principalName;
                         }
@@ -895,7 +893,7 @@ public class GssAclWS {
      *
      * @return the Web Service connectivity status
      */
-    public String checkConnectivity() {
+    public void checkConnectivity() throws SharepointException {
         try {
             stub.checkConnectivity();
         } catch (final AxisFault af) {
@@ -908,21 +906,20 @@ public class GssAclWS {
                 try {
                     stub.checkConnectivity();
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
+                    throw new SharepointException(
+                            "Call to checkConnectivity failed. endpoint [ "
                             + endpoint + " ].", e);
-                    return e.getLocalizedMessage();
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
-                        + endpoint + " ].", af);
-                return af.getLocalizedMessage();
+                throw new SharepointException(
+                        "Call to checkConnectivity failed. endpoint [ "
+                                + endpoint + " ].", af);
             }
         } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
+            throw new SharepointException(
+                    "Call to checkConnectivity failed. endpoint [ "
                     + endpoint + " ].", e);
-            return e.getLocalizedMessage();
-        }
 
-        return SPConstants.CONNECTIVITY_SUCCESS;
+        }
     }
 }

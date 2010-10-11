@@ -22,7 +22,6 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationLocator;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.holders.ArrayOfAuthDataPacketHolder;
-import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.holders.AuthDataPacketHolder;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.apache.axis.AxisFault;
@@ -116,39 +115,6 @@ public class GSBulkAuthorizationWS {
             }
         }
         return arrayOfAuthDataPacketHolder.value;
-    }
-
-    /**
-     * Calls AuthorizeInCurrentSiteCollectionContext() Web Method of
-     * GSBulkAuthorization Web Service
-     *
-     * @param authDataPacket Contains the list of documents to be authorized
-     * @param loginId The username to be authorized
-     * @return the updated {@link AuthDataPacket} object reflecting the
-     *         authorization status for each document
-     * @throws RemoteException
-     */
-    public AuthDataPacket authorizeInCurrentSiteCollectionContext(
-            final AuthDataPacket authDataPacket,
-            final String userId) throws RemoteException {
-        AuthDataPacketHolder authDataPacketHolder = new AuthDataPacketHolder(
-                authDataPacket);
-        try {
-            stub.authorizeInCurrentSiteCollectionContext(authDataPacketHolder, userId);
-        } catch (final AxisFault af) {
-            // Handling of username formats for different authentication models.
-            if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1) {
-                final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
-                stub.setUsername(username);
-                stub.authorizeInCurrentSiteCollectionContext(authDataPacketHolder, userId);
-            } else {
-                throw af;
-            }
-        }
-        return authDataPacketHolder.value;
     }
 
     /**

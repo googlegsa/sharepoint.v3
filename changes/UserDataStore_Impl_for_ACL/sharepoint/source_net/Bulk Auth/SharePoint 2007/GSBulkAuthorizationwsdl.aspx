@@ -79,21 +79,6 @@
           </s:sequence>
         </s:complexType>
       </s:element>
-      <s:element name="AuthorizeInCurrentSiteCollectionContext">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="authDataPacket" type="tns:AuthDataPacket" />
-            <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
-      <s:element name="AuthorizeInCurrentSiteCollectionContextResponse">
-        <s:complexType>
-          <s:sequence>
-            <s:element minOccurs="0" maxOccurs="1" name="authDataPacket" type="tns:AuthDataPacket" />
-          </s:sequence>
-        </s:complexType>
-      </s:element>
     </s:schema>
   </wsdl:types>
   <wsdl:message name="CheckConnectivitySoapIn">
@@ -108,12 +93,6 @@
   <wsdl:message name="AuthorizeSoapOut">
     <wsdl:part name="parameters" element="tns:AuthorizeResponse" />
   </wsdl:message>
-  <wsdl:message name="AuthorizeInCurrentSiteCollectionContextSoapIn">
-    <wsdl:part name="parameters" element="tns:AuthorizeInCurrentSiteCollectionContext" />
-  </wsdl:message>
-  <wsdl:message name="AuthorizeInCurrentSiteCollectionContextSoapOut">
-    <wsdl:part name="parameters" element="tns:AuthorizeInCurrentSiteCollectionContextResponse" />
-  </wsdl:message>
   <wsdl:portType name="BulkAuthorizationSoap">
     <wsdl:operation name="CheckConnectivity">
       <wsdl:input message="tns:CheckConnectivitySoapIn" />
@@ -122,10 +101,6 @@
     <wsdl:operation name="Authorize">
       <wsdl:input message="tns:AuthorizeSoapIn" />
       <wsdl:output message="tns:AuthorizeSoapOut" />
-    </wsdl:operation>
-    <wsdl:operation name="AuthorizeInCurrentSiteCollectionContext">
-      <wsdl:input message="tns:AuthorizeInCurrentSiteCollectionContextSoapIn" />
-      <wsdl:output message="tns:AuthorizeInCurrentSiteCollectionContextSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="BulkAuthorizationSoap" type="tns:BulkAuthorizationSoap">
@@ -141,15 +116,6 @@
     </wsdl:operation>
     <wsdl:operation name="Authorize">
       <soap:operation soapAction="gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com/Authorize" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="AuthorizeInCurrentSiteCollectionContext">
-      <soap:operation soapAction="gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com/AuthorizeInCurrentSiteCollectionContext" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -178,22 +144,13 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
-    <wsdl:operation name="AuthorizeInCurrentSiteCollectionContext">
-      <soap12:operation soapAction="gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com/AuthorizeInCurrentSiteCollectionContext" style="document" />
-      <wsdl:input>
-        <soap12:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap12:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
   </wsdl:binding>
   <wsdl:service name="BulkAuthorization">
     <wsdl:port name="BulkAuthorizationSoap" binding="tns:BulkAuthorizationSoap">
       <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
     <wsdl:port name="BulkAuthorizationSoap12" binding="tns:BulkAuthorizationSoap12">
-      <soap:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
+      <soap12:address location=<% SPEncode.WriteHtmlEncodeWithQuote(Response, SPWeb.OriginalBaseUrl(Request), '"'); %> />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

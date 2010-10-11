@@ -14,7 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -31,7 +30,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -112,16 +110,15 @@ public class SharepointConnector implements Connector {
      */
     public Session login() throws RepositoryException {
         LOGGER.info("login()");
-        // Check the availability of GSS services and set the flags in context
-        // so that connector does not attempt to make any calls to these
-        // services in the current session
-        // For now, checking for ACL only
         if (sharepointClientContext.isPushAcls()) {
-            GssAclWS aclWs = new GssAclWS(sharepointClientContext, null);
-            String status = aclWs.checkConnectivity();
-            if (!SPConstants.CONNECTIVITY_SUCCESS.equals(status)) {
-                sharepointClientContext.setPushAcls(false);
-                LOGGER.log(Level.WARNING, "ACL will not be sent for the documents because the ACL web service is not accessible.");
+            try {
+                new GssAclWS(sharepointClientContext, null).checkConnectivity();
+            } catch (Exception e) {
+                throw new RepositoryException(
+                        "Crawling cannot proceed becasue ACL web service cannot be contacted and hecne, "
+                                + "ACLs canot be retreived while crawling. You may still make the connector crawl "
+                                + "by setting the ACL flag as false in connectorInstance.xml. ",
+                        e);
             }
         }
         return new SharepointSession(this, sharepointClientContext);

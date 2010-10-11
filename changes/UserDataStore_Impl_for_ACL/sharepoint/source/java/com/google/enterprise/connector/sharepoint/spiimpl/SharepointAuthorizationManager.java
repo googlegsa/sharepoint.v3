@@ -79,6 +79,8 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
      * TODO The best place to have this information is in the connector's state.
      * This can be a subset of {@link GlobalState#getAllWebStateSet()}
      */
+    // TODO When to delete entries from this? This would happen when a site
+    // collection is deleted from SharePoint.
     final private Map<String, Set<String>> webappToSiteCollections = new HashMap<String, Set<String>>();
 
     /**
@@ -173,7 +175,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
                     urlPaths = webappToSiteCollections.get(webapp);
                 } else {
                     urlPaths = new TreeSet<String>(nonIncreasingComparator);
-                    webappToSiteCollections.put(webapp, urlPaths);
+                    // webappToSiteCollections.put(webapp, urlPaths);
                 }
                 try {
                     urlPaths.add(new URL(siteCollUrl).getPath());
@@ -198,22 +200,21 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
             throws MalformedURLException {
         Container container = new Container();
         container.setType(ContainerType.NA);
-        // TODO do we need to make the URL blank by default or null will work?
 
         String webapp = Util.getWebApp(strUrl);
-        String path = new URL(strUrl).getPath();
-        if (null == path || path.length() == 0) {
-            container.setUrl(webapp);
-            container.setType(ContainerType.SITE_COLLECTION);
-        }
-
         Set<String> siteCollUrlPaths = webappToSiteCollections.get(webapp);
         if (null != siteCollUrlPaths) {
-            for (String siteCollUrlPath : siteCollUrlPaths) {
-                if (path.startsWith(siteCollUrlPath)) {
-                    container.setUrl(webapp + siteCollUrlPath);
-                    container.setType(ContainerType.SITE_COLLECTION);
-                    break;
+            String path = new URL(strUrl).getPath();
+            if (null == path || path.length() == 0) {
+                container.setUrl(webapp);
+                container.setType(ContainerType.SITE_COLLECTION);
+            } else {
+                for (String siteCollUrlPath : siteCollUrlPaths) {
+                    if (path.startsWith(siteCollUrlPath)) {
+                        container.setUrl(webapp + siteCollUrlPath);
+                        container.setType(ContainerType.SITE_COLLECTION);
+                        break;
+                    }
                 }
             }
         }
@@ -310,16 +311,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
             GSBulkAuthorizationWS bulkAuthWS = null;
             try {
-                if (authDataPacketArray.length == 1
-                        && ContainerType.NA != authDataPacketArray[0].getContainer().getType()) {
-                    sharepointClientContext.setSiteURL(authDataPacketArray[0].getContainer().getUrl());
-                    bulkAuthWS = new GSBulkAuthorizationWS(sharepointClientContext);
-                    authDataPacketArray[0] = bulkAuthWS.authorizeInCurrentSiteCollectionContext(authDataPacketArray[0], userName);
-                } else {
-                    sharepointClientContext.setSiteURL(webapp);
-                    bulkAuthWS = new GSBulkAuthorizationWS(sharepointClientContext);
-                    authDataPacketArray = bulkAuthWS.authorize(authDataPacketArray, userName);
-                }
+                sharepointClientContext.setSiteURL(webapp);
+                bulkAuthWS = new GSBulkAuthorizationWS(sharepointClientContext);
+                authDataPacketArray = bulkAuthWS.authorize(authDataPacketArray, userName);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "WS call failed for GSBulkAuthorization using webapp [ "
                         + webapp + " ] ", e);

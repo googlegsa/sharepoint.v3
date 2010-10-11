@@ -16,7 +16,7 @@ public class BulkAuthorizationSoap12Stub extends org.apache.axis.client.Stub imp
     static org.apache.axis.description.OperationDesc [] _operations;
 
     static {
-        _operations = new org.apache.axis.description.OperationDesc[3];
+        _operations = new org.apache.axis.description.OperationDesc[2];
         _initOperationDesc1();
     }
 
@@ -45,19 +45,6 @@ public class BulkAuthorizationSoap12Stub extends org.apache.axis.client.Stub imp
         oper.setStyle(org.apache.axis.constants.Style.WRAPPED);
         oper.setUse(org.apache.axis.constants.Use.LITERAL);
         _operations[1] = oper;
-
-        oper = new org.apache.axis.description.OperationDesc();
-        oper.setName("AuthorizeInCurrentSiteCollectionContext");
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "authDataPacket"), org.apache.axis.description.ParameterDesc.INOUT, new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "AuthDataPacket"), com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket.class, false, false);
-        param.setOmittable(true);
-        oper.addParameter(param);
-        param = new org.apache.axis.description.ParameterDesc(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "username"), org.apache.axis.description.ParameterDesc.IN, new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"), java.lang.String.class, false, false);
-        param.setOmittable(true);
-        oper.addParameter(param);
-        oper.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
-        oper.setStyle(org.apache.axis.constants.Style.WRAPPED);
-        oper.setUse(org.apache.axis.constants.Use.LITERAL);
-        _operations[2] = oper;
 
     }
 
@@ -272,42 +259,6 @@ public class BulkAuthorizationSoap12Stub extends org.apache.axis.client.Stub imp
                 authDataPacketArray.value = (com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket[]) _output.get(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "authDataPacketArray"));
             } catch (java.lang.Exception _exception) {
                 authDataPacketArray.value = (com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket[]) org.apache.axis.utils.JavaUtils.convert(_output.get(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "authDataPacketArray")), com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket[].class);
-            }
-        }
-  } catch (org.apache.axis.AxisFault axisFaultException) {
-  throw axisFaultException;
-}
-    }
-
-    public void authorizeInCurrentSiteCollectionContext(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.holders.AuthDataPacketHolder authDataPacket, java.lang.String username) throws java.rmi.RemoteException {
-        if (super.cachedEndpoint == null) {
-            throw new org.apache.axis.NoEndPointException();
-        }
-        org.apache.axis.client.Call _call = createCall();
-        _call.setOperation(_operations[2]);
-        _call.setUseSOAPAction(true);
-        _call.setSOAPActionURI("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com/AuthorizeInCurrentSiteCollectionContext");
-        _call.setEncodingStyle(null);
-        _call.setProperty(org.apache.axis.client.Call.SEND_TYPE_ATTR, Boolean.FALSE);
-        _call.setProperty(org.apache.axis.AxisEngine.PROP_DOMULTIREFS, Boolean.FALSE);
-        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP12_CONSTANTS);
-        _call.setOperationName(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "AuthorizeInCurrentSiteCollectionContext"));
-
-        setRequestHeaders(_call);
-        setAttachments(_call);
- try {        java.lang.Object _resp = _call.invoke(new java.lang.Object[] {authDataPacket.value, username});
-
-        if (_resp instanceof java.rmi.RemoteException) {
-            throw (java.rmi.RemoteException)_resp;
-        }
-        else {
-            extractAttachments(_call);
-            java.util.Map _output;
-            _output = _call.getOutputParams();
-            try {
-                authDataPacket.value = (com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket) _output.get(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "authDataPacket"));
-            } catch (java.lang.Exception _exception) {
-                authDataPacket.value = (com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket) org.apache.axis.utils.JavaUtils.convert(_output.get(new javax.xml.namespace.QName("gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com", "authDataPacket")), com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket.class);
             }
         }
   } catch (org.apache.axis.AxisFault axisFaultException) {

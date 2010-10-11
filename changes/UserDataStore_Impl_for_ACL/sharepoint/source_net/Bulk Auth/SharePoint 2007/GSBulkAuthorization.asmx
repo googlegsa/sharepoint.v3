@@ -75,7 +75,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         // TODO Check if user is app pool user (SharePoint\\System). If yes, return true for everything.
         ///////
-        WSContext wsContext = new WSContext(SPContext.Current, username, false);
+        WSContext wsContext = new WSContext(SPContext.Current, username);
         foreach (AuthDataPacket authDataPacket in authDataPacketArray)
         {
             if (null == authDataPacket)
@@ -89,15 +89,19 @@ public class BulkAuthorization : System.Web.Services.WebService
                 continue;
             }
 
-            try
+            if (authDataPacket.Container.Type != global::Container.ContainerType.NA)
             {
-                wsContext.Using(authDataPacket);
+                try
+                {
+                    wsContext.Using(authDataPacket.Container.Url);
+                }
+                catch (Exception e)
+                {
+                    authDataPacket.Message = GetFullMessage(e);
+                    continue;
+                }
             }
-            catch (Exception e)
-            {
-                authDataPacket.Message = GetFullMessage(e);
-                continue;
-            }
+
             foreach (AuthData authData in authDataArray)
             {
                 if (null == authData)
@@ -107,7 +111,9 @@ public class BulkAuthorization : System.Web.Services.WebService
 
                 try
                 {
-                    Authorize(authData, wsContext);
+                    SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA);
+                    SPUser user = wsContext.User;
+                    Authorize(authData, web, user);
                 }
                 catch (Exception e)
                 {
@@ -121,59 +127,19 @@ public class BulkAuthorization : System.Web.Services.WebService
     }
 
     /// <summary>
-    /// Authorizes a user against a batch of URLs that belongs to a single site collection and that is the current site collection
-    /// context in WS is running. The site collection information is obtained from SPContext and is determined by the endpoint used
-    /// while calling WS. If a document does not actually belongs to this site collection, its authorization will fail.
-    /// </summary>
-    /// <param name="authDataPacket"></param>
-    /// <param name="username"></param>
-    [WebMethod]
-    public void AuthorizeInCurrentSiteCollectionContext(ref AuthDataPacket authDataPacket, string username)
-    {
-        // TODO Check if user is app pool user (SharePoint\\System). If yes, return true for everything.
-        ///////
-        WSContext wsContext = new WSContext(SPContext.Current, username, true);
-        AuthData[] authDataArray = authDataPacket.AuthDataArray;
-        if (null == authDataArray)
-        {
-            return;
-        }
-        foreach (AuthData authData in authDataArray)
-        {
-            if (null == authData)
-            {
-                continue;
-            }
-            try
-            {
-                Authorize(authData, wsContext);
-            }
-            catch (Exception e)
-            {
-                authData.Message = "Authorization failure! " + GetFullMessage(e);
-                continue;
-            }
-            authData.IsDone = true;
-        }
-        authDataPacket.IsDone = true;
-    }
-
-    /// <summary>
     /// Actual Authorization is done here
     /// </summary>
     /// <param name="authData">the data for which the authorization is done</param>
     /// <param name="wsContext">serves specific details like SPUser and SPWeb required for authZ</param>
-    private void Authorize(AuthData authData, WSContext wsContext)
+    private void Authorize(AuthData authData, SPWeb web, SPUser user)
     {
-        SPUser user = wsContext.GetUser();
-        SPWeb web = wsContext.GetWeb(authData);
         if (authData.Type == AuthData.EntityType.ALERT)
         {
             Guid alert_guid = new Guid(authData.ItemId);
             SPAlert alert = web.Alerts[alert_guid];
             if (null == alert)
             {
-                throw new Exception("Alert not found. alert_guid [ " + alert_guid + " ] web " + web.Url);
+                throw new Exception("Alert not found. alert_guid [ " + alert_guid + " ], web [ " + web.Url + " ]");
             }
             if (alert.User.LoginName.ToUpper().Equals(user.LoginName.ToUpper()))
             {
@@ -378,147 +344,50 @@ public class AuthData
 /// <summary>
 /// Creates a context for authZ. An object of this class can provide all the necessary information required for authorization.
 /// Examples include SPUser for a user, SPWeb for a URL etc. To serve in a better and performant way, it remembers the context
-/// in which authorization is being done. Also, this class knows about the scope of usage for every type of objects; for example,
-/// SPUser objects are same across every sites hence it make sense to have a single SPUser for a given username. Since, one WS call
-/// is made for only one user's authorization, the SPUser object is created only once.
+/// in which authorization is being done. Knowing the context, SPWeb kind of objects can be served in less time. Also, this class
+/// knows about the scope of usage for every type of objects; for example, SPUser objects are same across every sites hence it make
+/// sense to have a single SPUser for a given username. Since, one WS call is made for only one user's authorization, the SPUser object
+/// is created only once.
 /// </summary>
 public class WSContext
 {
     private readonly UserInfoHolder userInfoHolder;
-    private SiteInfoHolder siteInfoHolder;
+    private SPSite site;
 
-    internal WSContext(SPContext spContext, string username, bool mustIdentifyUser)
+    internal SPUser User
+    {
+        get { return userInfoHolder.User; }
+    }
+
+    /// <summary>
+    /// Instantiation using SPContext
+    /// </summary>
+    /// <param name="spContext"></param>
+    /// <param name="username"></param>
+    /// <param name="mustIdentifyUser">if true, an exception will be thrown if an SPUser cannot be constructed using current context</param>
+    internal WSContext(SPContext spContext, string username)
     {
         if (null == spContext)
         {
             throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
         }
-        SPSite site = spContext.Site;
-        if (null == site)
+        if (null == spContext.Site)
         {
             throw new Exception("Site Colllection not found!");
         }
-        siteInfoHolder = new SiteInfoHolder(site, false);
         userInfoHolder = new UserInfoHolder(username);
-        try
-        {
-            userInfoHolder.TryInit(site);
-        }
-        catch (Exception e)
-        {
-            if (mustIdentifyUser)
-            {
-                throw e;
-            }
-        }
     }
 
     ~WSContext()
     {
-        siteInfoHolder.Dispose();
-    }
-
-    internal void Using(AuthDataPacket authDataPacket)
-    {
-        if (authDataPacket.Container.Type == Container.ContainerType.NA)
-        {
-            siteInfoHolder.Container.Type = Container.ContainerType.NA;
-        }
-        else
-        {
-            Using(authDataPacket.Container);
-        }
+        site.Dispose();
     }
 
     /// <summary>
-    /// Inform WSContext about the context in which the authorization is being done. This, typically is the site collection
+    /// Reinitialize SPSite using the passed in url. All subsequest requests will be served using this SPSite
     /// </summary>
-    /// <param name="container"></param>
-    private void Using(Container container)
-    {
-        if (container.Equals(siteInfoHolder.Container))
-        {
-            return;
-        }
-        if (null != container.Url && !container.Url.Equals(siteInfoHolder.Container.Url))
-        {
-            siteInfoHolder.Dispose();
-            siteInfoHolder = new SiteInfoHolder(container);
-        }
-        userInfoHolder.TryInit(siteInfoHolder.Site);
-    }
-
-    /// <summary>
-    /// If WSContext is aware of a site collection or site context, it tries to serve SPWeb from there only. Otherwise it makes
-    /// the passed in AuthData's URL's context as current authZ context and retries to find SPWeb. The latter however, will happen
-    /// only if no explicit context information was given to WSContext prior to authorization
-    /// </summary>
-    /// <param name="authData"></param>
-    /// <returns></returns>
-    internal SPWeb GetWeb(AuthData authData)
-    {
-        if (authData.Container.Type == Container.ContainerType.NA)
-        {
-            throw new Exception("Container information is not available. A list or site is expected. ");
-        }
-        try
-        {
-            return siteInfoHolder.GetWeb(authData.Container);
-        }
-        catch (Exception e)
-        {
-            if (siteInfoHolder.Container.Type == Container.ContainerType.NA)
-            {
-                Using(authData.Container);
-                return siteInfoHolder.GetWeb(authData.Container);
-            }
-            throw e;
-        }
-    }
-
-    /// <summary>
-    /// Gets SPUser if one available. Otherwise, throws an exception.
-    /// </summary>
-    /// <returns></returns>
-    internal SPUser GetUser()
-    {
-        if (null == userInfoHolder.User)
-        {
-            userInfoHolder.throwException();
-        }
-        return userInfoHolder.User;
-    }
-}
-
-/// <summary>
-/// Stores site related information
-/// </summary>
-internal class SiteInfoHolder
-{
-    private readonly SPSite site;
-    private readonly Container container;
-    private readonly bool isDisposable = true;
-
-    internal SPSite Site
-    {
-        get { return site; }
-    }
-
-    internal Container Container
-    {
-        get { return container; }
-    }
-
-    internal SiteInfoHolder(SPSite site, bool isDisposable)
-    {
-        this.site = site;
-        this.isDisposable = isDisposable;
-        this.container = new Container();
-        this.container.Url = site.Url;
-        this.container.Type = Container.ContainerType.SITE_COLLECTION;
-    }
-
-    internal SiteInfoHolder(Container container)
+    /// <param name="url"></param>
+    internal void Using(string url)
     {
         SPSite site = null;
         SPSecurity.RunWithElevatedPrivileges(delegate()
@@ -526,36 +395,27 @@ internal class SiteInfoHolder
             // try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.
             try
             {
-                site = new SPSite(container.Url);
+                site = new SPSite(url);
             }
             catch (Exception e)
             {
-                site = new SPSite(SwitchURLFormat(container.Url));
+                site = new SPSite(SwitchURLFormat(url));
             }
         });
-
-        if (null == site)
-        {
-            throw new Exception("Site Colllection not found!");
-        }
-        this.site = site;
-        this.container = container;
-    }
-
-    ~SiteInfoHolder()
-    {
-        Dispose();
-    }
-
-    internal void Dispose()
-    {
-        if (isDisposable)
+        if (null != this.site)
         {
             this.site.Dispose();
         }
+        this.site = site;
+        userInfoHolder.TryInit(this.site);
     }
 
-    private string SwitchURLFormat(string siteURL)
+    /// <summary>
+    /// FQDN - non-FQDN conversion
+    /// </summary>
+    /// <param name="siteURL"></param>
+    /// <returns></returns>
+    string SwitchURLFormat(string siteURL)
     {
         Uri url = new Uri(siteURL);
         string host = url.Host;
@@ -573,11 +433,68 @@ internal class SiteInfoHolder
     }
 
     /// <summary>
-    /// Returns a SPWeb to work with. This SPWeb is the one in which the passed in container has been created.
+    /// Using the SPSite member, returns SPWeb that hosts the passed in container. If no SPWeb is found and retryUsingCurrentContainerUrl
+    /// is true, reinitializes SPSite with the container's URL and then retries.
+    /// </summary>
+    /// <param name="authData"></param>
+    /// <returns></returns>
+    internal SPWeb OpenWeb(Container container, bool retryUsingCurrentContainerUrl)
+    {
+        SPWeb web = null;
+        string relativeWebUrl = GetRelativeWebUrl(container);
+        Exception savedException = null;
+        try
+        {
+            web = site.OpenWeb(relativeWebUrl);
+        }
+        catch (Exception e)
+        {
+            if (!retryUsingCurrentContainerUrl)
+            {
+                throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", e);
+            }
+            else
+            {
+                savedException = e;
+            }
+        }
+
+        if (null == web || !web.Exists)
+        {
+            if (retryUsingCurrentContainerUrl)
+            {
+                try
+                {
+                    Using(container.Url);
+                    web = site.OpenWeb(relativeWebUrl);
+                    if (null == web || !web.Exists)
+                    {
+                        throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", savedException);
+                    }
+                    return web;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", e);
+                }
+            }
+            else
+            {
+                throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", savedException);
+            }
+        }
+        else
+        {
+            return web;
+        }
+    }
+
+    /// <summary>
+    /// Returns server relative URL of a list or site
     /// </summary>
     /// <param name="container"></param>
     /// <returns></returns>
-    internal SPWeb GetWeb(Container container)
+    string GetRelativeWebUrl(Container container)
     {
         Uri uri = new Uri(container.Url);
         string relativeWebUrl = null;
@@ -591,19 +508,15 @@ internal class SiteInfoHolder
             }
             relativeWebUrl = urlBuilder.ToString();
         }
-        else
+        else if (container.Type == Container.ContainerType.SITE || container.Type == Container.ContainerType.SITE_COLLECTION)
         {
             relativeWebUrl = uri.AbsolutePath;
         }
-
-        try
+        else
         {
-            return site.OpenWeb(relativeWebUrl);
+            throw new Exception("Unsupported container type [ " + container.Type + " ].  A list or site is expected.");
         }
-        catch (Exception e)
-        {
-            throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", e);
-        }
+        return relativeWebUrl;
     }
 }
 
@@ -619,7 +532,14 @@ internal class UserInfoHolder
 
     internal SPUser User
     {
-        get { return user; }
+        get
+        {
+            if (null == user)
+            {
+                throwException();
+            }
+            return user;
+        }
     }
 
     internal UserInfoHolder(string username)
@@ -628,7 +548,7 @@ internal class UserInfoHolder
     }
 
     /// <summary>
-    /// If the SPuser object is not yet constructed, try to get it using the passed in SPSite
+    /// If the SPuser object is not yet constructed, try to get it using the passed-in SPSite
     /// </summary>
     /// <param name="site"></param>
     internal void TryInit(SPSite site)
@@ -637,6 +557,21 @@ internal class UserInfoHolder
         {
             return;
         }
+
+        SPWeb web = null;
+        try
+        {
+            web = site.OpenWeb();
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Could not create SPUser for user [ " + username + " ] using site collection [ " + site.Url + " ]", e);
+        }
+        if (null == web || !web.Exists)
+        {
+            throw new Exception("Could not create SPUser for user [ " + username + " ] using site collection [ " + site.Url + " ] because root web is not existing.");
+        }
+
         if (!isResolved)
         {
             SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, username, SPPrincipalType.All, false);
@@ -647,7 +582,6 @@ internal class UserInfoHolder
             }
         }
 
-        SPWeb web = site.OpenWeb();
         // First ensure that the current user has rights to view pages or list items on the web. This will ensure that SPUser object can be constructed for this username.
         bool web_auth = web.DoesUserHavePermissions(username, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
 
