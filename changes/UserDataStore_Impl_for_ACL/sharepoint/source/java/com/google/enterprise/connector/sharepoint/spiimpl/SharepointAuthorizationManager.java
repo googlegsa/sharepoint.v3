@@ -403,6 +403,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
      * functionally dependent on the authorization of the item which contains the attachment.
      */
     private AuthData createAuthDataFromComplexDocId(String complexDocId) {
+        String originalComplexDocId = complexDocId;
         try {
             complexDocId = URLDecoder.decode(complexDocId, "UTF-8");
         } catch (final UnsupportedEncodingException e1) {
@@ -445,7 +446,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         if(isAttachment) {
             AttachmentKey attachmentKey = new AttachmentKey(listURL, DocID);
             if (attachments.containsKey(attachmentKey)) {
-                attachments.get(attachmentKey).add(complexDocId);
+                attachments.get(attachmentKey).add(originalComplexDocId);
                 return null;
             } else {
                 attachments.put(attachmentKey, new LinkedList<String>());
@@ -454,7 +455,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
 
         authData.setItemId(DocID);
-        authData.setComplexDocId(complexDocId);
+        authData.setComplexDocId(originalComplexDocId);
 
         return authData;
     }
