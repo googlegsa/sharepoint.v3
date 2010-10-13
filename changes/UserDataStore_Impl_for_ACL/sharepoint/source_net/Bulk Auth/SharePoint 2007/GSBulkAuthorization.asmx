@@ -21,7 +21,6 @@ using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
 using System.Collections.Generic;
 
-
 /// <summary>
 /// Google Search Appliance Connector for Microsoft SharePoint uses this web service to authorize documents at serve time.
 /// </summary>
@@ -438,10 +437,15 @@ public class WSContext
     /// </summary>
     /// <param name="authData"></param>
     /// <returns></returns>
-    internal SPWeb OpenWeb(Container container, bool retryUsingCurrentContainerUrl)
+    internal SPWeb OpenWeb(Container container, bool usingCurrentContainerUrl)
     {
+        if (null == site || usingCurrentContainerUrl)
+        {
+            Using(container.Url);
+        }
+    
         SPWeb web = null;
-        string relativeWebUrl = GetRelativeWebUrl(container);
+        string relativeWebUrl = GetServerRelativeUrl(container);
         Exception savedException = null;
         try
         {
@@ -449,39 +453,12 @@ public class WSContext
         }
         catch (Exception e)
         {
-            if (!retryUsingCurrentContainerUrl)
-            {
-                throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", e);
-            }
-            else
-            {
-                savedException = e;
-            }
+            throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", e);
         }
 
         if (null == web || !web.Exists)
         {
-            if (retryUsingCurrentContainerUrl)
-            {
-                try
-                {
-                    Using(container.Url);
-                    web = site.OpenWeb(relativeWebUrl);
-                    if (null == web || !web.Exists)
-                    {
-                        throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", savedException);
-                    }
-                    return web;
-                }
-                catch (Exception e)
-                {
-                    throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", e);
-                }
-            }
-            else
-            {
-                throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", savedException);
-            }
+            throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", savedException);
         }
         else
         {
@@ -494,29 +471,31 @@ public class WSContext
     /// </summary>
     /// <param name="container"></param>
     /// <returns></returns>
-    string GetRelativeWebUrl(Container container)
+    string GetServerRelativeUrl(Container container)
     {
-        Uri uri = new Uri(container.Url);
-        string relativeWebUrl = null;
+        String listUrl = container.Url;
+        listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+        listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+        listUrl = listUrl.Substring(listUrl.IndexOf('/'));
         if (container.Type == Container.ContainerType.LIST)
         {
-            string[] segments = uri.Segments;
-            StringBuilder urlBuilder = new StringBuilder(segments[0]);
-            for (int i = 1; i < segments.Length - 3; ++i)
+            int formsPos = listUrl.IndexOf("/forms/", 0, StringComparison.InvariantCultureIgnoreCase);
+            if (formsPos >= 0)
             {
-                urlBuilder.Append(segments[i]);
+                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', formsPos));
             }
-            relativeWebUrl = urlBuilder.ToString();
+
+            int listPos = listUrl.IndexOf("/lists/", 0, StringComparison.InvariantCultureIgnoreCase);
+            if (listPos >= 0)
+            {
+                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', listPos));
+            }
+            else
+            {
+                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+            }
         }
-        else if (container.Type == Container.ContainerType.SITE || container.Type == Container.ContainerType.SITE_COLLECTION)
-        {
-            relativeWebUrl = uri.AbsolutePath;
-        }
-        else
-        {
-            throw new Exception("Unsupported container type [ " + container.Type + " ].  A list or site is expected.");
-        }
-        return relativeWebUrl;
+        return listUrl;
     }
 }
 
