@@ -308,7 +308,9 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
-        initDao();
+        if (pushAcls) {
+            initDao();
+        }
     }
 
     /**
