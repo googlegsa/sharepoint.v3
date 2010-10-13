@@ -175,7 +175,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
                     urlPaths = webappToSiteCollections.get(webapp);
                 } else {
                     urlPaths = new TreeSet<String>(nonIncreasingComparator);
-                    // webappToSiteCollections.put(webapp, urlPaths);
+					webappToSiteCollections.put(webapp, urlPaths);
                 }
                 try {
                     urlPaths.add(new URL(siteCollUrl).getPath());
