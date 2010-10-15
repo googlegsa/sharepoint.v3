@@ -14,11 +14,23 @@
     string strScopeWeb = null;
     string strScopeList = null;
     string strWebSelected = null;
+    string strScopeFolder = null;
+    string siteUrl = "";
+    string listType = "";
+    string listUrl = "";
     SPWeb web = SPControl.GetContextWeb(Context);
-    
-    
-    hfIsFolder.Value = "false"; // Variable to be passed as a Querystring to the GSASearchResults page. Used to find whether 
-                                // the user is currently searching within a folder.
+
+
+    // Code to retrieve the site url if list is selected, as when list is selected, the complete
+    // site url is not retrieved.
+    SPContext ctx = SPContext.Current;
+    if (ctx != null)
+    {
+        // Retrieve the URL of the SharePoint site collection
+        SPSite site = ctx.Site;
+        siteUrl = site.Url;
+    }
+
 
     string strEncodedUrl = SPHttpUtility.EcmaScriptStringLiteralEncode(
 
@@ -31,19 +43,36 @@
     SPList list = SPContext.Current.List;
     if (list != null)
     {
-        strScopeList = list.DefaultViewUrl.ToString();
-        hfListType.Value = list.GetType().ToString();
+        listUrl = list.DefaultViewUrl.ToString();   // Retrieve list url
+        listType = list.GetType().ToString();       // Get type for the current list and accordingly construct the url
 
+        switch (listType)
+        {
+            case "Microsoft.SharePoint.SPDocumentLibrary":
+                int iStartIndex = listUrl.LastIndexOf("/"); //  Remove the string occurring after the last slash(/) i.e. "Alltems.aspx ", and then repeat the same all over once again, for removing the other string after the second last slash (/) i.e. "Forms"
+                                                            //  The last part of the string needs to be discarded so as to obtain the correct path for document library, till the name part.
+                listUrl = listUrl.Remove(iStartIndex);
+                int iStartIndex1 = listUrl.LastIndexOf("/");
+                listUrl = listUrl.Remove(iStartIndex1);
+                break;
+
+            case "Microsoft.SharePoint.SPList":
+
+                int iStartIndex2 = listUrl.LastIndexOf("/");
+                listUrl = listUrl.Remove(iStartIndex2);
+                break;
+        } // end switch-case statement
+
+        strScopeList = siteUrl + listUrl;
         if (this.Context.Request.QueryString["RootFolder"] != null)
         {
-            strScopeList = this.Context.Request.QueryString["RootFolder"].ToString();
-            hfIsFolder.Value = "true";
+            strScopeFolder = siteUrl + this.Context.Request.QueryString["RootFolder"].ToString(); // Retrieve the folder path
         }
     }
     else
     {
         strWebSelected = "SELECTED";
-        hfListType.Value = web.GetType().ToString();
+        
     }
 %>
 <!--Amit: overridded the SubmitSearchRedirect function of core.js. Else it fails for aspx pages when doing serach from cached result-->
@@ -79,11 +108,11 @@ function SubmitSearchRedirect1(strUrl)
 		/* Checking whether user has selected a list within a site, while selecting option as 'My List'.
 		 If user is not browsing the list, then display an eror message as in this case the scope url will be retrieved as "" */
 		
-		if(selectedScopeUrl == "" && selectedScopeText == "This List") 
+		if(selectedScopeUrl == "" && selectedScopeText == "Current List") 
 		{
 		    alert('Please select a list first !');
 		}
-		else if(selectedScopeUrl == "" && selectedScopeText == "This Site")
+		else if(selectedScopeUrl == "" && (selectedScopeText == "Current Site" || selectedScopeText == "Current Site and all subsites"))
 		{
 		    alert('Please select a site first !');
 		}
@@ -95,13 +124,13 @@ function SubmitSearchRedirect1(strUrl)
 		}
 		else
 		{
-		    // Getting the list type for the current context and passing the value as a querystring
-		    listType = document.getElementById("<%=hfListType.ClientID%>").value;
 		    
-		    // Used to find whether the user is currently searching within a folder.
-		    isFolder = document.getElementById("<%=hfIsFolder.ClientID%>").value;
+		    
+		    
+		    
+		    
 		    		    
-		    strUrl = strUrl + "&selectedScope=" +  selectedScopeText + "&scopeUrl=" + selectedScopeUrl + "&listType=" + listType + "&isFolder=" + isFolder;
+		    strUrl = strUrl + "&selectedScope=" +  selectedScopeText + "&scopeUrl=" + selectedScopeUrl;
 		    frm.action = strUrl;
 		    document.forms
 		    frm.submit();
@@ -114,25 +143,55 @@ function SubmitSearchRedirect1(strUrl)
 <table border="0" cellpadding="0" cellspacing="0" class='ms-searchform'>
     <tr>
         <td>
-            <asp:HiddenField ID="hfListType" runat="server" />
-            <asp:HiddenField ID="hfIsFolder" runat="server" />
+            
+            
             <select id='idSearchScope' name='SearchScope' class='ms-searchbox' title="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchScopeToolTip),Response.Output);%>">
                 <option value="Farm">Farm </option>
+                <%
+                    if (strScopeWeb != null)
+                    {
+                %>
                 <option value="<%=strScopeWeb%>">
-                    <SharePoint:EncodedLiteral runat="server" Text="<%$Resources:wss,search_Scope_Site%>"
+                    <SharePoint:EncodedLiteral runat="server" Text="Current Site"
                         EncodeMethod='HtmlEncode' ID='idSearchScopeSite' />
                 </option>
+                <option value="<%=strScopeWeb%>">
+                    <SharePoint:EncodedLiteral runat="server" Text="Current Site and all subsites" EncodeMethod='HtmlEncode'
+                        ID='idSearchScopeSiteandSubsite' />
+                </option>
                 <%
-                    
-                    //if (strScopeList != null)
-                    //{
+                    }
                 %>
+                <%
+                    if (strScopeList != null)
+                    {    
+                %>
+                
+                    
+                
+                
+                
                 <option value="<%=strScopeList%>">
-                    <SharePoint:EncodedLiteral runat="server" Text="<%$Resources:wss,search_Scope_List%>"
+                    <SharePoint:EncodedLiteral runat="server" Text="Current List"
                         EncodeMethod='HtmlEncode' ID='idSearchScopeList' />
                 </option>
                 <%
-                    //}
+                    }
+                %>
+                <%
+                    if (strScopeFolder != null)
+                    { 
+                %>
+                <option value="<%=strScopeFolder%>">
+                    <SharePoint:EncodedLiteral runat="server" Text="Current Folder" EncodeMethod='HtmlEncode'
+                        ID='idSearchScopeFolder' />
+                </option>
+                <option value="<%=strScopeFolder%>">
+                    <SharePoint:EncodedLiteral runat="server" Text="Current Folder and all subfolders"
+                        EncodeMethod='HtmlEncode' ID='idSearchScopeFolderandSubfolders' />
+                </option>
+                <%
+                    }
                 %>
             </select>
         </td>
