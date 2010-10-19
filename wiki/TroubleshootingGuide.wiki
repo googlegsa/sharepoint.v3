@@ -143,6 +143,7 @@ This section details some of the important log messages that are written into th
 || *Log Message* || * Description* || *Logging Level* ||
 || Authenticating User: `<username>` || Authentication request received for user `<username>`. This happens in case of batch(bulk) authorization when the user search for some docs that was content-fed by the connector. || INFO ||
 || Authorizing User: `<username>` || Connector is authorizing the user against a set of docs. This is required when the connector is set to handle authorization of search results. || INFO || 
+|| received #|| Connector got # of documents to authorize || FINER || 
 || `[`status: `<true/false>``]`, Complex Document ID: `[` `the doc id` `]` || The docID against which the user is getting authorized along with the authorization status. This is required when the connector is set to handle authorization of search results. || WARNING if the authz fails ||
 || Web Service has thrown the following error while authorizing. \n Error: `<error message>` || Any error encountered by the GSBulkAuthorization web service during authorization. This is required when the connector is set to handle authorization of search results. || SEVERE ||
 || Web Service has thrown the following error while authorizing.  Error: Value does not fall within the expected range. || The document to be authorized is not found on the SharePoint. It might have been deleted. || SEVERE ||
