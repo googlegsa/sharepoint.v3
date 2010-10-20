@@ -267,7 +267,12 @@ public class SPConstants {
     public static final String STATE_LASTDOCCRAWLED = "LastDocCrawled";
     public static final String STATE_LASTMODIFIED = "LastModified";
     public static final String STATE_FEEDTYPE = "FeedType";
+
+    @Deprecated
     public static final String STATE_FOLDER_LEVEL = "FolderLevel";
+
+    public static final String STATE_FOLDER_PATH = "FolderPath";
+    public static final String STATE_FOLDER_ID = "FolderID";
     public static final String STATE_CONTENT_TYPE = "ContentType";
     public static final String CONTENT_TYPE_DOCUMENT = "Document";
     public static final String STATE_INSERT_TIME = "InsertionTime";

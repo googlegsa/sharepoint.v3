@@ -13,6 +13,21 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
+import com.google.enterprise.connector.sharepoint.client.Attribute;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.joda.time.DateTime;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,21 +40,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.joda.time.DateTime;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
-import com.google.enterprise.connector.sharepoint.client.Attribute;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
  * Represents a SharePoint List/Library as a stateful object
@@ -655,6 +655,7 @@ public class ListState implements StatefulObject {
         }
         if (docPath == null) {
             LOGGER.log(Level.WARNING, "docPath is null. Returning..");
+            return;
         }
 
         int index = -1;
@@ -676,7 +677,7 @@ public class ListState implements StatefulObject {
             // this can be a top level folder. We need to update ExtraID, hence
             // make index 0.
             index = 0;
-            docTitle = parentPath.substring(index);
+            docTitle = parentPath;
         } else {
             docTitle = parentPath.substring(index + 1);
         }
@@ -1240,9 +1241,9 @@ public class ListState implements StatefulObject {
                 atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getUrl());
 
                 if (SPType.SP2007 == getParentWebState().getSharePointType()) {
-                    if (getLastDocForWSRefresh().getFolderLevel() != null
-                            && getLastDocForWSRefresh().getFolderLevel().length() != 0) {
-                        atts.addAttribute("", "", SPConstants.STATE_FOLDER_LEVEL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getFolderLevel());
+                    if (null != getLastDocForWSRefresh().getParentFolder()) {
+                        atts.addAttribute("", "", SPConstants.STATE_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getParentFolder().getPath());
+                        atts.addAttribute("", "", SPConstants.STATE_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getParentFolder().getId());
                     }
                     if (FeedType.CONTENT_FEED == feedType) {
                         atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getAction().toString());

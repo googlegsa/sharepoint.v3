@@ -13,18 +13,15 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.apache.xerces.parsers.SAXParser;
 import org.apache.xml.serialize.OutputFormat;
@@ -38,15 +35,18 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents the state of a site. Can be persisted to XML and loaded again from
@@ -148,11 +148,30 @@ public class GlobalState {
                     final String lastCrawledDocURL = atts.getValue(SPConstants.STATE_URL);
 
                     Calendar lastCrawledDocLastMod = null;
-                    String lastCrawledDocFolderLevel = null;
+                    Folder lastCrawledDocParentFolder = null;
                     ActionType lastCrawledDocAction = null;
 
                     if (SPType.SP2007 == web.getSharePointType()) {
-                        lastCrawledDocFolderLevel = atts.getValue(SPConstants.STATE_FOLDER_LEVEL);
+                        String parentFolderPath = atts.getValue(SPConstants.STATE_FOLDER_PATH);
+                        String parentFolderId = atts.getValue(SPConstants.STATE_FOLDER_ID);
+                        if (null == parentFolderPath || null == parentFolderId) {
+                            // for backward compatibility. Earlier version uses
+                            // only FolderPath which was called FolderLevel.
+                            String folderLevel = atts.getValue(SPConstants.STATE_FOLDER_LEVEL);
+                            if (null != folderLevel && folderLevel.length() > 0) {
+                                // Force a restart of the change detection using
+                                // the current change token saved. This is
+                                // because we know that the earlier logic of
+                                // using only FolderLevel had a bug
+                                // (refer Issue 174)
+                                list.setLastDocProcessedForWS(list.getDocumentInstance(feedType));
+                                return;
+                            }
+                        } else {
+                            lastCrawledDocParentFolder = new Folder(
+                                    parentFolderPath, parentFolderId);
+                        }
+
                         if (FeedType.CONTENT_FEED == feedType) {
                             lastCrawledDocAction = ActionType.findActionType(atts.getValue(SPConstants.STATE_ACTION));
                         }
@@ -165,10 +184,11 @@ public class GlobalState {
                                 + list.getListURL() + " ]. ", e);
                     }
 
-                    list.setLastDocProcessedForWS(new SPDocument(
+                    SPDocument lastCrawledDoc = new SPDocument(
                             lastCrawledDocId, lastCrawledDocURL,
-                            lastCrawledDocLastMod,
-                            lastCrawledDocFolderLevel, lastCrawledDocAction));
+                            lastCrawledDocLastMod, lastCrawledDocAction);
+                    lastCrawledDoc.setParentFolder(lastCrawledDocParentFolder);
+                    list.setLastDocProcessedForWS(lastCrawledDoc);
                 } else {
                     LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
                 }
@@ -181,7 +201,7 @@ public class GlobalState {
             } else if (SPConstants.WEB_STATE.equals(localName)) {
                 try {
                     web = WebState.loadStateFromXML(atts);
-                    AddOrUpdateWebStateInGlobalState(web);
+                    addOrUpdateWebStateInGlobalState(web);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Problem while loading WebState node from state file. ");
                 }
@@ -190,7 +210,7 @@ public class GlobalState {
             } else if (SPConstants.LAST_CRAWLED_LIST_ID.equals(localName)) {
                 lastCrawledListID = atts.getValue(SPConstants.STATE_ID);
             } else if (SPConstants.FULL_RECRAWL_FLAG.equals(localName)) {
-                bFullReCrawl = new Boolean(atts.getValue(SPConstants.STATE_ID));
+                bFullReCrawl = Boolean.valueOf(atts.getValue(SPConstants.STATE_ID));
                 lastFullCrawlDateTime = atts.getValue(SPConstants.LAST_FULL_CRAWL_DATETIME);
             } else if (SPConstants.STATE_FEEDTYPE.equals(localName)) {
                 feedType = FeedType.getFeedType(atts.getValue(SPConstants.STATE_TYPE));
@@ -296,7 +316,7 @@ public class GlobalState {
             final WebState obj = new WebState(spContext, key);
             final DateTime dt = new DateTime();
             obj.setInsertionTime(dt);
-            AddOrUpdateWebStateInGlobalState(obj);
+            addOrUpdateWebStateInGlobalState(obj);
             return obj;
         } else {
             LOGGER.warning("Unable to make WebState because list key is not found");
@@ -522,7 +542,7 @@ public class GlobalState {
      * method can be augmented with some generic attribute informations which
      * drives so that the ordering of WebStates is maintained.
      */
-    public void AddOrUpdateWebStateInGlobalState(final WebState state) {
+    public void addOrUpdateWebStateInGlobalState(final WebState state) {
         if (state != null) {
             keyMap.put(state.getPrimaryKey(), state);
             // Deletion is required to ensure that both datastructures are

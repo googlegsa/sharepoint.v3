@@ -14,18 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
@@ -42,6 +30,18 @@ import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.UserProfileWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class provides a layer of abstraction between the SharePoint Traversal
@@ -146,11 +146,7 @@ public class SharepointClient {
         }
 
         noOfVisitedListStates = 0;
-
-        LOGGER.log(Level.INFO, "Traversing web [ " + webState.getWebUrl()
-                + " ] ");
         SPDocumentList resultSet = null;
-
         for (final Iterator<ListState> iter = webState.getCurrentListstateIterator(); iter.hasNext();) {
             final ListState list = (ListState) iter.next();
 
@@ -165,7 +161,7 @@ public class SharepointClient {
             SPDocumentList resultsList = null;
 
             try {
-                LOGGER.log(Level.INFO, "Handling crawl queue for list URL [ "
+                LOGGER.log(Level.FINE, "Handling crawl queue for list URL [ "
                         + list.getListURL() + " ]. ");
                 resultsList = handleCrawlQueueForList(globalState, webState, list);
                 noOfVisitedListStates++;
@@ -184,7 +180,7 @@ public class SharepointClient {
                     resultSet.addAll(resultsList);
                 }
             } else {
-                LOGGER.log(Level.INFO, "No documents to be sent from list URL [ "
+                LOGGER.log(Level.FINE, "No documents to be sent from list URL [ "
                         + list.getListURL() + " ]. ");
             }
             if (resultSet != null) {
@@ -212,11 +208,8 @@ public class SharepointClient {
             }
         }
 
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.config("No. of listStates scanned from site : "
-                    + webState.getWebUrl() + " for current batch traversal : "
-                    + noOfVisitedListStates);
-        }
+        LOGGER.config(noOfVisitedListStates + " lists scanned from site "
+                + webState.getWebUrl() + ". found " + resultSet + " docs");
 
         return resultSet;
     }
@@ -348,7 +341,7 @@ public class SharepointClient {
         }
 
         if (null == wsGS) {// new web
-            LOGGER.info("Making WebState for : " + webUrl);
+            LOGGER.config("Making WebState for : " + webUrl);
             try {
                 web = globalState.makeWebState(sharepointClientContext, webUrl);
             } catch (final Exception e) {
@@ -425,8 +418,7 @@ public class SharepointClient {
         }
 
         if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.config("Starting crawl cycle. initiating from the web [ "
-                    + nextWeb + " ]. ");
+            LOGGER.info("Starting traversal from site [ " + nextWeb + " ]. ");
         }
 
         SPType spType = nextWeb.getSharePointType();
@@ -525,8 +517,6 @@ public class SharepointClient {
 
         globalState.setBFullReCrawl(doCrawl);
         globalState.endRecrawl(sharepointClientContext);
-
-        LOGGER.log(Level.INFO, "Returning after crawl cycle.. ");
     }
 
     public boolean isDoCrawl() {
@@ -716,10 +706,10 @@ public class SharepointClient {
                         // folders and the items under that. This is required
                         // for sending delete feeds for the documents when their
                         // parent folder is deleted.
-                        LOGGER.log(Level.INFO, "Discovering all the folders in the current list/library [ "
+                        LOGGER.log(Level.CONFIG, "Discovering all folders under current list/library [ "
                                 + listState.getListURL() + " ] ");
                         try {
-                            listsWS.getFolderHierarchy(listState, null, null);
+                            listsWS.getSubFoldersRecursively(listState, null, null);
                         } catch (final Exception e) {
                             LOGGER.log(Level.WARNING, "Exception occured while getting the folders hierarchy for list [ "
                                     + listState.getListURL() + " ]. ", e);
@@ -747,13 +737,12 @@ public class SharepointClient {
                     }
                 }
             } else {
-                LOGGER.info("revisiting old listState [ "
+                LOGGER.info("revisiting listState [ "
                         + listState.getListURL() + " ]. ");
                 listState.setExisting(true);
                 listState.setNextPage(null);
 
                 String lastDocID = null;
-                String lastDocFolderLevel = null;
 
                 SPDocument lastDoc = listState.getLastDocForWSRefresh();
 
@@ -779,10 +768,10 @@ public class SharepointClient {
                             // folders and the items under that. This is
                             // required for sending delete feeds for the
                             // documents when their parent folder is deleted.
-                            LOGGER.log(Level.INFO, "Discovering all the folders in the current list/library [ "
+                            LOGGER.log(Level.CONFIG, "Discovering all folders under current list/library [ "
                                     + listState.getListURL() + " ] ");
                             try {
-                                listsWS.getFolderHierarchy(listState, null, null);
+                                listsWS.getSubFoldersRecursively(listState, null, null);
                             } catch (final Exception e) {
                                 LOGGER.log(Level.WARNING, "Exception occured while getting the folders hierarchy for list [ "
                                         + listState.getListURL() + " ]. ", e);
@@ -804,7 +793,6 @@ public class SharepointClient {
                         lastDoc = listState.getLastDocForWSRefresh();
                         if (lastDoc != null) {
                             lastDocID = Util.getOriginalDocId(lastDoc.getDocId(), sharepointClientContext.getFeedType());
-                            lastDocFolderLevel = lastDoc.getFolderLevel();
                         }
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
@@ -814,7 +802,7 @@ public class SharepointClient {
                         if (null == aclChangedItems
                                 || aclChangedItems.size() < sharepointClientContext.getBatchHint()) {
                             // Do regular incremental crawl
-                            listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocFolderLevel);
+                            listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDoc.getParentFolder());
                         }
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
@@ -896,14 +884,18 @@ public class SharepointClient {
                 }
             }
 
-            if (null != listItems) {
-                Collections.sort(listItems);
-            }
-
             listState.setCrawlQueue(listItems);
-            if (null != listItems) {
+            // Set the last crawled date time. This is informative value for the
+            // user viewing the state file
+            listState.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
+
+            if (null == listItems || listItems.size() == 0) {
+                LOGGER.log(Level.CONFIG, "No items found from list "
+                        + listState);
+            } else {
+                Collections.sort(listItems);
                 LOGGER.log(Level.INFO, "found " + listItems.size()
-                        + " items to crawl in " + listState.getListURL());
+                        + " items from list " + listState);
                 nDocuments += listItems.size();
                 final int batchHint = sharepointClientContext.getBatchHint();
 
@@ -914,16 +906,6 @@ public class SharepointClient {
                     break;
                 }
             }
-
-            // Set the last crawled date time. This is informative value for the
-            // user viewing the state file
-            listState.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
-
-            if (LOGGER.isLoggable(Level.FINER)) {
-                LOGGER.finer("Crawled list with ID : " + listState.getListURL()
-                        + " for new/modified docs. Total : " + listItems.size());
-            }
-
         }// end:; for Lists
 
         // Set the last crawled date time. This is informative value for the
@@ -1004,10 +986,7 @@ public class SharepointClient {
             }
 
             nextWeb = ws;
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.fine("Web [ " + webURL
-                        + " ] is getting crawled for documents....");
-            }
+            LOGGER.config("Crawling site [ " + webURL + " ] ");
             final int currDocCount = nDocuments;
             try {
                 // Process the web site, and add the link site info to allSites.
@@ -1017,8 +996,7 @@ public class SharepointClient {
                     // get Alerts for the web and update webState. The above
                     // check is added to reduce the frequency with which
                     // getAlerts WS call is made.
-                    LOGGER.info("Web [ " + webURL
-                            + " ] is getting crawled for alerts....");
+                    LOGGER.fine("Getting alerts under site [ " + webURL + " ]");
                     processAlerts(ws, sharePointClientContext);
                 }
             } catch (final Exception e) {
@@ -1035,7 +1013,7 @@ public class SharepointClient {
             // As per Issue 116 we need to stop at batchHint or a little more
             if (nDocuments >= batchHint) {
                 LOGGER.info("Stopping crawl cycle as connector has discovered (>= batchHint) # of docs. In total : "
-                        + nDocuments + " docs");
+                        + nDocuments + " docs. batch-hint is " + batchHint);
                 doCrawl = false;
                 break;
             }
@@ -1044,9 +1022,15 @@ public class SharepointClient {
             sharepointClientContext.setSiteURL(webURL);
             WebsWS websWS = new WebsWS(sharepointClientContext);
             try {
-                LOGGER.log(Level.INFO, "Getting child sites for web [ "
-                        + webURL + "]. ");
                 final Set<String> allWebStateSet = websWS.getDirectChildsites();
+                final int size = allWebStateSet.size();
+                if (size > 0) {
+                    LOGGER.log(Level.INFO, "Discovered " + size
+                            + " child sites under [ " + webURL + "]. ");
+                } else {
+                    LOGGER.log(Level.CONFIG, "Discovered " + size
+                            + " child sites under [ " + webURL + "]. ");
+                }
                 allSites.addAll(allWebStateSet);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Unable to get the Child sites for site "

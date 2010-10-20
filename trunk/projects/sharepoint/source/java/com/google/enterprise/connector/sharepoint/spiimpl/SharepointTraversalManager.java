@@ -14,10 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -28,6 +24,10 @@ import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalContext;
 import com.google.enterprise.connector.spi.TraversalContextAware;
 import com.google.enterprise.connector.spi.TraversalManager;
+
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is an implementation of the TraversalManager from the spi. All the
@@ -182,9 +182,9 @@ public class SharepointTraversalManager implements TraversalManager,
         rsAll = traverse(sharepointClient, true);
         if ((rsAll != null) && (rsAll.size() > 0)) {
             LOGGER.info("Traversal returned " + rsAll.size()
-                    + " documents discovered in the previous crawl cycle(s).");
+                    + " documents discovered in the previous batch traversal(s).");
         } else {
-            LOGGER.info("No documents to be sent from the previous crawl cycle. Starting recrawl...");
+            LOGGER.info("No documents to be sent from previous batch traversal(s). Recrawling...");
             try {
                 sharepointClient.updateGlobalState(globalState);
             } catch (final Exception e) {
@@ -199,7 +199,7 @@ public class SharepointTraversalManager implements TraversalManager,
             final SPDocumentList rs = traverse(sharepointClient, false);
             if (rs != null) {
                 LOGGER.info("Traversal returned " + rs.size()
-                        + " documents discovered in the current crawl cycle.");
+                        + " documents discovered in the current batch traversal.");
                 if (rsAll == null) {
                     rsAll = rs;
                 } else {
@@ -277,6 +277,7 @@ public class SharepointTraversalManager implements TraversalManager,
 
         SPDocumentList rsAll = null;
         int sizeSoFar = 0;
+        LOGGER.log(Level.INFO, "Checking crawl queues of all ListStates/WebStates for pending docs.");
         for (final Iterator<WebState> iter = globalState.getCircularIterator(); iter.hasNext()
                 && (sizeSoFar < hint);) {
             final WebState webState = (WebState) iter.next();
@@ -301,9 +302,6 @@ public class SharepointTraversalManager implements TraversalManager,
                     rsAll.addAll(rs);
                 }
                 sizeSoFar = rsAll.size();
-            } else {
-                LOGGER.log(Level.INFO, "No documents to be sent from web URL [ "
-                        + webState.getWebUrl() + " ]. ");
             }
         }
         return rsAll;

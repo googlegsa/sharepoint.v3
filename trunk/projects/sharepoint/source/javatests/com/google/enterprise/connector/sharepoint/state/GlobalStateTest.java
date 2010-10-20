@@ -2,14 +2,6 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-
-import junit.framework.TestCase;
-
-import org.joda.time.DateTime;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -18,6 +10,14 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.joda.time.DateTime;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+
+import junit.framework.TestCase;
 
 public class GlobalStateTest extends TestCase {
 
@@ -157,7 +157,7 @@ public class GlobalStateTest extends TestCase {
                 new GregorianCalendar(2007, 1, 1), SPConstants.NO_AUTHOR,
                 SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
                 TestConfiguration.feedType, ws.getSharePointType());
-        doc.setFolderLevel("X");
+        doc.setParentFolder(new Folder("/X/XX", "1"));
 
         list.setLastDocProcessedForWS(doc);
         ws.AddOrUpdateListStateInWebState(list, dt);
@@ -206,7 +206,7 @@ public class GlobalStateTest extends TestCase {
                 assertEquals(tmpList1.getDeleteCache(), tmpList2.getDeleteCache());
                 assertEquals(tmpList1.getIDs().toString(), tmpList2.getIDs().toString());
                 assertEquals(tmpList1.getLastDocForWSRefresh(), tmpList2.getLastDocForWSRefresh());
-                assertEquals(tmpList1.getLastDocForWSRefresh().getFolderLevel(), tmpList2.getLastDocForWSRefresh().getFolderLevel());
+                assertEquals(tmpList1.getLastDocForWSRefresh().getParentFolder(), tmpList2.getLastDocForWSRefresh().getParentFolder());
                 assertEquals(tmpList1.getLastDocForWSRefresh().getLastMod(), tmpList2.getLastDocForWSRefresh().getLastMod());
                 assertEquals(tmpList1.getLastDocForWSRefresh().getAction(), tmpList2.getLastDocForWSRefresh().getAction());
             }
@@ -258,17 +258,17 @@ public class GlobalStateTest extends TestCase {
         WebState ws1 = new WebState(sharepointClientContext,
                 TestConfiguration.Site1_URL);
         ws1.setInsertionTime(new DateTime(2009, 9, 05, 10, 25, 36, 100));
-        state.AddOrUpdateWebStateInGlobalState(ws1);
+        state.addOrUpdateWebStateInGlobalState(ws1);
 
         WebState ws2 = new WebState(sharepointClientContext,
                 TestConfiguration.Site2_URL);
         ws2.setInsertionTime(new DateTime(2009, 9, 07, 10, 25, 36, 100));
-        state.AddOrUpdateWebStateInGlobalState(ws2);
+        state.addOrUpdateWebStateInGlobalState(ws2);
 
         WebState ws3 = new WebState(sharepointClientContext,
                 TestConfiguration.Site3_URL);
         ws3.setInsertionTime(new DateTime(2009, 9, 06, 10, 25, 36, 100));
-        state.AddOrUpdateWebStateInGlobalState(ws3);
+        state.addOrUpdateWebStateInGlobalState(ws3);
 
         assertEquals(3, state.getAllWebStateSet().size());
         assertEquals(ws2, state.dateMap.first());
