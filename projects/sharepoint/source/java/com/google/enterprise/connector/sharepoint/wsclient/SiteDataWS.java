@@ -14,21 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.rmi.RemoteException;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
-import javax.xml.rpc.holders.StringHolder;
-
-import org.apache.axis.AxisFault;
-import org.apache.axis.holders.UnsignedIntHolder;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -45,6 +30,21 @@ import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sW
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+
+import org.apache.axis.AxisFault;
+import org.apache.axis.holders.UnsignedIntHolder;
+
+import java.rmi.RemoteException;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.rpc.ServiceException;
+import javax.xml.rpc.holders.StringHolder;
 
 /**
  * This class holds data and methods for any call to SiteData web service.
@@ -128,8 +128,7 @@ public class SiteDataWS {
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
                 LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     stub.getListCollection(getListCollectionResult, vLists);
@@ -165,7 +164,7 @@ public class SiteDataWS {
                     }
 
                     final String baseType = element.getBaseType();
-                    LOGGER.log(Level.INFO, "Base Type returned by the Web Service : "
+                    LOGGER.log(Level.FINE, "Base Type returned by the Web Service : "
                             + baseType);
                     if (!collator.equals(baseType, (SPConstants.DISCUSSION_BOARD))
                             && !collator.equals(baseType, (SPConstants.DOC_LIB))
@@ -209,7 +208,7 @@ public class SiteDataWS {
                         }
                     }
 
-                    LOGGER.config("URL :" + url);
+                    LOGGER.config("List URL :" + url);
 
                     // Children of all URLs are discovered
                     ListState list = new ListState(
@@ -224,7 +223,7 @@ public class SiteDataWS {
                     String myNewListConst = "";
                     final String listUrl = element.getDefaultViewUrl();// e.g.
                     // /sites/abc/Lists/Announcements/AllItems.aspx
-                    LOGGER.log(Level.INFO, "getting listConst for list URL [ "
+                    LOGGER.log(Level.FINE, "getting listConst for list URL [ "
                             + listUrl + " ] ");
                     if ((listUrl != null) /* && (siteRelativeUrl!=null) */) {
                         final StringTokenizer strTokList = new StringTokenizer(
@@ -244,7 +243,7 @@ public class SiteDataWS {
                                 }
                             }
                             list.setListConst(myNewListConst);
-                            LOGGER.log(Level.INFO, "using listConst [ "
+                            LOGGER.log(Level.CONFIG, "using listConst [ "
                                     + myNewListConst + " ] for list URL [ "
                                     + listUrl + " ] ");
 
@@ -262,7 +261,6 @@ public class SiteDataWS {
                                     // sent as a
                                     // Document
                                     list.setSendListAsDocument(true);
-                                    LOGGER.config("included URL :[" + url + "]");
                                 } else {
                                     // if a List URL is EXCLUDED, it will NOT be
                                     // sent as a
@@ -278,7 +276,7 @@ public class SiteDataWS {
                             } else {
                                 // entire subtree is to be excluded
                                 // do not construct list state
-                                LOGGER.fine("Excluding " + url
+                                LOGGER.warning("Excluding " + url
                                         + " because entire subtree of "
                                         + myNewListConst + " is excluded");
                             }
@@ -295,7 +293,9 @@ public class SiteDataWS {
             return listCollection;
         }
 
-        LOGGER.info("Total Lists returned: " + listCollection.size());
+        LOGGER.info("Discovered " + listCollection.size()
+                + " lists/libraries under site [ " + webstate
+                + " ] for crawling");
         return listCollection;
     }
 

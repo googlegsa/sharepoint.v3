@@ -20,6 +20,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Document;
@@ -71,7 +72,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     private FeedType feedType;
     private SPType spType;
     private ActionType action = ActionType.ADD;
-    private String folderLevel;
+    private Folder parentFolder;
     // to be used for updating extraId during checkpoint
     private String fileref = null;
 
@@ -184,12 +185,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      * To be used while loading the lastDocument from the state file.
      */
     public SPDocument(final String inDocId, final String inDocURL,
-            final Calendar inLastMod,
-            final String inFolderLevel, final ActionType inAction) {
+            final Calendar inLastMod, final ActionType inAction) {
         docId = inDocId;
         displayUrl = url = inDocURL;
         lastMod = inLastMod;
-        folderLevel = inFolderLevel;
         action = inAction;
     }
 
@@ -342,6 +341,17 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return -1;
         }
 
+        int comparison = 0;
+
+        // If documents belongs to different lists, we can rely on the list's
+        // ordering only.
+        if (null != getParentList() && null != doc.getParentList()) {
+            comparison = getParentList().compareTo(doc.getParentList());
+            if (comparison != 0) {
+                return comparison;
+            }
+        }
+
         if (SPType.SP2007.equals(getSPType())
                 && SPType.SP2003 == doc.getSPType()) {
             return -1;
@@ -366,24 +376,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return 1;
         }
 
-        int comparison = 0;
 
         if (SPType.SP2007.equals(getSPType())) {
-            if ((folderLevel != null) || (doc.folderLevel != null)) {
-                if ((folderLevel != null) && (doc.folderLevel != null)
-                        && (folderLevel.length() != 0)
-                        && (doc.folderLevel.length() != 0)) {
-                    comparison = folderLevel.compareTo(doc.folderLevel);
-                } else if (((folderLevel == null) || (folderLevel.length() == 0))
-                        && ((doc.folderLevel != null) && (doc.folderLevel.length() != 0))) {
-                    return 1; // incoming doc should be sent before the current
-                    // doc. We always send renamed/restored folder
-                    // items first
-                } else if (((folderLevel != null) && (folderLevel.length() != 0))
-                        && ((doc.folderLevel == null) || (doc.folderLevel.length() == 0))) {
-                    return -1; // current doc should be sent before the incoming
-                    // doc. We always send renamed/restored folder
-                    // items first
+            if (null != getParentFolder() && null != doc.getParentFolder()) {
+                comparison = getParentFolder().compareTo(doc.getParentFolder());
+                if (comparison != 0) {
+                    return comparison;
                 }
             }
         } else {
@@ -411,8 +409,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             }
 
             // compare the URLs
-            String docURL1st = new String(url);
-            String docURL2nd = new String(doc.url);
+            String docURL1st = url;
+            String docURL2nd = doc.url;
             try {
                 docURL1st = URLDecoder.decode(docURL1st, "UTF-8");
                 docURL2nd = URLDecoder.decode(docURL2nd, "UTF-8");
@@ -732,17 +730,17 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     }
 
     /**
-     * @return the folderLevel
+     * @return parent folder
      */
-    public String getFolderLevel() {
-        return folderLevel;
+    public Folder getParentFolder() {
+        return parentFolder;
     }
 
     /**
      * @param folderLevel the folderLevel to set
      */
-    public void setFolderLevel(final String folderLevel) {
-        this.folderLevel = folderLevel;
+    public void setParentFolder(final Folder folder) {
+        this.parentFolder = folder;
     }
 
     /**

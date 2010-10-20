@@ -14,19 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-
-import org.joda.time.DateTime;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -37,6 +24,19 @@ import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.joda.time.DateTime;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 
 public class TestConfiguration {
     public static String googleConnectorWorkDir;
@@ -212,7 +212,7 @@ public class TestConfiguration {
         ls.setPrimaryKey(primaryKey);
         ls.setType(SPConstants.GENERIC_LIST);
         SPDocument doc = new SPDocument(new Integer(docId).toString(), "X",
-                Calendar.getInstance(), null, null);
+                Calendar.getInstance(), null);
         ls.setLastDocProcessedForWS(doc);
         ls.setUrl(url);
 
@@ -312,12 +312,10 @@ public class TestConfiguration {
             SPDocument doc = null;
             if (i % 3 == 0) {
                 doc = new SPDocument(docId.toString(), "X",
-                        Calendar.getInstance(),
-                        null, ActionType.DELETE);
+                        Calendar.getInstance(), ActionType.DELETE);
             } else {
                 doc = new SPDocument(docId.toString(), "X",
-                        Calendar.getInstance(),
-                        null, ActionType.ADD);
+                        Calendar.getInstance(), ActionType.ADD);
             }
             doc.setParentWeb(web);
             doc.setParentList(list);
@@ -353,14 +351,14 @@ public class TestConfiguration {
                 if (null != Site1_List1_Item1_URL
                         && Site1_List1_Item1_URL.trim().length() > 0) {
                     SPDocument doc = new SPDocument("111",
-                            Site1_List1_Item1_URL, Calendar.getInstance(), "",
+                            Site1_List1_Item1_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
                 if (null != Site1_List1_Item2_URL
                         && Site1_List1_Item2_URL.trim().length() > 0) {
                     SPDocument doc = new SPDocument("112",
-                            Site1_List1_Item2_URL, Calendar.getInstance(), "",
+                            Site1_List1_Item2_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
@@ -375,14 +373,14 @@ public class TestConfiguration {
                 if (null != Site1_List2_Item1_URL
                         && Site1_List2_Item1_URL.trim().length() > 0) {
                     SPDocument doc = new SPDocument("121",
-                            Site1_List2_Item1_URL, Calendar.getInstance(), "",
+                            Site1_List2_Item1_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
                 if (null != Site1_List2_Item2_URL
                         && Site1_List2_Item2_URL.trim().length() > 0) {
                     SPDocument doc = new SPDocument("122",
-                            Site1_List2_Item2_URL, Calendar.getInstance(), "",
+                            Site1_List2_Item2_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
@@ -400,13 +398,13 @@ public class TestConfiguration {
                 List<SPDocument> docs = new ArrayList<SPDocument>();
                 if (null != Site2_List1_Item1_URL) {
                     SPDocument doc = new SPDocument("211",
-                            Site2_List1_Item1_URL, Calendar.getInstance(), "",
+                            Site2_List1_Item1_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
                 if (null != Site2_List1_Item2_URL) {
                     SPDocument doc = new SPDocument("212",
-                            Site2_List1_Item2_URL, Calendar.getInstance(), "",
+                            Site2_List1_Item2_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
@@ -420,13 +418,13 @@ public class TestConfiguration {
                 List<SPDocument> docs = new ArrayList<SPDocument>();
                 if (null != Site2_List2_Item1_URL) {
                     SPDocument doc = new SPDocument("221",
-                            Site2_List2_Item1_URL, Calendar.getInstance(), "",
+                            Site2_List2_Item1_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
                 if (null != Site2_List2_Item2_URL) {
                     SPDocument doc = new SPDocument("222",
-                            Site2_List2_Item2_URL, Calendar.getInstance(), "",
+                            Site2_List2_Item2_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
@@ -444,13 +442,13 @@ public class TestConfiguration {
                 List<SPDocument> docs = new ArrayList<SPDocument>();
                 if (null != Site3_List1_Item1_URL) {
                     SPDocument doc = new SPDocument("311",
-                            Site3_List1_Item1_URL, Calendar.getInstance(), "",
+                            Site3_List1_Item1_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
                 if (null != Site3_List1_Item2_URL) {
                     SPDocument doc = new SPDocument("312",
-                            Site3_List1_Item2_URL, Calendar.getInstance(), "",
+                            Site3_List1_Item2_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
@@ -464,13 +462,13 @@ public class TestConfiguration {
                 List<SPDocument> docs = new ArrayList<SPDocument>();
                 if (null != Site3_List2_Item1_URL) {
                     SPDocument doc = new SPDocument("321",
-                            Site3_List2_Item1_URL, Calendar.getInstance(), "",
+                            Site3_List2_Item1_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
                 if (null != Site3_List2_Item2_URL) {
                     SPDocument doc = new SPDocument("322",
-                            Site2_List2_Item2_URL, Calendar.getInstance(), "",
+                            Site2_List2_Item2_URL, Calendar.getInstance(),
                             ActionType.ADD);
                     docs.add(doc);
                 }
