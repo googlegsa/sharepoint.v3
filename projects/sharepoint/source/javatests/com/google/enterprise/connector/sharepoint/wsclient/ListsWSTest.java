@@ -48,7 +48,7 @@ public class ListsWSTest extends TestCase {
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
-        sharepointClientContext.setBatchHint(3);
+        // sharepointClientContext.setBatchHint(3);
 
         System.out.println("Initializing ListsWS ...");
         this.listWS = new ListsWS(this.sharepointClientContext);
@@ -122,11 +122,10 @@ public class ListsWSTest extends TestCase {
     public void testGetListItemChangesSinceToken()
             throws MalformedURLException, RepositoryException {
         System.out.println("Testing getListItemChangesSinceToken()...");
-        testList.saveNextChangeTokenForWSCall("1;3;8c7bbbf0-3beb-4fea-8a59-7c3674898363;634230709569430000;2480");
-        testList.commitChangeTokenForWSCall();
-        final List items = this.listWS.getListItemChangesSinceToken(this.testList, "6", null, null);
+        // testList.saveNextChangeTokenForWSCall("1;3;8c7bbbf0-3beb-4fea-8a59-7c3674898363;634232427784730000;2491");
+        // testList.commitChangeTokenForWSCall();
+        final List items = this.listWS.getListItemChangesSinceToken(this.testList, null, null, null);
         assertNotNull(items);
-        System.out.println("[ getListItemChangesSinceToken() ] Test Passed.");
     }
 
     public void testGetListItemChangesSinceTokenWithInvalidChangeToken()

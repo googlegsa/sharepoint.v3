@@ -14,22 +14,23 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorization;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationLocator;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.holders.ArrayOfAuthDataPacketHolder;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+
+import org.apache.axis.AxisFault;
+
 import java.rmi.RemoteException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData;
-import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorization;
-import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationLocator;
-import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 /**
  * Java Client for calling GSBulkAuthorization.asmx. Provides a layer to talk to
@@ -84,48 +85,36 @@ public class GSBulkAuthorizationWS {
     }
 
     /**
-     * To call the BulkAuthorize() Web Method of GSBulkAuthorization Web Service
+     * To call the Authorize() Web Method of GSBulkAuthorization Web Service
      *
-     * @param authData Contains the list of documents to be authorized
+     * @param authDataPacketArray Contains the list of documents to be
+     *            authorized
      * @param loginId The username to be authorized
-     * @return the updated AuthData object reflecting the authorization status
-     *         for each document
+     * @return the updated {@link AuthDataPacket} object reflecting the
+     *         authorization status for each document
      * @throws RemoteException
      */
-    public AuthData[] bulkAuthorize(final AuthData[] authData,
-            final String loginId) throws RemoteException {
-        AuthData[] resultDocs = null;
-
-        if (null == stub) {
-            return null;
-        }
-
+    public AuthDataPacket[] authorize(
+            final AuthDataPacket[] authDataPacketArray,
+            final String userId) throws RemoteException {
+        ArrayOfAuthDataPacketHolder arrayOfAuthDataPacketHolder = new ArrayOfAuthDataPacketHolder(
+                authDataPacketArray);
         try {
-            resultDocs = stub.bulkAuthorize(authData, loginId);
-        } catch (final AxisFault af) { // Handling of username formats for
-                                        // different authentication models.
+            stub.authorize(arrayOfAuthDataPacketHolder, userId);
+        } catch (final AxisFault af) {
+            // Handling of username formats for different authentication models.
             if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
                 LOGGER.log(Level.INFO, "Web Service call failed for username [ "
                         + stub.getUsername() + " ].");
                 LOGGER.log(Level.INFO, "Trying with " + username);
                 stub.setUsername(username);
-                try {
-                    resultDocs = stub.bulkAuthorize(authData, loginId);
-                } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Problem while making remote call to BulkAuthorize. endpoint [ "
-                            + endpoint + " ]", e);
-                }
+                stub.authorize(arrayOfAuthDataPacketHolder, userId);
             } else {
-                LOGGER.log(Level.WARNING, "Problem while making remote call to BulkAuthorize. endpoint [ "
-                        + endpoint + " ]", af);
+                throw af;
             }
-        } catch (final Throwable e) {
-            LOGGER.log(Level.WARNING, "Problem while making remote call to BulkAuthorize. endpoint [ "
-                    + endpoint + " ]", e);
         }
-
-        return resultDocs;
+        return arrayOfAuthDataPacketHolder.value;
     }
 
     /**
