@@ -60,9 +60,9 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
      * specified during connector configuration is hosted
      *
      * @param identity AuthenticationIdentity object created by CM while
-     *            belegating the authetication job to the connector. This
+     *            delegating authentication to the connector. This
      *            corresponds to one specific search user
-     * @return AutheicationResponse Contains the authentication status fo the
+     * @return AutheicationResponse Contains the authentication status for the
      *         incoming identity
      */
     public AuthenticationResponse authenticate(
@@ -77,21 +77,17 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 
         final String user = identity.getUsername();
         final String password = identity.getPassword();
-        String logMessage = "Authenticating User: " + user;
-        LOGGER.log(Level.INFO, logMessage);
 
         String domain = identity.getDomain();
         // If domain is not received as part of the authentication request, use
         // the one from SharePointClientContext
         if ((domain == null) || (domain.length() == 0)) {
-            LOGGER.warning("domain not found in the Authentication Request. Using the one from connector's context.");
             domain = sharepointClientContext.getDomain();
         }
-        LOGGER.log(Level.FINEST, "Using domain [ " + domain + " ]. ");
 
         final String userName = Util.getUserNameWithDomain(user, domain);
-        logMessage = "Trying with username: " + userName;
-        LOGGER.log(Level.INFO, logMessage);
+        LOGGER.log(Level.INFO, "Authenticating User: " + userName);
+
         sharepointClientContext.setUsername(userName);
         sharepointClientContext.setPassword(password);
 
@@ -99,10 +95,6 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
             bulkAuth = new GSBulkAuthorizationWS(sharepointClientContext);
         } catch (final Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to initialize GSBulkAuthorizationWS.", e);
-        }
-
-        if (bulkAuth == null) {
-            LOGGER.warning("Failed to initialize GSBulkAuthorizationWS.");
             return null;
         }
 
@@ -115,13 +107,11 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
          * such user's credential.
          */
         if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
-            logMessage = "Authentication succeded for " + userName;
-            LOGGER.log(Level.INFO, logMessage);
+            LOGGER.log(Level.INFO, "Authentication succeded for " + userName);
             return new AuthenticationResponse(true, "");
         }
 
-        logMessage = "Authentication failed for " + user;
-        LOGGER.log(Level.WARNING, logMessage);
+        LOGGER.log(Level.WARNING, "Authentication failed for " + user);
         return new AuthenticationResponse(false, "");
     }
 }

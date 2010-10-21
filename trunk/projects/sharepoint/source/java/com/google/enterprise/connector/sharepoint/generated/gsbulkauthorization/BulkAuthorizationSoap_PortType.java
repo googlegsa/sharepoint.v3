@@ -8,7 +8,6 @@
 package com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization;
 
 public interface BulkAuthorizationSoap_PortType extends java.rmi.Remote {
-    public void authorize(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData authData, java.lang.String loginId) throws java.rmi.RemoteException;
-    public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData[] bulkAuthorize(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData[] authData, java.lang.String loginId) throws java.rmi.RemoteException;
     public java.lang.String checkConnectivity() throws java.rmi.RemoteException;
+    public void authorize(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.holders.ArrayOfAuthDataPacketHolder authDataPacketArray, java.lang.String username) throws java.rmi.RemoteException;
 }
