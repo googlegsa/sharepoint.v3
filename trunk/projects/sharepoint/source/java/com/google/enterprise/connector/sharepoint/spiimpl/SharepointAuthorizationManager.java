@@ -259,8 +259,8 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         String userName = identity.getUsername();
         String domain = identity.getDomain();
 
-        LOGGER.log(Level.INFO, "Received for authZ: [Docs Count: #"
-                + docIDs.size() + "], [Username: " + userName + "], [domain: "
+        LOGGER.log(Level.INFO, "Received authZ request for " + docIDs.size()
+                + " docs. Username [ " + userName + " ], domain [ "
                 + domain + " ]. ");
 
         // If domain is not received as part of the authorization request, use
