@@ -74,6 +74,8 @@
         strWebSelected = "SELECTED";
         
     }
+
+    
 %>
 <!--Amit: overridded the SubmitSearchRedirect function of core.js. Else it fails for aspx pages when doing serach from cached result-->
 
@@ -104,6 +106,7 @@ function SubmitSearchRedirect1(strUrl)
 		var dropdownScope = document.getElementById("idSearchScope");
 		var selectedScopeText = dropdownScope.options[dropdownScope.selectedIndex].text;
 		var selectedScopeUrl = dropdownScope.options[dropdownScope.selectedIndex].value;
+		var isPublicSearch = document.getElementById("hfPublicSearch");
 		
 		/* Checking whether user has selected a list within a site, while selecting option as 'My List'.
 		 If user is not browsing the list, then display an eror message as in this case the scope url will be retrieved as "" */
@@ -118,19 +121,13 @@ function SubmitSearchRedirect1(strUrl)
 		}
 		else if(selectedScopeUrl == "Farm" && selectedScopeText == "Farm")
 		{
-		    strUrl=strUrl + "&selectedScope=" + selectedScopeUrl;
+		    strUrl=strUrl + "&selectedScope=" + selectedScopeUrl + "&isPublicSearch=" + isPublicSearch.value;
 		    frm.action = strUrl;
 		    frm.submit();
 		}
 		else
 		{
-		    
-		    
-		    
-		    
-		    
-		    		    
-		    strUrl = strUrl + "&selectedScope=" +  selectedScopeText + "&scopeUrl=" + selectedScopeUrl;
+		    strUrl = strUrl + "&selectedScope=" +  selectedScopeText + "&scopeUrl=" + selectedScopeUrl + "&isPublicSearch=" + isPublicSearch.value;
 		    frm.action = strUrl;
 		    document.forms
 		    frm.submit();
@@ -138,14 +135,38 @@ function SubmitSearchRedirect1(strUrl)
 	}
 }
 
+// Function to change the value of hiddenfield whenever the checkbox is checked or unchecked
+function checkPublicSearch(chk)
+{
+    var isPublicSearch = document.getElementById("hfPublicSearch");
+    if(chk.checked == true)
+    {
+        isPublicSearch.value = "true";
+    }
+    else if(chk.checked == false)
+    {
+        isPublicSearch.value = "false";
+    }
+}
+
 </script>
 
+
+
 <table border="0" cellpadding="0" cellspacing="0" class='ms-searchform'>
+<tr class='ms-searchbox'>
+<!-- Checkbox for enabling Public Search -->
+    <td>
+     <input type="hidden" id="hfPublicSearch" name="PublicSearch" />
+    </td>
+    <td>
+        <input type="checkbox" name="chk" id="chkPublicSearch" onclick="checkPublicSearch(this);" title="Click this to enable Public Search"   style="border-left:0px" />Public Search 
+    </td>
+    <td></td>
+</tr>
     <tr>
         <td>
-            
-            
-            <select id='idSearchScope' name='SearchScope' class='ms-searchbox' title="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchScopeToolTip),Response.Output);%>">
+            <select id='idSearchScope' name='SearchScope' style="width:211px" class='ms-searchbox' title="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchScopeToolTip),Response.Output);%>">
                 <option value="Farm">Farm </option>
                 <%
                     if (strScopeWeb != null)
@@ -166,11 +187,6 @@ function SubmitSearchRedirect1(strUrl)
                     if (strScopeList != null)
                     {    
                 %>
-                
-                    
-                
-                
-                
                 <option value="<%=strScopeList%>">
                     <SharePoint:EncodedLiteral runat="server" Text="Current List"
                         EncodeMethod='HtmlEncode' ID='idSearchScopeList' />
@@ -198,12 +214,12 @@ function SubmitSearchRedirect1(strUrl)
         <!--column#1 Search Box-->
         <td>
             <div style="background-image: url(/_layouts/images/google_custom_search_watermark.gif);
-                background-repeat: no-repeat; background-position: center; background-color: Transparent">
+                background-repeat: no-repeat; background-position: left; background-color: Transparent">
                 <input type='text' id='idSearchString' size='28' value="" name='SearchString' display='inline'
                     maxlength='255' accesskey='S' class='ms-searchbox' style="width: auto; height: auto;
                     background-color: transparent" onfocus="javascript: var f = document.getElementById('idSearchString'); f.style.background = '#ffffff';"
                     onblur="javascript: var f = document.getElementById('idSearchString');f.style.background = 'background-color: transparent';"
-                    onkeydown="return SearchKeyDown(event, <%=strEncodedUrl%>);" title="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchTextToolTip),Response.Output);%>">
+                    onkeydown="return SearchKeyDown(event, <%=strEncodedUrl%>);" title="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchTextToolTip),Response.Output);%>" />
             </div>
         </td>
         <!--column#2 Search Button-->
@@ -214,5 +230,6 @@ function SubmitSearchRedirect1(strUrl)
                     id="onetIDGoSearch">
                     <img border='0' src="/_layouts/images/gosearch.gif" alt="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchImageToolTip),Response.Output);%>"></a></div>
         </td>
+        
     </tr>
 </table>
