@@ -2,8 +2,9 @@
 
 <%-- <% Here '~' is included in the MasterPageFile attribute. ~ refers to the root directory %>--%>
 <%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
-    MasterPageFile="~/_layouts/application.master" EnableViewState="false" EnableViewStateMac="false"
+    MasterPageFile="~/_layouts/application.master" EnableViewState="true" EnableViewStateMac="false"
     ValidateRequest="false" %> 
+
 
 <%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
@@ -13,6 +14,12 @@
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
     Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+
+
+
+
+
+
 <%@ Import Namespace="Microsoft.SharePoint.ApplicationPages" %>
 <%@ Import Namespace="Microsoft.SharePoint" %>
 <%@ Import Namespace="System.Net" %>
@@ -27,6 +34,7 @@
 <%@ Import Namespace="System.Web.Security" %>
 <%@ Import Namespace="System.Diagnostics" %>
 <%@ Import Namespace="System.IO.Compression" %>
+
 <asp:Content ID="Content1" ContentPlaceHolderID="PlaceHolderPageTitle" runat="server">
     <SharePoint:EncodedLiteral ID="EncodedLiteral1" runat="server" Text="<%$Resources:wss,searchresults_pagetitle%>"
         EncodeMethod='HtmlEncode' />
@@ -86,7 +94,7 @@
         class GoogleSearchBox
         {
             public string GSALocation;
-            public string accessLevel = "a";//Do a Public and Secured search
+            public string accessLevel;//Do a Public and Secured search
             public string siteCollection;
             public string frontEnd;
             public string enableInfoLogging;
@@ -543,10 +551,9 @@
     <!--custom script-->
 
     <script type="text/javascript">
-   
   	function _spFormOnSubmit()
 	{
-		return GoSearch();
+		//return GoSearch();
 	}
 	function SetPageTitle()
 	{
@@ -563,8 +570,10 @@
             
             // Code for carry forwarding the scope selected from the dropdown
             var dropdownScope = document.getElementById('idSearchScope');
+            var chkIsPublic = document.getElementById('chkPublicSearch');
             var scope = getParameter(Query, 'selectedScope');
             var scopeURL = getParameter(Query, 'scopeUrl');
+            var isPublicSearch = getParameter(Query, 'isPublicSearch');
             
             var currentSite = "Current Site";
             var currentSiteAndAllSubsites = "Current Site and all subsites";
@@ -591,6 +600,16 @@
                     break;
                 }
             } 
+            
+            // Code to change the checked status of 'Public Search' checkbox, as selected by user in previous page
+            if(isPublicSearch == "true")
+            {
+                chkIsPublic.checked = true;
+            }
+            else if(isPublicSearch == "false")
+            {
+                chkIsPublic.checked = false;
+            }
             
         	if(myTextField.value != "")
         	{
@@ -644,6 +663,8 @@ else if(document.attachEvent)
 	document.attachEvent("onreadystatechange", SetPageTitle);
 }
     </script>
+    
+
 
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="PlaceHolderTitleAreaClass" runat="server">
@@ -780,7 +801,18 @@ else if(document.attachEvent)
                             }
 
                             /*Get the user suppiled parameters from the web.config file*/
-                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
+
+                            if (inquery["isPublicSearch"] == "false")
+                            {
+                                gProps.accessLevel = "a";
+                            }
+                            else
+                            {
+                                gProps.accessLevel = "p";
+                            }
+                            
+                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;                                
+                            
 
                             if (gProps.frontEnd.Trim() != "")
                             {
