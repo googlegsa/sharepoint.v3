@@ -170,7 +170,7 @@ public class SharepointClientTest extends TestCase {
                 TestConfiguration.feedType);
         SharepointClientContext spContext = TestConfiguration.initContext();
         WebState ws = TestConfiguration.createWebState(gs, spContext, TestConfiguration.sharepointUrl, 1);
-        gs.AddOrUpdateWebStateInGlobalState(ws);
+        gs.addOrUpdateWebStateInGlobalState(ws);
 
         // Set the last crawled list and web id as set in web state
         gs.setLastCrawledList(ws.getLastCrawledList());

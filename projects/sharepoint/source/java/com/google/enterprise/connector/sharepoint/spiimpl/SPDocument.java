@@ -343,14 +343,14 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
         int comparison = 0;
 
-        // If documents belongs to different lists, we can rely on the list's
+        // TODO If documents belongs to different lists, we can rely on the
+        // list's
         // ordering only.
-        if (null != getParentList() && null != doc.getParentList()) {
-            comparison = getParentList().compareTo(doc.getParentList());
-            if (comparison != 0) {
-                return comparison;
-            }
-        }
+        /*
+         * if (null != getParentList() && null != doc.getParentList()) {
+         * comparison = getParentList().compareTo(doc.getParentList()); if
+         * (comparison != 0) { return comparison; } }
+         */
 
         if (SPType.SP2007.equals(getSPType())
                 && SPType.SP2003 == doc.getSPType()) {

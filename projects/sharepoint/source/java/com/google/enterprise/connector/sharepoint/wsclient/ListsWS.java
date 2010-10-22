@@ -261,11 +261,20 @@ public class ListsWS {
             }
         }
 
-        LOGGER.log(Level.INFO, "Found " + listAttachments.size()
-                + " new/updated and "
-                + ((null == knownAttachments) ? 0 : knownAttachments.size())
-                + " deleted attachments for listItem [ " + listItem.getUrl()
-                + "]. ");
+        int countDeleted = (null == knownAttachments) ? 0
+                : knownAttachments.size();
+
+        if (listAttachments.size() > 0 || countDeleted > 0) {
+            LOGGER.log(Level.INFO, "Found " + listAttachments.size()
+                    + " new/updated and " + countDeleted
+                    + " deleted attachments for listItem [ "
+                    + listItem.getUrl() + "]. ");
+        } else {
+            LOGGER.log(Level.CONFIG, "Found " + listAttachments.size()
+                    + " new/updated and " + countDeleted
+                    + " deleted attachments for listItem [ "
+                    + listItem.getUrl() + "]. ");
+        }
 
         Collections.sort(listAttachments);
         return listAttachments;
@@ -647,9 +656,13 @@ public class ListsWS {
         }
 
         Collections.sort(listItems);
-        LOGGER.info("found: " + listItems.size() + " Items in List/Library ["
-                + list.getListURL() + "]");
-
+        if (listItems.size() > 0) {
+            LOGGER.info("found: " + listItems.size()
+                    + " Items in List/Library [" + list.getListURL() + "]");
+        } else {
+            LOGGER.config("No Items found in List/Library ["
+                    + list.getListURL() + "]");
+        }
         return listItems;
     }
 
@@ -792,8 +805,7 @@ public class ListsWS {
      * @param lastItemID : Last Item ID that we have already identified at this
      *            level.
      * @param folder : The folder from where to discover the items.
-     * @param folderId : ID of the folder passed as folderPath
-     * @return the list of documents as {@link SPDocument}
+     * @return list of documents as {@link SPDocument}
      */
     public List<SPDocument> getListItemsAtFolderLevel(
             final ListState list, final String lastItemIdAtFolderLevel,
@@ -874,6 +886,8 @@ public class ListsWS {
         }
 
         Collections.sort(listItems);
+        LOGGER.log(Level.FINE, "found " + listItems.size() + " under folder "
+                + folder);
         return listItems;
     }
 
@@ -1031,8 +1045,14 @@ public class ListsWS {
             }
         }
 
-        LOGGER.info("found: " + listItems.size() + " Items in List/Library ["
-                + list.getListURL() + "] for feed action=ADD");
+        if (listItems.size() > 0) {
+            LOGGER.info("found: " + listItems.size()
+                    + " Items in List/Library [" + list.getListURL()
+                    + "] for feed action=ADD");
+        } else {
+            LOGGER.config("No Items found in List/Library ["
+                    + list.getListURL() + "] for feed action=ADD");
+        }
 
         // Process deleted IDs
         if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
@@ -1198,8 +1218,14 @@ public class ListsWS {
                 }
             }
         }
-        LOGGER.info("found: " + count + " Items in List/Library ["
-                + list.getListURL() + "] for feed action=DELETE");
+
+        if (count > 0) {
+            LOGGER.info("found: " + count + " Items in List/Library ["
+                    + list.getListURL() + "] for feed action=DELETE");
+        } else {
+            LOGGER.config("No items foudn in List/Library ["
+                    + list.getListURL() + "] for feed action=DELETE");
+        }
 
         return listItems;
     }
@@ -1527,7 +1553,7 @@ public class ListsWS {
                                     }
                                     Folder currFolder = folders.get(index);
                                     final List<SPDocument> restoredItems = getListItemsAtFolderLevel(list, lastItemIdAtFolderLevel, currFolder);
-                                    LOGGER.log(Level.INFO, "found "
+                                    LOGGER.log(Level.CONFIG, "found "
                                             + restoredItems.size()
                                             + " Items under folder "
                                             + currFolder

@@ -13,18 +13,6 @@
 //limitations under the License.
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.rmi.RemoteException;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
-import org.apache.axis.message.MessageElement;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -35,6 +23,18 @@ import com.google.enterprise.connector.sharepoint.generated.webs.Webs;
 import com.google.enterprise.connector.sharepoint.generated.webs.WebsLocator;
 import com.google.enterprise.connector.sharepoint.generated.webs.WebsSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+
+import org.apache.axis.AxisFault;
+import org.apache.axis.message.MessageElement;
+
+import java.rmi.RemoteException;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling Webs.asmx Provides a layer to talk to the Webs Web
@@ -63,7 +63,7 @@ public class WebsWS {
             sharepointClientContext = inSharepointClientContext;
             endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
                     + SPConstants.WEBSENDPOINT;
-            LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+            LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
             final WebsLocator loc = new WebsLocator();
             loc.setWebsSoapEndpointAddress(endpoint);
             final Webs service = loc;
@@ -103,9 +103,8 @@ public class WebsWS {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     webcollnResult = stub.getWebCollection();
@@ -170,9 +169,8 @@ public class WebsWS {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     strWebURL = stub.webUrlFromPageUrl(pageURL);
@@ -200,7 +198,7 @@ public class WebsWS {
                     + pageURL + " ]. Using [ " + strWebURL + " ] as web URL. ");
             return strWebURL;
         }
-        LOGGER.log(Level.INFO, "WebURL: " + strWebURL);
+        LOGGER.log(Level.CONFIG, "WebURL: " + strWebURL);
         return strWebURL;
     }
 
@@ -229,9 +227,10 @@ public class WebsWS {
                     if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                             && (sharepointClientContext.getDomain() != null)) {
                         final String username = Util.switchUserNameFormat(stub.getUsername());
-                        LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                                + stub.getUsername() + " ].");
-                        LOGGER.log(Level.INFO, "Trying with " + username);
+                        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                                + stub.getUsername()
+                                + " ]. Trying with "
+                                + username);
                         stub.setUsername(username);
                         try {
                             resWeb = stub.getWeb(webURL);
@@ -256,7 +255,7 @@ public class WebsWS {
             LOGGER.log(Level.WARNING, "Unable to Get Title for web [ " + webURL
                     + " ]. Using the default web Title. " + e);
         }
-        LOGGER.log(Level.INFO, "Title: " + webTitle);
+        LOGGER.log(Level.FINE, "Title: " + webTitle);
         return webTitle;
     }
 
@@ -267,13 +266,12 @@ public class WebsWS {
      */
     public String checkConnectivity() {
         try {
-            stub.getWebCollection(); // at least contribute permission is
-                                        // required. Fails in case of SP2003 if
-                                        // the url url contains repeated
-                                        // slashes.
+            // at least contribute permission is required. Fails in case of
+            // SP2003 if the url url contains repeated slashes.
+            stub.getWebCollection();
         } catch (final AxisFault af) {
             if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) == -1) {
-                // This is not an unauthorization exception. Do not retry with
+                // This is not an unauthorized exception. Do not retry with
                 // different username format.
                 LOGGER.log(Level.WARNING, "Unable to connect.", af);
                 return af.getFaultString();
@@ -283,9 +281,8 @@ public class WebsWS {
                 LOGGER.log(Level.WARNING, "Unable to connect.", af);
                 return af.getFaultString();
             }
-            LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                    + stub.getUsername() + " ].");
-            LOGGER.log(Level.INFO, "Trying with " + username);
+            LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                    + stub.getUsername() + " ]. Trying with " + username);
             stub.setUsername(username);
             try {
                 stub.getWebCollection();

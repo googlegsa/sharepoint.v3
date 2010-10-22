@@ -20,6 +20,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
@@ -122,6 +123,8 @@ public class ListsWSTest extends TestCase {
     public void testGetListItemChangesSinceToken()
             throws MalformedURLException, RepositoryException {
         System.out.println("Testing getListItemChangesSinceToken()...");
+        // Following lines can be used for testing with specific change token
+        // values, like something from state file
         // testList.saveNextChangeTokenForWSCall("1;3;8c7bbbf0-3beb-4fea-8a59-7c3674898363;634232427784730000;2491");
         // testList.commitChangeTokenForWSCall();
         final List items = this.listWS.getListItemChangesSinceToken(this.testList, null, null, null);
@@ -136,6 +139,13 @@ public class ListsWSTest extends TestCase {
         try {
             final List items = this.listWS.getListItemChangesSinceToken(this.testList, null, null, null);
         } catch (Exception e) {
+            assertTrue(e instanceof SharepointException);
+            assertNull(testList.getNextChangeTokenForSubsequectWSCalls());
+            assertNull(testList.getChangeTokenForWSCall());
+            assertNull(testList.getLastDocForWSRefresh());
+            assertNull(testList.getCrawlQueue());
+            assertFalse(testList.isAclChanged());
+            assertEquals(0, testList.getLastDocIdCrawledForAcl());
             final List items = this.listWS.getListItemChangesSinceToken(this.testList, null, null, null);
             assertNotNull(items);
         }

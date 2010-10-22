@@ -14,6 +14,20 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscovery;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoveryLocator;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoverySoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
+
+import org.apache.axis.AxisFault;
+
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,20 +44,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscovery;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoveryLocator;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.SiteDiscoverySoap_BindingStub;
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
 
 /**
  * Java Client for calling GSSiteDiscovery.asmx. Provides a layer to talk to the
@@ -76,7 +76,7 @@ public class GSSiteDiscoveryWS {
             }
             endpoint = Util.encodeURL(siteUrl)
                     + SPConstants.GSPSITEDISCOVERYWS_END_POINT;
-            LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+            LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
             final SiteDiscoveryLocator loc = new SiteDiscoveryLocator();
             loc.setSiteDiscoverySoapEndpointAddress(endpoint);
@@ -115,9 +115,8 @@ public class GSSiteDiscoveryWS {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     res = stub.getAllSiteCollectionFromAllWebApps();
@@ -168,7 +167,7 @@ public class GSSiteDiscoveryWS {
                 }
             }
         }
-        LOGGER.log(Level.INFO, "GSSiteDiscovery SiteCollection URLs:"
+        LOGGER.log(Level.CONFIG, "GSSiteDiscovery discovered following Site Collection URLs:"
                 + siteCollections);
         return siteCollections;
     }
@@ -209,9 +208,8 @@ public class GSSiteDiscoveryWS {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     return stub.getWebCrawlInfo();
@@ -246,9 +244,8 @@ public class GSSiteDiscoveryWS {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     wsResult = stub.getWebCrawlInfoInBatch(weburls);
@@ -275,10 +272,9 @@ public class GSSiteDiscoveryWS {
             return;
         }
         final Map<String, List<WebState>> webappToWeburlMap = arrangeWebUrlPerWebApp(webs);
-        LOGGER.log(Level.INFO, "a total of #"
-                + webappToWeburlMap.size()
-                + " WS call will be made to get the WebCrawlInfo of all the webs. Total webs are #"
-                + webs.size());
+        LOGGER.log(Level.CONFIG, webappToWeburlMap.size()
+                + " WS call(s) will be made to get WebCrawlInfo of "
+                + webs.size() + " sites");
 
         for (Entry<String, List<WebState>> entry : webappToWeburlMap.entrySet()) {
             GSSiteDiscoveryWS sitews = null;
@@ -337,9 +333,8 @@ public class GSSiteDiscoveryWS {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     listCrawlInfo = stub.getListCrawlInfo(listGuids);
@@ -366,6 +361,10 @@ public class GSSiteDiscoveryWS {
             if(!info.isStatus()) {
                 LOGGER.log(Level.WARNING, "GSSiteDiscovery has encountered following problem while getting the crawl info for list URL [ "
                         + listState.getListURL()
+                        + " ]. List GUID [ "
+                        + listState.getPrimaryKey()
+                        + " ]. Using endpoint [ "
+                        + endpoint
                         + " ]. WS error -> "
                         + info.getError());
                 continue;

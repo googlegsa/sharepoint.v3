@@ -1360,7 +1360,6 @@ public class ListState implements StatefulObject {
      */
     public void startAclCrawl() {
         if (isAclChanged()) {
-            LOGGER.log(Level.WARNING, "Attempt to mark a list for Acl crawl when it is already under Acl crawling.");
             return;
         }
         aclChanged = tmp_aclChanged = true;
@@ -1375,7 +1374,6 @@ public class ListState implements StatefulObject {
      */
     public void endAclCrawl() {
         if (!isAclChanged()) {
-            LOGGER.log(Level.WARNING, "Attempt to end the ACL crawl of a list when it is not under ACL crawling.");
             return;
         }
         aclChanged = tmp_aclChanged = false;
