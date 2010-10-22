@@ -14,6 +14,19 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPBasePermissions;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
+import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SpiConstants.RoleType;
+
+import org.joda.time.Chronology;
+import org.joda.time.DateTime;
+import org.joda.time.convert.ConverterManager;
+import org.joda.time.convert.InstantConverter;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
 import gnu.regexp.RE;
 import gnu.regexp.REException;
 import gnu.regexp.REMatch;
@@ -44,20 +57,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.joda.time.Chronology;
-import org.joda.time.DateTime;
-import org.joda.time.convert.ConverterManager;
-import org.joda.time.convert.InstantConverter;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPBasePermissions;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnectorType;
-import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.SpiConstants.RoleType;
-
 /**
  * Class to hold random utility functions
  *
@@ -85,7 +84,7 @@ public final class Util {
     private static final SimpleDateFormat SIMPLE_DATE_FORMATTER3 = new SimpleDateFormat(
             TIMEFORMAT3);
 
-    private static final Logger LOGGER = Logger.getLogger(SharepointConnectorType.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     /**
      * Formats last modified date (yyyy-MM-dd HH:mm:ss) to Calendar format

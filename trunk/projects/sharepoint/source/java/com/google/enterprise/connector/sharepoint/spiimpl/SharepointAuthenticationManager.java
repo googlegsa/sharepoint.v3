@@ -14,9 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -26,6 +23,9 @@ import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class provides an implementation of AuthenticationManager SPI provided
@@ -77,8 +77,11 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 
         final String user = identity.getUsername();
         final String password = identity.getPassword();
-
         String domain = identity.getDomain();
+
+        LOGGER.log(Level.INFO, "Received for authN request for Username [ "
+                + user + " ], domain [ " + domain + " ]. ");
+
         // If domain is not received as part of the authentication request, use
         // the one from SharePointClientContext
         if ((domain == null) || (domain.length() == 0)) {

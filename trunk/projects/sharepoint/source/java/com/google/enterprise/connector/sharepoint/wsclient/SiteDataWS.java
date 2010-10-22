@@ -72,7 +72,7 @@ public class SiteDataWS {
             sharepointClientContext = inSharepointClientContext;
             endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
                     + SPConstants.SITEDATAENDPOINT;
-            LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+            LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
             final SiteDataLocator loc = new SiteDataLocator();
             loc.setSiteDataSoapEndpointAddress(endpoint);
@@ -127,7 +127,7 @@ public class SiteDataWS {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
                         + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
@@ -293,9 +293,14 @@ public class SiteDataWS {
             return listCollection;
         }
 
-        LOGGER.info("Discovered " + listCollection.size()
-                + " lists/libraries under site [ " + webstate
-                + " ] for crawling");
+        if (listCollection.size() > 0) {
+            LOGGER.info("Discovered " + listCollection.size()
+                    + " lists/libraries under site [ " + webstate
+                    + " ] for crawling");
+        } else {
+            LOGGER.config("No lists/libraries to crawl under site [ "
+                    + webstate + " ]");
+        }
         return listCollection;
     }
 
@@ -370,9 +375,8 @@ public class SiteDataWS {
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);

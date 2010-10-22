@@ -60,7 +60,7 @@ public class GSBulkAuthorizationWS {
             sharepointClientContext = inSharepointClientContext;
             endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
                     + SPConstants.GSPBULKAUTHORIZATION_ENDPOINT;
-            LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+            LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
             final BulkAuthorizationLocator bulkloc = new BulkAuthorizationLocator();
             bulkloc.setBulkAuthorizationSoapEndpointAddress(endpoint);
@@ -105,9 +105,8 @@ public class GSBulkAuthorizationWS {
             // Handling of username formats for different authentication models.
             if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 stub.authorize(arrayOfAuthDataPacketHolder, userId);
             } else {
@@ -133,9 +132,8 @@ public class GSBulkAuthorizationWS {
                                         // different authentication models.
             if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     status = stub.checkConnectivity();

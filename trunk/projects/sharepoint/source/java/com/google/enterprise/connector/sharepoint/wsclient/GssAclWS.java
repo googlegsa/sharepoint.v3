@@ -14,18 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -51,6 +39,18 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
+
+import org.apache.axis.AxisFault;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling GssAcl.asmx web service. Provides a layer to talk to
@@ -88,8 +88,8 @@ public class GssAclWS {
             siteurl = sharepointClientContext.getSiteURL();
         }
 
-    endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
-        LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+        endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
+        LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
 
         final GssAclMonitorLocator loc = new GssAclMonitorLocator();
@@ -196,7 +196,8 @@ public class GssAclWS {
                             + " ] ");
                     continue;
                 }
-                LOGGER.log(Level.FINE, "WsLog [ " + acl.getLogMessage() + " ] ");
+                LOGGER.log(Level.CONFIG, "WsLog [ " + acl.getLogMessage()
+                        + " ] ");
                 Map<String, Set<RoleType>> userPermissionMap = new HashMap<String, Set<RoleType>>();
                 Map<String, Set<RoleType>> groupPermissionMap = new HashMap<String, Set<RoleType>>();
                 for (GssAce ace : allAces) {
@@ -347,7 +348,7 @@ public class GssAclWS {
             if (null != wsResult) {
                 aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
                 if (null != aclChangedDocs) {
-                    LOGGER.log(Level.INFO, "Found #"
+                    LOGGER.log(Level.INFO, "Found "
                             + aclChangedDocs.size()
                             + " documents from list [ "
                             + listState
@@ -454,7 +455,7 @@ public class GssAclWS {
             webState.commitAclChangeToken();
         }
 
-        LOGGER.log(Level.INFO, "Initiating ACL Change detection for web [ "
+        LOGGER.log(Level.CONFIG, "Initiating ACL Change detection for web [ "
                 + webState.getWebUrl() + " ] from change token [ "
                 + webState.getAclChangeTokenForWsCall());
         GssGetAclChangesSinceTokenResult wsResult = getAclChangesSinceToken(webState);

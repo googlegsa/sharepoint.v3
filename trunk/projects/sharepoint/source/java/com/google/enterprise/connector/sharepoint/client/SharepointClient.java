@@ -172,7 +172,7 @@ public class SharepointClient {
 
             if ((resultsList != null) && (resultsList.size() > 0)) {
                 LOGGER.log(Level.INFO, resultsList.size()
-                        + " documents to be sent from list URL [ "
+                        + " document(s) to be sent from list URL [ "
                         + list.getListURL() + " ]. ");
                 if (resultSet == null) {
                     resultSet = resultsList;
@@ -363,6 +363,8 @@ public class SharepointClient {
      *
      * @param globalState The recent state information
      */
+    // FIXME SharePointClientContext should not be passed as an argument in the
+    // methods that are called from here. Instead, use the class member.
     public void updateGlobalState(final GlobalState globalState)
             throws SharepointException {
         if (globalState == null) {
@@ -417,9 +419,7 @@ public class SharepointClient {
             }
         }
 
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.info("Starting traversal from site [ " + nextWeb + " ]. ");
-        }
+        LOGGER.info("Starting traversal from site [ " + nextWeb + " ]. ");
 
         SPType spType = nextWeb.getSharePointType();
 
@@ -592,11 +592,11 @@ public class SharepointClient {
      * attachments for these list items.
      *
      * @param tempCtx Current connector context
-     * @param webState The state information of the web which is ti be crawled
+     * @param webState The state information of the web which is to be crawled
      *            for documents
      * @param nextList Last List traversed. If the current web contains this
      *            list, the traversal will start from here.
-     * @param allWebs Contains all the webs that has been doscovered from link
+     * @param allWebs Contains all the webs that has been discovered from link
      *            sites/Site directory.
      */
     private void updateWebStateFromSite(final SharepointClientContext tempCtx,
@@ -615,10 +615,10 @@ public class SharepointClient {
         listCollection = new ArrayList<ListState>(new TreeSet<ListState>(
                 listCollection));
 
-        if (sharepointClientContext.isUseSPSearchVisibility()) {
+        if (tempCtx.isUseSPSearchVisibility()) {
             try {
-                GSSiteDiscoveryWS gssd = new GSSiteDiscoveryWS(
-                        sharepointClientContext, null);
+                GSSiteDiscoveryWS gssd = new GSSiteDiscoveryWS(tempCtx,
+                        webState.getWebUrl());
                 gssd.updateListCrawlInfo(listCollection);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Exception occurred when trying to to update the ListCrawlInfo for web [ "
@@ -652,7 +652,7 @@ public class SharepointClient {
 
         GssAclWS aclWs = null;
         try {
-            aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
+            aclWs = new GssAclWS(tempCtx, webState.getWebUrl());
             aclWs.fetchAclChangesSinceTokenAndUpdateState(webState);
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "

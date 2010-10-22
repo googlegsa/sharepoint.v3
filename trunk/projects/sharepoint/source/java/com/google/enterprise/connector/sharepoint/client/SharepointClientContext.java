@@ -14,18 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.TraversalContext;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -38,10 +30,18 @@ import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.TraversalContext;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class to hold the context information for sharepoint client connection. The
@@ -250,7 +250,7 @@ public class SharepointClientContext implements Cloneable {
         }
 
         if ((inDomain == null) || inDomain.trim().equals("")) {
-            LOGGER.log(Level.INFO, "Trying to get domain information from username specified [ "
+            LOGGER.log(Level.CONFIG, "Trying to get domain information from username specified [ "
                     + inUsername
                     + " ] because domain field has not been explicitly specified.");
             domain = Util.getDomainFromUsername(inUsername);
@@ -594,7 +594,7 @@ public class SharepointClientContext implements Cloneable {
      */
     public int checkConnectivity(final String strURL, HttpMethodBase method)
             throws Exception {
-        LOGGER.log(Level.CONFIG, "Requesting [ " + strURL + " ] ....");
+        LOGGER.log(Level.CONFIG, "Connecting [ " + strURL + " ] ....");
         int responseCode = 0;
         String username = this.username;
         final String host = Util.getHost(strURL);

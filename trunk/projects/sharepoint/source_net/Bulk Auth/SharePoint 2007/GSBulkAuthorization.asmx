@@ -443,7 +443,7 @@ public class WSContext
         {
             Using(container.Url);
         }
-    
+
         SPWeb web = null;
         string relativeWebUrl = GetServerRelativeUrl(container);
         Exception savedException = null;
@@ -471,6 +471,7 @@ public class WSContext
     /// </summary>
     /// <param name="container"></param>
     /// <returns></returns>
+    // FIXME For some lists of site directory, this logic does not work because the URL formats of those lists are different from what the logic assumes.
     string GetServerRelativeUrl(Container container)
     {
         String listUrl = container.Url;

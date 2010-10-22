@@ -279,7 +279,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         // documents are arranged per web application per site collection
         final Map<String, Map<Container, Set<AuthData>>> groupedDocIds = groupDocIds(docIDs);
 
-        LOGGER.log(Level.INFO, "A Total of #" + groupedDocIds.size()
+        LOGGER.log(Level.CONFIG, "A Total of #" + groupedDocIds.size()
                 + " WS calls will be made for authorization.");
 
         // For every entry in groupedDocIds, makes one WS call and send the AuthData as payload for authorization
@@ -598,7 +598,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         final String logMessage = "AuthZ status: " + status + " for DocID: "
                 + DocId;
         if (status) {
-            LOGGER.log(Level.FINER, logMessage);
+            LOGGER.log(Level.FINE, logMessage);
         } else {
             LOGGER.log(Level.WARNING, logMessage);
         }
