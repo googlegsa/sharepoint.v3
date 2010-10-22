@@ -79,7 +79,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         final String password = identity.getPassword();
         String domain = identity.getDomain();
 
-        LOGGER.log(Level.INFO, "Received for authN request for Username [ "
+        LOGGER.log(Level.INFO, "Received authN request for Username [ "
                 + user + " ], domain [ " + domain + " ]. ");
 
         // If domain is not received as part of the authentication request, use

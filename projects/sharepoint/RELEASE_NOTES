@@ -9,6 +9,136 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
+Release 2.6.6 , 22 Oct, 2010
+=======================================
+
+Introduction
+------------
+This is a patch release for wide evaluation and usage.  Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint and things may change in the future.
+
+Summary of Changes / New Features
+---------------------------------
+This patch contains fix for the following issues
+
+Issue 174: Handle folder rename/restore cases more judiciously
+Fixed a bug wherein connector was getting stuck in one particular case of folder rename/restore
+
+Issue 113: Connector fails to detect changes if there is a huge gap in the activity on the SharePoint Server, goes into an infinite loop
+With the current fix, the connector will initiate a full traversal of the site/list Whose change token (persisted in connector state file)
+has got expired
+
+This build also have some optimization in the authorization is done at serve time. Documents are now grouped according to their parent site
+collection before sending then to the authorization web service installed on SharePoint server. This grouping helps in reusing certain
+SharePoint objects that were earlier created and destroyed for every individual documents.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager Version 2.4.0 and above.
+It is recommended to upgrade to the latest Connector Manager version which is 2.6.0
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
+
+Steps to manually deploy the patch release
+------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Start the SharePoint Connector Service.
+
+Note: You also need to update the bulk authorization web service. Next section gives the complete manual upgrade instruction for all services.
+Also, to have an optimal authorization performance, it is recommended to install/update the site discovery service as well.
+
+Steps to manually deploy the Google services for SharePoint
+-----------------------------------------------------------
+Google services for SharePoint which are installed as web service files at the following location of your SharePoint server:
+C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI
+
+To update bulk authorization web service, update the following three files:
+GSBulkAuthorization.asmx
+GSBulkAuthorizationdisco.aspx
+GSBulkAuthorizationwsdl.aspx
+
+To update site discovery web service, update the following three files:
+GSSiteDiscovery.asmx
+GSSiteDiscoverydisco.aspx
+GSSiteDiscoverywsdl.aspx
+
+To update ACL web service, update the following three files:
+GssAcl.asmx
+GssAcldisco.aspx
+GssAclwsdl.aspx
+
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Note: This patch has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
+
+Known Issues/Limitations
+------------------------
+1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+2) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+4) In this release, following features are not supported on SharePoint versions prior to SP2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+- ACL
+
+5) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
+
+6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+7) Issue 139: Upgrade HTTPClient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not gets saved.
+
+_______________________________________________________________________
+
 Release 2.6.4 , 16 Sept, 2010
 =======================================
 
