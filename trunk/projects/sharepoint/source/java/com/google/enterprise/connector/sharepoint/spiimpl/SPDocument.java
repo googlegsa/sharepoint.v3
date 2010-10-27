@@ -72,7 +72,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     private FeedType feedType;
     private SPType spType;
     private ActionType action = ActionType.ADD;
+
     private Folder parentFolder;
+    // When a folder is renamed/restored and the current document is being sent
+    // as an implication of that.
+    private Folder renamedFolder;
+
     // to be used for updating extraId during checkpoint
     private String fileref = null;
 
@@ -809,7 +814,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     @Override
     public String toString() {
-        return url;
+        return "URL [ " + url + " ], DocId [ " + docId + " ], parentFolder [ "
+                + parentFolder + " ] ";
     }
 
     public String getFileref() {
@@ -850,5 +856,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     public void setDisplayUrl(String displayUrl) {
         this.displayUrl = displayUrl;
+    }
+
+    public Folder getRenamedFolder() {
+        return renamedFolder;
+    }
+
+    public void setRenamedFolder(Folder renamedFolder) {
+        this.renamedFolder = renamedFolder;
     }
 }

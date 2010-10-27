@@ -27,6 +27,7 @@ public final class Folder implements Comparable<Folder> {
         if (null == id || null == path) {
             throw new NullPointerException("Folder path/Id cannot be null! ");
         }
+        Integer.parseInt(id);
         this.path = path;
         this.id = id;
     }

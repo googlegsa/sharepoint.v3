@@ -19,7 +19,6 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
@@ -721,7 +720,7 @@ public class SharepointClient {
                     }
 
                     try {
-                        listItems = listsWS.getListItemChangesSinceToken(listState, null, allWebs, null);
+                        listItems = listsWS.getListItemChangesSinceToken(listState, allWebs);
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                                 + listState.getListURL() + " ].", e);
@@ -790,13 +789,7 @@ public class SharepointClient {
                 }
 
                 if (SPType.SP2007.equals(webState.getSharePointType())) {
-                    Folder lastDocParentFolder = null;
                     try {
-                        lastDoc = listState.getLastDocForWSRefresh();
-                        if (lastDoc != null) {
-                            lastDocID = Util.getOriginalDocId(lastDoc.getDocId(), sharepointClientContext.getFeedType());
-                            lastDocParentFolder = lastDoc.getParentFolder();
-                        }
                         webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
                         // Any documents to be crawled because of ACl Changes
@@ -805,7 +798,7 @@ public class SharepointClient {
                         if (null == aclChangedItems
                                 || aclChangedItems.size() < sharepointClientContext.getBatchHint()) {
                             // Do regular incremental crawl
-                            listItems = listsWS.getListItemChangesSinceToken(listState, lastDocID, allWebs, lastDocParentFolder);
+                            listItems = listsWS.getListItemChangesSinceToken(listState, allWebs);
                         }
                     } catch (final Exception e) {
                         LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
