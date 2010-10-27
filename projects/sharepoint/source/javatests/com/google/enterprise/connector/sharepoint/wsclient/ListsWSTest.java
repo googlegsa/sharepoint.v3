@@ -107,7 +107,7 @@ public class ListsWSTest extends TestCase {
     public void testGetListItemsAtFolderLevel() throws MalformedURLException,
             RepositoryException {
         System.out.println("Testing getListItemsAtFolderLevel()...");
-        final List items = this.listWS.getListItemsAtFolderLevel(this.testList, null, null);
+        final List items = this.listWS.getListItemsAtFolderLevel(this.testList, null, null, null);
         assertNotNull(items);
         System.out.println("[ getListItemsAtFolderLevel() ] Test Passed.");
     }
@@ -127,7 +127,7 @@ public class ListsWSTest extends TestCase {
         // values, like something from state file
         // testList.saveNextChangeTokenForWSCall("1;3;8c7bbbf0-3beb-4fea-8a59-7c3674898363;634232427784730000;2491");
         // testList.commitChangeTokenForWSCall();
-        final List items = this.listWS.getListItemChangesSinceToken(this.testList, null, null, null);
+        final List items = this.listWS.getListItemChangesSinceToken(this.testList, null);
         assertNotNull(items);
     }
 
@@ -137,7 +137,7 @@ public class ListsWSTest extends TestCase {
         testList.saveNextChangeTokenForWSCall("1;3;ca894ebb-41ed-44ee-9f09-0e8cb578bab6;1;1");
         testList.commitChangeTokenForWSCall();
         try {
-            final List items = this.listWS.getListItemChangesSinceToken(this.testList, null, null, null);
+            final List items = this.listWS.getListItemChangesSinceToken(this.testList, null);
         } catch (Exception e) {
             assertTrue(e instanceof SharepointException);
             assertNull(testList.getNextChangeTokenForSubsequectWSCalls());
@@ -146,7 +146,7 @@ public class ListsWSTest extends TestCase {
             assertNull(testList.getCrawlQueue());
             assertFalse(testList.isAclChanged());
             assertEquals(0, testList.getLastDocIdCrawledForAcl());
-            final List items = this.listWS.getListItemChangesSinceToken(this.testList, null, null, null);
+            final List items = this.listWS.getListItemChangesSinceToken(this.testList, null);
             assertNotNull(items);
         }
     }

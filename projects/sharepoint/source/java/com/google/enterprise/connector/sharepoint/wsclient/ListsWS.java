@@ -686,6 +686,8 @@ public class ListsWS {
         }
 
         String folderLevel = null;
+        // TODO Check if the incoming folder should be added. This is probably
+        // creating duplicate entries into the result.
         if (null != folder) {
             folders.add(folder);
             folderLevel = folder.getPath();
@@ -793,6 +795,9 @@ public class ListsWS {
             }
         }
 
+        // removing duplicate entries
+        folders = new ArrayList<Folder>(new HashSet<Folder>(folders));
+
         Collections.sort(folders);
         return folders;
     }
@@ -807,11 +812,11 @@ public class ListsWS {
      * @param folder : The folder from where to discover the items.
      * @return list of documents as {@link SPDocument}
      */
-    public List<SPDocument> getListItemsAtFolderLevel(
-            final ListState list, final String lastItemIdAtFolderLevel,
-            final Folder folder) {
+    public List<SPDocument> getListItemsAtFolderLevel(final ListState list,
+            final String lastItemIdAtFolderLevel, final Folder currentFolder,
+            final Folder renamedFolder) {
         final List<SPDocument> listItems = new ArrayList<SPDocument>();
-        if (null == folder) {
+        if (null == currentFolder) {
             return listItems;
         }
         final String listName = list.getPrimaryKey();
@@ -825,7 +830,7 @@ public class ListsWS {
         try {
             query.set_any(createQuery2(lastItemIdAtFolderLevel));
             viewFields.set_any(createViewFields());
-            queryOptions.set_any(createQueryOptions(false, folder.getPath(), null));
+            queryOptions.set_any(createQueryOptions(false, currentFolder.getPath(), null));
             LOGGER.log(Level.CONFIG, "Making Web Service call with the following parameters:\n query [ "
                     + query.get_any()[0]
                     + " ], queryoptions [ "
@@ -845,22 +850,18 @@ public class ListsWS {
                 try {
                     res = stub.getListItems(listName, viewName, query, viewFields, rowLimit, queryOptions, webID);
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                            + listName
-                            + " ] at level [ "
-                            + folder.getPath()
+                    LOGGER.log(Level.WARNING, "Unable to get the List Items under folder [ "
+                            + currentFolder + " ], list [ " + list
                             + " ]. ", e);
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                        + listName
-                        + " ] at level [ "
-                        + folder.getPath()
+                LOGGER.log(Level.WARNING, "Unable to get the List Items under folder [ "
+                        + currentFolder + " ], list [ " + list
                         + " ]. ", af);
             }
         } catch (final Throwable e) {
-            LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                    + listName + " ] at level [ " + folder.getPath() + " ]. ", e);
+            LOGGER.log(Level.WARNING, "Unable to get the List Items under folder [ "
+                    + currentFolder + " ], list [ " + list + " ]. ", e);
         }
 
         if (res != null) {
@@ -876,7 +877,8 @@ public class ListsWS {
                             final MessageElement row = (MessageElement) itrchild.next();
                             doc = processListItemElement(row, list, null);
                             if (doc != null) {
-                                doc.setParentFolder(folder);
+                                doc.setRenamedFolder(renamedFolder);
+                                doc.setParentFolder(currentFolder);
                                 listItems.add(doc);
                             }
                         }
@@ -887,7 +889,7 @@ public class ListsWS {
 
         Collections.sort(listItems);
         LOGGER.log(Level.FINE, "found " + listItems.size() + " under folder "
-                + folder);
+                + currentFolder);
         return listItems;
     }
 
@@ -917,26 +919,21 @@ public class ListsWS {
      *            discovers sub-folders and documents under it.
      * @return the list of documents as {@link SPDocument}
      */
+    // FIXME Why using List and not Set?
     public List<SPDocument> getListItemChangesSinceToken(final ListState list,
-            final String lastItemID, final Set<String> allWebs,
-            final Folder folder) throws SharepointException {
+            final Set<String> allWebs) throws SharepointException {
         final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
         if (list == null) {
             LOGGER.warning("Unable to get the list items because list is null");
             return listItems;
         }
 
-        LOGGER.config("list: title [ " + list.getListTitle() + " ], URL [ "
-                + list.getListURL() + " ], lastItemID [ " + lastItemID
-                + " ], folder [ " + folder + " ]");
+        LOGGER.config("list [ " + list + " ], LastDoc [ "
+                + list.getLastDocForWSRefresh() + " ]");
 
-        if (sharepointClientContext == null) {
-            LOGGER.warning("Unable to get the list items because client context is null");
-            return listItems;
-        }
-        if (stub == null) {
-            LOGGER.warning("Unable to get the list items because stub is null");
-            return listItems;
+        String lastDocID = null;
+        if (null != list.getLastDocForWSRefresh()) {
+            lastDocID = Util.getOriginalDocId(list.getLastDocForWSRefresh().getDocId(), sharepointClientContext.getFeedType());
         }
 
         final String listName = list.getPrimaryKey();
@@ -967,21 +964,16 @@ public class ListsWS {
              */
             if (token != null) {
                 /*
-                 * Do not use lastItemID in the query, if some folderlevel is
-                 * specified. folderlevel signifies that we are in between
-                 * discovering documents under renamed/restored folders. Such
-                 * discovery are done separate from the current web service
-                 * call. Hence, this LastItemID will be used when we restart the
-                 * document discovery again starting from the specified folder
-                 * level.
+                 * lastDocId is interpreted differently in case of folder
+                 * rename. Refer to processListDataElement()
                  */
-                if (null == folder) {
-                    query.set_any(createQuery3(lastItemID));
+                if (!list.processingFolderRename()) {
+                    query.set_any(createQuery3(lastDocID));
                 } else {
                     query.set_any(createQuery3("0"));
                 }
             } else {
-                query.set_any(createQuery2(lastItemID));
+                query.set_any(createQuery2(lastDocID));
             }
 
             viewFields.set_any(createViewFields());
@@ -1011,7 +1003,7 @@ public class ListsWS {
                 boolean retry = handleListException(list, af);
                 if(retry) {
                     LOGGER.log(Level.INFO, "Retrying WS call...");
-                    return getListItemChangesSinceToken(list, lastItemID, allWebs, folder);
+                    return getListItemChangesSinceToken(list, allWebs);
                 }
                 return listItems;
             }
@@ -1034,12 +1026,12 @@ public class ListsWS {
                     final MessageElement child = (MessageElement) itChilds.next();
                     if (SPConstants.CHANGES.equalsIgnoreCase(child.getLocalName())) {
                         inSequence = true;
-                        lastChangeToken = processListChangesElement(child, list, deletedIDs, restoredIDs, renamedIDs, lastItemID, folder);
+                        lastChangeToken = processListChangesElement(child, list, deletedIDs, restoredIDs, renamedIDs);
                     } else if (SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
                         if (!inSequence) {
                             LOGGER.log(Level.SEVERE, "Bad Sequence.");
                         }
-                        listItems.addAll(processListDataElement(child, list, deletedIDs, restoredIDs, renamedIDs, allWebs, lastItemID, folder));
+                        listItems.addAll(processListDataElement(child, list, deletedIDs, restoredIDs, renamedIDs, allWebs));
                     }
                 }
             }
@@ -1090,7 +1082,7 @@ public class ListsWS {
          * to keep the traversal on and update the state info about the complete
          * traversal.
          */
-        if (Util.isNumeric(lastItemID) && (listItems.size() == 0)) {
+        if (Util.isNumeric(lastDocID) && (listItems.size() == 0)) {
             list.setNewList(true);
         }
 
@@ -1251,8 +1243,7 @@ public class ListsWS {
     private String processListChangesElement(
             final MessageElement changeElement, final ListState list,
             final Set<String> deletedIDs, final Set<String> restoredIDs,
-            final Set<String> renamedIDs, final String lastItemID,
-            final Folder folder) throws SharepointException {
+            final Set<String> renamedIDs) throws SharepointException {
         final String lastChangeToken = changeElement.getAttributeValue(SPConstants.LASTCHANGETOKEN);
         LOGGER.log(Level.FINE, "Change Token Recieved [ " + lastChangeToken
                 + " ]. ");
@@ -1293,26 +1284,28 @@ public class ListsWS {
                         + changeType + " ] Skipping... ");
                 continue;
             }
+
+            String lastDocID = null;
+            if (null != list.getLastDocForWSRefresh()) {
+                lastDocID = Util.getOriginalDocId(list.getLastDocForWSRefresh().getDocId(), sharepointClientContext.getFeedType());
+            }
             /*
-             * Ensure that the changed itemId is bigger then the received
-             * lastItemID. This is required because getListItemChnagesSinceToken
-             * always sends change info, irrespective of any conditions
-             * specified in the CAML query.
-             *
-             * Also, since we do not use lastItemID in the CAML query when some
-             * folderLevel is specified. Do the above check only if no
-             * folderLevel has been specified.
+             * Since we do not use lastItemID in the CAML query when processing
+             * folder renames
              */
-            if (null == folder) {
+            if (!list.processingFolderRename()) {
                 try {
-                    if (Integer.parseInt(itemId) <= Integer.parseInt(lastItemID)) {
-                        LOGGER.log(Level.WARNING, "This ItemId [ "
+                    if (Integer.parseInt(itemId) <= Integer.parseInt(lastDocID)) {
+                        LOGGER.log(Level.INFO, "This ItemId [ "
                                 + itemId
                                 + " ] has already been tracked during change detection. skipping...");
                         continue;
                     }
                 } catch (final Exception e) {
-                    // lastItemID is of the list itself.
+                    // This will occur when the LastDocId is of the list itself
+                    LOGGER.log(Level.FINE, "Coud not compare ItemId [ "
+                            + itemId + " ] and LastDocID [ " + lastDocID
+                            + " ] ");
                 }
             }
             if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
@@ -1325,14 +1318,15 @@ public class ListsWS {
                     // We have already processed this.
                     LOGGER.log(Level.WARNING, "skipping deleted ItemID ["
                             + itemId
-                            + "] because it has been found in deletedCache. We have already sent delete feeds for this. listURL ["
+                            + "] because it has been processed in previous batch traversal(s). listURL ["
                             + list.getListURL() + " ]. ");
                     continue;
                 }
                 LOGGER.log(Level.INFO, "ItemID ["
                         + itemId
                         + "] has been deleted. Delete feeds will be sent for this and all the dependednt IDs. listURL ["
-                        + list.getListURL() + " ]. ");
+                        + list.getListURL() + " ] lastDocId [ " + lastDocID
+                        + " ] ");
                 try {
                     deletedIDs.addAll(list.getExtraIDs(itemId));
                 } catch (final Exception e) {
@@ -1347,7 +1341,8 @@ public class ListsWS {
                 LOGGER.log(Level.INFO, "ItemID ["
                         + itemId
                         + "] has been restored. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
-                        + list.getListURL() + " ]. ");
+                        + list.getListURL() + " ] lastDocId [ " + lastDocID
+                        + " ] ");
                 // Remove this ID from the list of deleted IDs. This is
                 // important or else you might have orphaned docs in GSA's
                 // index. There are various use cases where this can happen.
@@ -1362,7 +1357,8 @@ public class ListsWS {
                 LOGGER.log(Level.INFO, "ItemID ["
                         + itemId
                         + "] has been renamed. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
-                        + list.getListURL() + " ]. ");
+                        + list.getListURL() + " ] lastDocId [ " + lastDocID
+                        + " ] ");
             }
         }
 
@@ -1391,8 +1387,15 @@ public class ListsWS {
     private List<SPDocument> processListDataElement(
             final MessageElement dataElement, final ListState list,
             final Set<String> deletedIDs, final Set<String> restoredIDs,
-            final Set<String> renamedIDs, final Set<String> allWebs,
-            final String lastItemID, final Folder folder) {
+            final Set<String> renamedIDs, final Set<String> allWebs) {
+
+        String lastDocID = null;
+        Folder lastDocParentFolder = null;
+        if (null != list.getLastDocForWSRefresh()) {
+            lastDocID = Util.getOriginalDocId(list.getLastDocForWSRefresh().getDocId(), sharepointClientContext.getFeedType());
+            lastDocParentFolder = list.getLastDocForWSRefresh().getParentFolder();
+        }
+
         final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
         final ArrayList<MessageElement> updatedListItems = new ArrayList<MessageElement>();
 
@@ -1490,73 +1493,71 @@ public class ListsWS {
                         }
 
                         if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+                            if (listItems.size() >= intRowLimit) {
+                                // did all renamed folders get crawled? if not,
+                                // reflect this using NextPage
+                                if (null == list.getNextPage()) {
+                                    list.setNextPage("not null");
+                                }
+                                LOGGER.log(Level.CONFIG, "Skipping folder "
+                                        + relativeURL
+                                        + " because batch hint has been reached. This will be processed in the next batch traversal ");
+                                continue;
+                            }
 
                             // When a folder is restored / renamed, new feeds
                             // are sent for all items underneath
                             if (restoredIDs.contains(docId)
                                     || renamedIDs.contains(docId)) {
-                                /*
-                                 * Docs under renamed folders are always sent
-                                 * prior to other docs. So, absence of any
-                                 * folderLevel means that all items under all
-                                 * renamed/restored folders have been crawled in
-                                 * previous batch traversal(s). However, if it
-                                 * is the first batch traversal when the folder
-                                 * rename has been detected, the above analogy
-                                 * will not hold true. Hence, it must be
-                                 * confirmed at first that it's not the first
-                                 * time we are processing this change. The last
-                                 * thing to ensure is: we must start from the
-                                 * place where we stopped last time which is
-                                 * known by ListState.getAtFolderLevel.
-                                 */
-                                if (Util.isNumeric(lastItemID)
-                                        && (null == folder || !folder.getId().equals(docId))) {
-                                    LOGGER.log(Level.INFO, "Skipping renamed/restored folder ID [ "
-                                            + docId
-                                            + " ], relativeURL [ "
-                                            + relativeURL
+
+                                final Folder renamedFolder = new Folder(
+                                        Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
+                                        docId);
+
+                                // Skip all folders that have been
+                                // processed in previous batch traversal(s)
+                                if (list.processingFolderRename()
+                                        && Util.isNumeric(lastDocID)
+                                        && Integer.parseInt(lastDocID) < Integer.parseInt(docId)) {
+                                    LOGGER.log(Level.INFO, "Skipping renamed/restored folder [ "
+                                            + renamedFolder
                                             + " ] since it was processed in previous batch traversal(s) ");
                                     restoredIDs.remove(docId);
                                     renamedIDs.remove(docId);
                                     continue;
                                 }
 
-                                LOGGER.log(Level.INFO, "Processing renamed/restored folder ID["
-                                        + docId
-                                        + "], relativeURL["
-                                        + relativeURL + "] ");
+                                LOGGER.log(Level.INFO, "Processing renamed/restored folder ["
+                                        + renamedFolder + "] ");
 
-                                final String folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
-                                final List<Folder> folders = getSubFoldersRecursively(list, new Folder(
-                                        folderPath, docId), null);
-                                LOGGER.log(Level.CONFIG, " Total "
-                                        + folders.size()
+                                final List<Folder> folders = getSubFoldersRecursively(list, renamedFolder, null);
+                                LOGGER.log(Level.CONFIG, folders.size()
                                         + " folders discovered under [ "
-                                        + folderPath + " ] :  " + folders);
+                                        + renamedFolder + " ] :  " + folders);
 
-                                int folderLevelPos = folders.indexOf(folder);
-                                String lastItemIdAtFolderLevel = lastItemID;
+                                int folderLevelPos = folders.indexOf(lastDocParentFolder);
+                                String lastItemIdAtFolderLevel = lastDocID;
                                 if (folderLevelPos == -1) {
                                     folderLevelPos = 0;
                                     lastItemIdAtFolderLevel = "0";
                                 }
 
-                                for (int index = folderLevelPos; (index < folders.size()); ++index) {
+                                for (int index = folderLevelPos; index < folders.size(); ++index) {
                                     if (listItems.size() >= intRowLimit) {
-                                        // there are more folders to be
-                                        // crawled; nextPage must not be null
+                                        // did all sub folders under the current
+                                        // renamed folder get crawled? if not,
+                                        // reflect this using NextPage
                                         if (null == list.getNextPage()) {
                                             list.setNextPage("not null");
                                         }
                                         break;
                                     }
-                                    Folder currFolder = folders.get(index);
-                                    final List<SPDocument> restoredItems = getListItemsAtFolderLevel(list, lastItemIdAtFolderLevel, currFolder);
+                                    Folder currFolderUnderRenameFolder = folders.get(index);
+                                    final List<SPDocument> restoredItems = getListItemsAtFolderLevel(list, lastItemIdAtFolderLevel, currFolderUnderRenameFolder, renamedFolder);
                                     LOGGER.log(Level.CONFIG, "found "
                                             + restoredItems.size()
                                             + " Items under folder "
-                                            + currFolder
+                                            + currFolderUnderRenameFolder
                                             + " ] in List/Library ["
                                             + list.getListURL() + " ]");
                                     listItems.addAll(restoredItems);
@@ -1565,7 +1566,7 @@ public class ListsWS {
                                 LOGGER.log(Level.INFO, "found "
                                         + listItems.size()
                                         + " items under restored/renamed folder ["
-                                        + relativeURL + "] ");
+                                        + renamedFolder + " ] ");
                             }
                             continue; // do not send folders as documents.
                         }

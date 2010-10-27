@@ -149,12 +149,17 @@ public class GlobalState {
 
                     Calendar lastCrawledDocLastMod = null;
                     Folder lastCrawledDocParentFolder = null;
+                    Folder lastCrawledDocRenamedFolder = null;
                     ActionType lastCrawledDocAction = null;
 
                     if (SPType.SP2007 == web.getSharePointType()) {
-                        String parentFolderPath = atts.getValue(SPConstants.STATE_FOLDER_PATH);
-                        String parentFolderId = atts.getValue(SPConstants.STATE_FOLDER_ID);
-                        if (null == parentFolderPath || null == parentFolderId) {
+                        String parentFolderPath = atts.getValue(SPConstants.STATE_PARENT_FOLDER_PATH);
+                        String parentFolderId = atts.getValue(SPConstants.STATE_PARENT_FOLDER_ID);
+                        String renamedFolderPath = atts.getValue(SPConstants.STATE_RENAMED_FOLDER_PATH);
+                        String renamedFolderId = atts.getValue(SPConstants.STATE_RENAMED_FOLDER_ID);
+                        if (null == parentFolderPath || null == parentFolderId
+                                || null == renamedFolderId
+                                || null == renamedFolderPath) {
                             // for backward compatibility. Earlier version uses
                             // only FolderPath which was called FolderLevel.
                             String folderLevel = atts.getValue(SPConstants.STATE_FOLDER_LEVEL);
@@ -170,6 +175,8 @@ public class GlobalState {
                         } else {
                             lastCrawledDocParentFolder = new Folder(
                                     parentFolderPath, parentFolderId);
+                            lastCrawledDocRenamedFolder = new Folder(
+                                    renamedFolderPath, renamedFolderId);
                         }
 
                         if (FeedType.CONTENT_FEED == feedType) {
@@ -188,6 +195,7 @@ public class GlobalState {
                             lastCrawledDocId, lastCrawledDocURL,
                             lastCrawledDocLastMod, lastCrawledDocAction);
                     lastCrawledDoc.setParentFolder(lastCrawledDocParentFolder);
+                    lastCrawledDoc.setRenamedFolder(lastCrawledDocRenamedFolder);
                     list.setLastDocProcessedForWS(lastCrawledDoc);
                 } else {
                     LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");

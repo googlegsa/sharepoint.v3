@@ -271,8 +271,10 @@ public class SPConstants {
     @Deprecated
     public static final String STATE_FOLDER_LEVEL = "FolderLevel";
 
-    public static final String STATE_FOLDER_PATH = "FolderPath";
-    public static final String STATE_FOLDER_ID = "FolderID";
+    public static final String STATE_PARENT_FOLDER_PATH = "ParentFolderPath";
+    public static final String STATE_PARENT_FOLDER_ID = "ParentFolderID";
+    public static final String STATE_RENAMED_FOLDER_PATH = "RenamedFolderPath";
+    public static final String STATE_RENAMED_FOLDER_ID = "RenamedFolderID";
     public static final String STATE_CONTENT_TYPE = "ContentType";
     public static final String CONTENT_TYPE_DOCUMENT = "Document";
     public static final String STATE_INSERT_TIME = "InsertionTime";

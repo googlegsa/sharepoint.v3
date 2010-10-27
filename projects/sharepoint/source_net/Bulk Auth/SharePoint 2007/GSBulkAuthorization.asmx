@@ -102,11 +102,11 @@ public class BulkAuthorization : System.Web.Services.WebService
                 catch (Exception e)
                 {
                     authData.Message = "Authorization failure! " + GetFullMessage(e);
-                    authData.Message += " \nAuthorization of this documents took " + System.DateTime.Now.Subtract(authDataStartTime).TotalSeconds + " seconds";
+                    authData.Message += " \nAuthorization of this document took " + System.DateTime.Now.Subtract(authDataStartTime).TotalSeconds + " seconds";
                     continue;
                 }
                 authData.IsDone = true;
-                authData.Message += "\nAuthorization of this documents completed in " + System.DateTime.Now.Subtract(authDataStartTime).TotalSeconds + " seconds";
+                authData.Message += "\nAuthorization of this document completed successfully in " + System.DateTime.Now.Subtract(authDataStartTime).TotalSeconds + " seconds";
             }
             authDataPacket.IsDone = true;
             if (authDataPacket.Container.Type == global::Container.ContainerType.NA)
@@ -354,7 +354,7 @@ public class WSContext
     }
 
     /// <summary>
-    /// WSContext objects needs to know about the user who is being authorized. And, there can be only one such user 
+    /// WSContext objects needs to know about the user who is being authorized. And, there can be only one such user
     /// becasue one web service call authorizes only one user
     /// </summary>
     /// <param name="username"></param>

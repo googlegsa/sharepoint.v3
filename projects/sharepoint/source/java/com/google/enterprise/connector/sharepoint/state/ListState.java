@@ -1232,18 +1232,23 @@ public class ListState implements StatefulObject {
             }
 
             // dump the lastDocProcessedForWS
-            if (getLastDocForWSRefresh() != null) {
+            SPDocument lastDocForWSRefresh = getLastDocForWSRefresh();
+            if (lastDocForWSRefresh != null) {
                 atts.clear();
                 // ID and URL are mandatory field, used in
                 // SpDocument.compareTo(). These attributes must be
                 // preserved.
-                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getLastDocForWSRefresh().getDocId());
-                atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getUrl());
+                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, lastDocForWSRefresh.getDocId());
+                atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, lastDocForWSRefresh.getUrl());
 
                 if (SPType.SP2007 == getParentWebState().getSharePointType()) {
+                    if (null != lastDocForWSRefresh.getRenamedFolder()) {
+                        atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, lastDocForWSRefresh.getRenamedFolder().getPath());
+                        atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, lastDocForWSRefresh.getRenamedFolder().getId());
+                    }
                     if (null != getLastDocForWSRefresh().getParentFolder()) {
-                        atts.addAttribute("", "", SPConstants.STATE_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getParentFolder().getPath());
-                        atts.addAttribute("", "", SPConstants.STATE_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getParentFolder().getId());
+                        atts.addAttribute("", "", SPConstants.STATE_PARENT_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getParentFolder().getPath());
+                        atts.addAttribute("", "", SPConstants.STATE_PARENT_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getParentFolder().getId());
                     }
                     if (FeedType.CONTENT_FEED == feedType) {
                         atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getAction().toString());
@@ -1456,5 +1461,14 @@ public class ListState implements StatefulObject {
 
     public boolean isInfoPathLibrary() {
         return SPConstants.BT_FORMLIBRARY.equals(baseTemplate);
+    }
+
+    public boolean processingFolderRename() {
+        if (null == lastDocProcessedForWS
+                || null == lastDocProcessedForWS.getRenamedFolder()) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

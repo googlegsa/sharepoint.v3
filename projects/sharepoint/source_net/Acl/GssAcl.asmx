@@ -1062,6 +1062,11 @@ public class GssAclMonitor
 /// </summary>
 public sealed class GssAclUtility
 {
+    private GssAclUtility()
+    {
+        throw new Exception("Operation not allowed! ");    
+    }
+    
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from the web application security policies
     /// </summary>
