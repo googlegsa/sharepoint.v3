@@ -490,7 +490,7 @@ public class TestConfiguration {
      *
      * @return
      */
-    public static DataSource getUserDataSource() {
+    public static DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(TestConfiguration.driverClass);
         dataSource.setUrl(TestConfiguration.dbUrl);

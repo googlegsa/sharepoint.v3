@@ -14,6 +14,18 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.spi.Document;
+import com.google.enterprise.connector.spi.DocumentList;
+import com.google.enterprise.connector.spi.LocalDocumentStore;
+import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SkippedDocumentException;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,17 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.spi.Document;
-import com.google.enterprise.connector.spi.DocumentList;
-import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.SkippedDocumentException;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 /**
  * An implementation of DocumentList Class to represents a list of SPDocuments
@@ -53,6 +54,8 @@ public class SPDocumentList implements DocumentList {
     private Map<String, String> aliasMap = null;
     // Holds the index position of the doc last sent to CM
     private int docsFedIndexPosition = 0;
+
+    private LocalDocumentStore localDocumentStore;
 
     /**
      * @param inDocuments List of {@link SPDocument} to be sent to GSA
@@ -189,6 +192,9 @@ public class SPDocumentList implements DocumentList {
      */
     public String checkpoint() throws RepositoryException {
         for (int i = 0; i < docsFedIndexPosition; i++) {
+            if (null != localDocumentStore) {
+                localDocumentStore.storeDocument(documents.get(i));
+            }
             // Process the liststate and its crawl queue for the given doc which
             // has been sent to CM and fed to GSA successfully
             processListStateforCheckPoint(documents.get(i));
@@ -198,6 +204,10 @@ public class SPDocumentList implements DocumentList {
             LOGGER.log(Level.CONFIG, "checkpoint processed; saving GlobalState to disk.");
         }
         globalState.saveState(); // snapshot it all to disk
+
+        if (null != localDocumentStore) {
+            localDocumentStore.flush();
+        }
 
         return SPConstants.CHECKPOINT_VALUE;
     }
@@ -545,5 +555,13 @@ public class SPDocumentList implements DocumentList {
 
     public List<SPDocument> getDocuments() {
         return documents;
+    }
+
+    public LocalDocumentStore getLocalDocumentStore() {
+        return localDocumentStore;
+    }
+
+    public void setLocalDocumentStore(LocalDocumentStore localDocumentStore) {
+        this.localDocumentStore = localDocumentStore;
     }
 }

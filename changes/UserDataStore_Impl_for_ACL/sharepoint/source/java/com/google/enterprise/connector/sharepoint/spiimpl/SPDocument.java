@@ -14,24 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.io.InputStream;
-import java.net.URLDecoder;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.GetMethod;
-
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -54,6 +36,24 @@ import com.google.enterprise.connector.spiimpl.BinaryValue;
 import com.google.enterprise.connector.spiimpl.BooleanValue;
 import com.google.enterprise.connector.spiimpl.DateValue;
 import com.google.enterprise.connector.spiimpl.StringValue;
+
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.methods.GetMethod;
+
+import java.io.InputStream;
+import java.net.URLDecoder;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class to hold data regarding a sharepoint document. Anything that is sent ot
@@ -106,7 +106,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      */
     private boolean toBeFed = true;
 
-    // TODO: use Set instead of list
     // List of users and their permissions to be sent in document's ACL
     private Map<String, Set<RoleType>> usersAclMap;
 
@@ -522,6 +521,38 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 values.add(Value.getStringValue(roleType.toString()));
             }
             return new SimpleProperty(values);
+        } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_PRIMARY_FOLDER)) {
+            if (null == fileref || null == parentList
+                    || null == parentList.getListConst()) {
+                return null;
+            } else {
+                int index = fileref.indexOf(parentList.getListConst());
+                if (index == -1) {
+                    LOGGER.log(Level.WARNING, "The document path [ " + fileref
+                            + " ] does not match its parent list listConst [ "
+                            + parentList.getListConst() + " ], list [ "
+                            + parentList + "]. returning...");
+                    return null;
+                }
+                index += parentList.getListConst().length();
+                String parentPath = fileref.substring(index);
+                index = parentPath.lastIndexOf(SPConstants.SLASH);
+                if (index == -1) {
+                    parentPath = null;
+                } else {
+                    parentPath = parentPath.substring(0, index);
+                }
+
+                return new SPProperty(strPropertyName, new StringValue(
+                        parentPath));
+            }
+        } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_CONTAINER)) {
+            return (null == parentList) ? null : new SPProperty(
+                    strPropertyName,
+                    new StringValue(parentList.getPrimaryKey()));
+        } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_PERSISTED_CUSTOMDATA_1)) {
+            return new SPProperty(strPropertyName, new StringValue(getUrl()));
+
         }
         // FIXME: We can get rid of this if-else-if ladder here by setting all
         // the relevant properties (in appropriate type) right at the time of

@@ -14,10 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -28,6 +24,10 @@ import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalContext;
 import com.google.enterprise.connector.spi.TraversalContextAware;
 import com.google.enterprise.connector.spi.TraversalManager;
+
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is an implementation of the TraversalManager from the spi. All the
@@ -225,6 +225,8 @@ public class SharepointTraversalManager implements TraversalManager,
         } else {
             LOGGER.info("Traversal returned [0] documents");
         }
+
+        rsAll.setLocalDocumentStore(sharepointClientContext.getLocalDocumentStore());
 
         return rsAll;
     }

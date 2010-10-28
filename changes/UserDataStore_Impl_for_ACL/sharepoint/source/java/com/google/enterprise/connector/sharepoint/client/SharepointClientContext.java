@@ -18,6 +18,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.LocalDocumentStore;
 import com.google.enterprise.connector.spi.TraversalContext;
 
 import org.apache.commons.httpclient.Credentials;
@@ -79,6 +80,9 @@ public class SharepointClientContext implements Cloneable {
     private boolean stripDomainFromAces = true;
 
     private UserDataStoreDAO userDataStoreDAO;
+
+    // XXX This, in future will be moved to connector manager
+    private LocalDocumentStore localDocumentStore;
 
     /**
      * For cloning
@@ -158,6 +162,9 @@ public class SharepointClientContext implements Cloneable {
                 // It's ok if we do a shallow copy here
                 spCl.userDataStoreDAO = this.userDataStoreDAO;
             }
+
+            spCl.localDocumentStore = this.localDocumentStore;
+
             return spCl;
         } catch (final Throwable e) {
             LOGGER.log(Level.FINEST, "Unable to clone client context.", e);
@@ -915,5 +922,13 @@ public class SharepointClientContext implements Cloneable {
 
     public void setUserDataStoreDAO(UserDataStoreDAO userDataStoreDAO) {
         this.userDataStoreDAO = userDataStoreDAO;
+    }
+
+    public LocalDocumentStore getLocalDocumentStore() {
+        return localDocumentStore;
+    }
+
+    public void setLocalDocumentStore(LocalDocumentStore localDocumentStore) {
+        this.localDocumentStore = localDocumentStore;
     }
 }

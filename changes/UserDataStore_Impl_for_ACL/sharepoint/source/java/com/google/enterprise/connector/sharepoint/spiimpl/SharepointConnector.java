@@ -24,6 +24,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+import com.google.enterprise.connector.util.dao.LocalDocumentStoreImpl;
 
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
@@ -388,12 +389,28 @@ public class SharepointConnector implements Connector {
             if(null == locale || locale.length() == 0) {
                 locale = "mssql";
             }
-            queryProvider.init(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir), locale);
+            String connectorName = Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir);
+            queryProvider.init(connectorName, locale);
             queryProvider.setDatabase(properties.getProperty("DATABASE"));
 
             UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
                     dataSource, queryProvider, userGroupMembershipRowMapper);
             sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
+
+            // ///////////
+            // //////////////////
+
+            DriverManagerDataSource cmDataSource = new DriverManagerDataSource();
+            cmDataSource.setDriverClassName(properties.getProperty("DriverClass"));
+            cmDataSource.setUrl(properties.getProperty("CMDBURL"));
+            cmDataSource.setUsername(properties.getProperty("DBUsername"));
+            cmDataSource.setPassword(properties.getProperty("DBPassword"));
+
+            com.google.enterprise.connector.util.dao.SimpleQueryProvider cmQueryProvider = new com.google.enterprise.connector.util.dao.SimpleQueryProvider(
+                    "com.google.enterprise.connector.util.dao.sqlQueries");
+            cmQueryProvider.setDocTableName("Local_Document_Store");
+            cmQueryProvider.init(connectorName);
+            sharepointClientContext.setLocalDocumentStore(LocalDocumentStoreImpl.getInstance(cmDataSource, cmQueryProvider));
         } catch (Throwable e) {
             e.printStackTrace();
         }
