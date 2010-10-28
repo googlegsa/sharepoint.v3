@@ -759,10 +759,7 @@ public class SharepointClient {
                 if (lastDoc != null) {
                     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()
                             && ActionType.DELETE.equals(lastDoc.getAction())) {
-                        listState.saveNextChangeTokenForWSCall(null);
-                        listState.commitChangeTokenForWSCall();
-                        listState.setLastDocProcessedForWS(null);
-                        listState.setCrawlQueue(null);
+                        listState.resetState();
                         if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             // In case of content feed, we need to keep track of
                             // folders and the items under that. This is
