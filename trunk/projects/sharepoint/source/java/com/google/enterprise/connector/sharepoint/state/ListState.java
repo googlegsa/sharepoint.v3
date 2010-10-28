@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -150,6 +151,9 @@ public class ListState implements StatefulObject {
 
     // Flag to determine the crawl behavior of the list
     private boolean noCrawl;
+
+    // Folders that are renamed/restored
+    private List<Folder> changedFolders = new LinkedList<Folder>();
 
     /**
      * @param inInternalName
@@ -597,6 +601,9 @@ public class ListState implements StatefulObject {
      *            {@link ListState#commitChangeTokenForWSCall()}
      */
     public void saveNextChangeTokenForWSCall(final String inChangeToken) {
+        if (inChangeToken == null || inChangeToken.equals(currentChangeToken)) {
+            return;
+        }
         nextChangeToken = inChangeToken;
         LOGGER.log(Level.CONFIG, "currentChangeToken [ " + currentChangeToken
                 + " ], nextChangeToken [ " + nextChangeToken
@@ -614,10 +621,15 @@ public class ListState implements StatefulObject {
      * you make any change here
      */
     public void commitChangeTokenForWSCall() {
+        if (null == nextChangeToken
+                || nextChangeToken.equals(currentChangeToken)) {
+            return;
+        }
         LOGGER.log(Level.CONFIG, "committing nextChangeToken [ "
                 + nextChangeToken + " ] as currentChangetoken");
         currentChangeToken = nextChangeToken;
         nextChangeToken = null;
+        this.changedFolders.clear();
     }
 
     /**
@@ -1335,8 +1347,7 @@ public class ListState implements StatefulObject {
      * Resets the state of this List to initiate a complete re-crawl
      */
     public void resetState() {
-        saveNextChangeTokenForWSCall(null);
-        commitChangeTokenForWSCall();
+        currentChangeToken = nextChangeToken = null;
         setLastDocProcessedForWS(null);
         setCrawlQueue(null);
         endAclCrawl();
@@ -1463,12 +1474,11 @@ public class ListState implements StatefulObject {
         return SPConstants.BT_FORMLIBRARY.equals(baseTemplate);
     }
 
-    public boolean processingFolderRename() {
-        if (null == lastDocProcessedForWS
-                || null == lastDocProcessedForWS.getRenamedFolder()) {
-            return false;
-        } else {
-            return true;
-        }
+    public List<Folder> getChangedFolders() {
+        return changedFolders;
+    }
+
+    public void addToChangedFolders(Folder changedFolder) {
+        this.changedFolders.add(changedFolder);
     }
 }
