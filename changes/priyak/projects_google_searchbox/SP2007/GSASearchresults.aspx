@@ -86,7 +86,7 @@
         class GoogleSearchBox
         {
             public string GSALocation;
-            public string accessLevel = "a";//Do a Public and Secured search
+            public string accessLevel; //Do a Public and Secured search
             public string siteCollection;
             public string frontEnd;
             public string enableInfoLogging;
@@ -780,7 +780,7 @@ else if(document.attachEvent)
                             }
 
                             /*Get the user suppiled parameters from the web.config file*/
-                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
+                            searchReq = "?q=" + qQuery + "&access=" + WebConfigurationManager.AppSettings["accesslevel"] + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
 
                             if (gProps.frontEnd.Trim() != "")
                             {
