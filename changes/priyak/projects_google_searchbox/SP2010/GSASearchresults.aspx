@@ -1,4 +1,4 @@
-﻿<%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
     Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
@@ -9,7 +9,7 @@
 <%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
 <%@ Assembly Name="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c"%> 
-<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults"   EnableViewState="false" EnableViewStateMac="false"    %> 
+<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults"   EnableViewState="true" EnableViewStateMac="false"     %> 
 <%@ Import Namespace="Microsoft.Office.Server.Search.Internal.UI" %> <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 <%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Import Namespace="Microsoft.SharePoint" %> 
 <%@ Assembly Name="Microsoft.Web.CommandUI, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
@@ -64,6 +64,7 @@ div.ms-areaseparatorright{
         public const String PREV = "Previous";
         public const String NEXT = "Next";
         public const String PAGENAME = "GSASearchresults.aspx";
+        //public const String PAGENAME = "GSASearchresults.aspx";
         public string tempvar = "";
         public const string PREVSTMT = "";//initially prev should be hidden
         public const string NEXTSTMT = "";
@@ -71,6 +72,12 @@ div.ms-areaseparatorright{
         public int start = 0;/* E.g. start = 1 and num =5 (return 11-15 results)*/
         int endB = 0;
 
+		public const string currentSite = "Current Site";
+        public const string currentSiteAndAllSubsites = "Current Site and all subsites";
+        public const string currentList = "Current List";
+        public const string currentFolder = "Current Folder";
+        public const string currentFolderAndAllSubfolders = "Current Folder and all subfolders";
+		
         /*Enumeration which defines Search Box Log levels*/
         public enum LOG_LEVEL
         {
@@ -82,7 +89,7 @@ div.ms-areaseparatorright{
         class GoogleSearchBox
         {
             public string GSALocation;
-            public string accessLevel="a";//Do a Public and Secured search
+            public string accessLevel;//Do a Public and Secured search
             public string siteCollection;
             public string frontEnd;
             public string enableInfoLogging;
@@ -538,10 +545,11 @@ div.ms-areaseparatorright{
 <script type="text/javascript">
   	function _spFormOnSubmit()
 	{
-		return GoSearch();
+		//return GoSearch();
 	}
 	function SetPageTitle()
 	{
+	   
 	   var Query = "";
 	   if (window.top.location.search != 0)
 	   {
@@ -551,7 +559,45 @@ div.ms-areaseparatorright{
 		  {
             
             //set the value of query
-            var myTextField = document.getElementById('idSearchString');
+            var myTextField = document.getElementById("ctl00_PlaceHolderGlobalNavigation_GlobalBreadCrumbNavPopout_PlaceHolderTitleBreadcrumb_ctl00_txtSearch");
+            
+             // Code for carry forwarding the scope selected from the dropdown
+            var dropdownScope = document.getElementById("ctl00_PlaceHolderSearchArea_ctl01_idSearchScope");
+            
+            var scope = getParameter(Query, 'selectedScope');
+            var scopeURL = getParameter(Query, 'scopeUrl');
+            
+            var currentSite = "Current Site";
+            var currentSiteAndAllSubsites = "Current Site and all subsites";
+            var currentList = "Current List";
+            var currentFolder = "Current Folder";
+            var currentFolderAndAllSubfolders = "Current Folder and all subfolders";  
+            
+            if(scope == currentList || scope == currentFolder || scope == currentFolderAndAllSubfolders)
+            {
+
+                for (var i = 0; i < dropdownScope.options.length; i = i + 1)
+                {
+                    if (dropdownScope.options[i].text == scope) 
+                    {
+                        dropdownScope.options[i].disabled = false;
+                        break;
+                    }
+                } 
+                
+                
+            }   
+            
+            for(var i = 0;i < dropdownScope.options.length ; i = i+1)
+            {
+                if(dropdownScope.options[i].text == scope)
+                {
+                    dropdownScope.options[i].selected = true;
+                    break;
+                }
+            }
+            
+            if(myTextField.value != "")
         	{
 		        myTextField.value=keywordQuery;
 		    }
@@ -602,6 +648,7 @@ else if(document.attachEvent)
 	document.attachEvent("onreadystatechange", SetPageTitle);
 }
 </script>
+
 
 </asp:content>
 <asp:content id="Content3" contentplaceholderid="PlaceHolderTitleAreaClass" runat="server">
@@ -682,6 +729,8 @@ else if(document.attachEvent)
                     string searchReq = string.Empty;
                     string qQuery = string.Empty;
                     gProps.initGoogleSearchBox();//initialize the SearchBox parameters
+                    string finalURL = "";
+                    string strURL = "";
                     
                     ////////////////////////////CONSTRUCT THE SEARCH QUERY FOR GOOGLE SEARCH APPLIANCE ///////////////////////////////////
                     //The search query comes in 'k' parameter
@@ -700,12 +749,41 @@ else if(document.attachEvent)
                             string port = "";
                             string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
                             temp = temp.ToLower();
+                            strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
+                            
                             temp = temp.Replace("http://", "");// Delete http from url
                             qQuery += " inurl:\"" + temp + "\"";//  Change functionality to use "&sitesearch="  - when GSA Bug 11882 has been closed
+
+                            string scopeText = inquery["selectedScope"]; // Getting the user selected, scope dropdown textual value 
+                            switch (scopeText)
+                            {
+                                case currentSite:
+                                    finalURL = strURL + "/";
+                                    break;
+
+                                case currentSiteAndAllSubsites:
+                                    finalURL = strURL;
+                                    break;
+
+                                case currentList:
+                                    finalURL = strURL;
+                                    break;
+
+                                case currentFolder:
+                                    finalURL = strURL + "/";
+                                    break;
+
+                                case currentFolderAndAllSubfolders:
+                                    finalURL = strURL;
+                                    break;
+                            }
+                            finalURL = finalURL.Replace("'", "");
+                            qQuery += "&sitesearch=" + finalURL;
                         }
 
                         /*Get the user suppiled parameters from the web.config file*/
-                        searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
+
+                        searchReq = "?q=" + qQuery + "&access=" + WebConfigurationManager.AppSettings["accesslevel"] + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")
                         {
                             //check for the flag whether to enable custom styling locally or use GSA style
@@ -765,6 +843,7 @@ else if(document.attachEvent)
                         CookieContainer cc = new CookieContainer();
                         int i;
 						String GSASearchUrl= gProps.GSALocation + "/search" + searchReq;
+                        Response.Write("Search Request to GSA = " + GSASearchUrl);
 						
                         ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
                         objResp = (HttpWebResponse)gProps.GetResponse(false, GSASearchUrl,null,null);//fire getresponse
@@ -1085,7 +1164,8 @@ else if(document.attachEvent)
                 
             %>
             
-              <a href="<%=PAGENAME%>?k=<%=myquery%>&start=<%=start+num%>"><%=tempvar %></a>     
+              <a href="<%=PAGENAME%>?k=<%=myquery%>&start=<%=start+num%>"><%=tempvar %></a> 
+              
              </td>
              
              
