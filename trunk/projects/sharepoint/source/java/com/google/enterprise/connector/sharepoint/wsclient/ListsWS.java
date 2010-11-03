@@ -828,6 +828,9 @@ public class ListsWS {
         GetListItemsResponseGetListItemsResult res = null;
 
         try {
+            LOGGER.fine("DocId for WS call : " + lastItemIdAtFolderLevel
+                    + " folder path : " + currentFolder
+                    + " for renamed folder " + renamedFolder);
             query.set_any(createQuery2(lastItemIdAtFolderLevel));
             viewFields.set_any(createViewFields());
             queryOptions.set_any(createQueryOptions(false, currentFolder.getPath(), null));
@@ -890,6 +893,7 @@ public class ListsWS {
         Collections.sort(listItems);
         LOGGER.log(Level.FINE, "found " + listItems.size() + " under folder "
                 + currentFolder);
+
         return listItems;
     }
 
@@ -1266,10 +1270,14 @@ public class ListsWS {
                 continue;
             }
 
+            LOGGER.config("Recieved change type as: " + changeType);
+
             if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
                 if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
                     // Delete feed processing is done only in case of
                     // content feed
+                    LOGGER.fine("Ignoring change type: " + changeType
+                            + " since its applicable for content feed only");
                     continue;
                 }
                 if (list.isInDeleteCache(itemId)) {
@@ -1515,7 +1523,7 @@ public class ListsWS {
 
             final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
             for (Folder currentFolder : folders) {
-                if (allItems.size() >= sharepointClientContext.getBatchHint()) {
+                if (listItems.size() >= sharepointClientContext.getBatchHint()) {
                     // More sub folders to be crawled
                     if (null == list.getNextPage()) {
                         list.setNextPage("not null");
@@ -1527,6 +1535,45 @@ public class ListsWS {
                         && lastDocParentFolder.equals(currentFolder)) {
                     lastDocIdForCurrentFolder = Util.getOriginalDocId(lastDocument.getDocId(), sharepointClientContext.getFeedType());
                 }
+
+                // In case there have been items crawled as part of renamed
+                // folder discovery from previous batch traversals, there is a
+                // good chance one or more folders can be repeated and sent as
+                // duplicate feeds. This will be the case when batchHint is say
+                // 100, 75 docs were discovered in the first call to this method
+                // as part of completion of crawling renamed folders pending
+                // from previous batch traversal, but could not retrieve
+                // batchHint number of documents. This will mean re-fetching the
+                // same docs in same batch traversal.
+                // Here we ensure that the docId that is sent is incremented to
+                // go pass the lastDocId used in the same batch traversal, but
+                // could not retrieve batchHint number of docs. The idea is to
+                // ensure that the connector is done with all docs
+                if (Util.isNumeric(lastDocIdForCurrentFolder)
+                        && !lastDocIdForCurrentFolder.equals("0")) {
+                    int docIdForWSCall = Integer.parseInt(lastDocIdForCurrentFolder);
+                    int originalDocIdForWSCall = docIdForWSCall;
+
+                    for (SPDocument spDocument : allItems) {
+                        if (spDocument.getParentFolder().equals(currentFolder)
+                                && Integer.parseInt(spDocument.getDocId()) > originalDocIdForWSCall) {
+                            // Increment the docId since this doc has already
+                            // been discovered
+                            docIdForWSCall += 1;
+                        }
+                    }
+
+                    if (docIdForWSCall > originalDocIdForWSCall) {
+                        // Use the updated docId since it has been incremented
+                        // to the docId of the last document discovered from the
+                        // current folder
+                        lastDocIdForCurrentFolder = Integer.toString(docIdForWSCall);
+                        StringBuffer msg = new StringBuffer(
+                                "The docId to be used for WS call is updated from [ ").append(originalDocIdForWSCall).append(" ] to [ ").append(lastDocIdForCurrentFolder).append(" ] since the old docId has been proceessed as part of previous batch traversal");
+                        LOGGER.fine(msg.toString());
+                    }
+                }
+
                 listItems.addAll(getListItemsAtFolderLevel(list, lastDocIdForCurrentFolder, currentFolder, changedFolder));
             }
 

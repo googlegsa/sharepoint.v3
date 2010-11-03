@@ -200,6 +200,16 @@ public class GlobalState {
                 } else {
                     LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
                 }
+            } else if (SPConstants.STATE_RENAMED_FOLDER_LIST.equals(localName)) {
+                // Do nothing. Liststate creates an empty list of changedFolder
+                // by default which corresponds to this node and hence no action
+                // is required
+            } else if (SPConstants.STATE_RENAMED_FOLDER_NODE.equals(localName)) {
+                if (list != null) {
+                    // Load the renamed folder as Folder object instance and add
+                    // it to the list of renamed folders
+                    list.loadRenamedFolderList(atts);
+                }
             } else if (SPConstants.STATE_EXTRAIDS_FOLDERS.equals(localName)) {
                 currentNode = Nodes.FOLDERS_EXTRAID;
             } else if (SPConstants.STATE_EXTRAIDS_ATTACHMENTS.equals(localName)) {
