@@ -1270,8 +1270,61 @@ public class ListState implements StatefulObject {
                 handler.startElement("", "", SPConstants.STATE_LASTDOCCRAWLED, atts);
                 handler.endElement("", "", SPConstants.STATE_LASTDOCCRAWLED);
             }
+
+            // Dump the renamed folder list that have been processed so far
+            dumpRenamedFolderList(handler);
         }
         handler.endElement("", "", SPConstants.LIST_STATE);
+    }
+
+    /**
+     * Dumps the list of renamed folders if any to the state file. These are the
+     * list of folders which need to be processed on connector restart
+     * <p>
+     * Creates a node structure as under the list state node: <code>
+     * &lt;RenamedFolderList&gt;
+     * &lt;RenamedFolder ID="%FolderID%" Path="%FolderPath%"/&gt;
+     * .
+     * .
+     * &lt;/RenamedFolderList&gt;
+     * </code>
+     * </p>
+     *
+     * @param handler
+     * @throws SAXException
+     */
+    private void dumpRenamedFolderList(ContentHandler handler)
+            throws SAXException {
+        // Dump the RenamedFolderList if there are any folder renames
+        if (changedFolders != null && !changedFolders.isEmpty()) {
+            // Start of the RenamedFolderList node
+            handler.startElement("", "", SPConstants.STATE_RENAMED_FOLDER_LIST, new AttributesImpl());
+
+            for (Folder renamedFolder : changedFolders) {
+                // Dump each folder as RenamedFolder node with id & path as
+                // attributes
+                AttributesImpl atts = new AttributesImpl();
+                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, renamedFolder.getId());
+                atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDERPATH, SPConstants.STATE_ATTR_CDATA, renamedFolder.getPath());
+                handler.startElement("", "", SPConstants.STATE_RENAMED_FOLDER_NODE, atts);
+                handler.endElement("", "", SPConstants.STATE_RENAMED_FOLDER_NODE);
+            }
+
+            handler.endElement("", "", SPConstants.STATE_RENAMED_FOLDER_LIST);
+        }
+
+    }
+
+    /**
+     * Creates a {@link Folder} object for each &lt;RenamedFolder&gt; node
+     *
+     * @param atts The list of attributes for the given path
+     */
+    public void loadRenamedFolderList(Attributes atts) {
+        Folder renamedFolder = new Folder(
+                atts.getValue(SPConstants.STATE_RENAMED_FOLDERPATH),
+                atts.getValue(SPConstants.STATE_ID));
+        changedFolders.add(renamedFolder);
     }
 
     /**
