@@ -595,13 +595,21 @@ public class ListState implements StatefulObject {
     }
 
     /**
+     * Saves the nextChangeToken which will be committed as the
+     * currentChangeToken for making WS call once all the documents discovered
+     * using current change token will be fed to GSA. A saved nextChangeToken
+     * value must be committed at some time in future before another value can
+     * be saved.
+     *
      * @param inChangeToken save it as the next change token to be used for WS
      *            calls. Note that, this value is not picked up during the WS
      *            call unless you call
      *            {@link ListState#commitChangeTokenForWSCall()}
      */
     public void saveNextChangeTokenForWSCall(final String inChangeToken) {
-        if (inChangeToken == null || inChangeToken.equals(currentChangeToken)) {
+        if (inChangeToken == null || inChangeToken.equals(currentChangeToken)
+        // An already saved token must first be committed
+                || null != nextChangeToken) {
             return;
         }
         nextChangeToken = inChangeToken;
@@ -611,14 +619,10 @@ public class ListState implements StatefulObject {
     }
 
     /**
-     * commits the internally saved next change token value as the current
-     * change token and reset the next change token. Note: The current usage of
-     * committing the Change Token is NOT idempotent meaning, calling this
-     * method once will update certain info internally and the result would not
-     * be same if the same method is called consecutively. Connector make use of
-     * this info by checking {@link ListState#isNextChangeTokenBlank()} to
-     * ensure if the change token is already committed. Do take care of this if
-     * you make any change here
+     * commits the internally saved nextChangeToken value as the
+     * currentChangeToken and reset the next change token. If nextChangeToken is
+     * null, the method returns without changing the value of
+     * currentChangeToken.
      */
     public void commitChangeTokenForWSCall() {
         if (null == nextChangeToken
