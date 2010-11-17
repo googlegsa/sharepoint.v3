@@ -1038,8 +1038,11 @@ public class ListsWS {
             }
         }
 
-        // If some folder renames are found in WS response, handle it first
-        traverseChangedFolders(list, listItems);
+        // If some folder renames are found in WS response, handle it first.
+        if (renamedIDs.size() > 0 || restoredIDs.size() > 0) {
+            traverseChangedFolders(list, listItems);
+        }
+
         if (listItems.size() < sharepointClientContext.getBatchHint()
                 && null != updatedListItems) {
             for (Object element : updatedListItems) {
@@ -1069,6 +1072,14 @@ public class ListsWS {
         } else {
             LOGGER.config("No Items found in List/Library ["
                     + list.getListURL() + "]");
+
+            // If there are no more documents to be sent from the current window
+            // of (changetoken to nextchangeToken), the completion of this
+            // window must be announced to the caller.
+            if (null == list.getNextPage()
+                    && null != list.getNextChangeTokenForSubsequectWSCalls()) {
+                list.setNewList(true);
+            }
         }
 
         Collections.sort(listItems);
@@ -1302,24 +1313,25 @@ public class ListsWS {
                             + list.getListURL()
                             + " ]. ");
                 }
-            } else if (SPConstants.RESTORE.equalsIgnoreCase(changeType)
+            }
+            // Folder rename/restore are tracked only when the current
+            // change token is being used for the first time while making WS
+            // call hence, the check
+            // null == list.getNextChangeTokenForSubsequectWSCalls()
+            else if (SPConstants.RESTORE.equalsIgnoreCase(changeType)
                     && null == list.getNextChangeTokenForSubsequectWSCalls()) {
-                // Folder rename/restore are tracked only the current change
-                // token is being used very first time for tracking changes.
                 restoredIDs.add(itemId);
                 LOGGER.log(Level.INFO, "ItemID ["
                         + itemId
                         + "] has been restored. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
                         + list.getListURL()
                         + " ] ");
-                // Remove this ID from the list of deleted IDs. This is
-                // important or else you might have orphaned docs in GSA's
-                // index. There are various use cases where this can happen.
-                // Like you dont remove the ID from list of deleted IDs now,
-                // send an ADD feed and later send try to send DELETE feed.
-                // Here this new delete feed will never be sent as the ID is
-                // already marked in the list of deleted ids. Think of many
-                // such use cases and this step will then make sense
+                // Since the item has been restored, it becomes a candidate for
+                // deletion again. This has to be reflected here by removing
+                // it from the delete cache.
+                // FIXME The right way of handling this is to clear the delete
+                // cache when a new change token is committed just like we do
+                // for ListState.changedFolders
                 list.removeFromDeleteCache(itemId);
             } else if (SPConstants.RENAME.equalsIgnoreCase(changeType)
                     && null == list.getNextChangeTokenForSubsequectWSCalls()) {
@@ -1331,6 +1343,7 @@ public class ListsWS {
                         + " ] ");
             }
         }
+
         list.saveNextChangeTokenForWSCall(lastChangeToken);
     }
 
@@ -1521,9 +1534,9 @@ public class ListsWS {
             LOGGER.log(Level.INFO, "Processing renamed/restored folder ["
                     + changedFolder + "] ");
 
-            final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
+            int docCountFromCurrentFolder = 0;
             for (Folder currentFolder : folders) {
-                if (listItems.size() >= sharepointClientContext.getBatchHint()) {
+                if (allItems.size() >= sharepointClientContext.getBatchHint()) {
                     // More sub folders to be crawled
                     if (null == list.getNextPage()) {
                         list.setNextPage("not null");
@@ -1535,56 +1548,18 @@ public class ListsWS {
                         && lastDocParentFolder.equals(currentFolder)) {
                     lastDocIdForCurrentFolder = Util.getOriginalDocId(lastDocument.getDocId(), sharepointClientContext.getFeedType());
                 }
-
-                // In case there have been items crawled as part of renamed
-                // folder discovery from previous batch traversals, there is a
-                // good chance one or more folders can be repeated and sent as
-                // duplicate feeds. This will be the case when batchHint is say
-                // 100, 75 docs were discovered in the first call to this method
-                // as part of completion of crawling renamed folders pending
-                // from previous batch traversal, but could not retrieve
-                // batchHint number of documents. This will mean re-fetching the
-                // same docs in same batch traversal.
-                // Here we ensure that the docId that is sent is incremented to
-                // go pass the lastDocId used in the same batch traversal, but
-                // could not retrieve batchHint number of docs. The idea is to
-                // ensure that the connector is done with all docs
-                if (Util.isNumeric(lastDocIdForCurrentFolder)
-                        && !lastDocIdForCurrentFolder.equals("0")) {
-                    int docIdForWSCall = Integer.parseInt(lastDocIdForCurrentFolder);
-                    int originalDocIdForWSCall = docIdForWSCall;
-
-                    for (SPDocument spDocument : allItems) {
-                        if (spDocument.getParentFolder().equals(currentFolder)
-                                && Integer.parseInt(spDocument.getDocId()) > originalDocIdForWSCall) {
-                            // Increment the docId since this doc has already
-                            // been discovered
-                            docIdForWSCall += 1;
-                        }
-                    }
-
-                    if (docIdForWSCall > originalDocIdForWSCall) {
-                        // Use the updated docId since it has been incremented
-                        // to the docId of the last document discovered from the
-                        // current folder
-                        lastDocIdForCurrentFolder = Integer.toString(docIdForWSCall);
-                        StringBuffer msg = new StringBuffer(
-                                "The docId to be used for WS call is updated from [ ").append(originalDocIdForWSCall).append(" ] to [ ").append(lastDocIdForCurrentFolder).append(" ] since the old docId has been proceessed as part of previous batch traversal");
-                        LOGGER.fine(msg.toString());
-                    }
-                }
-
-                listItems.addAll(getListItemsAtFolderLevel(list, lastDocIdForCurrentFolder, currentFolder, changedFolder));
+                List<SPDocument> currentListItems = getListItemsAtFolderLevel(list, lastDocIdForCurrentFolder, currentFolder, changedFolder);
+                docCountFromCurrentFolder += currentListItems.size();
+                allItems.addAll(currentListItems);
             }
 
-            LOGGER.log(Level.INFO, "found " + listItems.size()
+            LOGGER.log(Level.INFO, "found " + docCountFromCurrentFolder
                     + " items under restored/renamed folder [" + changedFolder
                     + " ] ");
 
-            if (null == list.getNextPage() && listItems.size() == 0) {
+            if (null == list.getNextPage() && docCountFromCurrentFolder == 0) {
                 itrChangedFolders.remove();
             }
-            allItems.addAll(listItems);
         }
     }
 

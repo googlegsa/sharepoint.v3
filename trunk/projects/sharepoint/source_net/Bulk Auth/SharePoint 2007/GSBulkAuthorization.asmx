@@ -431,7 +431,7 @@ public class WSContext
         }
 
         SPWeb web = null;
-        string relativeWebUrl = GetServerRelativeUrl(container);
+        string relativeWebUrl = GetServerRelativeWebUrl(container);
         try
         {
             web = site.OpenWeb(relativeWebUrl);
@@ -457,7 +457,7 @@ public class WSContext
     /// <param name="container"></param>
     /// <returns></returns>
     // FIXME For some lists of site directory, this logic does not work because the URL formats of those lists are different from what the logic assumes.
-    string GetServerRelativeUrl(Container container)
+    string GetServerRelativeWebUrl(Container container)
     {
         String listUrl = container.Url;
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
@@ -465,19 +465,28 @@ public class WSContext
         listUrl = listUrl.Substring(listUrl.IndexOf('/'));
         if (container.Type == Container.ContainerType.LIST)
         {
-            int formsPos = listUrl.IndexOf("/forms/", 0, StringComparison.InvariantCultureIgnoreCase);
+            bool isTrimmed = false;
+            int formsPos = listUrl.LastIndexOf("/forms/", listUrl.Length, StringComparison.InvariantCultureIgnoreCase);
             if (formsPos >= 0)
             {
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', formsPos));
+                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+                isTrimmed = true;
             }
 
-            int listPos = listUrl.IndexOf("/lists/", 0, StringComparison.InvariantCultureIgnoreCase);
-            if (listPos >= 0)
+            if (!isTrimmed)
             {
-                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', listPos));
+                int listPos = listUrl.LastIndexOf("/lists/", listUrl.Length, StringComparison.InvariantCultureIgnoreCase);
+                if (listPos >= 0)
+                {
+                    listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', listPos));
+                    isTrimmed = true;
+                }
             }
-            else
+
+            if (!isTrimmed)
             {
+                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
             }
         }

@@ -302,6 +302,9 @@ public class SharepointTraversalManager implements TraversalManager,
                     rsAll.addAll(rs);
                 }
                 sizeSoFar = rsAll.size();
+            } else {
+                LOGGER.log(Level.CONFIG, "No documents to be sent from web [ "
+                        + webState.getWebUrl() + " ] ");
             }
         }
         return rsAll;
