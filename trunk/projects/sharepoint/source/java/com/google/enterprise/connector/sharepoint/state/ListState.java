@@ -92,7 +92,7 @@ public class ListState implements StatefulObject {
      * action=ADD. This is required during incremental crawl to tell the WS from
      * where to look for more docs
      */
-    SPDocument lastDocProcessedForWS;
+    SPDocument lastDocProcessed;
 
     /**
      * an ordered list of SPDocuments due to be fed to the Connector Manager
@@ -465,11 +465,11 @@ public class ListState implements StatefulObject {
     public SPDocument getLastDocForWSRefresh() {
         SPDocument lastDocFromCrawlQueue = getLastDocInCrawlQueueOfActionTypeADD();
         if (null == lastDocFromCrawlQueue) {
-            return lastDocProcessedForWS;
-        } else if (lastDocFromCrawlQueue.compareTo(lastDocProcessedForWS) > 0) {
+            return lastDocProcessed;
+        } else if (lastDocFromCrawlQueue.compareTo(lastDocProcessed) > 0) {
             return lastDocFromCrawlQueue;
         } else {
-            return lastDocProcessedForWS;
+            return lastDocProcessed;
         }
     }
 
@@ -1153,8 +1153,12 @@ public class ListState implements StatefulObject {
     /**
      * @param lastDocProcessedForWS the lastDocProcessedForWS to set
      */
-    public void setLastDocProcessedForWS(SPDocument lastDocProcessedForWS) {
-        this.lastDocProcessedForWS = lastDocProcessedForWS;
+    public void setLastDocProcessed(SPDocument lastDocProcessed) {
+        this.lastDocProcessed = lastDocProcessed;
+    }
+
+    public SPDocument getLastDocProcessed() {
+        return lastDocProcessed;
     }
 
     @Override
@@ -1253,30 +1257,29 @@ public class ListState implements StatefulObject {
                 }
             }
 
-            // dump the lastDocProcessedForWS
-            SPDocument lastDocForWSRefresh = getLastDocForWSRefresh();
-            if (lastDocForWSRefresh != null) {
+            // dump the lastDocProcessed
+            if (getLastDocProcessed() != null) {
                 atts.clear();
                 // ID and URL are mandatory field, used in
                 // SpDocument.compareTo(). These attributes must be
                 // preserved.
-                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, lastDocForWSRefresh.getDocId());
-                atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, lastDocForWSRefresh.getUrl());
+                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getLastDocProcessed().getDocId());
+                atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getUrl());
 
                 if (SPType.SP2007 == getParentWebState().getSharePointType()) {
-                    if (null != lastDocForWSRefresh.getRenamedFolder()) {
-                        atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, lastDocForWSRefresh.getRenamedFolder().getPath());
-                        atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, lastDocForWSRefresh.getRenamedFolder().getId());
+                    if (null != getLastDocProcessed().getRenamedFolder()) {
+                        atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getRenamedFolder().getPath());
+                        atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getRenamedFolder().getId());
                     }
-                    if (null != getLastDocForWSRefresh().getParentFolder()) {
-                        atts.addAttribute("", "", SPConstants.STATE_PARENT_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getParentFolder().getPath());
-                        atts.addAttribute("", "", SPConstants.STATE_PARENT_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getParentFolder().getId());
+                    if (null != getLastDocProcessed().getParentFolder()) {
+                        atts.addAttribute("", "", SPConstants.STATE_PARENT_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getParentFolder().getPath());
+                        atts.addAttribute("", "", SPConstants.STATE_PARENT_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getParentFolder().getId());
                     }
                     if (FeedType.CONTENT_FEED == feedType) {
-                        atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getAction().toString());
+                        atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getAction().toString());
                     }
                 }
-                atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getLastDocLastModString());
+                atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getLastDocLastModString());
                 handler.startElement("", "", SPConstants.STATE_LASTDOCCRAWLED, atts);
                 handler.endElement("", "", SPConstants.STATE_LASTDOCCRAWLED);
             }
@@ -1411,7 +1414,7 @@ public class ListState implements StatefulObject {
      */
     public void resetState() {
         currentChangeToken = nextChangeToken = null;
-        setLastDocProcessedForWS(null);
+        setLastDocProcessed(null);
         setCrawlQueue(null);
         endAclCrawl();
     }
