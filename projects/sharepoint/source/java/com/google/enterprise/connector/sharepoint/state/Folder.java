@@ -22,12 +22,13 @@ package com.google.enterprise.connector.sharepoint.state;
 public final class Folder implements Comparable<Folder> {
     private final String path;
     private final String id;
+    private final int intId;
 
     public Folder(String path, String id) {
         if (null == id || null == path) {
             throw new NullPointerException("Folder path/Id cannot be null! ");
         }
-        Integer.parseInt(id);
+        intId = Integer.parseInt(id);
         this.path = path;
         this.id = id;
     }
@@ -40,8 +41,12 @@ public final class Folder implements Comparable<Folder> {
         return id;
     }
 
+    public int getIntId() {
+        return intId;
+    }
+
     public int compareTo(Folder folder) {
-        return getPath().compareTo(folder.getPath());
+        return getIntId() - folder.getIntId();
     }
 
     @Override
@@ -50,12 +55,12 @@ public final class Folder implements Comparable<Folder> {
             return false;
         }
         Folder folder = (Folder) obj;
-        return getPath().equals(folder.getPath());
+        return getIntId() == folder.getIntId();
     }
 
     @Override
     public int hashCode() {
-        return path.hashCode();
+        return intId * path.hashCode();
     }
 
     @Override

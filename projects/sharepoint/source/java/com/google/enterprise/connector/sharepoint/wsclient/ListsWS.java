@@ -1549,6 +1549,8 @@ public class ListsWS {
                     lastDocIdForCurrentFolder = Util.getOriginalDocId(lastDocument.getDocId(), sharepointClientContext.getFeedType());
                 }
                 List<SPDocument> currentListItems = getListItemsAtFolderLevel(list, lastDocIdForCurrentFolder, currentFolder, changedFolder);
+                LOGGER.log(Level.CONFIG, "found " + currentListItems.size()
+                        + " items under folder [" + currentFolder + " ] ");
                 docCountFromCurrentFolder += currentListItems.size();
                 allItems.addAll(currentListItems);
             }
