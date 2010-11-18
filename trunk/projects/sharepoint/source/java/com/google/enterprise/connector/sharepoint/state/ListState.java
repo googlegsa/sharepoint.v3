@@ -603,19 +603,21 @@ public class ListState implements StatefulObject {
      *
      * @param inChangeToken save it as the next change token to be used for WS
      *            calls. Note that, this value is not picked up during the WS
-     *            call unless you call
+     *            call until the call to
      *            {@link ListState#commitChangeTokenForWSCall()}
+     * @return true if the change token was saved successfully; false otherwise
      */
-    public void saveNextChangeTokenForWSCall(final String inChangeToken) {
+    public boolean saveNextChangeTokenForWSCall(final String inChangeToken) {
         if (inChangeToken == null || inChangeToken.equals(currentChangeToken)
         // An already saved token must first be committed
                 || null != nextChangeToken) {
-            return;
+            return false;
         }
         nextChangeToken = inChangeToken;
         LOGGER.log(Level.CONFIG, "currentChangeToken [ " + currentChangeToken
                 + " ], nextChangeToken [ " + nextChangeToken
                 + " ]. ");
+        return true;
     }
 
     /**
@@ -623,17 +625,21 @@ public class ListState implements StatefulObject {
      * currentChangeToken and reset the next change token. If nextChangeToken is
      * null, the method returns without changing the value of
      * currentChangeToken.
+     *
+     * @return true if the change token was committed successfully; false
+     *         otherwise
      */
-    public void commitChangeTokenForWSCall() {
+    public boolean commitChangeTokenForWSCall() {
         if (null == nextChangeToken
                 || nextChangeToken.equals(currentChangeToken)) {
-            return;
+            return false;
         }
         LOGGER.log(Level.CONFIG, "committing nextChangeToken [ "
                 + nextChangeToken + " ] as currentChangetoken");
         currentChangeToken = nextChangeToken;
         nextChangeToken = null;
         this.changedFolders.clear();
+        return true;
     }
 
     /**

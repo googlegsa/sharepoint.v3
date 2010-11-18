@@ -188,15 +188,14 @@ public class SPDocumentList implements DocumentList {
      * </p>
      */
     public String checkpoint() throws RepositoryException {
+        LOGGER.log(Level.INFO, "checkpoint called. docsFedIndexPosition [ "
+                + docsFedIndexPosition + " ] ");
         for (int i = 0; i < docsFedIndexPosition; i++) {
             // Process the liststate and its crawl queue for the given doc which
             // has been sent to CM and fed to GSA successfully
             processListStateforCheckPoint(documents.get(i));
         }
         doCheckPoint();
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.log(Level.CONFIG, "checkpoint processed; saving GlobalState to disk.");
-        }
         globalState.saveState(); // snapshot it all to disk
 
         return SPConstants.CHECKPOINT_VALUE;
