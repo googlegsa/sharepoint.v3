@@ -454,7 +454,7 @@ public class SPDocumentList implements DocumentList {
             // This is to keep the regular crawling separate from ACl based
             // crawling.
             if (!spDocument.isForAclChange()) {
-                listState.setLastDocProcessedForWS(spDocument);
+                listState.setLastDocProcessed(spDocument);
 
                 // Update ExtraIDs
                 if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {

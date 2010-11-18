@@ -169,7 +169,7 @@ public class GlobalState {
                                 // because we know that the earlier logic of
                                 // using only FolderLevel had a bug
                                 // (refer Issue 174)
-                                list.setLastDocProcessedForWS(list.getDocumentInstance(feedType));
+                                list.setLastDocProcessed(list.getDocumentInstance(feedType));
                                 return;
                             }
                         } else {
@@ -196,7 +196,7 @@ public class GlobalState {
                             lastCrawledDocLastMod, lastCrawledDocAction);
                     lastCrawledDoc.setParentFolder(lastCrawledDocParentFolder);
                     lastCrawledDoc.setRenamedFolder(lastCrawledDocRenamedFolder);
-                    list.setLastDocProcessedForWS(lastCrawledDoc);
+                    list.setLastDocProcessed(lastCrawledDoc);
                 } else {
                     LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
                 }

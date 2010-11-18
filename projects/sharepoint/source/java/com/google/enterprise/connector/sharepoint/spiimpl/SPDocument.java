@@ -388,6 +388,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 if (comparison != 0) {
                     return comparison;
                 }
+            } else if (null != getParentFolder()
+                    && null == doc.getParentFolder()) {
+                return -1;
+            } else if (null == getParentFolder()
+                    && null != doc.getParentFolder()) {
+                return 1;
             }
         } else {
             comparison = lastMod.getTime().compareTo(doc.lastMod.getTime());

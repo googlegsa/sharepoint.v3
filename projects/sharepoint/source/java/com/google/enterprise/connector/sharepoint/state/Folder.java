@@ -60,7 +60,7 @@ public final class Folder implements Comparable<Folder> {
 
     @Override
     public int hashCode() {
-        return intId * path.hashCode();
+        return 13 * intId;
     }
 
     @Override
