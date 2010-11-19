@@ -456,9 +456,14 @@ public class ListState implements StatefulObject {
 
     /**
      * Return the most suitable Document to start the crawl. Used in case of
-     * SP2007. Ideally we should start from the lastDocProcessedForWS. But if
-     * the crawl queue has a document of ADD ActionType which is greater than
-     * lastDocProcessedForWS, we'll start from that doc of the crawl queue.
+     * SP2007. Ideally we should start from the lastDocProcessed. But if crawl
+     * queue have pending documents to be sent to GSA and connector, before
+     * sending them, starts discovering more documents from SharePoint, it
+     * should pick the last document in crawl for discovery. Hence, this method
+     * returns last document processed as last document to be used for
+     * further WS calls only when crawl queue is empty. Otherwise, the last
+     * document in crawl queue of ActionType ADD is returned. Deleted documents
+     * have no significance while making WS calls.
      *
      * @return {@link SPDocument}
      */
@@ -473,6 +478,12 @@ public class ListState implements StatefulObject {
         }
     }
 
+    /**
+     * Returns the last document in crawl queue which was sent as ADD feed. This
+     * is the most suitable document for incremental crawl
+     *
+     * @return
+     */
     private SPDocument getLastDocInCrawlQueueOfActionTypeADD() {
         if (null == crawlQueue || crawlQueue.size() == 0) {
             return null;
