@@ -103,16 +103,22 @@ To install the connector manually, follow the instructions given below:
 
 1. Login to the SharePoint server whose sites are to be crawled by the connector.
 
-2. Go to the ISAPI directory of SharePoint 2007. If you are using the standard default installation, the path of this directory would be C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI\
+2. Go to the ISAPI directory of SharePoint. If you are using the standard default installation, path of this directory would be C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI\ for SharePoint 2007 and ...\14\ISAPI for SharePoint 2010
 
-3. Download the correct SharePoint connector source (connector-sharepoint-{{{<version>}}}-src.zip) from the the download site on code.google.com.
+3. Download the correct SharePoint connector source (connector-sharepoint-{{{<version>}}}-src.zip) from the download site on code.google.com.
 
 4. Unzip the compressed file. 
 
 5. Copy the following files found after de-compressing the zip into the ISAPI folder as specified in step 2:
-  * source_net\Bulk Auth\SharePoint 2007/GSBulkAuthorization.asmx
-  * source_net\Bulk Auth\SharePoint 2007/GSBulkAuthorizationdisco.aspx
-  * source_net\Bulk Auth\SharePoint 2007/GSBulkAuthorizationwsdl.aspx
-  * source_net\Site Discovery\SharePoint 2007/GSSiteDiscovery.asmx
-  * source_net\Site Discovery\SharePoint 2007/GSSiteDiscoverydisco.aspx
-  * source_net\Site Discovery\SharePoint 2007/GSSiteDiscoverywsdl.aspx
+
+  * source_net\Bulk Auth\SharePoint 2007\GSBulkAuthorization.asmx
+  * source_net\Bulk Auth\SharePoint 2007\GSBulkAuthorizationdisco.aspx
+  * source_net\Bulk Auth\SharePoint 2007\GSBulkAuthorizationwsdl.aspx
+
+  * source_net\Site Discovery\SharePoint 2007\GSSiteDiscovery.asmx
+  * source_net\Site Discovery\SharePoint 2007\GSSiteDiscoverydisco.aspx
+  * source_net\Site Discovery\SharePoint 2007\GSSiteDiscoverywsdl.aspx
+
+  * source_net\Acl\GssAcl.asmx
+  * source_net\Acl\GssAcl.aspx
+  * source_net\Acl\GssAcl.aspx
