@@ -153,21 +153,18 @@ This section details some of the important log messages that are written into th
 
 == Verification of GSS ==
 
- * Three web services are deployed on the SharePoint server on installing Google Search Appliance Resource Kit for SharePoint, namely GSSiteDiscovery, GSBulkAuthorization and GssAcl.
- * Open the SharePoint web application URL in the browser.
- * Ensure that SharePoint server is up and running and sites are accessible from the connector machine. The connectivity of web services (deployed on SharePoint) can be verified from connector machine by accessing following URLs:
-
+ * Three web services are deployed on the SharePoint (frontend) server on installing Google Search Appliance Resource Kit for SharePoint, namely GSSiteDiscovery, GSBulkAuthorization and GssAcl.
+ * Pick any SharePoint site hosted on the SharePoint server where Google services for SharePoint are deployed. Try browsing this this URL from the browser.
+ * The connectivity of web services can be verified using following URLs:
 {{{
-
      http://mycomp.com/_vti_bin/GSBulkAuthorization.asmx
      http://mycomp.com/_vti_bin/GSSiteDiscovery.asmx
      http://mycomp.com/_vti_bin/GssAcl.asmx
 
 Where http://mycomp.com is the SharePoint site URL
-
 }}}
- * After opening the above URL, you should be able to view the the wsdl file description, by clicking on the Service Description link available on the top.
 
+ * After opening the above URL(s), you should be able to see all the web methods exposed by the web service. Click on the "Service Description" link available on the top to view the wsdl file description.
 
 
 == Frequently Asked Questions - FAQ ==
