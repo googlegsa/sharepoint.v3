@@ -161,7 +161,7 @@ This section details some of the important log messages that are written into th
     # http://mycomp.com/_vti_bin/GSSiteDiscovery.asmx
     # http://mycomp.com/_vti_bin/GssAcl.asmx
 
-Where http://mycomp.com is the SharePoint site
+Where http://mycomp.com is the SharePoint site URL
  * After opening the above URL, you should be able to view the the wsdl file description, by clicking on the Service Description link available on the top.
 
 
