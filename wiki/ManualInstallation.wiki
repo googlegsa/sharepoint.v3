@@ -122,3 +122,16 @@ To install the connector manually, follow the instructions given below:
   * source_net\Acl\GssAcl.asmx
   * source_net\Acl\GssAcl.aspx
   * source_net\Acl\GssAcl.aspx
+
+==Verifying the installation of GSS==
+ * Pick any SharePoint site hosted on the SharePoint server where Google services for SharePoint are deployed. Try browsing this this URL from the browser.
+ * The connectivity of web services can be verified using following URLs:
+{{{
+     http://mycomp.com/_vti_bin/GSBulkAuthorization.asmx
+     http://mycomp.com/_vti_bin/GSSiteDiscovery.asmx
+     http://mycomp.com/_vti_bin/GssAcl.asmx
+
+Where http://mycomp.com is the SharePoint site URL
+}}}
+
+ * After opening the above URL(s), you should be able to see all the web methods exposed by the web service. Click on the "Service Description" link available on the top to view the wsdl file description.
