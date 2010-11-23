@@ -158,11 +158,14 @@ This section details some of the important log messages that are written into th
  * Ensure that SharePoint server is up and running and sites are accessible from the connector machine. The connectivity of web services (deployed on SharePoint) can be verified from connector machine by accessing following URLs:
 
 {{{
+
      http://mycomp.com/_vti_bin/GSBulkAuthorization.asmx
      http://mycomp.com/_vti_bin/GSSiteDiscovery.asmx
      http://mycomp.com/_vti_bin/GssAcl.asmx
-}}}
+
 Where http://mycomp.com is the SharePoint site URL
+
+}}}
  * After opening the above URL, you should be able to view the the wsdl file description, by clicking on the Service Description link available on the top.
 
 
