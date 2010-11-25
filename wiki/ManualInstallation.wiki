@@ -61,7 +61,7 @@ To install the connector manually, follow the instructions given below:
    Also you can check for http://localhost:8080/connector-manager/testConnectivity which will displays the connectivity status or http://localhost:8080/connector-manager/startUp which will display a message indicating the successful deployment of Connector Manager
    * Shut down the Tomcat to start with the further steps.
 
-4. Start a web browser and navigate to the download site on code.google.com. 
+4. Start a web browser and navigate to the download site on http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list 
 
 5. Download the correct SharePoint connector version (connector-sharepoint-{{{<version>}}}.zip). 
 
@@ -105,7 +105,7 @@ To install the connector manually, follow the instructions given below:
 
 2. Go to the ISAPI directory of SharePoint. If you are using the standard default installation, path of this directory would be C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI\ for SharePoint 2007 and ...\14\ISAPI for SharePoint 2010
 
-3. Download the correct SharePoint connector source (connector-sharepoint-{{{<version>}}}-src.zip) from the download site on code.google.com.
+3. Download the correct SharePoint connector source (connector-sharepoint-{{{<version>}}}-src.zip) from the download site on http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list
 
 4. Unzip the compressed file. 
 
