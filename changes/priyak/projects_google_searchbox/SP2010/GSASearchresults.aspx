@@ -9,12 +9,15 @@
 <%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
 <%@ Assembly Name="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c"%> 
-<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults"   EnableViewState="true" EnableViewStateMac="false"     %> 
-<%@ Import Namespace="Microsoft.Office.Server.Search.Internal.UI" %> <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
-<%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Import Namespace="Microsoft.SharePoint" %> 
+<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults" EnableViewState="true" EnableViewStateMac="false"     %> 
+<%@ Import Namespace="Microsoft.Office.Server.Search.Internal.UI" %> 
+<%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
+<%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
+<%@ Import Namespace="Microsoft.SharePoint" %> 
 <%@ Assembly Name="Microsoft.Web.CommandUI, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 
-<%@ Register Tagprefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register Tagprefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
+<%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
 <%@ Register Tagprefix="SearchWC" Namespace="Microsoft.Office.Server.Search.WebControls" Assembly="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register Tagprefix="SPSWC" Namespace="Microsoft.SharePoint.Portal.WebControls" Assembly="Microsoft.SharePoint.Portal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
@@ -41,6 +44,7 @@
 </asp:content>
 
 <asp:content id="Content2" contentplaceholderid="PlaceHolderAdditionalPageHead" runat="server">
+
     <style type="text/css">
 .ms-titlearea
 {
@@ -543,73 +547,22 @@ div.ms-areaseparatorright{
 </script>
 
 <script type="text/javascript">
-  	function _spFormOnSubmit()
-	{
-		//return GoSearch();
-	}
 	function SetPageTitle()
 	{
-	   
 	   var Query = "";
-	   if (window.top.location.search != 0)
-	   {
-		  Query = window.top.location.search;
-		  var keywordQuery = getParameter(Query, 'k');
-		  if(keywordQuery != null)
-		  {
-            
-            //set the value of query
-            var myTextField = document.getElementById("ctl00_PlaceHolderGlobalNavigation_GlobalBreadCrumbNavPopout_PlaceHolderTitleBreadcrumb_ctl00_txtSearch");
-            
-             // Code for carry forwarding the scope selected from the dropdown
-            var dropdownScope = document.getElementById("ctl00_PlaceHolderSearchArea_ctl01_idSearchScope");
-            
-            var scope = getParameter(Query, 'selectedScope');
-            var scopeURL = getParameter(Query, 'scopeUrl');
-            
-            var currentSite = "Current Site";
-            var currentSiteAndAllSubsites = "Current Site and all subsites";
-            var currentList = "Current List";
-            var currentFolder = "Current Folder";
-            var currentFolderAndAllSubfolders = "Current Folder and all subfolders";  
-            
-            if(scope == currentList || scope == currentFolder || scope == currentFolderAndAllSubfolders)
-            {
-
-                for (var i = 0; i < dropdownScope.options.length; i = i + 1)
-                {
-                    if (dropdownScope.options[i].text == scope) 
-                    {
-                        dropdownScope.options[i].disabled = false;
-                        break;
-                    }
-                } 
-                
-                
-            }   
-            
-            for(var i = 0;i < dropdownScope.options.length ; i = i+1)
-            {
-                if(dropdownScope.options[i].text == scope)
-                {
-                    dropdownScope.options[i].selected = true;
-                    break;
-                }
-            }
-            
-            if(myTextField.value != "")
-        	{
-		        myTextField.value=keywordQuery;
-		    }
-			 
-			//set the title of the document
-			if(keywordQuery!="")
-		    {
-			 var titlePrefix = '<asp:Literal runat="server" text="<%$Resources:wss,searchresults_pagetitle%>"/>';
-			 document.title = titlePrefix + ": " +keywordQuery;
-			 }
-		  }
-	   }	 
+	   if (window.top.location.search != 0) {
+	       Query = window.top.location.search;
+	       var keywordQuery = getParameter(Query, 'k');
+	       if (keywordQuery != null)
+	       {
+	           //set the title of the document
+	           if (keywordQuery != "")
+	           {
+	               var titlePrefix = '<asp:Literal runat="server" text="<%$Resources:wss,searchresults_pagetitle%>"/>';
+	               document.title = titlePrefix + ": " + keywordQuery;
+	           }
+	       }
+	   }
 	}
 		
 	function getParameter (queryString, parameterNameWithoutEquals)
@@ -638,6 +591,7 @@ div.ms-areaseparatorright{
 	   }
 	   return null;
 	}
+
 	
 if (document.addEventListener)
 {
@@ -666,8 +620,9 @@ else if(document.attachEvent)
             <td style="height: 5px"> <img src="/_layouts/images/blank.gif" width="1" height="1" alt=""></td>
         </tr>
         <tr>
+        
             <td colspan="8">
-                <SharePoint:DelegateControl ID="DelegateControl1" runat="server" ControlId="SmallSearchInputBox" />
+                <SharePoint:DelegateControl ID="DelegateControl1" runat="server" ControlId="SmallSearchInputBox"  />
             </td>
             
         </tr>
@@ -720,8 +675,11 @@ else if(document.attachEvent)
         <tr>
            
             <td id="TD1" colspan="4" >
+            
                 
                 <%
+                    
+                    
                     GoogleSearchBox gProps = new GoogleSearchBox();
                     NameValueCollection inquery = HttpContext.Current.Request.QueryString;
                     string searchResp;
@@ -742,25 +700,22 @@ else if(document.attachEvent)
                             qQuery = inquery["cachedurl"];
                         }
                         myquery = qQuery;//for paging in custom stylesheet
-
+                        
                         //Using U parameter to create scoped searches on the GSA
                         if ((inquery["u"] != null))
                         {
+                            
                             string port = "";
                             string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
                             temp = temp.ToLower();
                             strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
-                            
                             temp = temp.Replace("http://", "");// Delete http from url
                             qQuery += " inurl:\"" + temp + "\"";//  Change functionality to use "&sitesearch="  - when GSA Bug 11882 has been closed
 
-                            string scopeText = inquery["selectedScope"]; // Getting the user selected, scope dropdown textual value 
+                            string scopeText = inquery["selectedScope"]; // Getting the user selected, scope dropdown textual value
                             switch (scopeText)
                             {
                                 case currentSite:
-                                    finalURL = strURL + "/";
-                                    break;
-
                                 case currentSiteAndAllSubsites:
                                     finalURL = strURL;
                                     break;
@@ -770,9 +725,6 @@ else if(document.attachEvent)
                                     break;
 
                                 case currentFolder:
-                                    finalURL = strURL + "/";
-                                    break;
-
                                 case currentFolderAndAllSubfolders:
                                     finalURL = strURL;
                                     break;
@@ -783,12 +735,21 @@ else if(document.attachEvent)
 
                         /*Get the user suppiled parameters from the web.config file*/
 
-                        searchReq = "?q=" + qQuery + "&access=" + WebConfigurationManager.AppSettings["accesslevel"] + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
+                        if (inquery["isPublicSearch"] == "false")
+                        {
+                            gProps.accessLevel = "a";
+                        }
+                        else
+                        {
+                            gProps.accessLevel = "p";
+                        }
+                       
+                        searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")
                         {
                             //check for the flag whether to enable custom styling locally or use GSA style
                             if (gProps.bUseGSAStyling == true)
-                            {
+                            { 
                                 searchReq += "&proxystylesheet=" + gProps.frontEnd /*+ "&proxyreload=1"*/;
                             }
                             searchReq += "&client=" + gProps.frontEnd;
@@ -843,8 +804,6 @@ else if(document.attachEvent)
                         CookieContainer cc = new CookieContainer();
                         int i;
 						String GSASearchUrl= gProps.GSALocation + "/search" + searchReq;
-                        Response.Write("Search Request to GSA = " + GSASearchUrl);
-						
                         ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
                         objResp = (HttpWebResponse)gProps.GetResponse(false, GSASearchUrl,null,null);//fire getresponse
                         string contentEncoding = objResp.Headers["Content-Encoding"];
