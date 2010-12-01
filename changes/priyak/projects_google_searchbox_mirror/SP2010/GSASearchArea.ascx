@@ -1,12 +1,23 @@
-<%@ Control Language="C#" Inherits="System.Web.UI.UserControl"    compilationMode="Always"  AutoEventWireup="false"%>
+<%@ Control Language="C#" Inherits="System.Web.UI.UserControl"     compilationMode="Always"  AutoEventWireup="false"%>
 <%@ Register Tagprefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 <%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 <%@ Import Namespace="Microsoft.SharePoint" %>
+<%@ Import Namespace="System.Web.Configuration" %>
 
 <!--Author: Amit Agrawal-->
 <%
+    // The forward slash is used to append to the sitesearch parameter. 
+    string forwardSlash = "/";
+    
+    if (Request.QueryString["scopeUrl"] != null)
+    {
+        // The ViewState allows ASP.NET to repopulate form fields on each postback to the server. Hence storing the value for the selected scope
+        // in Viewstate, so that the  scope is persisted while searching.
+        ViewState["ScopeURL"] = Request.QueryString["scopeUrl"].ToString();
+    }
+    
     string strScopeWeb = null;
     string strScopeList = null;
     string strWebSelected = null;
@@ -14,6 +25,16 @@
     string siteUrl = "";
     string listType = "";
     string listUrl = "";
+
+    if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
+    {
+        chkPublicSearch.Visible = true;
+    }
+    else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
+    {
+        chkPublicSearch.Visible = false;
+    }
+        
     
     // Declaring the scopes that will be displayed in the scopes dropdown
     string enterprise = "Enterprise";
@@ -38,7 +59,12 @@
     string strEncodedUrl = SPHttpUtility.EcmaScriptStringLiteralEncode(
         SPHttpUtility.UrlPathEncode(web.Url + "/_layouts/GSASearchresults.aspx", false, false)
         );
+   
 	strEncodedUrl = "'" + strEncodedUrl + "'";
+
+    // Hiddenfiled 'hfStrEncodedUrl' will store the value of the url, so as to be passed as a parameter for SendSearchRequesttoGSA function whenever user presses the Enter key.
+    hfStrEncodedUrl.Value = web.Url + "/_layouts/GSASearchresults.aspx";
+    
     strScopeWeb = "'" + SPHttpUtility.HtmlEncode(web.Url) + "'";
     
     // Adding the items to the dropdown 
@@ -51,15 +77,19 @@
     string sitename = strScopeWeb.Replace("'", "");
     sitename = ctx.ListItemDisplayName;
     lstItem1.Text = currentSite;
-    lstItem1.Value = strScopeWeb;
+    lstItem1.Value = strScopeWeb + forwardSlash;
     idSearchScope.Items.Add(lstItem1);
-    hfSelectedScope.Value = strScopeWeb;
+
+    // The hiddenfield named 'hfSelectedScope' is used to store the 'scope text' of the current context selected by the user, so that 
+    // appropriate scope can be enabled in the dropdown.
+    hfSelectedScope.Value = strScopeWeb + forwardSlash;
 
     ListItem lstItem2 = new ListItem();
     lstItem2.Text = currentSiteAndAllSubsites;
     lstItem2.Value = strScopeWeb;
     idSearchScope.Items.Add(lstItem2);
-
+    hfSelectedScope.Value = strScopeWeb;
+        
     ListItem lstItem3 = new ListItem();
     lstItem3.Text = currentList;
     idSearchScope.Items.Add(lstItem3);
@@ -71,11 +101,6 @@
     ListItem lstItem5 = new ListItem();
     lstItem5.Text = currentFolderAndAllSubfolders;
     idSearchScope.Items.Add(lstItem5);
-    
-    // Changing the font colour for Active scopes in the dropdown to make them appear as more precise
-    idSearchScope.Items.FindByText(enterprise).Attributes.Add("style", "color:Black");
-    idSearchScope.Items.FindByText(currentSite).Attributes.Add("style", "color:Black");
-    idSearchScope.Items.FindByText(currentSiteAndAllSubsites).Attributes.Add("style", "color:Black");
     
     // Disabling the respective items from the dropdownlist, as the user is browsing at the site level
     idSearchScope.Items.FindByText(currentList).Attributes.Add("disabled", "disabled");
@@ -113,19 +138,46 @@
         if (this.Context.Request.QueryString["RootFolder"] != null)
         {
             strScopeFolder = siteUrl + this.Context.Request.QueryString["RootFolder"].ToString(); // Retrieve the folder path
-            lstItem4.Value = strScopeFolder;
+            lstItem4.Value = strScopeFolder + forwardSlash;
             lstItem5.Value = strScopeFolder;
-            hfSelectedScope.Value = strScopeFolder;
+            hfSelectedScope.Value = strScopeFolder + forwardSlash;
         }
     }
     else
     {
         strWebSelected = "SELECTED";
     }
-
-   
-   
     
+    // Code for populating the search query text value
+    if (Request.QueryString["k"] != null)
+    {
+        txtSearch.Text = Request.QueryString["k"].ToString();
+    }
+    if (Request.QueryString["selectedScope"] != null)
+    {
+        for (int i = 0; i < idSearchScope.Items.Count; i++)
+        {
+            // Finding the dropdown's text value equivalent to the scope selected by the user, so that the respective value will be set as 'SELECTED' in the dropdown.
+            if (idSearchScope.Items[i].Text == Request.QueryString["selectedScope"].ToString())
+            {
+                if (Request.QueryString["selectedScope"].ToString() == currentList || Request.QueryString["selectedScope"].ToString() == currentFolder || Request.QueryString["selectedScope"].ToString() == currentFolderAndAllSubfolders)
+                {
+                    // Code to set the respective dropdown item as 'ENABLED', when the user selects 'Current List', 'Current Folder' and 'Current Folder And All Subfolders' in the dropdown. Needs to be done as these scope urls are not
+                    // available on the GSASearchresults.aspx page in SharePoint.(Browsing occurs at site level by default when search is redirected to GSASearchResults.aspx page)
+                    idSearchScope.Items[i].Attributes.Clear();
+                }
+                if (ViewState["ScopeURL"] != null)
+                {
+                    //Setting the dropdown's  scope value to the value stored within the ViewState. 
+                    idSearchScope.Items[i].Value = ViewState["ScopeURL"].ToString();
+                }
+
+                //Setting the dropdown's  selected value to the value from the querystring object.
+                idSearchScope.Items.FindByText(Request.QueryString["selectedScope"].ToString()).Selected = true;
+                break;
+            }
+        }
+    }
 %>
 
 
@@ -145,18 +197,15 @@
             if (searchScope.options[i].value == hfselectedscope.value) // Enabling the options for 'folder search'
             {
                 searchScope.options[i].disabled = false;
-                searchScope.options[i].style.color = "Black";
-                
-                if(searchScope.options[i].text == currentFolder || searchScope.options[i].text == currentFolderAndAllSubfolders)
+                if(searchScope.options[i].text == currentFolder)
                 {
-                    // Need to enable the 'Current List' option as well, if user is browsing through a folder. Because the hiddenfield 'hfselectedscope' is holding the text value for the folder.
-                    searchScope.options[i - 1].disabled = false;  
-                    searchScope.options[i-1].style.color = "Black";
+                    // Need to enable the 'Current Folder and all subfolders'  and 'Current List' options as well, if user is browsing through a folder.
+                    searchScope.options[i - 1].disabled = false;
+                    searchScope.options[i + 1].disabled = false;
                 }
             }
         }
     }
-
     if (document.addEventListener)
     {
         document.addEventListener("DOMContentLoaded", EnableSelectiveScopeOptions, false);
@@ -166,7 +215,9 @@
         document.attachEvent("onreadystatechange", EnableSelectiveScopeOptions);
     }
 
-function SubmitSearchRedirect1(strUrl)
+// This javascript function's default name is 'SubmitSearchRedirect' which can be found in 'CORE.JS' file (path "C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS\1033")
+// Renaming the function to 'SendSearchRequesttoGSA'. The function will send the search request to GSA.
+function SendSearchRequesttoGSA(strUrl)
 {
 	var frm=document.forms["frmSiteSearch"];
 	if (frm==null)
@@ -179,7 +230,7 @@ function SubmitSearchRedirect1(strUrl)
 		
 		strUrl=strUrl+"?k="+escapeProperly(document.getElementById("<%=txtSearch.ClientID%>").value);
 		var searchScope = document.getElementById("<%=idSearchScope.ClientID%>");
-		if (searchScope != null && searchScope != "Enterprise")
+		if (searchScope != null)
 		{
 			var searchScopeUrl = searchScope.options[searchScope.selectedIndex].value;
 			if (searchScopeUrl != "Enterprise")
@@ -190,7 +241,8 @@ function SubmitSearchRedirect1(strUrl)
 		
 		var selectedScopeText = searchScope.options[searchScope.selectedIndex].text;
 		var selectedScopeUrl = searchScope.options[searchScope.selectedIndex].value;
-		
+		var userSelectedScope = document.getElementById("<%=hfUserSelectedScope.ClientID%>").value;
+		var isPublicSearch = document.getElementById("<%=hfPublicSearch.ClientID%>").value;
 		/* Checking whether user has selected a list within a site, while selecting option as 'My List'.
 		 If user is not browsing the list, then display an eror message as in this case the scope url will be retrieved as "" */
 		
@@ -202,18 +254,17 @@ function SubmitSearchRedirect1(strUrl)
 		{
 		    alert('Please select a site first !');
 		}
-		else if (selectedScopeUrl == "Enterprise" && selectedScopeText == "Enterprise")
-		{
-		    strUrl = strUrl + "&selectedScope=" + selectedScopeUrl;
+		else if (selectedScopeUrl == "Enterprise" && selectedScopeText == "Enterprise") {
+		    strUrl = strUrl + "&selectedScope=" + selectedScopeUrl + "&isPublicSearch=" + isPublicSearch;
 		    frm.action = strUrl;
-		    alert(strUrl);
+		    //hfStrURL = strUrl;
 		    frm.submit();
 		}
 		else
 		{
-		    strUrl = strUrl + "&selectedScope=" + selectedScopeText + "&scopeUrl=" + selectedScopeUrl;
-		    frm.action=strUrl;
-		    alert(strUrl);
+		    strUrl = strUrl + "&selectedScope=" + selectedScopeText + "&scopeUrl=" + selectedScopeUrl + "&isPublicSearch=" + isPublicSearch;
+		    frm.action = strUrl;
+		   // hfStrURL = strUrl;
 		    document.forms
 		    frm.submit();
 		}
@@ -221,24 +272,59 @@ function SubmitSearchRedirect1(strUrl)
 }
 
 
+// This function will call the SendSearchRequesttoGSA Javascript function whenever 'Enter' key is pressed.
+function SendSearchRequesttoGSAOnEnterClick()
+{
+    if (event.keyCode == 13)
+    {
+        hfStrEncodedUrl = document.getElementById('<%=hfStrEncodedUrl.ClientID%>').value;
+        SendSearchRequesttoGSA(hfStrEncodedUrl);
+    }
+}
+
+// Function that will change the value of hiddenfiled whenever checkbox is checked/ unchecked
+function checkPublicSearch(chk)
+{
+
+    var isPublicSearch = document.getElementById("<%=hfPublicSearch.ClientID%>").value;
+    if (chk.checked == true) 
+    {
+        isPublicSearch = "true";
+    }
+    else 
+    {
+        isPublicSearch = "false";
+    }
+}
+
 </script>
 
+<div style="float:left;font-size:small; color:Black">
+<asp:HiddenField ID="hfPublicSearch" runat="server"  Value="true"/>
+<asp:HiddenField ID="hfStrEncodedUrl" runat="server"/>
+<asp:HiddenField id="hfUserSelectedScope" runat="server" />
+<asp:CheckBox ID="chkPublicSearch" runat="server"  Width="120px" Checked="true" onclick="checkPublicSearch(this);"  TextAlign="Right"  style="vertical-align:bottom;"  ToolTip="Check this to search public content"   />
+Public Search &nbsp;&nbsp;
+</div>
 
 <asp:Panel ID="pnlSearchBoxPanel" runat="server" >   
-<!--Search Controls-->
-          <asp:DropDownList  ID="idSearchScope" runat="server"    Width="240px" >
-          </asp:DropDownList>
-          <asp:HiddenField ID="hfSelectedScope" runat="server" />
-    <asp:TextBox ID="txtSearch" runat="server" Width="242px" size='28'  Text="" style="background-image: url('/_layouts/images/google_custom_search_watermark.gif'); background-repeat: no-repeat; background-position:center;background-color:Transparent"></asp:TextBox>
-</asp:Panel>
+<!--Search Controls--> 
 
 
-<div class="ms-searchimage">
+            <asp:DropDownList  ID="idSearchScope" runat="server"  ForeColor="Black" >
+            </asp:DropDownList>
+            <asp:HiddenField ID="hfSelectedScope" runat="server" />
+            <asp:TextBox ID="txtSearch" runat="server" size='28' style="background-image: url('/_layouts/images/google_custom_search_watermark.gif'); background-repeat: no-repeat; background-position:center;background-color:Transparent" onKeyPress="SendSearchRequesttoGSAOnEnterClick()" ></asp:TextBox></asp:Panel>
+
+<div  class="ms-searchimage">
 <a target='_self' 
 	href='javascript:' 
-	onClick="javascript:SubmitSearchRedirect1(<%=strEncodedUrl%>);javascript:return false;" 
+	onClick="javascript:SendSearchRequesttoGSA(<%=strEncodedUrl%>);javascript:return false;" 
 	ID=onetIDGoSearch>
 	<img border='0' src="/_layouts/images/gosearch.gif" alt='Go!'>
 </a>
-
 </div>
+
+
+
+
