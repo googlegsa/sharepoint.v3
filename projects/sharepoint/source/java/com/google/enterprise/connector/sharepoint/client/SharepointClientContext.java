@@ -43,6 +43,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// FIXME We can get rid of this class since it is unnecessarily creating a hop between SharePointConector and spi implementations. config values can be passed to the appropriate classes directly using IoC.
+
 /**
  * Class to hold the context information for sharepoint client connection. The
  * information is per connector instance.
@@ -80,6 +82,9 @@ public class SharepointClientContext implements Cloneable {
 
     private boolean useSPSearchVisibility = true;
     private List<String> infoPathBaseTemplate = null;
+
+    boolean reWriteDisplayUrlUsingAliasMappingRules = true;
+    boolean reWriteRecordUrlUsingAliasMappingRules;
 
     /**
      * For cloning
@@ -157,6 +162,9 @@ public class SharepointClientContext implements Cloneable {
 
             spCl.useSPSearchVisibility = useSPSearchVisibility;
             spCl.infoPathBaseTemplate = infoPathBaseTemplate;
+
+            spCl.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
+            spCl.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
             return spCl;
         } catch (final Throwable e) {
             LOGGER.log(Level.FINEST, "Unable to clone client context.", e);
@@ -931,5 +939,23 @@ public class SharepointClientContext implements Cloneable {
 
     public void setInfoPathBaseTemplate(List<String> infoPathBaseTemplate) {
         this.infoPathBaseTemplate = infoPathBaseTemplate;
+    }
+
+    public void setReWriteDisplayUrlUsingAliasMappingRules(
+            boolean reWriteDisplayUrlUsingAliasMappingRules) {
+        this.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public boolean isReWriteDisplayUrlUsingAliasMappingRules() {
+        return reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public boolean isReWriteRecordUrlUsingAliasMappingRules() {
+        return reWriteRecordUrlUsingAliasMappingRules;
+    }
+
+    public void setReWriteRecordUrlUsingAliasMappingRules(
+            boolean reWriteRecordUrlUsingAliasMappingRules) {
+        this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
 }

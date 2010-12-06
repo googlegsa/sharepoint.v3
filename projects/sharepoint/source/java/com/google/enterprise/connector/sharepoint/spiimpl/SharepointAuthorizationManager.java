@@ -24,7 +24,6 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
-import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.AuthorizationResponse;
@@ -134,7 +133,8 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
      *            create the instance of this class
      */
     public SharepointAuthorizationManager(
-            final SharepointClientContext inSharepointClientContext)
+            final SharepointClientContext inSharepointClientContext,
+            final Set<String> siteCollUrls)
             throws SharepointException {
         if (inSharepointClientContext == null) {
             throw new SharepointException(
@@ -154,10 +154,12 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
                 } else {
                     if (null == str2) {
                         return -1;
-                    } else if (str1.equals(str2)) {
-                        return 0;
                     } else {
-                        return str2.length() - str1.length();
+                        int comp = str2.length() - str1.length();
+                        if (comp == 0) {
+                            comp = str2.compareTo(str1);
+                        }
+                        return comp;
                     }
                 }
             };
@@ -165,9 +167,6 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
         // Populate all site collection URLs using the above comparator
         try {
-            GSSiteDiscoveryWS siteDiscoWs = new GSSiteDiscoveryWS(
-                    inSharepointClientContext, null);
-            Set<String> siteCollUrls = siteDiscoWs.getMatchingSiteCollections();
             for (String siteCollUrl : siteCollUrls) {
                 String webapp = Util.getWebApp(siteCollUrl);
                 Set<String> urlPaths = null;
@@ -177,15 +176,12 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
                     urlPaths = new TreeSet<String>(nonIncreasingComparator);
                     webappToSiteCollections.put(webapp, urlPaths);
                 }
-                try {
-                    urlPaths.add(new URL(siteCollUrl).getPath());
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Could not register path [ "
-                            + siteCollUrl + " ]. ", e);
-                }
+                urlPaths.add(new URL(siteCollUrl).getPath());
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Prolem occured while registering site collection URLs ", e);
+            // A partial fill can be buggy
+            webappToSiteCollections.clear();
         }
     }
 
@@ -603,5 +599,12 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
             LOGGER.log(Level.WARNING, logMessage);
         }
         return response.add(new AuthorizationResponse(status, DocId));
+    }
+
+    /*
+     * For Testing purpose
+     */
+    public Map<String, Set<String>> getWebappToSiteCollections() {
+        return webappToSiteCollections;
     }
 }

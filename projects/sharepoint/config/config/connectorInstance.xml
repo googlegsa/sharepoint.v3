@@ -60,6 +60,12 @@
       </list>
     </property>
   -->
+
+  <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property>
+
+  <!-- Applicable for only Metadata-and-URL feed -->
+  <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property>
+
   </bean>
 
 </beans>

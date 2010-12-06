@@ -70,7 +70,7 @@ public class ListStateTest extends TestCase {
 
         Calendar cal2 = Calendar.getInstance();
         cal2.add(Calendar.MONTH, -1);
-        list1.setLastDocProcessedForWS(new SPDocument("1", "X", cal2,
+        list1.setLastDocProcessed(new SPDocument("1", "X", cal2,
                 ActionType.ADD));
         assertEquals(cal2, list1.getDateForWSRefresh());
     }
@@ -247,7 +247,7 @@ public class ListStateTest extends TestCase {
         SPDocument doc1 = new SPDocument("1", "X", cal1, SPConstants.NO_AUTHOR,
                 SPConstants.DOCUMENT, "XX", FeedType.METADATA_URL_FEED,
                 SPType.SP2007);
-        list1.setLastDocProcessedForWS(doc1);
+        list1.setLastDocProcessed(doc1);
         assertEquals(doc1, list1.getLastDocForWSRefresh());
 
         SPDocument doc2 = new SPDocument("2", "X", cal1, SPConstants.NO_AUTHOR,
