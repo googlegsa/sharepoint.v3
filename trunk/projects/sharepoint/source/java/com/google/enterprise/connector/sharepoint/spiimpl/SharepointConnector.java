@@ -14,11 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -26,6 +21,11 @@ import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of the Connector interface from the spi for SharePoint This is
@@ -56,6 +56,8 @@ public class SharepointConnector implements Connector {
     private boolean stripDomainFromAces = true;
     private boolean useSPSearchVisibility = true;
     private List<String> infoPathBaseTemplate;
+    boolean reWriteDisplayUrlUsingAliasMappingRules = true;
+    boolean reWriteRecordUrlUsingAliasMappingRules;
 
     public SharepointConnector() {
 
@@ -281,6 +283,8 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setPushAcls(pushAcls);
         sharepointClientContext.setInfoPathBaseTemplate(infoPathBaseTemplate);
+        sharepointClientContext.setReWriteDisplayUrlUsingAliasMappingRules(reWriteDisplayUrlUsingAliasMappingRules);
+        sharepointClientContext.setReWriteRecordUrlUsingAliasMappingRules(reWriteRecordUrlUsingAliasMappingRules);
     }
 
     /**
@@ -335,5 +339,23 @@ public String getKdcserver() {
 
     public void setInfoPathBaseTemplate(List<String> infoPathBaseTemplate) {
         this.infoPathBaseTemplate = infoPathBaseTemplate;
+    }
+
+    public boolean isReWriteDisplayUrlUsingAliasMappingRules() {
+        return reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public void setReWriteDisplayUrlUsingAliasMappingRules(
+            boolean reWriteDisplayUrlUsingAliasMappingRules) {
+        this.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public boolean isReWriteRecordUrlUsingAliasMappingRules() {
+        return reWriteRecordUrlUsingAliasMappingRules;
+    }
+
+    public void setReWriteRecordUrlUsingAliasMappingRules(
+            boolean reWriteRecordUrlUsingAliasMappingRules) {
+        this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
 }

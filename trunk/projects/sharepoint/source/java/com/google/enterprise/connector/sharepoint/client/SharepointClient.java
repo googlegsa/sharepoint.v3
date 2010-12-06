@@ -117,9 +117,13 @@ public class SharepointClient {
         }
 
         final SPDocumentList docList = new SPDocumentList(newlist, globalState);
+        // FIXME These could be set in traversal manager just before returning
+        // start/resumeTraversal
         if (null != sharepointClientContext) {
             docList.setAliasMap(sharepointClientContext.getAliasMap());
             docList.setFQDNConversion(sharepointClientContext.isFQDNConversion());
+            docList.setReWriteDisplayUrlUsingAliasMappingRules(sharepointClientContext.isReWriteDisplayUrlUsingAliasMappingRules());
+            docList.setReWriteRecordUrlUsingAliasMappingRules(sharepointClientContext.isReWriteRecordUrlUsingAliasMappingRules());
         } else {
             LOGGER.log(Level.SEVERE, "sharepointClientContext not found!");
         }
@@ -150,7 +154,7 @@ public class SharepointClient {
         for (final Iterator<ListState> iter = webState.getCurrentListstateIterator(); iter.hasNext();) {
             final ListState list = (ListState) iter.next();
 
-            // Mark the this list as current list so that the next traversal
+            // Mark this list as current list so that the next traversal
             // request starts from here and already scanned lists are not
             // unnecessarily re-scanned.
             webState.setCurrentList(list);

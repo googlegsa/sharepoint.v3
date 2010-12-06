@@ -14,15 +14,16 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
 import com.google.enterprise.connector.spi.TraversalManager;
+
+import java.util.logging.Logger;
 
 /**
  * Implements the Session interface from the spi. It implements methods to
@@ -63,7 +64,7 @@ public class SharepointSession implements Session {
     public AuthenticationManager getAuthenticationManager()
             throws RepositoryException {
         LOGGER.info("getAuthenticationManager()");
-		if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
+        if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
             return null;
         }
         return new SharepointAuthenticationManager(sharepointClientContext);
@@ -75,10 +76,12 @@ public class SharepointSession implements Session {
     public AuthorizationManager getAuthorizationManager()
             throws RepositoryException {
         LOGGER.info("getAuthorizationManager()");
-		if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
+        if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
             return null;
         }
-        return new SharepointAuthorizationManager(sharepointClientContext);
+        return new SharepointAuthorizationManager(
+                sharepointClientContext,
+                new GSSiteDiscoveryWS(sharepointClientContext, null).getMatchingSiteCollections());
     }
 
     /**

@@ -50,7 +50,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1246,5 +1248,145 @@ public final class Util {
             roleTypes.add(RoleType.PEEKER);
         }
         return roleTypes;
+    }
+
+    /**
+     * Re-writes the current document's URL in respect to the Alias mapping
+     * specified.
+     *
+     * @param spDocument The document whose documentURL and displayURL need to
+     *            be set with aliased URL
+     */
+    public static String doAliasMapping(final String url,
+            Map<String, String> aliasMap, boolean fqdn)
+            throws MalformedURLException {
+        URL objURL = new URL(url);
+        String strUrl = "";
+
+        boolean matched = false;
+        // processing of alias values
+        if ((null != aliasMap) && (null != aliasMap.keySet())) {
+            for (final Iterator<String> aliasItr = aliasMap.keySet().iterator(); aliasItr.hasNext();) {
+
+                String aliasPattern = (String) aliasItr.next();
+                String aliasValue = (String) aliasMap.get(aliasPattern);
+
+                if ((aliasPattern == null) || (aliasValue == null)) {
+                    continue;
+                }
+                aliasPattern = aliasPattern.trim();
+                aliasValue = aliasValue.trim();
+                if (aliasPattern.equalsIgnoreCase("")
+                        || aliasValue.equalsIgnoreCase("")) {
+                    continue;
+                }
+
+                URL patternURL = null;
+                String aliasPatternURL = aliasPattern;
+                if (aliasPattern.startsWith(SPConstants.GLOBAL_ALIAS_IDENTIFIER)) {
+                    aliasPatternURL = aliasPattern.substring(1);
+                }
+
+                try {
+                    patternURL = new URL(aliasPatternURL);
+                } catch (final MalformedURLException e) {
+                    LOGGER.log(Level.WARNING, "Malformed alias pattern: "
+                            + aliasPatternURL, e);
+                }
+                if (patternURL == null) {
+                    continue;
+                }
+
+                if (!objURL.getProtocol().equalsIgnoreCase(patternURL.getProtocol())) {
+                    continue;
+                }
+
+                if (!objURL.getHost().equalsIgnoreCase(patternURL.getHost())) {
+                    continue;
+                }
+
+                if (aliasPattern.startsWith(SPConstants.GLOBAL_ALIAS_IDENTIFIER)) {
+                    aliasPattern = aliasPattern.substring(1);
+                    if (patternURL.getPort() == SPConstants.MINUS_ONE) {
+                        aliasPattern = patternURL.getProtocol()
+                                + SPConstants.URL_SEP + patternURL.getHost();
+                        if (objURL.getPort() != SPConstants.MINUS_ONE) {
+                            aliasPattern += SPConstants.COLON
+                                    + objURL.getPort();
+                        }
+                        aliasPattern += patternURL.getFile();
+                    }
+                } else if ((objURL.getPort() == SPConstants.MINUS_ONE)
+                        && (patternURL.getPort() == patternURL.getDefaultPort())) {
+                    aliasPattern = patternURL.getProtocol()
+                            + SPConstants.URL_SEP + patternURL.getHost()
+                            + patternURL.getFile();
+                } else if ((objURL.getPort() == objURL.getDefaultPort())
+                        && (patternURL.getPort() == SPConstants.MINUS_ONE)) {
+                    aliasPattern = patternURL.getProtocol()
+                            + SPConstants.URL_SEP + patternURL.getHost()
+                            + SPConstants.COLON + patternURL.getDefaultPort()
+                            + patternURL.getFile();
+                } else if (objURL.getPort() != patternURL.getPort()) {
+                    continue;
+                }
+
+                if (url.startsWith(aliasPattern)) {
+                    LOGGER.config("document url[" + url
+                            + "] has matched against alias source URL [ "
+                            + aliasPattern + " ]");
+                    strUrl = aliasValue;
+                    final String restURL = url.substring(aliasPattern.length());
+                    if (!strUrl.endsWith(SPConstants.SLASH)
+                            && !restURL.startsWith(SPConstants.SLASH)) {
+                        strUrl += SPConstants.SLASH;
+                    }
+                    strUrl += restURL;
+                    matched = true;
+                    LOGGER.config("document url[" + url
+                            + "] has been re-written to [ " + strUrl
+                            + " ] in respect to the aliasing.");
+                    break;
+                }
+            }
+        }
+
+        if (!matched) {
+            strUrl = objURL.getProtocol() + SPConstants.URL_SEP;
+            strUrl += getFQDNHostName(objURL.getHost(), fqdn)
+                    + SPConstants.COLON;
+            final int portNo = objURL.getPort();
+            if (portNo != SPConstants.MINUS_ONE) {
+                strUrl += portNo;
+            } else {
+                strUrl += objURL.getDefaultPort();
+            }
+            strUrl += objURL.getFile();
+        }
+
+        return strUrl;
+    }
+
+    /**
+     * Converts a host name to a FQDN. This should be called only if the fqdn
+     * property has been set to true in the connectorInstance.xml.
+     *
+     * @param hostName
+     * @return the host name in FQDN format
+     */
+    private static String getFQDNHostName(final String hostName, boolean fqdn) {
+        if (fqdn) {
+            InetAddress ia = null;
+            try {
+                ia = InetAddress.getByName(hostName);
+            } catch (final UnknownHostException e) {
+                LOGGER.log(Level.WARNING, "Exception occurred while converting to FQDN, hostname [ "
+                        + hostName + " ].", e);
+            }
+            if (ia != null) {
+                return ia.getCanonicalHostName();
+            }
+        }
+        return hostName;
     }
 }

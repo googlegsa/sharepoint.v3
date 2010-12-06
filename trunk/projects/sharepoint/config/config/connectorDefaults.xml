@@ -47,6 +47,8 @@
         <value>XMLForm</value>
       </list>
     </property>
+    <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property>
+    <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property>
   </bean>
 
   <bean id="propertyPlaceholderConfigurer"
