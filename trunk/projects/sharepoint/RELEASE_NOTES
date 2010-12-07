@@ -56,8 +56,8 @@ the new connectorInstance.xml provided with the build. If you had updated some p
 update them explicitly in the new connectorInstance.xml.
 5. Start the SharePoint Connector Service.
 
-Note: You also need to update the bulk authorization web service. Next section gives the complete manual upgrade instruction for all services.
-Also, to have an optimal authorization performance, it is recommended to install/update the site discovery service as well.
+Note: If you have deployed Google Services on SharePoint server, also update the same. Next section gives the complete manual upgrade instruction for all services.
+Also, to have an optimal authorization performance, it is recommended to install/update the site discovery service along with bulk authorization service..
 
 Steps to manually deploy the Google services for SharePoint
 -----------------------------------------------------------
