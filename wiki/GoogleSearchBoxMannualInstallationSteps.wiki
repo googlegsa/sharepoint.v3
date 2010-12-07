@@ -63,6 +63,6 @@
  {{{ 
          * open GSA Admin page->Serving->FrontEnd 
          * create a new frontend "SPS_frontend" 
-         * copy the contents of file "SPS_frontend.xslt" 
+         * copy the contents of file "SPS_frontend.xslt" packaged in the downloadable zip file 
          * save it 
  }}} 
