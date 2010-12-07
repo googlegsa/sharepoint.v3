@@ -1,9 +1,9 @@
 #summary Manual installation steps for connector 2.x
 
 = Introduction =
-This document walks you through the steps to manually install a connector. The instructions mentioned here are applicable to connector version 2.x and above
+This document walks you through the steps to manually install a Google Enterprise SharePoint connector. The instructions mentioned here are applicable to connector version 2.x and above.
 
-Google strongly recommends that you use the installer for installing the connector. Though, you may want to do it manually if,
+Google strongly recommends that you use the Google connectors installer for installing the connector. Though, you may want to do it manually if,
  * You have built and installed a customized connector manager or a customized version of the connector
  * You want to deploy the connector on an existing Tomcat installation
  * You are installing a patch release that is not packaged with an installer. 
