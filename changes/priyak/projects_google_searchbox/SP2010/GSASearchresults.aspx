@@ -149,7 +149,7 @@ div.ms-areaseparatorright{
                     HttpContext.Current.Response.End();
                 }
 
-                //set thelog location
+                //set the log location
                 LogLocation = getLogLocationFromConfig();
 
                 //set the current log level
@@ -705,43 +705,28 @@ else if(document.attachEvent)
                         if ((inquery["u"] != null))
                         {
                             
-                            string port = "";
+                            
                             string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
                             temp = temp.ToLower();
                             strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
                             temp = temp.Replace("http://", "");// Delete http from url
-                            qQuery += " inurl:\"" + temp + "\"";//  Change functionality to use "&sitesearch="  - when GSA Bug 11882 has been closed
-
-                            string scopeText = inquery["selectedScope"]; // Getting the user selected, scope dropdown textual value
-                            switch (scopeText)
-                            {
-                                case currentSite:
-                                case currentSiteAndAllSubsites:
-                                    finalURL = strURL;
-                                    break;
-
-                                case currentList:
-                                    finalURL = strURL;
-                                    break;
-
-                                case currentFolder:
-                                case currentFolderAndAllSubfolders:
-                                    finalURL = strURL;
-                                    break;
-                            }
-                            finalURL = finalURL.Replace("'", "");
+                            qQuery += "&inurl:\"" + temp + "\"";//  Change functionality to use "&sitesearch="  - when GSA Bug 11882 has been closed
+                            
+                            // The finalURL contains complete URL for the currently selected scope
+                            finalURL = strURL;
+                            finalURL = finalURL.Replace("'", "");// Removing the single quotes from the URL
                             qQuery += "&sitesearch=" + finalURL;
                         }
 
-                        /*Get the user suppiled parameters from the web.config file*/
+                        /*Get the user supplied parameters from the web.config file*/
 
                         if (inquery["isPublicSearch"] == "false")
                         {
-                            gProps.accessLevel = "a";
+                            gProps.accessLevel = "a"; // Perform 'public and secure search'
                         }
                         else
                         {
-                            gProps.accessLevel = "p";
+                            gProps.accessLevel = "p";  // Perform 'public search'
                         }
                        
                         searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;

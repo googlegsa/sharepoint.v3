@@ -5,9 +5,126 @@
 <%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 <%@ Import Namespace="Microsoft.SharePoint" %>
 <%@ Import Namespace="System.Web.Configuration" %>
+<%@ Import Namespace="System.IO" %>
 
 <!--Author: Amit Agrawal-->
-<%
+
+<script runat="server" >
+    
+    /*Enumeration which defines Search Box Log levels*/
+    public enum LOG_LEVEL
+    {
+            INFO,
+            ERROR
+    }
+    
+    public LOG_LEVEL currentLogLevel = LOG_LEVEL.ERROR;
+    
+    /**
+    * Block Logging. The flag is used to avoid the cyclic conditions. 
+    **/
+    public bool BLOCK_LOGGING = false;
+    public const String PRODUCTNAME = "GSBS";         
+            
+    /*
+    * The default location points to the 12 hive location where SharePoint usually logs all its messages
+    * User can always override this location and point to a different location.
+    */
+    public const String DEFAULT_LOG_LOCATION = @"C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\";
+    public string LogLocation = DEFAULT_LOG_LOCATION;
+
+    /// <summary>
+    /// For logging the search box messages.
+    /// </summary>
+    /// <param name="msg">The message to be logged</param>
+    /// <param name="logLevel">Log level</param>
+    public void log(String msg, LOG_LEVEL logLevel)
+    {
+        /**
+         * If logging is already blocked, do not do further processing 
+         **/
+        if ((BLOCK_LOGGING == false) && (logLevel >= currentLogLevel))
+        {
+            try
+            {
+                String time = DateTime.Today.ToString("yyyy_MM_dd");
+                string WebAppName = "";
+
+                /**
+                 * If possible get the web app name to be appended in log file name. If exception skip it.
+                 * Note: If we breakup create a function to get the web app name it fails with 'Unknown error' in SharePoint
+                 **/
+                try
+                {
+
+                    WebAppName = SPContext.Current.Site.WebApplication.Name;
+                    if ((WebAppName == null) || (WebAppName.Trim().Equals("")))
+                    {
+                        /**
+                         * This is generally the case with the SharePoint central web application.
+                         * e.g. DefaultServerComment = "SharePoint Central Administration v3"
+                         **/
+                        WebAppName = SPContext.Current.Site.WebApplication.DefaultServerComment;
+                    }
+                }
+                catch (Exception) { }
+
+
+                int portNumber = -1;
+
+                /**
+                 * If possible get the port number to be appended in log file name. If exception skip it
+                 **/
+                try
+                {
+                    portNumber = SPContext.Current.Site.WebApplication.AlternateUrls[0].Uri.Port;
+                }
+                catch (Exception) { }
+
+                String CustomName = PRODUCTNAME + "_" + WebAppName + "_" + portNumber + "_" + time + ".log";
+                String loc = LogLocation + CustomName;
+
+
+                /*
+                 * We need to make even a normal user with 'reader' access to be able to log messages
+                 * This requires to elevate the user temporarily for write operation.
+                 */
+                SPSecurity.RunWithElevatedPrivileges(delegate()
+                {
+                    FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
+
+                    /**
+                     * If we use FileLock [i.e.  f.Lock(0, f.Length)] then it may cause issue
+                     * Logging failed due to: The process cannot access the file 'C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\LOGS\GSBS_SharePoint - 9000_9000_2009_12_03.log' because it is being used by another process.
+                     * Thread was being aborted.
+                     **/
+
+                    StreamWriter logger = new StreamWriter(f);
+
+                    logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
+                    logger.Flush();
+                    logger.Close();
+                });
+            }
+            catch (Exception logException)
+            {
+                if (BLOCK_LOGGING == false)
+                {
+                    BLOCK_LOGGING = true;
+                    HttpContext.Current.Response.Write("<b><u>Logging failed due to:</u></b> " + logException.Message + "<br/>");
+                    HttpContext.Current.Response.End();
+                }
+            }
+
+        }
+    }
+    
+</script>
+    
+    
+    
+<%   
+    
     // The forward slash is used to append to the sitesearch parameter. 
     string forwardSlash = "/";
     
@@ -26,13 +143,22 @@
     string listType = "";
     string listUrl = "";
 
+
+    // Display the Public Search checkbox only if the user has selected 'public ans secure' search while installing the search box.
     if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
     {
         chkPublicSearch.Visible = true;
+        divPublicSearch.Visible = true;
     }
     else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
     {
         chkPublicSearch.Visible = false;
+        divPublicSearch.Visible = false;
+    }
+    else
+    {
+        // Logging the error into the log file, if the value for accesslevel parameter in web.config is other than 'a' and 'p'.
+        log("The value for access level cannot be '" + WebConfigurationManager.AppSettings["accesslevel"].ToString() + "'. Permitted values are only 'a' and 'p'", LOG_LEVEL.ERROR);//log error
     }
         
     
@@ -82,7 +208,6 @@
 
     // The hiddenfield named 'hfSelectedScope' is used to store the 'scope text' of the current context selected by the user, so that 
     // appropriate scope can be enabled in the dropdown.
-    hfSelectedScope.Value = strScopeWeb + forwardSlash;
 
     ListItem lstItem2 = new ListItem();
     lstItem2.Text = currentSiteAndAllSubsites;
@@ -140,28 +265,47 @@
             strScopeFolder = siteUrl + this.Context.Request.QueryString["RootFolder"].ToString(); // Retrieve the folder path
             lstItem4.Value = strScopeFolder + forwardSlash;
             lstItem5.Value = strScopeFolder;
-            hfSelectedScope.Value = strScopeFolder + forwardSlash;
+            hfSelectedScope.Value = strScopeFolder;
         }
     }
     else
     {
         strWebSelected = "SELECTED";
     }
-    
+
     // Contains code for persisting the search query term and selected scope.
-    // Code for populating the search query text value
+
+    // Code for populating the search query text value. 
     if (Request.QueryString["k"] != null)
     {
+        // If this is the first request for search, populate the search query text with querystring 'k' parameter.
         txtSearch.Text = Request.QueryString["k"].ToString();
     }
+    else if (Request.QueryString["q"] != null)
+    {
+        // If this is not the first request for search, populate search query text with querystring 'q' parameter.
+        txtSearch.Text = Request.QueryString["q"].ToString();
+    }
+
+
+    // Code for persisting the Public search checkbox status
+    if (ViewState["PublicSearchStatus"] != null)
+    {
+        bool publicSearchStatus = Convert.ToBoolean(ViewState["PublicSearchStatus"].ToString());
+        chkPublicSearch.Checked = publicSearchStatus;
+    }
+    
+    
     if (Request.QueryString["selectedScope"] != null)
     {
+        string selectedScopeTextValue = Request.QueryString["selectedScope"].ToString();
+        // If this is the first request for search,get the dropdown text value from the 'selectedScope' querystring parameter.
         for (int i = 0; i < idSearchScope.Items.Count; i++)
         {
             // Finding the dropdown's text value equivalent to the scope selected by the user, so that the respective value will be set as 'SELECTED' in the dropdown.
-            if (idSearchScope.Items[i].Text == Request.QueryString["selectedScope"].ToString())
+            if (idSearchScope.Items[i].Text == selectedScopeTextValue)
             {
-                if (Request.QueryString["selectedScope"].ToString() == currentList || Request.QueryString["selectedScope"].ToString() == currentFolder || Request.QueryString["selectedScope"].ToString() == currentFolderAndAllSubfolders)
+                if (selectedScopeTextValue == currentList || selectedScopeTextValue == currentFolder || selectedScopeTextValue == currentFolderAndAllSubfolders)
                 {
                     // Code to set the respective dropdown item as 'ENABLED', when the user selects 'Current List', 'Current Folder' and 'Current Folder And All Subfolders' in the dropdown. Needs to be done as these scope urls are not
                     // available on the GSASearchresults.aspx page in SharePoint.(Browsing occurs at site level by default when search is redirected to GSASearchResults.aspx page)
@@ -179,6 +323,21 @@
             }
         }
     }
+    // If this is not the first request for search,get the dropdown text value from the 'sitesearch' querystring parameter. Here 
+    else if (Request.QueryString["sitesearch"] != null)
+    {
+        // Decode the value for sitesearch parameter
+        string sitesearchStrValue = System.Web.HttpUtility.UrlDecode(Request.QueryString["sitesearch"].ToString());
+        for (int i = 0; i < idSearchScope.Items.Count; i++)
+        {
+            string searchScopeValue = idSearchScope.Items[i].Value.Replace("'", "");// Removing the single quotes from the URL
+            if (searchScopeValue == sitesearchStrValue)
+            {
+                idSearchScope.Items[i].Selected = true;
+                break;
+            }
+        }
+    }
 %>
 
 
@@ -192,19 +351,20 @@
         var hfselectedscope = document.getElementById("<%=hfSelectedScope.ClientID%>");
         var searchScope = document.getElementById("<%=idSearchScope.ClientID%>");
 
-    
         for (var i = 0; i < searchScope.options.length; i = i + 1)
         {
+            searchScope.options[i].disabled = false; // Enabling the scope the user is currently browsing.
             if (searchScope.options[i].value == hfselectedscope.value) // Enabling the options for 'folder search'
             {
-                searchScope.options[i].disabled = false;
                 if(searchScope.options[i].text == currentFolder)
                 {
-                    // Need to enable the 'Current Folder and all subfolders'  and 'Current List' options as well, if user is browsing through a folder.
-                    searchScope.options[i - 1].disabled = false;
+                    // Need to enable the 'Current Folder and all subfolders', if user is browsing through a folder.
                     searchScope.options[i + 1].disabled = false;
                 }
+                break; // Need to break the for loop if the currently selected scope is other than 'Current Folder',as for instance, 
+                // if the currently selected scope is 'Current List', don't enable the remaining scopes at lower level.
             }
+            
         }
     }
     if (document.addEventListener)
@@ -281,29 +441,35 @@ function SendSearchRequesttoGSAOnEnterClick()
     }
 }
 
-// Function that will change the value of hiddenfiled whenever checkbox is checked/ unchecked
-function checkPublicSearch(chk)
-{
 
-    var isPublicSearch = document.getElementById("<%=hfPublicSearch.ClientID%>").value;
-    if (chk.checked == true) 
-    {
-        isPublicSearch = "true";
-    }
-    else 
-    {
-        isPublicSearch = "false";
-    }
-}
+</script>
 
+
+<script type="text/C#" runat="server">
+
+    
+    protected void checkPublicSearch(object sender, EventArgs e)
+    {
+        if (chkPublicSearch.Checked == true)
+        {
+            hfPublicSearch.Value = "true";
+        }
+        else
+        {
+            hfPublicSearch.Value = "false";            
+        }
+        
+        
+    }
+    
 </script>
 
 <div style="float:left;font-size:small; color:Black">
 <asp:HiddenField ID="hfPublicSearch" runat="server"  Value="true"/>
 <asp:HiddenField ID="hfStrEncodedUrl" runat="server"/>
 <asp:HiddenField id="hfUserSelectedScope" runat="server" />
-<asp:CheckBox ID="chkPublicSearch" runat="server"  Width="120px" Checked="true" onclick="checkPublicSearch(this);"  TextAlign="Right"  style="vertical-align:bottom;"  ToolTip="Check this to search public content"   />
-Public Search &nbsp;&nbsp;
+<asp:CheckBox ID="chkPublicSearch" runat="server"  Width="120px" Checked="true"  OnCheckedChanged="checkPublicSearch"   AutoPostBack="true" TextAlign="Right"  style="vertical-align:bottom;"  ToolTip="Check this to search public content"   />
+<div id="divPublicSearch" runat="server">Public Search &nbsp;&nbsp;</div> 
 </div>
 
 <asp:Panel ID="pnlSearchBoxPanel" runat="server" >   
