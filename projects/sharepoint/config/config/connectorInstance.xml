@@ -61,10 +61,11 @@
     </property>
   -->
 
-  <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property>
+  <!-- Applicable for both Metadata-and-URL and content feed. If set to true, the document display URL (shown to the search users) will be re-written using alias mapping rule specified on connector configuration page. -->
+  <!-- <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property> -->
 
-  <!-- Applicable for only Metadata-and-URL feed -->
-  <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property>
+  <!-- Applicable only for Metadata-and-URL feed. If set to true, the document record URL will also be re-written using alias mapping rule specified on connector configuration page. -->
+  <!-- <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property> -->
 
   </bean>
 
