@@ -94,7 +94,7 @@
         class GoogleSearchBox
         {
             public string GSALocation;
-            public string accessLevel;//Do a Public and Secured search
+            public string accessLevel;
             public string siteCollection;
             public string frontEnd;
             public string enableInfoLogging;
@@ -561,65 +561,15 @@
 		  var keywordQuery = getParameter(Query, 'k');
 		  if(keywordQuery != null)
 		  {
-            
-            //set the value of query
-            var myTextField = document.getElementById('idSearchString');
-            
-            // Code for carry forwarding the scope selected from the dropdown
-            var dropdownScope = document.getElementById('idSearchScope');
-            var chkIsPublic = document.getElementById("ctl00_PlaceHolderTitleBreadcrumb_ctl00_chkPublicSearch");
-            var scope = getParameter(Query, 'selectedScope');
-            var scopeURL = getParameter(Query, 'scopeUrl');
-            var isPublicSearch = getParameter(Query, 'isPublicSearch');
-            
-            var currentSite = "Current Site";
-            var currentSiteAndAllSubsites = "Current Site and all subsites";
-            var currentList = "Current List";
-            var currentFolder = "Current Folder";
-            var currentFolderAndAllSubfolders = "Current Folder and all subfolders";  
-            
-            if(scope == currentList || scope == currentFolder || scope == currentFolderAndAllSubfolders)
-            {
-                // Create an Option object        
-                var opt = document.createElement("option");
-                // Add an Option object to Drop Down/List Box
-                dropdownScope.options.add(opt);
-                // Assign text and value to Option object
-                opt.text = scope;
-                opt.value = scopeURL;
-            }   
-            
-            for(var i = 0;i <= dropdownScope.length-1 ; i = i+1)
-            {
-                if(dropdownScope.options(i).text == scope)
-                {
-                    dropdownScope.options(i).selected = true;
-                    break;
-                }
-            } 
-            
-            // Code to change the checked status of 'Public Search' checkbox, as selected by user in previous page
-            if(isPublicSearch == "true")
-            {
-                chkIsPublic.checked = true;
-            }
-            else if(isPublicSearch == "false")
-            {
-                chkIsPublic.checked = false;
-            }
-            
-        	if(myTextField.value != "")
-        	{
-		        myTextField.value=keywordQuery;
-		    }
-
 		    if(keywordQuery!="")
 		    {
-			 var titlePrefix = '<asp:Literal runat="server" text="<%$Resources:wss,searchresults_pagetitle%>"/>';
-			 document.title = titlePrefix + ": " +keywordQuery;
-			 }
+			    var titlePrefix = '<asp:Literal runat="server" text="<%$Resources:wss,searchresults_pagetitle%>"/>';
+			    document.title = titlePrefix + ": " +keywordQuery;
+			}
 		  }
-	   }	 
+        }
+
+      
 	}
 		
 	function getParameter (queryString, parameterNameWithoutEquals)
@@ -638,7 +588,7 @@
 			}
 			var x = document.getElementById("idSearchString");
 			var mystring = decodeURIComponent(queryString.substring (begin, end))
-			x.value=mystring;
+			//x.value=mystring;
 			
 			var myindex = mystring.indexOf('cache:');
 			if(myindex>-1)
@@ -762,38 +712,17 @@ else if(document.attachEvent)
                             //Using U parameter to create scoped searches on the GSA
                             if ((inquery["u"] != null) && inquery["selectedScope"] != "Enterprise")
                             {
-                                string port = "";
+                                
                                 string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
                                 temp = temp.ToLower();
                                 strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
 
                                 temp = temp.Replace("http://", "");// Delete http from url
-                                qQuery += " inurl:\"" + temp + "\"";// Change functionality to use "&sitesearch=" - when GSA Bug 11882 has been closed
-                                
-                                string scopeText = inquery["selectedScope"]; // Getting the user selected, scope dropdown textual value 
-                                switch (scopeText)
-                                {
-                                    case currentSite:
-                                        finalURL = strURL + "/";
-                                        break;
+                                qQuery += "&inurl:\"" + temp + "\"";// Change functionality to use "&sitesearch=" - when GSA Bug 11882 has been closed
 
-                                    case currentSiteAndAllSubsites:
-                                        finalURL = strURL;
-                                        break;
-
-                                    case currentList:
-                                        finalURL = strURL;
-                                        break;
-
-                                    case currentFolder:
-                                        finalURL = strURL + "/";
-                                        break;
-
-                                    case currentFolderAndAllSubfolders:
-                                        finalURL = strURL;
-                                        break;
-                                }
-                                finalURL = finalURL.Replace("'", "");
+                                // The finalURL contains complete URL for the currently selected scope
+                                finalURL = strURL;
+                                finalURL = finalURL.Replace("'", "");// Removing the single quotes from the URL
                                 qQuery += "&sitesearch=" + finalURL;
                             }
 
@@ -801,14 +730,14 @@ else if(document.attachEvent)
 
                             if (inquery["isPublicSearch"] == "false")
                             {
-                                gProps.accessLevel = "a";
+                                gProps.accessLevel = "a"; // Perform 'public and secure search'
                             }
                             else
                             {
-                                gProps.accessLevel = "p";
+                                gProps.accessLevel = "p";  // Perform 'public search'
                             }
 
-                            searchReq = "?q=" + qQuery + "&access=" + WebConfigurationManager.AppSettings["accesslevel"] + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;                                
+                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;                                
                             
 
                             if (gProps.frontEnd.Trim() != "")
