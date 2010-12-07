@@ -9,6 +9,146 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
+Release 2.6.8 , 7 Dec 2010
+=======================================
+
+Introduction
+------------
+This is a patch release for wide evaluation and usage.  Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint and things may change in the future.
+
+Summary of Changes / New Features
+---------------------------------
+This patch contains fix for the following issues
+
+[Issue 3260602] SP connector batch authZ should handle site collection URLs correctly for authZ grouping of URLs to avoid intermittent indeterminate results
+
+The bug was in the comparator used for grouping documents (to be authorized) according to their parent site collections.
+Each site collection is treated as a bucket wherein the documents belonging to that site collection are stored and set for authorization.
+The bug, in certain use cases, causes document URLs being put in wrong bucket which leads to authZ failures.
+
+
+[Issue 3260584] Allow alias mapping to be applied over record URL along with displayURL
+
+Added following boolean properties in connectorInstance.xml to give users option to choose whether record URL and/or display URl be re-written using
+alias mapping rules specified on connector configuration page:
+<!-- Applicable for both Metadata-and-URL and content feed. If set to true, the document display URL (shown to the search users) will be re-written using alias mapping rule specified on connector configuration page. -->
+<!-- <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property> -->
+
+<!-- Applicable only for Metadata-and-URL feed. If set to true, the document record URL will also be re-written using alias mapping rule specified on connector configuration page. -->
+<!-- <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property> -->
+
+Version Compatibility
+---------------------
+This version works with Connector Manager Version 2.4.0 and above.
+It is recommended to upgrade to the latest Connector Manager version which is 2.6.0
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
+
+Steps to manually deploy the patch release
+------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Replace $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/$CONNECTOR_INSTANCE$/connectorInstance.xml with
+the new connectorInstance.xml provided with the build. If you had updated some properties in your older connectorInstance.xml, you'll have to
+update them explicitly in the new connectorInstance.xml.
+5. Start the SharePoint Connector Service.
+
+Note: You also need to update the bulk authorization web service. Next section gives the complete manual upgrade instruction for all services.
+Also, to have an optimal authorization performance, it is recommended to install/update the site discovery service as well.
+
+Steps to manually deploy the Google services for SharePoint
+-----------------------------------------------------------
+Google services for SharePoint which are installed as web service files at the following location of your SharePoint server:
+C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI
+
+To update bulk authorization web service, update the following three files:
+GSBulkAuthorization.asmx
+GSBulkAuthorizationdisco.aspx
+GSBulkAuthorizationwsdl.aspx
+
+To update site discovery web service, update the following three files:
+GSSiteDiscovery.asmx
+GSSiteDiscoverydisco.aspx
+GSSiteDiscoverywsdl.aspx
+
+To update ACL web service, update the following three files:
+GssAcl.asmx
+GssAcldisco.aspx
+GssAclwsdl.aspx
+
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Note: This patch has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
+
+Known Issues/Limitations
+------------------------
+1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+2) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+4) In this release, following features are not supported on SharePoint versions prior to SP2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+- ACL
+
+5) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
+
+6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+7) Issue 139: Upgrade HTTPClient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not gets saved.
+
+_______________________________________________________________________
+
+
 Release 2.6.6 , 18 Nov, 2010
 =======================================
 

@@ -1251,11 +1251,13 @@ public final class Util {
     }
 
     /**
-     * Re-writes the current document's URL in respect to the Alias mapping
-     * specified.
+     * Re-writes a given URL using the alias mapping rule specified.
      *
-     * @param spDocument The document whose documentURL and displayURL need to
-     *            be set with aliased URL
+     * @param url URL to be re-written/mapped
+     * @param aliasMap the alias mapping rules
+     * @param fqdn If true, resulting URLs are converted into fqdn format. If
+     *            false, URLs are returned just by applying the alias mapping
+     *            rules. No further attempt will be made to re-write them.
      */
     public static String doAliasMapping(final String url,
             Map<String, String> aliasMap, boolean fqdn)
@@ -1368,8 +1370,8 @@ public final class Util {
     }
 
     /**
-     * Converts a host name to a FQDN. This should be called only if the fqdn
-     * property has been set to true in the connectorInstance.xml.
+     * Converts a host name to FQDN using Java's
+     * {@link InetAddress#getCanonicalHostName()}
      *
      * @param hostName
      * @return the host name in FQDN format

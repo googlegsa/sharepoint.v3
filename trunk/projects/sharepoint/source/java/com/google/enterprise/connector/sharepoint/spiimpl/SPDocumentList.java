@@ -163,25 +163,7 @@ public class SPDocumentList implements DocumentList {
             }
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
             // Do Alias mapping before sending the doc
-            if (reWriteDisplayUrlUsingAliasMappingRules) {
-                try {
-                    spDocument.setDisplayUrl(Util.doAliasMapping(spDocument.getDisplayUrl(), aliasMap, bFQDNConversion));
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Failed to rewrite document's display Url [ "
-                            + spDocument.getDisplayUrl()
-                            + " ] as per alias mapping rule. ", e);
-                }
-            }
-
-            if (reWriteRecordUrlUsingAliasMappingRules) {
-                try {
-                    spDocument.setUrl(Util.doAliasMapping(spDocument.getUrl(), aliasMap, bFQDNConversion));
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Failed to rewrite document's record Url [ "
-                            + spDocument.getUrl()
-                            + " ] as per alias mapping rule. ", e);
-                }
-            }
+            reWriteUrlsUsingAliasMappingRules(spDocument);
             LOGGER.log(Level.INFO, "Sending DocID [ " + spDocument.getDocId()
                     + " ], docURL [ " + spDocument.getUrl()
                     + " ] to CM for ADD.");
@@ -189,6 +171,34 @@ public class SPDocumentList implements DocumentList {
         }
 
         return spDocument;
+    }
+
+    /**
+     * Checks and re-writes all those URLs which are to be mapped using alias
+     * mapping rules
+     *
+     * @param spDocument The {@link SPDocument} whose URLs are to be mapped
+     */
+    private void reWriteUrlsUsingAliasMappingRules(final SPDocument spDocument) {
+        if (reWriteDisplayUrlUsingAliasMappingRules) {
+            try {
+                spDocument.setDisplayUrl(Util.doAliasMapping(spDocument.getDisplayUrl(), aliasMap, bFQDNConversion));
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to rewrite document's display Url [ "
+                        + spDocument.getDisplayUrl()
+                        + " ] as per alias mapping rule. ", e);
+            }
+        }
+
+        if (reWriteRecordUrlUsingAliasMappingRules) {
+            try {
+                spDocument.setUrl(Util.doAliasMapping(spDocument.getUrl(), aliasMap, bFQDNConversion));
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to rewrite document's record Url [ "
+                        + spDocument.getUrl()
+                        + " ] as per alias mapping rule. ", e);
+            }
+        }
     }
 
     /**
