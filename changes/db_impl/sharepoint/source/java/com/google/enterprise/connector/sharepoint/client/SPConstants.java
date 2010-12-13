@@ -173,6 +173,7 @@ public class SPConstants {
 
     // Constants used by SiteDataWS while processing the list data as returned
     // by the Web Service.
+    public static final String NOREDIRECT = "NoRedirect=true";
     public static final String DOC_LIB = "DocumentLibrary";// BaseType=1 (In
                                                             // SPS2003)
     public static final String DISCUSSION_BOARD = "DiscussionBoard";// BaseType=3
@@ -265,7 +266,14 @@ public class SPConstants {
     public static final String STATE_LASTDOCCRAWLED = "LastDocCrawled";
     public static final String STATE_LASTMODIFIED = "LastModified";
     public static final String STATE_FEEDTYPE = "FeedType";
+
+    @Deprecated
     public static final String STATE_FOLDER_LEVEL = "FolderLevel";
+
+    public static final String STATE_PARENT_FOLDER_PATH = "ParentFolderPath";
+    public static final String STATE_PARENT_FOLDER_ID = "ParentFolderID";
+    public static final String STATE_RENAMED_FOLDER_PATH = "RenamedFolderPath";
+    public static final String STATE_RENAMED_FOLDER_ID = "RenamedFolderID";
     public static final String STATE_CONTENT_TYPE = "ContentType";
     public static final String CONTENT_TYPE_DOCUMENT = "Document";
     public static final String STATE_INSERT_TIME = "InsertionTime";
@@ -280,6 +288,13 @@ public class SPConstants {
     public static final String STATE_ATTR_CDATA = "CDATA";
     public static final String STATE_ATTR_ID = "ID";
     public static final String STATE_ATTR_IDREF = "IDREF";
+    public static final String STATE_NOCRAWL = "NoCrawl";
+    public static final String STATE_CRAWLASPXPAGES = "CrawlASPXPages";
+    // To persist the list of renamed folders that need to be processed on
+    // connector restart
+    public static final String STATE_RENAMED_FOLDER_LIST = "RenamedFolderList";
+    public static final String STATE_RENAMED_FOLDER_NODE = "RenamedFolder";
+    public static final String STATE_RENAMED_FOLDERPATH = "Path";
 
     public static final String CONNECTOR_NAME = "Sharepoint";
     public static final String CONNECTOR_PREFIX = "_state.xml";
@@ -321,6 +336,7 @@ public class SPConstants {
     public static final String TITLE = "title";
     public static final String CONFIG_ID = "id";
     public static final String CHECKED = "checked";
+    public static final String CHECKBOX = "checkbox";
 
     public static final String TABLE = "table";
     public static final String END_TABLE = "</table>\r\n";
@@ -382,6 +398,9 @@ public class SPConstants {
     public static final String INVALID_EXCLUDE_PATTERN = "Invalid_Exclude_Pattern";
     public static final String REASON = "Reason";
     public static final String KERBEROS_KDC_HOST_BLANK="Kerberos_Kdc_Hostname_Blank";
+    public static final String USE_SP_SEARCH_VISIBILITY = "useSPSearchVisibility";
+    public static final String USE_SP_SEARCH_VISIBILITY_LABEL = "Use_SP_SearchVisibility";
+    public static final String USE_SP_SEARCH_VISIBILITY_HELP = "Use_SP_SearchVisibility_Help";
 
     public static final String CHECKPOINT_VALUE = "SharePoint";
     public static final int MAX_PORT_VALUE = 65535;

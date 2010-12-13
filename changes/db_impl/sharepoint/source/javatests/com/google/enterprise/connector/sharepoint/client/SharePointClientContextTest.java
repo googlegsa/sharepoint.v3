@@ -14,10 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+
+import junit.framework.TestCase;
 
 public class SharePointClientContextTest extends TestCase {
 
@@ -25,18 +25,8 @@ public class SharePointClientContextTest extends TestCase {
 
     protected void setUp() throws Exception {
         System.out.println("Setting Up...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
-        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
-
-        System.out.println("SharepointClientContext has been initialized successfully.");
     }
 
     public void testClone() {
@@ -61,8 +51,8 @@ public class SharePointClientContextTest extends TestCase {
     public void testCheckSharePointType() {
         System.out.println("Testing checkSharePointVersion()...");
         try {
-			final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.Site1_URL);
-            assertEquals(spType, SPConstants.CONNECTIVITY_SUCCESS);
+            final SPType spType = this.sharepointClientContext.checkSharePointType(TestConfiguration.sharepointUrl);
+            assertEquals(spType, SPType.SP2007);
         } catch (Exception e) {
             System.out.println(e);
             assertFalse(false);

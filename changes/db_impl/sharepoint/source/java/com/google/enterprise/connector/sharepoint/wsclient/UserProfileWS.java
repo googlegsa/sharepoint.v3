@@ -14,16 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.text.Collator;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -35,6 +25,16 @@ import com.google.enterprise.connector.sharepoint.generated.userprofileservice.U
 import com.google.enterprise.connector.sharepoint.generated.userprofileservice.UserProfileServiceSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.userprofileservice.ValueData;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+
+import org.apache.axis.AxisFault;
+
+import java.text.Collator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling UserProfile.asmx for SharePoint2007 Provides a layer
@@ -66,10 +66,9 @@ public class UserProfileWS {
             sharepointClientContext = inSharepointClientContext;
             endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
                     + SPConstants.USERPROFILEENDPOINT;
-            LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+            LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
             try {
-                LOGGER.fine("User Profile End Point: [" + endpoint + "]");
                 final UserProfileServiceLocator loc = new UserProfileServiceLocator();
                 loc.setUserProfileServiceSoapEndpointAddress(endpoint);
 
@@ -93,11 +92,7 @@ public class UserProfileWS {
                 stub.setUsername(strUserName);
                 stub.setPassword(strPassword);
             } catch (final Exception e) {
-                LOGGER
-                        .log(
-                                Level.WARNING,
-                                "Problem while creating the stub for UserProfile WS",
-                                e);
+                LOGGER.log(Level.WARNING, "Problem while creating the stub for UserProfile WS", e);
             }
         }
     }
@@ -111,28 +106,21 @@ public class UserProfileWS {
      * @throws SharepointException
      */
     public boolean isSPS() throws SharepointException {
-        if (stub == null) {
-            LOGGER.warning("UserProfile stub not found");
-            throw new SharepointException("UserProfile stub not found");
-        }
-
         try {
             stub.getUserProfileByIndex(0);
-            LOGGER.info("SPS site");
+            LOGGER.config("SPS site. Using endpoint " + endpoint);
             return true;
         } catch (final AxisFault fault) {
             if ((SPConstants.UNAUTHORIZED.indexOf(fault.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub
                         .getUsername());
-                LOGGER.log(Level.INFO,
-                        "Web Service call failed for username [ "
-                                + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     stub.getUserProfileByIndex(0);
-                    LOGGER.info("SPS site");
+                    LOGGER.config("SPS site. Using endpoint " + endpoint);
                     return true;
                 } catch (final Exception e) {
                     LOGGER.log(Level.WARNING,
@@ -141,7 +129,7 @@ public class UserProfileWS {
                     return false;
                 }
             } else {
-                LOGGER.info("WSS site");
+                LOGGER.config("WSS site. Using endpoint " + endpoint);
                 return false;
             }
         } catch (final Exception e) {
@@ -157,15 +145,9 @@ public class UserProfileWS {
      * @return the list of personal sites
      * @throws SharepointException
      */
-
     public Set<String> getPersonalSiteList() throws SharepointException {
         final Set<String> lstAllPersonalSites = new TreeSet<String>();
         final Collator collator = Util.getCollator();
-        if (stub == null) {
-            LOGGER
-                    .warning("Unable to get personal sites because userprofile stub is null");
-            return lstAllPersonalSites;
-        }
 
         // Method 1: High Level Steps:
         // ============================
@@ -194,10 +176,10 @@ public class UserProfileWS {
                         && (sharepointClientContext.getDomain() != null)) {
                     final String username = Util.switchUserNameFormat(stub
                             .getUsername());
-                    LOGGER.log(Level.INFO,
-                            "Web Service call failed for username [ "
-                                    + stub.getUsername() + " ].");
-                    LOGGER.log(Level.INFO, "Trying with " + username);
+                    LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                            + stub.getUsername()
+                            + " ]. Trying with "
+                            + username);
                     stub.setUsername(username);
                     try {
                         result = stub.getUserProfileByIndex(index);
@@ -253,7 +235,7 @@ public class UserProfileWS {
                         }
                         if (sharepointClientContext.isIncludedUrl(strURL)) {
                             lstAllPersonalSites.add(strURL);
-                            LOGGER.log(Level.INFO, "Personal Site: " + strURL);
+                            LOGGER.log(Level.CONFIG, "Personal Site: " + strURL);
                         } else {
                             LOGGER.log(Level.WARNING, "excluding " + strURL);
                         }
@@ -267,9 +249,12 @@ public class UserProfileWS {
             index = Integer.parseInt(next);
         }
 
-        if (lstAllPersonalSites != null) {
-            LOGGER.info("Total Personal sites returned: "
-                    + lstAllPersonalSites.size());
+        if (lstAllPersonalSites.size() > 0) {
+            LOGGER.info("Discovered " + lstAllPersonalSites.size()
+                    + " Personal sites to crawl. Using endpoint " + endpoint);
+        } else {
+            LOGGER.config("No Personal sites to crawl. Using endpoint "
+                    + endpoint);
         }
         return lstAllPersonalSites;
     }
@@ -283,11 +268,6 @@ public class UserProfileWS {
      */
     public Set<String> getMyLinks() throws SharepointException {
         final Set<String> myLinksSet = new TreeSet<String>();
-        if (stub == null) {
-            LOGGER.warning("Unable to get myLinkes because stub is null");
-            return myLinksSet;
-        }
-
         int index = 0;
         while (index >= 0) {
 
@@ -299,10 +279,10 @@ public class UserProfileWS {
                         && (sharepointClientContext.getDomain() != null)) {
                     final String username = Util.switchUserNameFormat(stub
                             .getUsername());
-                    LOGGER.log(Level.INFO,
-                            "Web Service call failed for username [ "
-                                    + stub.getUsername() + " ].");
-                    LOGGER.log(Level.INFO, "Trying with " + username);
+                    LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                            + stub.getUsername()
+                            + " ]. Trying with "
+                            + username);
                     stub.setUsername(username);
                     try {
                         result = stub.getUserProfileByIndex(index);
@@ -348,8 +328,11 @@ public class UserProfileWS {
             index = Integer.parseInt(next);
         }
 
-        if (myLinksSet != null) {
-            LOGGER.info("Total MyLinks returned: " + myLinksSet.size());
+        if (myLinksSet.size() > 0) {
+            LOGGER.info(myLinksSet.size() + " MyLinks returned using endpoint "
+                    + endpoint);
+        } else {
+            LOGGER.config("No MyLinks found using endpoint " + endpoint);
         }
         return myLinksSet;
     }

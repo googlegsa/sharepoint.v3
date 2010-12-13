@@ -14,19 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -42,6 +29,19 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.apache.axis.AxisFault;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling Alerts.asmx Provides a layer to talk to the Alerts
@@ -69,10 +69,9 @@ public class AlertsWS {
             sharepointClientContext = inSharepointClientContext;
             endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
                     + SPConstants.ALERTSENDPOINT;
-            LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+            LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
             try {
-                LOGGER.config("AlertsEndpoint: " + endpoint);
                 final AlertsLocator loc = new AlertsLocator();
                 loc.setAlertsSoapEndpointAddress(endpoint);
                 final Alerts alertsService = loc;
@@ -131,9 +130,10 @@ public class AlertsWS {
                 if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                         && (sharepointClientContext.getDomain() != null)) {
                     final String username = Util.switchUserNameFormat(stub.getUsername());
-                    LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                            + stub.getUsername() + " ].");
-                    LOGGER.log(Level.INFO, "Trying with " + username);
+                    LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                            + stub.getUsername()
+                            + " ]. Trying with "
+                            + username);
                     stub.setUsername(username);
                     try {
                         alertsInfo = stub.getAlerts();
@@ -182,7 +182,7 @@ public class AlertsWS {
                     // Send only those alerts which are newly added.
                     final int idPos = knownAlerts.indexOf(docId);
                     if (idPos == -1) {
-						if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                        if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                             docId = SPConstants.ALERT_SUFFIX_IN_DOCID
                                     + alertListState.getListURL()
                                     + SPConstants.DOC_TOKEN + docId;
@@ -202,7 +202,7 @@ public class AlertsWS {
 
                 // Create delete feed docs for all those alerts which have been
                 // deleted.
-				if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                     final Pattern pat = Pattern.compile("\\{.+\\}");
                     final Matcher match = pat.matcher(knownAlerts);
                     if (match.find()) {
@@ -222,8 +222,8 @@ public class AlertsWS {
                     }
                 }
                 alertListState.setIDs(currentAlerts);
-			} else {
-				alertListState.setExisting(false);
+            } else {
+                alertListState.setExisting(false);
             }
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Problem while getting alerts", e);

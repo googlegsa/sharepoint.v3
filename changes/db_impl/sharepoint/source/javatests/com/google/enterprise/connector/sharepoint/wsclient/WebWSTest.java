@@ -34,13 +34,7 @@ public class WebWSTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
@@ -51,7 +45,7 @@ public class WebWSTest extends TestCase {
 
     public final void testWebsWS() throws Throwable {
         System.out.println("Testing WebsWS(SharepointClientContext, siteName)...");
-		sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
+        sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
         this.websWS = new WebsWS(this.sharepointClientContext);
         assertNotNull(this.websWS);
         System.out.println("[ WebsWS(SharepointClientContext, siteName) ] Test Passed");
@@ -66,14 +60,14 @@ public class WebWSTest extends TestCase {
 
     public final void testGetWebURLFromPageURL() throws Throwable {
         System.out.println("Testing getWebURLFromPageURL()...");
-		final String siteURL = this.websWS.getWebURLFromPageURL(TestConfiguration.Site1_List1_Item1_URL);
+        final String siteURL = this.websWS.getWebURLFromPageURL(TestConfiguration.Site1_List1_Item1_URL);
         assertNotNull(siteURL);
         System.out.println("[ getWebURLFromPageURL() ] Test Passed");
     }
 
     public final void testGetWebTitle() throws Throwable {
         System.out.println("Testing getWebTitle()...");
-		final String siteURL = this.websWS.getWebTitle(TestConfiguration.sharepointUrl, SPType.SP2007);
+        final String siteURL = this.websWS.getWebTitle(TestConfiguration.sharepointUrl, SPType.SP2007);
         assertNotNull(siteURL);
         System.out.println("[ getWebTitle() ] Test Passed");
     }

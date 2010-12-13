@@ -16,10 +16,6 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.util.Set;
-
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
@@ -30,6 +26,10 @@ import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants;
 
+import java.util.Set;
+
+import junit.framework.TestCase;
+
 public class SharepointClientTest extends TestCase {
 
     private SharepointClient sharepointClient;
@@ -38,14 +38,7 @@ public class SharepointClientTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         System.out.println("Initializing SharepointClientContext ...");
-        final SharepointClientContext sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
-
+        final SharepointClientContext sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
@@ -163,19 +156,11 @@ public class SharepointClientTest extends TestCase {
      * @throws SharepointException
      */
     public void testTraverseToCheckValidLists() throws SharepointException {
-
-		GlobalState gs = new GlobalState(
-				TestConfiguration.googleConnectorWorkDir,
-				TestConfiguration.feedType);
         SharepointClientContext spContext = TestConfiguration.initContext();
-        WebState ws = TestConfiguration.createWebState(gs, spContext, TestConfiguration.sharepointUrl, 1);
-        gs.AddOrUpdateWebStateInGlobalState(ws);
-
-        // Set the last crawled list and web id as set in web state
-        gs.setLastCrawledList(ws.getLastCrawledList());
-        gs.setLastCrawledWeb(ws);
-
-        SharepointClient spclient = new SharepointClient(null);
+        spContext.setBatchHint(Integer.MAX_VALUE);
+        GlobalState gs = TestConfiguration.initState(spContext);
+        WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);
+        SharepointClient spclient = new SharepointClient(spContext);
 
         // Traverse the lists for the given web state
         spclient.traverse(gs, ws, 50);

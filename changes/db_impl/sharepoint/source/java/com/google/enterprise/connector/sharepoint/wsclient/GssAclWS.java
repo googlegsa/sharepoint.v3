@@ -91,9 +91,7 @@ public class GssAclWS {
         }
 
         endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
-        // TODO: these endpoint setting log message should at CONFIG level in
-        // all WS client classes
-        LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+        LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
 
         final GssAclMonitorLocator loc = new GssAclMonitorLocator();
@@ -201,7 +199,8 @@ public class GssAclWS {
                             + " ] ");
                     continue;
                 }
-                LOGGER.log(Level.FINE, "WsLog [ " + acl.getLogMessage() + " ] ");
+                LOGGER.log(Level.CONFIG, "WsLog [ " + acl.getLogMessage()
+                        + " ] ");
                 Map<String, Set<RoleType>> userPermissionMap = new HashMap<String, Set<RoleType>>();
                 Map<String, Set<RoleType>> groupPermissionMap = new HashMap<String, Set<RoleType>>();
                 for (GssAce ace : allAces) {
@@ -381,7 +380,7 @@ public class GssAclWS {
             if (null != wsResult) {
                 aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
                 if (null != aclChangedDocs) {
-                    LOGGER.log(Level.INFO, "Found #"
+                    LOGGER.log(Level.INFO, "Found "
                             + aclChangedDocs.size()
                             + " documents from list [ "
                             + listState
@@ -488,7 +487,7 @@ public class GssAclWS {
             webState.commitAclChangeToken();
         }
 
-        LOGGER.log(Level.INFO, "Initiating ACL Change detection for web [ "
+        LOGGER.log(Level.CONFIG, "Initiating ACL Change detection for web [ "
                 + webState.getWebUrl() + " ] from change token [ "
                 + webState.getAclChangeTokenForWsCall());
         GssGetAclChangesSinceTokenResult wsResult = getAclChangesSinceToken(webState);

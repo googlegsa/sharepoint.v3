@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -31,19 +32,12 @@ public class SharePointSessionTest extends TestCase {
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
         System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType);
+        this.sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(this.sharepointClientContext);
-        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+        sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
 
         System.out.println("Initializing SharepointConnector ...");
-		final SharepointConnector connector = new SharepointConnector();
+        final SharepointConnector connector = new SharepointConnector();
         connector.setFQDNConversion(TestConfiguration.FQDNflag);
         System.out.println("Initializing SharepointSession ...");
         this.session = new SharepointSession(connector,

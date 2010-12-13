@@ -14,16 +14,18 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-
-import junit.framework.TestCase;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.spi.RepositoryException;
 
 import org.joda.time.DateTime;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.spi.RepositoryException;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import junit.framework.TestCase;
 
 public class UtilTest extends TestCase {
 
@@ -200,12 +202,34 @@ public class UtilTest extends TestCase {
         assertNotNull(formattedDate);
         assertEquals(expectedFormat, formattedDate);
 
-        expectedFormat = "2009-06-12 11:30:30 PDT";
+        expectedFormat = "2009-06-12 11:30:30 IST";
 
         formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT_WITH_ZONE);
 
         assertNotNull(formattedDate);
         assertEquals(expectedFormat, formattedDate);
 
+    }
+
+    public void testDoAliasMapping() {
+        checkAliasMapping("http://mycomp.com/", "http://mycomp.com:80/");
+        checkAliasMapping("http://mycomp.com:80/", "http://mycomp.com/");
+        checkAliasMapping("http://mycomp.com:80/", "http://mycomp.com:8080/");
+        checkAliasMapping("http://mycomp.com:80/", "http://mycomp.co.in:8080/");
+        checkAliasMapping("http://mycomp.com:80/", "https://mycomp.co.in:8080/");
+    }
+
+    private void checkAliasMapping(final String originalUrl,
+            final String expectedUrl) {
+        Map<String, String> aliasMap = new HashMap<String, String>();
+        aliasMap.put(originalUrl, expectedUrl);
+        String mappedUrl = null;
+        try {
+            mappedUrl = Util.doAliasMapping(originalUrl, aliasMap, false);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+        assertEquals(expectedUrl, mappedUrl);
+        aliasMap.clear();
     }
 }

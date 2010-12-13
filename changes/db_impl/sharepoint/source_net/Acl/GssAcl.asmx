@@ -509,9 +509,8 @@ public class GssAclChangeCollection
         }
         else
         {
-            GssAclUtility gssUtil = new GssAclUtility();
-            return gssUtil.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);
-        }       
+            return GssAclUtility.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);
+        }
     }
 
     public void UpdateChangeToken(SPChangeToken inToken)
@@ -655,6 +654,8 @@ public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
     }
 }
 
+// TODO It's better to use in-out (holders in java) parameters instead of separate objects for returning responses from every web methods
+
 /// <summary>
 /// Provides alll the necessary web methods exposed by the Web Service
 /// </summary>
@@ -662,8 +663,6 @@ public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
 public class GssAclMonitor
 {
-    private readonly GssAclUtility gssUtil = new GssAclUtility();
-    
     // A random guess about how many items should be query at a time. Such threshold is required to save the web service from being unresponsive for a long time
     private const int ROWLIMIT = 500;
 
@@ -674,30 +673,35 @@ public class GssAclMonitor
     // just require updating the group membership info and no re-crawl will be required.
     public const string GSSITEADMINGROUP = "[GSSiteCollectionAdministrator]";
 
+  void init(out SPSite site, out SPWeb web)
+    {
+        SPContext spContext = SPContext.Current;
+        if (null == spContext)
+        {
+            throw new Exception("No SharePoint context found at the endpoint.");
+        }
+        site = spContext.Site;
+        if (null == site)
+        {
+            throw new Exception("SharePoint site collection not found");
+        }
+        web = site.OpenWeb();
+        if (null == web || !web.Exists)
+        {
+            throw new Exception("SharePoint site not found");
+        }
+    }
+
     /// <summary>
     /// A dummy method used mainly to test the availability and connectivity of the web service.
     /// </summary>
     [WebMethod]
     public string CheckConnectivity()
     {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
-        {
-            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
-        }
-        
-        SPSite site = spContext.Site;
-        if (null == site)
-        {
-            throw new Exception("SharePoint site collection not found");
-        }
-        
-        SPWeb web = spContext.Web;
-        if (null == web)
-        {
-            throw new Exception("SharePoint site not found");
-        }
-        
+        SPSite site;
+        SPWeb web;
+        init(out site, out web);
+
         // Ensure that all the required APIs are accessible
         SPUserCollection admins = web.SiteAdministrators;
         SPPolicyCollection policies = site.WebApplication.Policies;
@@ -713,24 +717,10 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
     {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
-        {
-            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
-        }
+        SPSite site;
+        SPWeb web;
+        init(out site, out web);
 
-        SPSite site = spContext.Site;
-        if (null == site)
-        {
-            throw new Exception("SharePoint site collection not found");
-        }
-
-        SPWeb web = spContext.Web;
-        if (null == web)
-        {
-            throw new Exception("SharePoint site not found");
-        }
-        
         GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
 
         List<GssAcl> allAcls = new List<GssAcl>();
@@ -738,7 +728,7 @@ public class GssAclMonitor
         Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
         try
         {
-            gssUtil.FetchSecurityPolicyForAcl(site, commonAceMap);
+            GssAclUtility.FetchSecurityPolicyForAcl(site, commonAceMap);
         }
         catch (Exception e)
         {
@@ -747,7 +737,7 @@ public class GssAclMonitor
 
         try
         {
-            gssUtil.FetchSiteAdminsForAcl(web, commonAceMap);
+            GssAclUtility.FetchSiteAdminsForAcl(web, commonAceMap);
         }
         catch (Exception e)
         {
@@ -760,8 +750,8 @@ public class GssAclMonitor
             try
             {
                 Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
-                ISecurableObject secobj = gssUtil.IdentifyObject(url, web);
-                gssUtil.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
+                ISecurableObject secobj = GssAclUtility.IdentifyObject(url, web);
+                GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
                 acl = new GssAcl(url, aceMap.Count);
                 foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
                 {
@@ -771,12 +761,12 @@ public class GssAclMonitor
 
                 try
                 {
-                    acl.Owner = gssUtil.GetOwner(secobj).LoginName;
+                    acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
                 }
                 catch (Exception e)
                 {
                     acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
-                }                
+                }
             }
             catch (Exception e)
             {
@@ -803,25 +793,11 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclChangesSinceTokenResult GetAclChangesSinceToken(string fromChangeToken, string toChangeToken)
     {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
-        {
-            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
-        }
+        SPSite site;
+        SPWeb web;
+        init(out site, out web);
 
-        SPSite site = spContext.Site;
-        if (null == site)
-        {
-            throw new Exception("SharePoint site collection not found");
-        }
-
-        SPWeb web = spContext.Web;
-        if (null == web)
-        {
-            throw new Exception("SharePoint site not found");
-        }
-        
-        GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
+    GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         GssAclChangeCollection allChanges = null;
         SPChangeToken changeTokenEnd = null;
         if (null != fromChangeToken && fromChangeToken.Length != 0)
@@ -835,7 +811,7 @@ public class GssAclMonitor
             allChanges = new GssAclChangeCollection(changeTokenStart);
             try
             {
-                SPChangeCollection spChanges = gssUtil.FetchAclChanges(site, changeTokenStart, changeTokenEnd);
+                SPChangeCollection spChanges = GssAclUtility.FetchAclChanges(site, changeTokenStart, changeTokenEnd);
                 foreach (SPChange change in spChanges)
                 {
                     allChanges.AddChange(change, site, web);
@@ -886,24 +862,10 @@ public class GssAclMonitor
     [WebMethod]
     public GssResolveSPGroupResult ResolveSPGroup(string[] groupId)
     {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
-        {
-            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
-        }
+        SPSite site;
+        SPWeb web;
+        init(out site, out web);
 
-        SPSite site = spContext.Site;
-        if (null == site)
-        {
-            throw new Exception("SharePoint site collection not found");
-        }
-
-        SPWeb web = spContext.Web;
-        if (null == web)
-        {
-            throw new Exception("SharePoint site not found");
-        }
-        
         GssResolveSPGroupResult result = new GssResolveSPGroupResult();
         List<GssPrincipal> prinicpals = new List<GssPrincipal>();
         if (null != groupId)
@@ -920,7 +882,7 @@ public class GssAclMonitor
                         List<GssPrincipal> admins = new List<GssPrincipal>();
                         foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
                         {
-                            GssPrincipal admin = gssUtil.GetGssPrincipalFromSPPrincipal(spPrincipal);
+                            GssPrincipal admin = GssAclUtility.GetGssPrincipalFromSPPrincipal(spPrincipal);
                             if (null == admin)
                             {
                                 continue;
@@ -935,7 +897,7 @@ public class GssAclMonitor
                         if(null != spGroup)
                         {
                             principal = new GssPrincipal(spGroup.Name, spGroup.ID);
-                            principal.Members = gssUtil.ResolveSPGroup(spGroup);
+                            principal.Members = GssAclUtility.ResolveSPGroup(spGroup);
                         }
                         else
                         {
@@ -968,12 +930,15 @@ public class GssAclMonitor
     [WebMethod]
     public List<string> GetListsWithInheritingRoleAssignments()
     {
+      SPSite site;
+        SPWeb web;
+        init(out site, out web);
+
         List<string> listIDs = new List<string>();
-        SPWeb web = SPContext.Current.Web;
-        SPListCollection lists = SPContext.Current.Web.Lists;
+        SPListCollection lists = web.Lists;
         foreach (SPList list in lists)
         {
-            if (!list.HasUniqueRoleAssignments && gssUtil.isSame(web.FirstUniqueAncestor, list.FirstUniqueAncestor))
+            if (!list.HasUniqueRoleAssignments && GssAclUtility.isSame(web.FirstUniqueAncestor, list.FirstUniqueAncestor))
             {
                 listIDs.Add(list.ID.ToString());
             }
@@ -991,24 +956,10 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetListItemsWithInheritingRoleAssignments GetListItemsWithInheritingRoleAssignments(string listGuId, int rowLimit, int lastItemId)
     {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
-        {
-            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
-        }
+        SPSite site;
+        SPWeb web;
+        init(out site, out web);
 
-        SPSite site = spContext.Site;
-        if (null == site)
-        {
-            throw new Exception("SharePoint site collection not found");
-        }
-
-        SPWeb web = spContext.Web;
-        if (null == web)
-        {
-            throw new Exception("SharePoint site not found");
-        }
-        
         SPList changeList = null;
         try
         {
@@ -1057,7 +1008,7 @@ public class GssAclMonitor
                 result.MoreDocs = true;
                 break;
             }
-            if (!item.HasUniqueRoleAssignments && gssUtil.isSame(changeList.FirstUniqueAncestor, item.FirstUniqueAncestor))
+            if (!item.HasUniqueRoleAssignments && GssAclUtility.isSame(changeList.FirstUniqueAncestor, item.FirstUniqueAncestor))
             {
                 XmlNode node = handleOwsMetaInfo(item);
                 node = xmlDoc.ImportNode(node, true);
@@ -1118,14 +1069,20 @@ public class GssAclMonitor
 /// Provides general purpose utility methods.
 /// This class must be stateless becasue it is a member instance of the web service
 /// </summary>
-public class GssAclUtility
+public sealed class GssAclUtility
 {
+
+    private GssAclUtility()
+    {
+        throw new Exception("Operation not allowed! ");
+    }
+
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from the web application security policies
     /// </summary>
     /// <param name="site"> Site Collection for which the security policies are to be tracked </param>
     /// <param name="userAceMap"> ACE map to be updated </param>
-    public void FetchSecurityPolicyForAcl(SPSite site, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
+    public static void FetchSecurityPolicyForAcl(SPSite site, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
         // policies apllied at web application level. This is applicable to all the zones
         SPPolicyCollection policies = site.WebApplication.Policies;
@@ -1190,7 +1147,7 @@ public class GssAclUtility
     /// </summary>
     /// <param name="web"> SharePoint web site whose administrators are to be tracked </param>
     /// <param name="userAceMap"> ACE Map to be updated </param>
-    public void FetchSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
+    public static void FetchSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
         GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP, -1);
         principal.Type = GssPrincipal.PrincipalType.SPGROUP;
@@ -1219,7 +1176,7 @@ public class GssAclUtility
     /// </summary>
     /// <param name="roles"> list of role assignments </param>
     /// <param name="userAceMap"> ACE Map to be updated </param>
-    public void FetchRoleAssignmentsForAcl(SPRoleAssignmentCollection roles, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
+    public static void FetchRoleAssignmentsForAcl(SPRoleAssignmentCollection roles, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
         foreach (SPRoleAssignment roleAssg in roles)
         {
@@ -1254,7 +1211,7 @@ public class GssAclUtility
     /// <param name="url"> Entity URL</param>
     /// <param name="web"> Parent Web to which the entity URL belongs </param>
     /// <returns></returns>
-    public ISecurableObject IdentifyObject(string url, SPWeb web)
+    public static ISecurableObject IdentifyObject(string url, SPWeb web)
     {
         SPListItem listItem = web.GetListItem(url);
         if (null != listItem)
@@ -1287,7 +1244,7 @@ public class GssAclUtility
     /// </summary>
     /// <param name="secobj"></param>
     /// <returns></returns>
-    public SPUser GetOwner(ISecurableObject secobj)
+    public static SPUser GetOwner(ISecurableObject secobj)
     {
         SPUser owner = null;
         if (secobj is SPList)
@@ -1315,7 +1272,7 @@ public class GssAclUtility
                     {
                         owner = fieldValue.User;
                     }
-                }                
+                }
             }
         }
         else if (secobj is SPWeb)
@@ -1341,7 +1298,7 @@ public class GssAclUtility
     /// <param name="changeTokenStart"> The starting change token value from where the changes are to be scanned in the SharePoint's change log </param>
     /// <param name="changeTokenEnd"> The ending change token value until where the changes are to be scanned in the SharePoint's change log </param>
     /// <returns> list of changes that most likely expected to change the ACLs of the entities </returns>
-    public SPChangeCollection FetchAclChanges(SPSite site, SPChangeToken changeTokenStart, SPChangeToken changeTokenEnd)
+    public static SPChangeCollection FetchAclChanges(SPSite site, SPChangeToken changeTokenStart, SPChangeToken changeTokenEnd)
     {
         SPChangeQuery query = new SPChangeQuery(false, false);
         query.ChangeTokenStart = changeTokenStart;
@@ -1373,7 +1330,7 @@ public class GssAclUtility
     /// </summary>
     /// <param name="group"> SharePoint group ID/Name to be resolved </param>
     /// <returns> list of GssPricnicpal object corresponding to the group that was resolved </returns>
-    public List<GssPrincipal> ResolveSPGroup(SPGroup group)
+    public static List<GssPrincipal> ResolveSPGroup(SPGroup group)
     {
         if (null == group)
         {
@@ -1396,7 +1353,7 @@ public class GssAclUtility
     /// </summary>
     /// <param name="spPrincipal"></param>
     /// <returns></returns>
-    public GssPrincipal GetGssPrincipalFromSPPrincipal(SPPrincipal spPrincipal)
+    public static GssPrincipal GetGssPrincipalFromSPPrincipal(SPPrincipal spPrincipal)
     {
         if (null == spPrincipal)
         {
@@ -1434,7 +1391,7 @@ public class GssAclUtility
     /// <param name="site">SharePoint Site Collection whose context is to be used for constructing the prinicpal</param>
     /// <param name="login">user login name for which the prinicipal is to be created</param>
     /// <returns></returns>
-    public GssPrincipal GetGssPrincipalForSecPolicyUser(SPSite site, string login)
+    public static GssPrincipal GetGssPrincipalForSecPolicyUser(SPSite site, string login)
     {
         if (null == site || null == login)
         {
@@ -1466,7 +1423,7 @@ public class GssAclUtility
     /// <param name="secObj1"> First Object </param>
     /// <param name="secObj2"> Second Object </param>
     /// <returns></returns>
-    public bool isSame(ISecurableObject secObj1, ISecurableObject secObj2)
+    public static bool isSame(ISecurableObject secObj1, ISecurableObject secObj2)
     {
         if (secObj1 is SPWeb && secObj2 is SPWeb)
         {

@@ -29,6 +29,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -59,36 +60,15 @@ public class SharepointConnector implements Connector {
     private String authorizationAsfeedType = null;
     private boolean pushAcls = true;
     private boolean stripDomainFromAces = true;
-    QueryProvider queryProvider;
-    UserGroupMembershipRowMapper userGroupMembershipRowMapper;
+    private QueryProvider queryProvider;
+    private UserGroupMembershipRowMapper userGroupMembershipRowMapper;
+    private boolean useSPSearchVisibility = true;
+    private List<String> infoPathBaseTemplate;
+    private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
+    private boolean reWriteRecordUrlUsingAliasMappingRules;
 
     public SharepointConnector() {
 
-    }
-
-    /**
-     * All the arguments required to create an instance of this class are
-     * defined in the file connector_Instance.xml The argument supplied here
-     * must match those specified under connector_Instance.xml and vice-versa
-     */
-    public SharepointConnector(final String sharepointUrl, final String domain,
-            final String username, final String password,
-            final String googleConnectorWorkDir, final String includedURls,
-            final String excludedURls, final String mySiteBaseURL,
-            final String aliasMapString, final String feedType)
-            throws SharepointException {
-
-        LOGGER.config("sharepointUrl = [" + sharepointUrl + "] , domain = ["
-                + domain + "] , username = [" + username + "] , "
-                + "googleConnectorWorkDir = [" + googleConnectorWorkDir
-                + "] , includedURls = [" + includedURls + "] , "
-                + "excludedURls = [" + excludedURls + "] , mySiteBaseURL = ["
-                + mySiteBaseURL + "] , aliasHostPort = [" + aliasMapString
-                + "]");
-        sharepointClientContext = new SharepointClientContext(sharepointUrl,
-                domain, kdcserver, username, password, googleConnectorWorkDir,
-                includedURls, excludedURls, mySiteBaseURL, aliasMapString,
-                FeedType.getFeedType(feedType));
     }
 
     /**
@@ -302,11 +282,13 @@ public class SharepointConnector implements Connector {
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMap,
-                FeedType.getFeedType(authorizationAsfeedType));
+                FeedType.getFeedType(authorizationAsfeedType),
+                useSPSearchVisibility);
         sharepointClientContext.setFQDNConversion(FQDNConversion);
         sharepointClientContext.setIncluded_metadata(included_metadata);
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
         sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
+        sharepointClientContext.setInfoPathBaseTemplate(infoPathBaseTemplate);
         sharepointClientContext.setPushAcls(pushAcls);
         if (pushAcls) {
             initDao();
@@ -349,6 +331,22 @@ public class SharepointConnector implements Connector {
 
     public void setStripDomainFromAces(boolean stripDomainFromAces) {
         this.stripDomainFromAces = stripDomainFromAces;
+    }
+
+    public boolean isUseSPSearchVisibility() {
+        return useSPSearchVisibility;
+    }
+
+    public void setUseSPSearchVisibility(boolean useSPSerachVisibility) {
+        this.useSPSearchVisibility = useSPSerachVisibility;
+    }
+
+    public List<String> getInfoPathBaseTemplate() {
+        return infoPathBaseTemplate;
+    }
+
+    public void setInfoPathBaseTemplate(List<String> infoPathBaseTemplate) {
+        this.infoPathBaseTemplate = infoPathBaseTemplate;
     }
 
     public void setQueryProvider(QueryProvider queryProvider) {
@@ -397,5 +395,23 @@ public class SharepointConnector implements Connector {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean isReWriteDisplayUrlUsingAliasMappingRules() {
+        return reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public void setReWriteDisplayUrlUsingAliasMappingRules(
+            boolean reWriteDisplayUrlUsingAliasMappingRules) {
+        this.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public boolean isReWriteRecordUrlUsingAliasMappingRules() {
+        return reWriteRecordUrlUsingAliasMappingRules;
+    }
+
+    public void setReWriteRecordUrlUsingAliasMappingRules(
+            boolean reWriteRecordUrlUsingAliasMappingRules) {
+        this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
 }

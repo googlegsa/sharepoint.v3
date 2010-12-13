@@ -14,38 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.MalformedURLException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.rpc.ServiceException;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPFactory;
-
-import org.apache.axis.AxisFault;
-import org.apache.axis.message.MessageElement;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -65,9 +33,42 @@ import com.google.enterprise.connector.sharepoint.generated.lists.ListsLocator;
 import com.google.enterprise.connector.sharepoint.generated.lists.ListsSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.wsclient.handlers.InvalidXmlCharacterHandler;
 import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.apache.axis.AxisFault;
+import org.apache.axis.message.MessageElement;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.MalformedURLException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.rpc.ServiceException;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPHeaderElement;
 
 /**
  * Java Client for calling Lists.asmx Provides a layer to talk to the Lists Web
@@ -108,6 +109,7 @@ public class ListsWS {
             loc.setListsSoapEndpointAddress(endpoint);
 
             final Lists listsService = loc;
+
             try {
                 stub = (ListsSoap_BindingStub) listsService.getListsSoap();
             } catch (final ServiceException e) {
@@ -170,8 +172,7 @@ public class ListsWS {
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
                 LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     res = stub.getAttachmentCollection(listName, listItemId);
@@ -210,8 +211,6 @@ public class ListsWS {
                                 LOGGER.config("Attachment URL :" + url);
 
                                 if (sharepointClientContext.isIncludedUrl(url)) {
-                                    LOGGER.config("included URL [" + url + " ]");
-
                                     String modifiedID = listItemId;
                                     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                                         modifiedID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID
@@ -245,10 +244,6 @@ public class ListsWS {
             }// end: if
         }
 
-        LOGGER.log(Level.INFO, "Found [" + listAttachments.size()
-                + "] new/updated attachments for listItem [ "
-                + listItem.getUrl() + "]. ");
-
         if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             // All the urls which have been left in knownAttachments are
             // considered to be deleted.
@@ -263,10 +258,22 @@ public class ListsWS {
                         baseList.getParentWebState().getSharePointType());
                 attchmnt.setAction(ActionType.DELETE);
                 listAttachments.add(attchmnt);
-                LOGGER.log(Level.INFO, "Sending attachment [" + attchmnt_url
-                        + "] for listItem [ " + listItem.getUrl()
-                        + "] as a delete feed. ");
             }
+        }
+
+        int countDeleted = (null == knownAttachments) ? 0
+                : knownAttachments.size();
+
+        if (listAttachments.size() > 0 || countDeleted > 0) {
+            LOGGER.log(Level.INFO, "Found " + listAttachments.size()
+                    + " new/updated and " + countDeleted
+                    + " deleted attachments for listItem [ "
+                    + listItem.getUrl() + "]. ");
+        } else {
+            LOGGER.log(Level.CONFIG, "Found " + listAttachments.size()
+                    + " new/updated and " + countDeleted
+                    + " deleted attachments for listItem [ "
+                    + listItem.getUrl() + "]. ");
         }
 
         Collections.sort(listAttachments);
@@ -282,7 +289,8 @@ public class ListsWS {
      * @throws ParseException
      */
     private MessageElement[] createQuery(final Calendar c, String listItemID)
-            throws ParseException {
+            throws ParserConfigurationException, IOException, SAXException,
+            ParseException {
         String date = null;
         boolean isList = false;
 
@@ -290,18 +298,15 @@ public class ListsWS {
         try {
             Integer.parseInt(listItemID);
         } catch (final Exception e) {
-            LOGGER.config("List Discovered.. ID: " + listItemID);
             listItemID = "0";
             // change the query
             isList = true;
         }
 
         if (c != null) {
-
             date = Value.calendarToIso8601(c);
             final Date dt = (Date) SPConstants.ISO8601_DATE_FORMAT_MILLIS.parse(date);
             date = SPConstants.ISO8601_DATE_FORMAT_SECS.format(dt);
-            LOGGER.config("Time: " + date);
         }
 
         String strMyString = "<Query/>";// empty Query String
@@ -358,11 +363,7 @@ public class ListsWS {
                     + "<OrderBy><FieldRef Name=\"Modified\" Ascending=\"TRUE\" /></OrderBy>"
                     + "</Query>";
         }
-        final MessageElement[] meArray = { getMeFromString(strMyString) };// Array
-        // of
-        // the
-        // message
-        // element
+        final MessageElement[] meArray = { getMeFromString(strMyString) };
         return meArray;
     }
 
@@ -374,12 +375,10 @@ public class ListsWS {
      * @throws ParseException
      */
     private MessageElement[] createQuery1(String listItemID)
-            throws ParseException {
+            throws ParserConfigurationException, IOException, SAXException {
         try {
             Integer.parseInt(listItemID);
         } catch (final Exception e) {
-            // Eatup the exception. This was just to check whether it is a list
-            // or listItem.
             listItemID = "0";
         }
         final String strMyString = ""
@@ -414,7 +413,7 @@ public class ListsWS {
      * @throws ParseException
      */
     private MessageElement[] createQuery2(String listItemID)
-            throws ParseException {
+            throws ParserConfigurationException, IOException, SAXException {
         try {
             Integer.parseInt(listItemID);
         } catch (final Exception e) {
@@ -454,7 +453,7 @@ public class ListsWS {
      * @throws ParseException
      */
     private MessageElement[] createQuery3(String listItemID)
-            throws ParseException {
+            throws ParserConfigurationException, IOException, SAXException {
         try {
             Integer.parseInt(listItemID);
         } catch (final Exception e) {
@@ -491,30 +490,14 @@ public class ListsWS {
      * @param strMyString
      * @return the created query being used for WS call
      */
-    MessageElement getMeFromString(final String strMyString) {
-        DocumentBuilder docBuilder = null;
-        try {
-            docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        } catch (final ParserConfigurationException e) {
-
-            e.printStackTrace();
-        } catch (final FactoryConfigurationError e) {
-
-            e.printStackTrace();
-        }
+    MessageElement getMeFromString(final String strMyString)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         final StringReader reader = new StringReader(strMyString);
         final InputSource inputsource = new InputSource(reader);
-        Document doc = null;
-        try {
-            doc = docBuilder.parse(inputsource);
-        } catch (final SAXException e) {
-            e.printStackTrace();
-        } catch (final IOException e) {
-            e.printStackTrace();
-        }
+        Document doc = docBuilder.parse(inputsource);
         final Element ele = doc.getDocumentElement();
         final MessageElement msg = new MessageElement(ele);
-
         return msg;
     }
 
@@ -548,30 +531,20 @@ public class ListsWS {
             me.addChildElement(new MessageElement(new QName("DateInUtc"))).addTextNode("TRUE");
 
             // If no scope has been explicitly given, get the list items
-            // recursively. Else, get itmes only at the given scope. Scope
-            // arguement has the higher priority here and will be checked first.
+            // recursively. Else, get items only at the given scope. Scope
+            // argument has the higher priority here and will be checked first.
             if ((folderLevel != null) && (folderLevel.trim().length() > 0)) {
                 me.addChildElement(new MessageElement(new QName("Folder"))).addTextNode(folderLevel);
                 // folder information are by deafult returned by
                 // getListItemChangesSinceToken, when folder scope is given.
-                // Hance, no need to use "OptimizeFor" in this case.
+                // Hence, no need to use "OptimizeFor" in this case.
             } else if (recursion) {
                 me.addChildElement(new MessageElement(new QName(
                         "ViewAttributes"))).addAttribute(SOAPFactory.newInstance().createName("Scope"), "Recursive");
-                me.addChildElement(new MessageElement(new QName("OptimizeFor"))).addTextNode("ItemIds"); // added
-                // for
-                // getting
-                // folder
-                // information
-                // when
-                // recursion
-                // is
-                // being
-                // used,
-                // in
-                // case
-                // of
-                // getListItemChangesSinceToken.
+
+                // added for getting folder information when recursion is being
+                // used, in case of getListItemChangesSinceToken.
+                me.addChildElement(new MessageElement(new QName("OptimizeFor"))).addTextNode("ItemIds");
             }
 
             if (nextPage != null) {
@@ -683,9 +656,13 @@ public class ListsWS {
         }
 
         Collections.sort(listItems);
-        LOGGER.info("found: " + listItems.size() + " Items in List/Library ["
-                + list.getListURL() + "]");
-
+        if (listItems.size() > 0) {
+            LOGGER.info("found: " + listItems.size()
+                    + " Items in List/Library [" + list.getListURL() + "]");
+        } else {
+            LOGGER.config("No Items found in List/Library ["
+                    + list.getListURL() + "]");
+        }
         return listItems;
     }
 
@@ -695,21 +672,25 @@ public class ListsWS {
      * because the discovered folders are not sent as docs.
      *
      * @param list : Specify the base list
-     * @param folderLevel : From where to discover the folder hierarchy
+     * @param folder : From where to discover the folder hierarchy
      * @param lastID ; If we have already identified some folders at this
      *            folderLevel, specify the lastItemID to get the next set of
      *            folders.
      * @return the list of folders in this list
      */
-    public List<String> getFolderHierarchy(final ListState list,
-            final String folderLevel, final String lastID) {
-        List<String> folderLevels = new ArrayList<String>();
+    public List<Folder> getSubFoldersRecursively(final ListState list,
+            final Folder folder, final String lastID) {
+        List<Folder> folders = new ArrayList<Folder>();
         if (!list.canContainFolders()) {
-            return folderLevels; // folders are created only inside document
-            // libraries.
+            return folders;
         }
-        if ((folderLevel != null) && (folderLevel.trim().length() != 0)) {
-            folderLevels.add(folderLevel);
+
+        String folderLevel = null;
+        // TODO Check if the incoming folder should be added. This is probably
+        // creating duplicate entries into the result.
+        if (null != folder) {
+            folders.add(folder);
+            folderLevel = folder.getPath();
         }
 
         final String listName = list.getPrimaryKey();
@@ -737,8 +718,7 @@ public class ListsWS {
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
                 LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, SPConstants.DEFAULT_ROWLIMIT, queryOptions, token, contains);
@@ -799,25 +779,27 @@ public class ListsWS {
                                 if ((folderLevel != null)
                                         && (folderLevel.trim().length() != 0)) {
                                     if (folderPath.startsWith(folderLevel)) {
-                                        folderLevels.add(folderPath);
+                                        folders.add(new Folder(folderPath,
+                                                docId));
                                     }
                                 } else {
-                                    folderLevels.add(folderPath);
+                                    folders.add(new Folder(folderPath, docId));
                                 }
                             }
                         }
                         if (tmpNextPage != null) {
-                            folderLevels.addAll(getFolderHierarchy(list, folderLevel, lastItemID));
+                            folders.addAll(getSubFoldersRecursively(list, folder, lastItemID));
                         }
                     }
                 }
             }
         }
 
-        folderLevels = new ArrayList<String>(new TreeSet<String>(folderLevels));
-        Collections.sort(folderLevels);
-        LOGGER.log(Level.INFO, "Folders Discovered: " + folderLevels);
-        return folderLevels;
+        // removing duplicate entries
+        folders = new ArrayList<Folder>(new HashSet<Folder>(folders));
+
+        Collections.sort(folders);
+        return folders;
     }
 
     /**
@@ -827,26 +809,31 @@ public class ListsWS {
      * @param list : Base List
      * @param lastItemID : Last Item ID that we have already identified at this
      *            level.
-     * @param folderLevel : The folder level at which we need to discover the
-     *            items.
-     * @return the list of documents as {@link SPDocument}
+     * @param folder : The folder from where to discover the items.
+     * @return list of documents as {@link SPDocument}
      */
     public List<SPDocument> getListItemsAtFolderLevel(final ListState list,
-            final String lastItemID, final String folderLevel) {
+            final String lastItemIdAtFolderLevel, final Folder currentFolder,
+            final Folder renamedFolder) {
         final List<SPDocument> listItems = new ArrayList<SPDocument>();
+        if (null == currentFolder) {
+            return listItems;
+        }
         final String listName = list.getPrimaryKey();
         final String viewName = "";
         final GetListItemsQuery query = new GetListItemsQuery();
-        final GetListItemsViewFields viewFields = new GetListItemsViewFields(); // <ViewFields
-        // />
+        final GetListItemsViewFields viewFields = new GetListItemsViewFields();
         final GetListItemsQueryOptions queryOptions = new GetListItemsQueryOptions();
         final String webID = "";
         GetListItemsResponseGetListItemsResult res = null;
 
         try {
-            query.set_any(createQuery2(lastItemID));
+            LOGGER.fine("DocId for WS call : " + lastItemIdAtFolderLevel
+                    + " folder path : " + currentFolder
+                    + " for renamed folder " + renamedFolder);
+            query.set_any(createQuery2(lastItemIdAtFolderLevel));
             viewFields.set_any(createViewFields());
-            queryOptions.set_any(createQueryOptions(false, folderLevel, null));
+            queryOptions.set_any(createQueryOptions(false, currentFolder.getPath(), null));
             LOGGER.log(Level.CONFIG, "Making Web Service call with the following parameters:\n query [ "
                     + query.get_any()[0]
                     + " ], queryoptions [ "
@@ -866,19 +853,18 @@ public class ListsWS {
                 try {
                     res = stub.getListItems(listName, viewName, query, viewFields, rowLimit, queryOptions, webID);
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                            + listName
-                            + " ] at level [ "
-                            + folderLevel
+                    LOGGER.log(Level.WARNING, "Unable to get the List Items under folder [ "
+                            + currentFolder + " ], list [ " + list
                             + " ]. ", e);
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                        + listName + " ] at level [ " + folderLevel + " ]. ", af);
+                LOGGER.log(Level.WARNING, "Unable to get the List Items under folder [ "
+                        + currentFolder + " ], list [ " + list
+                        + " ]. ", af);
             }
         } catch (final Throwable e) {
-            LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                    + listName + " ] at level [ " + folderLevel + " ]. ", e);
+            LOGGER.log(Level.WARNING, "Unable to get the List Items under folder [ "
+                    + currentFolder + " ], list [ " + list + " ]. ", e);
         }
 
         if (res != null) {
@@ -894,7 +880,8 @@ public class ListsWS {
                             final MessageElement row = (MessageElement) itrchild.next();
                             doc = processListItemElement(row, list, null);
                             if (doc != null) {
-                                doc.setFolderLevel(folderLevel);
+                                doc.setRenamedFolder(renamedFolder);
+                                doc.setParentFolder(currentFolder);
                                 listItems.add(doc);
                             }
                         }
@@ -904,9 +891,8 @@ public class ListsWS {
         }
 
         Collections.sort(listItems);
-        LOGGER.info("found: " + listItems.size() + " Items in List/Library ["
-                + list.getListURL() + "] at folderLevel [ " + folderLevel
-                + " ]. ");
+        LOGGER.log(Level.FINE, "found " + listItems.size() + " under folder "
+                + currentFolder);
 
         return listItems;
     }
@@ -929,31 +915,39 @@ public class ListsWS {
      * @param allWebs : A collection to store any webs, discovered as part of
      *            discovering list items. Foe example link sites are stored as
      *            list items.
-     * @param folderLevel : indicates a folder level if we have to start from
-     *            that folder level. This is possible when some folder has been
-     *            restored.
+     * @param folder : indicates that the last batch traversal stopped at some
+     *            folder. This happens when folder(s) are renamed/restored. In
+     *            such cases, web service response gives information about
+     *            changed folders only and not the documents underneath.
+     *            Connector manually visits each renamed/resored folder to
+     *            discovers sub-folders and documents under it.
      * @return the list of documents as {@link SPDocument}
      */
+    // FIXME Why using List and not Set?
     public List<SPDocument> getListItemChangesSinceToken(final ListState list,
-            final String lastItemID, final Set<String> allWebs,
-            final String folderLevel) {
+            final Set<String> allWebs) throws SharepointException {
         final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
         if (list == null) {
             LOGGER.warning("Unable to get the list items because list is null");
             return listItems;
         }
 
-        LOGGER.config("list: title [ " + list.getListTitle() + " ], URL [ "
-                + list.getListURL() + " ], lastItemID [ " + lastItemID
-                + " ], folderLevel [ " + folderLevel + " ]");
+        LOGGER.config("list [ " + list + " ], LastDoc [ "
+                + list.getLastDocForWSRefresh() + " ]");
 
-        if (sharepointClientContext == null) {
-            LOGGER.warning("Unable to get the list items because client context is null");
-            return listItems;
-        }
-        if (stub == null) {
-            LOGGER.warning("Unable to get the list items because stub is null");
-            return listItems;
+        // if there are any folder/rename/restore found during previous WS call,
+        // processed the folders first
+        if (null != list.getNextChangeTokenForSubsequectWSCalls()) {
+            traverseChangedFolders(list, listItems);
+            if (listItems.size() >= sharepointClientContext.getBatchHint()) {
+                Collections.sort(listItems);
+                if (null == list.getNextPage()) {
+                    // There might be more documents to be crawled using the
+                    // current change token.
+                    list.setNextPage("not null");
+                }
+                return listItems;
+            }
         }
 
         final String listName = list.getPrimaryKey();
@@ -972,39 +966,19 @@ public class ListsWS {
         final GetListItemChangesSinceTokenContains contains = null;
         GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res = null;
         try {
-            /*
-             * If we are not getting the change token, that means we have not
-             * yet traversed the list completely. In that case, we need to get
-             * the documents only. It is assumed that the caller would have
-             * populated the folders info by calling getFolderHierarchy(), which
-             * will be required in case of content feed for sending delete
-             * feeds. Though, if we have a change token, then we can not skip
-             * folders because they can also be changed(rename/restored) which
-             * may mean sending the child documents again.
-             */
-            if (token != null) {
-                /*
-                 * Do not use lastItemID in the query, if some folderlevel is
-                 * specified. folderlevel signifies that we had stopped last
-                 * time while getting restored items inside a folder level.
-                 * Hence, LastItemID should be used in that context only i.e,
-                 * when we again start discovering the items inside the restored
-                 * folder.
-                 */
-                if ((folderLevel == null) || (folderLevel.trim().length() == 0)
-                        || (folderLevel.indexOf(SPConstants.SLASH) == -1)) {
-                    query.set_any(createQuery3(lastItemID));
-                } else {
-                    query.set_any(createQuery3("0"));
+            if (null == token) {
+                String lastDocID = "0";
+                if (null != list.getLastDocForWSRefresh()) {
+                    lastDocID = Util.getOriginalDocId(list.getLastDocForWSRefresh().getDocId(), sharepointClientContext.getFeedType());
                 }
+                // During full crawl, crawl progresses using LastDocId
+                query.set_any(createQuery2(lastDocID));
             } else {
-                query.set_any(createQuery2(lastItemID));
+                // During incremental crawl, crawl progresses using change token
+                query.set_any(createQuery3("0"));
             }
 
             viewFields.set_any(createViewFields());
-
-            // Though, we have received a folderLevel, we'll not use it here
-            // because that will make the WS returning incorrect change info.
             queryOptions.set_any(createQueryOptions(true, null, null));
             LOGGER.log(Level.CONFIG, "Making Web Service call with the following parameters:\n query [ "
                     + query.get_any()[0]
@@ -1019,8 +993,7 @@ public class ListsWS {
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
                 LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, rowLimit, queryOptions, token, null);
@@ -1029,7 +1002,11 @@ public class ListsWS {
                     return listItems;
                 }
             } else {
-                handleListException(list, af);
+                boolean retry = handleListException(list, af);
+                if(retry) {
+                    LOGGER.log(Level.INFO, "Retrying WS call...");
+                    return getListItemChangesSinceToken(list, allWebs);
+                }
                 return listItems;
             }
         } catch (final Throwable e) {
@@ -1040,31 +1017,45 @@ public class ListsWS {
         final Set<String> deletedIDs = new HashSet<String>();
         final Set<String> restoredIDs = new HashSet<String>();
         final Set<String> renamedIDs = new HashSet<String>();
-        String lastChangeToken = null;
-
+        List<MessageElement> updatedListItems = null;
         if (res != null) {
             final MessageElement[] me = res.get_any();
             if ((me != null) && (me.length > 0)) {
-                boolean inSequence = false; // To ensure that Changes are
-                // retrieved always before actual
-                // data.
+                // To ensure that Changes are accessed before documents
+                boolean inSequence = false;
                 for (final Iterator itChilds = me[0].getChildElements(); itChilds.hasNext();) {
                     final MessageElement child = (MessageElement) itChilds.next();
                     if (SPConstants.CHANGES.equalsIgnoreCase(child.getLocalName())) {
                         inSequence = true;
-                        lastChangeToken = processListChangesElement(child, list, deletedIDs, restoredIDs, renamedIDs, lastItemID, folderLevel);
+                        processListChangesElement(child, list, deletedIDs, restoredIDs, renamedIDs);
                     } else if (SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
                         if (!inSequence) {
                             LOGGER.log(Level.SEVERE, "Bad Sequence.");
                         }
-                        listItems.addAll(processListDataElement(child, list, deletedIDs, restoredIDs, renamedIDs, allWebs, lastItemID, folderLevel));
+                        updatedListItems = processListDataElement(child, list, deletedIDs, restoredIDs, renamedIDs, allWebs);
                     }
                 }
             }
         }
 
-        LOGGER.info("found: " + listItems.size() + " Items in List/Library ["
-                + list.getListURL() + "] for feed action=ADD");
+        // If some folder renames are found in WS response, handle it first.
+        if (renamedIDs.size() > 0 || restoredIDs.size() > 0) {
+            traverseChangedFolders(list, listItems);
+        }
+
+        if (listItems.size() < sharepointClientContext.getBatchHint()
+                && null != updatedListItems) {
+            for (Object element : updatedListItems) {
+                final MessageElement row = (MessageElement) element;
+                final SPDocument doc = processListItemElement(row, list, allWebs);
+                if (doc != null) {
+                    listItems.add(doc);
+                }
+            }
+        } else if (null == list.getNextPage() && null != updatedListItems
+                && updatedListItems.size() > 0) {
+            list.setNextPage("not null");
+        }
 
         // Process deleted IDs
         if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
@@ -1075,35 +1066,20 @@ public class ListsWS {
             }
         }
 
-        if (null != lastChangeToken) {
-            if(
-            // FIRST CASE: This is the first change token we have received for
-            // the first call to WS. We need to save this change token because
-            // this will define the starting point for incremental crawl
-            // once the initial crawl gets completed. This is important because
-            // by the time we complete the initial crawl, web service would
-            // returning a new change token which would be valid at that point.
-            // If we use that token, we will miss any changes that have happened
-            // while the initial crawl was was in progress.
-            list.isCurrentChangeTokenBlank() && list.isNextChangeTokenBlank()
+        if (listItems.size() > 0) {
+            LOGGER.info("found " + listItems.size()
+                    + " Items in List/Library [" + list.getListURL() + "] ");
+        } else {
+            LOGGER.config("No Items found in List/Library ["
+                    + list.getListURL() + "]");
 
-                    // Or, SECOOND CASE: If connector is running in an
-                    // incremental crawl and all the documents are crawled for
-                    // the current change token
-                    || (!list.isCurrentChangeTokenBlank() && null == list.getNextPage()))
-            {
-                list.saveNextChangeTokenForWSCall(lastChangeToken);
+            // If there are no more documents to be sent from the current window
+            // of (changetoken to nextchangeToken), the completion of this
+            // window must be announced to the caller.
+            if (null == list.getNextPage()
+                    && null != list.getNextChangeTokenForSubsequectWSCalls()) {
+                list.setNewList(true);
             }
-        }
-
-
-        /*
-         * If we had received a numeric lastItemID, we must send at list one doc
-         * to keep the traversal on and update the state info about the complete
-         * traversal.
-         */
-        if (Util.isNumeric(lastItemID) && (listItems.size() == 0)) {
-            list.setNewList(true);
         }
 
         Collections.sort(listItems);
@@ -1114,34 +1090,44 @@ public class ListsWS {
     /**
      * Called when the connector is not able proceed after the current state of
      * list (lastDoc+changetoken) because the web service call has failed.
-     * @param list List for which the exception occured
+     *
+     * @param list List for which the exception occurred
+     * @return an advice to the caller indicating whether the web service call
+     *         should be re-tried
      */
-    private void handleListException(final ListState list, Throwable te) {
-        if (te == null) {
-            return;
-        }
-        // As a quick fix, marking the list as partially crawled. Crawl will not proceed for the given list
+    private boolean handleListException(final ListState list, Throwable te) {
         LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-                + list.getListURL()
-                + " ]. The list's state can not be updated and the crawl will not proceed for this list!!", te);
-        list.setNewList(false); // This will ensure that list will
-                                // not be sent as document and hence
-                                // can not be assumed completed.
+                + list.getListURL() + " ]. ", te);
 
-        // TODO: With the above logic, connector will get stuck at the current
-        // state of the list where the web service call has failed and
-        // will proceed only when the web service call can succeed.
-        // Better solutions for this is being worked out. We should
-        // recover from the exception gracefully and proceed with the
-        // crawl. Any problematic document should be skipped and list's
-        // state should be appropriately updated.
         if (te.getMessage().indexOf(SPConstants.SAXPARSEEXCEPTION) != -1) {
+            boolean isNew = true;
+            for (SOAPHeaderElement headerelem : stub.getHeaders()) {
+                if (InvalidXmlCharacterHandler.PRECONDITION_HEADER.equals(headerelem)) {
+                    isNew = false;
+                    break;
+                }
+            }
+            if (isNew) {
+                stub.setHeader(InvalidXmlCharacterHandler.PRECONDITION_HEADER);
+                LOGGER.log(Level.WARNING, "Web Service response seems to contain invalid XML characters. Retry with InvalidXmlCharacterHandler");
+                return true;
+            }
             LOGGER.log(Level.WARNING, "Could not parse the web service SOAP response for list [ "
                     + list.getListURL()
                     + " ]. This could happen becasue of invalid XML chanracters in the web service response. "
                     + "Check if any of your document's metadata has such characters in it. ");
         }
+
+        // If nothing can be done to recover from this exception, at least
+        // ensure that the crawl for this list will not proceed so that the user
+        // would not get any false impression afterwards. Following will ensure
+        // that list will not be sent as document and hence can not be assumed
+        // completed.
+        list.setNewList(false);
+
+        return false;
     }
+
     /**
      * Construct SPDocument for all those items which has been deleted.
      *
@@ -1220,8 +1206,14 @@ public class ListsWS {
                 }
             }
         }
-        LOGGER.info("found: " + count + " Items in List/Library ["
-                + list.getListURL() + "] for feed action=DELETE");
+
+        if (count > 0) {
+            LOGGER.info("found: " + count + " Items in List/Library ["
+                    + list.getListURL() + "] for feed action=DELETE");
+        } else {
+            LOGGER.config("No items foudn in List/Library ["
+                    + list.getListURL() + "] for feed action=DELETE");
+        }
 
         return listItems;
     }
@@ -1239,16 +1231,15 @@ public class ListsWS {
      * @param renamedIDs : If it is a folder. New feeds are sent for all the
      *            items beneath it.
      * @param lastItemID : Serves as a base for incremental crawl.
-     * @param folderLevel : If some folder level is specified, we will ignore
-     *            the changes. This becasue in such cases the change info
-     *            returned by the WS are not consistent.
+     * @param folder : If some folder level is specified, we will ignore the
+     *            changes. This because in such cases the change info returned
+     *            by WS are not consistent.
      * @return the change token being received as per the WS call
      */
-    private String processListChangesElement(
+    private void processListChangesElement(
             final MessageElement changeElement, final ListState list,
             final Set<String> deletedIDs, final Set<String> restoredIDs,
-            final Set<String> renamedIDs, final String lastItemID,
-            final String folderLevel) {
+            final Set<String> renamedIDs) throws SharepointException {
         final String lastChangeToken = changeElement.getAttributeValue(SPConstants.LASTCHANGETOKEN);
         LOGGER.log(Level.FINE, "Change Token Recieved [ " + lastChangeToken
                 + " ]. ");
@@ -1258,96 +1249,102 @@ public class ListsWS {
         }
 
         for (final Iterator itrchild = changeElement.getChildElements(); itrchild.hasNext();) {
-            try {
-                final MessageElement change = (MessageElement) itrchild.next();
-                if (SPConstants.LIST.equalsIgnoreCase(change.getLocalName())) {
-                    list.setNewList(true);
-                }
+            final MessageElement change = (MessageElement) itrchild.next();
+            if (null == change) {
+                continue;
+            }
 
-                final String changeType = change.getAttributeValue(SPConstants.CHANGETYPE);
-                final String itemId = change.getValue();
-                if ((null == changeType) || (null == itemId)) {
+            if (SPConstants.LIST.equalsIgnoreCase(change.getLocalName())) {
+                list.setNewList(true);
+                break;
+            }
+
+            final String changeType = change.getAttributeValue(SPConstants.CHANGETYPE);
+            if (null == changeType) {
+                LOGGER.log(Level.WARNING, "Unknown change type! Skipping... ");
+                continue;
+            } else if (changeType.equalsIgnoreCase("InvalidToken")) {
+                String ct = list.getChangeTokenForWSCall();
+                list.resetState();
+                throw new SharepointException(
+                        "Current change token [ "
+                                + ct
+                                + " ] of List [ "
+                                + list
+                                + " ] has expired or is invalid. State of the list was reset to initiate a full crawl....");
+            }
+
+            final String itemId = change.getValue();
+            if (null == itemId) {
+                LOGGER.log(Level.WARNING, "Unknown ItemID for change type [ "
+                        + changeType + " ] Skipping... ");
+                continue;
+            }
+
+            LOGGER.config("Recieved change type as: " + changeType);
+
+            if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
+                if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
+                    // Delete feed processing is done only in case of
+                    // content feed
+                    LOGGER.fine("Ignoring change type: " + changeType
+                            + " since its applicable for content feed only");
                     continue;
                 }
-                /*
-                 * Ensure that the changed itemId is bigger then the received
-                 * lastItemID. This is required because
-                 * getListItemChnagesSinceToken always sends change info,
-                 * irrespective of any conditions specified in the CAML query.
-                 *
-                 * Also, since we do not use lastItemID in the CAML query when
-                 * some folderLevel is specified. Do the above check only if no
-                 * folderLevel has been specified.
-                 */
-                if ((folderLevel == null) || (folderLevel.trim().length() == 0)
-                        || (folderLevel.indexOf(SPConstants.SLASH) == -1)) {
-                    try {
-                        if (Integer.parseInt(itemId) <= Integer.parseInt(lastItemID)) {
-                            LOGGER.log(Level.WARNING, "This ItemId [ "
-                                    + itemId
-                                    + " ] has already been tracked during change detection. skipping...");
-                            continue;
-                        }
-                    } catch (final Exception e) {
-                        // lastItemID is of the list itself.
-                    }
+                if (list.isInDeleteCache(itemId)) {
+                    // We have already processed this.
+                    LOGGER.log(Level.WARNING, "skipping deleted ItemID ["
+                            + itemId
+                            + "] because it has been processed in previous batch traversal(s). listURL ["
+                            + list.getListURL() + " ]. ");
+                    continue;
                 }
-                if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
-                    if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
-                        // Delete feed processing is done only in case of
-                        // content feed
-                        continue;
-                    }
-                    if (list.isInDeleteCache(itemId)) {
-                        // We have already processed this.
-                        LOGGER.log(Level.WARNING, "skipping deleted ItemID ["
-                                + itemId
-                                + "] because it has been found in deletedCache. We have already sent delete feeds for this. listURL ["
-                                + list.getListURL() + " ]. ");
-                        continue;
-                    }
-                    LOGGER.log(Level.INFO, "ItemID ["
+                LOGGER.log(Level.INFO, "ItemID ["
+                        + itemId
+                        + "] has been deleted. Delete feeds will be sent for this and all the dependednt IDs. listURL ["
+                        + list.getListURL()
+                        + " ] ");
+                try {
+                    deletedIDs.addAll(list.getExtraIDs(itemId));
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "Problem occured while getting the dependent IDs for deleted ID [ "
                             + itemId
-                            + "] has been deleted. Delete feeds will be sent for this and all the dependednt IDs. listURL ["
-                            + list.getListURL() + " ]. ");
-                    try {
-                        deletedIDs.addAll(list.getExtraIDs(itemId));
-                    } catch (final Exception e) {
-                        LOGGER.log(Level.WARNING, "Problem occured while getting the dependent IDs for deleted ID [ "
-                                + itemId
-                                + " ]. listURL ["
-                                + list.getListURL()
-                                + " ]. ");
-                    }
-                } else if (SPConstants.RESTORE.equalsIgnoreCase(changeType)) {
-                    restoredIDs.add(itemId);
-                    LOGGER.log(Level.INFO, "ItemID ["
-                            + itemId
-                            + "] has been restored. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
-                            + list.getListURL() + " ]. ");
-                    // Remove this ID from the list of deleted IDs. This is
-                    // important or else you might have orphaned docs in GSA's
-                    // index. There are various use cases where this can happen.
-                    // Like you dont remove the ID from list of deleted IDs now,
-                    // send an ADD feed and later send try to send DELETE feed.
-                    // Here this new delete feed will never be sent as the ID is
-                    // already marked in the list of deleted ids. Think of many
-                    // such use cases and this step will then make sense
-                    list.removeFromDeleteCache(itemId);
-                } else if (SPConstants.RENAME.equalsIgnoreCase(changeType)) {
-                    renamedIDs.add(itemId);
-                    LOGGER.log(Level.INFO, "ItemID ["
-                            + itemId
-                            + "] has been renamed. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
-                            + list.getListURL() + " ]. ");
+                            + " ]. listURL ["
+                            + list.getListURL()
+                            + " ]. ");
                 }
-            } catch (final Exception e) {
-                LOGGER.log(Level.WARNING, "Problem occured while parsing the Changes node", e);
-                continue;
+            }
+            // Folder rename/restore are tracked only when the current
+            // change token is being used for the first time while making WS
+            // call hence, the check
+            // null == list.getNextChangeTokenForSubsequectWSCalls()
+            else if (SPConstants.RESTORE.equalsIgnoreCase(changeType)
+                    && null == list.getNextChangeTokenForSubsequectWSCalls()) {
+                restoredIDs.add(itemId);
+                LOGGER.log(Level.INFO, "ItemID ["
+                        + itemId
+                        + "] has been restored. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
+                        + list.getListURL()
+                        + " ] ");
+                // Since the item has been restored, it becomes a candidate for
+                // deletion again. This has to be reflected here by removing
+                // it from the delete cache.
+                // FIXME The right way of handling this is to clear the delete
+                // cache when a new change token is committed just like we do
+                // for ListState.changedFolders
+                list.removeFromDeleteCache(itemId);
+            } else if (SPConstants.RENAME.equalsIgnoreCase(changeType)
+                    && null == list.getNextChangeTokenForSubsequectWSCalls()) {
+                renamedIDs.add(itemId);
+                LOGGER.log(Level.INFO, "ItemID ["
+                        + itemId
+                        + "] has been renamed. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
+                        + list.getListURL()
+                        + " ] ");
             }
         }
 
-        return lastChangeToken;
+        list.saveNextChangeTokenForWSCall(lastChangeToken);
     }
 
     /**
@@ -1364,22 +1361,22 @@ public class ListsWS {
      * @param renamedIDs : If it is a folder. New feeds are sent for all the
      *            items beneath it.
      * @param lastItemID : Serves as a base for incremental crawl.
-     * @param folderLevel : If some folder level is specified, we will ignore
-     *            the changes. This becasue in such cases the change info
-     *            returned by the WS are not consistent.
-     * @return the list of documents as {@link SPDocument}
+     * @param folder : If some folder level is specified, we will ignore the
+     *            changes. This because in such cases the change info returned
+     *            by WS are not consistent.
+     * @return the list items which WS returns as rs:rows. These do not include
+     *         folders
      */
-    private List<SPDocument> processListDataElement(
+    private List<MessageElement> processListDataElement(
             final MessageElement dataElement, final ListState list,
             final Set<String> deletedIDs, final Set<String> restoredIDs,
-            final Set<String> renamedIDs, final Set<String> allWebs,
-            String lastItemID, final String folderLevel) {
-        final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
-        final ArrayList<MessageElement> updatedListItems = new ArrayList<MessageElement>();
+            final Set<String> renamedIDs, final Set<String> allWebs) {
 
+        final ArrayList<MessageElement> updatedListItems = new ArrayList<MessageElement>();
         final String receivedNextPage = dataElement.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
         LOGGER.log(Level.FINE, "Next Page Recieved [ " + receivedNextPage
                 + " ]. ");
+        list.setNextPage(receivedNextPage);
         /*
          * One may think of using nextPage as the backbone of page by page
          * crawling when threshold is reached. This definitely seems to be a
@@ -1394,7 +1391,6 @@ public class ListsWS {
          * does not happen so. Instead, ListItemCollectionPositionNext keeps
          * recrawling the same set of document again and again."
          */
-        final int intRowLimit = Integer.parseInt(rowLimit);
         for (final Iterator itrchild = dataElement.getChildElements(); itrchild.hasNext();) {
             try {
                 final MessageElement row = (MessageElement) itrchild.next();
@@ -1457,7 +1453,7 @@ public class ListsWS {
                                             + " ], listURL [ "
                                             + list.getListURL()
                                             + " ]. Retrying after updating the folders info.. ", se1.getMessage());
-                                    getFolderHierarchy(list, null, null);
+                                    getSubFoldersRecursively(list, null, null);
                                     try {
                                         list.updateExtraIDs(relativeURL, docId, true);
                                     } catch (SharepointException se2) {
@@ -1471,76 +1467,11 @@ public class ListsWS {
                         }
 
                         if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
-
-                            // When a folder is restored / renamed, we need to
-                            // send new feeds for all the items which are
-                            // beneath it.
                             if (restoredIDs.contains(docId)
                                     || renamedIDs.contains(docId)) {
-                                /*
-                                 * The following conditions checks if the
-                                 * lastCrawledDoc info is of a top level
-                                 * document or of a document which is inside a
-                                 * folder, which might have been restored. Since
-                                 * we always send the restored items first, if
-                                 * we are getting the lastCrawledDoc info at
-                                 * some folder level, this means we had not done
-                                 * with getting all the restored items. In that
-                                 * case only we can proceed to get the restored
-                                 * items.
-                                 */
-                                if ((Util.isNumeric(lastItemID) && ((folderLevel == null) || (folderLevel.trim().length() == 0)))) {
-                                    // We have processed this in previous
-                                    // cycles.
-                                    restoredIDs.remove(docId);
-                                    renamedIDs.remove(docId);
-                                    continue;
-                                }
-
-                                LOGGER.log(Level.INFO, "Processing the renamed/restored folder ID["
-                                        + docId
-                                        + "], relativeURL["
-                                        + relativeURL + "] ");
-                                final String folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
-                                if (folderPath == null) {
-                                    continue;
-                                }
-
-                                LOGGER.log(Level.INFO, "Getting folder hierarchy at folder level [ "
-                                        + folderPath + " ]. ");
-                                final List<String> folderLevels = getFolderHierarchy(list, folderPath, null);
-
-                                /*
-                                 * If in the last cycle, we have stopped
-                                 * somewhere in between while getting the
-                                 * restored item, let's first complete that
-                                 * hierarchy. Or, start from the first, it's the
-                                 * next item which has been restored.
-                                 */
-                                int folderLevelPos = folderLevels.indexOf(folderLevel);
-                                if (folderLevelPos == -1) {
-                                    folderLevelPos = 0;
-                                    lastItemID = "0";
-                                }
-
-                                for (int index = folderLevelPos; (index < folderLevels.size()); ++index) {
-                                    if (listItems.size() >= intRowLimit) {
-                                        // If there are more folders to be
-                                        // crawled, and batch-hint is reached,
-                                        // then ensure that nextPage is not null
-                                        if (null == list.getNextPage()) {
-                                            list.setNextPage("not null");
-                                        }
-                                        break;
-                                    }
-                                    final List<SPDocument> restoredItems = getListItemsAtFolderLevel(list, lastItemID, (String) folderLevels.get(index));
-                                    listItems.addAll(restoredItems);
-                                }
-
-                                LOGGER.log(Level.INFO, "Discovered #"
-                                        + listItems.size()
-                                        + " under the restored/renamed folder ["
-                                        + relativeURL + "] ");
+                                list.addToChangedFolders(new Folder(
+                                        Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
+                                        docId));
                             }
                             continue; // do not send folders as documents.
                         }
@@ -1561,30 +1492,77 @@ public class ListsWS {
             }
         } // end of For
 
-        // Process the list items which WS returns as rs:rows
-        if (listItems.size() < intRowLimit) {
-            for (Object element : updatedListItems) {
-                final MessageElement row = (MessageElement) element;
-                final SPDocument doc = processListItemElement(row, list, allWebs);
-                if (doc != null) {
-                    listItems.add(doc);
+        return updatedListItems;
+    }
+
+    private void traverseChangedFolders(final ListState list,
+            final List<SPDocument> allItems) {
+        SPDocument lastDocument = list.getLastDocForWSRefresh();
+        if (null == lastDocument || null == allItems) {
+            return;
+        }
+
+        final Folder lastDocParentFolder = lastDocument.getParentFolder();
+        final Folder lastDocRenamedFolder = lastDocument.getRenamedFolder();
+
+        if (null != lastDocRenamedFolder) {
+            int index = list.getChangedFolders().indexOf(lastDocRenamedFolder);
+            if (index > 0) {
+                list.getChangedFolders().subList(0, index).clear();
+            }
+        }
+
+        Iterator<Folder> itrChangedFolders = list.getChangedFolders().iterator();
+        while (itrChangedFolders.hasNext()) {
+            Folder changedFolder = itrChangedFolders.next();
+            if (allItems.size() >= sharepointClientContext.getBatchHint()) {
+                // more folders to traverse
+                if (null == list.getNextPage()) {
+                    list.setNextPage("not null");
+                }
+                break;
+            }
+
+            final List<Folder> folders = getSubFoldersRecursively(list, changedFolder, null);
+            if (null != lastDocParentFolder) {
+                int index = folders.indexOf(lastDocParentFolder);
+                if (index > 0) {
+                    folders.subList(0, index).clear();
                 }
             }
 
-            // If in case while getting the items under renamed/restored folder,
-            // we have changed the nextPage value to null, let's get the
-            // original value back.
-            if (list.getNextPage() == null) {
-                list.setNextPage(receivedNextPage);
-            }
-        } else if (updatedListItems.size() > 0) {
-            // Since, we have not processed the updated items yet, nextPage must
-            // explicitly be set non-null to indicate further processing is
-            // required with the same Change Token
-            list.setNextPage("not null");
-        }
+            LOGGER.log(Level.INFO, "Processing renamed/restored folder ["
+                    + changedFolder + "] ");
 
-        return listItems;
+            int docCountFromCurrentFolder = 0;
+            for (Folder currentFolder : folders) {
+                if (allItems.size() >= sharepointClientContext.getBatchHint()) {
+                    // More sub folders to be crawled
+                    if (null == list.getNextPage()) {
+                        list.setNextPage("not null");
+                    }
+                    break;
+                }
+                String lastDocIdForCurrentFolder = "0";
+                if (null != lastDocParentFolder
+                        && lastDocParentFolder.equals(currentFolder)) {
+                    lastDocIdForCurrentFolder = Util.getOriginalDocId(lastDocument.getDocId(), sharepointClientContext.getFeedType());
+                }
+                List<SPDocument> currentListItems = getListItemsAtFolderLevel(list, lastDocIdForCurrentFolder, currentFolder, changedFolder);
+                LOGGER.log(Level.CONFIG, "found " + currentListItems.size()
+                        + " items under folder [" + currentFolder + " ] ");
+                docCountFromCurrentFolder += currentListItems.size();
+                allItems.addAll(currentListItems);
+            }
+
+            LOGGER.log(Level.INFO, "found " + docCountFromCurrentFolder
+                    + " items under restored/renamed folder [" + changedFolder
+                    + " ] ");
+
+            if (null == list.getNextPage() && docCountFromCurrentFolder == 0) {
+                itrChangedFolders.remove();
+            }
+        }
     }
 
     /**
@@ -1663,6 +1641,7 @@ public class ListsWS {
         }
 
         final StringBuffer url = new StringBuffer();
+        String displayUrl = null;
         if (list.isDocumentLibrary()) {
             if (fileref == null) {
                 return null;
@@ -1677,6 +1656,11 @@ public class ListsWS {
             url.append(urlPrefix);
             url.append(SPConstants.SLASH);
             url.append(fileref);
+            displayUrl = url.toString();
+            if (list.isInfoPathLibrary()) {
+                url.append("?");
+                url.append(SPConstants.NOREDIRECT);
+            }
         } else {
             final String urlPrefix = Util.getWebApp(sharepointClientContext.getSiteURL());
             url.setLength(0);
@@ -1684,14 +1668,18 @@ public class ListsWS {
             url.append(SPConstants.SLASH);
             url.append(list.getListConst() + SPConstants.DISPFORM);
             url.append(docId);
+            displayUrl = url.toString();
+            if (list.isInfoPathLibrary()) {
+                url.append("&");
+                url.append(SPConstants.NOREDIRECT);
+            }
         }
 
-        LOGGER.config("URL :" + url);
+        LOGGER.config("ListItem URL :" + url);
         if (!sharepointClientContext.isIncludedUrl(url.toString())) {
             LOGGER.warning("excluding " + url.toString());
             return null;
         }
-        LOGGER.config("included url : " + url.toString());
 
         SPDocument doc;
 
@@ -1714,7 +1702,7 @@ public class ListsWS {
         try {
             calMod = Value.iso8601ToCalendar(lastModified);
         } catch (final ParseException pe) {
-            LOGGER.log(Level.INFO, "Unable to parse the document's last modified date vale. Using parent's last modified.");
+            LOGGER.log(Level.WARNING, "Unable to parse the document's last modified date vale. Using parent's last modified.");
             calMod = list.getLastModCal();
         }
 
@@ -1726,6 +1714,7 @@ public class ListsWS {
                 sharepointClientContext.getFeedType(),
                 list.getParentWebState().getSharePointType());
         doc.setFileref(fileref);
+        doc.setDisplayUrl(displayUrl);
 
         if (fileSize != null && !fileSize.equals("")) {
             try {
@@ -1810,7 +1799,12 @@ public class ListsWS {
 
     public List<SPDocument> parseCustomWSResponseForListItemNodes(String data,
             ListState list) {
-        MessageElement wsElement = getMeFromString(data);
+        MessageElement wsElement = null;
+        try {
+            wsElement = getMeFromString(data);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "", e);
+        }
         return parseCustomWSResponseForListItemNodes(wsElement, list);
     }
 }

@@ -14,6 +14,19 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.spi.Property;
+import com.google.enterprise.connector.spi.SpiConstants;
+
+import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.methods.GetMethod;
+
+import com.sun.jndi.toolkit.url.UrlUtil;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -21,30 +34,21 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.httpclient.URI;
-import org.apache.commons.httpclient.methods.GetMethod;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.spi.Property;
-import com.sun.jndi.toolkit.url.UrlUtil;
-
 public class SPDocumentTest extends TestCase {
 
     SPDocument doc;
 
     protected void setUp() throws Exception {
         super.setUp();
-        final String docURL = "http://myHost.myDomain:port/path/";
-        this.doc = new SPDocument("docID", docURL, Calendar.getInstance(),
-                SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-                SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED,
-                SPType.SP2007);
+        SharepointClientContext spContext = TestConfiguration.initContext();
+        List<SPDocument> allDocs = TestConfiguration.initState(spContext).lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID).getCrawlQueue();
+        this.doc = allDocs.get(0);
+        this.doc.setSharepointClientContext(spContext);
+        this.doc.setContentDwnldURL(doc.getUrl());
         try {
-            String str = UrlUtil.encode(docURL, "UTF-8");
+            String str = UrlUtil.encode(doc.getUrl(), "UTF-8");
             String charset = new GetMethod(str).getParams().getUriCharset();
-            URI uri = new URI(docURL, true, charset);
+            URI uri = new URI(doc.getUrl(), true, charset);
             System.out.println(str);
             System.out.println(uri.toString());
         } catch (Exception e) {
@@ -71,7 +75,7 @@ public class SPDocumentTest extends TestCase {
     public final void testFindProperty() {
         System.out.println("Testing findProperty()..");
         try {
-            final Property prop = this.doc.findProperty("docID");
+            final Property prop = this.doc.findProperty(SpiConstants.PROPNAME_DOCID);
             assertNotNull(prop);
             System.out.println("[ findProperty(() ] Test passd");
         } catch (final Exception e) {
@@ -79,21 +83,15 @@ public class SPDocumentTest extends TestCase {
         }
     }
 
-    /*
-     * public final void testDownloadContents() {
-     * System.out.println("Testing downloadContents().."); try { final
-     * SharepointClientContext sharepointClientContext = new
-     * SharepointClientContext(TestConfiguration.sharepointUrl,
-     * TestConfiguration.domain, TestConfiguration.username,
-     * TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
-     * TestConfiguration.includedURls, TestConfiguration.excludedURls,
-     * TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-     * TestConfiguration.feedType);
-     *
-     * final String responseCode =
-     * this.doc.downloadContents(sharepointClientContext);
-     * assertEquals(responseCode, "200"); } catch (final Exception e) {
-     * assertTrue(false); }
-     * System.out.println("[ downloadContents(() ] Test passd"); }
-     */
+    public final void testDownloadContents() {
+        System.out.println("Testing downloadContents()..");
+        try {
+            final String responseCode = this.doc.downloadContents();
+            assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
+        } catch (final Exception e) {
+            assertTrue(false);
+        }
+        System.out.println("[ downloadContents(() ] Test passd");
+    }
+
 }

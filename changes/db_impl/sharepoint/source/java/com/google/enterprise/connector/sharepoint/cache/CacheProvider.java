@@ -237,7 +237,11 @@ public abstract class CacheProvider<T> implements ICache<T> {
      * @param view
      */
     protected void removeUsingView(View view) {
-        for (SPWeakReference<T> ref : viewRefsMap.get(view)) {
+        Set<SPWeakReference<T>> refs = viewRefsMap.get(view);
+        if (null == refs) {
+            return;
+        }
+        for (SPWeakReference<T> ref : refs) {
             remove(ref.get());
         }
     }

@@ -13,25 +13,6 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.joda.time.DateTime;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -40,6 +21,26 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import org.joda.time.DateTime;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents a SharePoint List/Library as a stateful object
@@ -91,7 +92,7 @@ public class ListState implements StatefulObject {
      * action=ADD. This is required during incremental crawl to tell the WS from
      * where to look for more docs
      */
-    SPDocument lastDocProcessedForWS;
+    SPDocument lastDocProcessed;
 
     /**
      * an ordered list of SPDocuments due to be fed to the Connector Manager
@@ -147,6 +148,12 @@ public class ListState implements StatefulObject {
 
     // To check if the list inherits permission from the parent web
     private boolean inheritedSecurity;
+
+    // Flag to determine the crawl behavior of the list
+    private boolean noCrawl;
+
+    // Folders that are renamed/restored
+    private List<Folder> changedFolders = new LinkedList<Folder>();
 
     /**
      * @param inInternalName
@@ -449,23 +456,34 @@ public class ListState implements StatefulObject {
 
     /**
      * Return the most suitable Document to start the crawl. Used in case of
-     * SP2007. Ideally we should start from the lastDocProcessedForWS. But if
-     * the crawl queue has a document of ADD ActionType which is greater than
-     * lastDocProcessedForWS, we'll start from that doc of the crawl queue.
+     * SP2007. Ideally we should start from the lastDocProcessed. But if crawl
+     * queue have pending documents to be sent to GSA and connector, before
+     * sending them, starts discovering more documents from SharePoint, it
+     * should pick the last document in crawl for discovery. Hence, this method
+     * returns last document processed as last document to be used for
+     * further WS calls only when crawl queue is empty. Otherwise, the last
+     * document in crawl queue of ActionType ADD is returned. Deleted documents
+     * have no significance while making WS calls.
      *
      * @return {@link SPDocument}
      */
     public SPDocument getLastDocForWSRefresh() {
         SPDocument lastDocFromCrawlQueue = getLastDocInCrawlQueueOfActionTypeADD();
         if (null == lastDocFromCrawlQueue) {
-            return lastDocProcessedForWS;
-        } else if (lastDocFromCrawlQueue.compareTo(lastDocProcessedForWS) > 0) {
+            return lastDocProcessed;
+        } else if (lastDocFromCrawlQueue.compareTo(lastDocProcessed) > 0) {
             return lastDocFromCrawlQueue;
         } else {
-            return lastDocProcessedForWS;
+            return lastDocProcessed;
         }
     }
 
+    /**
+     * Returns the last document in crawl queue which was sent as ADD feed. This
+     * is the most suitable document for incremental crawl
+     *
+     * @return
+     */
     private SPDocument getLastDocInCrawlQueueOfActionTypeADD() {
         if (null == crawlQueue || crawlQueue.size() == 0) {
             return null;
@@ -588,33 +606,51 @@ public class ListState implements StatefulObject {
     }
 
     /**
+     * Saves the nextChangeToken which will be committed as the
+     * currentChangeToken for making WS call once all the documents discovered
+     * using current change token will be fed to GSA. A saved nextChangeToken
+     * value must be committed at some time in future before another value can
+     * be saved.
+     *
      * @param inChangeToken save it as the next change token to be used for WS
      *            calls. Note that, this value is not picked up during the WS
-     *            call unless you call
+     *            call until the call to
      *            {@link ListState#commitChangeTokenForWSCall()}
+     * @return true if the change token was saved successfully; false otherwise
      */
-    public void saveNextChangeTokenForWSCall(final String inChangeToken) {
+    public boolean saveNextChangeTokenForWSCall(final String inChangeToken) {
+        if (inChangeToken == null || inChangeToken.equals(currentChangeToken)
+        // An already saved token must first be committed
+                || null != nextChangeToken) {
+            return false;
+        }
         nextChangeToken = inChangeToken;
         LOGGER.log(Level.CONFIG, "currentChangeToken [ " + currentChangeToken
                 + " ], nextChangeToken [ " + nextChangeToken
                 + " ]. ");
+        return true;
     }
 
     /**
-     * commits the internally saved next change token value as the current
-     * change token and reset the next change token. Note: The current usage of
-     * committing the Change Token is NOT idempotent meaning, calling this
-     * method once will update certain info internally and the result would not
-     * be same if the same method is called consecutively. Connector make use of
-     * this info by checking {@link ListState#isNextChangeTokenBlank()} to
-     * ensure if the change token is already committed. Do take care of this if
-     * you make any change here
+     * commits the internally saved nextChangeToken value as the
+     * currentChangeToken and reset the next change token. If nextChangeToken is
+     * null, the method returns without changing the value of
+     * currentChangeToken.
+     *
+     * @return true if the change token was committed successfully; false
+     *         otherwise
      */
-    public void commitChangeTokenForWSCall() {
+    public boolean commitChangeTokenForWSCall() {
+        if (null == nextChangeToken
+                || nextChangeToken.equals(currentChangeToken)) {
+            return false;
+        }
         LOGGER.log(Level.CONFIG, "committing nextChangeToken [ "
                 + nextChangeToken + " ] as currentChangetoken");
         currentChangeToken = nextChangeToken;
         nextChangeToken = null;
+        this.changedFolders.clear();
+        return true;
     }
 
     /**
@@ -652,6 +688,7 @@ public class ListState implements StatefulObject {
         }
         if (docPath == null) {
             LOGGER.log(Level.WARNING, "docPath is null. Returning..");
+            return;
         }
 
         int index = -1;
@@ -673,7 +710,7 @@ public class ListState implements StatefulObject {
             // this can be a top level folder. We need to update ExtraID, hence
             // make index 0.
             index = 0;
-            docTitle = parentPath.substring(index);
+            docTitle = parentPath;
         } else {
             docTitle = parentPath.substring(index + 1);
         }
@@ -987,6 +1024,7 @@ public class ListState implements StatefulObject {
             listConst = inList.getListConst();
             sendListAsDocument = inList.isSendListAsDocument();
             inheritedSecurity = inList.isInheritedSecurity();
+            noCrawl = inList.isNoCrawl();
         }
     }
 
@@ -1126,8 +1164,12 @@ public class ListState implements StatefulObject {
     /**
      * @param lastDocProcessedForWS the lastDocProcessedForWS to set
      */
-    public void setLastDocProcessedForWS(SPDocument lastDocProcessedForWS) {
-        this.lastDocProcessedForWS = lastDocProcessedForWS;
+    public void setLastDocProcessed(SPDocument lastDocProcessed) {
+        this.lastDocProcessed = lastDocProcessed;
+    }
+
+    public SPDocument getLastDocProcessed() {
+        return lastDocProcessed;
     }
 
     @Override
@@ -1191,6 +1233,10 @@ public class ListState implements StatefulObject {
                 }
             }
         }
+
+        // Dump the "Nocrawl" flag
+        atts.addAttribute("", "", SPConstants.STATE_NOCRAWL, SPConstants.STATE_ATTR_CDATA, String.valueOf(isNoCrawl()));
+
         handler.startElement("", "", SPConstants.LIST_STATE, atts);
 
         // Creating child nodes of ListState node
@@ -1222,30 +1268,87 @@ public class ListState implements StatefulObject {
                 }
             }
 
-            // dump the lastDocProcessedForWS
-            if (getLastDocForWSRefresh() != null) {
+            // dump the lastDocProcessed
+            if (getLastDocProcessed() != null) {
                 atts.clear();
                 // ID and URL are mandatory field, used in
                 // SpDocument.compareTo(). These attributes must be
                 // preserved.
-                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getLastDocForWSRefresh().getDocId());
-                atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getUrl());
+                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, getLastDocProcessed().getDocId());
+                atts.addAttribute("", "", SPConstants.STATE_URL, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getUrl());
 
                 if (SPType.SP2007 == getParentWebState().getSharePointType()) {
-                    if (getLastDocForWSRefresh().getFolderLevel() != null
-                            && getLastDocForWSRefresh().getFolderLevel().length() != 0) {
-                        atts.addAttribute("", "", SPConstants.STATE_FOLDER_LEVEL, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getFolderLevel());
+                    if (null != getLastDocProcessed().getRenamedFolder()) {
+                        atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getRenamedFolder().getPath());
+                        atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getRenamedFolder().getId());
+                    }
+                    if (null != getLastDocProcessed().getParentFolder()) {
+                        atts.addAttribute("", "", SPConstants.STATE_PARENT_FOLDER_PATH, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getParentFolder().getPath());
+                        atts.addAttribute("", "", SPConstants.STATE_PARENT_FOLDER_ID, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getParentFolder().getId());
                     }
                     if (FeedType.CONTENT_FEED == feedType) {
-                        atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getAction().toString());
+                        atts.addAttribute("", "", SPConstants.STATE_ACTION, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getAction().toString());
                     }
                 }
-                atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastDocForWSRefresh().getLastDocLastModString());
+                atts.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, SPConstants.STATE_ATTR_CDATA, getLastDocProcessed().getLastDocLastModString());
                 handler.startElement("", "", SPConstants.STATE_LASTDOCCRAWLED, atts);
                 handler.endElement("", "", SPConstants.STATE_LASTDOCCRAWLED);
             }
+
+            // Dump the renamed folder list that have been processed so far
+            dumpRenamedFolderList(handler);
         }
         handler.endElement("", "", SPConstants.LIST_STATE);
+    }
+
+    /**
+     * Dumps the list of renamed folders if any to the state file. These are the
+     * list of folders which need to be processed on connector restart
+     * <p>
+     * Creates a node structure as under the list state node: <code>
+     * &lt;RenamedFolderList&gt;
+     * &lt;RenamedFolder ID="%FolderID%" Path="%FolderPath%"/&gt;
+     * .
+     * .
+     * &lt;/RenamedFolderList&gt;
+     * </code>
+     * </p>
+     *
+     * @param handler
+     * @throws SAXException
+     */
+    private void dumpRenamedFolderList(ContentHandler handler)
+            throws SAXException {
+        // Dump the RenamedFolderList if there are any folder renames
+        if (changedFolders != null && !changedFolders.isEmpty()) {
+            // Start of the RenamedFolderList node
+            handler.startElement("", "", SPConstants.STATE_RENAMED_FOLDER_LIST, new AttributesImpl());
+
+            for (Folder renamedFolder : changedFolders) {
+                // Dump each folder as RenamedFolder node with id & path as
+                // attributes
+                AttributesImpl atts = new AttributesImpl();
+                atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, renamedFolder.getId());
+                atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDERPATH, SPConstants.STATE_ATTR_CDATA, renamedFolder.getPath());
+                handler.startElement("", "", SPConstants.STATE_RENAMED_FOLDER_NODE, atts);
+                handler.endElement("", "", SPConstants.STATE_RENAMED_FOLDER_NODE);
+            }
+
+            handler.endElement("", "", SPConstants.STATE_RENAMED_FOLDER_LIST);
+        }
+
+    }
+
+    /**
+     * Creates a {@link Folder} object for each &lt;RenamedFolder&gt; node
+     *
+     * @param atts The list of attributes for the given path
+     */
+    public void loadRenamedFolderList(Attributes atts) {
+        Folder renamedFolder = new Folder(
+                atts.getValue(SPConstants.STATE_RENAMED_FOLDERPATH),
+                atts.getValue(SPConstants.STATE_ID));
+        changedFolders.add(renamedFolder);
     }
 
     /**
@@ -1303,6 +1406,9 @@ public class ListState implements StatefulObject {
                 }
             }
         }
+
+        list.setNoCrawl(Boolean.getBoolean(atts.getValue(SPConstants.STATE_NOCRAWL)));
+
         return list;
     }
 
@@ -1318,9 +1424,8 @@ public class ListState implements StatefulObject {
      * Resets the state of this List to initiate a complete re-crawl
      */
     public void resetState() {
-        saveNextChangeTokenForWSCall(null);
-        commitChangeTokenForWSCall();
-        setLastDocProcessedForWS(null);
+        currentChangeToken = nextChangeToken = null;
+        setLastDocProcessed(null);
         setCrawlQueue(null);
         endAclCrawl();
     }
@@ -1348,7 +1453,6 @@ public class ListState implements StatefulObject {
      */
     public void startAclCrawl() {
         if (isAclChanged()) {
-            LOGGER.log(Level.WARNING, "Attempt to mark a list for Acl crawl when it is already under Acl crawling.");
             return;
         }
         aclChanged = tmp_aclChanged = true;
@@ -1363,7 +1467,6 @@ public class ListState implements StatefulObject {
      */
     public void endAclCrawl() {
         if (!isAclChanged()) {
-            LOGGER.log(Level.WARNING, "Attempt to end the ACL crawl of a list when it is not under ACL crawling.");
             return;
         }
         aclChanged = tmp_aclChanged = false;
@@ -1413,12 +1516,16 @@ public class ListState implements StatefulObject {
 
         listDoc.setAllAttributes(getAttrs());
 
-        if (!isSendListAsDocument()) {
+        if (!isSendListAsDocument() || !getParentWebState().isCrawlAspxPages()) {
             // send the listState as a feed only if it was
             // included
             // (not excluded) in the URL pattern matching
+            // The other case is SharePoint admin has set a
+            // flag at site level to exclude ASPX pages from
+            // being crawled and indexed and hence need to
+            // honor the same
             listDoc.setToBeFed(false);
-            LOGGER.log(Level.FINE, "List Document marked as not to be fed");
+            LOGGER.log(Level.FINE, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
         }
 
         return listDoc;
@@ -1430,5 +1537,25 @@ public class ListState implements StatefulObject {
 
     public void setInheritedSecurity(boolean inheritedSecurity) {
         this.inheritedSecurity = inheritedSecurity;
+    }
+
+    public boolean isNoCrawl() {
+        return noCrawl;
+    }
+
+    public void setNoCrawl(boolean noCrawl) {
+        this.noCrawl = noCrawl;
+    }
+
+    public boolean isInfoPathLibrary() {
+        return SPConstants.BT_FORMLIBRARY.equals(baseTemplate);
+    }
+
+    public List<Folder> getChangedFolders() {
+        return changedFolders;
+    }
+
+    public void addToChangedFolders(Folder changedFolder) {
+        this.changedFolders.add(changedFolder);
     }
 }

@@ -37,11 +37,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+//FIXME Should we can get rid of this class since it is unnecessarily creating a hop between SharePointConector and spi implementations
+// config values can be passed to the appropriate classes directly using IoC.
 
 /**
  * Class to hold the context information for sharepoint client connection. The
@@ -79,6 +83,12 @@ public class SharepointClientContext implements Cloneable {
     private boolean stripDomainFromAces = true;
 
     private UserDataStoreDAO userDataStoreDAO;
+
+    private boolean useSPSearchVisibility = true;
+    private List<String> infoPathBaseTemplate = null;
+
+    private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
+    private boolean reWriteRecordUrlUsingAliasMappingRules;
 
     /**
      * For cloning
@@ -158,6 +168,13 @@ public class SharepointClientContext implements Cloneable {
                 // It's ok if we do a shallow copy here
                 spCl.userDataStoreDAO = this.userDataStoreDAO;
             }
+
+            spCl.useSPSearchVisibility = useSPSearchVisibility;
+            spCl.infoPathBaseTemplate = infoPathBaseTemplate;
+
+            spCl.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
+            spCl.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
+
             return spCl;
         } catch (final Throwable e) {
             LOGGER.log(Level.FINEST, "Unable to clone client context.", e);
@@ -207,7 +224,8 @@ public class SharepointClientContext implements Cloneable {
             final String inPassword, final String inGoogleConnectorWorkDir,
             final String includedURls, final String excludedURls,
             final String inMySiteBaseURL, final String inAliasMapString,
-            final FeedType inFeedType) throws SharepointException {
+            final FeedType inFeedType, boolean useSPSearchVisibility)
+            throws SharepointException {
 
         Protocol.registerProtocol("https", new Protocol("https",
                 new EasySSLProtocolSocketFactory(),
@@ -250,7 +268,7 @@ public class SharepointClientContext implements Cloneable {
         }
 
         if ((inDomain == null) || inDomain.trim().equals("")) {
-            LOGGER.log(Level.INFO, "Trying to get domain information from username specified [ "
+            LOGGER.log(Level.CONFIG, "Trying to get domain information from username specified [ "
                     + inUsername
                     + " ] because domain field has not been explicitly specified.");
             domain = Util.getDomainFromUsername(inUsername);
@@ -279,6 +297,9 @@ public class SharepointClientContext implements Cloneable {
         LOGGER.finest("feedType set to " + feedType);
         LOGGER.finest("bFQDNConversion set to " + bFQDNConversion);
 
+
+        this.useSPSearchVisibility = useSPSearchVisibility;
+
         LOGGER.config(" sharepointUrl = [" + sharepointUrl + "] , domain = ["
                 + inDomain + "] , username = [" + inUsername
                 + "] , googleConnectorWorkDir = [" + inGoogleConnectorWorkDir
@@ -286,7 +307,8 @@ public class SharepointClientContext implements Cloneable {
                 + "] , excludedURls = [" + excludedURls
                 + "] , mySiteBaseURL = [" + inMySiteBaseURL
                 + "], aliasMapString = [" + inAliasMapString + "], FeedType ["
-                + inFeedType + "]. ");
+                + inFeedType + "], useSPSearchVisibility = ["
+                + useSPSearchVisibility + "]");
     }
 
     /**
@@ -590,7 +612,7 @@ public class SharepointClientContext implements Cloneable {
      */
     public int checkConnectivity(final String strURL, HttpMethodBase method)
             throws Exception {
-        LOGGER.log(Level.CONFIG, "Requesting [ " + strURL + " ] ....");
+        LOGGER.log(Level.CONFIG, "Connecting [ " + strURL + " ] ....");
         int responseCode = 0;
         String username = this.username;
         final String host = Util.getHost(strURL);
@@ -915,5 +937,43 @@ public class SharepointClientContext implements Cloneable {
 
     public void setUserDataStoreDAO(UserDataStoreDAO userDataStoreDAO) {
         this.userDataStoreDAO = userDataStoreDAO;
+    }
+
+    public boolean isUseSPSearchVisibility() {
+        return useSPSearchVisibility;
+    }
+
+    public void setUseSPSearchVisibility(boolean useSPSearchVisibility) {
+        this.useSPSearchVisibility = useSPSearchVisibility;
+    }
+
+    public List<String> getInfoPathBaseTemplate() {
+        if (null == infoPathBaseTemplate) {
+            infoPathBaseTemplate = new ArrayList<String>();
+            infoPathBaseTemplate.add(SPConstants.ORIGINAL_BT_FORMLIBRARY);
+        }
+        return infoPathBaseTemplate;
+    }
+
+    public void setInfoPathBaseTemplate(List<String> infoPathBaseTemplate) {
+        this.infoPathBaseTemplate = infoPathBaseTemplate;
+    }
+
+    public void setReWriteDisplayUrlUsingAliasMappingRules(
+            boolean reWriteDisplayUrlUsingAliasMappingRules) {
+        this.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public boolean isReWriteDisplayUrlUsingAliasMappingRules() {
+        return reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public boolean isReWriteRecordUrlUsingAliasMappingRules() {
+        return reWriteRecordUrlUsingAliasMappingRules;
+    }
+
+    public void setReWriteRecordUrlUsingAliasMappingRules(
+            boolean reWriteRecordUrlUsingAliasMappingRules) {
+        this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
 }

@@ -14,6 +14,19 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPBasePermissions;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
+import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SpiConstants.RoleType;
+
+import org.joda.time.Chronology;
+import org.joda.time.DateTime;
+import org.joda.time.convert.ConverterManager;
+import org.joda.time.convert.InstantConverter;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
 import gnu.regexp.RE;
 import gnu.regexp.REException;
 import gnu.regexp.REMatch;
@@ -37,27 +50,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.joda.time.Chronology;
-import org.joda.time.DateTime;
-import org.joda.time.convert.ConverterManager;
-import org.joda.time.convert.InstantConverter;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPBasePermissions;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnectorType;
-import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 /**
  * Class to hold random utility functions
@@ -86,7 +87,7 @@ public final class Util {
     private static final SimpleDateFormat SIMPLE_DATE_FORMATTER3 = new SimpleDateFormat(
             TIMEFORMAT3);
 
-    private static final Logger LOGGER = Logger.getLogger(SharepointConnectorType.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     /**
      * Formats last modified date (yyyy-MM-dd HH:mm:ss) to Calendar format
@@ -1266,5 +1267,147 @@ public final class Util {
             directory = tokenizer.nextToken();
         }
         return directory;
+    }
+
+    /**
+     * Re-writes a given URL using the alias mapping rule specified.
+     *
+     * @param url URL to be re-written/mapped
+     * @param aliasMap the alias mapping rules
+     * @param fqdn If true, resulting URLs are converted into fqdn format. If
+     *            false, URLs are returned just by applying the alias mapping
+     *            rules. No further attempt will be made to re-write them.
+     */
+    public static String doAliasMapping(final String url,
+            Map<String, String> aliasMap, boolean fqdn)
+            throws MalformedURLException {
+        URL objURL = new URL(url);
+        String strUrl = "";
+
+        boolean matched = false;
+        // processing of alias values
+        if ((null != aliasMap) && (null != aliasMap.keySet())) {
+            for (final Iterator<String> aliasItr = aliasMap.keySet().iterator(); aliasItr.hasNext();) {
+
+                String aliasPattern = (String) aliasItr.next();
+                String aliasValue = (String) aliasMap.get(aliasPattern);
+
+                if ((aliasPattern == null) || (aliasValue == null)) {
+                    continue;
+                }
+                aliasPattern = aliasPattern.trim();
+                aliasValue = aliasValue.trim();
+                if (aliasPattern.equalsIgnoreCase("")
+                        || aliasValue.equalsIgnoreCase("")) {
+                    continue;
+                }
+
+                URL patternURL = null;
+                String aliasPatternURL = aliasPattern;
+                if (aliasPattern.startsWith(SPConstants.GLOBAL_ALIAS_IDENTIFIER)) {
+                    aliasPatternURL = aliasPattern.substring(1);
+                }
+
+                try {
+                    patternURL = new URL(aliasPatternURL);
+                } catch (final MalformedURLException e) {
+                    LOGGER.log(Level.WARNING, "Malformed alias pattern: "
+                            + aliasPatternURL, e);
+                }
+                if (patternURL == null) {
+                    continue;
+                }
+
+                if (!objURL.getProtocol().equalsIgnoreCase(patternURL.getProtocol())) {
+                    continue;
+                }
+
+                if (!objURL.getHost().equalsIgnoreCase(patternURL.getHost())) {
+                    continue;
+                }
+
+                if (aliasPattern.startsWith(SPConstants.GLOBAL_ALIAS_IDENTIFIER)) {
+                    aliasPattern = aliasPattern.substring(1);
+                    if (patternURL.getPort() == SPConstants.MINUS_ONE) {
+                        aliasPattern = patternURL.getProtocol()
+                                + SPConstants.URL_SEP + patternURL.getHost();
+                        if (objURL.getPort() != SPConstants.MINUS_ONE) {
+                            aliasPattern += SPConstants.COLON
+                                    + objURL.getPort();
+                        }
+                        aliasPattern += patternURL.getFile();
+                    }
+                } else if ((objURL.getPort() == SPConstants.MINUS_ONE)
+                        && (patternURL.getPort() == patternURL.getDefaultPort())) {
+                    aliasPattern = patternURL.getProtocol()
+                            + SPConstants.URL_SEP + patternURL.getHost()
+                            + patternURL.getFile();
+                } else if ((objURL.getPort() == objURL.getDefaultPort())
+                        && (patternURL.getPort() == SPConstants.MINUS_ONE)) {
+                    aliasPattern = patternURL.getProtocol()
+                            + SPConstants.URL_SEP + patternURL.getHost()
+                            + SPConstants.COLON + patternURL.getDefaultPort()
+                            + patternURL.getFile();
+                } else if (objURL.getPort() != patternURL.getPort()) {
+                    continue;
+                }
+
+                if (url.startsWith(aliasPattern)) {
+                    LOGGER.config("document url[" + url
+                            + "] has matched against alias source URL [ "
+                            + aliasPattern + " ]");
+                    strUrl = aliasValue;
+                    final String restURL = url.substring(aliasPattern.length());
+                    if (!strUrl.endsWith(SPConstants.SLASH)
+                            && !restURL.startsWith(SPConstants.SLASH)) {
+                        strUrl += SPConstants.SLASH;
+                    }
+                    strUrl += restURL;
+                    matched = true;
+                    LOGGER.config("document url[" + url
+                            + "] has been re-written to [ " + strUrl
+                            + " ] in respect to the aliasing.");
+                    break;
+                }
+            }
+        }
+
+        if (!matched) {
+            strUrl = objURL.getProtocol() + SPConstants.URL_SEP;
+            strUrl += getFQDNHostName(objURL.getHost(), fqdn)
+                    + SPConstants.COLON;
+            final int portNo = objURL.getPort();
+            if (portNo != SPConstants.MINUS_ONE) {
+                strUrl += portNo;
+            } else {
+                strUrl += objURL.getDefaultPort();
+            }
+            strUrl += objURL.getFile();
+        }
+
+        return strUrl;
+    }
+
+    /**
+     * Converts a host name to FQDN using Java's
+     * {@link InetAddress#getCanonicalHostName()}
+     *
+     * @param hostName
+     * @return the host name in FQDN format
+     */
+    private static String getFQDNHostName(final String hostName, boolean fqdn) {
+        if (fqdn) {
+            InetAddress ia = null;
+            try {
+                ia = InetAddress.getByName(hostName);
+            } catch (final UnknownHostException e) {
+                LOGGER.log(Level.WARNING, "Exception occurred while converting to FQDN, hostname [ "
+                        + hostName + " ].", e);
+            }
+            if (ia != null) {
+                return ia.getCanonicalHostName();
+            }
+        }
+        return hostName;
     }
 }

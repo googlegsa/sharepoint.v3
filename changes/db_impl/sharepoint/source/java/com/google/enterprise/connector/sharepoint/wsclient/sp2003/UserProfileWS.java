@@ -14,16 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.sp2003;
 
-import java.text.Collator;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
-
-import org.apache.axis.AxisFault;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -33,6 +23,16 @@ import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofilese
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileServiceLocator;
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileServiceSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+
+import org.apache.axis.AxisFault;
+
+import java.text.Collator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling UserProfile.asmx for SharePoint 2003 Provides a layer
@@ -62,7 +62,7 @@ public class UserProfileWS {
             sharepointClientContext = inSharepointClientContext;
             endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
                     + SPConstants.USERPROFILEENDPOINT;
-            LOGGER.log(Level.INFO, "Endpoint set to: " + endpoint);
+            LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
             final UserProfileServiceLocator loc = new UserProfileServiceLocator();
             loc.setUserProfileServiceSoapEndpointAddress(endpoint);
@@ -99,19 +99,18 @@ public class UserProfileWS {
         }
         try {
             stub.getUserProfileByIndex(0);
-            LOGGER.info("SPS site");
+            LOGGER.config("SPS site. Using endpoint " + endpoint);
             return true;
         } catch (final AxisFault fault) {
             if ((SPConstants.UNAUTHORIZED.indexOf(fault.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
                 final String username = Util.switchUserNameFormat(stub.getUsername());
-                LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                        + stub.getUsername() + " ].");
-                LOGGER.log(Level.INFO, "Trying with " + username);
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
                 stub.setUsername(username);
                 try {
                     stub.getUserProfileByIndex(0);
-                    LOGGER.info("SPS site");
+                    LOGGER.config("SPS site. Using endpoint " + endpoint);
                     return true;
                 } catch (final Exception e) {
                     LOGGER.log(Level.WARNING, "Unable to call getUserProfileByIndex(0). endpoint [ "
@@ -123,7 +122,7 @@ public class UserProfileWS {
                 return false;
             }
         } catch (final Exception e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.config("WSS site. Using endpoint " + endpoint);
             return false;
         }
 
@@ -136,11 +135,8 @@ public class UserProfileWS {
      * @throws SharepointException
      */
     public Set<String> getPersonalSiteList() throws SharepointException {
-        final Set<String> personalSitesSet = new TreeSet<String>(); // list of
-                                                                    // personal
-                                                                    // sites and
-                                                                    // subsites
-
+        // list of personal sites and subsites
+        final Set<String> personalSitesSet = new TreeSet<String>();
         final Collator collator = Util.getCollator();
         if (stub == null) {
             LOGGER.warning("Unable to get personal sites because userprofile stub is null");
@@ -156,9 +152,10 @@ public class UserProfileWS {
                 if ((SPConstants.UNAUTHORIZED.indexOf(fault.getFaultString()) != -1)
                         && (sharepointClientContext.getDomain() != null)) {
                     final String username = Util.switchUserNameFormat(stub.getUsername());
-                    LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-                            + stub.getUsername() + " ].");
-                    LOGGER.log(Level.INFO, "Trying with " + username);
+                    LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                            + stub.getUsername()
+                            + " ]. Trying with "
+                            + username);
                     stub.setUsername(username);
                     try {
                         result = stub.getUserProfileByIndex(index);
@@ -192,7 +189,6 @@ public class UserProfileWS {
                 break;
             }
 
-            final String space = null;
             for (PropertyData element : data) {
                 final String name = element.getName();
                 if (collator.equals(personalSpaceTag, name)) {
@@ -209,21 +205,21 @@ public class UserProfileWS {
                     }
                     if (sharepointClientContext.isIncludedUrl(strURL)) {
                         personalSitesSet.add(strURL);
-                        LOGGER.log(Level.INFO, "Personal Site: " + strURL);
+                        LOGGER.log(Level.CONFIG, "Personal Site: " + strURL);
                     } else {
                         LOGGER.log(Level.WARNING, "excluding " + strURL);
                     }
                 }
             }
-            if (space == null) {
-                break;
-            }
             final String next = result.getNextValue();
             index = Integer.parseInt(next);
         }
-        if (personalSitesSet != null) {
-            LOGGER.info("Total personal sites returned: "
-                    + personalSitesSet.size());
+        if (personalSitesSet.size() > 0) {
+            LOGGER.info("Discovered " + personalSitesSet.size()
+                    + " personal sites to crawl. Using endpoint " + endpoint);
+        } else {
+            LOGGER.config("No personal sites to crawl. Using endpoint "
+                    + endpoint);
         }
         return personalSitesSet;
     }

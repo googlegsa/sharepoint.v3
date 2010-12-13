@@ -14,30 +14,13 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.io.InputStream;
-import java.net.URLDecoder;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.GetMethod;
-
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Document;
@@ -55,6 +38,24 @@ import com.google.enterprise.connector.spiimpl.BooleanValue;
 import com.google.enterprise.connector.spiimpl.DateValue;
 import com.google.enterprise.connector.spiimpl.StringValue;
 
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.methods.GetMethod;
+
+import java.io.InputStream;
+import java.net.URLDecoder;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Class to hold data regarding a sharepoint document. Anything that is sent ot
  * GSA for indexing must be represented as an instance of this class.
@@ -71,7 +72,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     private FeedType feedType;
     private SPType spType;
     private ActionType action = ActionType.ADD;
-    private String folderLevel;
+
+    private Folder parentFolder;
+    // When a folder is renamed/restored and the current document is being sent
+    // as an implication of that.
+    private Folder renamedFolder;
+
     // to be used for updating extraId during checkpoint
     private String fileref = null;
 
@@ -118,6 +124,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     // affects the ACL of many list items
     private boolean forAclChange = false;
 
+    private String displayUrl;
+    private String title;
+
     /**
      * @return the toBeFed
      */
@@ -163,7 +172,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             final String inObjType, final String inParentWebTitle,
             final FeedType inFeedType, final SPType inSpType) {
         docId = inDocId;
-        url = inUrl;
+        displayUrl = url = inUrl;
         lastMod = inLastMod;
         author = inAuthor;
         objType = inObjType;
@@ -181,12 +190,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      * To be used while loading the lastDocument from the state file.
      */
     public SPDocument(final String inDocId, final String inDocURL,
-            final Calendar inLastMod,
-            final String inFolderLevel, final ActionType inAction) {
+            final Calendar inLastMod, final ActionType inAction) {
         docId = inDocId;
-        url = inDocURL;
+        displayUrl = url = inDocURL;
         lastMod = inLastMod;
-        folderLevel = inFolderLevel;
         action = inAction;
     }
 
@@ -259,6 +266,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     public void setAttribute(final String key, final String value) {
         if (key != null) {
             attrs.add(new Attribute(key, value));
+            if (key.equalsIgnoreCase(SPConstants.TITLE)) {
+                title = value;
+            }
         }
     }
 
@@ -336,6 +346,17 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return -1;
         }
 
+        int comparison = 0;
+
+        // TODO If documents belongs to different lists, we can rely on the
+        // list's
+        // ordering only.
+        /*
+         * if (null != getParentList() && null != doc.getParentList()) {
+         * comparison = getParentList().compareTo(doc.getParentList()); if
+         * (comparison != 0) { return comparison; } }
+         */
+
         if (SPType.SP2007.equals(getSPType())
                 && SPType.SP2003 == doc.getSPType()) {
             return -1;
@@ -360,25 +381,26 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return 1;
         }
 
-        int comparison = 0;
 
         if (SPType.SP2007.equals(getSPType())) {
-            if ((folderLevel != null) || (doc.folderLevel != null)) {
-                if ((folderLevel != null) && (doc.folderLevel != null)
-                        && (folderLevel.length() != 0)
-                        && (doc.folderLevel.length() != 0)) {
-                    comparison = folderLevel.compareTo(doc.folderLevel);
-                } else if (((folderLevel == null) || (folderLevel.length() == 0))
-                        && ((doc.folderLevel != null) && (doc.folderLevel.length() != 0))) {
-                    return 1; // incoming doc should be sent before the current
-                    // doc. We always send renamed/restored folder
-                    // items first
-                } else if (((folderLevel != null) && (folderLevel.length() != 0))
-                        && ((doc.folderLevel == null) || (doc.folderLevel.length() == 0))) {
-                    return -1; // current doc should be sent before the incoming
-                    // doc. We always send renamed/restored folder
-                    // items first
+            if (null != getParentFolder() && null != doc.getParentFolder()) {
+                if (null != getRenamedFolder()
+                        && null != doc.getRenamedFolder()) {
+                    comparison = getRenamedFolder().compareTo(doc.getRenamedFolder());
+                    if (comparison != 0) {
+                        return comparison;
+                    }
                 }
+                comparison = getParentFolder().compareTo(doc.getParentFolder());
+                if (comparison != 0) {
+                    return comparison;
+                }
+            } else if (null != getParentFolder()
+                    && null == doc.getParentFolder()) {
+                return -1;
+            } else if (null == getParentFolder()
+                    && null != doc.getParentFolder()) {
+                return 1;
             }
         } else {
             comparison = lastMod.getTime().compareTo(doc.lastMod.getTime());
@@ -405,8 +427,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             }
 
             // compare the URLs
-            String docURL1st = new String(url);
-            String docURL2nd = new String(doc.url);
+            String docURL1st = url;
+            String docURL2nd = doc.url;
             try {
                 docURL1st = URLDecoder.decode(docURL1st, "UTF-8");
                 docURL2nd = URLDecoder.decode(docURL2nd, "UTF-8");
@@ -437,28 +459,30 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
             if (FeedType.CONTENT_FEED == getFeedType()
                     && ActionType.ADD.equals(getAction())) {
-                if (null == content) {
+                if (null == content && null == content_type) {
                     String status = downloadContents();
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-                        LOGGER.log(Level.WARNING, "Following response received while downloading contents: "
+                        LOGGER.log(Level.WARNING, "Following response received while downloading contents (for getting contents): "
                                 + status);
                     }
                 }
-                return new SPProperty(SpiConstants.PROPNAME_CONTENT,
-                        new BinaryValue(content));
+                return (null == content) ? null
+                        : new SPProperty(SpiConstants.PROPNAME_CONTENT,
+                                new BinaryValue(content));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_MIMETYPE)) {
             if (FeedType.CONTENT_FEED == getFeedType()
                     && ActionType.ADD.equals(getAction())) {
-                if (null == content) {
+                if (null == content && null == content_type) {
                     String status = downloadContents();
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-                        LOGGER.log(Level.WARNING, "Following response recieved while downloading contents: "
+                        LOGGER.log(Level.WARNING, "Following response recieved while downloading contents (for getting content type): "
                                 + status);
                     }
                 }
-                return new SPProperty(SpiConstants.PROPNAME_MIMETYPE,
-                        new StringValue(content_type));
+                return (null == content_type) ? null : new SPProperty(
+                        SpiConstants.PROPNAME_MIMETYPE, new StringValue(
+                                content_type));
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
             if (FeedType.CONTENT_FEED != getFeedType()) {
@@ -467,7 +491,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             }
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_DISPLAYURL)) {
             return new SPProperty(SpiConstants.PROPNAME_DISPLAYURL,
-                    new StringValue(getUrl()));
+                    new StringValue(displayUrl));
         } else if (collator.equals(strPropertyName, SPConstants.PARENT_WEB_TITLE)) {
             return new SPProperty(SPConstants.PARENT_WEB_TITLE,
                     new StringValue(getParentWebTitle()));
@@ -522,6 +546,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 values.add(Value.getStringValue(roleType.toString()));
             }
             return new SimpleProperty(values);
+        } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_TITLE)) {
+            return new SPProperty(SpiConstants.PROPNAME_TITLE, new StringValue(
+                    title));
         }
         // FIXME: We can get rid of this if-else-if ladder here by setting all
         // the relevant properties (in appropriate type) right at the time of
@@ -567,6 +594,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             }
         }
 
+        if (null != title) {
+            s.add(SpiConstants.PROPNAME_TITLE);
+        }
+
         // get the "extra" metadata fields, including those added by user:
         for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
             final Attribute attr = (Attribute) iter.next();
@@ -607,7 +638,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      * @return the status of download
      * @throws RepositoryException
      */
-    private String downloadContents() throws RepositoryException {
+    /*
+     * public for testing purpose
+     */
+    public String downloadContents() throws RepositoryException {
         if (null == sharepointClientContext) {
             LOGGER.log(Level.SEVERE, "Failed to download document content because the connector context is not found!");
             return SPConstants.CONNECTIVITY_FAIL;
@@ -717,17 +751,17 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     }
 
     /**
-     * @return the folderLevel
+     * @return parent folder
      */
-    public String getFolderLevel() {
-        return folderLevel;
+    public Folder getParentFolder() {
+        return parentFolder;
     }
 
     /**
      * @param folderLevel the folderLevel to set
      */
-    public void setFolderLevel(final String folderLevel) {
-        this.folderLevel = folderLevel;
+    public void setParentFolder(final Folder folder) {
+        this.parentFolder = folder;
     }
 
     /**
@@ -796,7 +830,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     @Override
     public String toString() {
-        return url;
+        return "URL [ " + url + " ], DocId [ " + docId + " ], parentFolder [ "
+                + parentFolder + " ] ";
     }
 
     public String getFileref() {
@@ -829,5 +864,21 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     public void setForAclChange(boolean forAclChange) {
         this.forAclChange = forAclChange;
+    }
+
+    public String getDisplayUrl() {
+        return displayUrl;
+    }
+
+    public void setDisplayUrl(String displayUrl) {
+        this.displayUrl = displayUrl;
+    }
+
+    public Folder getRenamedFolder() {
+        return renamedFolder;
+    }
+
+    public void setRenamedFolder(Folder renamedFolder) {
+        this.renamedFolder = renamedFolder;
     }
 }

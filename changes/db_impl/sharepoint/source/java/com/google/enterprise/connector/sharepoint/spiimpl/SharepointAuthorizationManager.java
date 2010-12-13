@@ -24,7 +24,6 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
-import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.AuthorizationResponse;
@@ -134,7 +133,8 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
      *            create the instance of this class
      */
     public SharepointAuthorizationManager(
-            final SharepointClientContext inSharepointClientContext)
+            final SharepointClientContext inSharepointClientContext,
+            final Set<String> siteCollUrls)
             throws SharepointException {
         if (inSharepointClientContext == null) {
             throw new SharepointException(
@@ -154,10 +154,12 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
                 } else {
                     if (null == str2) {
                         return -1;
-                    } else if (str1.equals(str2)) {
-                        return 0;
                     } else {
-                        return str2.length() - str1.length();
+                        int comp = str2.length() - str1.length();
+                        if (comp == 0) {
+                            comp = str2.compareTo(str1);
+                        }
+                        return comp;
                     }
                 }
             };
@@ -165,9 +167,6 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
         // Populate all site collection URLs using the above comparator
         try {
-            GSSiteDiscoveryWS siteDiscoWs = new GSSiteDiscoveryWS(
-                    inSharepointClientContext);
-            Set<String> siteCollUrls = siteDiscoWs.getMatchingSiteCollections();
             for (String siteCollUrl : siteCollUrls) {
                 String webapp = Util.getWebApp(siteCollUrl);
                 Set<String> urlPaths = null;
@@ -175,17 +174,14 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
                     urlPaths = webappToSiteCollections.get(webapp);
                 } else {
                     urlPaths = new TreeSet<String>(nonIncreasingComparator);
-					webappToSiteCollections.put(webapp, urlPaths);
+                    webappToSiteCollections.put(webapp, urlPaths);
                 }
-                try {
-                    urlPaths.add(new URL(siteCollUrl).getPath());
-                } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Could not register path [ "
-                            + siteCollUrl + " ]. ", e);
-                }
+                urlPaths.add(new URL(siteCollUrl).getPath());
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Prolem occured while registering site collection URLs ", e);
+            // A partial fill can be buggy
+            webappToSiteCollections.clear();
         }
     }
 
@@ -259,8 +255,8 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         String userName = identity.getUsername();
         String domain = identity.getDomain();
 
-        LOGGER.log(Level.INFO, "Received for authZ: [Docs Count: #"
-                + docIDs.size() + "], [Username: " + userName + "], [domain: "
+        LOGGER.log(Level.INFO, "Received authZ request for " + docIDs.size()
+                + " docs. Username [ " + userName + " ], domain [ "
                 + domain + " ]. ");
 
         // If domain is not received as part of the authorization request, use
@@ -279,7 +275,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         // documents are arranged per web application per site collection
         final Map<String, Map<Container, Set<AuthData>>> groupedDocIds = groupDocIds(docIDs);
 
-        LOGGER.log(Level.INFO, "A Total of #" + groupedDocIds.size()
+        LOGGER.log(Level.CONFIG, "A Total of #" + groupedDocIds.size()
                 + " WS calls will be made for authorization.");
 
         // For every entry in groupedDocIds, makes one WS call and send the AuthData as payload for authorization
@@ -511,7 +507,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
             LOGGER.log(Level.SEVERE, "One of the AuthDataPacket objects is null after authZ!");
             return false;
         }
+
         if (authDataPacket.isIsDone()) {
+            LOGGER.config("WS Message -> " + authDataPacket.getMessage());
             return true;
         }
 
@@ -558,7 +556,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
             LOGGER.log(Level.SEVERE, "One of the AuthData objects is null after authZ!");
             return false;
         }
+
         if (authData.isIsDone()) {
+            LOGGER.config("WS Message -> " + authData.getMessage());
             return true;
         }
 
@@ -595,10 +595,17 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         final String logMessage = "AuthZ status: " + status + " for DocID: "
                 + DocId;
         if (status) {
-            LOGGER.log(Level.FINER, logMessage);
+            LOGGER.log(Level.FINE, logMessage);
         } else {
             LOGGER.log(Level.WARNING, logMessage);
         }
         return response.add(new AuthorizationResponse(status, DocId));
+    }
+
+    /*
+     * For Testing purpose
+     */
+    public Map<String, Set<String>> getWebappToSiteCollections() {
+        return webappToSiteCollections;
     }
 }

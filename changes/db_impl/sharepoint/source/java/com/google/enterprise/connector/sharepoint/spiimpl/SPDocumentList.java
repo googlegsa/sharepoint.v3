@@ -14,16 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -34,6 +24,11 @@ import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An implementation of DocumentList Class to represents a list of SPDocuments
@@ -53,6 +48,9 @@ public class SPDocumentList implements DocumentList {
     private Map<String, String> aliasMap = null;
     // Holds the index position of the doc last sent to CM
     private int docsFedIndexPosition = 0;
+
+    private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
+    private boolean reWriteRecordUrlUsingAliasMappingRules;
 
     /**
      * @param inDocuments List of {@link SPDocument} to be sent to GSA
@@ -165,7 +163,7 @@ public class SPDocumentList implements DocumentList {
             }
         } else if (ActionType.ADD.equals(spDocument.getAction())) {
             // Do Alias mapping before sending the doc
-            doAliasMapping(spDocument);
+            reWriteUrlsUsingAliasMappingRules(spDocument);
 
             LOGGER.log(Level.INFO, "Sending DocID [ " + spDocument.getDocId()
                     + " ], docURL [ " + spDocument.getUrl()
@@ -174,6 +172,34 @@ public class SPDocumentList implements DocumentList {
         }
 
         return spDocument;
+    }
+
+    /**
+     * Checks and re-writes all those URLs which are to be mapped using alias
+     * mapping rules
+     *
+     * @param spDocument The {@link SPDocument} whose URLs are to be mapped
+     */
+    private void reWriteUrlsUsingAliasMappingRules(final SPDocument spDocument) {
+        if (reWriteDisplayUrlUsingAliasMappingRules) {
+            try {
+                spDocument.setDisplayUrl(Util.doAliasMapping(spDocument.getDisplayUrl(), aliasMap, bFQDNConversion));
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to rewrite document's display Url [ "
+                        + spDocument.getDisplayUrl()
+                        + " ] as per alias mapping rule. ", e);
+            }
+        }
+
+        if (reWriteRecordUrlUsingAliasMappingRules) {
+            try {
+                spDocument.setUrl(Util.doAliasMapping(spDocument.getUrl(), aliasMap, bFQDNConversion));
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to rewrite document's record Url [ "
+                        + spDocument.getUrl()
+                        + " ] as per alias mapping rule. ", e);
+            }
+        }
     }
 
     /**
@@ -188,15 +214,14 @@ public class SPDocumentList implements DocumentList {
      * </p>
      */
     public String checkpoint() throws RepositoryException {
+        LOGGER.log(Level.INFO, "checkpoint called. docsFedIndexPosition [ "
+                + docsFedIndexPosition + " ] ");
         for (int i = 0; i < docsFedIndexPosition; i++) {
             // Process the liststate and its crawl queue for the given doc which
             // has been sent to CM and fed to GSA successfully
             processListStateforCheckPoint(documents.get(i));
         }
         doCheckPoint();
-        if (LOGGER.isLoggable(Level.CONFIG)) {
-            LOGGER.log(Level.CONFIG, "checkpoint processed; saving GlobalState to disk.");
-        }
         globalState.saveState(); // snapshot it all to disk
 
         return SPConstants.CHECKPOINT_VALUE;
@@ -230,155 +255,6 @@ public class SPDocumentList implements DocumentList {
      */
     public Map<String, String> getAliasMap() {
         return aliasMap;
-    }
-
-    /**
-     * Re-writes the current document's URL in respect to the Alias mapping
-     * specified.
-     *
-     * @param spDocument The document whose documentURL and displayURL need to
-     *            be set with aliased URL
-     */
-    private void doAliasMapping(SPDocument spDocument) {
-        if ((null == spDocument) || (null == spDocument.getUrl())) {
-            return;
-        }
-        final String url = spDocument.getUrl();
-        URL objURL = null;
-        try {
-            objURL = new URL(url);
-        } catch (final MalformedURLException e) {
-            LOGGER.log(Level.WARNING, "Malformed URL!", e);
-        }
-        String strUrl = "";
-        if (objURL == null) {
-            return;
-        }
-
-        boolean matched = false;
-        // processing of alias values
-        if ((null != aliasMap) && (null != aliasMap.keySet())) {
-            for (final Iterator<String> aliasItr = aliasMap.keySet().iterator(); aliasItr.hasNext();) {
-
-                String aliasPattern = (String) aliasItr.next();
-                String aliasValue = (String) aliasMap.get(aliasPattern);
-
-                if ((aliasPattern == null) || (aliasValue == null)) {
-                    continue;
-                }
-                aliasPattern = aliasPattern.trim();
-                aliasValue = aliasValue.trim();
-                if (aliasPattern.equalsIgnoreCase("")
-                        || aliasValue.equalsIgnoreCase("")) {
-                    continue;
-                }
-
-                URL patternURL = null;
-                String aliasPatternURL = aliasPattern;
-                if (aliasPattern.startsWith(SPConstants.GLOBAL_ALIAS_IDENTIFIER)) {
-                    aliasPatternURL = aliasPattern.substring(1);
-                }
-
-                try {
-                    patternURL = new URL(aliasPatternURL);
-                } catch (final MalformedURLException e) {
-                    LOGGER.log(Level.WARNING, "Malformed alias pattern: "
-                            + aliasPatternURL, e);
-                }
-                if (patternURL == null) {
-                    continue;
-                }
-
-                if (!objURL.getProtocol().equalsIgnoreCase(patternURL.getProtocol())) {
-                    continue;
-                }
-
-                if (!objURL.getHost().equalsIgnoreCase(patternURL.getHost())) {
-                    continue;
-                }
-
-                if (aliasPattern.startsWith(SPConstants.GLOBAL_ALIAS_IDENTIFIER)) {
-                    aliasPattern = aliasPattern.substring(1);
-                    if (patternURL.getPort() == SPConstants.MINUS_ONE) {
-                        aliasPattern = patternURL.getProtocol()
-                                + SPConstants.URL_SEP + patternURL.getHost();
-                        if (objURL.getPort() != SPConstants.MINUS_ONE) {
-                            aliasPattern += SPConstants.COLON
-                                    + objURL.getPort();
-                        }
-                        aliasPattern += patternURL.getFile();
-                    }
-                } else if ((objURL.getPort() == SPConstants.MINUS_ONE)
-                        && (patternURL.getPort() == patternURL.getDefaultPort())) {
-                    aliasPattern = patternURL.getProtocol()
-                            + SPConstants.URL_SEP + patternURL.getHost()
-                            + patternURL.getFile();
-                } else if ((objURL.getPort() == objURL.getDefaultPort())
-                        && (patternURL.getPort() == SPConstants.MINUS_ONE)) {
-                    aliasPattern = patternURL.getProtocol()
-                            + SPConstants.URL_SEP + patternURL.getHost()
-                            + SPConstants.COLON + patternURL.getDefaultPort()
-                            + patternURL.getFile();
-                } else if (objURL.getPort() != patternURL.getPort()) {
-                    continue;
-                }
-
-                if (url.startsWith(aliasPattern)) {
-                    LOGGER.config("document url[" + url
-                            + "] has matched against alias source URL [ "
-                            + aliasPattern + " ]");
-                    strUrl = aliasValue;
-                    final String restURL = url.substring(aliasPattern.length());
-                    if (!strUrl.endsWith(SPConstants.SLASH)
-                            && !restURL.startsWith(SPConstants.SLASH)) {
-                        strUrl += SPConstants.SLASH;
-                    }
-                    strUrl += restURL;
-                    matched = true;
-                    LOGGER.config("document url[" + url
-                            + "] has been re-written to [ " + strUrl
-                            + " ] in respect to the aliasing.");
-                    break;
-                }
-            }
-        }
-
-        if (!matched) {
-            strUrl = objURL.getProtocol() + SPConstants.URL_SEP;
-            strUrl += getFQDNHostName(objURL.getHost()) + SPConstants.COLON;
-            final int portNo = objURL.getPort();
-            if (portNo != SPConstants.MINUS_ONE) {
-                strUrl += portNo;
-            } else {
-                strUrl += objURL.getDefaultPort();
-            }
-            strUrl += objURL.getFile();
-        }
-
-        spDocument.setUrl(strUrl);
-    }
-
-    /**
-     * Converts a host name to a FQDN. This should be called only if the fqdn
-     * property has been set to true in the connectorInstance.xml.
-     *
-     * @param hostName
-     * @return the host name in FQDN format
-     */
-    private String getFQDNHostName(final String hostName) {
-        if (isFQDNConversion()) {
-            InetAddress ia = null;
-            try {
-                ia = InetAddress.getByName(hostName);
-            } catch (final UnknownHostException e) {
-                LOGGER.log(Level.WARNING, "Exception occurred while converting to FQDN, hostname [ "
-                        + hostName + " ].", e);
-            }
-            if (ia != null) {
-                return ia.getCanonicalHostName();
-            }
-        }
-        return hostName;
     }
 
     /**
@@ -455,7 +331,7 @@ public class SPDocumentList implements DocumentList {
             // This is to keep the regular crawling separate from ACl based
             // crawling.
             if (!spDocument.isForAclChange()) {
-                listState.setLastDocProcessedForWS(spDocument);
+                listState.setLastDocProcessed(spDocument);
 
                 // Update ExtraIDs
                 if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {
@@ -545,5 +421,15 @@ public class SPDocumentList implements DocumentList {
 
     public List<SPDocument> getDocuments() {
         return documents;
+    }
+
+    public void setReWriteDisplayUrlUsingAliasMappingRules(
+            boolean reWriteDisplayUrlUsingAliasMappingRules) {
+        this.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
+    }
+
+    public void setReWriteRecordUrlUsingAliasMappingRules(
+            boolean reWriteRecordUrlUsingAliasMappingRules) {
+        this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
 }

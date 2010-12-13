@@ -41,7 +41,7 @@
 
       <!-- FQDNCONVERSION:
         true: connector will try to resolve the host names of the document URLs in FQDN format.
-        false: docuemnt URLs are sent to GSA as discovered. -->
+        false: document URLs are sent to GSA as discovered. -->
     <!--
     <property name="FQDNConversion"><value>false</value></property>
        -->
@@ -53,5 +53,19 @@
     <property name="pushAcls"><value>true</value></property>
       <property name="stripDomainFromAces"><value>true</value></property>
       -->
+  <!--
+  <property name="infoPathBaseTemplate">
+      <list>
+        <value>XMLForm</value>
+      </list>
+    </property>
+  -->
+
+  <!-- Applicable for both Metadata-and-URL and content feed. If set to true, the document display URL (shown to the search users) will be re-written using alias mapping rule specified on connector configuration page. -->
+  <!-- <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property> -->
+
+  <!-- Applicable only for Metadata-and-URL feed. If set to true, the document record URL will also be re-written using alias mapping rule specified on connector configuration page. -->
+  <!-- <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property> -->
+
   </bean>
 </beans>

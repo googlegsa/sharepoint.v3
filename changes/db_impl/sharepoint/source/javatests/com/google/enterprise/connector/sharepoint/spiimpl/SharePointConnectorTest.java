@@ -14,28 +14,13 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+
+import junit.framework.TestCase;
 
 public class SharePointConnectorTest extends TestCase {
 
-    SharepointClientContext sharepointClientContext;
-    SharepointConnector connector;
-
-    protected void setUp() throws Exception {
-        System.out.println("\n...Setting Up...");
-        System.out.println("Initializing SharepointClientContext ...");
-		this.sharepointClientContext = TestConfiguration.initContext();
-        assertNotNull(this.sharepointClientContext);
-        this.connector.setIncluded_metadata(TestConfiguration.whiteList);
-        this.connector.setExcluded_metadata(TestConfiguration.blackList);
-
-        System.out.println("initializing SharepointConnector ...");
-		this.connector = new SharepointConnector();
-        this.connector.setFQDNConversion(TestConfiguration.FQDNflag);
+    public void testInit() throws SharepointException {
+        assertNotNull(TestConfiguration.getConnectorInstance());
     }
-
-    // The class under test contains only getters/setters
 }

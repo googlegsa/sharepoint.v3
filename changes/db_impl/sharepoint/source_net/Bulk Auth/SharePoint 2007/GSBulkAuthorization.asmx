@@ -36,26 +36,9 @@ public class BulkAuthorization : System.Web.Services.WebService
     public string CheckConnectivity()
     {
         // All the pre-requisites for running this web service should be checked here.
-        SPContext spContext = SPContext.Current;
-        if (null == spContext || null == spContext.Site)
+        SPSecurity.RunWithElevatedPrivileges(delegate()
         {
-            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
-        }
-        if (null == spContext.Site)
-        {
-            throw new Exception("Site Collection not found!");
-        }
-
-        try
-        {
-            SPSecurity.RunWithElevatedPrivileges(delegate()
-            {
-            });
-        }
-        catch (Exception e)
-        {
-            return e.Message;
-        }
+        });
         return "success";
     }
 
@@ -74,7 +57,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         // TODO Check if user is app pool user (SharePoint\\System). If yes, return true for everything.
         ///////
-        WSContext wsContext = new WSContext(SPContext.Current, username);
+        WSContext wsContext = new WSContext(username);
         foreach (AuthDataPacket authDataPacket in authDataPacketArray)
         {
             if (null == authDataPacket)
@@ -88,6 +71,7 @@ public class BulkAuthorization : System.Web.Services.WebService
                 continue;
             }
 
+            DateTime authDataPacketStartTime = System.DateTime.Now;
             if (authDataPacket.Container.Type != global::Container.ContainerType.NA)
             {
                 try
@@ -108,6 +92,7 @@ public class BulkAuthorization : System.Web.Services.WebService
                     continue;
                 }
 
+                DateTime authDataStartTime = System.DateTime.Now;
                 try
                 {
                     SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA);
@@ -117,11 +102,21 @@ public class BulkAuthorization : System.Web.Services.WebService
                 catch (Exception e)
                 {
                     authData.Message = "Authorization failure! " + GetFullMessage(e);
+                    authData.Message += " \nAuthorization of this document took " + System.DateTime.Now.Subtract(authDataStartTime).TotalSeconds + " seconds";
                     continue;
                 }
                 authData.IsDone = true;
+                authData.Message += "\nAuthorization of this document completed successfully in " + System.DateTime.Now.Subtract(authDataStartTime).TotalSeconds + " seconds";
             }
             authDataPacket.IsDone = true;
+            if (authDataPacket.Container.Type == global::Container.ContainerType.NA)
+            {
+                authDataPacket.Message += " Authorization of " + authDataArray.Length + " documents completed in " + System.DateTime.Now.Subtract(authDataPacketStartTime).TotalSeconds + " seconds";
+            }
+            else
+            {
+                authDataPacket.Message += " Authorization of " + authDataArray.Length + " documents from site collection " + authDataPacket.Container.Url + " completed in " + System.DateTime.Now.Subtract(authDataPacketStartTime).TotalSeconds + " seconds";
+            }
         }
     }
 
@@ -359,21 +354,12 @@ public class WSContext
     }
 
     /// <summary>
-    /// Instantiation using SPContext
+    /// WSContext objects needs to know about the user who is being authorized. And, there can be only one such user
+    /// becasue one web service call authorizes only one user
     /// </summary>
-    /// <param name="spContext"></param>
     /// <param name="username"></param>
-    /// <param name="mustIdentifyUser">if true, an exception will be thrown if an SPUser cannot be constructed using current context</param>
-    internal WSContext(SPContext spContext, string username)
+    internal WSContext(string username)
     {
-        if (null == spContext)
-        {
-            throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to an active SharePoitn site. ");
-        }
-        if (null == spContext.Site)
-        {
-            throw new Exception("Site Colllection not found!");
-        }
         userInfoHolder = new UserInfoHolder(username);
     }
 
@@ -445,8 +431,7 @@ public class WSContext
         }
     
         SPWeb web = null;
-        string relativeWebUrl = GetServerRelativeUrl(container);
-        Exception savedException = null;
+        string relativeWebUrl = GetServerRelativeWebUrl(container);
         try
         {
             web = site.OpenWeb(relativeWebUrl);
@@ -458,7 +443,7 @@ public class WSContext
 
         if (null == web || !web.Exists)
         {
-            throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]", savedException);
+            throw new Exception("Could not get SPWeb for url [ " + container.Url + " ], server relative URL [ " + relativeWebUrl + " ]");
         }
         else
         {
@@ -471,7 +456,7 @@ public class WSContext
     /// </summary>
     /// <param name="container"></param>
     /// <returns></returns>
-    string GetServerRelativeUrl(Container container)
+    string GetServerRelativeWebUrl(Container container)
     {
         String listUrl = container.Url;
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
@@ -479,19 +464,28 @@ public class WSContext
         listUrl = listUrl.Substring(listUrl.IndexOf('/'));
         if (container.Type == Container.ContainerType.LIST)
         {
-            int formsPos = listUrl.IndexOf("/forms/", 0, StringComparison.InvariantCultureIgnoreCase);
+            bool isTrimmed = false;
+            int formsPos = listUrl.LastIndexOf("/forms/", listUrl.Length, StringComparison.InvariantCultureIgnoreCase);
             if (formsPos >= 0)
             {
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', formsPos));
+                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+                isTrimmed = true;
             }
 
-            int listPos = listUrl.IndexOf("/lists/", 0, StringComparison.InvariantCultureIgnoreCase);
-            if (listPos >= 0)
+            if (!isTrimmed)
             {
-                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', listPos));
+                int listPos = listUrl.LastIndexOf("/lists/", listUrl.Length, StringComparison.InvariantCultureIgnoreCase);
+                if (listPos >= 0)
+                {
+                    listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', listPos));
+                    isTrimmed = true;
+                }
             }
-            else
+
+            if (!isTrimmed)
             {
+                listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
             }
         }
