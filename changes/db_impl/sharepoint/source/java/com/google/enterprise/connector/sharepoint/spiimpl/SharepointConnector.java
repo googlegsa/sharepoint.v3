@@ -59,7 +59,9 @@ public class SharepointConnector implements Connector {
     private String aliasMap = null;
     private String authorizationAsfeedType = null;
     private boolean pushAcls = true;
-    private boolean stripDomainFromAces = true;
+    private String usernameFormatInAce;
+    private String groupnameFormatInAce;
+    private boolean appendNamespaceInSPGroup;
     private QueryProvider queryProvider;
     private UserGroupMembershipRowMapper userGroupMembershipRowMapper;
     private boolean useSPSearchVisibility = true;
@@ -287,8 +289,10 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setFQDNConversion(FQDNConversion);
         sharepointClientContext.setIncluded_metadata(included_metadata);
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
-        sharepointClientContext.setStripDomainFromAces(stripDomainFromAces);
         sharepointClientContext.setInfoPathBaseTemplate(infoPathBaseTemplate);
+        sharepointClientContext.setUsernameFormatInAce(getUsernameFormatInAce());
+        sharepointClientContext.setGroupnameFormatInAce(this.getGroupnameFormatInAce());
+        sharepointClientContext.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
         sharepointClientContext.setPushAcls(pushAcls);
         if (pushAcls) {
             initDao();
@@ -323,14 +327,6 @@ public class SharepointConnector implements Connector {
 
     public void setPushAcls(boolean pushAcls) {
         this.pushAcls = pushAcls;
-    }
-
-    public boolean isStripDomainFromAces() {
-        return stripDomainFromAces;
-    }
-
-    public void setStripDomainFromAces(boolean stripDomainFromAces) {
-        this.stripDomainFromAces = stripDomainFromAces;
     }
 
     public boolean isUseSPSearchVisibility() {
@@ -413,5 +409,29 @@ public class SharepointConnector implements Connector {
     public void setReWriteRecordUrlUsingAliasMappingRules(
             boolean reWriteRecordUrlUsingAliasMappingRules) {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
+    }
+
+    public String getUsernameFormatInAce() {
+        return usernameFormatInAce;
+    }
+
+    public void setUsernameFormatInAce(String usernameFormatInAce) {
+        this.usernameFormatInAce = usernameFormatInAce;
+    }
+
+    public String getGroupnameFormatInAce() {
+        return groupnameFormatInAce;
+    }
+
+    public void setGroupnameFormatInAce(String groupnameFormatInAce) {
+        this.groupnameFormatInAce = groupnameFormatInAce;
+    }
+
+    public boolean isAppendNamespaceInSPGroup() {
+        return appendNamespaceInSPGroup;
+    }
+
+    public void setAppendNamespaceInSPGroup(boolean appendNamespaceInSPGroup) {
+        this.appendNamespaceInSPGroup = appendNamespaceInSPGroup;
     }
 }

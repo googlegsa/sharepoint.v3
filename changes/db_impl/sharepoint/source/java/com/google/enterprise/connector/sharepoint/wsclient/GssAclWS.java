@@ -257,24 +257,7 @@ public class GssAclWS {
                         }
                     }
 
-                    // TODO:Stripping off the domain from UID is temporary as
-                    // GSA
-                    // does not support it currently. In future, domains will be
-                    // sent as namespace. This will also be useful for sending
-                    // SP Groups as they must be defined in the context of site
-                    // collection. Here is Max's comment about this:
-                    // A change is coming in the June train: user and group
-                    // names will be associated with a namespace. By default,
-                    // this will be the empty namespace, but other namespaces
-                    // will be possible. This is important for sharepoint-local
-                    // groups, but less so for user names - probably. In the
-                    // meantime, please use the simple name (with domain
-                    // stripped off) but later we will put the domain in the
-                    // namespace field of the principal (user or group) name.
-                    String principalName = principal.getName();
-                    if (sharepointClientContext.isStripDomainFromAces()) {
-                        principalName = Util.getUserFromUsername(principalName);
-                    }
+                    final String principalName = getPrincipalName(principal);
                     Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
                     if (PrincipalType.USER.equals(principal.getType())) {
                         userPermissionMap.put(principalName, allowedRoleTypes);
@@ -295,14 +278,14 @@ public class GssAclWS {
                             }
                         }
 
-                        // FIXME This is temporary
-                        if (PrincipalType.SPGROUP.equals(principal.getType())) {
-                            principalName = "["
+                        if(PrincipalType.SPGROUP.equals(principal.getType()) && sharepointClientContext.isAppendNamespaceInSPGroup()) {
+                            // FIXME This is temporary
+                            groupPermissionMap.put("["
                                     + wsResult.getSiteCollectionUrl() + "]"
-                                    + principalName;
+                                    + principalName, allowedRoleTypes);
+                        } else {
+                            groupPermissionMap.put(principalName, allowedRoleTypes);
                         }
-
-                        groupPermissionMap.put(principalName, allowedRoleTypes);
                     } else {
                         LOGGER.log(Level.WARNING, "Skipping ACE for principal [ "
                                 + principal.getName()
@@ -325,6 +308,47 @@ public class GssAclWS {
                 }
             }
         }
+    }
+
+    /**
+     * Returns user/group name in the format as specified in
+     * connectorInstance.xml
+     *
+     * @param principal
+     * @return
+     */
+    private String getPrincipalName(GssPrincipal principal) {
+        String principalname = Util.getUserFromUsername(principal.getName());
+        final String domain = Util.getDomainFromUsername(principal.getName());
+        String domainStringConst = SPConstants.DOMAIN_CONSTANT_IN_ACL;
+
+        if (null != domain) {
+            if (PrincipalType.USER.equals(principal.getType())) {
+                String usernameFormatInAcl = sharepointClientContext.getUsernameFormatInAce();
+                if (null != usernameFormatInAcl
+                        && usernameFormatInAcl.trim().length() > 0) {
+                    if (principalname.contains(domainStringConst)) {
+                        usernameFormatInAcl = usernameFormatInAcl.replace(domainStringConst, domainStringConst = "_"
+                                + domainStringConst);
+                    }
+                    principalname = usernameFormatInAcl.replace(SPConstants.USERNAME_CONSTANT_IN_ACL, principalname);
+                    principalname = principalname.replace(domainStringConst, domain);
+                }
+            } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
+                    || PrincipalType.SPGROUP.equals(principal.getType())) {
+                String groupnameFormatInAcl = sharepointClientContext.getGroupnameFormatInAce();
+                if (null != groupnameFormatInAcl
+                        && groupnameFormatInAcl.trim().length() > 0) {
+                    if (principalname.contains(domainStringConst)) {
+                        groupnameFormatInAcl = groupnameFormatInAcl.replace(domainStringConst, domainStringConst = "_"
+                                + domainStringConst);
+                    }
+                    principalname = groupnameFormatInAcl.replace(SPConstants.GROUPNAME_CONSTANT_IN_ACL, principalname);
+                    principalname = principalname.replace(domainStringConst, domain);
+                }
+            }
+        }
+        return principalname;
     }
 
     /**

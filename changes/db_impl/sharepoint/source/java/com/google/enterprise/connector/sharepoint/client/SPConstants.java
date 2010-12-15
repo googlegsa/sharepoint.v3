@@ -424,6 +424,10 @@ public class SPConstants {
     public static final String FALSE = "false";
     public static final String PERIOD = ".";
 
+    public static final String USERNAME_CONSTANT_IN_ACL = "username";
+    public static final String GROUPNAME_CONSTANT_IN_ACL = "groupname";
+    public static final String DOMAIN_CONSTANT_IN_ACL = "domain";
+
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";
         public static final String VIEWLISTITEMS = "ViewListItems";

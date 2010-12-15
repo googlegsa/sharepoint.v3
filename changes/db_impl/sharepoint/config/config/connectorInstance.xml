@@ -48,10 +48,14 @@
 
        <!-- ACL Related flags:
         pushAcls: Whether ACLs should be sent for the documents. If true, ACLs will be sent as metadata with each document.
-        stripDomainFromAces: the domain will be stripped off from username send in the ACLs. -->
+        usernameFormatInAce: Specify the username format to be used in ACL. for example, username, username@domain or domain\username.
+        groupnameFormatInAce: Specify the groupname format to be used in ACL. for example, groupname, groupname@domain or domain\groupname.
+        appendNamespaceInSPGroup: SPGroups will be sent in the format [site_collection_url]groupname.  -->
     <!--
     <property name="pushAcls"><value>true</value></property>
-      <property name="stripDomainFromAces"><value>true</value></property>
+      <property name="usernameFormatInAce"><value>username</value></property>
+      <property name="groupnameFormatInAce"><value>domain\groupname</value></property>
+      <property name="appendNamespaceInSPGroup"><value>true</value></property>
       -->
   <!--
   <property name="infoPathBaseTemplate">

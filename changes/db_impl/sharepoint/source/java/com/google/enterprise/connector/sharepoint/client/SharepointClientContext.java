@@ -80,7 +80,9 @@ public class SharepointClientContext implements Cloneable {
     private TraversalContext traversalContext;
 
     private boolean pushAcls = true;
-    private boolean stripDomainFromAces = true;
+    private String usernameFormatInAce;
+    private String groupnameFormatInAce;
+    private boolean appendNamespaceInSPGroup;
 
     private UserDataStoreDAO userDataStoreDAO;
 
@@ -151,7 +153,6 @@ public class SharepointClientContext implements Cloneable {
             spCl.setFQDNConversion(bFQDNConversion);
             spCl.setBatchHint(batchHint);
             spCl.setPushAcls(pushAcls);
-            spCl.setStripDomainFromAces(stripDomainFromAces);
 
             if (null != included_metadata) {
                 spCl.included_metadata.addAll(included_metadata);
@@ -174,6 +175,11 @@ public class SharepointClientContext implements Cloneable {
 
             spCl.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
             spCl.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
+
+            spCl.setUsernameFormatInAce(this.getUsernameFormatInAce());
+            spCl.setGroupnameFormatInAce(this.getGroupnameFormatInAce());
+
+            spCl.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
 
             return spCl;
         } catch (final Throwable e) {
@@ -923,14 +929,6 @@ public class SharepointClientContext implements Cloneable {
         this.pushAcls = pushAcls;
     }
 
-    public boolean isStripDomainFromAces() {
-        return stripDomainFromAces;
-    }
-
-    public void setStripDomainFromAces(boolean stripDomainFromAces) {
-        this.stripDomainFromAces = stripDomainFromAces;
-    }
-
     public UserDataStoreDAO getUserDataStoreDAO() {
         return userDataStoreDAO;
     }
@@ -975,5 +973,30 @@ public class SharepointClientContext implements Cloneable {
     public void setReWriteRecordUrlUsingAliasMappingRules(
             boolean reWriteRecordUrlUsingAliasMappingRules) {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
+    }
+
+
+    public String getUsernameFormatInAce() {
+        return usernameFormatInAce;
+    }
+
+    public void setUsernameFormatInAce(String usernameFormatInAce) {
+        this.usernameFormatInAce = usernameFormatInAce;
+    }
+
+    public String getGroupnameFormatInAce() {
+        return groupnameFormatInAce;
+    }
+
+    public void setGroupnameFormatInAce(String groupnameFormatInAce) {
+        this.groupnameFormatInAce = groupnameFormatInAce;
+    }
+
+    public boolean isAppendNamespaceInSPGroup() {
+        return appendNamespaceInSPGroup;
+    }
+
+    public void setAppendNamespaceInSPGroup(boolean appendNamespaceInSPGroup) {
+        this.appendNamespaceInSPGroup = appendNamespaceInSPGroup;
     }
 }
