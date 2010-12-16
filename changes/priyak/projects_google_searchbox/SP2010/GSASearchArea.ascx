@@ -9,119 +9,6 @@
 
 <!--Author: Amit Agrawal-->
 
-<script runat="server" >
-    
-    /*Enumeration which defines Search Box Log levels*/
-    public enum LOG_LEVEL
-    {
-            INFO,
-            ERROR
-    }
-    
-    public LOG_LEVEL currentLogLevel = LOG_LEVEL.ERROR;
-    
-    /**
-    * Block Logging. The flag is used to avoid the cyclic conditions. 
-    **/
-    public bool BLOCK_LOGGING = false;
-    public const String PRODUCTNAME = "GSBS";         
-            
-    /*
-    * The default location points to the 12 hive location where SharePoint usually logs all its messages
-    * User can always override this location and point to a different location.
-    */
-    public const String DEFAULT_LOG_LOCATION = @"C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\";
-    public string LogLocation = DEFAULT_LOG_LOCATION;
-
-    /// <summary>
-    /// For logging the search box messages.
-    /// </summary>
-    /// <param name="msg">The message to be logged</param>
-    /// <param name="logLevel">Log level</param>
-    public void log(String msg, LOG_LEVEL logLevel)
-    {
-        /**
-         * If logging is already blocked, do not do further processing 
-         **/
-        if ((BLOCK_LOGGING == false) && (logLevel >= currentLogLevel))
-        {
-            try
-            {
-                String time = DateTime.Today.ToString("yyyy_MM_dd");
-                string WebAppName = "";
-
-                /**
-                 * If possible get the web app name to be appended in log file name. If exception skip it.
-                 * Note: If we breakup create a function to get the web app name it fails with 'Unknown error' in SharePoint
-                 **/
-                try
-                {
-
-                    WebAppName = SPContext.Current.Site.WebApplication.Name;
-                    if ((WebAppName == null) || (WebAppName.Trim().Equals("")))
-                    {
-                        /**
-                         * This is generally the case with the SharePoint central web application.
-                         * e.g. DefaultServerComment = "SharePoint Central Administration v3"
-                         **/
-                        WebAppName = SPContext.Current.Site.WebApplication.DefaultServerComment;
-                    }
-                }
-                catch (Exception) { }
-
-
-                int portNumber = -1;
-
-                /**
-                 * If possible get the port number to be appended in log file name. If exception skip it
-                 **/
-                try
-                {
-                    portNumber = SPContext.Current.Site.WebApplication.AlternateUrls[0].Uri.Port;
-                }
-                catch (Exception) { }
-
-                String CustomName = PRODUCTNAME + "_" + WebAppName + "_" + portNumber + "_" + time + ".log";
-                String loc = LogLocation + CustomName;
-
-
-                /*
-                 * We need to make even a normal user with 'reader' access to be able to log messages
-                 * This requires to elevate the user temporarily for write operation.
-                 */
-                SPSecurity.RunWithElevatedPrivileges(delegate()
-                {
-                    FileStream f = new FileStream(loc, FileMode.Append, FileAccess.Write);
-
-                    /**
-                     * If we use FileLock [i.e.  f.Lock(0, f.Length)] then it may cause issue
-                     * Logging failed due to: The process cannot access the file 'C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\LOGS\GSBS_SharePoint - 9000_9000_2009_12_03.log' because it is being used by another process.
-                     * Thread was being aborted.
-                     **/
-
-                    StreamWriter logger = new StreamWriter(f);
-
-                    logger.WriteLine("[ {0} ]  [{1}] :- {2}", DateTime.Now.ToString(), logLevel, msg);
-                    logger.Flush();
-                    logger.Close();
-                });
-            }
-            catch (Exception logException)
-            {
-                if (BLOCK_LOGGING == false)
-                {
-                    BLOCK_LOGGING = true;
-                    HttpContext.Current.Response.Write("<b><u>Logging failed due to:</u></b> " + logException.Message + "<br/>");
-                    HttpContext.Current.Response.End();
-                }
-            }
-
-        }
-    }
-    
-</script>
-    
-    
     
 <%   
     
@@ -150,17 +37,12 @@
         chkPublicSearch.Visible = true;
         divPublicSearch.Visible = true;
     }
-    else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
+    else 
     {
         chkPublicSearch.Visible = false;
         divPublicSearch.Visible = false;
     }
-    else
-    {
-        // Logging the error into the log file, if the value for accesslevel parameter in web.config is other than 'a' and 'p'.
-        log("The value for access level cannot be '" + WebConfigurationManager.AppSettings["accesslevel"].ToString() + "'. Permitted values are only 'a' and 'p'", LOG_LEVEL.ERROR);//log error
-    }
-        
+    
     
     // Declaring the scopes that will be displayed in the scopes dropdown
     string enterprise = "Enterprise";
@@ -287,15 +169,6 @@
         txtSearch.Text = Request.QueryString["q"].ToString();
     }
 
-
-    // Code for persisting the Public search checkbox status
-    if (ViewState["PublicSearchStatus"] != null)
-    {
-        bool publicSearchStatus = Convert.ToBoolean(ViewState["PublicSearchStatus"].ToString());
-        chkPublicSearch.Checked = publicSearchStatus;
-    }
-    
-    
     if (Request.QueryString["selectedScope"] != null)
     {
         string selectedScopeTextValue = Request.QueryString["selectedScope"].ToString();
