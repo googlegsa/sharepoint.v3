@@ -47,7 +47,7 @@ Once the modification of the file is done, you have to restart the connector ser
 For e.g. [[http://moss_host1/]]  will be converted to [[http://moss_host1.yourdomain.com/]]. 
 The default value is set to false.
 
-Note: The FQDN resolution will happen using the Connector system's name resolution. Hosts not accesible from the connector machine will not be resolved.
+Note: The FQDN resolution will happen using the Connector system's name resolution. Hosts not accessible from the connector machine will not be resolved.
 
 ==== How ACL should be used? ====
 following two properties in connectorInstance.xml will dictate the way ACLs will be fed to GSA.
@@ -60,3 +60,15 @@ Should domain name be removed from domain\username?
 {{{ 
 <property name="stripDomainFromAces"><value>true</value></property> 
 }}}
+
+
+==== Specify the URLs that should be mapped as per the alias mapping rule specified on connector configuration page ====
+{{{
+<property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property>
+}}}
+          Applicable for both Metadata-and-URL and content feed. If set to true, the document display URL (shown to the search users) will be re-written using alias mapping rule specified on connector configuration page.
+
+{{{
+<property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property>
+}}}
+  Applicable only for Metadata-and-URL feed. If set to true, the document record URL will also be re-written using alias mapping rule specified on connector configuration page.
