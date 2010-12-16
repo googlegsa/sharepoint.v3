@@ -588,7 +588,7 @@
 			}
 			var x = document.getElementById("idSearchString");
 			var mystring = decodeURIComponent(queryString.substring (begin, end))
-			//x.value=mystring;
+			
 			
 			var myindex = mystring.indexOf('cache:');
 			if(myindex>-1)
@@ -724,6 +724,21 @@ else if(document.attachEvent)
                                 finalURL = strURL;
                                 finalURL = finalURL.Replace("'", "");// Removing the single quotes from the URL
                                 qQuery += "&sitesearch=" + finalURL;
+                            }
+                            
+                            // Code to log error message if accesslevel parameter value is other than 'a' or 'p'
+
+                            if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
+                            {
+                                gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ", which indicates that both 'public and secure' and 'public' searches can be performed. Enable the Public Search checkbox to perform a public search, and disable the checkbox to perform a public and secure search.", LOG_LEVEL.INFO);
+                            }
+                            else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
+                            {
+                                gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ", which indicates that only 'public' search can be performed.", LOG_LEVEL.INFO);
+                            }
+                            else
+                            {
+                                gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ". Permitted values are only 'a' and 'p'. Change the value to either 'a' or 'p'. 'a' indicates a public and secure search, and 'p' indicates a public search.", LOG_LEVEL.ERROR);  
                             }
 
                             /*Get the user suppiled parameters from the web.config file*/
