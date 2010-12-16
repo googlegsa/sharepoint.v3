@@ -42,7 +42,7 @@
     <property name="FQDNConversion"><value>false</value></property>
 
 
-    <property name="pushAcls"><value>false</value></property>
+    <property name="pushAcls"><value>true</value></property>
     <property name="usernameFormatInAce"><value>username</value></property>
     <property name="groupnameFormatInAce"><value>domain\groupname</value></property>
     <property name="appendNamespaceInSPGroup"><value>true</value></property>

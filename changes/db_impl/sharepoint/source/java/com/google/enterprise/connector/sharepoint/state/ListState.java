@@ -1525,7 +1525,8 @@ public class ListState implements StatefulObject {
             // being crawled and indexed and hence need to
             // honor the same
             listDoc.setToBeFed(false);
-            LOGGER.log(Level.FINE, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
+            LOGGER.log(Level.WARNING, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
+            // TODO log it in excludedUrl.log
         }
 
         return listDoc;

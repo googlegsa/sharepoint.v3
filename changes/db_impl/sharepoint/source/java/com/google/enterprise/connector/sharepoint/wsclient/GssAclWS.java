@@ -280,9 +280,7 @@ public class GssAclWS {
 
                         if(PrincipalType.SPGROUP.equals(principal.getType()) && sharepointClientContext.isAppendNamespaceInSPGroup()) {
                             // FIXME This is temporary
-                            groupPermissionMap.put("["
-                                    + wsResult.getSiteCollectionUrl() + "]"
-                                    + principalName, allowedRoleTypes);
+                            groupPermissionMap.put(new StringBuffer().append("[").append(wsResult.getSiteCollectionUrl()).append("]").append(principalName).toString(), allowedRoleTypes);
                         } else {
                             groupPermissionMap.put(principalName, allowedRoleTypes);
                         }
@@ -317,7 +315,11 @@ public class GssAclWS {
      * @param principal
      * @return
      */
-    private String getPrincipalName(GssPrincipal principal) {
+    /*
+     * marked package-private because of JUnit test case
+     * GssAclTest.testGetPrincipalName
+     */
+    String getPrincipalName(GssPrincipal principal) {
         String principalname = Util.getUserFromUsername(principal.getName());
         final String domain = Util.getDomainFromUsername(principal.getName());
         String domainStringConst = SPConstants.DOMAIN_CONSTANT_IN_ACL;

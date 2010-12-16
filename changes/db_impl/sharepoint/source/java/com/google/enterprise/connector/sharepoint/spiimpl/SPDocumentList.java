@@ -137,7 +137,7 @@ public class SPDocumentList implements DocumentList {
             docsFedIndexPosition++;
 
             if (!spDocument.isToBeFed()) {
-                LOGGER.log(Level.FINE, "Document skipped from feed because it is excluded: "
+                LOGGER.log(Level.WARNING, "Excluding document from feed "
                         + spDocument.getUrl());
             }
 

@@ -1057,7 +1057,8 @@ public class GssAclMonitor
         allAttrs.Remove(ows_MetaInfo);
         foreach (DictionaryEntry propEntry in props)
         {
-            XmlAttribute attr = xmlDoc.CreateAttribute("ows_MetaInfo_" + propEntry.Key.ToString());
+            string propName = propEntry.Key.ToString().Replace(" ", "_x0020_");
+            XmlAttribute attr = xmlDoc.CreateAttribute("ows_MetaInfo_" + propName);
             attr.Value = propEntry.Value.ToString();
             allAttrs.Append(attr);
         }
