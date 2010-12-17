@@ -9,12 +9,12 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
-Release 2.6.9 , 16 Dec 2010
+Release 2.6.9 , 17 Dec 2010
 =======================================
 
 Introduction
 ------------
-This is a patch release for wide evaluation and usage.  Your feedback is important to us.
+This is a developer tested patch release for wide evaluation and usage.  Your feedback is important to us.
 Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint and things may change in the future.
 
 Summary of Changes / New Features
@@ -39,7 +39,7 @@ for the two.
 Version Compatibility
 ---------------------
 This version works with Connector Manager Version 2.4.0 and above.
-It is recommended to upgrade to the latest Connector Manager version which is 2.6.0
+It is recommended to upgrade to the latest Connector Manager version which is 2.6.6
 Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
 
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.

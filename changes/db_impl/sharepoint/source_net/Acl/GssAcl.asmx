@@ -1057,6 +1057,7 @@ public class GssAclMonitor
         allAttrs.Remove(ows_MetaInfo);
         foreach (DictionaryEntry propEntry in props)
         {
+            // xmlDoc.CreateAttribute throws exception if aatribute contains space
             string propName = propEntry.Key.ToString().Replace(" ", "_x0020_");
             XmlAttribute attr = xmlDoc.CreateAttribute("ows_MetaInfo_" + propName);
             attr.Value = propEntry.Value.ToString();
