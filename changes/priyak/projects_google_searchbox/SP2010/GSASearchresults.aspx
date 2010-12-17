@@ -86,7 +86,8 @@ div.ms-areaseparatorright{
         public enum LOG_LEVEL
         {
             INFO,
-            ERROR
+            ERROR,
+            DEBUG
         }
         
         /*Google Search Box for SharePoint*/
@@ -716,21 +717,29 @@ else if(document.attachEvent)
                             finalURL = strURL;
                             finalURL = finalURL.Replace("'", "");// Removing the single quotes from the URL
                             qQuery += "&sitesearch=" + finalURL;
-                        }
+                        }      
 
-
-                        // Code to log error message if accesslevel parameter value is other than 'a' or 'p'
-
+                        // Logging error/ debug message as per the value of accesslevel parameter
                         if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
                         {
-                            gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ", which indicates that both 'public and secure' and 'public' searches can be performed. Enable the Public Search checkbox to perform a public search, and disable the checkbox to perform a public and secure search.", LOG_LEVEL.INFO);
+                            // Log a debug message indicating the value of accesslevel parameter whenever the application is running in debug mode.
+                            if (System.Diagnostics.Debugger.IsAttached)
+                            {
+                                gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ", which indicates that both 'public and secure' and 'public' searches can be performed. Enable the Public Search checkbox to perform a public search, and disable the checkbox to perform a public and secure search.", LOG_LEVEL.DEBUG);
+                            }
+                            
                         }
                         else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
                         {
-                            gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ", which indicates that only 'public' search can be performed.", LOG_LEVEL.INFO);
+                            // Log a debug message indicating the value of accesslevel parameter whenever the application is running in debug mode.
+                            if (System.Diagnostics.Debugger.IsAttached)
+                            {
+                                gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ", which indicates that only 'public' search can be performed.", LOG_LEVEL.DEBUG);
+                            }
                         }
                         else
                         {
+                            // Code to log error message if accesslevel parameter value is other than 'a' or 'p'
                             gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ". Permitted values are only 'a' and 'p'. Change the value to either 'a' or 'p'. 'a' indicates a public and secure search, and 'p' indicates a public search.", LOG_LEVEL.ERROR);
                         }
 
