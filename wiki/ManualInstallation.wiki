@@ -123,6 +123,8 @@ To install the connector manually, follow the instructions given below:
   * source_net\Acl\GssAcl.aspx
   * source_net\Acl\GssAcl.aspx
 
+*Note*: Google Services should be installed on all SharePoint front end servers where sites that connector will crawl are hosted.
+
 ==Verifying the installation of GSS==
  * Pick any SharePoint site hosted on the SharePoint server where Google services for SharePoint are deployed. Try browsing this this URL from the browser.
  * The connectivity of web services can be verified using following URLs:
