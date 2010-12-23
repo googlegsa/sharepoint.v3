@@ -527,14 +527,15 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
 *Q. Do we support Crawling of Infopath Forms ?*
     Yes, now (2.6.2 onwards) the connector supports Infopath forms.
 
-*Q. My Crawl URL on GSA should follow any  specific pattern?
+*Q. My Crawl URL on GSA should follow any  specific pattern?*
     Your Crawl URL should match the pattern given in Alternate Access Mapping of Central  
     Administration.
     You can do so by going to
     Central Admin -> Operations Tab -> Global Configuration Section -> Alternate Access 
     Mapping 
     Click on the Webapp and chage the URL.
-*Q. I'm trying to setup SharePoint connector to crawl a Kerberos based site using Kerberos crawling feature. When I enter a valid KDC hostname, I get this error "Cannot connect to the given SharePoint Site URL with the supplied Domain/Username/Password.Reason:(401)Unauthorized"*
 
-    1. Make sure that you are using correct credentials for the site
-    2. Make sure that there are no duplicate service principal names (SPN) set for the SharePoint server
+*Q. I'm trying to setup SharePoint connector to crawl a Kerberos based site using Kerberos crawling feature. When I enter a valid KDC hostname, I get this error "Cannot connect to the given SharePoint Site URL with the supplied Domain/Username/Password.Reason:(401)Unauthorized". When I remove KDC hostname, connector gets saved.*
+    > Make sure that you are using correct credentials for the site.
+
+    > Make sure that there are no duplicate service principal names (SPN) set for the SharePoint server
