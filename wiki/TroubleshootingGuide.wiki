@@ -4,7 +4,7 @@
 
 
 == Introduction ==
-This document has a list of troubleshooting tips and FAQ to quickly identify if connector has been configured correctly and is discovering & crawling as intended.
+This document has a list of troubleshooting tips and FAQ to quickly identify if connector has been configured correctly and is discovering & crawling SharePoint content as intended.
 
 All details will be applicable to both modes of authorization set for the connector: 
  * Handling authorization by appliance or SAML provider (metadata-and-URL feed mode)
