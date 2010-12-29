@@ -268,13 +268,11 @@ public class GssAclWS {
                         if (PrincipalType.SPGROUP.equals(principal.getType()) && null != sharepointClientContext.getUserDataStoreDAO()) {
                             GssPrincipal[] members = principal.getMembers();
                             for(GssPrincipal member : members) {
-                                UserGroupMembership membership = null;
-                                membership = new UserGroupMembership(
-                                        member.getID(), member.getName(),
+                                memberships.add(new UserGroupMembership(
+                                        member.getID(),
+                                        getPrincipalName(member),
                                         principal.getID(), principalName,
-                                        wsResult.getSiteCollectionUrl());
-
-                                memberships.add(membership);
+                                        wsResult.getSiteCollectionUrl()));
                             }
                         }
 
@@ -783,7 +781,7 @@ public class GssAclWS {
                         Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
                         for (GssPrincipal member : group.getMembers()) {
                             memberships.add(new UserGroupMembership(
-                                    member.getID(), member.getName(),
+                                    member.getID(), getPrincipalName(member),
                                     group.getID(), group.getName(),
                                     wsResult.getSiteCollectionUrl()));
                         }
