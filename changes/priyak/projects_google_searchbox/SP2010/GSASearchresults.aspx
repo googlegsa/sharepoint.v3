@@ -9,7 +9,9 @@
 <%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
 <%@ Assembly Name="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c"%> 
-<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults" EnableViewState="true" EnableViewStateMac="false"     %> 
+
+<%-- <% Enabled the Session state in the page by setting the attribute 'EnableSessionState' to true  %>--%>
+<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults" EnableViewState="true" EnableViewStateMac="false"  EnableSessionState="True"   %> 
 <%@ Import Namespace="Microsoft.Office.Server.Search.Internal.UI" %> 
 <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 <%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
@@ -290,7 +292,10 @@ div.ms-areaseparatorright{
                         c.Value = HttpUtility.UrlEncode(value, utf8);//Encoding the cookie value
                         c.Domain = domain;
                         c.Expires = CookieCollection[i].Expires;
-                        cc.Add(c);
+                        if (tempCookieName.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                        {
+                            cc.Add(c);
+                        }
 
                         /*Cookie Information*/
                         log("Cookie Name= " + tempCookieName+ "| Value= " + value+ "| Domain= " + domain+ "| Expires= " + c.Expires, LOG_LEVEL.INFO);
@@ -702,16 +707,34 @@ else if(document.attachEvent)
                         myquery = qQuery;//for paging in custom stylesheet
                         
                         //Using U parameter to create scoped searches on the GSA
-                        if ((inquery["u"] != null))
+                        string temp = "";
+                        if (inquery["selectedScope"] != "Enterprise")
                         {
-                            
-                            
-                            string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
+                            /* 
+                             * This code will be executed whenever search is performed by the user, except when search is performed
+                             * for any suggestions listed, if any.
+                             */
+                            if ((inquery["u"] != null))
+                            {
+
+
+                                temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
+                                strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
+                            }
+                            else if (inquery["sitesearch"] != null) /* This code will be executed only when suggestions are
+                                                                         * provided by the GSA. Here, the scope url's value
+                                                                         * will be retrieved from the GSA's search request 
+                                                                         * 'sitesearch' parameter.
+                                                                         */
+                            {
+                                temp = System.Web.HttpUtility.UrlDecode(inquery["sitesearch"]);
+                                strURL = temp;
+                            }
+
                             temp = temp.ToLower();
-                            strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
                             temp = temp.Replace("http://", "");// Delete http from url
                             qQuery += "&inurl:\"" + temp + "\"";//  Change functionality to use "&sitesearch="  - when GSA Bug 11882 has been closed
-                            
+
                             // The finalURL contains complete URL for the currently selected scope
                             finalURL = strURL;
                             finalURL = finalURL.Replace("'", "");// Removing the single quotes from the URL
@@ -734,15 +757,39 @@ else if(document.attachEvent)
                             gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ". Permitted values are only 'a' and 'p'. Change the value to either 'a' or 'p'. 'a' indicates a public and secure search, and 'p' indicates a public search.", LOG_LEVEL.ERROR);
                         }
 
-                        /*Get the user suppiled parameters from the web.config file*/
-                        
-                        if (inquery["isPublicSearch"] == "false")
+                        /* 
+                         * This code will be executed whenever search is performed by the user, except when search is performed
+                         * for any suggestions listed, if any. Here, the value for the public search parameter will be retrieved 
+                         * from the querystring's 'isPublicSearch' parameter.
+                         */
+                        if (inquery["isPublicSearch"] != null)
                         {
-                            gProps.accessLevel = "a"; // Perform 'public and secure search'
+                            if (inquery["isPublicSearch"] == "false")
+                            {
+                                gProps.accessLevel = "a"; // Perform 'public and secure search'
+                            }
+                            else
+                            {
+                                gProps.accessLevel = "p";  // Perform 'public search'
+                            }
                         }
-                        else
+                        else     /* 
+                                  * This code will be executed only when suggestions are provided by the GSA. Here, the scope url's value
+                                  * will be retrieved from the GSA's search request 'access' parameter.
+                                  */
                         {
-                            gProps.accessLevel = "p";  // Perform 'public search'
+                            if (inquery["access"] != null)
+                            {
+                                string publicSearchCheckboxStatus = inquery["access"].ToString();
+                                if (publicSearchCheckboxStatus == "a")
+                                {
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else
+                                {
+                                    gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                            }
                         }
                         
                     
@@ -794,6 +841,7 @@ else if(document.attachEvent)
                     else
                     {
                         searchReq = HttpContext.Current.Request.Url.Query;
+                        searchReq = HttpUtility.UrlDecode(searchReq); // Decoding the URL received from the current request 
                     }
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -842,8 +890,11 @@ else if(document.attachEvent)
                                 /*Cookie Information*/
                                 gProps.log("Cookie Name= " + responseCookies.Name + "| Value= " + value + "| Domain= " + responseCookies.Domain
                                     + "| Expires= " + responseCookies.Expires.ToString(), LOG_LEVEL.INFO);
-                                
-                                newcc.Add(responseCookies);
+
+                                if (responseCookies.Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                                {
+                                    newcc.Add(responseCookies);
+                                }
                             }
                             
                             
@@ -919,7 +970,10 @@ else if(document.attachEvent)
                                         Uri GoogleUri = new Uri(GSASearchUrl);
                                         responseCookies.Domain = GoogleUri.Host;
                                         responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
-                                        newcc.Add(responseCookies);
+                                        if (responseCookies.Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                                        {
+                                            newcc.Add(responseCookies);
+                                        }
 
                                         /*Cookie Information*/
                                         gProps.log("Cookie Name= " + responseCookies.Name
@@ -947,7 +1001,10 @@ else if(document.attachEvent)
                                 responseCookies.Value = objResp.Cookies[j].Value;
                                 responseCookies.Domain = objReq.RequestUri.Host;
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
-                                HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                if (objResp.Cookies[j].Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                                {
+                                    HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                }
                                 responseCookies = null;
 
                                 /*Cookie Information*/
