@@ -1,5 +1,5 @@
 <%@ Control Language="C#" Inherits="Microsoft.SharePoint.WebControls.SearchArea,Microsoft.SharePoint,Version=12.0.0.0,Culture=neutral,PublicKeyToken=71e9bce111e9429c"
-    CompilationMode="Always" AutoEventWireup="false" %>
+    CompilationMode="Always" AutoEventWireup="false"  %>
 <%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
     Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
@@ -12,41 +12,83 @@
 
 <%
     
+    
    // The forward slash is used to append to the sitesearch parameter. 
     string forwardSlash = "/";
     
     if (Request.QueryString["scopeUrl"] != null)
     {
         /*
-         * The ViewState allows ASP.NET to repopulate form fields on each postback to the server. Hence storing the value for the selected scope
-         * in Viewstate, so that the  scope is persisted while searching.
+         * Def of Session - Variables stored in a Session object hold information about one single user, and are available to all pages in one application. 
+         * Hence storing the value for the selected scope in Session, so that the  scope is persisted while searching.
          */
-        ViewState["ScopeURL"] = Request.QueryString["scopeUrl"].ToString();
+        Session["ScopeURL"] = Request.QueryString["scopeUrl"].ToString();
     }
 
     /* 
     * Definition for IsPostBack :- "IsPostBack" is a read-only Boolean property that indicates if the page or control is being loaded for the first time. 
-    * So, if the page is loaded for the first time after search, assign a value to the ViewState which is equal to the value of the Querystring parameter
+    * So, if the page is loaded for the first time after search, assign a value to the Session which is equal to the value of the Querystring parameter
     * 'isPublicSearch'
     */
 
+
+
     if (!IsPostBack)
     {
+        string publicSearchStatus = "";
         if (Request.QueryString["isPublicSearch"] != null)
         {
-            ViewState["PublicSearchStatus"] = Request.QueryString["isPublicSearch"].ToString();
+            // This code will be executed for the first search request sent to GSA.
+            publicSearchStatus = Request.QueryString["isPublicSearch"].ToString();
+            
+            // Save value in a session varaible.
+            Session["PublicSearchStatus"] = Request.QueryString["isPublicSearch"].ToString();
+            hfPublicSearch.Value = Session["PublicSearchStatus"].ToString();
+            if (publicSearchStatus == "true")
+            {
+                chkPublicSearch.Checked = true;
+            }
+            else
+            {
+                chkPublicSearch.Checked = false;
+            }
         }
-    }
-    /* 
-     * If the page is not loaded for the first time after search, assign a value to the ViewState which is equal to the value of the Hiddenfield.
-     */
-    else
-    {
-        if (hfPublicSearch.Value != null)
+        else // This code will be executed for all successive searches performed by the user.
         {
-            ViewState["PublicSearchStatus"] = hfPublicSearch.Value;
+            /*
+             * For successive searches, it is possible to get the type of search performed by the user using the 'access' parameter. 
+             * The access parameter is one of the search parameters in a search request to the GSA. Search parameters can be found on
+             * url - http://code.google.com/apis/searchappliance/documentation/68/xml_reference.html#request_parameters
+             * Value 'a' means public and secure search; value 'p' means public search.
+             */
+            if (Request.QueryString["access"] != null)
+            {
+                string accessStatus = Request.QueryString["access"].ToString();
+                if (accessStatus == "a")
+                {
+                    if (Session["PublicSearchStatus"] != null)
+                    {
+                        publicSearchStatus = Convert.ToString(Session["PublicSearchStatus"]); // Get value from the session variable
+                        hfPublicSearch.Value = publicSearchStatus;
+                        if (publicSearchStatus == "true")
+                        {
+                            chkPublicSearch.Checked = true;
+                        }
+                        else
+                        {
+                            chkPublicSearch.Checked = false;
+                        }
+                    }
+                }
+                else // Means only public search is performed by the user (i.e. access = p)
+                {
+                    chkPublicSearch.Checked = true;
+                    Session["PublicSearchStatus"] = "true";
+                }
+            }
         }
     }
+   
    
     
     
@@ -108,18 +150,17 @@
 
     ListItem lstItem1 = new ListItem();
     string sitename = strScopeWeb.Replace("'", "");
-    sitename = ctx.ListItemDisplayName;
     lstItem1.Text = currentSite;
-    lstItem1.Value = strScopeWeb + forwardSlash;
+    lstItem1.Value = sitename + forwardSlash;
     idSearchScope.Items.Add(lstItem1);
 
     // The hiddenfield named 'hfSelectedScope' is used to store the 'scope text' of the current context selected by the user, so that 
     // appropriate scope can be enabled in the dropdown.    
     ListItem lstItem2 = new ListItem();
     lstItem2.Text = currentSiteAndAllSubsites;
-    lstItem2.Value = strScopeWeb;
+    lstItem2.Value = sitename;
     idSearchScope.Items.Add(lstItem2);
-    hfSelectedScope.Value = strScopeWeb;
+    hfSelectedScope.Value = sitename;
         
     ListItem lstItem3 = new ListItem();
     lstItem3.Text = currentList;
@@ -175,6 +216,7 @@
             hfSelectedScope.Value = strScopeFolder;
             idSearchScope.Items.FindByText(currentFolder).Enabled = true;
             idSearchScope.Items.FindByText(currentFolderAndAllSubfolders).Enabled = true;
+            
         }
     }
     else
@@ -195,16 +237,13 @@
         // If this is not the first request for search, populate search query text with querystring 'q' parameter.
         txtSearch.Text = Request.QueryString["q"].ToString();
     }
-    
-    // Code for persisting the Public search checkbox status
-    if (ViewState["PublicSearchStatus"] != null)
-    {
-        bool publicSearchStatus = Convert.ToBoolean(ViewState["PublicSearchStatus"].ToString());
-        chkPublicSearch.Checked = publicSearchStatus;
-    }
-    
+    /* This code is executed for the very first search performed on the site. This code will also execute when the user performs  
+     * the first search, after changing the scope from the scopes dropdown.
+     */
     if (Request.QueryString["selectedScope"] != null)
     {
+        // Store the value in a session variable
+        Session["ScopeText"] = Request.QueryString["selectedScope"].ToString();
         // If this is the first request for search,get the dropdown text value from the 'selectedScope' querystring parameter.
         for (int i = 0; i < idSearchScope.Items.Count; i++)
         {
@@ -220,31 +259,49 @@
                     idSearchScope.Items[i].Enabled = true;
                     idSearchScope.Items[i].Selected = true;
                 }
-                if (ViewState["ScopeURL"] != null)
+                if (Session["ScopeURL"] != null)
                 {
                     // Setting the dropdown's  scope value to the value stored within the ViewState. 
-                    idSearchScope.Items[i].Value = ViewState["ScopeURL"].ToString();
+                    idSearchScope.Items[i].Value = System.Web.HttpUtility.UrlDecode(Session["ScopeURL"].ToString());
                 }
-
+                
                 // Setting the dropdown's  selected value to the value from the querystring object.
                 idSearchScope.Items.FindByText(Request.QueryString["selectedScope"].ToString()).Selected = true;
                 break;
             }
         }
-    }
-    // If this is not the first request for search,get the dropdown text value from the 'sitesearch' querystring parameter. Here 
-    else if (Request.QueryString["sitesearch"] != null)
+    } 
+    else if (Session["ScopeText"] != null) /* For successive searches, this code will be executed. This code will also be executed
+                                            * when there is a suggestion on the search results page to 'repeat the search with the
+                                            * omitted results included'. Here, the session variable's value can be retrieved to get
+                                            * the scope text value.
+                                            */
     {
-        // Decode the value for sitesearch parameter
-        string sitesearchStrValue = System.Web.HttpUtility.UrlDecode(Request.QueryString["sitesearch"].ToString());
-        for (int i = 0; i < idSearchScope.Items.Count; i++)
+        
+        string scopeText = Session["ScopeText"].ToString();
+        string scopeValue = "";
+        if(Request.QueryString["sitesearch"] != null) // The sitesearch parameter comes in the GSA search URL.
         {
-            string searchScopeValue = idSearchScope.Items[i].Value.Replace("'", "");// Removing the single quotes from the URL
-            if (searchScopeValue == sitesearchStrValue)
+            scopeValue = System.Web.HttpUtility.UrlDecode(Request.QueryString["sitesearch"].ToString());
+        }
+        if (scopeValue != "")
+        {
+            // Creating a new listitem for the respective scope text and value retrieved
+            ListItem lstItemScopeItem = new ListItem();
+            lstItemScopeItem.Text = scopeText;
+            lstItemScopeItem.Value = scopeValue;
+
+            /* Checking whether the respective listitem already exists in the scopes dropdown. If it already exists, just make the 
+             * respective listitem as selected in the dropdown. If the listitem does not exist (which is true in the case the 
+             * user gets option of 'repeat the search with the omitted results included' while searching for the scopes - 
+             * Current List, Current folder and current folder and all subfolders), then add the item into the scopes dropdown and
+             * make the item as selected.
+             */
+            if (!idSearchScope.Items.Contains(lstItemScopeItem))
             {
-                idSearchScope.Items[i].Selected = true;
-                break;
+                idSearchScope.Items.Add(lstItemScopeItem);
             }
+            idSearchScope.Items.FindByValue(scopeValue).Selected = true;
         }
     }
 %>
@@ -350,23 +407,39 @@
             SendSearchRequesttoGSA(hfStrEncodedUrl);
         }
     }
+    
+    // Function that will change the background of the search query textbox to plain white background whenever the user begins to type inside the query textbox.
+    function SearchTextOnFocus()
+    {
+         var f = document.getElementById("<%=txtSearch.ClientID%>");
+         f.style.background = '#ffffff';
+    }
+    
+    // Function that will change the background of the search query textbox to the Google search image whenever the user is done with typing the search query.
+    function SearchTextOnBlur()
+    {
+         var f = document.getElementById("<%=txtSearch.ClientID%>");
+         f.style.background = 'background-color: transparent'; 
+    }
+    
 </script>
 
 
-<script type="text/C#" runat="server">
+<script runat="server">
 
-    // Function that will change the value of hiddenfiled whenever checkbox is checked/ unchecked
+    // Function that will change the value of hiddenfield and session variable whenever checkbox is checked/ unchecked.
     protected void checkPublicSearch(object sender, EventArgs e)
     {
         if (chkPublicSearch.Checked == true)
         {
             hfPublicSearch.Value = "true";
+            Session["PublicSearchStatus"] = "true";
         }
-        else 
+        else
         {
-            hfPublicSearch.Value = "false";            
+            hfPublicSearch.Value = "false";
+            Session["PublicSearchStatus"] = "false";
         }
-        
     }
     
 </script>
@@ -375,10 +448,10 @@
 <table border="0" cellpadding="0" cellspacing="0" class='ms-searchform'>
     <tr class='ms-searchbox'>
         <td>
-        <asp:HiddenField ID="hfPublicSearch" runat="server"  Value="true"/>
+        <asp:HiddenField ID="hfPublicSearch" runat="server" Value="true"  />
         <asp:HiddenField ID="hfStrEncodedUrl" runat="server"/>
         <asp:HiddenField id="hfUserSelectedScope" runat="server" />
-        <div  style="color:#003399" id="divPublicSearch" runat="server"><asp:CheckBox ID="chkPublicSearch" runat="server"  Checked="true" OnCheckedChanged="checkPublicSearch" AutoPostBack="true"  ToolTip="Check this to search public content"   />Public&nbsp;Search</div> 
+        <div  style="color:#003399" id="divPublicSearch" runat="server"><asp:CheckBox ID="chkPublicSearch" runat="server"  Checked="true"   OnCheckedChanged="checkPublicSearch" AutoPostBack="true"  ToolTip="Check this to search public content"   />Public&nbsp;Search</div> 
         </td>
         <td>
              
@@ -390,7 +463,7 @@
             <div style="background-image: url(/_layouts/images/google_custom_search_watermark.gif);
                 background-repeat: no-repeat; background-position: left; background-color: Transparent">
           <asp:TextBox ID="txtSearch" runat="server"  Width="190px" style="height:auto; background-color: transparent; color:#003399" 
-             ToolTip="Enter search query term" onKeyPress="SendSearchRequesttoGSAOnEnterClick()"></asp:TextBox>
+             ToolTip="Enter search query term" onKeyPress="SendSearchRequesttoGSAOnEnterClick()" onfocus="javascript:return SearchTextOnFocus()" onblur="javascript:return SearchTextOnBlur();" ></asp:TextBox>
             </div>
         </td>
         

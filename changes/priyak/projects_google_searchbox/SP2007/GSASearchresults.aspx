@@ -1,8 +1,9 @@
 <%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
 <%-- <% Here '~' is included in the MasterPageFile attribute. ~ refers to the root directory %>--%>
+<%-- <% Enabled the Session state in the page by setting the attribute 'EnableSessionState' to true  %>--%>
 <%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
-    MasterPageFile="~/_layouts/application.master" EnableViewState="true" EnableViewStateMac="false"
+    MasterPageFile="~/_layouts/application.master" EnableViewState="true" EnableViewStateMac="false" EnableSessionState="True"
     ValidateRequest="false" %> 
 
 
@@ -291,8 +292,26 @@
                         c.Value = HttpUtility.UrlEncode(value, utf8);//Encoding the cookie value
                         c.Domain = domain;
                         c.Expires = CookieCollection[i].Expires;
-                        cc.Add(c);
 
+                        /* 
+                         * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                         * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                         */
+                        if (WebConfigurationManager.AppSettings["omitSecureCookie"] == "false" && tempCookieName.ToLower() == "secure" && value != "") 
+                        {
+                            cc.Add(c);
+                        }
+
+                        // Code for logging error message whenever the secure cookie exists and has a value, but is being discared due to configuartion setting in web.config file of the web application.
+                        if (value != "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && tempCookieName.ToLower() == "secure")
+                        {
+                            log("The secure cookie exists with value as " + value +". Currently the cookie is being discarded.  To avoid discarding of the cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.ERROR);
+                        }
+                         else if (value == "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && tempCookieName.ToLower() == "secure")
+                         {
+                             log("The secure cookie exists and has no value. Hence discarding the cookie.", LOG_LEVEL.INFO);
+                         }
+                        
                         /*Cookie Information*/
                         log("Cookie Name= " + tempCookieName + "| Value= " + value + "| Domain= " + domain + "| Expires= " + c.Expires, LOG_LEVEL.INFO);
 
@@ -619,7 +638,7 @@ else if(document.attachEvent)
 </asp:Content>
 <asp:Content ID="Content4" ContentPlaceHolderID="PlaceHolderNavSpacer" runat="server">
 </asp:Content>
-<asp:Content ID="Content5" ContentPlaceHolderID="PlaceHolderTitleBreadcrumb" runat="server">
+<asp:Content ID="Content5" ContentPlaceHolderID="PlaceHolderTitleBreadcrumb" runat="server" EnableViewState="true">
     <a name="mainContent"></a>
     <table width="100%" cellpadding="2" cellspacing="0" border="0">
         <tr>
@@ -710,13 +729,31 @@ else if(document.attachEvent)
                             myquery = qQuery;//for paging in custom stylesheet
 
                             //Using U parameter to create scoped searches on the GSA
-                            if ((inquery["u"] != null) && inquery["selectedScope"] != "Enterprise")
+                            string temp = "";
+                            if (inquery["selectedScope"] != "Enterprise")
                             {
-                                
-                                string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
-                                temp = temp.ToLower();
-                                strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
+                                /* 
+                                 * This code will be executed whenever search is performed by the user, except when search is performed
+                                 * for any suggestions listed, if any.
+                                 */
+                                if (inquery["u"] != null)
+                                {
 
+                                    temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
+                                    strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
+                                }
+                                else if (inquery["sitesearch"] != null) /* This code will be executed only when suggestions are
+                                                                         * provided by the GSA. Here, the scope url's value
+                                                                         * will be retrieved from the GSA's search request 
+                                                                         * 'sitesearch' parameter.
+                                                                         */
+                                {
+                                    temp = System.Web.HttpUtility.UrlDecode(inquery["sitesearch"]);
+                                    strURL = temp;
+                                }
+
+
+                                temp = temp.ToLower();
                                 temp = temp.Replace("http://", "");// Delete http from url
                                 qQuery += "&inurl:\"" + temp + "\"";// Change functionality to use "&sitesearch=" - when GSA Bug 11882 has been closed
 
@@ -741,15 +778,39 @@ else if(document.attachEvent)
                                 gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ". Permitted values are only 'a' and 'p'. Change the value to either 'a' or 'p'. 'a' indicates a public and secure search, and 'p' indicates a public search.", LOG_LEVEL.ERROR);  
                             }
 
-                            /*Get the user suppiled parameters from the web.config file*/
-
-                            if (inquery["isPublicSearch"] == "false")
+                            /* 
+                             * This code will be executed whenever search is performed by the user, except when search is performed
+                             * for any suggestions listed, if any. Here, the value for the public search parameter will be retrieved 
+                             * from the querystring's 'isPublicSearch' parameter.
+                             */
+                            if (inquery["isPublicSearch"] != null)
                             {
-                                gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                if (inquery["isPublicSearch"] == "false")
+                                {
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else
+                                {
+                                    gProps.accessLevel = "p";  // Perform 'public search'
+                                }
                             }
-                            else
+                            else /* 
+                                  * This code will be executed only when suggestions are provided by the GSA. Here, the scope url's value
+                                  * will be retrieved from the GSA's search request 'access' parameter.
+                                  */
                             {
-                                gProps.accessLevel = "p";  // Perform 'public search'
+                                if (inquery["access"] != null)
+                                {
+                                    string publicSearchCheckboxStatus = inquery["access"].ToString();
+                                    if (publicSearchCheckboxStatus == "a")
+                                    {
+                                        gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                    }
+                                    else
+                                    {
+                                        gProps.accessLevel = "p";  // Perform 'public search'
+                                    }
+                                }
                             }
 
                             searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;                                
@@ -801,6 +862,7 @@ else if(document.attachEvent)
                         else
                         {
                             searchReq = HttpContext.Current.Request.Url.Query;
+                            searchReq = HttpUtility.UrlDecode(searchReq); // Decoding the URL received from the current request 
                         }
                         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -850,7 +912,26 @@ else if(document.attachEvent)
                                     gProps.log("Cookie Name= " + responseCookies.Name + "| Value= " + value + "| Domain= " + responseCookies.Domain
                                         + "| Expires= " + responseCookies.Expires.ToString(), LOG_LEVEL.INFO);
 
-                                    newcc.Add(responseCookies);
+
+
+                                    /* 
+                                     * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                     * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                     */
+                                    if (WebConfigurationManager.AppSettings["omitSecureCookie"] == "false" && responseCookies.Name.ToLower() == "secure" && value != "")
+                                    {
+                                        newcc.Add(responseCookies);
+                                    }
+
+                                    // Code for logging error message whenever the secure cookie exists and has a value, but is being discared due to configuartion setting in web.config file of the web application.
+                                    if (value != "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && responseCookies.Name.ToLower() == "secure")
+                                    {
+                                        gProps.log("The secure cookie exists with value as " + value + ". Currently the cookie is being discarded.  To avoid discarding of the cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.ERROR);
+                                    }
+                                    else if (value == "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && responseCookies.Name.ToLower() == "secure")
+                                    {
+                                        gProps.log("The secure cookie exists and has no value. Hence discarding the cookie.", LOG_LEVEL.INFO);
+                                    }              
                                 }
 
 
@@ -926,8 +1007,27 @@ else if(document.attachEvent)
                                             Uri GoogleUri = new Uri(GSASearchUrl);
                                             responseCookies.Domain = GoogleUri.Host;
                                             responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
-                                            newcc.Add(responseCookies);
 
+
+                                            /* 
+                                             * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                             * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                             */
+                                            if (WebConfigurationManager.AppSettings["omitSecureCookie"] == "false" && responseCookies.Name.ToLower() == "secure" && value != "")
+                                            {
+                                                newcc.Add(responseCookies);
+                                            }
+
+                                            // Code for logging error message whenever the secure cookie exists and has a value, but is being discared due to configuartion setting in web.config file of the web application.
+                                            if (value != "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && responseCookies.Name.ToLower() == "secure")
+                                            {
+                                                gProps.log("The secure cookie exists with value as " + value + ". Currently the cookie is being discarded.  To avoid discarding of the cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.ERROR);
+                                            }
+                                            else if (value == "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && responseCookies.Name.ToLower() == "secure")
+                                            {
+                                                gProps.log("The secure cookie exists and has no value. Hence discarding the cookie.", LOG_LEVEL.INFO);
+                                            }    
+                                            
                                             /*Cookie Information*/
                                             gProps.log("Cookie Name= " + responseCookies.Name
                                                 + "| Value= " + value
@@ -954,7 +1054,25 @@ else if(document.attachEvent)
                                     responseCookies.Value = objResp.Cookies[j].Value;
                                     responseCookies.Domain = objReq.RequestUri.Host;
                                     responseCookies.Expires = objResp.Cookies[j].Expires;
-                                    HttpContext.Current.Response.Cookies.Add(responseCookies);
+
+                                    /* 
+                                     * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                     * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                     */
+                                    if (WebConfigurationManager.AppSettings["omitSecureCookie"] == "false" && objResp.Cookies[j].Name.ToLower() == "secure" && objResp.Cookies[j].Value != "")
+                                    {
+                                        HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                    }
+
+                                    // Code for logging error message whenever the secure cookie exists and has a value, but is being discared due to configuartion setting in web.config file of the web application.
+                                    if (objResp.Cookies[j].Value != "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && objResp.Cookies[j].Name.ToLower() == "secure")
+                                    {
+                                        gProps.log("The secure cookie exists with value as " + objResp.Cookies[j].Value + ". Currently the cookie is being discarded.  To avoid discarding of the cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.ERROR);
+                                    }
+                                    else if (objResp.Cookies[j].Value == "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && objResp.Cookies[j].Name.ToLower() == "secure")
+                                    {
+                                        gProps.log("The secure cookie exists and has no value. Hence discarding the cookie.", LOG_LEVEL.INFO);
+                                    }
                                     responseCookies = null;
 
                                     /*Cookie Information*/
