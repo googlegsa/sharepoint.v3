@@ -33,7 +33,7 @@
  Global Style variables (can be customized): '' for using browser's default
      ********************************************************************** -->
   <!-- *** SPSMod:  Remove unecessary colours/formatting - will be controlled 
-     	largely by Sharepoint					*** -->
+		largely by Sharepoint					*** -->
 
 
   <xsl:variable name="global_font">Tahoma</xsl:variable>
@@ -283,8 +283,8 @@
 
 
   <!-- **********************************************************************
-Home search page header (can be customized): logo and search box
- ********************************************************************** -->
+ Home search page header (can be customized): logo and search box
+     ********************************************************************** -->
   <xsl:template name="home_page_header">
     <table border="0" cellpadding="0" cellspacing="0">
       <xsl:if test="$show_logo != '0'">
@@ -309,8 +309,8 @@ Home search page header (can be customized): logo and search box
 
 
   <!-- **********************************************************************
-Separation bar variables (used in advanced search header and result page)
- ********************************************************************** -->
+ Separation bar variables (used in advanced search header and result page)
+     ********************************************************************** -->
   <xsl:variable name="sep_bar_border_color">
     <xsl:choose>
       <xsl:when test="$choose_sep_bar = 'ltblue'">#3366cc</xsl:when>
@@ -342,8 +342,8 @@ Separation bar variables (used in advanced search header and result page)
   </xsl:variable>
 
   <!-- **********************************************************************
-Advanced search page header HTML (can be customized)
- ********************************************************************** -->
+ Advanced search page header HTML (can be customized)
+     ********************************************************************** -->
   <xsl:template name="advanced_search_header">
     <table border="0" cellpadding="0" cellspacing="0">
 
@@ -360,17 +360,17 @@ Advanced search page header HTML (can be customized)
 
 
   <!-- **********************************************************************
-Cached page header (can be customized)
- ********************************************************************** -->
+ Cached page header (can be customized)
+     ********************************************************************** -->
   <xsl:template name="cached_page_header">
     <xsl:param name="cached_page_url"/>
     <xsl:variable name="stripped_url" select="substring-after($cached_page_url,
-														'://')"/>
+                                                            '://')"/>
     <table border="1" width="100%">
       <tr>
         <td>
           <table border="1" width="100%" cellpadding="10" cellspacing="0"
-          bgcolor="{$global_bg_color}" color="{$global_bg_color}">
+            bgcolor="{$global_bg_color}" color="{$global_bg_color}">
             <tr>
               <td>
                 <font face="{$global_font}" color="{$global_text_color}" size="-1">
@@ -378,7 +378,7 @@ Cached page header (can be customized)
                   <xsl:call-template name="nbsp"/>
                   <xsl:choose>
                     <xsl:when test="starts-with($cached_page_url,
-									  $db_url_protocol)">
+                                          $db_url_protocol)">
                       <a href="{concat('/db/',$stripped_url)}">
                         <font color="{$global_link_color}">
                           <xsl:value-of select="$cached_page_url"/>
@@ -386,7 +386,7 @@ Cached page header (can be customized)
                       </a>.<br/>
                     </xsl:when>
                     <xsl:when test="starts-with($cached_page_url,
-									  $nfs_url_protocol)">
+                                          $nfs_url_protocol)">
                       <a href="{concat('/nfs/',$stripped_url)}">
                         <font color="{$global_link_color}">
                           <xsl:value-of select="$cached_page_url"/>
@@ -394,7 +394,7 @@ Cached page header (can be customized)
                       </a>.<br/>
                     </xsl:when>
                     <xsl:when test="starts-with($cached_page_url,
-									  $smb_url_protocol)">
+                                          $smb_url_protocol)">
                       <a href="{concat('/smb/',$stripped_url)}">
                         <font color="{$global_link_color}">
                           <xsl:value-of select="$cached_page_url"/>
@@ -402,7 +402,7 @@ Cached page header (can be customized)
                       </a>.<br/>
                     </xsl:when>
                     <xsl:when test="starts-with($cached_page_url,
-									  $unc_url_protocol)">
+                                          $unc_url_protocol)">
                       <xsl:variable name="display_url">
                         <xsl:call-template name="convert_unc">
                           <xsl:with-param name="string" select="$stripped_url"/>
@@ -434,8 +434,8 @@ Cached page header (can be customized)
 
 
   <!-- **********************************************************************
-"Search Within Results" search input page (can be customized)
- ********************************************************************** -->
+ "Search Within Results" search input page (can be customized)
+     ********************************************************************** -->
   <xsl:template name="swr_search">
     <html>
       <xsl:call-template name="langHeadStart"/>
@@ -460,8 +460,8 @@ Cached page header (can be customized)
 
 
   <!-- **********************************************************************
-"Front door" search input page (can be customized)
- ********************************************************************** -->
+ "Front door" search input page (can be customized)
+     ********************************************************************** -->
   <xsl:template name="front_door">
     <html>
       <xsl:call-template name="langHeadStart"/>
@@ -486,8 +486,8 @@ Cached page header (can be customized)
 
 
   <!-- **********************************************************************
-Empty result set (can be customized)
- ********************************************************************** -->
+ Empty result set (can be customized)
+     ********************************************************************** -->
   <xsl:template name="no_RES">
     <xsl:param name="query"/>
 
@@ -522,21 +522,21 @@ Empty result set (can be customized)
 
 
   <!-- ######################################################################
-We do not recommend changes to the following code.  Google Technical
-Support Personnel currently do not support customization of XSLT under
-these Technical Support Services Guidelines.  Such services may be
-provided on a consulting basis, at Google's then-current consulting
-services rates under a separate agreement, if Google personnel are
-available.  Please ask your Google Account Manager for more details if
-you are interested in purchasing consulting services.
- ###################################################################### -->
+ We do not recommend changes to the following code.  Google Technical
+ Support Personnel currently do not support customization of XSLT under
+ these Technical Support Services Guidelines.  Such services may be
+ provided on a consulting basis, at Google's then-current consulting
+ services rates under a separate agreement, if Google personnel are
+ available.  Please ask your Google Account Manager for more details if
+ you are interested in purchasing consulting services.
+     ###################################################################### -->
 
 
   <!-- **********************************************************************
-Global Style (do not customize)
-	default font type/size/color, background color, link color
-	 using HTML CSS (Cascading Style Sheets)
- ********************************************************************** -->
+ Global Style (do not customize)
+        default font type/size/color, background color, link color
+         using HTML CSS (Cascading Style Sheets)
+     ********************************************************************** -->
   <xsl:template name="style">
     <style>
       <xsl:comment>
@@ -590,11 +590,11 @@ Global Style (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-URL variables (do not customize)
- ********************************************************************** -->
+ URL variables (do not customize)
+     ********************************************************************** -->
   <!-- *** if this is a test search (help variable)-->
   <xsl:variable name="is_test_search"
-  select="/GSP/PARAM[@name='testSearch']/@value"/>
+    select="/GSP/PARAM[@name='testSearch']/@value"/>
 
   <!-- *** if this is a search within results search *** -->
   <xsl:variable name="swrnum">
@@ -619,50 +619,36 @@ URL variables (do not customize)
     <xsl:for-each
       select="/GSP/PARAM[@name = 'client' or
 
-				 @name = 'site' or
-				 @name = 'num' or
-				 @name = 'output' or
-				 @name = 'proxystylesheet' or
-				 @name = 'access' or
-				 @name = 'lr' or
-				 @name = 'sitesearch' or
-				 @name = 'ie']">
+                     @name = 'site' or
+                     @name = 'num' or
+                     @name = 'output' or
+                     @name = 'proxystylesheet' or
+                     @name = 'access' or
+                     @name = 'lr' or
+                     @name = 'ie']">
       <xsl:value-of select="@name"/>=<xsl:value-of select="@original_value"/>
       <xsl:if test="position() != last()">&amp;</xsl:if>
     </xsl:for-each>
   </xsl:variable>
 
-
-
-
-  <!-- *** alerts_url: Alerts URL (html file) *** -->
-  <xsl:variable name="suggestion_sitesearchParam">
-    <xsl:value-of select="/GSP/PARAM[@name = 'sitesearch']/@original_value"/>
-
-  </xsl:variable>
-
-
-
-
-
-  <!-- *** home_url: GSASearchresults.aspx? + collection info + &proxycustom=<HOME/> *** -->
+  <!-- *** home_url: GSAsearchresults.aspx? + collection info + &proxycustom=<HOME/> *** -->
   <xsl:variable name="home_url">
-    GSASearchresults.aspx?<xsl:value-of select="$base_url"
-/>&amp;proxycustom=&lt;HOME/&gt;
+    GSAsearchresults.aspx?<xsl:value-of select="$base_url"
+  />&amp;proxycustom=&lt;HOME/&gt;
   </xsl:variable>
 
 
   <!-- *** synonym_url: does not include q, as_q, and start elements *** -->
   <xsl:variable name="synonym_url">
     <xsl:for-each
-    select="/GSP/PARAM[(@name != 'q') and
-				 (@name != 'as_q') and
-				 (@name != 'swrnum') and
+  select="/GSP/PARAM[(@name != 'q') and
+                     (@name != 'as_q') and
+                     (@name != 'swrnum') and
 
-		 (@name != 'ie') and
-				 (@name != 'start') and
-				 (@name != 'epoch' or $is_test_search != '') and
-				 not(starts-with(@name, 'metabased_'))]">
+		     (@name != 'ie') and
+                     (@name != 'start') and
+                     (@name != 'epoch' or $is_test_search != '') and
+                     not(starts-with(@name, 'metabased_'))]">
       <xsl:value-of select="@name"/>
       <xsl:text>=</xsl:text>
       <xsl:value-of select="@original_value"/>
@@ -675,9 +661,9 @@ URL variables (do not customize)
   <!-- *** search_url *** -->
   <xsl:variable name="search_url">
     <xsl:for-each select="/GSP/PARAM[(@name != 'start') and
-							   (@name != 'swrnum') and
-				 (@name != 'epoch' or $is_test_search != '') and
-				 not(starts-with(@name, 'metabased_'))]">
+                                   (@name != 'swrnum') and
+                     (@name != 'epoch' or $is_test_search != '') and
+                     not(starts-with(@name, 'metabased_'))]">
       <xsl:value-of select="@name"/>
       <xsl:text>=</xsl:text>
       <xsl:value-of select="@original_value"/>
@@ -689,10 +675,10 @@ URL variables (do not customize)
 
   <!-- *** filter_url: everything except resetting "filter=" *** -->
   <xsl:variable name="filter_url">
-    GSASearchresults.aspx?<xsl:for-each
-select="/GSP/PARAM[(@name != 'filter') and
-				 (@name != 'epoch' or $is_test_search != '') and
-				 not(starts-with(@name, 'metabased_'))]">
+    GSAsearchresults.aspx?<xsl:for-each
+  select="/GSP/PARAM[(@name != 'filter') and
+                     (@name != 'epoch' or $is_test_search != '') and
+                     not(starts-with(@name, 'metabased_'))]">
       <xsl:value-of select="@name"/>
       <xsl:text>=</xsl:text>
       <xsl:value-of select="@original_value"/>
@@ -703,10 +689,10 @@ select="/GSP/PARAM[(@name != 'filter') and
     <xsl:text disable-output-escaping='yes'>&amp;filter=</xsl:text>
   </xsl:variable>
 
-  <!-- *** adv_search_url: GSASearchresults.aspx? + $search_url + as_q=$q *** -->
+  <!-- *** adv_search_url: GSAsearchresults.aspx? + $search_url + as_q=$q *** -->
   <xsl:variable name="adv_search_url">
-    GSASearchresults.aspx?<xsl:value-of
-select="$search_url"/>&amp;proxycustom=&lt;ADVANCED/&gt;
+    GSAsearchresults.aspx?<xsl:value-of
+  select="$search_url"/>&amp;proxycustom=&lt;ADVANCED/&gt;
   </xsl:variable>
 
   <!-- *** db_url_protocol: googledb:// *** -->
@@ -724,19 +710,19 @@ select="$search_url"/>&amp;proxycustom=&lt;ADVANCED/&gt;
   <!-- *** unc_url_protocol: unc:// *** -->
   <xsl:variable name="unc_url_protocol">unc://</xsl:variable>
 
-  <!-- *** swr_search_url: GSASearchresults.aspx? + $search_url + as_q=$q *** -->
+  <!-- *** swr_search_url: GSAsearchresults.aspx? + $search_url + as_q=$q *** -->
   <xsl:variable name="swr_search_url">
-    GSASearchresults.aspx?<xsl:value-of
-select="$search_url"/>&amp;swrnum=<xsl:value-of select="/GSP/RES/M"/>
+    GSAsearchresults.aspx?<xsl:value-of
+  select="$search_url"/>&amp;swrnum=<xsl:value-of select="/GSP/RES/M"/>
   </xsl:variable>
 
   <!-- *** analytics_script_url: http://www.google-analytics.com/urchin.js *** -->
   <xsl:variable
-  name="analytics_script_url">http://www.google-analytics.com/urchin.js</xsl:variable>
+   name="analytics_script_url">http://www.google-analytics.com/urchin.js</xsl:variable>
 
   <!-- **********************************************************************
-Search Parameters (do not customize)
- ********************************************************************** -->
+ Search Parameters (do not customize)
+     ********************************************************************** -->
 
   <!-- *** num_results: actual num_results per page *** -->
   <xsl:variable name="num_results">
@@ -754,26 +740,25 @@ Search Parameters (do not customize)
   <xsl:template name="form_params">
     <xsl:for-each
       select="PARAM[@name != 'q' and
-			  @name != 'ie' and
-			  not(contains(@name, 'as_')) and
-			  @name != 'btnG' and
-			  @name != 'btnI' and
-			  @name != 'site' and
-			  @name != 'filter' and
-			  @name != 'swrnum' and
-			  @name != 'start' and
-			  @name != 'access' and
-			  @name != 'sitesearch' and
-			  @name != 'ip' and
-			  (@name != 'epoch' or $is_test_search != '') and
-			  not(starts-with(@name ,'metabased_'))]">
+                  @name != 'ie' and
+                  not(contains(@name, 'as_')) and
+                  @name != 'btnG' and
+                  @name != 'btnI' and
+                  @name != 'site' and
+                  @name != 'filter' and
+                  @name != 'swrnum' and
+                  @name != 'start' and
+                  @name != 'access' and
+                  @name != 'ip' and
+                  (@name != 'epoch' or $is_test_search != '') and
+                  not(starts-with(@name ,'metabased_'))]">
       <input type="hidden" name="{@name}" value="{@value}" />
 
       <xsl:if test="@name = 'oe'">
         <input type="hidden" name="ie" value="{@value}" />
       </xsl:if>
       <xsl:text>
-</xsl:text>
+    </xsl:text>
     </xsl:for-each>
     <xsl:if test="$search_collections_xslt = '' and PARAM[@name='site']">
       <input type="hidden" name="site" value="{PARAM[@name='site']/@value}"/>
@@ -793,16 +778,16 @@ Search Parameters (do not customize)
   <!-- *** stripped_search_query: q, as_q, ... for cache highlight *** -->
   <xsl:variable name="stripped_search_query">
     <xsl:for-each
-    select="/GSP/PARAM[(@name = 'q') or
-				 (@name = 'as_q') or
-				 (@name = 'as_oq') or
-				 (@name = 'as_epq')]">
+  select="/GSP/PARAM[(@name = 'q') or
+                     (@name = 'as_q') or
+                     (@name = 'as_oq') or
+                     (@name = 'as_epq')]">
       <xsl:value-of select="@original_value"
-/>
+  />
       <xsl:if test="position() != last()"
->
+    >
         <xsl:text disable-output-escaping="yes">+</xsl:text
- >
+     >
       </xsl:if>
     </xsl:for-each>
   </xsl:variable>
@@ -816,18 +801,9 @@ Search Parameters (do not customize)
     </xsl:choose>
   </xsl:variable>
 
-  <xsl:variable name="sitesearch">
-    <xsl:choose>
-      <xsl:when test="/GSP/PARAM[(@name='sitesearch')]">
-        <xsl:value-of select="/GSP/PARAM[@name='sitesearch']/@original_value"/>
-      </xsl:when>
-      <xsl:otherwise>p</xsl:otherwise>
-    </xsl:choose>
-  </xsl:variable>
-
   <!-- **********************************************************************
-Figure out what kind of page this is (do not customize)
- ********************************************************************** -->
+ Figure out what kind of page this is (do not customize)
+     ********************************************************************** -->
   <xsl:template match="GSP">
     <xsl:choose>
       <xsl:when test="Q">
@@ -865,19 +841,19 @@ Figure out what kind of page this is (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-Cached page (do not customize)
- ********************************************************************** -->
+ Cached page (do not customize)
+     ********************************************************************** -->
   <xsl:template name="cached_page">
     <xsl:variable name="cached_page_url" select="CACHE/CACHE_URL"/>
     <xsl:variable name="cached_page_html" select="CACHE/CACHE_HTML"/>
 
     <!-- *** decide whether to load html page or pdf file *** -->
     <xsl:if test="'.pdf' != substring($cached_page_url,
-		  1 + string-length($cached_page_url) - string-length('.pdf')) and
-		  not(starts-with($cached_page_url, $db_url_protocol)) and
-		  not(starts-with($cached_page_url, $nfs_url_protocol)) and
-		  not(starts-with($cached_page_url, $smb_url_protocol)) and
-		  not(starts-with($cached_page_url, $unc_url_protocol))">
+              1 + string-length($cached_page_url) - string-length('.pdf')) and
+              not(starts-with($cached_page_url, $db_url_protocol)) and
+              not(starts-with($cached_page_url, $nfs_url_protocol)) and
+              not(starts-with($cached_page_url, $smb_url_protocol)) and
+              not(starts-with($cached_page_url, $unc_url_protocol))">
       <base href="{$cached_page_url}"/>
     </xsl:if>
 
@@ -911,8 +887,8 @@ Cached page (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-Advanced search page (do not customize)
- ********************************************************************** -->
+ Advanced search page (do not customize)
+     ********************************************************************** -->
   <xsl:template name="advanced_search">
 
     <xsl:variable name="html_escaped_as_q">
@@ -994,8 +970,6 @@ Advanced search page (do not customize)
 
           if (typeof(z.access) != 'undefined')
           {p[i++] = 'access=' + esc(z.access.value);}
-          if (typeof(z.sitesearch) != 'undefined')
-          {p[i++] = 'sitesearch=' + esc(z.sitesearch.value);}
           if (custom != '')
           {p[i++] = 'proxycustom=' + '&lt;ADVANCED/&gt;';}
           if (p.length &gt; 0) {
@@ -1014,13 +988,13 @@ Advanced search page (do not customize)
 
         <!-- *** Customer's own advanced search page header *** -->
         <xsl:if test="$choose_adv_search_page_header = 'mine' or
-				$choose_adv_search_page_header = 'both'">
+                    $choose_adv_search_page_header = 'both'">
           <xsl:call-template name="my_page_header"/>
         </xsl:if>
 
         <!--====Advanced Search Header======-->
         <xsl:if test="$choose_adv_search_page_header = 'provided' or
-				$choose_adv_search_page_header = 'both'">
+                    $choose_adv_search_page_header = 'both'">
           <xsl:call-template name="advanced_search_header"/>
         </xsl:if>
 
@@ -1036,13 +1010,6 @@ Advanced search page (do not customize)
             <input type="hidden" name="client"
               value="{PARAM[@name='client']/@value}" />
           </xsl:if>
-
-          <xsl:if test="PARAM[@name='sitesearch']">
-            <input type="hidden" name="sitesearch"
-              value="{PARAM[@name='sitesearch']/@value}" />
-          </xsl:if>
-
-
           <!--==== site is carried over in the drop down if the menu is used =====-->
           <xsl:if test="$search_collections_xslt = '' and PARAM[@name='site']">
             <input type="hidden" name="site" value="{PARAM[@name='site']/@value}"/>
@@ -1110,9 +1077,9 @@ Advanced search page (do not customize)
 
                                 <td>
                                   <xsl:text disable-output-escaping="yes">
-						 &lt;input type=&quot;text&quot;
-						 name=&quot;as_q&quot;
-						 size=&quot;25&quot; value=&quot;</xsl:text>
+                             &lt;input type=&quot;text&quot;
+                             name=&quot;as_q&quot;
+                             size=&quot;25&quot; value=&quot;</xsl:text>
                                   <xsl:value-of disable-output-escaping="yes"
                                    select="$html_escaped_as_q"/>
                                   <xsl:text disable-output-escaping="yes">&quot;&gt;</xsl:text>
@@ -1192,9 +1159,9 @@ Advanced search page (do not customize)
                                 <td>
                                   <xsl:text disable-output-escaping="yes">
 
-						 &lt;input type=&quot;text&quot;
-						 name=&quot;as_epq&quot;
-						 size=&quot;25&quot; value=&quot;</xsl:text>
+                             &lt;input type=&quot;text&quot;
+                             name=&quot;as_epq&quot;
+                             size=&quot;25&quot; value=&quot;</xsl:text>
                                   <xsl:value-of disable-output-escaping="yes"
                                    select="$html_escaped_as_epq"/>
                                   <xsl:text disable-output-escaping="yes">&quot;&gt;</xsl:text>
@@ -1212,9 +1179,9 @@ Advanced search page (do not customize)
                                 <td>
                                   <xsl:text disable-output-escaping="yes">
 
-						 &lt;input type=&quot;text&quot;
-						 name=&quot;as_oq&quot;
-						 size=&quot;25&quot; value=&quot;</xsl:text>
+                             &lt;input type=&quot;text&quot;
+                             name=&quot;as_oq&quot;
+                             size=&quot;25&quot; value=&quot;</xsl:text>
                                   <xsl:value-of disable-output-escaping="yes"
                                    select="$html_escaped_as_oq"/>
                                   <xsl:text disable-output-escaping="yes">&quot;&gt;</xsl:text>
@@ -1231,9 +1198,9 @@ Advanced search page (do not customize)
                                 <td>
                                   <xsl:text disable-output-escaping="yes">
 
-						 &lt;input type=&quot;text&quot;
-						 name=&quot;as_eq&quot;
-						 size=&quot;25&quot; value=&quot;</xsl:text>
+                             &lt;input type=&quot;text&quot;
+                             name=&quot;as_eq&quot;
+                             size=&quot;25&quot; value=&quot;</xsl:text>
                                   <xsl:value-of disable-output-escaping="yes"
                                    select="$html_escaped_as_eq"/>
                                   <xsl:text disable-output-escaping="yes">&quot;&gt;</xsl:text>
@@ -1280,7 +1247,7 @@ Advanced search page (do not customize)
                               <xsl:choose>
                                 <xsl:when test="PARAM[(@name='lr') and (@value='lang_ar')]">
                                   <option value="lang_ar"
-                                  selected="selected">Arabic</option>
+                                    selected="selected">Arabic</option>
                                 </xsl:when>
                                 <xsl:otherwise>
                                   <option value="lang_ar">Arabic</option>
@@ -1290,7 +1257,7 @@ Advanced search page (do not customize)
                               <xsl:choose>
                                 <xsl:when test="PARAM[(@name='lr') and (@value='lang_zh-CN')]">
                                   <option value="lang_zh-CN"
-                                  selected="selected">Chinese (Simplified)</option>
+                                    selected="selected">Chinese (Simplified)</option>
                                 </xsl:when>
                                 <xsl:otherwise>
                                   <option value="lang_zh-CN">Chinese (Simplified)</option>
@@ -1300,7 +1267,7 @@ Advanced search page (do not customize)
                               <xsl:choose>
                                 <xsl:when test="PARAM[(@name='lr') and (@value='lang_zh-TW')]">
                                   <option value="lang_zh-TW"
-                                  selected="selected">Chinese (Traditional)</option>
+                                    selected="selected">Chinese (Traditional)</option>
                                 </xsl:when>
                                 <xsl:otherwise>
                                   <option value="lang_zh-TW">Chinese (Traditional)</option>
@@ -1652,7 +1619,7 @@ Advanced search page (do not customize)
                           <td>
                             <font size="-1">
                               <select
-                    name="as_occt">
+          name="as_occt">
                                 <xsl:choose>
                                   <xsl:when test="PARAM[(@name='as_occt') and (@value!='any')]">
                                     <option value="any"> anywhere in the page </option>
@@ -1701,7 +1668,7 @@ Advanced search page (do not customize)
                           <td width="40%" nowrap="nowrap">
                             <font size="-1">
                               <select
-                          name="as_dt">
+                      name="as_dt">
                                 <xsl:choose>
                                   <xsl:when test="PARAM[(@name='as_dt') and (@value='i')]">
                                     <option value="i" selected="selected">Only</option>
@@ -1762,7 +1729,7 @@ Advanced search page (do not customize)
                           <td colspan="2" nowrap="nowrap">
                             <font size="-1">
                               <select
-                          name="sort">
+                      name="sort">
                                 <xsl:choose>
                                   <xsl:when test="PARAM[(@name='sort') and (@value='')]">
                                     <option value="" selected="selected">Sort by relevance</option>
@@ -1871,7 +1838,7 @@ Advanced search page (do not customize)
                                 <xsl:when test="PARAM[@name='as_lq']">
                                   <input type="text" size="30"
                                    value="{PARAM[@name='as_lq']/@value}"
-                                       name="as_lq" />
+                                           name="as_lq" />
                                 </xsl:when>
                                 <xsl:otherwise>
                                   <input type="text" size="30" value="" name="as_lq" />
@@ -1904,9 +1871,9 @@ Advanced search page (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-Resend query with filter=p to disable path_filtering
-if there is only one result cluster (do not customize)
- ********************************************************************** -->
+ Resend query with filter=p to disable path_filtering
+ if there is only one result cluster (do not customize)
+     ********************************************************************** -->
   <xsl:template name="redirect_if_few_results">
     <xsl:variable name="count" select="count(/GSP/RES/R)"/>
     <xsl:variable name="start" select="/GSP/RES/@SN"/>
@@ -1917,8 +1884,8 @@ if there is only one result cluster (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-Search results (do not customize)
- ********************************************************************** -->
+ Search results (do not customize)
+     ********************************************************************** -->
   <xsl:template name="search_results">
     <html>
 
@@ -1968,13 +1935,13 @@ Search results (do not customize)
 
     <!-- *** Customer's own result page header *** -->
     <xsl:if test="$choose_result_page_header = 'mine' or
-			$choose_result_page_header = 'both'">
+                $choose_result_page_header = 'both'">
       <xsl:call-template name="my_page_header"/>
     </xsl:if>
 
     <!-- *** Result page header *** -->
     <xsl:if test="$choose_result_page_header = 'provided' or
-			$choose_result_page_header = 'both'">
+                $choose_result_page_header = 'both'">
       <xsl:call-template name="result_page_header" />
     </xsl:if>
 
@@ -2017,8 +1984,8 @@ Search results (do not customize)
 
 
   <!-- **********************************************************************
-Collection menu beside the search box
- ********************************************************************** -->
+  Collection menu beside the search box
+     ********************************************************************** -->
   <xsl:template name="collection_menu">
     <xsl:if test="$search_collections_xslt != ''">
       <td valign="middle">
@@ -2039,8 +2006,8 @@ Collection menu beside the search box
   </xsl:template>
 
   <!-- **********************************************************************
-Search box input form (Types: std_top, std_bottom, home, swr)
- ********************************************************************** -->
+  Search box input form (Types: std_top, std_bottom, home, swr)
+     ********************************************************************** -->
   <xsl:template name="search_box">
     <xsl:param name="type"/>
 
@@ -2102,8 +2069,8 @@ Search box input form (Types: std_top, std_bottom, home, swr)
                     <xsl:choose>
                       <xsl:when test="$choose_search_button = 'image'">
                         <input type="image" name="btnG" src="{$search_button_image_url}"
-                         valign="bottom" width="60" height="26"
-                         border="0" value="{$search_button_text}"/>
+                       valign="bottom" width="60" height="26"
+                       border="0" value="{$search_button_text}"/>
                       </xsl:when>
                       <xsl:otherwise>
                         <input type="submit" name="btnG" value="{$search_button_text}"/>
@@ -2186,15 +2153,15 @@ Search box input form (Types: std_top, std_bottom, home, swr)
         </tr>
       </table>
       <xsl:text>
-</xsl:text>
+    </xsl:text>
       <xsl:call-template name="form_params"/>
     </form>
   </xsl:template>
 
 
   <!-- **********************************************************************
-Bottom search box (do not customized)
- ********************************************************************** -->
+  Bottom search box (do not customized)
+     ********************************************************************** -->
   <xsl:template name="bottom_search_box">
     <br clear="all"/>
     <br/>
@@ -2227,15 +2194,15 @@ Bottom search box (do not customized)
 
 
   <!-- **********************************************************************
-Sort-by criteria: sort by date/relevance
- ********************************************************************** -->
+ Sort-by criteria: sort by date/relevance
+     ********************************************************************** -->
   <xsl:template name="sort_by">
     <xsl:variable name="sort_by_url">
       <xsl:for-each
     select="/GSP/PARAM[(@name != 'sort') and
-				   (@name != 'start') and
-				   (@name != 'epoch' or $is_test_search != '') and
-				   not(starts-with(@name, 'metabased_'))]">
+                       (@name != 'start') and
+                       (@name != 'epoch' or $is_test_search != '') and
+                       not(starts-with(@name, 'metabased_'))]">
         <xsl:value-of select="@name"/>
         <xsl:text>=</xsl:text>
         <xsl:value-of select="@original_value"/>
@@ -2247,12 +2214,12 @@ Sort-by criteria: sort by date/relevance
 
     <xsl:variable name="sort_by_relevance_url">
       <xsl:value-of select="$sort_by_url"
-  />&amp;sort=date%3AD%3AL%3Ad1
+      />&amp;sort=date%3AD%3AL%3Ad1
     </xsl:variable>
 
     <xsl:variable name="sort_by_date_url">
       <xsl:value-of select="$sort_by_url"
-  />&amp;sort=date%3AD%3AS%3Ad1
+      />&amp;sort=date%3AD%3AS%3Ad1
     </xsl:variable>
 
     <table>
@@ -2264,16 +2231,16 @@ Sort-by criteria: sort by date/relevance
                 <font color="{$global_text_color}">
                   <xsl:text>Sort by date / </xsl:text>
                 </font>
-                <a href="GSASearchresults.aspx?{$sort_by_relevance_url}">Sort by relevance</a>
+                <a href="GSAsearchresults.aspx?{$sort_by_relevance_url}">Sort by relevance</a>
               </xsl:when>
               <xsl:when test="/GSP/PARAM[@name = 'sort' and starts-with(@value,'date:A:S')]">
                 <font color="{$global_text_color}">
                   <xsl:text>Sort by date / </xsl:text>
                 </font>
-                <a href="GSASearchresults.aspx?{$sort_by_relevance_url}">Sort by relevance</a>
+                <a href="GSAsearchresults.aspx?{$sort_by_relevance_url}">Sort by relevance</a>
               </xsl:when>
               <xsl:otherwise>
-                <a href="GSASearchresults.aspx?{$sort_by_date_url}">Sort by date</a>
+                <a href="GSAsearchresults.aspx?{$sort_by_date_url}">Sort by date</a>
                 <font color="{$global_text_color}">
                   <xsl:text> / Sort by relevance</xsl:text>
                 </font>
@@ -2286,8 +2253,8 @@ Sort-by criteria: sort by date/relevance
   </xsl:template>
 
   <!-- **********************************************************************
-Output all results
- ********************************************************************** -->
+ Output all results
+     ********************************************************************** -->
   <xsl:template name="results">
     <xsl:param name="query"/>
     <xsl:param name="time"/>
@@ -2470,8 +2437,8 @@ Output all results
 
 
   <!-- **********************************************************************
-Stopwords suggestions in result page (do not customize)
- ********************************************************************** -->
+ Stopwords suggestions in result page (do not customize)
+     ********************************************************************** -->
   <xsl:template name="stopwords">
     <xsl:variable name="stopwords_suggestions1">
       <xsl:call-template name="replace_string">
@@ -2501,8 +2468,8 @@ Stopwords suggestions in result page (do not customize)
 
 
   <!-- **********************************************************************
-Spelling suggestions in result page (do not customize)
- ********************************************************************** -->
+ Spelling suggestions in result page (do not customize)
+     ********************************************************************** -->
   <xsl:template name="spelling">
     <xsl:if test="/GSP/Spelling/Suggestion">
       <p>
@@ -2512,20 +2479,18 @@ Spelling suggestions in result page (do not customize)
             <xsl:call-template name="nbsp"/>
           </font>
         </span>
-        <a href="GSASearchresults.aspx?k={/GSP/Spelling/Suggestion[1]/@qe}&amp;spell=1&amp;{$base_url}">
+        <a href="GSAsearchresults.aspx?k={/GSP/Spelling/Suggestion[1]/@qe}&amp;spell=1&amp;{$base_url}">
           <xsl:value-of disable-output-escaping="yes"
-          select="/GSP/Spelling/Suggestion[1]"/>
-
+            select="/GSP/Spelling/Suggestion[1]"/>
         </a>
-
       </p>
     </xsl:if>
   </xsl:template>
 
 
   <!-- **********************************************************************
-Synonym suggestions in result page (do not customize)
- ********************************************************************** -->
+ Synonym suggestions in result page (do not customize)
+     ********************************************************************** -->
   <xsl:template name="synonyms">
     <xsl:if test="/GSP/Synonyms/OneSynonym">
       <p>
@@ -2536,7 +2501,7 @@ Synonym suggestions in result page (do not customize)
           </font>
         </span>
         <xsl:for-each select="/GSP/Synonyms/OneSynonym">
-          <a href="GSASearchresults.aspx?k={@q}&amp;{$synonym_url}">
+          <a href="GSAsearchresults.aspx?k={@q}&amp;{$synonym_url}">
             <xsl:value-of disable-output-escaping="yes" select="."/>
           </a>
           <xsl:text> </xsl:text>
@@ -2547,8 +2512,8 @@ Synonym suggestions in result page (do not customize)
 
 
   <!-- **********************************************************************
-Truncation functions (do not customize)
- ********************************************************************** -->
+ Truncation functions (do not customize)
+     ********************************************************************** -->
   <xsl:template name="truncate_url">
     <xsl:param name="t_url"/>
 
@@ -2620,8 +2585,8 @@ Truncation functions (do not customize)
 
 
   <!-- **********************************************************************
-A single result (do not customize)
- ********************************************************************** -->
+  A single result (do not customize)
+     ********************************************************************** -->
   <xsl:template match="R">
     <xsl:param name="query"/>
 
@@ -2751,8 +2716,8 @@ A single result (do not customize)
                 <img src="/_layouts/images/icrtf.gif" alt="Richtext Doc"></img>
               </xsl:when>
               <!--
-  <xsl:when test="@MIME='application/pdf'"><img src="/_layouts/images/icpdf.gif" alt="PDF"></img></xsl:when>
-  -->
+      <xsl:when test="@MIME='application/pdf'"><img src="/_layouts/images/icpdf.gif" alt="PDF"></img></xsl:when>
+      -->
               <xsl:when test="@MIME='application/postscript'">[PS]</xsl:when>
               <xsl:when test="@MIME='application/vnd.ms-powerpoint'">
                 <img src="/_layouts/images/icpot.gif" alt="MS Powerpoint"></img>
@@ -2769,8 +2734,8 @@ A single result (do not customize)
                 <xsl:variable name="extension">
                   <xsl:call-template name="last_substring_after">
                     <xsl:with-param name="string" select="substring-after(
-											  $temp_url,
-											  '/')"/>
+                                                  $temp_url,
+                                                  '/')"/>
                     <xsl:with-param name="separator" select="'.'"/>
                     <xsl:with-param name="fallback" select="'UNKNOWN'"/>
                   </xsl:call-template>
@@ -2793,12 +2758,12 @@ A single result (do not customize)
           <xsl:choose>
             <xsl:when test="starts-with(U, $db_url_protocol)">
               <xsl:value-of disable-output-escaping='yes'
-                    select="concat('db/', $temp_url)"/>
+                            select="concat('db/', $temp_url)"/>
             </xsl:when>
             <!-- *** URI for smb or NFS must be escaped because it appears in the URI query *** -->
             <xsl:when test="$protocol='nfs' or $protocol='smb'">
               <xsl:value-of disable-output-escaping='yes'
-                    select="concat($protocol,'/',$temp_url)"/>
+                            select="concat($protocol,'/',$temp_url)"/>
             </xsl:when>
             <xsl:when test="$protocol='unc'">
               <xsl:value-of disable-output-escaping='yes' select="concat('file://', $display_url2)"/>
@@ -2838,7 +2803,7 @@ A single result (do not customize)
             </xsl:if>
 
             <!-- *** Meta tags *** -->
-            <xsl:if test="$show_meta_tags != '1'">
+            <xsl:if test="$show_meta_tags != '0'">
               <xsl:apply-templates select="MT"/>
             </xsl:if>
 
@@ -2857,8 +2822,8 @@ A single result (do not customize)
               <xsl:choose>
                 <xsl:when test="not($url_indexed)">
                   <xsl:if test="($show_res_size!='0') or
-					($show_res_date!='0') or
-					($show_res_cache!='0')">
+                        ($show_res_date!='0') or
+                        ($show_res_cache!='0')">
                     <xsl:text>Not Indexed:</xsl:text>
                     <xsl:value-of select="$stripped_url"/>
                   </xsl:if>
@@ -2887,8 +2852,8 @@ A single result (do not customize)
             <xsl:if test="HN">
               <br/>
               [
-              <a class="f" href="GSASearchresults.aspx?as_sitesearch={$crowded_url}&amp;{
-		$search_url}">
+              <a class="f" href="GSAsearchresults.aspx?as_sitesearch={$crowded_url}&amp;{
+            $search_url}">
                 More results from <xsl:value-of select="$crowded_display_url"/>
               </a>
               ]
@@ -2899,7 +2864,7 @@ A single result (do not customize)
               <xsl:if test="starts-with($crowded_url, $db_url_protocol)">
                 [
                 <a class="f" href="dbaggr?sitesearch={$crowded_url}&amp;{
-	  $search_url}">View all data</a>
+          $search_url}">View all data</a>
                 ]
               </xsl:if>
             </xsl:if>
@@ -2928,8 +2893,8 @@ A single result (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-Meta tag values within a result (do not customize)
- ********************************************************************** -->
+  Meta tag values within a result (do not customize)
+     ********************************************************************** -->
   <xsl:template match="MT">
     <br/>
     <span class="f">
@@ -2939,8 +2904,8 @@ Meta tag values within a result (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-A single keymatch result (do not customize)
- ********************************************************************** -->
+  A single keymatch result (do not customize)
+     ********************************************************************** -->
   <xsl:template match="GM">
     <p>
       <table cellpadding="4" cellspacing="0" border="0" height="40" width="100%">
@@ -2957,7 +2922,7 @@ A single keymatch result (do not customize)
             </font>
           </td>
           <td bgcolor="{$keymatch_bg_color}" height="40"
-          align="right" valign="top">
+            align="right" valign="top">
             <b>
               <font size="-1" color="{$keymatch_text_color}">
                 <xsl:value-of select="$keymatch_text"/>
@@ -2971,8 +2936,8 @@ A single keymatch result (do not customize)
 
 
   <!-- **********************************************************************
-Variables for reformatting keyword-match display (do not customize)
- ********************************************************************** -->
+  Variables for reformatting keyword-match display (do not customize)
+     ********************************************************************** -->
   <xsl:variable name="keyword_orig_start" select="'&lt;b&gt;'"/>
   <xsl:variable name="keyword_orig_end" select="'&lt;/b&gt;'"/>
 
@@ -3010,9 +2975,9 @@ Variables for reformatting keyword-match display (do not customize)
   </xsl:variable>
 
   <!-- **********************************************************************
-Reformat the keyword match display in a title/snippet string
- (do not customize)
- ********************************************************************** -->
+  Reformat the keyword match display in a title/snippet string
+     (do not customize)
+     ********************************************************************** -->
   <xsl:template name="reformat_keyword">
     <xsl:param name="orig_string"/>
 
@@ -3038,8 +3003,8 @@ Reformat the keyword match display in a title/snippet string
 
 
   <!-- **********************************************************************
-Helper templates for generating a result item (do not customize)
- ********************************************************************** -->
+  Helper templates for generating a result item (do not customize)
+     ********************************************************************** -->
 
   <!-- *** Miscellaneous: - size - date - cache *** -->
   <xsl:template match="C">
@@ -3064,8 +3029,8 @@ Helper templates for generating a result item (do not customize)
 
     <xsl:if test="$show_res_date != '0'">
       <xsl:if test="($date != '') and
-			  (translate($date, '-', '') &gt; 19500000) and
-			  (translate($date, '-', '') &lt; 21000000)">
+                  (translate($date, '-', '') &gt; 19500000) and
+                  (translate($date, '-', '') &lt; 21000000)">
         <font color="{$res_url_color}" size="{$res_url_size}">
           <xsl:text> - </xsl:text>
           <xsl:value-of select="$date"/>
@@ -3085,9 +3050,9 @@ Helper templates for generating a result item (do not customize)
           <xsl:otherwise>UTF-8</xsl:otherwise>
         </xsl:choose>
       </xsl:variable>
-      <a class="f" href="GSASearchresults.aspx?k=cache:{$docid}:{$escaped_url}+{
-					   $stripped_search_query}&amp;{$base_url}&amp;oe={
-					   $cache_encoding}">
+      <a class="f" href="GSAsearchresults.aspx?k=cache:{$docid}:{$escaped_url}+{
+                           $stripped_search_query}&amp;{$base_url}&amp;oe={
+                           $cache_encoding}">
         <xsl:choose>
           <xsl:when test="not($mime)">Cached</xsl:when>
           <xsl:when test="$mime='text/html'">Cached</xsl:when>
@@ -3101,8 +3066,8 @@ Helper templates for generating a result item (do not customize)
 
 
   <!-- **********************************************************************
-Google navigation bar in result page (do not customize)
- ********************************************************************** -->
+ Google navigation bar in result page (do not customize)
+     ********************************************************************** -->
   <xsl:template name="google_navigation">
     <xsl:param name="prev"/>
     <xsl:param name="next"/>
@@ -3126,7 +3091,7 @@ Google navigation bar in result page (do not customize)
 
       <xsl:if test="$navigation_style != 'top'">
         <xsl:text disable-output-escaping="yes">&lt;center&gt;
-	&lt;div class=&quot;n&quot;&gt;</xsl:text>
+        &lt;div class=&quot;n&quot;&gt;</xsl:text>
       </xsl:if>
 
       <table border="0" cellpadding="0" width="1%" cellspacing="0">
@@ -3146,12 +3111,12 @@ Google navigation bar in result page (do not customize)
               <td nowrap="1">
 
                 <span class="{$fontclass}">
-                  <a href="GSASearchresults.aspx?{$search_url}&amp;start={$view_begin -
-				  $num_results - 1}">
+                  <a href="GSAsearchresults.aspx?{$search_url}&amp;start={$view_begin -
+                      $num_results - 1}">
                     <xsl:if test="$navigation_style = 'google'">
 
                       <img src="/_layouts/images/PLPLAYR2.GIF" width="68" height="26"
-                      alt="Previous" border="0"/>
+                        alt="Previous" border="0"/>
                       <br/>
                     </xsl:if>
                     <xsl:if test="$navigation_style = 'top'">
@@ -3169,7 +3134,7 @@ Google navigation bar in result page (do not customize)
               <td nowrap="1">
                 <xsl:if test="$navigation_style = 'google'">
                   <img src="/_layouts/images/PLPREV2.GIF" width="18" height="26"
-                  alt="First" border="0"/>
+                    alt="First" border="0"/>
                   <br/>
                 </xsl:if>
               </td>
@@ -3177,7 +3142,7 @@ Google navigation bar in result page (do not customize)
           </xsl:choose>
 
           <xsl:if test="($navigation_style = 'google') or
-				  ($navigation_style = 'link')">
+                      ($navigation_style = 'link')">
             <!-- *** Google result set navigation *** -->
             <xsl:variable name="mod_end">
               <xsl:choose>
@@ -3206,13 +3171,13 @@ Google navigation bar in result page (do not customize)
                   <xsl:call-template name="nbsp"/>
                 </xsl:if>
                 <span class="{$fontclass}">
-                  <a   href="GSASearchresults.aspx?{$search_url}&amp;start={$view_begin +
-			$num_results - 1}">
+                  <a href="GSAsearchresults.aspx?{$search_url}&amp;start={$view_begin +
+                $num_results - 1}">
                     <xsl:if test="$navigation_style = 'google'">
 
                       <img src="/_layouts/images/PLPLAY2.GIF" width="100" height="26"
 
-                      alt="Next1234" border="0"/>
+                        alt="Next" border="0"/>
                       <br/>
                     </xsl:if>
                     <xsl:text>Next</xsl:text>
@@ -3231,7 +3196,7 @@ Google navigation bar in result page (do not customize)
                 <xsl:if test="$navigation_style = 'google'">
                   <img src="/_layouts/images/PLNEXT2.GIF" width="46" height="26"
 
-                  alt="Last" border="0"/>
+                    alt="Last" border="0"/>
                   <br/>
                 </xsl:if>
               </td>
@@ -3244,15 +3209,15 @@ Google navigation bar in result page (do not customize)
 
       <xsl:if test="$navigation_style != 'top'">
         <xsl:text disable-output-escaping="yes">&lt;/div&gt;
-	&lt;/center&gt;</xsl:text>
+        &lt;/center&gt;</xsl:text>
       </xsl:if>
     </xsl:if>
   </xsl:template>
 
   <!-- **********************************************************************
-Helper templates for generating Google result navigation (do not customize)
-only shows 10 sets up or down from current view
- ********************************************************************** -->
+ Helper templates for generating Google result navigation (do not customize)
+   only shows 10 sets up or down from current view
+     ********************************************************************** -->
   <xsl:template name="result_nav">
     <xsl:param name="start" select="'0'"/>
     <xsl:param name="end"/>
@@ -3264,7 +3229,7 @@ only shows 10 sets up or down from current view
       <xsl:when test="($start)&lt;(($current_view)-(10*($num_results)))">
       </xsl:when>
       <xsl:when test="(($current_view)&gt;=($start)) and
-				(($current_view)&lt;(($start)+($num_results)))">
+                    (($current_view)&lt;(($start)+($num_results)))">
         <td>
           <xsl:if test="$navigation_style = 'google'">
             <img src="/_layouts/images/PLSTOP2.GIF" width="16" height="26" alt="Current"/>
@@ -3275,7 +3240,7 @@ only shows 10 sets up or down from current view
           </xsl:if>
           <span class="i">
             <xsl:value-of
-            select="(($start)div($num_results))+1"/>
+          select="(($start)div($num_results))+1"/>
           </span>
           <xsl:if test="$navigation_style = 'link'">
             <xsl:call-template name="nbsp"/>
@@ -3287,10 +3252,10 @@ only shows 10 sets up or down from current view
           <xsl:if test="$navigation_style = 'link'">
             <xsl:call-template name="nbsp"/>
           </xsl:if>
-          <a href="GSASearchresults.aspx?{$search_url}&amp;start={$start}">
+          <a href="GSAsearchresults.aspx?{$search_url}&amp;start={$start}">
             <xsl:if test="$navigation_style = 'google'">
               <img src="/_layouts/images/SEARCH.GIF" width="16" height="26" alt="Navigation"
-                 border="0"/>
+                   border="0"/>
               <br/>
             </xsl:if>
             <xsl:value-of select="(($start)div($num_results))+1"/>
@@ -3304,8 +3269,8 @@ only shows 10 sets up or down from current view
 
     <!-- *** Recursively iterate through result sets to display *** -->
     <xsl:if test="((($start)+($num_results))&lt;($end)) and
-			((($start)+($num_results))&lt;(($current_view)+
-			(10*($num_results))))">
+                ((($start)+($num_results))&lt;(($current_view)+
+                (10*($num_results))))">
       <xsl:call-template name="result_nav">
         <xsl:with-param name="start" select="$start+$num_results"/>
         <xsl:with-param name="end" select="$end"/>
@@ -3318,8 +3283,8 @@ only shows 10 sets up or down from current view
 
 
   <!-- **********************************************************************
-Top separation bar (do not customize)
- ********************************************************************** -->
+ Top separation bar (do not customize)
+     ********************************************************************** -->
   <xsl:template name="top_sep_bar">
     <xsl:param name="text"/>
     <xsl:param name="show_info"/>
@@ -3387,8 +3352,8 @@ Top separation bar (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-Analytics script (do not customize)
- ********************************************************************** -->
+ Analytics script (do not customize)
+     ********************************************************************** -->
   <xsl:template name="analytics">
     <xsl:if test="string-length($analytics_account) != '0'">
       <script src="{$analytics_script_url}" type="text/javascript"></script>
@@ -3403,8 +3368,8 @@ Analytics script (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-Utility function for constructing copyright text (do not customize)
- ********************************************************************** -->
+ Utility function for constructing copyright text (do not customize)
+     ********************************************************************** -->
   <xsl:template name="copyright">
     <center>
       <br/>
@@ -3419,8 +3384,8 @@ Utility function for constructing copyright text (do not customize)
 
 
   <!-- **********************************************************************
-Utility functions for generating html entities
- ********************************************************************** -->
+ Utility functions for generating html entities
+     ********************************************************************** -->
   <xsl:template name="nbsp">
     <xsl:text disable-output-escaping="yes">&amp;nbsp;</xsl:text>
   </xsl:template>
@@ -3441,27 +3406,27 @@ Utility functions for generating html entities
   </xsl:template>
 
   <!-- **********************************************************************
-Utility functions for generating head elements so that the XSLT processor
-won't add a meta tag to the output, since it may specify the wrong
-encoding (utf8) in the meta tag.
- ********************************************************************** -->
+ Utility functions for generating head elements so that the XSLT processor
+ won't add a meta tag to the output, since it may specify the wrong
+ encoding (utf8) in the meta tag.
+     ********************************************************************** -->
   <xsl:template name="plainHeadStart">
     <xsl:text disable-output-escaping="yes">&lt;head&gt;</xsl:text>
     <meta name="robots" content="NOINDEX,NOFOLLOW"/>
     <xsl:text>
-</xsl:text>
+  </xsl:text>
   </xsl:template>
   <xsl:template name="plainHeadEnd">
     <xsl:text disable-output-escaping="yes">&lt;/head&gt;</xsl:text>
     <xsl:text>
-</xsl:text>
+  </xsl:text>
   </xsl:template>
 
 
   <!-- **********************************************************************
-Utility functions for generating head elements with a meta tag to the output
-specifying the character set as requested
- ********************************************************************** -->
+ Utility functions for generating head elements with a meta tag to the output
+ specifying the character set as requested
+     ********************************************************************** -->
   <xsl:template name="langHeadStart">
     <xsl:text disable-output-escaping="yes">&lt;head&gt;</xsl:text>
     <meta name="robots" content="NOINDEX,NOFOLLOW"/>
@@ -3556,19 +3521,19 @@ specifying the character set as requested
       </xsl:otherwise>
     </xsl:choose>
     <xsl:text>
-</xsl:text>
+  </xsl:text>
   </xsl:template>
 
   <xsl:template name="langHeadEnd">
     <xsl:text disable-output-escaping="yes">&lt;/head&gt;</xsl:text>
     <xsl:text>
-</xsl:text>
+  </xsl:text>
   </xsl:template>
 
 
   <!-- **********************************************************************
-Utility functions (do not customize)
- ********************************************************************** -->
+ Utility functions (do not customize)
+     ********************************************************************** -->
 
   <!-- *** Find the substring after the last occurence of a separator *** -->
   <xsl:template name="last_substring_after">
@@ -3608,7 +3573,7 @@ Utility functions (do not customize)
           <xsl:with-param name="find" select="$find"/>
           <xsl:with-param name="replace" select="$replace"/>
           <xsl:with-param name="string"
-          select="substring-after($string, $find)"/>
+            select="substring-after($string, $find)"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:otherwise>
@@ -3685,8 +3650,8 @@ Utility functions (do not customize)
   </xsl:template>
 
   <!-- **********************************************************************
-Display error messages
- ********************************************************************** -->
+ Display error messages
+     ********************************************************************** -->
   <xsl:template name="error_page">
     <xsl:param name="errorMessage"/>
     <xsl:param name="errorDescription"/>
@@ -3765,8 +3730,8 @@ Display error messages
 
 
   <!-- **********************************************************************
-Google Desktop for Enterprise integration templates
- ********************************************************************** -->
+ Google Desktop for Enterprise integration templates
+     ********************************************************************** -->
   <xsl:template name="desktop_tab">
 
     <!-- *** Show the Google tabs *** -->
@@ -3824,8 +3789,8 @@ Google Desktop for Enterprise integration templates
   </xsl:template>
 
   <!-- **********************************************************************
-OneBox results (if any)
- ********************************************************************** -->
+  OneBox results (if any)
+     ********************************************************************** -->
   <xsl:template name="onebox">
     <xsl:for-each select="/GSP/ENTOBRESULTS">
       <xsl:apply-templates/>
@@ -3833,10 +3798,11 @@ OneBox results (if any)
   </xsl:template>
 
   <!-- **********************************************************************
-Swallow unmatched elements
- ********************************************************************** -->
+ Swallow unmatched elements
+     ********************************************************************** -->
   <xsl:template match="@*|node()"/>
 </xsl:stylesheet>
 
 
 <!-- *** END OF STYLESHEET *** -->
+
