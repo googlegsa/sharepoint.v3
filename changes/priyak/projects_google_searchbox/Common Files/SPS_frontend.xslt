@@ -625,15 +625,30 @@
                      @name = 'proxystylesheet' or
                      @name = 'access' or
                      @name = 'lr' or
+                     @name = 'sitesearch' or
                      @name = 'ie']">
       <xsl:value-of select="@name"/>=<xsl:value-of select="@original_value"/>
       <xsl:if test="position() != last()">&amp;</xsl:if>
     </xsl:for-each>
   </xsl:variable>
 
-  <!-- *** home_url: GSAsearchresults.aspx? + collection info + &proxycustom=<HOME/> *** -->
+
+  <!-- added code start-->
+
+  <!-- *** alerts_url: Alerts URL (html file) *** -->
+  <xsl:variable name="suggestion_sitesearchParam">
+    <xsl:value-of select="/GSP/PARAM[@name = 'sitesearch']/@original_value"/>
+
+  </xsl:variable>
+
+
+
+
+  <!-- added code end-->
+
+  <!-- *** home_url: GSASearchresults.aspx? + collection info + &proxycustom=<HOME/> *** -->
   <xsl:variable name="home_url">
-    GSAsearchresults.aspx?<xsl:value-of select="$base_url"
+    GSASearchresults.aspx?<xsl:value-of select="$base_url"
   />&amp;proxycustom=&lt;HOME/&gt;
   </xsl:variable>
 
@@ -675,7 +690,7 @@
 
   <!-- *** filter_url: everything except resetting "filter=" *** -->
   <xsl:variable name="filter_url">
-    GSAsearchresults.aspx?<xsl:for-each
+    GSASearchresults.aspx?<xsl:for-each
   select="/GSP/PARAM[(@name != 'filter') and
                      (@name != 'epoch' or $is_test_search != '') and
                      not(starts-with(@name, 'metabased_'))]">
@@ -689,9 +704,9 @@
     <xsl:text disable-output-escaping='yes'>&amp;filter=</xsl:text>
   </xsl:variable>
 
-  <!-- *** adv_search_url: GSAsearchresults.aspx? + $search_url + as_q=$q *** -->
+  <!-- *** adv_search_url: GSASearchresults.aspx? + $search_url + as_q=$q *** -->
   <xsl:variable name="adv_search_url">
-    GSAsearchresults.aspx?<xsl:value-of
+    GSASearchresults.aspx?<xsl:value-of
   select="$search_url"/>&amp;proxycustom=&lt;ADVANCED/&gt;
   </xsl:variable>
 
@@ -710,9 +725,9 @@
   <!-- *** unc_url_protocol: unc:// *** -->
   <xsl:variable name="unc_url_protocol">unc://</xsl:variable>
 
-  <!-- *** swr_search_url: GSAsearchresults.aspx? + $search_url + as_q=$q *** -->
+  <!-- *** swr_search_url: GSASearchresults.aspx? + $search_url + as_q=$q *** -->
   <xsl:variable name="swr_search_url">
-    GSAsearchresults.aspx?<xsl:value-of
+    GSASearchresults.aspx?<xsl:value-of
   select="$search_url"/>&amp;swrnum=<xsl:value-of select="/GSP/RES/M"/>
   </xsl:variable>
 
@@ -749,6 +764,7 @@
                   @name != 'swrnum' and
                   @name != 'start' and
                   @name != 'access' and
+                  @name != 'sitesearch' and
                   @name != 'ip' and
                   (@name != 'epoch' or $is_test_search != '') and
                   not(starts-with(@name ,'metabased_'))]">
@@ -796,6 +812,15 @@
     <xsl:choose>
       <xsl:when test="/GSP/PARAM[(@name='access') and ((@value='s') or (@value='a'))]">
         <xsl:value-of select="/GSP/PARAM[@name='access']/@original_value"/>
+      </xsl:when>
+      <xsl:otherwise>p</xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <xsl:variable name="sitesearch">
+    <xsl:choose>
+      <xsl:when test="/GSP/PARAM[(@name='sitesearch')]">
+        <xsl:value-of select="/GSP/PARAM[@name='sitesearch']/@original_value"/>
       </xsl:when>
       <xsl:otherwise>p</xsl:otherwise>
     </xsl:choose>
@@ -970,6 +995,8 @@
 
           if (typeof(z.access) != 'undefined')
           {p[i++] = 'access=' + esc(z.access.value);}
+          if (typeof(z.sitesearch) != 'undefined')
+          {p[i++] = 'sitesearch=' + esc(z.sitesearch.value);}
           if (custom != '')
           {p[i++] = 'proxycustom=' + '&lt;ADVANCED/&gt;';}
           if (p.length &gt; 0) {
@@ -1010,6 +1037,13 @@
             <input type="hidden" name="client"
               value="{PARAM[@name='client']/@value}" />
           </xsl:if>
+
+          <xsl:if test="PARAM[@name='sitesearch']">
+            <input type="hidden" name="sitesearch"
+              value="{PARAM[@name='sitesearch']/@value}" />
+          </xsl:if>
+
+
           <!--==== site is carried over in the drop down if the menu is used =====-->
           <xsl:if test="$search_collections_xslt = '' and PARAM[@name='site']">
             <input type="hidden" name="site" value="{PARAM[@name='site']/@value}"/>
@@ -2231,16 +2265,16 @@
                 <font color="{$global_text_color}">
                   <xsl:text>Sort by date / </xsl:text>
                 </font>
-                <a href="GSAsearchresults.aspx?{$sort_by_relevance_url}">Sort by relevance</a>
+                <a href="GSASearchresults.aspx?{$sort_by_relevance_url}">Sort by relevance</a>
               </xsl:when>
               <xsl:when test="/GSP/PARAM[@name = 'sort' and starts-with(@value,'date:A:S')]">
                 <font color="{$global_text_color}">
                   <xsl:text>Sort by date / </xsl:text>
                 </font>
-                <a href="GSAsearchresults.aspx?{$sort_by_relevance_url}">Sort by relevance</a>
+                <a href="GSASearchresults.aspx?{$sort_by_relevance_url}">Sort by relevance</a>
               </xsl:when>
               <xsl:otherwise>
-                <a href="GSAsearchresults.aspx?{$sort_by_date_url}">Sort by date</a>
+                <a href="GSASearchresults.aspx?{$sort_by_date_url}">Sort by date</a>
                 <font color="{$global_text_color}">
                   <xsl:text> / Sort by relevance</xsl:text>
                 </font>
@@ -2479,10 +2513,12 @@
             <xsl:call-template name="nbsp"/>
           </font>
         </span>
-        <a href="GSAsearchresults.aspx?k={/GSP/Spelling/Suggestion[1]/@qe}&amp;spell=1&amp;{$base_url}">
+        <a href="GSASearchresults.aspx?k={/GSP/Spelling/Suggestion[1]/@qe}&amp;spell=1&amp;{$base_url}">
           <xsl:value-of disable-output-escaping="yes"
             select="/GSP/Spelling/Suggestion[1]"/>
+
         </a>
+
       </p>
     </xsl:if>
   </xsl:template>
@@ -2501,7 +2537,7 @@
           </font>
         </span>
         <xsl:for-each select="/GSP/Synonyms/OneSynonym">
-          <a href="GSAsearchresults.aspx?k={@q}&amp;{$synonym_url}">
+          <a href="GSASearchresults.aspx?k={@q}&amp;{$synonym_url}">
             <xsl:value-of disable-output-escaping="yes" select="."/>
           </a>
           <xsl:text> </xsl:text>
@@ -2803,7 +2839,7 @@
             </xsl:if>
 
             <!-- *** Meta tags *** -->
-            <xsl:if test="$show_meta_tags != '0'">
+            <xsl:if test="$show_meta_tags != '1'">
               <xsl:apply-templates select="MT"/>
             </xsl:if>
 
@@ -2852,7 +2888,7 @@
             <xsl:if test="HN">
               <br/>
               [
-              <a class="f" href="GSAsearchresults.aspx?as_sitesearch={$crowded_url}&amp;{
+              <a class="f" href="GSASearchresults.aspx?as_sitesearch={$crowded_url}&amp;{
             $search_url}">
                 More results from <xsl:value-of select="$crowded_display_url"/>
               </a>
@@ -3050,7 +3086,7 @@
           <xsl:otherwise>UTF-8</xsl:otherwise>
         </xsl:choose>
       </xsl:variable>
-      <a class="f" href="GSAsearchresults.aspx?k=cache:{$docid}:{$escaped_url}+{
+      <a class="f" href="GSASearchresults.aspx?k=cache:{$docid}:{$escaped_url}+{
                            $stripped_search_query}&amp;{$base_url}&amp;oe={
                            $cache_encoding}">
         <xsl:choose>
@@ -3111,7 +3147,7 @@
               <td nowrap="1">
 
                 <span class="{$fontclass}">
-                  <a href="GSAsearchresults.aspx?{$search_url}&amp;start={$view_begin -
+                  <a href="GSASearchresults.aspx?{$search_url}&amp;start={$view_begin -
                       $num_results - 1}">
                     <xsl:if test="$navigation_style = 'google'">
 
@@ -3171,13 +3207,13 @@
                   <xsl:call-template name="nbsp"/>
                 </xsl:if>
                 <span class="{$fontclass}">
-                  <a href="GSAsearchresults.aspx?{$search_url}&amp;start={$view_begin +
+                  <a   href="GSASearchresults.aspx?{$search_url}&amp;start={$view_begin +
                 $num_results - 1}">
                     <xsl:if test="$navigation_style = 'google'">
 
                       <img src="/_layouts/images/PLPLAY2.GIF" width="100" height="26"
 
-                        alt="Next" border="0"/>
+                        alt="Next1234" border="0"/>
                       <br/>
                     </xsl:if>
                     <xsl:text>Next</xsl:text>
@@ -3252,7 +3288,7 @@
           <xsl:if test="$navigation_style = 'link'">
             <xsl:call-template name="nbsp"/>
           </xsl:if>
-          <a href="GSAsearchresults.aspx?{$search_url}&amp;start={$start}">
+          <a href="GSASearchresults.aspx?{$search_url}&amp;start={$start}">
             <xsl:if test="$navigation_style = 'google'">
               <img src="/_layouts/images/SEARCH.GIF" width="16" height="26" alt="Navigation"
                    border="0"/>
@@ -3805,4 +3841,3 @@
 
 
 <!-- *** END OF STYLESHEET *** -->
-
