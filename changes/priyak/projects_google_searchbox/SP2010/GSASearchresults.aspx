@@ -292,9 +292,24 @@ div.ms-areaseparatorright{
                         c.Value = HttpUtility.UrlEncode(value, utf8);//Encoding the cookie value
                         c.Domain = domain;
                         c.Expires = CookieCollection[i].Expires;
-                        if (tempCookieName.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                        
+                        /* 
+                        * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                        * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                        */
+                        if (WebConfigurationManager.AppSettings["omitSecureCookie"] == "false" && tempCookieName.ToLower() == "secure" && value != "")
                         {
                             cc.Add(c);
+                        }
+
+                        // Code for logging error message whenever the secure cookie exists and has a value, but is being discared due to configuartion setting in web.config file of the web application.
+                        if (value != "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && tempCookieName.ToLower() == "secure")
+                        {
+                            log("The secure cookie exists with value as " + value + ". Currently the cookie is being discarded.  To avoid discarding of the cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.ERROR);
+                        }
+                        else if (value == "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && tempCookieName.ToLower() == "secure")
+                        {
+                            log("The secure cookie exists and has no value. Hence discarding the cookie.", LOG_LEVEL.INFO);
                         }
 
                         /*Cookie Information*/
@@ -891,10 +906,24 @@ else if(document.attachEvent)
                                 gProps.log("Cookie Name= " + responseCookies.Name + "| Value= " + value + "| Domain= " + responseCookies.Domain
                                     + "| Expires= " + responseCookies.Expires.ToString(), LOG_LEVEL.INFO);
 
-                                if (responseCookies.Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                                /* 
+                                * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                */
+                                if (WebConfigurationManager.AppSettings["omitSecureCookie"] == "false" && responseCookies.Name.ToLower() == "secure" && value != "")
                                 {
                                     newcc.Add(responseCookies);
                                 }
+
+                                // Code for logging error message whenever the secure cookie exists and has a value, but is being discared due to configuartion setting in web.config file of the web application.
+                                if (value != "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && responseCookies.Name.ToLower() == "secure")
+                                {
+                                    gProps.log("The secure cookie exists with value as " + value + ". Currently the cookie is being discarded.  To avoid discarding of the cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.ERROR);
+                                }
+                                else if (value == "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && responseCookies.Name.ToLower() == "secure")
+                                {
+                                    gProps.log("The secure cookie exists and has no value. Hence discarding the cookie.", LOG_LEVEL.INFO);
+                                }              
                             }
                             
                             
@@ -970,10 +999,25 @@ else if(document.attachEvent)
                                         Uri GoogleUri = new Uri(GSASearchUrl);
                                         responseCookies.Domain = GoogleUri.Host;
                                         responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
-                                        if (responseCookies.Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+
+                                        /* 
+                                         * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                         * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                         */
+                                        if (WebConfigurationManager.AppSettings["omitSecureCookie"] == "false" && responseCookies.Name.ToLower() == "secure" && value != "")
                                         {
                                             newcc.Add(responseCookies);
                                         }
+
+                                        // Code for logging error message whenever the secure cookie exists and has a value, but is being discared due to configuartion setting in web.config file of the web application.
+                                        if (value != "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && responseCookies.Name.ToLower() == "secure")
+                                        {
+                                            gProps.log("The secure cookie exists with value as " + value + ". Currently the cookie is being discarded.  To avoid discarding of the cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.ERROR);
+                                        }
+                                        else if (value == "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && responseCookies.Name.ToLower() == "secure")
+                                        {
+                                            gProps.log("The secure cookie exists and has no value. Hence discarding the cookie.", LOG_LEVEL.INFO);
+                                        }    
 
                                         /*Cookie Information*/
                                         gProps.log("Cookie Name= " + responseCookies.Name
@@ -1001,9 +1045,24 @@ else if(document.attachEvent)
                                 responseCookies.Value = objResp.Cookies[j].Value;
                                 responseCookies.Domain = objReq.RequestUri.Host;
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
-                                if (objResp.Cookies[j].Name.ToLower() != "secure") // if cookie name is not 'secure', then only add the cookie
+                                
+                               /* 
+                                * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                */
+                                if (WebConfigurationManager.AppSettings["omitSecureCookie"] == "false" && objResp.Cookies[j].Name.ToLower() == "secure" && objResp.Cookies[j].Value != "")
                                 {
                                     HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                }
+
+                                // Code for logging error message whenever the secure cookie exists and has a value, but is being discared due to configuartion setting in web.config file of the web application.
+                                if (objResp.Cookies[j].Value != "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && objResp.Cookies[j].Name.ToLower() == "secure")
+                                {
+                                    gProps.log("The secure cookie exists with value as " + objResp.Cookies[j].Value + ". Currently the cookie is being discarded.  To avoid discarding of the cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.ERROR);
+                                }
+                                else if (objResp.Cookies[j].Value == "" && WebConfigurationManager.AppSettings["omitSecureCookie"] == "true" && objResp.Cookies[j].Name.ToLower() == "secure")
+                                {
+                                    gProps.log("The secure cookie exists and has no value. Hence discarding the cookie.", LOG_LEVEL.INFO);
                                 }
                                 responseCookies = null;
 
