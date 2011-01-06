@@ -1,4 +1,4 @@
-<!-- *** Sharepoint GUI Framework Modified styleSheet          ***
+﻿<!-- *** Sharepoint GUI Framework Modified styleSheet          ***
      *** Key components are marked in the file with SPSMod     *** -->
 
 
@@ -689,8 +689,7 @@
   </xsl:variable>
 
   <!-- *** filter_url: everything except resetting "filter=" *** -->
-  <xsl:variable name="filter_url">
-    GSASearchresults.aspx?<xsl:for-each
+  <xsl:variable name="filter_url">GSASearchresults.aspx?<xsl:for-each
   select="/GSP/PARAM[(@name != 'filter') and
                      (@name != 'epoch' or $is_test_search != '') and
                      not(starts-with(@name, 'metabased_'))]">
@@ -822,8 +821,7 @@
       <xsl:when test="/GSP/PARAM[(@name='sitesearch')]">
         <xsl:value-of select="/GSP/PARAM[@name='sitesearch']/@original_value"/>
       </xsl:when>
-      <xsl:otherwise>p</xsl:otherwise>
-    </xsl:choose>
+          </xsl:choose>
   </xsl:variable>
 
   <!-- **********************************************************************
@@ -2839,7 +2837,7 @@
             </xsl:if>
 
             <!-- *** Meta tags *** -->
-            <xsl:if test="$show_meta_tags != '1'">
+            <xsl:if test="$show_meta_tags != '0'">
               <xsl:apply-templates select="MT"/>
             </xsl:if>
 
@@ -3213,7 +3211,7 @@
 
                       <img src="/_layouts/images/PLPLAY2.GIF" width="100" height="26"
 
-                        alt="Next1234" border="0"/>
+                        alt="Next" border="0"/>
                       <br/>
                     </xsl:if>
                     <xsl:text>Next</xsl:text>
