@@ -336,9 +336,12 @@
                                 cc.Add(c);
                             }
                         }
-                        
-                        // Add the other cookies to the cookie container
-                        cc.Add(c);
+                        else
+                        {
+
+                            // Add the other cookies to the cookie container
+                            cc.Add(c);
+                        }
                         
                         /*Cookie Information*/
                         log("Cookie Name= " + tempCookieName + "| Value= " + value + "| Domain= " + domain + "| Expires= " + c.Expires, LOG_LEVEL.INFO);
@@ -953,9 +956,11 @@ else if(document.attachEvent)
                                             newcc.Add(responseCookies);
                                         }
                                     }
-
-                                    // Add the other cookies to the cookie container
-                                    newcc.Add(responseCookies);
+                                    else
+                                    {
+                                        // Add the other cookies to the cookie container
+                                        newcc.Add(responseCookies);
+                                    }
                                 }
 
 
@@ -1045,9 +1050,12 @@ else if(document.attachEvent)
                                                     newcc.Add(responseCookies);
                                                 }
                                             }
+                                            else
+                                            {
 
-                                            // Add the other cookies to the cookie container
-                                            newcc.Add(responseCookies);
+                                                // Add the other cookies to the cookie container
+                                                newcc.Add(responseCookies);
+                                            }
                                             
                                             /*Cookie Information*/
                                             gProps.log("Cookie Name= " + responseCookies.Name
@@ -1089,8 +1097,11 @@ else if(document.attachEvent)
                                             HttpContext.Current.Response.Cookies.Add(responseCookies);
                                         }
                                     }
-
-                                    HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                    else
+                                    {
+                                        // Add the other cookies to the cookie container
+                                        HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                    }
                                     
                                     responseCookies = null;
 
