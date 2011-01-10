@@ -21,3 +21,14 @@ Following are the required Connector Manager libraries which are expected to be 
 * connector-logging.jar
 
 6. From the command prompt, execute the build.xml using "ant" command. The 'connector-sharepoint.jar' will be created in the dist/jarfile directory
+
+To create user data store where all SharePoint groups/user memberships are stored, follow steps 7 and 8:
+
+7. After registering the connector-manager on GSA, copy UserDataStoreConfig.properties file (comes along with the connector 2.6.9 jar) at the following location:
+$CATALINA_HOME\webapps\connector-manager\WEB-INF\connectors\sharepoint-connector
+
+You can also get UserDataStoreConfig.properties directly from com.google.enterprise.connector.sharepoint.sql package in the project source
+
+8. Specify values for all the properties in UserDataStoreConfig.properties.
+
+9. Proceed with the creation of connector instance on GSA.
