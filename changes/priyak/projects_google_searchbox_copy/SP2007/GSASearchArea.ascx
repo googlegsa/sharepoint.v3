@@ -12,7 +12,7 @@
 
 <%
     
-   // The forward slash is used to append to the sitesearch parameter. 
+   // The forward slash is used to append to the sitesearch parameter to Search Request
     string forwardSlash = "/";
     
     if (Request.QueryString["scopeUrl"] != null)
