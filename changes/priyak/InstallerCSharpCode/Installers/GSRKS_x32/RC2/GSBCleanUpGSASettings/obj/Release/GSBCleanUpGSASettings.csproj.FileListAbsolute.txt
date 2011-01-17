@@ -26,3 +26,10 @@ C:\GSARK_32 bit\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.pdb
 C:\GSARK_32 bit\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache
 C:\GSARK_32 bit\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
 C:\GSARK_32 bit\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb

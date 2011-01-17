@@ -18,3 +18,8 @@ C:\GSARK_32 bit\CleanUpStaleWebSites\bin\Release\CleanUpStaleWebSites.pdb
 C:\GSARK_32 bit\CleanUpStaleWebSites\obj\Release\ResolveAssemblyReference.cache
 C:\GSARK_32 bit\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.exe
 C:\GSARK_32 bit\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\CleanUpStaleWebSites\bin\Release\CleanUpStaleWebSites.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\CleanUpStaleWebSites\bin\Release\CleanUpStaleWebSites.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\CleanUpStaleWebSites\obj\Release\ResolveAssemblyReference.cache
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\CleanUpStaleWebSites\obj\Release\CleanUpStaleWebSites.pdb

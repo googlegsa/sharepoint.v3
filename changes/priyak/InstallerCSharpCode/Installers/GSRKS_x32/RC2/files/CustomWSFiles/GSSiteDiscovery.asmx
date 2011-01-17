@@ -91,7 +91,7 @@ public class SiteDiscovery : System.Web.Services.WebService
     {
         // An identification of the web whose information is contained in the current WebCrawlInfo
         private string webKey;
-        
+
         private bool crawlAspxPages;
         private bool noCrawl;
 
@@ -104,7 +104,7 @@ public class SiteDiscovery : System.Web.Services.WebService
             get { return webKey; }
             set { webKey = value; }
         }
-        
+
         public bool CrawlAspxPages
         {
             get { return crawlAspxPages; }
@@ -303,7 +303,7 @@ public class SiteDiscovery : System.Web.Services.WebService
                 }
                 catch (Exception e)
                 {
-                    info.Error = "List no found! Exception [ " + e.Message + " ] ";
+                    info.Error = "List not found! Exception [ " + e.Message + " ] ";
                 }
             }
             catch (Exception e)

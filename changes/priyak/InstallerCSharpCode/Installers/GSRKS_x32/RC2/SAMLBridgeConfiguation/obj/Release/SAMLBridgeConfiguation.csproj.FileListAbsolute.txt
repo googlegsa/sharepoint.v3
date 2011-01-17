@@ -57,3 +57,30 @@ C:\GSARK_32 bit\SAMLBridgeConfiguation\obj\Release\ResolveAssemblyReference.cach
 C:\GSARK_32 bit\SAMLBridgeConfiguation\obj\Release\SAMLConfiguration.frmSAMLConfiguration.resources
 C:\GSARK_32 bit\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.Properties.Resources.resources
 C:\GSARK_32 bit\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLConfigurationManager.cs
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.exe
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.pdb
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\ResolveAssemblyReference.cache
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLConfiguration.frmSAMLConfiguration.resources
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.Properties.Resources.resources
+D:\Priya Khade\Backup for GSASearchArea.ascx and GSASearchResults.aspx pages\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLConfigurationManager.cs
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\ResolveAssemblyReference.cache
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLConfiguration.frmSAMLConfiguration.resources
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.Properties.Resources.resources
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLConfigurationManager.cs
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.exe
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\bin\Release\SAMLBridgeConfiguation.pdb
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\ResolveAssemblyReference.cache
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLConfiguration.frmSAMLConfiguration.resources
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.Properties.Resources.resources
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.csproj.GenerateResource.Cache
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.exe
+E:\priya\from gdc38\InstallerCSharpCode\Installers\GSRKS_x32\RC2\SAMLBridgeConfiguation\obj\Release\SAMLBridgeConfiguation.pdb

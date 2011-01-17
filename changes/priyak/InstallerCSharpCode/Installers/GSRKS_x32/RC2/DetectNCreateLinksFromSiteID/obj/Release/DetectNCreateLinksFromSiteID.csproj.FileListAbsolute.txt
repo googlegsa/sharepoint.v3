@@ -18,3 +18,8 @@ C:\GSARK_32 bit\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromS
 C:\GSARK_32 bit\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache
 C:\GSARK_32 bit\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
 C:\GSARK_32 bit\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.pdb
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
+E:\priya\InstallerCSharpCode\Installers\GSRKS_x32\RC2\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb
