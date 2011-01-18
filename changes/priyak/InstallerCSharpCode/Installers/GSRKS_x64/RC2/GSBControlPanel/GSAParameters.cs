@@ -167,6 +167,21 @@ namespace GSBControlPanel
             {
                 cbEnableLogging.Checked = false;
             }
+
+            // Get value for accesslevel key from web.config and accordingly populate the radiobuttons
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='accesslevel']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
+            if (myVal.ToLower().Equals("a"))
+            {
+                rbPublicAndSecure.Checked = true;
+            }
+            else if (myVal.ToLower().Equals("p"))
+            {
+                rbPublic.Checked = true;
+            }
         }
 
         /// <summary>
@@ -219,6 +234,15 @@ namespace GSBControlPanel
             else if (rbGSAFrontEnd.Checked == true)
             {
                 gc.UseGsaStyling = "true";
+            }
+
+            if (rbPublic.Checked == true)
+            {
+                gc.AccessLevel = "p";
+            }
+            else if (rbPublicAndSecure.Checked == true)
+            {
+                gc.AccessLevel = "a";
             }
 
             return gc;

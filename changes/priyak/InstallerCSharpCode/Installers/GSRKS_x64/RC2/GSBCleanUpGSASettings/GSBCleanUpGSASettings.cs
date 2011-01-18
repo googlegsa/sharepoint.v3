@@ -59,6 +59,8 @@ namespace GSBCleanUpGSASettings
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSALocation']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='frontEnd']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='verbose']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='accesslevel']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='omitSecureCookie']");
 
                                 //for custom stylesheet
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslGSA2SP']");
@@ -103,6 +105,8 @@ namespace GSBCleanUpGSASettings
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSALocation']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='frontEnd']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='verbose']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='accesslevel']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='omitSecureCookie']");
 
                                 //for custom stylesheet
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslGSA2SP']");
