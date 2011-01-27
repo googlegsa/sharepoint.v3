@@ -28,9 +28,11 @@ import com.google.enterprise.connector.spi.Session;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -366,7 +368,7 @@ public class SharepointConnector implements Connector {
     // DBURL=jdbc:mysql://localhost:3306/user_data_store
     // DBUsername=root
     // DBPassword=pspl!@#
-    public void initDao() {
+    public void initDao() throws SharepointException {
         try {
             Properties properties = new Properties();
             properties.load(new FileInputStream(googleConnectorWorkDir
@@ -388,8 +390,12 @@ public class SharepointConnector implements Connector {
             UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
                     dataSource, queryProvider, userGroupMembershipRowMapper);
             sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+        	LOGGER.log(Level.WARNING, "UserDataStoreConfig.properties not found at " + googleConnectorWorkDir, e);
+        } catch(IllegalArgumentException e) {
+        	LOGGER.log(Level.WARNING, "missing property values in UserDataStoreConfig.properties.", e);
+        } catch(Exception e) {
+        	throw new SharepointException("exception occurred while initilizing DAO.");
         }
     }
 
