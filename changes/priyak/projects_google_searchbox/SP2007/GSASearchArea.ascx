@@ -11,7 +11,7 @@
 <%@ Import Namespace="System.IO" %>
 
 <%
-
+     // Registering the event handler for public search checkboxcheck
     chkPublicSearch.CheckedChanged += new EventHandler(this.checkPublicSearch);
 
     
