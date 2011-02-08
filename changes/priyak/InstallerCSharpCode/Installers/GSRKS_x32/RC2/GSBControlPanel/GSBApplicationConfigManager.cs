@@ -157,24 +157,30 @@ namespace GSBControlPanel
             
             if (xmlNode != null)
             {
-                XmlElement ele = xmlNode as XmlElement;
+                XmlElement element = xmlNode as XmlElement;
                 //Attempt to load up the entry for httpModule.
-                ele = (XmlElement)xmlNode.SelectSingleNode(String.Format("//add[@name='{0}']", attributename));
+                element = (XmlElement)xmlNode.SelectSingleNode(String.Format("//add[@name='{0}']", attributename));
 
                 // Check if it exists...
-                if (ele != null)
+                if (element != null)
                 {
-                    // Name was found, change value for 'type' attribute here (only needed if you want to change it).
-                    ele.SetAttribute(TYPE_ATTRIBUTE, type);
+                    /*
+                     * Name was found, change value for 'type' attribute here (only needed if you want to change it).
+                     * For Instance, the name <add name="Session" /> may be found in web.config file, without any type 
+                     * attribute. Hence, the code adds the type attribute (i.e. System.Web.SessionState.SessionStateModule)
+                     * to the httpmodule entry.
+					 */
+
+                    element.SetAttribute(TYPE_ATTRIBUTE, type);
                 }
                 else
                 {
                     // Name was not found, so create the 'add' element and set it's name/type attributes.
 
-                    ele = xd.CreateElement(ADD_ELEMENT);
-                    ele.SetAttribute(NAME_ATTRIBUTE, attributename);
-                    ele.SetAttribute(TYPE_ATTRIBUTE, type);
-                    xmlNode.AppendChild(ele);
+                    element = xd.CreateElement(ADD_ELEMENT);
+                    element.SetAttribute(NAME_ATTRIBUTE, attributename);
+                    element.SetAttribute(TYPE_ATTRIBUTE, type);
+                    xmlNode.AppendChild(element);
                 }
             }
         }
