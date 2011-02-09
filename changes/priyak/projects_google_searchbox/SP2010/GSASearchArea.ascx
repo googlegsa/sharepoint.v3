@@ -279,22 +279,14 @@
         }
         if (scopeValue != "")
         {
-            // Creating a new listitem for the respective scope text and value retrieved
-            ListItem lstItemScopeItem = new ListItem();
-            lstItemScopeItem.Text = scopeText;
-            lstItemScopeItem.Value = scopeValue;
-
-            /* Checking whether the respective listitem already exists in the scopes dropdown. If it already exists, just make the 
-             * respective listitem as selected in the dropdown. If the listitem does not exist (which is true in the case the 
-             * user gets option of 'repeat the search with the omitted results included' while searching for the scopes - 
-             * Current List, Current folder and current folder and all subfolders), then add the item into the scopes dropdown and
-             * make the item as selected.
-             */
-            if (!idSearchScope.Items.Contains(lstItemScopeItem))
-            {
-                idSearchScope.Items.Add(lstItemScopeItem);
-            }
-            idSearchScope.Items.FindByValue(scopeValue).Selected = true;
+            //* Making the respective listitem enabled in the scopes dropdown. If the listitem is not enabled (which is true in the case the 
+            // * user gets option of 'repeat the search with the omitted results included' while searching for the scopes - 
+            // * Current List, Current folder and current folder and all subfolders), then enable the item from the scopes dropdown and
+            // * make the item as selected.
+            // */
+            idSearchScope.Items.FindByText(scopeText).Attributes.Clear();
+            idSearchScope.Items.FindByText(scopeText).Value = scopeValue;
+            idSearchScope.Items.FindByText(scopeText).Selected = true;
         }
     }
 
@@ -304,37 +296,60 @@
 <script type="text/javascript">
 
 // Function which will activate the respective scopes, as per the scope the user is browsing currently
-    function EnableSelectiveScopeOptions() 
-    {
-        var currentFolder = "Current Folder";
-        var currentFolderAndAllSubfolders = "Current Folder and all subfolders";
-        var hfselectedscope = document.getElementById("<%=hfSelectedScope.ClientID%>");
-        var searchScope = document.getElementById("<%=idSearchScope.ClientID%>");
-
-        for (var i = 0; i < searchScope.options.length; i = i + 1)
+function EnableSelectiveScopeOptions()
+{
+  var currentList = "Current List";
+  var currentFolder = "Current Folder";
+  var currentFolderAndAllSubfolders = "Current Folder and all subfolders";
+  var hfselectedscope = document.getElementById("<%=hfSelectedScope.ClientID%>");
+  var searchScope = document.getElementById("<%=idSearchScope.ClientID%>");
+  for (var i = 0; i < searchScope.options.length; i = i + 1)
+  {
+        if (searchScope.options[i].value == hfselectedscope.value) // Enabling the options for 'list and folder search'
         {
-            searchScope.options[i].disabled = false; // Enabling the scope the user is currently browsing.
-            if (searchScope.options[i].value == hfselectedscope.value) // Enabling the options for 'folder search'
+            searchScope.options[i].disabled = false;
+            searchScope.options[i].style.color = "Black";
+            switch (true)
             {
-                if(searchScope.options[i].text == currentFolder)
-                {
-                    // Need to enable the 'Current Folder and all subfolders', if user is browsing through a folder.
-                    searchScope.options[i + 1].disabled = false;
-                }
-                break; // Need to break the for loop if the currently selected scope is other than 'Current Folder',as for instance, 
-                // if the currently selected scope is 'Current List', don't enable the remaining scopes at lower level.
+                // If selected scope is 'Current List', enable only the 'Current List' option. 
+                case (searchScope.options[i].text == currentList):  
+
+                searchScope.options[i].disabled = false;
+                searchScope.options[i].style.color = "Black";
+                break;
+
+                // If selected scope is 'Current Folder', enable 'Current List' & 'Current Folder' options. 
+                case (searchScope.options[i].text == currentFolder): 
+
+                searchScope.options[i - 1].disabled = false;
+                searchScope.options[i - 1].style.color = "Black";
+                searchScope.options[i].disabled = false;
+                searchScope.options[i].style.color = "Black";
+                break;
+
+                // If selected scope is 'Current Folder and all subfolders', enable 'Current List', 'Current Folder' and 'Current Folder and all sunfolders' options.   
+                case (searchScope.options[i].text == currentFolderAndAllSubfolders):
+
+                searchScope.options[i - 2].disabled = false;
+                searchScope.options[i - 2].style.color = "Black";
+                searchScope.options[i - 1].disabled = false;
+                searchScope.options[i - 1].style.color = "Black";
+                searchScope.options[i].disabled = false;
+                searchScope.options[i].style.color = "Black";
+                break;
             }
-            
         }
-    }
-    if (document.addEventListener)
-    {
-        document.addEventListener("DOMContentLoaded", EnableSelectiveScopeOptions, false);
-    }
-    else if (document.attachEvent)
-    {
-        document.attachEvent("onreadystatechange", EnableSelectiveScopeOptions);
-    }
+     }
+ }
+ 
+ if (document.addEventListener)
+ {
+    document.addEventListener("DOMContentLoaded", EnableSelectiveScopeOptions, false);
+ }
+ else if (document.attachEvent)
+ {
+    document.attachEvent("onreadystatechange", EnableSelectiveScopeOptions);
+ }
 
 // This javascript function's default name is 'SubmitSearchRedirect' which can be found in 'CORE.JS' file (path "C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS\1033")
 // Renaming the function to 'SendSearchRequesttoGSA'. The function will send the search request to GSA.
@@ -419,13 +434,13 @@ function SearchTextOnBlur()
 </script>
 
 
-<script runat="server">
+<script runat="server" type="text/C#">
 
     
     // Function that will change the value of hiddenfield and session variable whenever checkbox is checked/ unchecked.
-    protected void checkPublicSearch(object sender, EventArgs e)
+    public void checkPublicSearch(object sender, EventArgs e)
     {
-        if (chkPublicSearch.Checked == true)
+        if (chkPublicSearch.Checked)
         {
             hfPublicSearch.Value = "true";
             Session["PublicSearchStatus"] = "true";
