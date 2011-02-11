@@ -279,11 +279,11 @@
         }
         if (scopeValue != "")
         {
-            //* Making the respective listitem enabled in the scopes dropdown. If the listitem is not enabled (which is true in the case the 
-            // * user gets option of 'repeat the search with the omitted results included' while searching for the scopes - 
-            // * Current List, Current folder and current folder and all subfolders), then enable the item from the scopes dropdown and
-            // * make the item as selected.
-            // */
+            /* Making the respective listitem enabled in the scopes dropdown. If the listitem is not enabled (which is true in the case the 
+             * user gets option of 'repeat the search with the omitted results included' while searching for the scopes - 
+             * Current List, Current folder and current folder and all subfolders), then enable the item from the scopes dropdown and
+             * make the item as selected.
+             */
             idSearchScope.Items.FindByText(scopeText).Attributes.Clear();
             idSearchScope.Items.FindByText(scopeText).Value = scopeValue;
             idSearchScope.Items.FindByText(scopeText).Selected = true;
@@ -307,8 +307,6 @@ function EnableSelectiveScopeOptions()
   {
         if (searchScope.options[i].value == hfselectedscope.value) // Enabling the options for 'list and folder search'
         {
-            searchScope.options[i].disabled = false;
-            searchScope.options[i].style.color = "Black";
             switch (true)
             {
                 // If selected scope is 'Current List', enable only the 'Current List' option. 
