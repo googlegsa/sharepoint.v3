@@ -49,6 +49,11 @@ Issues fixed from last release:
    o Modified the search request sent to the GSA to include the scope search parameter. Used the 'sitesearch' parameter which will hold the currently selected scope's URL value.
    o With this, the search results are restricted to the scope selected by the user.
    o Also added code which will persist the values of public search checkbox status, search query term and selected scope while navigating between search results using previous and next buttons.
+   
+2) Issue 156: Search Box to support public content in SharePoint
+
+   o Earlier version of Google Search Box for SharePoint supported public and secure search, i.e. the search was intended to search for both, the public and secure content indexed by the GSA. There was no mechanism to return only public content matching the search query. 
+   o The GSA Resource Kit for SharePoint 2.6.8 contains support for public search, by which the user can selectively query for public content only. 
 
 Version Compatibility
 ---------------------
