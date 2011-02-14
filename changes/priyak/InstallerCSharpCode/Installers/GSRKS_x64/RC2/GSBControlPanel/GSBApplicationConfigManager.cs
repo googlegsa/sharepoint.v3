@@ -28,6 +28,8 @@ namespace GSBControlPanel
         public const string ADD_ELEMENT = "add";
         public const string KEY_ATTRIBUTE = "key";
         public const string VALUE_ATTRIBUTE = "value";
+        public const string TYPE_ATTRIBUTE = "type";
+        public const string NAME_ATTRIBUTE = "name";
 
         private string myFileName = "";
         private XmlDocument xd = new XmlDocument();
@@ -141,6 +143,46 @@ namespace GSBControlPanel
                 }
             }//end: if ((xd != null) && (pattern != null))
 
+        }
+
+        /// <summary>
+        /// Modify the Node value for the HTTPModule
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="value"></param>
+        public void ModifyNodeForHttpModule(string pattern, string attributename, string type)
+        {
+            // Load up the httpModules node.
+            XmlNode xmlNode = xd.SelectSingleNode(pattern);
+
+            if (xmlNode != null)
+            {
+                XmlElement element = xmlNode as XmlElement;
+                //Attempt to load up the entry for httpModule.
+                element = (XmlElement)xmlNode.SelectSingleNode(String.Format("//add[@name='{0}']", attributename));
+
+                // Check if it exists...
+                if (element != null)
+                {
+                    /*
+                     * Name was found, change value for 'type' attribute here (only needed if you want to change it).
+                     * For Instance, the name <add name="Session" /> may be found in web.config file, without any type 
+                     * attribute. Hence, the code adds the type attribute (i.e. System.Web.SessionState.SessionStateModule)
+                     * to the httpmodule entry.
+					 */
+
+                    element.SetAttribute(TYPE_ATTRIBUTE, type);
+                }
+                else
+                {
+                    // Name was not found, so create the 'add' element and set it's name/type attributes.
+
+                    element = xd.CreateElement(ADD_ELEMENT);
+                    element.SetAttribute(NAME_ATTRIBUTE, attributename);
+                    element.SetAttribute(TYPE_ATTRIBUTE, type);
+                    xmlNode.AppendChild(element);
+                }
+            }
         }
 
         /// <summary>

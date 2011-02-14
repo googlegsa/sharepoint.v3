@@ -37,6 +37,7 @@ namespace GSBControlPanel
         private string logLocation="";
         private string accesslevel = "a";
         private string omitSecureCookie = "false";
+        private string sessionStateModule = "System.Web.SessionState.SessionStateModule";
 
         public string LogLocation
         {
@@ -80,6 +81,11 @@ namespace GSBControlPanel
             set { omitSecureCookie = value; }
         }
 
+        public string SessionStateModule
+        {
+            get { return sessionStateModule; }
+            set { sessionStateModule = value; }
+        }
 
         public void SaveConfigurationsToFile(string webConfigFilePath,bool isInstaller)
         {
@@ -97,6 +103,8 @@ namespace GSBControlPanel
             gcm.ModifyNode("/configuration/appSettings", "accesslevel", AccessLevel);//for 'public' or 'public and secure' search with GSBS
             gcm.ModifyNode("/configuration/appSettings", "omitSecureCookie", OmitSecureCookie);// Included for the BoA secure cookie issue. Will decide whether to process the cookie or discard the same.
 
+            // Code for enabling Session State on SharePoint Web Application
+            gcm.ModifyNodeForHttpModule("//httpModules", "Session", SessionStateModule);
             
             //this needs to be saved only during installation. should be unchnaged otherwise
             if (isInstaller == true)
