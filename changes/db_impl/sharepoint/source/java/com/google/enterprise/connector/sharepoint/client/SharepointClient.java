@@ -1005,6 +1005,9 @@ public class SharepointClient {
                     // getAlerts WS call is made.
                     LOGGER.fine("Getting alerts under site [ " + webURL + " ]");
                     processAlerts(ws, sharePointClientContext);
+                    // get site data for the web and update webState.
+                    LOGGER.fine("Geting landing page data for the site [ " + webURL + " ]");
+                    processSiteData(ws, sharepointClientContext);
                 }
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Following exception occured while traversing/updating web state URL [ "
@@ -1055,5 +1058,57 @@ public class SharepointClient {
      */
     public int getNoOfVisitedListStates() {
         return noOfVisitedListStates;
+    }
+
+    private void processSiteData(final WebState webState,
+            final SharepointClientContext tempCtx) {
+        if (null == webState) {
+            return;
+        }
+        String internalName = webState.getPrimaryKey();
+
+        if (!internalName.endsWith("/")) {
+            internalName += "/" + SPConstants.DEFAULT_SITEPAGE;
+        }
+
+        final Calendar cLastMod = Calendar.getInstance();
+        cLastMod.setTime(new Date());
+
+        cLastMod.setTime(new Date());
+        ListState currentDummySiteDataList = null;
+
+        try {
+            currentDummySiteDataList = new ListState(webState.getPrimaryKey(),
+                    webState.getTitle(), webState.getPrimaryKey(), cLastMod,
+                    SPConstants.SITE, webState.getPrimaryKey(), webState);
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "Unable to create the dummy list state for site. " + webState.getWebUrl(), e);
+            return;
+        }
+
+        // find the list in the Web state
+        ListState dummySiteListState = webState.lookupList(currentDummySiteDataList.getPrimaryKey());
+        if (dummySiteListState == null) {
+            dummySiteListState = currentDummySiteDataList;
+        }
+        LOGGER.log(Level.INFO, "Getting site data. internalName [ "	+ internalName + " ] ");
+        List<SPDocument> listCollectionSiteData = new ArrayList<SPDocument>();
+        List<SPDocument> siteInfoList = null;
+
+        try {
+            final SiteDataWS siteDataWS = new SiteDataWS(tempCtx);
+            siteInfoList = siteDataWS.getSiteDataAsList(webState);
+
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "Problem while getting site data. ", e);
+        }
+
+        listCollectionSiteData.addAll(siteInfoList);
+        if (dummySiteListState.isExisting()) {
+            dummySiteListState.setSiteDefaultPage(true);
+            webState.AddOrUpdateListStateInWebState(dummySiteListState,
+                    currentDummySiteDataList.getLastMod());
+            dummySiteListState.setCrawlQueue(listCollectionSiteData);
+        }
     }
 }

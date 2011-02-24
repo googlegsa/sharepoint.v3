@@ -16,8 +16,10 @@
 package com.google.enterprise.connector.sharepoint.wsclient;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -75,4 +77,16 @@ public class SiteDataWSTest extends TestCase {
             System.out.println("[ getTitle() ] Test Failed.");
         }
     }
+
+	public void testGetSiteDataAsList() throws MalformedURLException,
+			RepositoryException {
+		System.out.println("Testing getSiteDataAsList()...");
+		final GlobalState state = new GlobalState(
+				TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
+		WebState ws = state.makeWebState(sharepointClientContext,
+				TestConfiguration.sharepointUrl + SPConstants.SITE_DEFAULT);
+		final List<SPDocument> items = this.siteDataWS.getSiteDataAsList(ws);
+		assertNotNull(items);
+		System.out.println("[ getSiteDataAsList() ] Test Passed.");
+	}
 }

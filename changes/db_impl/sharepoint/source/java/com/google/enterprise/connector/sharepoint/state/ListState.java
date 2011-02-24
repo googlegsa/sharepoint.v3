@@ -106,8 +106,9 @@ public class ListState implements StatefulObject {
     private String baseTemplate;
     private ArrayList<Attribute> attrs = new ArrayList<Attribute>();
     private String listConst = "/Lists";
+    private boolean isSiteDefaultPage = false;    
 
-    /**
+	/**
      * To keep track of those IDs which can not be discovered by making any web
      * service call. For Example, it is not possible to track the documents if
      * their parent folder is deleted.
@@ -187,6 +188,13 @@ public class ListState implements StatefulObject {
         parentWeb = inParentWeb;
     }
 
+    public boolean isSiteDefaultPage() {
+		return isSiteDefaultPage;
+	}
+
+	public void setSiteDefaultPage(boolean isSiteDefaultPage) {
+		this.isSiteDefaultPage = isSiteDefaultPage;
+	}
     /**
      * @return list type (generic / document libraries)
      */

@@ -27,6 +27,7 @@ import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.Arr
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListWithTimeHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sWebWithTimeHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sWebMetadataHolder;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
@@ -396,6 +397,62 @@ public class SiteDataWS {
                     + endpoint + " ]", e);
             return "";
         }
+    }
+
+    public List<SPDocument> getSiteDataAsList(final WebState webState) throws SharepointException {
+    	final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
+        final _sWebMetadataHolder sWebMetadata = new _sWebMetadataHolder();
+        final ArrayOf_sWebWithTimeHolder vWebs = new ArrayOf_sWebWithTimeHolder();
+        final ArrayOf_sListWithTimeHolder vLists = new ArrayOf_sListWithTimeHolder();
+        final ArrayOf_sFPUrlHolder vFPUrls = new ArrayOf_sFPUrlHolder();
+        final StringHolder strRoles = new StringHolder();
+        final ArrayOfStringHolder vRolesUsers = new ArrayOfStringHolder();
+        final ArrayOfStringHolder vRolesGroups = new ArrayOfStringHolder();
+
+    	final ArrayList<SPDocument> listCollection = new ArrayList<SPDocument>();
+        if (stub == null) {
+            LOGGER.warning("Unable to get the list collection because stub is null");
+            return listCollection;
+        }
+
+        if (webState == null) {
+            LOGGER.warning("Unable to get the list collection because webstate is null");
+            return listCollection;
+        }
+        try {
+            stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
+        } catch (final AxisFault af) {
+        	// Handling of username formats for
+            // different authentication models.
+            if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+                    && (sharepointClientContext.getDomain() != null)) {
+                final String username = Util.switchUserNameFormat(stub.getUsername());
+                LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+                        + stub.getUsername() + " ]. Trying with " + username);
+                stub.setUsername(username);
+                try {
+                    stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
+                } catch (final Exception e) {
+                    LOGGER.log(Level.WARNING, "Unable to get site data for web beacuse call to the WS failed. endpoint [ "
+                            + endpoint + " ]", e);
+                }
+            } else {
+                LOGGER.log(Level.WARNING, "Unable to get site data for web beacuse call to the WS failed. endpoint [ "
+                        + endpoint + " ]", af);
+            }
+        } catch (final Throwable e) {
+            LOGGER.log(Level.WARNING, "Unable to get the data for web beacuse call to the WS failed. endpoint [ "
+                    + endpoint + " ]", e);
+        }
+
+        final SPDocument siteData = new SPDocument(webState.getWebUrl(),
+        		webState.getWebUrl()+ SPConstants.SITE_DEFAULT, sWebMetadata.value.getLastModified().getInstance(),
+        		sWebMetadata.value.getAuthor(), SPConstants.SITE, webState.getTitle(),
+                sharepointClientContext.getFeedType(),
+                webState.getSharePointType());
+        listCollection.add(siteData);
+
+        return listCollection;
     }
 
 }

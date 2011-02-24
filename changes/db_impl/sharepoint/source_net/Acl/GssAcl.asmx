@@ -1215,10 +1215,19 @@ public sealed class GssAclUtility
     /// <returns></returns>
     public static ISecurableObject IdentifyObject(string url, SPWeb web)
     {
-        SPListItem listItem = web.GetListItem(url);
-        if (null != listItem)
+        SPListItem listItem = null;
+        if (!url.EndsWith("default.aspx"))
         {
-            return listItem;
+             listItem= web.GetListItem(url);
+            if (null != listItem)
+            {
+                return listItem;
+            }
+        }
+        else
+        {
+            return web.Site.OpenWeb();
+
         }
 
         SPList list = web.GetList(url);

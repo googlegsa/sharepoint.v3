@@ -204,6 +204,7 @@ public class SPConstants {
     public static final String ATTR_TITLE = "Title";
 
     public static final String WEB_TITLE = "Title";
+    public static final String SITE = "Site";
 
     // Constants used by SPDocument for various info related to documents
     public static final String SPAUTHOR = "sharepoint:author";
@@ -427,6 +428,7 @@ public class SPConstants {
     public static final String USERNAME_CONSTANT_IN_ACL = "username";
     public static final String GROUPNAME_CONSTANT_IN_ACL = "groupname";
     public static final String DOMAIN_CONSTANT_IN_ACL = "domain";
+    public static final String SITE_DEFAULT = "/default.aspx";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";
