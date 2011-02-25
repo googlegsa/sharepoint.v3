@@ -70,6 +70,7 @@ namespace GSBCleanUpGSASettings
 
                                 // Deleting the HTTPModule corresponding to the session state from web.config file
                                 mgr.DeleteNode("//httpModules//add[@name='Session']");
+                                mgr.DeleteNode("//modules//add[@name='Session']");
 
                                 mgr.SaveXML();
                                 #endregion save results to file
@@ -119,6 +120,7 @@ namespace GSBCleanUpGSASettings
 
                                 // Deleting the HTTPModule corresponding to the session state from web.config file
                                 mgr.DeleteNode("//httpModules//add[@name='Session']");
+                                mgr.DeleteNode("//modules//add[@name='Session']");
 
                                 mgr.SaveXML();
                                 #endregion delete APP setting nodes

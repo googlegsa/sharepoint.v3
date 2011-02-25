@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{6231F075-55FC-4E5A-9C24-C42D9D126777}</ProjectGuid>
     <OutputType>Exe</OutputType>
@@ -53,10 +53,7 @@
       <ExecutableExtension>.exe</ExecutableExtension>
       <HintPath>..\GSBControlPanel\bin\Release\Configuration Wizard.exe</HintPath>
     </Reference>
-    <Reference Include="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Amit\Installshield_Delivery\sp2007\Microsoft.SharePoint.dll</HintPath>
-    </Reference>
+    <Reference Include="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL" />
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Data" />

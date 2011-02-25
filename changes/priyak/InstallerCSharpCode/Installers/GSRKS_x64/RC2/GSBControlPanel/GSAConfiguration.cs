@@ -104,7 +104,7 @@ namespace GSBControlPanel
             gcm.ModifyNode("/configuration/appSettings", "omitSecureCookie", OmitSecureCookie);// Included for the BoA secure cookie issue. Will decide whether to process the cookie or discard the same.
 
             // Code for enabling Session State on SharePoint Web Application
-            gcm.ModifyNodeForHttpModule("//httpModules", "Session", SessionStateModule);
+            gcm.ModifyNodeForHttpModule("//httpModules","//modules", "Session", SessionStateModule);
             
             //this needs to be saved only during installation. should be unchnaged otherwise
             if (isInstaller == true)

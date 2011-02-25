@@ -30,6 +30,7 @@ namespace GSBControlPanel
         public const string VALUE_ATTRIBUTE = "value";
         public const string TYPE_ATTRIBUTE = "type";
         public const string NAME_ATTRIBUTE = "name";
+        public const string MODULES_SECTION = "//modules"; // This refers to the Modules section in web.config file for IIS 7
 
         private string myFileName = "";
         private XmlDocument xd = new XmlDocument();
@@ -146,19 +147,36 @@ namespace GSBControlPanel
         }
 
         /// <summary>
-        /// Modify the Node value for the HTTPModule
+        /// Modify node value for HTTP module
         /// </summary>
-        /// <param name="pattern"></param>
-        /// <param name="value"></param>
-        public void ModifyNodeForHttpModule(string pattern, string attributename, string type)
+        /// <param name="pattern1">Refers to the 'httpModules' element in web.config file.</param>
+        /// <param name="pattern2">Refers to the 'modules' element in web.config file.</param>
+        /// <param name="attributename">Name of attribute to be added</param>
+        /// <param name="type">Refers to the type attribute</param>
+        public void ModifyNodeForHttpModule(string pattern1,string pattern2, string attributename, string type)
         {
-            // Load up the httpModules node.
-            XmlNode xmlNode = xd.SelectSingleNode(pattern);
+            /*
+             * Load up the modules element in web.config file. If the 'modules' element is found (this is true in case of SP 2010 
+             * installation on 64-bit machine), add the session module underneath the modules element. This ensures that the 
+             * session module gets run for all requests and not just for known ASP.NET resources.
+             */
+            XmlNode xmlNode = xd.SelectSingleNode(pattern2);
 
+            if (xmlNode == null)
+            {
+                /*
+                 * Load up the httpmodules element in web.config file. If the 'modules' element is not found (this is true in case of SP 2007 
+                 * installation on 64-bit machine), add the session module underneath the httpmodules element. 
+                 */
+                xmlNode = xd.SelectSingleNode(pattern1);
+            }
             if (xmlNode != null)
             {
                 XmlElement element = xmlNode as XmlElement;
-                //Attempt to load up the entry for httpModule.
+                /*
+                 * Attempt to load up the entry for httpModule(MOSS 2007 on 64-bit) or modules(SharePoint 2010 on 64-bit). 
+                 * Either one of them will surely exist.
+                 */
                 element = (XmlElement)xmlNode.SelectSingleNode(String.Format("//add[@name='{0}']", attributename));
 
                 // Check if it exists...
@@ -168,12 +186,11 @@ namespace GSBControlPanel
                      * Name was found, change value for 'type' attribute here (only needed if you want to change it).
                      * For Instance, the name <add name="Session" /> may be found in web.config file, without any type 
                      * attribute. Hence, the code adds the type attribute (i.e. System.Web.SessionState.SessionStateModule)
-                     * to the httpmodule entry.
+                     * to the httpmodule/modules entry.
 					 */
-
                     element.SetAttribute(TYPE_ATTRIBUTE, type);
                 }
-                else
+                else 
                 {
                     // Name was not found, so create the 'add' element and set it's name/type attributes.
 
