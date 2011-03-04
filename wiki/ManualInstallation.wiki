@@ -101,11 +101,13 @@ To install the connector manually, follow the instructions given below:
 
 ==Installing Google Services for SharePoint==
 
+It is recommended that the version of the Google services for SharePoint should be the same as that of the SharePoint connector version.
+
 1. Login to the SharePoint server whose sites are to be crawled by the connector.
 
 2. Go to the ISAPI directory of SharePoint. If you are using the standard default installation, path of this directory would be C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI\ for SharePoint 2007 and ...\14\ISAPI for SharePoint 2010
 
-3. Download the correct SharePoint connector source (connector-sharepoint-{{{<version>}}}-src.zip) from the download site on http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list
+3. Download the correct SharePoint connector source (connector-sharepoint-{{{<version>}}}-src.zip) from the download site on http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list.
 
 4. Unzip the compressed file. 
 
