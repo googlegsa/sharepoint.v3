@@ -1216,6 +1216,8 @@ public sealed class GssAclUtility
     public static ISecurableObject IdentifyObject(string url, SPWeb web)
     {
         SPListItem listItem = null;
+        //check if the url ending with default.aspx, then return IsecureObejct
+        // for the site not any of it's List/listItems to fetch Acl's.
         if (!url.EndsWith("default.aspx"))
         {
              listItem= web.GetListItem(url);

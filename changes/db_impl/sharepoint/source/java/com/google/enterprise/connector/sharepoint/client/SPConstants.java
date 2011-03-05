@@ -428,7 +428,7 @@ public class SPConstants {
     public static final String USERNAME_CONSTANT_IN_ACL = "username";
     public static final String GROUPNAME_CONSTANT_IN_ACL = "groupname";
     public static final String DOMAIN_CONSTANT_IN_ACL = "domain";
-    public static final String SITE_DEFAULT = "/default.aspx";
+    public static final String DEFAULT_SITE_LANDING_PAGE = "/default.aspx";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

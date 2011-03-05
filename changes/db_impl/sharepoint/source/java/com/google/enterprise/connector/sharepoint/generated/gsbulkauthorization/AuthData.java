@@ -45,7 +45,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the container value for this AuthData.
-     *
+     * 
      * @return container
      */
     public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container getContainer() {
@@ -55,7 +55,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the container value for this AuthData.
-     *
+     * 
      * @param container
      */
     public void setContainer(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container container) {
@@ -65,7 +65,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the itemId value for this AuthData.
-     *
+     * 
      * @return itemId
      */
     public java.lang.String getItemId() {
@@ -75,7 +75,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the itemId value for this AuthData.
-     *
+     * 
      * @param itemId
      */
     public void setItemId(java.lang.String itemId) {
@@ -85,7 +85,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the isAllowed value for this AuthData.
-     *
+     * 
      * @return isAllowed
      */
     public boolean isIsAllowed() {
@@ -95,7 +95,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the isAllowed value for this AuthData.
-     *
+     * 
      * @param isAllowed
      */
     public void setIsAllowed(boolean isAllowed) {
@@ -105,7 +105,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the message value for this AuthData.
-     *
+     * 
      * @return message
      */
     public java.lang.String getMessage() {
@@ -115,7 +115,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the message value for this AuthData.
-     *
+     * 
      * @param message
      */
     public void setMessage(java.lang.String message) {
@@ -125,7 +125,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the complexDocId value for this AuthData.
-     *
+     * 
      * @return complexDocId
      */
     public java.lang.String getComplexDocId() {
@@ -135,7 +135,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the complexDocId value for this AuthData.
-     *
+     * 
      * @param complexDocId
      */
     public void setComplexDocId(java.lang.String complexDocId) {
@@ -145,7 +145,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the isDone value for this AuthData.
-     *
+     * 
      * @return isDone
      */
     public boolean isIsDone() {
@@ -155,7 +155,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the isDone value for this AuthData.
-     *
+     * 
      * @param isDone
      */
     public void setIsDone(boolean isDone) {
@@ -165,7 +165,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Gets the type value for this AuthData.
-     *
+     * 
      * @return type
      */
     public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType getType() {
@@ -175,7 +175,7 @@ public class AuthData  implements java.io.Serializable {
 
     /**
      * Sets the type value for this AuthData.
-     *
+     * 
      * @param type
      */
     public void setType(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType type) {
@@ -193,22 +193,22 @@ public class AuthData  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.container==null && other.getContainer()==null) ||
+        _equals = true && 
+            ((this.container==null && other.getContainer()==null) || 
              (this.container!=null &&
               this.container.equals(other.getContainer()))) &&
-            ((this.itemId==null && other.getItemId()==null) ||
+            ((this.itemId==null && other.getItemId()==null) || 
              (this.itemId!=null &&
               this.itemId.equals(other.getItemId()))) &&
             this.isAllowed == other.isIsAllowed() &&
-            ((this.message==null && other.getMessage()==null) ||
+            ((this.message==null && other.getMessage()==null) || 
              (this.message!=null &&
               this.message.equals(other.getMessage()))) &&
-            ((this.complexDocId==null && other.getComplexDocId()==null) ||
+            ((this.complexDocId==null && other.getComplexDocId()==null) || 
              (this.complexDocId!=null &&
               this.complexDocId.equals(other.getComplexDocId()))) &&
             this.isDone == other.isIsDone() &&
-            ((this.type==null && other.getType()==null) ||
+            ((this.type==null && other.getType()==null) || 
              (this.type!=null &&
               this.type.equals(other.getType())));
         __equalsCalc = null;
@@ -308,10 +308,10 @@ public class AuthData  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -320,10 +320,10 @@ public class AuthData  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -95,4 +95,25 @@ public class SharepointAuthorizationManagerTest extends TestCase {
             assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
         }
     }
+
+    public void testAuthorizeDocidsForSiteLandingPage() throws Throwable {
+        SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+                this.sharepointClientContext,
+                new GSSiteDiscoveryWS(sharepointClientContext, null).getMatchingSiteCollections());
+        AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
+                TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
+
+        Set<String> docids = new HashSet<String>();
+        //site landing page with right user name and password
+        docids.add(TestConfiguration.SearchDocID25);
+        //site landing page with wrong user name and password.
+        docids.add(TestConfiguration.SearchDocID26);
+
+        final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
+        assertEquals(docids.size(), authZResponses.size() -1 );
+
+        for (AuthorizationResponse authZResponse : authZResponses) {
+            assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
+        }
+    }
 }

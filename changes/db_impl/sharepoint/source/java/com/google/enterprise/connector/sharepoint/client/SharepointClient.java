@@ -1060,15 +1060,19 @@ public class SharepointClient {
         return noOfVisitedListStates;
     }
 
+    /**
+     * Makes a call to SiteData web service to get data for a sire and update
+     * global state. Site data in share point is created at site level. Though,
+     * in the state file that connector maintains a SpDocument can only be inside
+     * a ListState. Hence we need to create a dummy list here.
+     *
+     * @param webState
+     * @param tempCtx
+     */
     private void processSiteData(final WebState webState,
             final SharepointClientContext tempCtx) {
         if (null == webState) {
             return;
-        }
-        String internalName = webState.getPrimaryKey();
-
-        if (!internalName.endsWith("/")) {
-            internalName += "/" + SPConstants.DEFAULT_SITEPAGE;
         }
 
         final Calendar cLastMod = Calendar.getInstance();
@@ -1091,24 +1095,28 @@ public class SharepointClient {
         if (dummySiteListState == null) {
             dummySiteListState = currentDummySiteDataList;
         }
-        LOGGER.log(Level.INFO, "Getting site data. internalName [ "	+ internalName + " ] ");
-        List<SPDocument> listCollectionSiteData = new ArrayList<SPDocument>();
-        List<SPDocument> siteInfoList = null;
+        LOGGER.log(Level.INFO, "Getting site data. internalName [ "	+ webState.getWebUrl() + " ] ");
+        List<SPDocument> documentList = new ArrayList<SPDocument>();
+        SPDocument document = null;
 
         try {
             final SiteDataWS siteDataWS = new SiteDataWS(tempCtx);
-            siteInfoList = siteDataWS.getSiteDataAsList(webState);
-
+            //we need to check whether the site exist or not
+            if (webState.isExisting()) {
+               document = siteDataWS.getSiteData(webState);
+               documentList.add(document);
+            }
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Problem while getting site data. ", e);
         }
 
-        listCollectionSiteData.addAll(siteInfoList);
         if (dummySiteListState.isExisting()) {
+            // Mark dummy list state to true in order to differentiate this list state with
+            // other lists in web state.
             dummySiteListState.setSiteDefaultPage(true);
             webState.AddOrUpdateListStateInWebState(dummySiteListState,
                     currentDummySiteDataList.getLastMod());
-            dummySiteListState.setCrawlQueue(listCollectionSiteData);
+            dummySiteListState.setCrawlQueue(documentList);
         }
     }
 }

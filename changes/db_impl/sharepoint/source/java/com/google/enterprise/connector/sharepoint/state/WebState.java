@@ -408,9 +408,11 @@ public class WebState implements StatefulObject {
                             iter.remove();
                             keyMap.remove(list.getPrimaryKey());
                         } else if (maxID >= biggestID) {
-                        	String docID = list.getListURL();
+                        	String docID = null;
                         	if(!list.isSiteDefaultPage()) {
-                        		docID += list.getPrimaryKey();
+                        		docID = list.getListURL() + SPConstants.DOC_TOKEN + list.getPrimaryKey();;
+                        	} else {
+                        		docID = list.getLastDocProcessed().getDocId();
                         	}
                             final SPDocument doc = new SPDocument(
                                     docID,
@@ -431,8 +433,9 @@ public class WebState implements StatefulObject {
                                 // send DELETE feed for List
                             	if(list.isSiteDefaultPage()) {
                                 	doc.setToBeFed(true);
+                                } else {
+                                	doc.setToBeFed(false);
                                 }
-                                doc.setToBeFed(false);
                                 LOGGER.log(Level.FINE, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
                             }
                             deletedDocs.add(doc);

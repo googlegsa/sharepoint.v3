@@ -127,6 +127,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     /// <param name="wsContext">serves specific details like SPUser and SPWeb required for authZ</param>
     private void Authorize(AuthData authData, SPWeb web, SPUser user)
     {
+        String url = authData.Container.Url;
         if (authData.Type == AuthData.EntityType.ALERT)
         {
             Guid alert_guid = new Guid(authData.ItemId);
@@ -140,9 +141,11 @@ public class BulkAuthorization : System.Web.Services.WebService
                 authData.IsAllowed = true;
             }
         }
-        else
-        {
-            SPList list = web.GetListFromUrl(authData.Container.Url);
+        else if (authData.Type == AuthData.EntityType.SITE) {
+            bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
+            authData.IsAllowed = isAllowd;
+        } else {
+            SPList list = web.GetListFromUrl(url);    
             if (authData.Type == AuthData.EntityType.LIST)
             {
                 bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
@@ -325,7 +328,7 @@ public class AuthData
 
     public enum EntityType
     {
-        LISTITEM, LIST, ALERT
+        LISTITEM, LIST, ALERT, SITE
     }
     private EntityType type;
     public EntityType Type
@@ -429,7 +432,7 @@ public class WSContext
         {
             Using(container.Url);
         }
-    
+
         SPWeb web = null;
         string relativeWebUrl = GetServerRelativeWebUrl(container);
         try
@@ -456,9 +459,20 @@ public class WSContext
     /// </summary>
     /// <param name="container"></param>
     /// <returns></returns>
+    // FIXME For some lists of site directory, this logic does not work because the URL formats of those lists are different from what the logic assumes.
     string GetServerRelativeWebUrl(Container container)
     {
         String listUrl = container.Url;
+        //If the container type is SITE return only site name.
+        if (container.Type == Container.ContainerType.SITE)
+        {
+            Uri url = new Uri(listUrl);
+            listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+            listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+            listUrl = listUrl.Substring(listUrl.IndexOf('/') + 1);
+            listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+            return listUrl;
+        }
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf('/'));

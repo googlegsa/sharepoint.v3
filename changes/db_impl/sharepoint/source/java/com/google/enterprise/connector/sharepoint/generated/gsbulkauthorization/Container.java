@@ -25,7 +25,7 @@ public class Container  implements java.io.Serializable {
 
     /**
      * Gets the url value for this Container.
-     *
+     * 
      * @return url
      */
     public java.lang.String getUrl() {
@@ -35,7 +35,7 @@ public class Container  implements java.io.Serializable {
 
     /**
      * Sets the url value for this Container.
-     *
+     * 
      * @param url
      */
     public void setUrl(java.lang.String url) {
@@ -45,7 +45,7 @@ public class Container  implements java.io.Serializable {
 
     /**
      * Gets the type value for this Container.
-     *
+     * 
      * @return type
      */
     public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.ContainerType getType() {
@@ -55,7 +55,7 @@ public class Container  implements java.io.Serializable {
 
     /**
      * Sets the type value for this Container.
-     *
+     * 
      * @param type
      */
     public void setType(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.ContainerType type) {
@@ -73,11 +73,11 @@ public class Container  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.url==null && other.getUrl()==null) ||
+        _equals = true && 
+            ((this.url==null && other.getUrl()==null) || 
              (this.url!=null &&
               this.url.equals(other.getUrl()))) &&
-            ((this.type==null && other.getType()==null) ||
+            ((this.type==null && other.getType()==null) || 
              (this.type!=null &&
               this.type.equals(other.getType())));
         __equalsCalc = null;
@@ -133,10 +133,10 @@ public class Container  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -145,10 +145,10 @@ public class Container  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

@@ -84,9 +84,9 @@ public class SiteDataWSTest extends TestCase {
 		final GlobalState state = new GlobalState(
 				TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
 		WebState ws = state.makeWebState(sharepointClientContext,
-				TestConfiguration.sharepointUrl + SPConstants.SITE_DEFAULT);
-		final List<SPDocument> items = this.siteDataWS.getSiteDataAsList(ws);
-		assertNotNull(items);
-		System.out.println("[ getSiteDataAsList() ] Test Passed.");
+				TestConfiguration.sharepointUrl + SPConstants.DEFAULT_SITE_LANDING_PAGE);
+		final SPDocument document = this.siteDataWS.getSiteData(ws);
+		assertNotNull(document);
+		System.out.println("[ getSiteData() ] Test Passed.");
 	}
 }

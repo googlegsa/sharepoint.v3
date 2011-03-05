@@ -399,8 +399,16 @@ public class SiteDataWS {
         }
     }
 
-    public List<SPDocument> getSiteDataAsList(final WebState webState) throws SharepointException {
-    	final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
+    /**
+     * Makes a call to Site Data web service to retrieve site meta data and create a SPDocuemnt
+     * and it returns a single SPDcoument.
+     *
+     * @param webState
+     * @return
+     * @throws SharepointException
+     */
+    public SPDocument getSiteData(final WebState webState) throws SharepointException {
+        final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
         final _sWebMetadataHolder sWebMetadata = new _sWebMetadataHolder();
         final ArrayOf_sWebWithTimeHolder vWebs = new ArrayOf_sWebWithTimeHolder();
         final ArrayOf_sListWithTimeHolder vLists = new ArrayOf_sListWithTimeHolder();
@@ -409,20 +417,19 @@ public class SiteDataWS {
         final ArrayOfStringHolder vRolesUsers = new ArrayOfStringHolder();
         final ArrayOfStringHolder vRolesGroups = new ArrayOfStringHolder();
 
-    	final ArrayList<SPDocument> listCollection = new ArrayList<SPDocument>();
         if (stub == null) {
             LOGGER.warning("Unable to get the list collection because stub is null");
-            return listCollection;
+            return null;
         }
 
         if (webState == null) {
             LOGGER.warning("Unable to get the list collection because webstate is null");
-            return listCollection;
+            return null;
         }
         try {
             stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
         } catch (final AxisFault af) {
-        	// Handling of username formats for
+            // Handling of username formats for
             // different authentication models.
             if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
                     && (sharepointClientContext.getDomain() != null)) {
@@ -445,14 +452,15 @@ public class SiteDataWS {
                     + endpoint + " ]", e);
         }
 
-        final SPDocument siteData = new SPDocument(webState.getWebUrl(),
-        		webState.getWebUrl()+ SPConstants.SITE_DEFAULT, sWebMetadata.value.getLastModified().getInstance(),
-        		sWebMetadata.value.getAuthor(), SPConstants.SITE, webState.getTitle(),
+        final SPDocument siteDataDocument = new SPDocument(webState.getPrimaryKey()
+                + SPConstants.DEFAULT_SITE_LANDING_PAGE + SPConstants.DOC_TOKEN
+                + sWebMetadata.value.getWebID(),
+                webState.getWebUrl()+ SPConstants.DEFAULT_SITE_LANDING_PAGE, sWebMetadata.value.getLastModified().getInstance(),
+                sWebMetadata.value.getAuthor(), SPConstants.SITE, webState.getTitle(),
                 sharepointClientContext.getFeedType(),
                 webState.getSharePointType());
-        listCollection.add(siteData);
 
-        return listCollection;
+        return siteDataDocument;
     }
 
 }
