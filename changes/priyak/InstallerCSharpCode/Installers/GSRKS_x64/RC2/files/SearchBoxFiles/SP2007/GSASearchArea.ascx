@@ -11,7 +11,9 @@
 <%@ Import Namespace="System.IO" %>
 
 <%
-    
+     // Registering the event handler for public search checkboxcheck
+    chkPublicSearch.CheckedChanged += new EventHandler(this.checkPublicSearch);
+
     
    // The forward slash is used to append to the sitesearch parameter. 
     string forwardSlash = "/";
@@ -40,10 +42,8 @@
         {
             // This code will be executed for the first search request sent to GSA.
             publicSearchStatus = Request.QueryString["isPublicSearch"].ToString();
-            
-            // Save value in a session varaible.
-            Session["PublicSearchStatus"] = Request.QueryString["isPublicSearch"].ToString();
-            hfPublicSearch.Value = Session["PublicSearchStatus"].ToString();
+
+            hfPublicSearch.Value = publicSearchStatus;
             if (publicSearchStatus == "true")
             {
                 chkPublicSearch.Checked = true;
@@ -66,24 +66,11 @@
                 string accessStatus = Request.QueryString["access"].ToString();
                 if (accessStatus == "a")
                 {
-                    if (Session["PublicSearchStatus"] != null)
-                    {
-                        publicSearchStatus = Convert.ToString(Session["PublicSearchStatus"]); // Get value from the session variable
-                        hfPublicSearch.Value = publicSearchStatus;
-                        if (publicSearchStatus == "true")
-                        {
-                            chkPublicSearch.Checked = true;
-                        }
-                        else
-                        {
-                            chkPublicSearch.Checked = false;
-                        }
-                    }
+                   chkPublicSearch.Checked = false;
                 }
                 else // Means only public search is performed by the user (i.e. access = p)
                 {
                     chkPublicSearch.Checked = true;
-                    Session["PublicSearchStatus"] = "true";
                 }
             }
         }
@@ -147,6 +134,7 @@
     lstItem.Text = enterprise;
     lstItem.Value = enterprise;
     idSearchScope.Items.Add(lstItem);
+    
 
     ListItem lstItem1 = new ListItem();
     string sitename = strScopeWeb.Replace("'", "");
@@ -173,7 +161,8 @@
     ListItem lstItem5 = new ListItem();
     lstItem5.Text = currentFolderAndAllSubfolders;
     idSearchScope.Items.Add(lstItem5);
-    
+
+   
     idSearchScope.Items.FindByText(currentList).Enabled = false;
     idSearchScope.Items.FindByText(currentFolder).Enabled = false;
     idSearchScope.Items.FindByText(currentFolderAndAllSubfolders).Enabled = false;
@@ -207,7 +196,7 @@
         hfSelectedScope.Value = strScopeList;
         lstItem3.Value = strScopeList;
         idSearchScope.Items.FindByText(currentList).Enabled = true;
-        
+
         if (this.Context.Request.QueryString["RootFolder"] != null)
         {
             strScopeFolder = siteUrl + this.Context.Request.QueryString["RootFolder"].ToString(); // Retrieve the folder path
@@ -216,7 +205,7 @@
             hfSelectedScope.Value = strScopeFolder;
             idSearchScope.Items.FindByText(currentFolder).Enabled = true;
             idSearchScope.Items.FindByText(currentFolderAndAllSubfolders).Enabled = true;
-            
+
         }
     }
     else
@@ -425,23 +414,20 @@
 </script>
 
 
-<script runat="server">
+<script runat="server"  type="text/C#">
 
     // Function that will change the value of hiddenfield and session variable whenever checkbox is checked/ unchecked.
-    protected void checkPublicSearch(object sender, EventArgs e)
+    public void checkPublicSearch(object sender, EventArgs e)
     {
         if (chkPublicSearch.Checked == true)
         {
             hfPublicSearch.Value = "true";
-            Session["PublicSearchStatus"] = "true";
         }
         else
         {
             hfPublicSearch.Value = "false";
-            Session["PublicSearchStatus"] = "false";
         }
     }
-    
 </script>
 
 
