@@ -466,11 +466,12 @@ public class WSContext
         //If the container type is SITE return only site name.
         if (container.Type == Container.ContainerType.SITE)
         {
-            listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
-            listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
-            listUrl = listUrl.Substring(listUrl.IndexOf('/') + 1);
-            listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
-            return listUrl;
+            String siteUrl = container.Url
+            siteUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+            siteUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+            siteUrl = listUrl.Substring(listUrl.IndexOf('/') + 1);
+            siteUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+            return siteUrl;
         }
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
