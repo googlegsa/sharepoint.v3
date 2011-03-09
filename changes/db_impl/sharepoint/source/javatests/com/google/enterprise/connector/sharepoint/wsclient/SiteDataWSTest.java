@@ -78,15 +78,19 @@ public class SiteDataWSTest extends TestCase {
         }
     }
 
-	public void testGetSiteDataAsList() throws MalformedURLException,
-			RepositoryException {
-		System.out.println("Testing getSiteDataAsList()...");
-		final GlobalState state = new GlobalState(
-				TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
-		WebState ws = state.makeWebState(sharepointClientContext,
-				TestConfiguration.sharepointUrl + SPConstants.DEFAULT_SITE_LANDING_PAGE);
-		final SPDocument document = this.siteDataWS.getSiteData(ws);
-		assertNotNull(document);
-		System.out.println("[ getSiteData() ] Test Passed.");
-	}
+    public void testGetSiteData() throws MalformedURLException,
+            RepositoryException {
+        System.out.println("Testing getSiteDataAsList()...");
+        final GlobalState state = new GlobalState(
+                TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
+        WebState ws = state.makeWebState(sharepointClientContext,
+                TestConfiguration.sharepointUrl + SPConstants.DEFAULT_SITE_LANDING_PAGE);
+        final SPDocument document = this.siteDataWS.getSiteData(ws);
+        assertNotNull(document);
+        String author = document.getAuthor();
+        String objectType = document.getObjType();
+        assertEquals("googlesp", author);
+        assertEquals("Site", objectType);
+        System.out.println("[ getSiteData() ] Test Passed.");
+    }
 }

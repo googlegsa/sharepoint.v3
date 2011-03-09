@@ -1061,13 +1061,13 @@ public class SharepointClient {
     }
 
     /**
-     * Makes a call to SiteData web service to get data for a sire and update
-     * global state. Site data in share point is created at site level. Though,
-     * in the state file that connector maintains a SpDocument can only be inside
+     * Makes a call to SiteData web service to get data for a site and update
+     * global state. Site data in SharePoint is created at site level. Though,
+     * in the state file that connector maintains a SPDocument can only be inside
      * a ListState. Hence we need to create a dummy list here.
      *
-     * @param webState
-     * @param tempCtx
+     * @param webState for which SPDcocument needs to be constructed.
+     * @param tempCtx is the temporary SharepointClientContext object.
      */
     private void processSiteData(final WebState webState,
             final SharepointClientContext tempCtx) {
@@ -1095,22 +1095,24 @@ public class SharepointClient {
         if (dummySiteListState == null) {
             dummySiteListState = currentDummySiteDataList;
         }
-        LOGGER.log(Level.INFO, "Getting site data. internalName [ "	+ webState.getWebUrl() + " ] ");
+        LOGGER.log(Level.INFO, "Getting site data. internalName [ " + webState.getWebUrl() + " ] ");
         List<SPDocument> documentList = new ArrayList<SPDocument>();
         SPDocument document = null;
 
         try {
             final SiteDataWS siteDataWS = new SiteDataWS(tempCtx);
-            //we need to check whether the site exist or not
-            if (webState.isExisting()) {
+            // need to check whether the site exist or not and is not null
+            if (webState.isExisting() && null != webState) {
                document = siteDataWS.getSiteData(webState);
-               documentList.add(document);
+               if (null != document) {
+                   documentList.add(document);
+               }
             }
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Problem while getting site data. ", e);
         }
 
-        if (dummySiteListState.isExisting()) {
+        if (dummySiteListState.isExisting() && null != document) {
             // Mark dummy list state to true in order to differentiate this list state with
             // other lists in web state.
             dummySiteListState.setSiteDefaultPage(true);

@@ -410,10 +410,10 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
                 SPConstants.DOC_TOKEN);
         String URL = strTok.nextToken();
         if(URL != null && URL.endsWith(SPConstants.DEFAULT_SITE_LANDING_PAGE)) {
-        	//If the URL ends with default.aspx, the container type should be SITE.
-        	container.setType(ContainerType.SITE);
+            //If the URL ends with default.aspx, the container type should be SITE.
+            container.setType(ContainerType.SITE);
         } else {
-        	container.setType(ContainerType.LIST);
+            container.setType(ContainerType.LIST);
         }
         final AuthData authData = new AuthData();
         authData.setContainer(container);
@@ -426,11 +426,11 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
             Integer.parseInt(DocID);
             authData.setType(EntityType.LISTITEM);
         } catch (final Exception e) {
-        	if (URL.endsWith(SPConstants.DEFAULT_SITE_LANDING_PAGE)) {
-        		authData.setType(EntityType.SITE);
-        	} else {
-        		authData.setType(EntityType.LIST);
-        	}
+            if (URL.endsWith(SPConstants.DEFAULT_SITE_LANDING_PAGE)) {
+                authData.setType(EntityType.SITE);
+            } else {
+                authData.setType(EntityType.LIST);
+            }
         }
 
         final Matcher match = SPConstants.ATTACHMENT_SUFFIX_PATTERN.matcher(URL);

@@ -110,7 +110,7 @@ public class SharepointAuthorizationManagerTest extends TestCase {
         docids.add(TestConfiguration.SearchDocID26);
 
         final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
-        assertEquals(docids.size(), authZResponses.size() -1 );
+        assertEquals(docids.size(), authZResponses.size());
 
         for (AuthorizationResponse authZResponse : authZResponses) {
             assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);

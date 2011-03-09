@@ -401,10 +401,11 @@ public class SiteDataWS {
 
     /**
      * Makes a call to Site Data web service to retrieve site meta data and create a SPDocuemnt
-     * and it returns a single SPDcoument.
+     * and it returns a single SPDcoument.This method returns null if and only if any one of
+     * SiteData stub or webState is null.
      *
-     * @param webState
-     * @return
+     * @param webState The web from which we need to construct SPDcoument for it's landing page.
+     * @return a single SPDocument for the given web.
      * @throws SharepointException
      */
     public SPDocument getSiteData(final WebState webState) throws SharepointException {
@@ -419,11 +420,13 @@ public class SiteDataWS {
 
         if (stub == null) {
             LOGGER.warning("Unable to get the list collection because stub is null");
+            //in case if SiteData web service end point is not created properly.
             return null;
         }
 
         if (webState == null) {
             LOGGER.warning("Unable to get the list collection because webstate is null");
+            //in case if the web state is null and is not existing in SharePoint server.
             return null;
         }
         try {

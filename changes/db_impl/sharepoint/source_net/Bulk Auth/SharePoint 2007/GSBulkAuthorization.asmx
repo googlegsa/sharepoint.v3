@@ -145,7 +145,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
             authData.IsAllowed = isAllowd;
         } else {
-            SPList list = web.GetListFromUrl(url);    
+            SPList list = web.GetListFromUrl(url);
             if (authData.Type == AuthData.EntityType.LIST)
             {
                 bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
@@ -466,7 +466,6 @@ public class WSContext
         //If the container type is SITE return only site name.
         if (container.Type == Container.ContainerType.SITE)
         {
-            Uri url = new Uri(listUrl);
             listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
             listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
             listUrl = listUrl.Substring(listUrl.IndexOf('/') + 1);
