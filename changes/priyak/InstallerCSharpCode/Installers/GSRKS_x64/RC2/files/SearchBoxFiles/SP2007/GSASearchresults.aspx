@@ -816,22 +816,11 @@ else if(document.attachEvent)
                              */
                             if (inquery["isPublicSearch"] != null)
                             {
-                                /* 
-                                 * Here the value for the access parameter will be decided on the basis of the value of
-                                 * isPublicSearch and the saved web.config file settings.
-                                 */
-                                if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
+                                if (inquery["isPublicSearch"] == "false")
                                 {
-                                    if (inquery["isPublicSearch"] == "false")
-                                    {
-                                        gProps.accessLevel = "a"; // Perform 'public and secure search'
-                                    }
-                                    else
-                                    {
-                                        gProps.accessLevel = "p";  // Perform 'public search'
-                                    }
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
                                 }
-                                else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
+                                else
                                 {
                                     gProps.accessLevel = "p";  // Perform 'public search'
                                 }
