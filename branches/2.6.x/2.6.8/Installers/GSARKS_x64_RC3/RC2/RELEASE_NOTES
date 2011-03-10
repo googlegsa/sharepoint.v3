@@ -10,7 +10,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
-Release 2.6.8, 17 Jan, 2010
+Release 2.6.8, 08 Mar, 2010
 ===========================
 
 INTRODUCTION
@@ -85,3 +85,4 @@ Known Issues/Limitations
 1. The Installer does not validate the port number for 'GSA Resource Kit for SharePoint'. User needs to enter a valid non-conflicting port during installation. Assigned port number could be changed even after Installation directly through IIS Manager.
 2. The Installer does not validate the 'Artifact Consumer' URL on "Google SAML Bridge for Windows - Configuration Wizard".
 3. Cancelling Installer does not intiate rollback of the installed components. You need to run installer again in 'remove' mode to clean up the installed components.
+4. If a new web application is added after the installation of search box,this web application does not show search box.
