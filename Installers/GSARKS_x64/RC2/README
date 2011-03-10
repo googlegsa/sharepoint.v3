@@ -1,0 +1,13 @@
+Google Resource Kit for SharePoint 2.6.8 (64-bit)
+
+The Google Resource Kit for SharePoint 2.6.8 (64-bit) provides the following components:
+1. Google Search Box for SharePoint: It represents Google Search Box for SharePoint. When selected, the Google Search Box for SharePoint is enabled on all SharePoint web applications on a machine, which share the same search control.
+2. Google Services for SharePoint: The Google Services for SharePoint are custom web services used by the Google Search Appliance Connector for Microsoft SharePoint 2007 and Microsoft SharePoint 2010.
+3. GSA Resource Kit for SharePoint: It represents a set of utilities which are useful for testing and extending GSA's search on SharePoint.
+
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+
+Licensing
+---------
+      This product is licensed under the Apache Software Foundation (http://www.apache.org/).
+      A copy of the licensing terms is available in a file called COPYING.
