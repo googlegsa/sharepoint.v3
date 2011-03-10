@@ -373,15 +373,12 @@
             else if (selectedScopeUrl == "Enterprise" && selectedScopeText == "Enterprise")
             {
                 strUrl = strUrl + "&selectedScope=" + selectedScopeUrl + "&isPublicSearch=" + isPublicSearch;
-                frm.action = strUrl;
-                frm.submit();
+                window.document.location.href = strUrl;
             }
             else
             {
                 strUrl = strUrl + "&selectedScope=" + selectedScopeText + "&scopeUrl=" + selectedScopeUrl + "&isPublicSearch=" + isPublicSearch;
-                frm.action = strUrl;
-                document.forms
-                frm.submit();
+                window.document.location.href = strUrl;
             }
         }
     }

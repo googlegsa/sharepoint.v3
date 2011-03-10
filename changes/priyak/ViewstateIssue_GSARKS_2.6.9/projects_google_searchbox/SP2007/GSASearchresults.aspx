@@ -3,7 +3,7 @@
 <%-- <% Here '~' is included in the MasterPageFile attribute. ~ refers to the root directory %>--%>
 <%-- <% Enabled the Session state in the page by setting the attribute 'EnableSessionState' to true  %>--%>
 <%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
-    MasterPageFile="~/_layouts/application.master" EnableViewState="true" EnableViewStateMac="false" EnableSessionState="True"
+    MasterPageFile="~/_layouts/application.master" EnableSessionState="True"
     ValidateRequest="false" %> 
 
 
