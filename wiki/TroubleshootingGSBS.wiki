@@ -31,6 +31,8 @@ You see this message when
 
 3. If you are using GSA's frontend, make sure that the frontend name mentioned under configuration is correct.
 
+Check http://code.google.com/apis/searchappliance/documentation/connectors/260/connector_admin/searchbox_sharepoint.html#MultipleColl for more error messages.
+
 == FAQ ==
 
 *1. Does Google Search Box for SharePoint support Public search?*
