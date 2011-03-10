@@ -1,4 +1,4 @@
-#summary Manual installation steps for connector 2.x
+#summary Manual installation steps for SharePoint connector 2.x
 
 = Introduction =
 This document walks you through the steps to manually install a Google Enterprise SharePoint connector. The instructions mentioned here are applicable to connector version 2.x and above.
