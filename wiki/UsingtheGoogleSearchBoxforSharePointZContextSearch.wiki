@@ -30,33 +30,33 @@ There are in all six scopes defined in Google Search Box for SharePoint 2.6.8  -
     * Current Folder
     * Current Folder and all subfolders
 
-== Enterprise Scope == 
+=== Enterprise Scope === 
 
         Supports search at a global level i.e. all the search results, belonging to SharePoint or other content management systems, and indexed by the GSA will be returned matching the search query term.
 
-== Current Site Scope ==
+=== Current Site Scope ===
 
         The SharePoint site url is of the form "http://SharePointSiteURL:portno". The current site scope supports search at the site level.
        Any contents within the subsites of the site  "http://SharePointSiteURL:portno" (in the entire hierarchy) are not searchable. Also, data pertaining to any custom list or document library within the site  "http://SharePointSiteURL:portno" are also not searchable. Contents from sites other than the SharePoint site "http://SharePointSiteURL:portno" are not returned. 
 
-== Current Site and all subsites Scope ==
+=== Current Site and all subsites Scope ===
 
         The SharePoint site url is of the form "http://SharePointSiteURL:portno". The current site and all subsites scope supports search at a site and all subsites level. 
           The search results are restricted to the contents of the site "http://SharePointSiteURL:portno". Any contents within the subsites of the site  "http://SharePointSiteURL:portno" (in the entire hierarchy) are also searchable. Also, data pertaining to any custom list or document library within the site  "http://SharePointSiteURL:portno" is searchable. Contents from sites other than the SharePoint site "http://SharePointSiteURL:portno" are not returned.  
 
-== Current List ==
+=== Current List ===
 
             The SharePoint list url is of the form "http://SharePointSiteURL:portno/Lists/listname/AllItems.aspx" or "http://SharePointSiteURL:portno/documentlibraryname/Forms/AllItems.aspx". The current list scope supports search at a list level.
 
                  The search results are restricted to the given list. Results are also returned for any of the list records (applicable for list created using custom list template) or documents (applicable for list created using document library template) present in the list. Contents from sites other than the SharePoint site "http://SharePointSiteURL:portno" are not returned.   
 
-== Current Folder ==
+=== Current Folder ===
                The SharePoint folder url is of the form "http://SharePointSiteURL:portno/documentlibraryname/Forms/AllItems.aspx?RootFolder=Encodedurl&FolderCTID=&View=EncodedURL". The current folder scope supports search at a folder level.
 
                The search results are restricted to the given folder contents. Contents from the subfolders inside the given folder are not returned.  Contents from sites other than the SharePoint site "http://SharePointSiteURL:portno" are not returned. 
 
 
-== Current Folder and all subfolders ==
+=== Current Folder and all subfolders ===
 
              The SharePoint folder url is of the form "http://SharePointSiteURL:portno/documentlibraryname/Forms/AllItems.aspx?RootFolder=Encodedurl&FolderCTID=&View=EncodedURL". The current folder and all subfolders scope supports search at a folder and all subfolders level.
                 The search results are restricted to the given folder contents. Contents from the subfolders inside the given folder are also returned. Contents from sites other than the SharePoint site "http://SharePointSiteURL:portno" are not returned. 
