@@ -19,7 +19,7 @@ You see this message when
 
 *The remote server returned an error: (502) Bad Gateway.Search Box logs show message: "The cookie contains only key 'secure'without any value"*
 
-To avoid getting this error for a secure search, configure the search box to omit the secure cookie. Open web.config file for the SharePoint site/s. Set the omitSecureCookie flag to true and perform a fresh search. You should get the search results.
+To avoid getting this error for a secure search, configure the search box to omit the secure cookie. Open web.config file for the SharePoint site/s. Set the omitSecureCookie flag (available in version 2.6.8) to true and perform a fresh search. You should get the search results.
 
 *500-Internal Server Error*
 
