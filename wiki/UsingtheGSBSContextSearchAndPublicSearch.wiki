@@ -6,9 +6,13 @@ This document gives a brief overview of the context search and public search in 
 
 SharePoint is a Content Management System. With SharePoint, documents can be uploaded, stored and downloaded for sharing between the different parties for collaboration purpose. Using SharePoint, different web applications can be developed as an internet-based, intranet based or extranet based respectively. Web applications comprise of site collections and site collections in turn have sites in them. Sites may contain various entities like document libraries, lists, features and subsites. The lists may contain large number of documents and folders.  
 
-== New Features in Google Search Box for SharePoint 2.6.8 ==
+== Abbreviations ==
 
-Google Search Box for SharePoint 2.6.8 supports following new features -
+*GSBS*: Google Search Box for SharePoint
+
+== New Features in GSBS 2.6.8 ==
+
+GSBS 2.6.8 supports following new features -
 
     * Support for context-sensitive search
 
@@ -18,7 +22,7 @@ Google Search Box for SharePoint 2.6.8 supports following new features -
 
 Google Search Box for SharePoint 2.6.0 supported intranet search at an Enterprise level i.e. all the data indexed and matching the entered search query term is returned. This may at times be cumbersome if the user is intending to search only within a site/ list/ folder, and that the search results are plenty in number.
 
-The Google Search Box for SharePoint 2.6.8 supports context search i.e. user can search for documents within a site/ list/ folder matching the search query term, provided the SharePoint connector is configured in Metadata-URL feed mode. (feed mode essential is working with GSA 6.8, as the display and record urls are different in case of content feed mode. For scope search, the url of the site or list the user is currently browsing is extracted, which is of the form “http://sharepointsite:portnumber/”. In content feed mode, the record url is of the form “googleconnector://”). The site, list and folder levels are termed as scopes. Scopes make it possible to narrow searches to particular locations/ entities.
+The Google Search Box for SharePoint 2.6.8 supports context search i.e. user can search for documents within a site/ list/ folder matching the search query term, provided the SharePoint connector is configured in Metadata-URL feed mode. (feed mode essential is working with GSA 6.8, as the display and record urls are different in case of content feed mode. For scope search, the url of the site or list the user is currently browsing is extracted, which is of the form “http://sharepointsite:portnumber/”. In content feed mode, the record URL is of the form “googleconnector://”). The site, list and folder levels are termed as scopes. Scopes make it possible to narrow searches to particular locations/ entities.
 
 There are in all six scopes defined in Google Search Box for SharePoint 2.6.8  -
 
@@ -70,7 +74,7 @@ There are in all six scopes defined in Google Search Box for SharePoint 2.6.8  -
 
             The Google Search Box for SharePoint 2.6.8 supports public search. Earlier version i.e. Google Search Box for SharePoint 2.6.0 had support for public and secure search. For facilitating public search with Google Search Box for SharePoint 2.6.8, a checkbox named 'Public Search' has been provided. User can change the checkbox status before performing a search with search box.
 
-             On checking the public search checkbox, a public search is performed by the search box. On unchecking the public search checkbox, a public and secure search is performed by the search box.
+             On checking the public search check-box, a public search is performed by the search box. On unchecking the public search checkbox, a public and secure search is performed by the search box.
 
 == New web.config parameters introduced in GSBS 2.6.8 ==
 
@@ -80,7 +84,7 @@ There are two new web.config parameters introduced into the web.config file for 
 
           Using this parameter, the user can perform either a 'public search' or a 'public and secure search'. The permissible values for this parameter are 'a' and 'p'. This is one of the name-value pairs that can be used in a search request sent to the GSA, documented on http://code.google.com/apis/searchappliance/documentation/64/xml_reference.html#request_parameters
 
-          Based on the value of accesslevel parameter, the public search checkbox is displayed. If the value of accesslevel parameter is 'p', the public search checkbox is not displayed with the GSBS, and all the searches performed will be public searches. If the value of accesslevel parameter is 'a', the public search checkbox is displayed along with the GSBS, and all the searches performed will be public and secure searches.
+          Based on the value of accesslevel parameter, the public search check-box is displayed. If the value of accesslevel parameter is 'p', the public search checkbox is not displayed with the GSBS, and all the searches performed will be public searches. If the value of accesslevel parameter is 'a', the public search checkbox is displayed along with the GSBS, and all the searches performed will be public and secure searches.
 
     * omitSecureCookie
 
