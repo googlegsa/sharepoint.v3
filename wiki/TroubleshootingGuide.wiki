@@ -328,6 +328,7 @@ The connector relies on the SharePoint's web-service to detect changes. The web-
 To circumvent this problem, please increase the EventCache timeout to the maximum possible value for your environment. See [http://code.google.com/p/google-enterprise-connector-sharepoint/issues/detail?id=113] for details.
 
 
+
 === Metadata-and-URL Feed Mode ===
 *Q. Do I need to configure robots.txt on the SharePoint server and if so how do I do it?*
 
@@ -541,3 +542,7 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
     > Make sure that you are using correct credentials for the site.
 
     > Make sure that there are no duplicate service principal names (SPN) set for the SharePoint server
+
+*Q. How does the connector behave when the SharePoint list is configured with "only their own" access control?
+
+The connector simply checks if the user has "READ" access to all the items in that list to decide if the SharePoint list is accessible to the given user. So if the user does not own or does not have access to any of the item in the list, the connector will return DENY for the SharePoint list landing page.
