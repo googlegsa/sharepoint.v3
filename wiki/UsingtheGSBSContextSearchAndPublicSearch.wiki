@@ -6,6 +6,21 @@ This document gives a brief overview of the context search and public search in 
 
 SharePoint is a Content Management System. With SharePoint, documents can be uploaded, stored and downloaded for sharing between the different parties for collaboration purpose. Using SharePoint, different web applications can be developed as an internet-based, intranet based or extranet based respectively. Web applications comprise of site collections and site collections in turn have sites in them. Sites may contain various entities like document libraries, lists, features and subsites. The lists may contain large number of documents and folders.  
 
+== New web.config parameters introduced in GSBS 2.6.8 ==
+
+There are two new web.config parameters introduced into the web.config file for any web application, on which the Google search box is to be installed -
+
+    * accesslevel
+
+          Using this parameter, the user can perform either a 'public search' or a 'public and secure search'. The permissible values for this parameter are 'a' and 'p'. This is one of the name-value pairs that can be used in a search request sent to the GSA, documented on http://code.google.com/apis/searchappliance/documentation/64/xml_reference.html#request_parameters
+
+          Based on the value of accesslevel parameter, the public search checkbox is displayed. If the value of accesslevel parameter is 'p', the public search checkbox is not displayed with the GSBS, and all the searches performed will be public searches. If the value of accesslevel parameter is 'a', the public search checkbox is displayed along with the GSBS, and all the searches performed will be public and secure searches.
+
+    * omitSecureCookie
+
+          The parameter was added to overcome the secure cookie issue. This parameter indicates whether the secure cookie should be passed on for processing or should be dropped. Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+
+
 == New Features in Google Search Box for SharePoint 2.6.8 ==
 
 Google Search Box for SharePoint 2.6.8 supports following new features -
