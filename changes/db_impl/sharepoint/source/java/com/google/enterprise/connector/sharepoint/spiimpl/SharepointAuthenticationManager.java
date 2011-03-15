@@ -45,7 +45,6 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     Logger LOGGER = Logger.getLogger(SharepointAuthenticationManager.class.getName());
 
     SharepointClientContext sharepointClientContext = null;
-    UserDataStoreDAO userDataStoreDAO = null;
 
     /**
      * @param inSharepointClientContext Context Information is required to
@@ -61,16 +60,6 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
     }
 
-    public SharepointAuthenticationManager(
-            final SharepointClientContext inSharepointClientContext, final UserDataStoreDAO inUserDataStoreDAO)
-            throws SharepointException {
-        if (inSharepointClientContext == null) {
-            throw new SharepointException(
-                    "SharePointClientContext can not be null");
-        }
-        sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
-        this.userDataStoreDAO = inUserDataStoreDAO;
-    }
     /**
      * Authenticates the user against the SharePoint server where Crawl URL
      * specified during connector configuration is hosted
@@ -124,20 +113,25 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
          * SharePoint server. He may no have any access to the SharePoint site.
          * The Google Services deployed on the SharePoint can be called with any
          * such user's credential.
+         * If Authentication successful create a AuthenticationResponse as per
+         * CM SPI changes.
          */
         if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
             LOGGER.log(Level.INFO, "Authentication succeded for " + userName);
-            UserDataStoreDAO userDataStoreDAO = this.sharepointClientContext.getUserDataStoreDAO();
-            List<UserGroupMembership> groupsList = this.userDataStoreDAO.getAllMembershipsForUser(userName);
-            Set<String> groups = new HashSet<String>();
-            for (UserGroupMembership group : groupsList) {
-                    groups.add(group.getGroupName());
+            if (null != this.sharepointClientContext.getUserDataStoreDAO()) {
+                //Retrieving list of UserGroupMembership
+                List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForUser(userName);
+                Set<String> groups = new HashSet<String>();
+                for (UserGroupMembership userGroupMembership : groupMemberList) {
+                    groups.add(userGroupMembership.getGroupName());
+                }
+                LOGGER.log(Level.INFO, "Groups information for the user: " + userName + " : " + groups);
+                //Adding collection of groups data while creating AuthenticationResponse object.
+                return new AuthenticationResponse(true, "", groups);
             }
-            LOGGER.log(Level.INFO, "groups information for the user: " + userName + " : " + groups);
-            return new AuthenticationResponse(true, "", groups);
         }
 
         LOGGER.log(Level.WARNING, "Authentication failed for " + user);
-        return new AuthenticationResponse(false, "");
+        return new AuthenticationResponse(false, "", null);
     }
 }

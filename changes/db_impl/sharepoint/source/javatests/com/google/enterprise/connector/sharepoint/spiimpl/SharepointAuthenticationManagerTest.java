@@ -52,8 +52,9 @@ public class SharepointAuthenticationManagerTest extends TestCase {
                 TestConfiguration.getUserDataSource(),
                 TestConfiguration.getUserDataStoreQueryProvider(),
                 TestConfiguration.getUserGroupMembershipRowMapper());
+        this.sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
         this.authMan = new SharepointAuthenticationManager(
-                this.sharepointClientContext, userDataStoreDAO);
+                this.sharepointClientContext);
         System.out.println("Initializing SharepointAuthenticationIdentity ...");
         this.authID = new SimpleAuthenticationIdentity(
                 TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
