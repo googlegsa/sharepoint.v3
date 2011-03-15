@@ -17,6 +17,8 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
@@ -24,6 +26,9 @@ import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +45,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     Logger LOGGER = Logger.getLogger(SharepointAuthenticationManager.class.getName());
 
     SharepointClientContext sharepointClientContext = null;
+    UserDataStoreDAO userDataStoreDAO = null;
 
     /**
      * @param inSharepointClientContext Context Information is required to
@@ -55,6 +61,16 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
     }
 
+    public SharepointAuthenticationManager(
+            final SharepointClientContext inSharepointClientContext, final UserDataStoreDAO inUserDataStoreDAO)
+            throws SharepointException {
+        if (inSharepointClientContext == null) {
+            throw new SharepointException(
+                    "SharePointClientContext can not be null");
+        }
+        sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
+        this.userDataStoreDAO = inUserDataStoreDAO;
+    }
     /**
      * Authenticates the user against the SharePoint server where Crawl URL
      * specified during connector configuration is hosted
@@ -111,7 +127,14 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
          */
         if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
             LOGGER.log(Level.INFO, "Authentication succeded for " + userName);
-            return new AuthenticationResponse(true, "");
+            UserDataStoreDAO userDataStoreDAO = this.sharepointClientContext.getUserDataStoreDAO();
+            List<UserGroupMembership> groupsList = this.userDataStoreDAO.getAllMembershipsForUser(userName);
+            Set<String> groups = new HashSet<String>();
+            for (UserGroupMembership group : groupsList) {
+                    groups.add(group.getGroupName());
+            }
+            LOGGER.log(Level.INFO, "groups information for the user: " + userName + " : " + groups);
+            return new AuthenticationResponse(true, "", groups);
         }
 
         LOGGER.log(Level.WARNING, "Authentication failed for " + user);

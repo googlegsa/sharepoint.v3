@@ -16,8 +16,12 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
+import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
+
+import java.util.Collection;
 
 import junit.framework.TestCase;
 
@@ -26,6 +30,8 @@ public class SharepointAuthenticationManagerTest extends TestCase {
     SharepointClientContext sharepointClientContext;
     SharepointAuthenticationManager authMan;
     AuthenticationIdentity authID;
+    AuthenticationResponse authenticationResponse;
+    UserDataStoreDAO userDataStoreDAO;
 
     protected void setUp() throws Exception {
         System.out.println("\n...Setting Up...");
@@ -42,8 +48,12 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
         System.out.println("Initializing SharepointAuthenticationManager ...");
+        userDataStoreDAO = new UserDataStoreDAO(
+                TestConfiguration.getUserDataSource(),
+                TestConfiguration.getUserDataStoreQueryProvider(),
+                TestConfiguration.getUserGroupMembershipRowMapper());
         this.authMan = new SharepointAuthenticationManager(
-                this.sharepointClientContext);
+                this.sharepointClientContext, userDataStoreDAO);
         System.out.println("Initializing SharepointAuthenticationIdentity ...");
         this.authID = new SimpleAuthenticationIdentity(
                 TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
@@ -51,7 +61,10 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 
     public void testAuthenticate() throws Throwable {
         System.out.println("Testing authenticate()...");
-        this.authMan.authenticate(this.authID);
+        this.authenticationResponse = this.authMan.authenticate(this.authID);
+        assertNotNull(authenticationResponse);
+        Collection<String> groups = this.authenticationResponse.getGroups();
+        assertNotNull(groups);
         System.out.println("[ authenticate() ] Test Completed.");
     }
 }

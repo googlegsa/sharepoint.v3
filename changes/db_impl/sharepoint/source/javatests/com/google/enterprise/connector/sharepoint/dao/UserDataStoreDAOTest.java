@@ -143,4 +143,19 @@ public class UserDataStoreDAOTest extends TestCase {
             fail(e.getMessage());
         }
     }
+    public void testgetAllMembershipsForUser() {
+        try {
+            String userName = "googlesp";
+            List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser(userName);
+            assertNotNull(members);
+            Set<String> groups = new HashSet<String>();
+            for (UserGroupMembership membership : members) {
+                groups.add(membership.getGroupName());
+            }
+            assertNotNull(groups);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
 }
