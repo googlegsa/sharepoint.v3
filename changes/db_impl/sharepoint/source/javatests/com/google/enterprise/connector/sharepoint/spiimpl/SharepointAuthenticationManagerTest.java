@@ -68,4 +68,24 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         assertNotNull(groups);
         System.out.println("[ authenticate() ] Test Completed.");
     }
+
+    /**
+     * Need to run this test case by changing user name (not existed user) in
+     * TestConfig.properties.
+     * @throws Throwable
+     */
+    public void testAuthenticateWithNullGroups () throws Throwable {
+        System.out.println("Testing Authenticate() with null groups");
+        testAuthenticate();
+        Collection<String> groups = this.authenticationResponse.getGroups();
+        assertNull(groups);
+    }
+
+    public void testAuthenticateWithGroups () throws Throwable {
+        System.out.println("Testing Authenticate() with groups");
+        testAuthenticate();
+        Collection<String> groups = this.authenticationResponse.getGroups();
+        assertNotNull(groups);
+    }
+
 }

@@ -143,16 +143,28 @@ public class UserDataStoreDAOTest extends TestCase {
             fail(e.getMessage());
         }
     }
-    public void testgetAllMembershipsForUser() {
+    public void testGetAllMembershipsForUser() {
         try {
-            String userName = "googlesp";
+            String userName = TestConfiguration.searchUserID;
             List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser(userName);
             assertNotNull(members);
             Set<String> groups = new HashSet<String>();
             for (UserGroupMembership membership : members) {
+                assertEquals(userName, membership.getUserName());
+                assertNotNull(membership.getGroupName());
                 groups.add(membership.getGroupName());
             }
             assertNotNull(groups);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    public void testGetAllMembershipsForUserWithNull() {
+        try {
+            String userName = TestConfiguration.testuser;
+            List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser(userName);
+            assertNull(members);            
         } catch (Exception e) {
             fail(e.getMessage());
         }

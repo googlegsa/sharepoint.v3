@@ -56,6 +56,7 @@ public class TestConfiguration {
     public static String domain;
     public static String kdcserver;
     public static String username;
+    public static String testuser;
     public static String Password;
     public static String mySiteBaseURL;
     public static String includedURls;
@@ -68,6 +69,8 @@ public class TestConfiguration {
     public static String SearchDocID1;
     public static String SearchDocID2;
     public static String SearchDocID3;
+    public static String SearchDocID25;
+    public static String SearchDocID26;
 
     public static String Site1_URL;
     public static String Site1_List1_GUID;
@@ -140,7 +143,9 @@ public class TestConfiguration {
         SearchDocID1 = properties.getProperty("SearchDocID1");
         SearchDocID2 = properties.getProperty("SearchDocID2");
         SearchDocID3 = properties.getProperty("SearchDocID3");
-
+        SearchDocID25 = properties.getProperty("SearchDocID25");
+        SearchDocID26 = properties.getProperty("SearchDocID26");
+        testuser = properties.getProperty("testuser");
         Site1_URL = properties.getProperty("Site1_URL");
         Site1_List1_GUID = properties.getProperty("Site1_List1_GUID");
         Site1_List1_URL = properties.getProperty("Site1_List1_URL");
@@ -558,7 +563,7 @@ public class TestConfiguration {
                 "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
         queryProvider.setUdsTableName("User_Group_Memberships");
         queryProvider.setUdsIndexName("UDS_Index_SPUserId");
-        queryProvider.init("Test", "mssql");
+        queryProvider.init("Test", "Oracle");
         return queryProvider;
     }
 
