@@ -111,6 +111,8 @@ public class TestConfiguration {
     public static String dbUrl;
     public static String dbUsername;
     public static String dbPassword;
+    public static String dbVendor;
+    public static String connectorName;
 
     static {
         final Properties properties = new Properties();
@@ -199,6 +201,8 @@ public class TestConfiguration {
         dbUrl = properties.getProperty("DBURL");
         dbUsername = properties.getProperty("DBUsername");
         dbPassword = properties.getProperty("DBPassword");
+        dbVendor = properties.getProperty("DBVendor");
+        connectorName = properties.getProperty("ConnectorName");
     }
 
     public static Map<String, String> getConfigMap() {
@@ -563,7 +567,7 @@ public class TestConfiguration {
                 "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
         queryProvider.setUdsTableName("User_Group_Memberships");
         queryProvider.setUdsIndexName("UDS_Index_SPUserId");
-        queryProvider.init("Test", "Oracle");
+        queryProvider.init(TestConfiguration.connectorName, TestConfiguration.dbVendor);
         return queryProvider;
     }
 
