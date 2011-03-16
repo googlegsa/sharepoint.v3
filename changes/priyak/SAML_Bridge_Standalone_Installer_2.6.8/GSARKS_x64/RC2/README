@@ -1,11 +1,9 @@
-Google Resource Kit for SharePoint 2.6.8 (64-bit)
+Google SAML bridge for Windows 2.6.8 (64-bit)
 
-The Google Resource Kit for SharePoint 2.6.8 (64-bit) provides the following components:
-1. Google Search Box for SharePoint: It represents Google Search Box for SharePoint. When selected, the Google Search Box for SharePoint is enabled on all SharePoint web applications on a machine, which share the same search control.
-2. Google Services for SharePoint: The Google Services for SharePoint are custom web services used by the Google Search Appliance Connector for Microsoft SharePoint 2007 and Microsoft SharePoint 2010.
-3. GSA Resource Kit for SharePoint: It represents a set of utilities which are useful for testing and extending GSA's search on SharePoint.
+The Google SAML bridge for Windows 2.6.8 (64-bit) provides the following components:
+1. Google SAML Bridge for Windows: It allows users to gain seamless access to content that resides on file systems, web servers, or Microsoft Office Sharepoint servers
 
-Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+Web Site: http://code.google.com/p/google-saml-bridge-for-windows/
 
 Licensing
 ---------

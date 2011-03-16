@@ -25,7 +25,7 @@ namespace GoogleResourceKitForSharePoint
     {
         static void Main(string[] args)
         {
-            string SITENAME = "gsa-resource-kit";//required to do search for the site
+            string SITENAME = "saml-bridge-for-windows";//required to do search for the site
             string GSA_SIMULATOR ="GSASimulator";
             string SAML_BRIDGE = "SAMLBridge";
             string SEARCH_BOX_TEST_UTILITY = "SearchBoxTestUtility";

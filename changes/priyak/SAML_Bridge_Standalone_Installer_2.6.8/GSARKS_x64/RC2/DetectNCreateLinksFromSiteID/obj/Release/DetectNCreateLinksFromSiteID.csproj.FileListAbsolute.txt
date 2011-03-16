@@ -30,3 +30,8 @@ C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFro
 C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache
 C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
 C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb
+C:\Priya\SAML bridge for Windows\GSRKS_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
+C:\Priya\SAML bridge for Windows\GSRKS_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb
+C:\Priya\SAML bridge for Windows\GSRKS_x64\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.exe
+C:\Priya\SAML bridge for Windows\GSRKS_x64\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.pdb
+C:\Priya\SAML bridge for Windows\GSRKS_x64\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache

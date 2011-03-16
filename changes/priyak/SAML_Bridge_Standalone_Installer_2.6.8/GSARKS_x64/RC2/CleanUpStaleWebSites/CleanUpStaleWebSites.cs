@@ -24,7 +24,7 @@ namespace GoogleResourceKitForSharePoint
     {
         static void Main(string[] args)
         {
-            string SITENAME = "gsa-resource-kit";//required to do search for the site
+            string SITENAME = "saml-bridge-for-windows";//required to do search for the site
             try
             {
                 DeleteWebSiteFromName(SITENAME);
