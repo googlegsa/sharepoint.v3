@@ -1,0 +1,11 @@
+Google SAML bridge for Windows 2.6.8 (64-bit)
+
+The Google SAML bridge for Windows 2.6.8 (64-bit) provides the following components:
+1. Google SAML Bridge for Windows: It allows users to gain seamless access to content that resides on file systems, web servers, or Microsoft Office Sharepoint servers
+
+Web Site: http://code.google.com/p/google-saml-bridge-for-windows/
+
+Licensing
+---------
+      This product is licensed under the Apache Software Foundation (http://www.apache.org/).
+      A copy of the licensing terms is available in a file called COPYING.
