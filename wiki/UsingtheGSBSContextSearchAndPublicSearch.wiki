@@ -1,4 +1,4 @@
-#summary Using the Google search box for SharePoint to perform context search 2.6.8
+#summary Using the Google search box for SharePoint to perform context search (2.6.8 onwards)
 
 = Introduction =
 
