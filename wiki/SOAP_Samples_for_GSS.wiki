@@ -1,4 +1,4 @@
-#summary Sample SOAP requests to test GSS
+#summary Sample SOAP requests to test Google Services for SharePoint
 
 = Introduction =
 
