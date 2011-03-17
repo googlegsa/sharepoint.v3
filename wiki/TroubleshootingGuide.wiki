@@ -500,7 +500,7 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
     you are willing to use ACL based authorization of search results.
 
 *Q. Do we support Share Point 2010 ?*
-     Yes, Connector now supports Share Point 2010.
+     Yes, Connector 2.6.0 onward supports Share Point 2010 and SharePoint Foundation 2010.
 
 *Q. How to include/exclude a site/page in the search results? *
     Connector, during the crawl checks if a site/list search visibility is turned on.  
