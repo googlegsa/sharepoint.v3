@@ -14,10 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
@@ -25,6 +25,7 @@ import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
+import com.google.enterprise.connector.spi.SpiConstants;
 
 import java.util.HashSet;
 import java.util.List;
@@ -94,44 +95,48 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         }
 
         final String userName = Util.getUserNameWithDomain(user, domain);
-        LOGGER.log(Level.INFO, "Authenticating User: " + userName);
-
-        sharepointClientContext.setUsername(userName);
-        sharepointClientContext.setPassword(password);
-
-        try {
-            bulkAuth = new GSBulkAuthorizationWS(sharepointClientContext);
-        } catch (final Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize GSBulkAuthorizationWS.", e);
-            return null;
+        if (!Strings.isNullOrEmpty(userName)) {
+        	LOGGER.log(Level.INFO, "Authenticating User: " + userName);
+        	sharepointClientContext.setUsername(userName);
+        	sharepointClientContext.setPassword(password);
+        	try{
+        		bulkAuth = new GSBulkAuthorizationWS(sharepointClientContext);
+        	} catch (final Exception e) {
+        		LOGGER.log(Level.SEVERE, "Failed to initialize GSBulkAuthorozationWS.", e);
+        		return null;
+        	}
+        	/*
+        	 * If you can make a call to Web Service with the given credential,
+        	 * the user is valid user. This should not be assumed as a valid
+        	 * SharePoint user. A valid user is any user who is identified on the 
+        	 * SharePoint server.The Google Services deployed on the SharePoint server
+        	 * can be called with such user credentials.
+        	 * 
+        	 * If Authentication is successful get groups information from UserDataStore
+        	 * data base for a given user and add it to AuthenticationResponse.        	 * 
+        	 */
+        	if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
+        		LOGGER.log(Level.INFO, "Authentication succeded for the user : ", userName);
+        		if (null  != this.sharepointClientContext.getUserDataStoreDAO()) {
+        			return getAllGroupsForTheUser(userName);
+        		}
+        	}
+        } else {
+        	return getAllGroupsForTheUser(userName);
         }
-
-        /*
-         * If we can make a call to the Web Service with the given credetial,
-         * the user is a valid user. This should not be assumed as a valid
-         * SharePoint user. A valid user is any user who is identified on the
-         * SharePoint server. He may no have any access to the SharePoint site.
-         * The Google Services deployed on the SharePoint can be called with any
-         * such user's credential.
-         * If Authentication successful create a AuthenticationResponse as per
-         * CM SPI changes.
-         */
-        if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
-            LOGGER.log(Level.INFO, "Authentication succeded for " + userName);
-            if (null != this.sharepointClientContext.getUserDataStoreDAO()) {
-                //Retrieving list of UserGroupMembership
-                List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForUser(userName);
-                Set<String> groups = new HashSet<String>();
-                for (UserGroupMembership userGroupMembership : groupMemberList) {
-                    groups.add(userGroupMembership.getGroupName());
-                }
-                LOGGER.log(Level.INFO, "Groups information for the user: " + userName + " : " + groups);
-                //Adding collection of groups data while creating AuthenticationResponse object.
-                return new AuthenticationResponse(true, "", groups);
-            }
-        }
-
         LOGGER.log(Level.WARNING, "Authentication failed for " + user);
         return new AuthenticationResponse(false, "", null);
     }
+
+	private AuthenticationResponse getAllGroupsForTheUser(String userName) throws SharepointException {
+		//Retrieving list of UserGroupMembership
+		List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForUser(userName);
+		Set<String> groups = new HashSet<String>();
+		for (UserGroupMembership userGroupMembership : groupMemberList) {
+			groups.add(userGroupMembership.getGroupName());
+		}
+		LOGGER.log(Level.INFO, "Groups information for the user[ " + userName + " ]: " + groups);
+		//Adding collection of groups data while creating AuthenticationResponse object.
+		return new AuthenticationResponse(true, "", groups);
+	}
 }

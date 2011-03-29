@@ -88,4 +88,15 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         assertNotNull(groups);
     }
 
+    /**
+     * Run this with empty or null password by specifying in TestConfig.properties
+     * @throws Throwable
+     */
+    public void testAuthenticateWithEmptyOrNullPassword () throws Throwable {
+        System.out.println("Testing Authenticate() with empty or null password");
+        testAuthenticate();
+        Collection<String> groups = this.authenticationResponse.getGroups();
+        assertNotNull(groups);
+    }
+
 }
