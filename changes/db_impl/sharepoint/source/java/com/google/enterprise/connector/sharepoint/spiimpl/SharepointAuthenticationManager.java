@@ -95,7 +95,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         }
 
         final String userName = Util.getUserNameWithDomain(user, domain);
-        if (!Strings.isNullOrEmpty(userName)) {
+        if (!Strings.isNullOrEmpty(password)) {
         	LOGGER.log(Level.INFO, "Authenticating User: " + userName);
         	sharepointClientContext.setUsername(userName);
         	sharepointClientContext.setPassword(password);
