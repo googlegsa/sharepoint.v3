@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.common.base.Strings;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import java.text.MessageFormat;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
 /**
  * Provides basic implementation for all the operations related to accessing
@@ -33,6 +36,7 @@ import java.util.ResourceBundle;
  * @author nitendra_thakur
  */
 public class SimpleQueryProvider implements QueryProvider {
+    private final Logger LOGGER = Logger.getLogger(SimpleQueryProvider.class.getName());
     private ResourceBundle sqlQueries;
     private String basename;
 
@@ -90,8 +94,8 @@ public class SimpleQueryProvider implements QueryProvider {
                             + locale + " ] ");
         }
 
-        this.udsTableName += "_" + connectorName;
-        this.udsIndexName += "_" + connectorName;
+        this.udsTableName = makeTableOrIndexName(this.udsTableName, connectorName, getMaxTableNameLength(database));
+        this.udsIndexName = makeTableOrIndexName(this.udsIndexName, connectorName, getMaxTableNameLength(database));
 
         for (Query query : Query.values()) {
             registerQuery(query);
@@ -157,4 +161,41 @@ public class SimpleQueryProvider implements QueryProvider {
     public void setUdsIndexName(String udsIndexName) {
         this.udsIndexName = udsIndexName;
     }
+
+    /**
+     * Constructs a database table name based up the configured table name prefix
+     * and the Connector name.
+     * @param prefix the generated table name will begin with this prefix
+     * @param connectorName the connector name
+     * @param maxLength the maximum length of the generated table name
+     * @return table or index name.
+     */
+    private String makeTableOrIndexName(String prefix, String connectorName, int maxLength) {
+        prefix = Strings.nullToEmpty(prefix);
+        String suffix = null;
+        if ((connectorName.matches("[a-z0-9]+[a-z0-9_]*")) &&
+            ((connectorName.length() + prefix.length()) <= maxLength)) {
+          suffix = connectorName;
+        } else {
+            suffix = connectorName.replace("-", ""); // replace hyphen in the connector name.
+            if(prefix.length() + suffix.length() > maxLength ) {
+                suffix = suffix.substring(0, maxLength - prefix.length());
+            }
+        }
+        return (prefix + suffix).toLowerCase();
+      }
+
+    /**
+     * Returns the maximum table name length for this database vendor.
+     */
+    private int getMaxTableNameLength(String dataBaseName) {
+       int maxTableNameLength;
+       if (!dataBaseName.equalsIgnoreCase(SPConstants.SELETED_DATABASE)) {
+              maxTableNameLength = 255;
+       } else {
+          maxTableNameLength = 30;  // Assume the worst. Oracle is 30 chars.
+       }
+       LOGGER.info("Selected data base is: " + dataBaseName + " and maximum table name length is : " + maxTableNameLength);
+       return maxTableNameLength;
+      }
 }

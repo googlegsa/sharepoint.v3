@@ -122,6 +122,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         		}
         	}
         } else {
+        	LOGGER.config("AuthN was not attempted as password is " + password + " and groups are being returned.");
         	return getAllGroupsForTheUser(userName);
         }
         LOGGER.log(Level.WARNING, "Authentication failed for " + user);

@@ -113,6 +113,8 @@ public class TestConfiguration {
     public static String dbPassword;
     public static String dbVendor;
     public static String connectorName;
+    private static String UDS_TABLE_NAME;
+    private static String UDS_INDEX_NAME;
 
     static {
         final Properties properties = new Properties();
@@ -203,6 +205,8 @@ public class TestConfiguration {
         dbPassword = properties.getProperty("DBPassword");
         dbVendor = properties.getProperty("DBVendor");
         connectorName = properties.getProperty("ConnectorName");
+        UDS_TABLE_NAME = properties.getProperty("UDS_TABLE_NAME");
+        UDS_INDEX_NAME = properties.getProperty(UDS_INDEX_NAME);
     }
 
     public static Map<String, String> getConfigMap() {
@@ -565,8 +569,9 @@ public class TestConfiguration {
             throws SharepointException {
         SimpleQueryProvider queryProvider = new SimpleQueryProvider(
                 "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
-        queryProvider.setUdsTableName("User_Group_Memberships");
-        queryProvider.setUdsIndexName("UDS_Index_SPUserId");
+        queryProvider.setUdsTableName(TestConfiguration.UDS_TABLE_NAME);
+        queryProvider.setUdsIndexName(TestConfiguration.UDS_INDEX_NAME);
+        queryProvider.setDatabase(TestConfiguration.dbVendor);
         queryProvider.init(TestConfiguration.connectorName, TestConfiguration.dbVendor);
         return queryProvider;
     }

@@ -59,6 +59,7 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport
         Connection con = null;
         try {
             con = getConnection();
+            LOGGER.config("Created data base connection for specified data source.");
         } catch (Exception e) {
             throw new SharepointException(
                     "Could not create the database conection for specified data source",

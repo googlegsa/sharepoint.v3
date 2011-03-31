@@ -14,25 +14,22 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
+import com.google.enterprise.connector.spi.ConnectorPersistentStore;
+import com.google.enterprise.connector.spi.ConnectorPersistentStoreAware;
+import com.google.enterprise.connector.spi.LocalDatabase;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
 
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -42,7 +39,7 @@ import java.util.logging.Logger;
  *
  * @author nitendra_thakur
  */
-public class SharepointConnector implements Connector {
+public class SharepointConnector implements Connector, ConnectorPersistentStoreAware {
     private static final Logger LOGGER = Logger.getLogger(SharepointConnector.class.getName());
     private SharepointClientContext sharepointClientContext = null;
 
@@ -70,6 +67,7 @@ public class SharepointConnector implements Connector {
     private List<String> infoPathBaseTemplate;
     private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
     private boolean reWriteRecordUrlUsingAliasMappingRules;
+    private ConnectorPersistentStore connectorPersistnetStore;
 
     public SharepointConnector() {
 
@@ -93,9 +91,21 @@ public class SharepointConnector implements Connector {
      * returns a session object for the current connector instance
      */
     public Session login() throws RepositoryException {
-        LOGGER.info("login()");
+        LOGGER.info("Connector login()");
         if (sharepointClientContext.isPushAcls()) {
             try {
+                LocalDatabase localDatabseImpl = connectorPersistnetStore.getLocalDatabase();
+                String locale = localDatabseImpl.getDatabaseType().name();
+                LOGGER.config("Data base type : " + locale);
+                if(null == locale || locale.length() == 0) {
+                    locale = "mssql";
+                }
+                queryProvider.setDatabase(locale);
+                queryProvider.init(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir), locale);                
+                UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
+                        localDatabseImpl.getDataSource(), queryProvider, userGroupMembershipRowMapper);
+                LOGGER.config("DAO for UserDataStore created successfully");
+                sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
                 new GssAclWS(sharepointClientContext, null).checkConnectivity();
             } catch (Exception e) {
                 throw new RepositoryException(
@@ -296,9 +306,6 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setGroupnameFormatInAce(this.getGroupnameFormatInAce());
         sharepointClientContext.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
         sharepointClientContext.setPushAcls(pushAcls);
-        if (pushAcls) {
-            initDao();
-        }
     }
 
     /**
@@ -356,49 +363,6 @@ public class SharepointConnector implements Connector {
         this.userGroupMembershipRowMapper = userGroupMembershipRowMapper;
     }
 
-    // FIXME there is CM SPI dependency here.
-    // This is a temporary code snippet for integration testing. The
-    // DBConfig values are actually to be come from the connector
-    // configuration page or CM spi.
-    // Create a property file named UserDataStoreConfig.properties inside
-    // the sharepoint-connector directory which is parent directory where
-    // connector instance directory is created. And, specify the following
-    // values:
-    // DriverClass=com.mysql.jdbc.Driver
-    // DBURL=jdbc:mysql://localhost:3306/user_data_store
-    // DBUsername=root
-    // DBPassword=pspl!@#
-    public void initDao() throws SharepointException {
-        try {
-            Properties properties = new Properties();
-            properties.load(new FileInputStream(googleConnectorWorkDir
-                    + "/../UserDataStoreConfig.properties"));
-
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName(properties.getProperty("DriverClass"));
-            dataSource.setUrl(properties.getProperty("DBURL"));
-            dataSource.setUsername(properties.getProperty("DBUsername"));
-            dataSource.setPassword(properties.getProperty("DBPassword"));
-
-            String locale = properties.getProperty("LOCALE");
-            if(null == locale || locale.length() == 0) {
-                locale = "mssql";
-            }
-            queryProvider.init(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir), locale);
-            queryProvider.setDatabase(properties.getProperty("DATABASE"));
-
-            UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
-                    dataSource, queryProvider, userGroupMembershipRowMapper);
-            sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
-        } catch (IOException e) {
-        	LOGGER.log(Level.WARNING, "UserDataStoreConfig.properties not found at " + googleConnectorWorkDir, e);
-        } catch(IllegalArgumentException e) {
-        	LOGGER.log(Level.WARNING, "missing property values in UserDataStoreConfig.properties.", e);
-        } catch(Exception e) {
-        	throw new SharepointException("exception occurred while initilizing DAO.");
-        }
-    }
-
     public boolean isReWriteDisplayUrlUsingAliasMappingRules() {
         return reWriteDisplayUrlUsingAliasMappingRules;
     }
@@ -439,5 +403,9 @@ public class SharepointConnector implements Connector {
 
     public void setAppendNamespaceInSPGroup(boolean appendNamespaceInSPGroup) {
         this.appendNamespaceInSPGroup = appendNamespaceInSPGroup;
+    }
+
+    public void setDatabaseAccess(ConnectorPersistentStore databaseAccess) {
+        this.connectorPersistnetStore = databaseAccess;
     }
 }

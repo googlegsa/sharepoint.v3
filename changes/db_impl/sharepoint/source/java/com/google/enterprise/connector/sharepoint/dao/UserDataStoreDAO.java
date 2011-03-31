@@ -75,17 +75,28 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     private void confirmEntitiesExistence()
             throws SharepointException {
         DatabaseMetaData dbm = null;
+        boolean tableFound = false;
+        String tableName;
         try {
             // TODO Devise a better way for ensuring the availability of
             // tables/indexes. Cann't this be incorporated in the query itself
             // e.g CREATE IF NOT AVAILABLE
             dbm = getConnection().getMetaData();
-            ResultSet resultSet = dbm.getTables(getQueryProvider().getDatabase(), null, getQueryProvider().getUdsTableName(), null);
-            if (null == resultSet || !resultSet.next()) {
-                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
-                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
+            tableName = getQueryProvider().getUdsTableName();
+            ResultSet rsTables = dbm.getTables(getQueryProvider().getDatabase(), null, null, null);
+            while (rsTables.next()){
+                if (tableName.equalsIgnoreCase(rsTables.getString("TABLE_NAME"))) {
+                    tableFound = true;
+                    LOGGER.config("User data store table found with name : " + rsTables.getString("TABLE_NAME"));
+                }
             }
-            resultSet.close();
+            if (!tableFound) {
+                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
+                LOGGER.config("Created user data store table with name : " + Query.UDS_CREATE_TABLE+ "sucessfully");
+                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
+                LOGGER.config("Created user data store table index with name : " + Query.UDS_CREATE_INDEX+ "sucessfully");
+            }
+            rsTables.close();
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
         }
