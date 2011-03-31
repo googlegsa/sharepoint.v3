@@ -120,7 +120,7 @@ namespace SAMLConfiguration
             this.MinimizeBox = false;
             this.Name = "frmSAMLConfiguration";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Google SAML Bridge for Windows- Configuration Wizard";
+            this.Text = "Google SAML Bridge for Windows 2.0 - Configuration Wizard";
             this.ResumeLayout(false);
             this.PerformLayout();
 
