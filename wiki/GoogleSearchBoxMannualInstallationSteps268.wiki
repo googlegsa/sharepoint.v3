@@ -33,7 +33,7 @@
                  stsadm.exe -o activatefeature -name GSAFeature -force 
       }}}
 
- 6.  To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application. 
+   6.    To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application. 
 
 
      {{{
@@ -74,7 +74,7 @@
       
  }}}
 
- 7.  To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to enable session state for a given SharePoint web application. 
+    7.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to enable session state for a given SharePoint web application. 
 
 {{{
 
@@ -88,7 +88,7 @@
 
 }}}
 
- 8. To setup SharePoint like frontend: 
+    8.   To setup SharePoint like frontend: 
 
 {{{
 
