@@ -1,4 +1,4 @@
-#summary Manual installation steps for Google Search Box
+#summary Manual installation steps for Google Search Box 2.6.8
 
 = Pre-requisites =
 
