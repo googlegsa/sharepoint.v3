@@ -2,7 +2,7 @@
 ==Instructions for manual deployment of Google Search Box for SharePoint == 
   
    * The search Box can be deployed on machine with WSS 3.0 or MOSS 2007 installed (32-bit)
-   * The search Box can also be deployed on machine with WSS 4.0 or MOSS 2010 installed (64-bit)
+   * The search Box can also be deployed on machine with MOSS 2010 installed (64-bit)
    * The documents should be fed and indexed on appliance before doing search  
    * For a SharePoint farm scenario, you need to install the Search Box for all the SharePoint server machines connected to the farm. 
    * The Google Search Box for SharePoint 2007 can be downloaded at [http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/detail?name=GSBS-2.6.0_SharePoint2007.zip&can=2&q=#makechanges] 
@@ -32,7 +32,7 @@
          * In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened 
 (For Sharepoint 2010, in IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened)
          * In the Windows Explorer, right click on web.config -> Edit 
-         * Go to "<appSettings>" section (For MOSS 2007 and MOSS 2010). In case of WSS 3.0 and 4.0 you need to create a new "<appSettings>" section 
+         * Go to "<appSettings>" section (For MOSS 2007 and MOSS 2010). In case of WSS 3.0, you need to create a new "<appSettings>" section 
          * For Sharepoint 2007, add following keys under it. (Following are sample values for reference) 
           
              <!--Beginning of GSA search control section --> 
