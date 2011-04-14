@@ -58,7 +58,7 @@
 		<comments>##ID_STRING24##</comments>
 		<template>x64;1033</template>
 		<lastauthor>Administrator</lastauthor>
-		<revnumber>{A47AA3FA-EFE6-4F4A-96E0-1E222DEC69FB}</revnumber>
+		<revnumber>{EBA5A91C-B983-4479-815A-0B099788B2AE}</revnumber>
 		<lastprinted/>
 		<createdtm>06/21/1999 18:30</createdtm>
 		<lastsavedtm>07/14/2000 22:20</lastsavedtm>
@@ -4082,7 +4082,7 @@
 		<row><td>ID_STRING1</td><td>1033</td><td>SharePoint 2007 or 2010 installation not found</td><td>0</td><td/><td>983485965</td></row>
 		<row><td>ID_STRING10</td><td>1033</td><td>SearchBoxTestUtility</td><td>0</td><td/><td>345888878</td></row>
 		<row><td>ID_STRING100</td><td>1033</td><td>SAML Bridge Configuration Wizard</td><td>0</td><td/><td>2040514027</td></row>
-		<row><td>ID_STRING101</td><td>1033</td><td>GSA Simulator for SharePoint</td><td>0</td><td/><td>2040482479</td></row>
+		<row><td>ID_STRING101</td><td>1033</td><td>SAML for Windows</td><td>0</td><td/><td>1914662930</td></row>
 		<row><td>ID_STRING102</td><td>1033</td><td>GOOGLE~1|Google SAML Bridge for Windows</td><td>0</td><td/><td>2040505933</td></row>
 		<row><td>ID_STRING103</td><td>1033</td><td>SAMLBR~1|SAML Bridge Login Page</td><td>0</td><td/><td>2040508075</td></row>
 		<row><td>ID_STRING104</td><td>1033</td><td>UNINST~1|Uninstall Google SAML Bridge for Windows</td><td>0</td><td/><td>2040484108</td></row>
@@ -4165,7 +4165,7 @@
 		<row><td>ID_STRING64</td><td>1033</td><td>.:System32</td><td>0</td><td/><td>1964872978</td></row>
 		<row><td>ID_STRING65</td><td>1033</td><td>Google Services for SharePoint</td><td>0</td><td/><td>1436406284</td></row>
 		<row><td>ID_STRING66</td><td>1033</td><td>NewFeature1</td><td>0</td><td/><td>-451041106</td></row>
-		<row><td>ID_STRING67</td><td>1033</td><td>GSA Simulator for SharePoint</td><td>0</td><td/><td>1839030796</td></row>
+		<row><td>ID_STRING67</td><td>1033</td><td>SAML for Windows</td><td>0</td><td/><td>1914673170</td></row>
 		<row><td>ID_STRING68</td><td>1033</td><td>Google Search Box Test Utility</td><td>0</td><td/><td>-451057426</td></row>
 		<row><td>ID_STRING69</td><td>1033</td><td>Google SAML Bridge for Windows</td><td>0</td><td/><td>2040494731</td></row>
 		<row><td>ID_STRING7</td><td>1033</td><td>http://www.GoogleInc..com</td><td>0</td><td/><td>-375435411</td></row>
@@ -4909,7 +4909,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;STSADMPATH;SAML_BRIDGE3;GSA_RESOURCE_KIT;SHAREPOINTLOCATION;STSADMPATH;SP2010;_IsSetupTypeMin</td><td/></row>
 		<row><td>SetupType</td><td>Typical</td><td/></row>
 		<row><td>TESTUTILITYPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
-		<row><td>UpgradeCode</td><td>{A9A5C3C2-1F45-47DA-877B-66078B3EA554}</td><td/></row>
+		<row><td>UpgradeCode</td><td>{A68EFBD4-13E2-4C24-BCBB-23493F81FC97}</td><td/></row>
 		<row><td>_IsMaintenance</td><td>Change</td><td/></row>
 		<row><td>_IsSetupTypeMin</td><td>Typical</td><td/></row>
 		<row><td>abcd</td><td>0</td><td/></row>
