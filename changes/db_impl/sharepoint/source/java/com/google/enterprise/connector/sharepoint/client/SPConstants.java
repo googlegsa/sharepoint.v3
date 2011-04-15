@@ -429,7 +429,6 @@ public class SPConstants {
     public static final String GROUPNAME_CONSTANT_IN_ACL = "groupname";
     public static final String DOMAIN_CONSTANT_IN_ACL = "domain";
     public static final String DEFAULT_SITE_LANDING_PAGE = "/default.aspx";
-    public static final String SELETED_DATABASE = "oracle";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

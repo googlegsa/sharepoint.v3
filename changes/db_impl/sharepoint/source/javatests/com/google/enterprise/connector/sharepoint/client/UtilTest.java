@@ -31,7 +31,6 @@ public class UtilTest extends TestCase {
 
     protected void setUp() throws Exception {
         System.out.println("\n--------------");
-        String str = Util.getConnectorNameFromDirectoryUrl("C://a/b/c");
         FeedType fd = FeedType.getFeedType("CONTENT");
         FeedType fd2 = FeedType.getFeedType("content");
         System.out.println(fd.equals(fd2));

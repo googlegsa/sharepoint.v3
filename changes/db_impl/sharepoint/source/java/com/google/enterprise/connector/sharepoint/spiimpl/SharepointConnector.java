@@ -16,7 +16,6 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
@@ -101,7 +100,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
                     locale = "mssql";
                 }
                 queryProvider.setDatabase(locale);
-                queryProvider.init(Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir), locale);                
+                queryProvider.init(locale);
                 UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
                         localDatabseImpl.getDataSource(), queryProvider, userGroupMembershipRowMapper);
                 LOGGER.config("DAO for UserDataStore created successfully");

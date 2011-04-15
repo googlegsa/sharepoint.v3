@@ -43,7 +43,7 @@ public interface QueryProvider {
      *            along with vendor name while loading the queries
      * @throws SharepointException
      */
-    void init(String connectorName, String vendor, String... attr)
+    void init(String vendor, String... attr)
             throws SharepointException;
 
     /**

@@ -1251,25 +1251,7 @@ public final class Util {
         return roleTypes;
     }
 
-    /**
-     * Finds the connector name from googleconnectorURL by tokenizing the URL
-     * and getting the leaf directory name
-     *
-     * @param googleConnectorWorkDir
-     * @return
-     */
-    public static String getConnectorNameFromDirectoryUrl(
-            String googleConnectorWorkDir) {
-        String directory = null;
-        StringTokenizer tokenizer = new StringTokenizer(googleConnectorWorkDir,
-                File.separator);
-        while (tokenizer.hasMoreTokens()) {
-            directory = tokenizer.nextToken();
-        }
-        return directory;
-    }
-
-    /**
+   /**
      * Re-writes a given URL using the alias mapping rule specified.
      *
      * @param url URL to be re-written/mapped

@@ -60,8 +60,8 @@
 
     <bean id="queryProvider" class="com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider">
       <constructor-arg value="com.google.enterprise.connector.sharepoint.sql.sqlQueries" />
-      <property name="udsTableName" value="Memberships_" />
-      <property name="udsIndexName" value="UDS_Index_" />
+      <property name="udsTableName" value="User_Group_Memberships" />
+      <property name="udsIndexName" value="IDX_SPUserID" />
     </bean>
 
     <bean id="userGroupMembershipRowMapper" class="com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper">
