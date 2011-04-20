@@ -29,6 +29,7 @@ import com.google.enterprise.connector.spi.Session;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -93,18 +94,6 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         LOGGER.info("Connector login()");
         if (sharepointClientContext.isPushAcls()) {
             try {
-                LocalDatabase localDatabseImpl = connectorPersistnetStore.getLocalDatabase();
-                String locale = localDatabseImpl.getDatabaseType().name();
-                LOGGER.config("Data base type : " + locale);
-                if(null == locale || locale.length() == 0) {
-                    locale = "mssql";
-                }
-                queryProvider.setDatabase(locale);
-                queryProvider.init(locale);
-                UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
-                        localDatabseImpl.getDataSource(), queryProvider, userGroupMembershipRowMapper);
-                LOGGER.config("DAO for UserDataStore created successfully");
-                sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
                 new GssAclWS(sharepointClientContext, null).checkConnectivity();
             } catch (Exception e) {
                 throw new RepositoryException(
@@ -406,5 +395,34 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
 
     public void setDatabaseAccess(ConnectorPersistentStore databaseAccess) {
         this.connectorPersistnetStore = databaseAccess;
+        if(sharepointClientContext.isPushAcls()) {
+            performUserDataStoreInitialization();
+        }
+    }
+
+    /**
+     * Perform initialization steps that are required to create User Data Store object.
+     * It also loads and register corresponding sqlQueries.properties for selected
+     * data base.
+     */
+    private void performUserDataStoreInitialization() {
+        UserDataStoreDAO userDataStoreDAO = null;
+        LocalDatabase localDatabseImpl = connectorPersistnetStore.getLocalDatabase();
+        String locale = localDatabseImpl.getDatabaseType().name();
+        LOGGER.config("Data base type : " + locale);
+        if (null == locale || locale.length() == 0) {
+            locale = "mssql";
+        }
+        queryProvider.setDatabase(locale);
+        try {
+            queryProvider.init(locale);
+            userDataStoreDAO = new UserDataStoreDAO(
+                localDatabseImpl.getDataSource(), queryProvider,
+                userGroupMembershipRowMapper);
+            LOGGER.config("DAO for UserDataStore created successfully");
+        } catch (SharepointException se) {
+            LOGGER.log(Level.WARNING, "Failed to create UserDataStoreDAO object. ", se);
+        }
+        sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
     }
 }

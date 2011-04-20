@@ -65,44 +65,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     }
 
     /**
-     * Checks if all the required entities exist in the user data store DB. If
-     * not, creates them. As a minimal check, this method only checks for the
-     * existence of tables. Child of this class can extend this for various such
-     * checks
-     *
-     * @throws SharepointException
-     */
-    private void confirmEntitiesExistence()
-            throws SharepointException {
-        DatabaseMetaData dbm = null;
-        boolean tableFound = false;
-        String tableName;
-        try {
-            // TODO Devise a better way for ensuring the availability of
-            // tables/indexes. Cann't this be incorporated in the query itself
-            // e.g CREATE IF NOT AVAILABLE
-            dbm = getConnection().getMetaData();
-            tableName = getQueryProvider().getUdsTableName();
-            ResultSet rsTables = dbm.getTables(getQueryProvider().getDatabase(), null, null, null);
-            while (rsTables.next()){
-                if (tableName.equalsIgnoreCase(rsTables.getString("TABLE_NAME"))) {
-                    tableFound = true;
-                    LOGGER.config("User data store table found with name : " + rsTables.getString("TABLE_NAME"));
-                }
-            }
-            if (!tableFound) {
-                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
-                LOGGER.config("Created user data store table with name : " + Query.UDS_CREATE_TABLE+ "sucessfully");
-                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
-                LOGGER.config("Created user data store table index with name : " + Query.UDS_CREATE_INDEX+ "sucessfully");
-            }
-            rsTables.close();
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
-        }
-    }
-
-    /**
      * Retrieves all the membership information pertaining to a user. This would
      * be useful to serve the GSA -> CM requests during session channel creation
      *
@@ -438,4 +400,58 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         }
         return namedParams;
     }
+    
+    /**
+     * Checks if all the required entities exist in the user data store DB. If
+     * not, creates them. As a minimal check, this method only checks for the
+     * existence of tables. Child of this class can extend this for various such
+     * checks
+     *
+     * @throws SharepointException
+     */
+	private void confirmEntitiesExistence() throws SharepointException {
+		DatabaseMetaData dbm = null;
+		boolean tableFound = false;
+		String tableName;
+		String tablePattern;
+		ResultSet rsTables = null;
+		try {
+			dbm = getConnection().getMetaData();
+			tableName = getQueryProvider().getUdsTableName();
+			if (dbm.storesUpperCaseIdentifiers()) {
+				tablePattern = tableName.toUpperCase();
+			} else if (dbm.storesLowerCaseIdentifiers()) {
+				tablePattern = tableName.toLowerCase();
+			} else {
+				tablePattern = tableName;
+			}
+			// Now quote '%' and '-', a special characters in search patterns.
+			tablePattern = tablePattern.replace("%", dbm.getSearchStringEscape()
+					+ "%");
+			tablePattern = tablePattern.replace("_", dbm.getSearchStringEscape()
+					+ "_");
+			rsTables = dbm.getTables(null, null, tablePattern, null);
+			try {
+				while (rsTables.next()) {
+					if (tableName.equalsIgnoreCase(rsTables.getString("TABLE_NAME"))) {
+						tableFound = true;
+						LOGGER.config("User data store table found with name : "
+								+ rsTables.getString("TABLE_NAME"));
+					}
+				}
+			} finally {
+				rsTables.close();
+			}
+			if (!tableFound) {
+				getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
+				LOGGER.config("Created user data store table with name : "
+						+ Query.UDS_CREATE_TABLE + "sucessfully");
+				getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
+				LOGGER.config("Created user data store table index with name : "
+						+ Query.UDS_CREATE_INDEX + "sucessfully");
+			}
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
+		}
+	}
 }
