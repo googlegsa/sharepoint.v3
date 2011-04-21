@@ -93,8 +93,8 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
             domain = sharepointClientContext.getDomain();
         }
 
-        final String userName = Util.getUserNameWithDomain(user, domain);
         if (!Strings.isNullOrEmpty(password)) {
+            final String userName = Util.getUserNameWithDomain(user, domain);
             LOGGER.log(Level.INFO, "Authenticating User: " + userName);
             sharepointClientContext.setUsername(userName);
             sharepointClientContext.setPassword(password);
@@ -117,12 +117,12 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
             if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
                 LOGGER.log(Level.INFO, "Authentication succeded for the user : ", userName);
                 if (null  != this.sharepointClientContext.getUserDataStoreDAO()) {
-                    return getAllGroupsForTheUser(userName);
+                    return getAllGroupsForTheUser(user);
                 }
             }
         } else {
             LOGGER.config("AuthN was not attempted as password is empty and groups are being returned.");
-            return getAllGroupsForTheUser(userName);
+            return getAllGroupsForTheUser(user);
         }
         LOGGER.log(Level.WARNING, "Authentication failed for " + user);
         return new AuthenticationResponse(false, "", null);
@@ -132,8 +132,10 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         //Retrieving list of UserGroupMembership
         List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForUser(userName);
         Set<String> groups = new HashSet<String>();
+        StringBuffer groupName;
         for (UserGroupMembership userGroupMembership : groupMemberList) {
-            groups.add(userGroupMembership.getGroupName());
+            groupName = new StringBuffer().append("[").append(userGroupMembership.getNamespace()).append("]").append(userGroupMembership.getGroupName());
+            groups.add(groupName.toString());
         }
         LOGGER.log(Level.INFO, "Groups information for the user[ " + userName + " ]: " + groups);
         //Adding collection of groups data while creating AuthenticationResponse object.
