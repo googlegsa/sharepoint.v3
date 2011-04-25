@@ -15,8 +15,8 @@
 package com.google.enterprise.connector.sharepoint;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
@@ -115,6 +115,9 @@ public class TestConfiguration {
     public static String connectorName;
     private static String UDS_TABLE_NAME;
     private static String UDS_INDEX_NAME;
+    public static String userNameFormat1;
+    public static String userNameFormat2;
+    public static String userNameFormat3;
 
     static {
         final Properties properties = new Properties();
@@ -207,6 +210,9 @@ public class TestConfiguration {
         connectorName = properties.getProperty("ConnectorName");
         UDS_TABLE_NAME = properties.getProperty("UDS_TABLE_NAME");
         UDS_INDEX_NAME = properties.getProperty(UDS_INDEX_NAME);
+        userNameFormat1 = properties.getProperty("userNameFormat1");
+        userNameFormat1 = properties.getProperty("userNameFormat2");
+        userNameFormat1 = properties.getProperty("userNameFormat3");
     }
 
     public static Map<String, String> getConfigMap() {

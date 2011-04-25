@@ -133,8 +133,16 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForUser(userName);
         Set<String> groups = new HashSet<String>();
         StringBuffer groupName;
+        boolean nameSpaceAppended = false;
+        if (sharepointClientContext.isAppendNamespaceInSPGroup()) {
+        	nameSpaceAppended = true;
+        }
         for (UserGroupMembership userGroupMembership : groupMemberList) {
-            groupName = new StringBuffer().append("[").append(userGroupMembership.getNamespace()).append("]").append(userGroupMembership.getGroupName());
+        	if (!nameSpaceAppended) {
+        		groupName = new StringBuffer().append("[").append(userGroupMembership.getNamespace()).append("]").append(userGroupMembership.getGroupName());
+        	} else {
+                groupName = new StringBuffer().append(userGroupMembership.getGroupName());
+        	}
             groups.add(groupName.toString());
         }
         LOGGER.log(Level.INFO, "Groups information for the user[ " + userName + " ]: " + groups);

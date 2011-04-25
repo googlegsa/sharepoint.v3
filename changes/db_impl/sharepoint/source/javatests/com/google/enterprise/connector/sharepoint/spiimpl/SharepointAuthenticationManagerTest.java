@@ -99,4 +99,35 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         assertNotNull(groups);
     }
 
+    public void testAAuthenticateWithDifferentUserNameFormats()
+            throws Throwable {
+        System.out.println("Testing Authenticate() with domain\\user");
+        this.authID = new SimpleAuthenticationIdentity(
+                TestConfiguration.userNameFormat1,
+                TestConfiguration.searchUserPwd);
+        this.authenticationResponse = this.authMan.authenticate(this.authID);
+        assertTrue(this.authenticationResponse.isValid());
+        assertNotNull(this.authenticationResponse.getGroups());
+        System.out.println("Authentication sucessful for : "
+                + TestConfiguration.userNameFormat1);
+        System.out.println("Testing Authenticate() with user@domain");
+        this.authID = new SimpleAuthenticationIdentity(
+                TestConfiguration.userNameFormat2,
+                TestConfiguration.searchUserPwd);
+        this.authenticationResponse = this.authMan.authenticate(this.authID);
+        assertTrue(this.authenticationResponse.isValid());
+        assertNotNull(this.authenticationResponse.getGroups());
+        System.out.println("Authentication sucessful for : "
+                + TestConfiguration.userNameFormat2);
+        System.out.println("Testing Authenticate() with user");
+        this.authID = new SimpleAuthenticationIdentity(
+                TestConfiguration.userNameFormat3,
+                TestConfiguration.searchUserPwd);
+        this.authenticationResponse = this.authMan.authenticate(this.authID);
+        assertTrue(this.authenticationResponse.isValid());
+        assertNotNull(this.authenticationResponse.getGroups());
+        System.out.println("Authentication sucessful for : "
+                + TestConfiguration.userNameFormat3);
+    }
+
 }
