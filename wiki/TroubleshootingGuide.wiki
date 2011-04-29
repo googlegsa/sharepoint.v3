@@ -546,3 +546,29 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
 *Q. How does the connector behave when the SharePoint list is configured with "only their own" access control?
 
 The connector simply checks if the user has "READ" access to all the items in that list to decide if the SharePoint list is accessible to the given user. So if the user does not own or does not have access to any of the item in the list, the connector will return DENY for the SharePoint list landing page.
+
+*Q. I get the following error:
+SharepointException: Unknown SharePoint version
+
+
+You need to set the HTTP Header for your IIS web sites:
+
+
+1. Open IIS (You probably want to repeat this for ALL your web servers in the farm.)  
+2. Click on the website that hosts your target web app.  Click on 'HTTP Response Headers' (In IIS 7) or properties / HTTP Headers (in IIS 6).
+
+You should see two headers - "X-Powered-By : ASP.NET" and "MicrosoftSharePointTeamServices : 12.0.0.6318"
+
+12.x.x.xxxx indicates SP 2007/MOSS, 6.x.x.xxxx indicates SP 2003 and 14.x.x.xxxx indicates SP 2010.
+
+The connector detects the SP type by comparong against this header value: 
+
+startsWith("6") --> SP 2003
+startsWith("12") --> SP 2007
+startsWith("14") --> SP 2010
+
+Refer for more details:
+
+http://social.technet.microsoft.com/Forums/en/sharepointsearch/thread/0e5205a5-37eb-4cf0-8397-51906e74c2fd
+http://sharepointlogics.com/2010/02/how-to-check-sharepoint-2007-versions.html
+http://social.msdn.microsoft.com/Forums/en/sharepointinfopath/thread/d2acfa81-14d6-4830-8518-34f61eaf77b7
