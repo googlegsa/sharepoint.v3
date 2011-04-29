@@ -559,13 +559,13 @@ You need to set the HTTP Header for your IIS web sites:
 
 You should see two headers - "X-Powered-By : ASP.NET" and "MicrosoftSharePointTeamServices : 12.0.0.6318"
 
-12.x.x.xxxx indicates SP 2007/MOSS, 6.x.x.xxxx indicates SP 2003 and 14.x.x.xxxx indicates SP 2010.
+12.x.x.xxxx indicates SharePoint 2007/MOSS, 6.x.x.xxxx indicates SharePoint 2003 and 14.x.x.xxxx indicates SharePoint 2010.
 
-The connector detects the SP type by comparong against this header value: 
+The connector detects the SharePoint type by comparing against this header value: 
 
-startsWith("6") --> SP 2003
-startsWith("12") --> SP 2007
-startsWith("14") --> SP 2010
+startsWith("6") --> SharePoint 2003
+startsWith("12") --> SharePoint 2007
+startsWith("14") --> SharePoint 2010
 
 Refer for more details:
 
