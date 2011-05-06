@@ -149,7 +149,7 @@ This section details some of the important log messages that are written into th
 || Web Service has thrown the following error while authorizing.  Error: Value does not fall within the expected range. || The document to be authorized is not found on the SharePoint. It might have been deleted. || SEVERE ||
 || Web Service has thrown the following error while authorizing.  Error: User not found || The search user is not found on the SharePoint site. || SEVERE ||
 || Sending # `<`document_count`>` documents to delete from the deleted List/Library `[` `<`listURL`>` `]`. || The # docs for which the connector is sending delete feeds for the given list as it has been deleted from SharePoint || INFO ||
-|| 'cannot complete the action' when contacting http://sharepointsite.domain.com:80/_vti_bin/GSBulkAuthorization.asmx ||   There is a version mis-match between connector and Google Services for SharePoint || SEVERE ||
+|| 'cannot complete the action' when contacting http://sharepointsite.domain.com:80/_vti_bin/GSBulkAuthorization.asmx OR  authData is null at the completion of the call. ||   There is a version mis-match between the SharePoint connector and Google Services for SharePoint || SEVERE ||
 || User domain\user not found in parent site collection of web http://sharepointsite.domain.com/sites/somesite || There is a version mis-match between connector and Google Services for SharePoint || SEVERE ||
 
 
