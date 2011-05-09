@@ -431,6 +431,9 @@ public class SPConstants {
     public static final String DEFAULT_SITE_LANDING_PAGE = "/default.aspx";
     public static final String LEFT_SQUARE_BRACKET = "[";
 	public static final String RIGHT_SQUARE_BRACKET = "]";
+	public static final String UDS_TABLE = "'TABLE'";
+	public static final String SELECTED_DATABASE = "oracle";
+	public static final String TABLE_NAME = "TABLE_NAME";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

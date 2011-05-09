@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.dao;
 
 import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -25,6 +26,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -415,33 +417,36 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
 		String tableName;
 		String tablePattern;
 		ResultSet rsTables = null;
+		Statement statement = null;
 		try {
 			dbm = getConnection().getMetaData();
 			tableName = getQueryProvider().getUdsTableName();
-			if (dbm.storesUpperCaseIdentifiers()) {
-				tablePattern = tableName.toUpperCase();
-			} else if (dbm.storesLowerCaseIdentifiers()) {
-				tablePattern = tableName.toLowerCase();
-			} else {
-				tablePattern = tableName;
-			}
-			// Now quote '%' and '-', a special characters in search patterns.
-			tablePattern = tablePattern.replace("%", dbm.getSearchStringEscape()
-					+ "%");
-			tablePattern = tablePattern.replace("_", dbm.getSearchStringEscape()
-					+ "_");
-			rsTables = dbm.getTables(null, null, tablePattern, null);
-			try {
+			if (getQueryProvider().getDatabase().equalsIgnoreCase(SPConstants.SELECTED_DATABASE)) {
+				statement = getConnection().createStatement();
+				String query = getSqlQuery(Query.UDS_CHECK_TABLES);
+				rsTables = statement.executeQuery(query);
 				while (rsTables.next()) {
-					if (tableName.equalsIgnoreCase(rsTables.getString("TABLE_NAME"))) {
+					if (tableName.equalsIgnoreCase(rsTables.getString(1))) {
 						tableFound = true;
 						LOGGER.config("User data store table found with name : "
-								+ rsTables.getString("TABLE_NAME"));
+								+ tableName);
 					}
 				}
-			} finally {
-				rsTables.close();
+			} else {
+				if (dbm.storesUpperCaseIdentifiers()) {
+					tablePattern = tableName.toUpperCase();
+				} else if (dbm.storesLowerCaseIdentifiers()) {
+					tablePattern = tableName.toLowerCase();
+				} else {
+					tablePattern = tableName;
+				}
+				tablePattern = tablePattern.replace("%", dbm.getSearchStringEscape()
+						+ "%");
+				tablePattern = tablePattern.replace("_", dbm.getSearchStringEscape()
+						+ "_");
+				rsTables = dbm.getTables(null, null, tablePattern, null);
 			}
+			rsTables.close();
 			if (!tableFound) {
 				getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
 				LOGGER.config("Created user data store table with name : "

@@ -93,7 +93,7 @@ public interface QueryProvider {
  * @author nitendra_thakur
  */
 enum Query {
-    UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE,
+    UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES,
 
     UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"), UDS_SELECT_FOR_USERNAME(
             "user_name"),

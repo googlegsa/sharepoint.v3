@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import java.text.MessageFormat;
@@ -127,6 +128,8 @@ public class SimpleQueryProvider implements QueryProvider {
             placeholders.add(0, udsIndexName);
             placeholders.add(1, udsTableName);
             break;
+        case UDS_CHECK_TABLES:
+        	placeholders.add(0, SPConstants.UDS_TABLE);
         }
         sqlQuery = MessageFormat.format(sqlQueries.getString(query.name()), placeholders.toArray());
         sqlQueryMap.put(query, sqlQuery);
