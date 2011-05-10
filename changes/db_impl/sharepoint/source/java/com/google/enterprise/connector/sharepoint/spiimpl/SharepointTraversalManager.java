@@ -284,13 +284,13 @@ public class SharepointTraversalManager implements TraversalManager,
             globalState.setCurrentWeb(webState);
             SPDocumentList rs = null;
             try {
-                rs = sharepointClient.traverse(globalState, webState, sizeSoFar);
+                rs = sharepointClient.traverse(globalState, webState, sizeSoFar, checkForPendingDocs);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Exception occured while traversing web URL [ "
-                        + webState.getWebUrl() + " ] ");
+                        + webState.getWebUrl() + " ] ", e);
             } catch (final Throwable t) {
                 LOGGER.log(Level.WARNING, "Error occured while traversing web URL [ "
-                        + webState.getWebUrl() + " ] ");
+                        + webState.getWebUrl() + " ] ", t);
             }
             if ((rs != null) && (rs.size() > 0)) {
                 LOGGER.log(Level.INFO, rs.size()

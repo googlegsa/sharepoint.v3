@@ -138,13 +138,47 @@ public class SharepointClient {
      * that same list is not scanned twice in case the traversal has been
      * resumed.
      * <p/>
+     * <p>
      * At the end, fetches the ACL of all the documents contained in the
-     * {@link SPDocumentList} object.
+     * {@link SPDocumentList} object. Ensures that ACL are not re-fetched when
+     * documents from previous batch traversal are bing returned.
+     * </p>
+     * <p>
+     * <b>No documents are returned in case there are failures/errors while
+     * retrieving ACLs</b>
+     * </p>
+     * <p>
+     * Logs the {@link OutOfMemoryError} when fetching ACLs. For retry, need to
+     * edit properties in connectorInstance.xml and restart
+     * <ul>
+     * <li>If 'fetchACLInBatches' is enabled, tries to fetch ACLs in smaller
+     * batches of (n/aclBatchSizeFactor) (n being he number of documents).</li>
+     * <li>Both 'fetchACLInBatches' and 'aclBatchSizeFactor' can be edited from
+     * connectorInstance.xml</li>
+     * </ul>
+     * </p>
      *
+     * @param globalState The {@link GlobalState} representing all the
+     *            SharePoint sites. Primary required when constructing the
+     *            {@link SPDocumentList}
+     * @param webState The {@link WebState} whose lists ned to be scanned for
+     *            documents
+     * @param sizeSoFar This indicates the number documents that have been
+     *            previously fetched and added to the global crawl queue. This
+     *            is useful in cases when a single list/site does not have
+     *            sufficient documents that can match the batchHint and hence
+     *            multiple site/lists need to be scanned.
+     * @param sendPendingDocs True will indicate that documents retrieved as
+     *            part of previous batch traversal need to be sent. This will be
+     *            the case when connector returned batch Hint or little more
+     *            docs, but the CM did not feed all of them to GSA and
+     *            checkPoint() was called, implying there are docs from previous
+     *            batch traversal to be sent. In such a case, ACLs should not be
+     *            re-fetched
      * @return {@link SPDocumentList} containing crawled {@link SPDocument}.
      */
     public SPDocumentList traverse(final GlobalState globalState,
-            final WebState webState, int sizeSoFar) {
+            final WebState webState, int sizeSoFar, boolean sendPendingDocs) {
         if (webState == null) {
             LOGGER.warning("global state is null");
             return null;
@@ -189,30 +223,37 @@ public class SharepointClient {
                 LOGGER.log(Level.FINE, "No documents to be sent from list URL [ "
                         + list.getListURL() + " ]. ");
             }
-            if (resultSet != null) {
-                sizeSoFar += resultSet.size();
+            if (resultsList != null) {
+                sizeSoFar += resultsList.size();
             }
 
-            // we heed the batch hint, but always finish a List before checking:
+            // Check if the docs added so far meet the batchHint
             if (sizeSoFar >= sharepointClientContext.getBatchHint()) {
                 LOGGER.info("Stopping traversal because batch hint "
                         + sharepointClientContext.getBatchHint()
-                        + " has been reached");
+                        + " has been reached. Processed documents: "
+                        + sizeSoFar);
                 break;
             }
         }
 
         // Fetch ACL for all the documents crawled from the current WebState
-        if (sharepointClientContext.isPushAcls() && null != resultSet && resultSet.size() > 0) {
-            LOGGER.log(Level.INFO, "Fetching ACls for #" + resultSet.size()
-                    + " documents crawled from web " + webState.getWebUrl());
-            try {
-                GssAclWS aclWs = new GssAclWS(sharepointClientContext,
-                        webState.getWebUrl());
-                aclWs.fetchAclForDocuments(resultSet, webState);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Problem while fetching ACLs for documents crawled under WebState [ "
-                        + webState.getWebUrl() + " ] ", e);
+        // Do not try to re-fetch the ACLs when documents are pending from
+        // previous batch traversals
+        if (!sendPendingDocs && sharepointClientContext.isPushAcls()
+                && null != resultSet && resultSet.size() > 0) {
+            boolean aclRetrievalResult = false;
+            if (sharepointClientContext.isFetchACLInBatches()) {
+                aclRetrievalResult = fetchACLInBatches(resultSet, webState, globalState, sharepointClientContext.getAclBatchSizeFactor());
+            } else {
+                aclRetrievalResult = fetchACLForDocument(resultSet, webState, globalState);
+            }
+
+            if (!aclRetrievalResult) {
+                LOGGER.log(Level.WARNING, "No documents will be sent for site [ "
+                        + webState.getWebUrl()
+                        + " ] as ACL retrieval has failed. Please check the errors/logs associated with ACL retrieval befor this");
+                return null;
             }
         }
 
@@ -220,6 +261,123 @@ public class SharepointClient {
                 + webState.getWebUrl() + ". found " + resultSet + " docs");
 
         return resultSet;
+    }
+
+    /**
+     * Fetches the ACL for documents.
+     * <p>
+     * Based on the size of ACL per document, the WS response can be large and
+     * result in {@link java.lang.OutOfMemoryError}. In such a case, the
+     * connector will log the error
+     * </p>
+     *
+     * @param resultSet The list of documents for which ACL should be fetched.
+     * @param webState The web state representing the site
+     * @param globalState The global state representing the list of all sites
+     *            and their information
+     * @return True if ACLs were retrieved successfully OR false in case of any
+     *         exceptions/errors
+     */
+    private boolean fetchACLForDocument(SPDocumentList resultSet,
+            WebState webState, GlobalState globalState) {
+        LOGGER.log(Level.INFO, "Fetching ACls for #" + resultSet.size()
+                + " documents crawled from web " + webState.getWebUrl());
+        GssAclWS aclWs = null;
+        try {
+            aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
+            aclWs.fetchAclForDocuments(resultSet, webState);
+        } catch (Throwable t) {
+            logErrors(resultSet, webState, t);
+            // Return false indicating that the ACL retrieval for current batch
+            // has failed and skipped
+            return false;
+        }
+
+        // Return true indicating successful retrieval of ACL
+        return true;
+    }
+
+    /**
+     * Common method to log ACL retrieval errors
+     *
+     * @param resultSet The document list for which ACL retrieval was attempted
+     * @param te The error/exception encountered
+     */
+    private void logErrors(SPDocumentList resultSet, WebState webState,
+            Throwable te) {
+
+        // Check for OOM and indicate that connector service needs to be
+        // restarted
+        if (te instanceof OutOfMemoryError) {
+            LOGGER.log(Level.SEVERE, "Connector encountered fatal error : \"OutOfMemoryError\" which might be due to a large web service response while fetching ACL for "
+                    + resultSet.size()
+                    + " documents for documents crawled under WebState [ "
+                    + webState.getWebUrl()
+                    + " ]. Please enable 'fetchACLInBatches' flag and modify the 'aclBatchSizeFactor' in connectorInstance.xml and restart the connector service", te);
+        } else {
+            LOGGER.log(Level.WARNING, "Problem while fetching ACLs for documents crawled under WebState [ "
+                    + webState.getWebUrl() + " ] . ", te);
+        }
+
+        LOGGER.warning("Skipping ACL retrieval for the document list : "
+                + resultSet.toString());
+    }
+
+    /**
+     * Fetches ACL for documents in batches. Required to handle the
+     * {@link OutOfMemoryError} kind errors
+     * <ul>
+     * <li>When re-fetching ACLs, tries to fetch in smaller batches of
+     * n/batchSizeFactor (n being he number of documents).</li>
+     * </ul>
+     *
+     * @param resultSet The set of documents whose ACL need to be re-fetched in
+     *            smaller batches
+     * @param webState The {@link WebState} to which the documents belong
+     * @param globalState The {@link GlobalState} required primarily for the
+     *            {@link SPDocumentList}
+     * @param batchSizeFactor The factor by which the current batch of documents
+     *            should be divided to arrive at a smaller batch. The formula
+     *            used is [n/batchSizeFactor]
+     * @return True if ACLs were retrieved successfully OR false in case of any
+     *         exceptions/errors
+     */
+    private boolean fetchACLInBatches(SPDocumentList resultSet,
+            WebState webState, GlobalState globalState, int batchSizeFactor) {
+
+        int batchSize = 0;
+
+        if (batchSizeFactor == 1) {
+            batchSize = batchSizeFactor;
+        } else {
+            // Connector should attempt ACL retrieval in batches of
+            // [resultSet.size() / 10]
+            batchSize = resultSet.size() / batchSizeFactor;
+        }
+
+        LOGGER.info("The connector will attempt to fetch ACLs for documents in batches of "
+                + batchSize);
+
+        int toIndex = 0;
+        for (int i = 0; i < resultSet.size(); i += batchSize) {
+            // Use the batchSize to identify the subset of docs. The toIndex
+            // indicates the end of sub-set with 'i' indicating the start.
+            toIndex += batchSize;
+            if (toIndex > resultSet.size()) {
+                toIndex = resultSet.size();
+            }
+            SPDocumentList docList = new SPDocumentList(
+                    resultSet.getDocuments().subList(i, toIndex), globalState);
+
+            // Fetch ACL
+            if (!fetchACLForDocument(docList, webState, globalState)) {
+                // Return false indicating ACL retrieval has failed and the
+                // entire batch of documents need to be skipped
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -750,8 +908,8 @@ public class SharepointClient {
                     }
                 }
             } else {
-                LOGGER.info("revisiting listState [ "
-                        + listState.getListURL() + " ]. ");
+                LOGGER.info("revisiting listState [ " + listState.getListURL()
+                        + " ]. ");
                 listState.setExisting(true);
                 listState.setNextPage(null);
 

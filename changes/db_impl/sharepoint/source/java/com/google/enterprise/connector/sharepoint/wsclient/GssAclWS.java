@@ -112,6 +112,8 @@ public class GssAclWS {
         strUser = Util.getUserNameWithDomain(strUser, strDomain);
         stub.setUsername(strUser);
         stub.setPassword(strPassword);
+        stub.setTimeout(300000);
+        LOGGER.fine("Set time-out of 5 mins");
     }
 
     /**
@@ -376,7 +378,8 @@ public class GssAclWS {
                 }
                 LOGGER.log(Level.CONFIG, "Getting ACL for #"
                         + urlToDocMap.size() + " entities crawled from site [ "
-                        + webState.getWebUrl() + " ]");
+                        + webState.getWebUrl() + " ]. Document list : "
+                        + resultSet.toString());
                 GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl);
                 processWsResponse(wsResult, urlToDocMap);
             } catch (Exception e) {
