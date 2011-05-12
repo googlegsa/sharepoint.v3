@@ -67,7 +67,7 @@ public class SharepointClientTest extends TestCase {
         this.sharepointClient.updateGlobalState(this.globalState);
         final Set webStates = this.globalState.getAllWebStateSet();
         final WebState curr_webState = (WebState) (webStates.toArray())[0];
-        final SPDocumentList rs = this.sharepointClient.traverse(this.globalState, curr_webState, iPageSizeHint);
+        final SPDocumentList rs = this.sharepointClient.traverse(this.globalState, curr_webState, iPageSizeHint, false);
         int numDocs = 0;
         try {
             System.out.println("Documents found - ");
@@ -163,7 +163,7 @@ public class SharepointClientTest extends TestCase {
         SharepointClient spclient = new SharepointClient(spContext);
 
         // Traverse the lists for the given web state
-        spclient.traverse(gs, ws, 50);
+        spclient.traverse(gs, ws, 50, true);
 
         // Since there are 4 lists, the third list being set as last crawled,
         // the total no. of lists visited should be 2

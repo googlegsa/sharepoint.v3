@@ -432,4 +432,14 @@ public class SPDocumentList implements DocumentList {
             boolean reWriteRecordUrlUsingAliasMappingRules) {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
+
+    @Override
+    public String toString() {
+        StringBuffer msg = new StringBuffer(" SPDocumentList for "
+                + documents.size() + " documents with docId & URL : \n");
+        for (SPDocument spDoc : documents) {
+            msg.append("Document -- ").append(spDoc.toString()).append(" \n");
+        }
+        return msg.toString();
+    }
 }

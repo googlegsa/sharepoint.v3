@@ -9,6 +9,124 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
+Release 2.6.9 RC4, 12 May 2011
+=======================================
+
+Introduction
+------------
+This is a developer tested patch release for wide evaluation and usage.  Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint and things may change in the future.
+
+Summary of Changes / New Features
+---------------------------------
+This patch contains fix for the following issues
+
+[Issue 4380742] SharePoint connector throws OutOfMemory errors when parsing ACL web service response
+
+Description:
+The "OutOfMemory" error is usually caused when the ACLs per document are large, resulting in a very large web service response.
+Since its difficult to recover from java.lang.OutOfMemory error, there is no way to re-cover and retry of fetching of ACLs without connector restart.
+Usually, in such cases the JVM needs to be re-started.
+Hence, the alternative approach will be to expose flags in connectorInstance.xml to retry in batches which will need to be changed by the admin
+
+The approach taken is:
+1. By default the connector will fetch ACLs for all the documents discovered in a batch traversal.
+2. In case of OutOfMemory errors, it will log  SEVERE error message indicating to restart the connector service
+   Eg: com.google.enterprise.connector.sharepoint.client.SharepointClient logErrors
+SEVERE: Connector encountered fatal error : "OutOfMemoryError" which might be due to a large web service response while fetching ACL for 1058 documents for documents crawled under WebState [ http://gdc05.gdc-psl.net:3000/Site11 ].
+Please enable 'fetchACLInBatches' flag and modify the 'aclBatchSizeFactor' in connectorInstance.xml and restart the connector service
+
+3. The admin will have to stop the connector service, edit the properties in connectorInstance.xml and restart the connector service
+  a. Enable a flag to attempt ACL retrieval in batches.
+  b. Set appropriate value to a factor used to determine the new batch size. The formula used will be [n/batchSizeFactor] implying that instead of retrieving ACL for 'n' documents, the connector will now do it in smaller batches which reduce the original value by batchSizeFactor
+
+Here are the details of the specific parameters that need to be changed in the connectorInstance.xml
+1. fetchACLInBatches: True indicates ACL for documents will be retrieved in batches
+2. aclBatchSizeFactor: The batchSizeFactor is used to arrive at an appropriate batch size value. Default is 2.
+
+Uncomment the above in connectorInstance.xml and set them to correct values and restart the connector service
+
+Note: The admin will have to arrive at an optimal value for batchSizeFactor based on their deployment
+
+[Issue 4320659] Web service calls should time out
+
+Description:
+The web service calls today cannot be configured for a time-out.
+This is required in cases where-in the network connections between the SharePoint server and connector is slow/ the web service takes a long time to respond.
+
+The connector now allows admins to specify the time-out value for web service calls through connectorInstance.xml.
+The 'webServiceTimeOut' needs to be configured with an appropriate time-out value in milliseconds. Default is 300000 milliseconds = 5 mins
+
+In this release it has been implemented for the ACL web service only.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager Version 2.6.0 and above.
+It is recommended to upgrade to the latest Connector Manager version which is 2.6.6
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+
+Connectors with version 2.6.8 and above can be safely upgraded using the steps given below.
+
+Steps to manually deploy the patch release
+------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Replace $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/$CONNECTOR_INSTANCE$/connectorInstance.xml with
+the new connectorInstance.xml provided with the build. If you had updated some properties in your older connectorInstance.xml, you'll have to
+update them explicitly in the new connectorInstance.xml.
+5. Start the SharePoint Connector Service.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+Connector Manager 2.6.6 release
+
+Known Issues/Limitations
+------------------------
+1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+2) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+4) In this release, following features are not supported on SharePoint versions prior to SP2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+- ACL
+
+5) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
+
+6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+7) Issue 139: Upgrade HTTPClient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not gets saved.
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
 Release 2.6.9 , 17 Dec 2010
 =======================================
 

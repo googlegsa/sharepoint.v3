@@ -112,6 +112,11 @@ public class GssAclWS {
         strUser = Util.getUserNameWithDomain(strUser, strDomain);
         stub.setUsername(strUser);
         stub.setPassword(strPassword);
+        // The web service time-out value
+        stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
+        LOGGER.fine("Set time-out of : "
+                + sharepointClientContext.getWebServiceTimeOut()
+                + " milliseconds");
     }
 
     /**
@@ -378,7 +383,8 @@ public class GssAclWS {
                 }
                 LOGGER.log(Level.CONFIG, "Getting ACL for #"
                         + urlToDocMap.size() + " entities crawled from site [ "
-                        + webState.getWebUrl() + " ]");
+                        + webState.getWebUrl() + " ]. Document list : "
+                        + resultSet.toString());
                 GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl);
                 processWsResponse(wsResult, urlToDocMap);
             } catch (Exception e) {

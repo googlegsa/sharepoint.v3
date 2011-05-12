@@ -68,6 +68,9 @@ public class SharepointConnector implements Connector {
     private List<String> infoPathBaseTemplate;
     private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
     private boolean reWriteRecordUrlUsingAliasMappingRules;
+    private boolean fetchACLInBatches = false;
+    private int aclBatchSizeFactor = 2;
+    private int webServiceTimeOut = 300000;
 
     public SharepointConnector() {
 
@@ -294,6 +297,9 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setGroupnameFormatInAce(this.getGroupnameFormatInAce());
         sharepointClientContext.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
         sharepointClientContext.setPushAcls(pushAcls);
+        sharepointClientContext.setFetchACLInBatches(this.fetchACLInBatches);
+        sharepointClientContext.setAclBatchSizeFactor(this.aclBatchSizeFactor);
+        sharepointClientContext.setWebServiceTimeOut(this.webServiceTimeOut);
         if (pushAcls) {
             initDao();
         }
@@ -434,4 +440,55 @@ public class SharepointConnector implements Connector {
     public void setAppendNamespaceInSPGroup(boolean appendNamespaceInSPGroup) {
         this.appendNamespaceInSPGroup = appendNamespaceInSPGroup;
     }
+
+    /**
+     * @return the fetchACLInBatches
+     */
+    public boolean isFetchACLInBatches() {
+        return fetchACLInBatches;
+    }
+
+    /**
+     * @param fetchACLInBatches the fetchACLInBatches to set
+     */
+    public void setFetchACLInBatches(boolean fetchACLInBatches) {
+        this.fetchACLInBatches = fetchACLInBatches;
+    }
+
+    /**
+     * @return the aclBatchSizeFactor
+     */
+    public int getAclBatchSizeFactor() {
+        return aclBatchSizeFactor;
+    }
+
+    /**
+     * @param aclBatchSizeFactor the aclBatchSizeFactor to set
+     */
+    public void setAclBatchSizeFactor(int aclBatchSizeFactor) {
+        if (aclBatchSizeFactor <= 0) {
+            throw new IllegalArgumentException(
+                    "The aclBatchSizeFactor should be greater than zero");
+        }
+        this.aclBatchSizeFactor = aclBatchSizeFactor;
+    }
+
+    /**
+     * @return the webServiceTimeOut
+     */
+    public int getWebServiceTimeOut() {
+        return webServiceTimeOut;
+    }
+
+    /**
+     * @param webServiceTimeOut the webServiceTimeOut to set
+     */
+    public void setWebServiceTimeOut(int webServiceTimeOut) {
+        if (webServiceTimeOut <= 1000) {
+            throw new IllegalArgumentException(
+                    "The webServiceTimeOut should be greater than 1000 milliseconds");
+        }
+        this.webServiceTimeOut = webServiceTimeOut;
+    }
+
 }

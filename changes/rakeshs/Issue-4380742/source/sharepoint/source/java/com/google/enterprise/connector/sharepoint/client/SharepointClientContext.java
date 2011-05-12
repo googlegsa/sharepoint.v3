@@ -92,6 +92,10 @@ public class SharepointClientContext implements Cloneable {
     private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
     private boolean reWriteRecordUrlUsingAliasMappingRules;
 
+    private boolean fetchACLInBatches = false;
+    private int aclBatchSizeFactor = 2;
+    private int webServiceTimeOut = 300000;
+
     /**
      * For cloning
      */
@@ -180,6 +184,9 @@ public class SharepointClientContext implements Cloneable {
             spCl.setGroupnameFormatInAce(this.getGroupnameFormatInAce());
 
             spCl.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
+            spCl.setAclBatchSizeFactor(this.aclBatchSizeFactor);
+            spCl.setFetchACLInBatches(this.fetchACLInBatches);
+            spCl.setWebServiceTimeOut(this.webServiceTimeOut);
 
             return spCl;
         } catch (final Throwable e) {
@@ -999,4 +1006,48 @@ public class SharepointClientContext implements Cloneable {
     public void setAppendNamespaceInSPGroup(boolean appendNamespaceInSPGroup) {
         this.appendNamespaceInSPGroup = appendNamespaceInSPGroup;
     }
+
+    /**
+     * @return the fetchACLInBatches
+     */
+    public boolean isFetchACLInBatches() {
+        return fetchACLInBatches;
+    }
+
+    /**
+     * @param fetchACLInBatches the fetchACLInBatches to set
+     */
+    public void setFetchACLInBatches(boolean fetchACLInBatches) {
+        this.fetchACLInBatches = fetchACLInBatches;
+    }
+
+    /**
+     * @return the aclBatchSizeFactor
+     */
+    public int getAclBatchSizeFactor() {
+        return aclBatchSizeFactor;
+    }
+
+    /**
+     * @param aclBatchSizeFactor the aclBatchSizeFactor to set
+     */
+    public void setAclBatchSizeFactor(int aclBatchSizeFactor) {
+        this.aclBatchSizeFactor = aclBatchSizeFactor;
+    }
+
+    /**
+     * @return the webServiceTimeOut
+     */
+    public int getWebServiceTimeOut() {
+        return webServiceTimeOut;
+    }
+
+    /**
+     * @param webServiceTimeOut the webServiceTimeOut to set
+     */
+    public void setWebServiceTimeOut(int webServiceTimeOut) {
+        this.webServiceTimeOut = webServiceTimeOut;
+    }
 }
+
+
