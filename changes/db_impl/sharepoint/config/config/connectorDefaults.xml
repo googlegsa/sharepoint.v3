@@ -19,7 +19,7 @@
     <list>
       <!-- If you want to index only specific metadata, put them here.
         For example, putting the following entry will cause only Title to be sent to GSA.
--->
+      -->
       <!-- <value>Title</value> -->
     </list>
     </property>
@@ -27,7 +27,7 @@
    <property name="excluded_metadata">
       <list>
         <!-- Remove any of the following metadata entries if you want them to be indexed in GSA.
--->
+        -->
       <value>.*cachedcustomprops$</value>
       <value>.*parserversion$</value>
       <value>.*cachedtitle$</value>
@@ -60,17 +60,16 @@
     batchHint number of documents will result in a large WS response and
     result in OutOfMemoryError
   -->
-  <property name="fetchACLInBatches">
-    <value>false</value>
-  </property>
+  <property name="fetchACLInBatches"><value>false</value></property>
   <!--
     The aclBatchSizeFactor is used to arrive at an appropriate batch size
     value. The formula used is: n/batchSizeFactor where 'n' is the number
     of documents discovered in each batch traversal. Value should be > 0
   -->
-  <property name="aclBatchSizeFactor">
-    <value>2</value>
-  </property>
+  <property name="aclBatchSizeFactor"><value>2</value></property>
+
+  <!-- Web service time out value. Value should be mentioned in milliseconds -->
+  <property name="webServiceTimeOut"><value>300000</value></property>
 
     <property name="queryProvider" ref="queryProvider" />
     <property name="userGroupMembershipRowMapper" ref="userGroupMembershipRowMapper" />

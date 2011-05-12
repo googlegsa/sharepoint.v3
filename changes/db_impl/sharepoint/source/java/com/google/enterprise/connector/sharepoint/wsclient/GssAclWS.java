@@ -112,8 +112,11 @@ public class GssAclWS {
         strUser = Util.getUserNameWithDomain(strUser, strDomain);
         stub.setUsername(strUser);
         stub.setPassword(strPassword);
-        stub.setTimeout(300000);
-        LOGGER.fine("Set time-out of 5 mins");
+        // The web service time-out value
+        stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
+        LOGGER.fine("Set time-out of : "
+                + sharepointClientContext.getWebServiceTimeOut()
+                + " milliseconds");
     }
 
     /**

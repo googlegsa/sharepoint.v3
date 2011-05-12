@@ -94,6 +94,7 @@ public class SharepointClientContext implements Cloneable {
 
     private boolean fetchACLInBatches = false;
     private int aclBatchSizeFactor = 2;
+    private int webServiceTimeOut = 300000;
 
     /**
      * For cloning
@@ -185,6 +186,8 @@ public class SharepointClientContext implements Cloneable {
             spCl.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
             spCl.setAclBatchSizeFactor(this.aclBatchSizeFactor);
             spCl.setFetchACLInBatches(this.fetchACLInBatches);
+
+            spCl.setWebServiceTimeOut(this.webServiceTimeOut);
 
             return spCl;
         } catch (final Throwable e) {
@@ -1031,6 +1034,20 @@ public class SharepointClientContext implements Cloneable {
      */
     public void setAclBatchSizeFactor(int aclBatchSizeFactor) {
         this.aclBatchSizeFactor = aclBatchSizeFactor;
+    }
+
+    /**
+     * @return the webServiceTimeOut
+     */
+    public int getWebServiceTimeOut() {
+        return webServiceTimeOut;
+    }
+
+    /**
+     * @param webServiceTimeOut the webServiceTimeOut to set
+     */
+    public void setWebServiceTimeOut(int webServiceTimeOut) {
+        this.webServiceTimeOut = webServiceTimeOut;
     }
 }
 

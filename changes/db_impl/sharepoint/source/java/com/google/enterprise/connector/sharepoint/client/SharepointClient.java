@@ -141,7 +141,7 @@ public class SharepointClient {
      * <p>
      * At the end, fetches the ACL of all the documents contained in the
      * {@link SPDocumentList} object. Ensures that ACL are not re-fetched when
-     * documents from previous batch traversal are bing returned.
+     * documents from previous batch traversal are being returned.
      * </p>
      * <p>
      * <b>No documents are returned in case there are failures/errors while
@@ -152,7 +152,7 @@ public class SharepointClient {
      * edit properties in connectorInstance.xml and restart
      * <ul>
      * <li>If 'fetchACLInBatches' is enabled, tries to fetch ACLs in smaller
-     * batches of (n/aclBatchSizeFactor) (n being he number of documents).</li>
+     * batches of (n/aclBatchSizeFactor) (n being the number of documents).</li>
      * <li>Both 'fetchACLInBatches' and 'aclBatchSizeFactor' can be edited from
      * connectorInstance.xml</li>
      * </ul>
@@ -345,11 +345,10 @@ public class SharepointClient {
     private boolean fetchACLInBatches(SPDocumentList resultSet,
             WebState webState, GlobalState globalState, int batchSizeFactor) {
 
-        int batchSize = 0;
+        // Default batch size should be one
+        int batchSize = 1;
 
-        if (batchSizeFactor == 1) {
-            batchSize = batchSizeFactor;
-        } else {
+        if (batchSizeFactor > 1) {
             // Connector should attempt ACL retrieval in batches of
             // [resultSet.size() / 10]
             batchSize = resultSet.size() / batchSizeFactor;
