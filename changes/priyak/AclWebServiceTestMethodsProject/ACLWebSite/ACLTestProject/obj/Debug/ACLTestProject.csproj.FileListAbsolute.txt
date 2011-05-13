@@ -1,0 +1,6 @@
+C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\ACLTestProject\bin\Debug\ACLTestProject.dll
+C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\ACLTestProject\bin\Debug\ACLTestProject.pdb
+C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\ACLTestProject\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\ACLTestProject\obj\Debug\ACLTestProject.dll
+C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\ACLTestProject\obj\Debug\ACLTestProject.pdb
+C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\ACLTestProject\bin\Debug\ACLTestProject.dll.config

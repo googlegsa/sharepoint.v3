@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TestRun id="8e3a6a65-7220-4b33-917d-4d34fa4094e1" name="googlesp@GDC04 2011-05-12 14:07:00" runUser="GDC-PSL\googlesp" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+  <TestRunConfiguration name="Local Test Run" id="f696496a-9b9c-48c4-94a9-2d709b2b0f00">
+    <Description>This is a default test run configuration for a local test run.</Description>
+    <Deployment runDeploymentRoot="C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\TestResults\googlesp_GDC04 2011-05-12 14_07_00" />
+    <TestTypeSpecific />
+  </TestRunConfiguration>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" error="0" failed="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+  <Times creation="2011-05-12T14:07:00.2136519+05:30" queuing="2011-05-12T14:07:01.1667708+05:30" start="2011-05-12T14:07:01.3386447+05:30" finish="2011-05-12T14:07:04.0105026+05:30" />
+  <TestDefinitions>
+    <UnitTest name="GetListsWithInheritingRoleAssignmentsTestMethod" storage="c:\documents and settings\kerbadmin\my documents\visual studio 2008\projects\aclwebsite\acltestproject\bin\debug\acltestproject.dll" id="1891f1d9-71a5-c3c7-e370-635a920d9aa4">
+      <Css projectStructure="" iteration="" />
+      <Owners>
+        <Owner name="" />
+      </Owners>
+      <Execution id="23b671a9-b169-4045-95fe-4ef8175525f1" />
+      <TestMethod codeBase="C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\ACLTestProject\bin\Debug\ACLTestProject.dll" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="ACLTestProject.AclTest1, ACLTestProject" name="GetListsWithInheritingRoleAssignmentsTestMethod" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <TestEntries>
+    <TestEntry testId="1891f1d9-71a5-c3c7-e370-635a920d9aa4" executionId="23b671a9-b169-4045-95fe-4ef8175525f1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <Results>
+    <UnitTestResult executionId="23b671a9-b169-4045-95fe-4ef8175525f1" testId="1891f1d9-71a5-c3c7-e370-635a920d9aa4" testName="GetListsWithInheritingRoleAssignmentsTestMethod" computerName="GDC04" duration="00:00:01.7752141" startTime="2011-05-12T14:07:01.4480190+05:30" endTime="2011-05-12T14:07:03.8073789+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d">
+      <Output>
+      </Output>
+    </UnitTestResult>
+  </Results>
+</TestRun>

@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<TestRun id="378e872e-301c-45b5-b19c-8d83a7bd9cd2" name="googlesp@GDC04 2011-05-12 13:58:48" runUser="GDC-PSL\googlesp" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+  <TestRunConfiguration name="Local Test Run" id="f696496a-9b9c-48c4-94a9-2d709b2b0f00">
+    <Description>This is a default test run configuration for a local test run.</Description>
+    <Deployment runDeploymentRoot="C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\TestResults\googlesp_GDC04 2011-05-12 13_58_48" />
+    <TestTypeSpecific />
+  </TestRunConfiguration>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" error="0" failed="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+  </ResultSummary>
+  <Times creation="2011-05-12T13:58:48.3105501+05:30" queuing="2011-05-12T13:58:48.7324224+05:30" start="2011-05-12T13:58:48.8886714+05:30" finish="2011-05-12T13:58:51.2636562+05:30" />
+  <TestDefinitions>
+    <UnitTest name="GetAclChangesSinceTokenTestMethod" storage="c:\documents and settings\kerbadmin\my documents\visual studio 2008\projects\aclwebsite\acltestproject\bin\debug\acltestproject.dll" id="318113ee-cdb4-1a41-916d-97d2624c77a4">
+      <Css projectStructure="" iteration="" />
+      <Owners>
+        <Owner name="" />
+      </Owners>
+      <Execution id="84a3f45e-5b58-489d-b536-616a46cfcfaa" />
+      <TestMethod codeBase="C:\Documents and Settings\kerbadmin\My Documents\Visual Studio 2008\Projects\ACLWebSite\ACLTestProject\bin\Debug\ACLTestProject.dll" adapterTypeName="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestAdapter, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.Adapter, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" className="ACLTestProject.AclTest1, ACLTestProject" name="GetAclChangesSinceTokenTestMethod" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <TestEntries>
+    <TestEntry testId="318113ee-cdb4-1a41-916d-97d2624c77a4" executionId="84a3f45e-5b58-489d-b536-616a46cfcfaa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <Results>
+    <UnitTestResult executionId="84a3f45e-5b58-489d-b536-616a46cfcfaa" testId="318113ee-cdb4-1a41-916d-97d2624c77a4" testName="GetAclChangesSinceTokenTestMethod" computerName="GDC04" duration="00:00:01.6926707" startTime="2011-05-12T13:58:48.9355461+05:30" endTime="2011-05-12T13:58:51.0917823+05:30" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d">
+      <Output>
+      </Output>
+    </UnitTestResult>
+  </Results>
+</TestRun>
