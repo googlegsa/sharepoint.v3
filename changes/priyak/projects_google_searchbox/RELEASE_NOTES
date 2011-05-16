@@ -1,0 +1,100 @@
+Release Notes
+==============
+
+This document contains the release notes for Google Search Box for SharePoint 2.6.0 The following sections describe the release in detail and provide information that supplements the main documentation.  See the Issues Tab on the Code Site for the current list of known issues and workarounds.
+
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+
+Release 2.6.0, 1 July, 2010
+==========================
+
+Introduction
+-------------
+This is an upgrade release with some enhancements and bug fixes. Users of previous releases are encouraged to upgrade.
+Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
+
+Summary of Changes
+------------------
+New features:
+-------------
+1. Added support for SharePoint 2010
+
+Issues fixed:
+-------------
+1. Issue 82: Google Search Box does not handle cookie properly
+Multiple cookies, blank cookies, cookie encoding are now handled by the search box
+2. Issue 109 : Deploy searchbox to a single web app only
+The search box can now be deployed to specific web applications only. By default it is deployed for all the web applications in the farm.
+3. Issue 152: When using GSBS with local stylesheet, you see document Icon for both .doc and .pdf files
+The pdfs in search results are now displayed with a default icon as is the case when seen in SharePoint
+
+Google Search Box for SharePoint 2.6.0 is bundled with "Google Search Appliance Resource Kit for SharePoint" installer which also bundles other related components such as
+		* Google Services for SharePoint : It includes SharePoint custom web services which are used by SharePoint connector for traversal, Authentication, Authorization and fetching ACLs
+		* GSA Resource Kit for SharePoint : It includes:
+			-Google Search Box for SharePoint Test Utility : It is used to verify the Google Search Box parameters, cookies and headers.
+			-GSA Security SPI Simulator: It is used to test "Google SAML Bridge for Windows" without involving the complexity of the GSA. Once you know that the SAML Bridge works, you can reconfigure it to work with the search appliance.
+			-Google SAML Bridge for Windows: It enables "Google Search Box for SharePoint 2.6.0" to perform search on NTLM contents.
+			
+   For a farm setup, you need to install the Google Search Box on all the SharePoint 2.6.0 Installations (machines).
+
+Version Compatibility
+---------------------
+The Google Search Box for SharePoint 2.6.0 is supported on the following SharePoint versions:
+* Microsoft Office SharePoint Server 2007 (MOSS 2007) 
+* Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
+* Microsoft SharePoint 2010
+
+Users who have deployed the 1.x.x version of Google Search Box, should follow these steps:
+1. Uninstall Google Search Box.
+2. Install the Google Search Box for SharePoint using the new "Google Search Appliance Resource Kit for SharePoint" installer. Refer to the documentation to understand the set of components that will be required to configure the Google Search Box based on the authentication scheme set on SharePoint
+
+* In case if you have a farm setup, repeat the above steps on each SharePoint installation (machine) in the farm
+
+Browser Compatibility
+---------------------
+The Google Search Box for SharePoint 2.6.0 is certified on following browsers:
+* Microsoft Internet Explorer 6.0
+* Microsoft Internet Explorer 7.0
+* Mozilla Firefox 3.0.5
+
+Platform Support
+------------------
+Google Search Box for SharePoint 2.6.0 can be installed on both 32-bit and 64-bit Windows Server Enterprise Operating System.
+
+Certified Against
+-------------------
+32-bit:
+
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel  Xeon  CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Microsoft Windows Server 2008 Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+
+
+64-bit:
+ 
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel  Xeon  CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Microsoft Windows Server 2008
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 4.00 GB of RAM
+
+Microsoft Windows Server 2008 R2
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 4.00 GB of RAM
+
+
+Known Limitations
+-----------------
+1. Search keyword is not displayed on the Search Box when using GSA's front end for displaying searched results and "repeat the search with the omitted results included" is clicked.
+2. Issue 126: When a new SharePoint web application is added after Search Box is installed using the GSA Resource Kit for SharePoint installer, it shows destorted search results when search is configured with a local stylesheet.
