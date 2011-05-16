@@ -342,8 +342,17 @@ public class SharepointClient {
      * @return True if ACLs were retrieved successfully OR false in case of any
      *         exceptions/errors
      */
-    private boolean fetchACLInBatches(SPDocumentList resultSet,
+    /*
+     * The access method is package level for JUnit test cases
+     */
+    boolean fetchACLInBatches(SPDocumentList resultSet,
             WebState webState, GlobalState globalState, int batchSizeFactor) {
+
+
+        if (resultSet.size() == 0) {
+            LOGGER.log(Level.CONFIG, "Result set is empty. No documents to fetch ACL");
+            return false;
+        }
 
         // Default is 1
         int batchSize = 1;
@@ -352,6 +361,11 @@ public class SharepointClient {
             // Connector should attempt ACL retrieval in batches of
             // [resultSet.size() / 10]
             batchSize = resultSet.size() / batchSizeFactor;
+
+            // This is to handle the cases like [1/2=0] and the batchSize will
+            // be set to 0. This can result into an infinite loop
+            if (batchSize == 0)
+                batchSize = resultSet.size();
         }
 
         LOGGER.info("The connector will attempt to fetch ACLs for documents in batches of "
@@ -364,7 +378,15 @@ public class SharepointClient {
             toIndex += batchSize;
             if (toIndex > resultSet.size()) {
                 toIndex = resultSet.size();
+
+                // In case the start and end index is same it will result in an
+                // empty list. So ignore and proceed to next level
+                if (i == toIndex) {
+                    LOGGER.log(Level.WARNING, "The start and end index of the List of the documents should not be same");
+                    continue;
+                }
             }
+
             SPDocumentList docList = new SPDocumentList(
                     resultSet.getDocuments().subList(i, toIndex), globalState);
 

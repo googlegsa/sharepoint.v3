@@ -25,7 +25,11 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -168,5 +172,44 @@ public class SharepointClientTest extends TestCase {
         // Since there are 4 lists, the third list being set as last crawled,
         // the total no. of lists visited should be 2
         assertEquals(2, spclient.getNoOfVisitedListStates());
+    }
+
+    /**
+     * Test case for
+     * {@link SharepointClient#fetchACLInBatches(SPDocumentList, WebState, GlobalState, int)}
+     *
+     * @throws SharepointException
+     */
+    public void testFetchACLInBatches() throws SharepointException {
+        SharepointClientContext spContext = TestConfiguration.initContext();
+        spContext.setBatchHint(Integer.MAX_VALUE);
+        spContext.setAclBatchSizeFactor(2);
+        spContext.setFetchACLInBatches(true);
+        GlobalState gs = TestConfiguration.initState(spContext);
+        WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);
+        SharepointClient spclient = new SharepointClient(spContext);
+
+        SPDocument doc = new SPDocument(
+                "122",
+                TestConfiguration.Site1_List1_URL,
+                Calendar.getInstance(), ActionType.ADD);
+
+
+        doc.setSharepointClientContext(spContext);
+
+        List<SPDocument> list = new ArrayList<SPDocument>();
+        list.add(doc);
+        SPDocumentList docList = new SPDocumentList(list, gs);
+
+        // Test that whenever 1 document, the batchsize is set to 1 and the
+        // method does return and does not run into infinite loop
+        boolean result = spclient.fetchACLInBatches(docList, ws, gs, 2);
+        assertTrue(result);
+
+        // Negative test case with 0 documents
+        List<SPDocument> list2 = new ArrayList<SPDocument>();
+        SPDocumentList docList2 = new SPDocumentList(list2, gs);
+        assertFalse(spclient.fetchACLInBatches(docList2, ws, gs, 2));
+
     }
 }
