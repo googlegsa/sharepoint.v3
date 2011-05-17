@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
@@ -71,6 +72,10 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     private boolean fetchACLInBatches = false;
     private int aclBatchSizeFactor = 2;
     private int webServiceTimeOut = 300000;
+    private LdapConnectionSettings ldapConnectiionSettings;
+    private int lugCacheSize;
+    private long refreshInterval;
+    private boolean enableLUGCache = false;
 
     public SharepointConnector() {
 
@@ -107,6 +112,39 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
             }
         }
         return new SharepointSession(this, sharepointClientContext);
+    }
+
+    public LdapConnectionSettings getLdapConnectiionSettings() {
+        return ldapConnectiionSettings;
+    }
+
+    public void setLdapConnectiionSettings(
+            LdapConnectionSettings ldapConnectiionSettings) {
+        this.ldapConnectiionSettings = ldapConnectiionSettings;
+    }
+
+    public int getLugCacheSize() {
+        return lugCacheSize;
+    }
+
+    public void setLugCacheSize(int lugCacheSize) {
+        this.lugCacheSize = lugCacheSize;
+    }
+
+    public long getRefreshInterval() {
+        return refreshInterval;
+    }
+
+    public void setRefreshInterval(long refreshInterval) {
+        this.refreshInterval = refreshInterval;
+    }
+
+    public boolean isEnableLUGCache() {
+        return enableLUGCache;
+    }
+
+    public void setEnableLUGCache(boolean enableLUGCache) {
+        this.enableLUGCache = enableLUGCache;
     }
 
     /**
@@ -300,6 +338,11 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         sharepointClientContext.setFetchACLInBatches(this.fetchACLInBatches);
         sharepointClientContext.setAclBatchSizeFactor(this.aclBatchSizeFactor);
         sharepointClientContext.setWebServiceTimeOut(this.webServiceTimeOut);
+        sharepointClientContext.setEnableLUGCache(enableLUGCache);
+        sharepointClientContext.setDomain(this.domain);
+        sharepointClientContext.setLdapConnectiionSettings(this.ldapConnectiionSettings);
+        sharepointClientContext.setLugCacheSize(this.lugCacheSize);
+        sharepointClientContext.setRefreshInterval(this.refreshInterval);
 
     }
 
@@ -402,7 +445,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
 
     public void setDatabaseAccess(ConnectorPersistentStore databaseAccess) {
         this.connectorPersistnetStore = databaseAccess;
-        if(sharepointClientContext.isPushAcls()) {
+        if (sharepointClientContext.isPushAcls()) {
             performUserDataStoreInitialization();
         }
     }

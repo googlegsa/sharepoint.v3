@@ -53,6 +53,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
                 TestConfiguration.getUserDataStoreQueryProvider(),
                 TestConfiguration.getUserGroupMembershipRowMapper());
         this.sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
+        sharepointClientContext.setLdapConnectiionSettings(TestConfiguration.getLdapConnetionSettings());
         this.authMan = new SharepointAuthenticationManager(
                 this.sharepointClientContext);
         System.out.println("Initializing SharepointAuthenticationIdentity ...");
@@ -130,4 +131,37 @@ public class SharepointAuthenticationManagerTest extends TestCase {
                 + TestConfiguration.userNameFormat3);
     }
 
+    public void testGetSamAccountNameFromSearchUser() {
+        String expectedUserName = TestConfiguration.username;
+
+        String userName3 = this.authMan.ldapService.getSamAccountNameFromSearchUser(TestConfiguration.userNameFormat3);
+        assertNotNull(userName3);
+        assertEquals(expectedUserName, userName3);
+
+        String userName1 = this.authMan.ldapService.getSamAccountNameFromSearchUser(TestConfiguration.userNameFormat1);
+        assertNotNull(userName1);
+        assertEquals(expectedUserName, userName1);
+
+        String userName2 = this.authMan.ldapService.getSamAccountNameFromSearchUser(TestConfiguration.userNameFormat2);
+        assertNotNull(userName2);
+        assertEquals(expectedUserName, userName2);
+    }
+
+    public void testgetAllGroupsForTheUser() throws SharepointException {
+        this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
+
+        assertNotNull(this.authenticationResponse);
+        assertNotNull(this.authenticationResponse.getGroups());
+
+        // this time should get results from cache for the same user.
+        this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
+        assertNotNull(this.authenticationResponse);
+        assertNotNull(this.authenticationResponse.getGroups());
+
+        // should fetch results from service.
+        this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.fakeusername);
+        assertNotNull(this.authenticationResponse);
+        assertTrue((this.authenticationResponse.getGroups().isEmpty()));
+
+    }
 }

@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -100,6 +101,36 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     }
 
     /**
+     * Retrieves all the {@link UserGroupMembership} to which {@link Set} groups
+     * belongs to including the search user.
+     *
+     * @param groups
+     * @param searchUser
+     * @return
+     * @throws SharepointException
+     */
+    public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
+            Set<String> groups, String searchUser) throws SharepointException {
+        Query query = Query.UDS_SELECT_FOR_ADGROUPS;
+        groups.add(searchUser);
+        Map<String, Object> groupsObject = new HashMap<String, Object>();
+        groupsObject.put("groups", groups);
+        List<UserGroupMembership> memberships = null;
+        try {
+            memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
+        } catch (Throwable t) {
+            throw new SharepointException(
+                    "Query execution failed while getting the membership info of a given user ",
+                    t);
+        }
+        LOGGER.log(Level.INFO, memberships.size()
+                + " Memberships identified for Directory groups in User Data Store.");
+        groups.remove(searchUser);
+        return memberships;
+
+    }
+
+    /**
      * Adds a list of {@link UserGroupMembership} into the user data store. From
      * the passed in collection, only those memberships which are not in cache
      * are picked up for the SQL insert. The rest other memberships are removed
@@ -115,7 +146,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
      */
     public void addMemberships(Set<UserGroupMembership> memberships)
             throws SharepointException {
-        if(null == memberships || memberships.size() == 0) {
+        if (null == memberships || memberships.size() == 0) {
             return;
         }
         if (null != udsCache) {
@@ -402,7 +433,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         }
         return namedParams;
     }
-    
+
     /**
      * Checks if all the required entities exist in the user data store DB. If
      * not, creates them. As a minimal check, this method only checks for the
@@ -411,52 +442,59 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
      *
      * @throws SharepointException
      */
-	private void confirmEntitiesExistence() throws SharepointException {
-		DatabaseMetaData dbm = null;
-		boolean tableFound = false;
-		String tableName;
-		String tablePattern;
-		ResultSet rsTables = null;
-		Statement statement = null;
-		try {
-			dbm = getConnection().getMetaData();
-			tableName = getQueryProvider().getUdsTableName();
-			if (getQueryProvider().getDatabase().equalsIgnoreCase(SPConstants.SELECTED_DATABASE)) {
-				statement = getConnection().createStatement();
-				String query = getSqlQuery(Query.UDS_CHECK_TABLES);
-				rsTables = statement.executeQuery(query);
-				while (rsTables.next()) {
-					if (tableName.equalsIgnoreCase(rsTables.getString(1))) {
-						tableFound = true;
-						LOGGER.config("User data store table found with name : "
-								+ tableName);
-					}
-				}
-			} else {
-				if (dbm.storesUpperCaseIdentifiers()) {
-					tablePattern = tableName.toUpperCase();
-				} else if (dbm.storesLowerCaseIdentifiers()) {
-					tablePattern = tableName.toLowerCase();
-				} else {
-					tablePattern = tableName;
-				}
-				tablePattern = tablePattern.replace("%", dbm.getSearchStringEscape()
-						+ "%");
-				tablePattern = tablePattern.replace("_", dbm.getSearchStringEscape()
-						+ "_");
-				rsTables = dbm.getTables(null, null, tablePattern, null);
-			}
-			rsTables.close();
-			if (!tableFound) {
-				getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
-				LOGGER.config("Created user data store table with name : "
-						+ Query.UDS_CREATE_TABLE + "sucessfully");
-				getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
-				LOGGER.config("Created user data store table index with name : "
-						+ Query.UDS_CREATE_INDEX + "sucessfully");
-			}
-		} catch (Exception e) {
-			LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
-		}
-	}
+    private void confirmEntitiesExistence() throws SharepointException {
+        DatabaseMetaData dbm = null;
+        boolean tableFound = false;
+        String tableName;
+        String tablePattern;
+        ResultSet rsTables = null;
+        Statement statement = null;
+        try {
+            dbm = getConnection().getMetaData();
+            tableName = getQueryProvider().getUdsTableName();
+            if (getQueryProvider().getDatabase().equalsIgnoreCase(SPConstants.SELECTED_DATABASE)) {
+                statement = getConnection().createStatement();
+                String query = getSqlQuery(Query.UDS_CHECK_TABLES);
+                rsTables = statement.executeQuery(query);
+                while (rsTables.next()) {
+                    if (tableName.equalsIgnoreCase(rsTables.getString(1))) {
+                        tableFound = true;
+                        LOGGER.config("User data store table found with name : "
+                                + tableName);
+                    }
+                }
+            } else {
+                if (dbm.storesUpperCaseIdentifiers()) {
+                    tablePattern = tableName.toUpperCase();
+                } else if (dbm.storesLowerCaseIdentifiers()) {
+                    tablePattern = tableName.toLowerCase();
+                } else {
+                    tablePattern = tableName;
+                }
+                tablePattern = tablePattern.replace("%", dbm.getSearchStringEscape()
+                        + "%");
+                tablePattern = tablePattern.replace("_", dbm.getSearchStringEscape()
+                        + "_");
+                rsTables = dbm.getTables(null, null, tablePattern, null);
+                while (rsTables.next()) {
+                    if (tableName.equalsIgnoreCase(rsTables.getString(SPConstants.TABLE_NAME))) {
+                        tableFound = true;
+                        LOGGER.config("User data store table found with name : "
+                                + rsTables.getString("TABLE_NAME"));
+                    }
+                }
+            }
+            rsTables.close();
+            if (!tableFound) {
+                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
+                LOGGER.config("Created user data store table with name : "
+                        + Query.UDS_CREATE_TABLE + "sucessfully");
+                getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
+                LOGGER.config("Created user data store table index with name : "
+                        + Query.UDS_CREATE_INDEX + "sucessfully");
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
+        }
+    }
 }

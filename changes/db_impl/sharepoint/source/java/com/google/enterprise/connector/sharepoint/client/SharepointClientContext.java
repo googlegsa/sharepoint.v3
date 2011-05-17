@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.client;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
 
@@ -95,6 +96,43 @@ public class SharepointClientContext implements Cloneable {
     private boolean fetchACLInBatches = false;
     private int aclBatchSizeFactor = 2;
     private int webServiceTimeOut = 300000;
+    private LdapConnectionSettings ldapConnectiionSettings;
+    private int lugCacheSize;
+    private long refreshInterval;
+    private boolean enableLUGCache = false;
+
+    public boolean isEnableLUGCache() {
+        return enableLUGCache;
+    }
+
+    public void setEnableLUGCache(boolean enableLUGCache) {
+        this.enableLUGCache = enableLUGCache;
+    }
+
+    public int getLugCacheSize() {
+        return lugCacheSize;
+    }
+
+    public void setLugCacheSize(int lugCacheSize) {
+        this.lugCacheSize = lugCacheSize;
+    }
+
+    public long getRefreshInterval() {
+        return refreshInterval;
+    }
+
+    public void setRefreshInterval(long refreshInterval) {
+        this.refreshInterval = refreshInterval;
+    }
+
+    public LdapConnectionSettings getLdapConnectiionSettings() {
+        return ldapConnectiionSettings;
+    }
+
+    public void setLdapConnectiionSettings(
+            LdapConnectionSettings ldapConnectiionSettings) {
+        this.ldapConnectiionSettings = ldapConnectiionSettings;
+    }
 
     /**
      * For cloning
@@ -186,8 +224,11 @@ public class SharepointClientContext implements Cloneable {
             spCl.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
             spCl.setAclBatchSizeFactor(this.aclBatchSizeFactor);
             spCl.setFetchACLInBatches(this.fetchACLInBatches);
-
             spCl.setWebServiceTimeOut(this.webServiceTimeOut);
+            spCl.setLdapConnectiionSettings(this.ldapConnectiionSettings);
+            spCl.setEnableLUGCache(this.enableLUGCache);
+            spCl.setLugCacheSize(this.lugCacheSize);
+            spCl.setRefreshInterval(this.refreshInterval);
 
             return spCl;
         } catch (final Throwable e) {
@@ -310,7 +351,6 @@ public class SharepointClientContext implements Cloneable {
         feedType = inFeedType;
         LOGGER.finest("feedType set to " + feedType);
         LOGGER.finest("bFQDNConversion set to " + bFQDNConversion);
-
 
         this.useSPSearchVisibility = useSPSearchVisibility;
 
@@ -983,7 +1023,6 @@ public class SharepointClientContext implements Cloneable {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
 
-
     public String getUsernameFormatInAce() {
         return usernameFormatInAce;
     }
@@ -1050,5 +1089,3 @@ public class SharepointClientContext implements Cloneable {
         this.webServiceTimeOut = webServiceTimeOut;
     }
 }
-
-

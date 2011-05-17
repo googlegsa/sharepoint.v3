@@ -60,6 +60,7 @@ public interface QueryProvider {
      * @return
      */
     String getDatabase();
+
     void setDatabase(String database);
     /**
      * Name of the table representing User Group Memberships
@@ -93,7 +94,7 @@ public interface QueryProvider {
  * @author nitendra_thakur
  */
 enum Query {
-    UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES,
+    UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES, UDS_SELECT_FOR_ADGROUPS("groups"),
 
     UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"), UDS_SELECT_FOR_USERNAME(
             "user_name"),

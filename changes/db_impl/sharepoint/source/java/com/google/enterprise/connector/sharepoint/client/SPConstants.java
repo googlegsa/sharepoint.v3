@@ -402,6 +402,7 @@ public class SPConstants {
     public static final String USE_SP_SEARCH_VISIBILITY = "useSPSearchVisibility";
     public static final String USE_SP_SEARCH_VISIBILITY_LABEL = "Use_SP_SearchVisibility";
     public static final String USE_SP_SEARCH_VISIBILITY_HELP = "Use_SP_SearchVisibility_Help";
+    public static final Object DOUBLE_CLOSE_PARENTHESIS = "))";
 
     public static final String CHECKPOINT_VALUE = "SharePoint";
     public static final int MAX_PORT_VALUE = 65535;

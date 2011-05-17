@@ -21,6 +21,10 @@ import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.Method;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -45,6 +49,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.naming.ldap.LdapContext;
 import javax.sql.DataSource;
 
 public class TestConfiguration {
@@ -118,6 +123,23 @@ public class TestConfiguration {
     public static String userNameFormat1;
     public static String userNameFormat2;
     public static String userNameFormat3;
+    // LDAP
+    public static long refreshInterval;
+    public static int cacheSize;
+    public static String ldapuser1;
+    public static String ldapuser2;
+    public static String ldapuser3;
+    public static String ldapuser4;
+    public static String ldapuser5;
+    public static String ldapuser6;
+    public static String nullldapuser;
+    public static String ldapgroupname;
+    public static String fakeoremptyldapgroupname;
+    public static String expectedParentGroup;
+    public static Object google;
+    public static String ldapgroup;
+    public static String ldapuser;
+    public static String fakeusername;
 
     static {
         final Properties properties = new Properties();
@@ -209,10 +231,30 @@ public class TestConfiguration {
         dbVendor = properties.getProperty("DBVendor");
         connectorName = properties.getProperty("ConnectorName");
         UDS_TABLE_NAME = properties.getProperty("UDS_TABLE_NAME");
-        UDS_INDEX_NAME = properties.getProperty(UDS_INDEX_NAME);
+        UDS_INDEX_NAME = properties.getProperty("UDS_INDEX_NAME");
         userNameFormat1 = properties.getProperty("userNameFormat1");
         userNameFormat1 = properties.getProperty("userNameFormat2");
         userNameFormat1 = properties.getProperty("userNameFormat3");
+
+        refreshInterval = new Long(properties.getProperty("refreshInterval")).longValue();
+        cacheSize = new Integer(properties.getProperty("cacheSize")).intValue();
+
+        ldapuser1 = properties.getProperty("ldapuser1");
+        ldapuser2 = properties.getProperty("ldapuser2");
+        ldapuser3 = properties.getProperty("ldapuser3");
+        ldapuser4 = properties.getProperty("ldapuser4");
+        ldapuser5 = properties.getProperty("ldapuser5");
+        ldapuser5 = properties.getProperty("ldapuser5");
+        ldapuser5 = properties.getProperty("ldapuser6");
+        nullldapuser = properties.getProperty("nullldapuser");
+
+        ldapgroupname = properties.getProperty("ldapgroupname");
+        expectedParentGroup = properties.getProperty("expectedParentGroup");
+        google = properties.getProperty("google");
+        fakeoremptyldapgroupname = properties.getProperty("fakeoremptyldapgroupname");
+
+        ldapgroup = properties.getProperty("ldapgroup");
+        ldapuser = properties.getProperty("ldapuser");
     }
 
     public static Map<String, String> getConfigMap() {
@@ -578,7 +620,7 @@ public class TestConfiguration {
         queryProvider.setUdsTableName(TestConfiguration.UDS_TABLE_NAME);
         queryProvider.setUdsIndexName(TestConfiguration.UDS_INDEX_NAME);
         queryProvider.setDatabase(TestConfiguration.dbVendor);
-        queryProvider.init(TestConfiguration.connectorName, TestConfiguration.dbVendor);
+        queryProvider.init(TestConfiguration.dbVendor);
         return queryProvider;
     }
 
@@ -596,5 +638,21 @@ public class TestConfiguration {
         memberships.add(membership3);
 
         return memberships;
+    }
+
+    public static LdapConnectionSettings getLdapConnetionSettings() {
+        LdapConnectionSettings settings = new LdapConnectionSettings(
+                Method.STANDARD, "10.77.224.100", 389,
+                "DC=persistent,DC=co, DC=in", AuthType.SIMPLE,
+                "nageswara_sura", "xxxx", "persistent.co.in");
+        return settings;
+    }
+
+    public static LdapContext getLdapContext() {
+        LdapConnectionSettings ldapConnectionSettings = getLdapConnetionSettings();
+        LdapServiceImpl serviceImpl = new LdapServiceImpl(
+                ldapConnectionSettings, TestConfiguration.cacheSize,
+                TestConfiguration.refreshInterval, true);
+        return serviceImpl.getLdapContext();
     }
 }

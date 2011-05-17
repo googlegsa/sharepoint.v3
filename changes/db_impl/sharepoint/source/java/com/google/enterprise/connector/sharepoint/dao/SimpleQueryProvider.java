@@ -129,7 +129,10 @@ public class SimpleQueryProvider implements QueryProvider {
             placeholders.add(1, udsTableName);
             break;
         case UDS_CHECK_TABLES:
-        	placeholders.add(0, SPConstants.UDS_TABLE);
+            placeholders.add(0, SPConstants.UDS_TABLE);
+            break;
+        case UDS_SELECT_FOR_ADGROUPS:
+            placeholders.add(0, udsTableName);
         }
         sqlQuery = MessageFormat.format(sqlQueries.getString(query.name()), placeholders.toArray());
         sqlQueryMap.put(query, sqlQuery);
@@ -139,6 +142,7 @@ public class SimpleQueryProvider implements QueryProvider {
     public String getDatabase() {
         return database;
     }
+
     public void setDatabase(String database) {
         this.database = database;
     }
