@@ -401,11 +401,23 @@
          f.style.background = '#ffffff';
     }
     
-    // Function that will change the background of the search query textbox to the Google search image whenever the user is done with typing the search query.
+    // Function that will change the background of the search query textbox 
     function SearchTextOnBlur()
     {
          var f = document.getElementById("<%=txtSearch.ClientID%>");
-         f.style.background = 'background-color: transparent'; 
+         if(f.value == "")
+         {
+            // Display the Google Search watermark image in searchbox when the searchbox is empty
+            f.style.background = 'background-color: transparent'; 
+         }
+         else
+         {
+            /*
+             * Do not display the Google Search watermark image in searchbox, when the searchbox contains text.
+             * Instead set background colour to white.
+             */
+            f.style.background = '#ffffff';
+         }
     }
     
 </script>

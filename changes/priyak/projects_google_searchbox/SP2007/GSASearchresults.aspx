@@ -604,6 +604,8 @@
   	
 	function SetPageTitle()
 	{
+	   setBackgroundForSearchbox();
+	   
 	   var Query = "";
 	   if (window.top.location.search != 0)
 	   {
@@ -621,6 +623,27 @@
 
       
 	}
+	// Function that will set the background for the Google Search Box
+	function setBackgroundForSearchbox()
+    {
+       /*
+        * Code which will decide when the Google Search watermark image will be displayed.
+        */
+        var txtSearch = document.getElementById("ctl00_PlaceHolderTitleBreadcrumb_ctl00_txtSearch");
+        if (txtSearch.value == "")
+        {
+            // Display the Google Search watermark image in searchbox when the searchbox is empty
+            txtSearch.style.background = 'background-color: transparent';
+        }
+        else
+        {
+            /*
+            * Do not display the Google Search watermark image in searchbox, when the searchbox contains text.
+            * Instead set background colour to white.
+            */
+            txtSearch.style.background = '#ffffff';
+        }
+    } 
 		
 	function getParameter (queryString, parameterNameWithoutEquals)
 	{
