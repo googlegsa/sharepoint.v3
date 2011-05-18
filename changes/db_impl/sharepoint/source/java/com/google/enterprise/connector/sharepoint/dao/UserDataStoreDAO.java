@@ -149,7 +149,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         if (null == memberships || memberships.size() == 0) {
             return;
         }
-        if (null != udsCache) {
+        if (null != udsCache && udsCache.size() > 0) {
             removeAllCached(memberships);
         }
 
@@ -370,11 +370,8 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             Collection<UserGroupMembership> memberships) {
         if (null != udsCache && null != status
                 && status.length == memberships.size()) {
-            int i = 0;
             for (UserGroupMembership membership : memberships) {
-                if (status[i] > 0) {
-                    udsCache.add(membership);
-                }
+                udsCache.add(membership);
             }
         }
     }

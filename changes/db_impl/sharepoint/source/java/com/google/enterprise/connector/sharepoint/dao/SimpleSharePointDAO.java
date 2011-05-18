@@ -22,6 +22,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +66,7 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport
                     "Could not create the database conection for specified data source",
                     e);
         }
-        if(null == con) {
+        if (null == con) {
             throw new SharepointException("Could not create the database conection for specified data source");
         }
     }
@@ -119,10 +120,19 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport
                     + batchStatus.length + " records. Query [ " + query + " ] ");
         } catch (Exception e) {
             if (null == e.getCause()
-                    || !(e.getCause() instanceof BatchUpdateException)) {
+                    || (!(e.getCause() instanceof BatchUpdateException) && !(e.getCause() instanceof SQLException))) {
                 LOGGER.log(Level.WARNING, "BatchUpdate failed for query [  "
                         + query + " ]", e);
+
             } else {
+            	// Batch update failure exception in Oracle and fall-back to individual query execution.
+            	if (e.getCause() instanceof SQLException && !(e.getCause() instanceof BatchUpdateException)) {
+            		batchStatus = new int[params.length];
+            		for (int i=0; i<params.length; ++i) {
+            			batchStatus[i] = update (query, params[i]);
+            		}
+            		return batchStatus;
+            	}
                 batchStatus = handleBatchUpdateException((BatchUpdateException) e.getCause(), query, params);
                 LOGGER.info("BatchUpdate completed with a fallback for #"
                         + batchStatus.length + " records. Query [ " + query
