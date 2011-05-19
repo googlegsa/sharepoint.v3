@@ -166,6 +166,9 @@ public class SPConstants {
     public static final String LIST_ITEM_COLLECTION_POSITION_NEXT = "ListItemCollectionPositionNext";
     public static final String CONTENT_TYPE_FOLDER = "Folder";
 
+    // The minimum time out value for WS calls
+    public static final int MINIMUM_TIMEOUT_FOR_WS = 1000;
+
     public static final String GSSLISTITEMS = "GssListItems";
 
     // For Alerts
@@ -431,10 +434,10 @@ public class SPConstants {
     public static final String DOMAIN_CONSTANT_IN_ACL = "domain";
     public static final String DEFAULT_SITE_LANDING_PAGE = "/default.aspx";
     public static final String LEFT_SQUARE_BRACKET = "[";
-	public static final String RIGHT_SQUARE_BRACKET = "]";
-	public static final String UDS_TABLE = "'TABLE'";
-	public static final String SELECTED_DATABASE = "oracle";
-	public static final String TABLE_NAME = "TABLE_NAME";
+    public static final String RIGHT_SQUARE_BRACKET = "]";
+    public static final String UDS_TABLE = "'TABLE'";
+    public static final String SELECTED_DATABASE = "oracle";
+    public static final String TABLE_NAME = "TABLE_NAME";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

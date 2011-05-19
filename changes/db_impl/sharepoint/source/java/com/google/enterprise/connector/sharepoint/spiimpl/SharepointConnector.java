@@ -14,8 +14,9 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
@@ -520,7 +521,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
      * @param webServiceTimeOut the webServiceTimeOut to set
      */
     public void setWebServiceTimeOut(int webServiceTimeOut) {
-        if (webServiceTimeOut <= 1000) {
+        if (webServiceTimeOut < SPConstants.MINIMUM_TIMEOUT_FOR_WS) {
             throw new IllegalArgumentException(
                     "The webServiceTimeOut should be greater than 1000 milliseconds");
         }

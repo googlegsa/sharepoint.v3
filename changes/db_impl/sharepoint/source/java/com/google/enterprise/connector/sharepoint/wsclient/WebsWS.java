@@ -82,6 +82,11 @@ public class WebsWS {
             strUser = Util.getUserNameWithDomain(strUser, strDomain);
             stub.setUsername(strUser);
             stub.setPassword(strPassword);
+            // The web service time-out value
+            stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
+            LOGGER.fine("Set time-out of : "
+                    + sharepointClientContext.getWebServiceTimeOut()
+                    + " milliseconds");
         }
     }
 
