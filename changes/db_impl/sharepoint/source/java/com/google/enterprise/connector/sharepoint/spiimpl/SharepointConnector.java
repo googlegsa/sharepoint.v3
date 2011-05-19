@@ -15,12 +15,14 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
 import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.Method;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
@@ -73,10 +75,15 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     private boolean fetchACLInBatches = false;
     private int aclBatchSizeFactor = 2;
     private int webServiceTimeOut = 300000;
+    private String ldapServerHostAddress;
+    private int portNumber;
+    private String authenticationType;
+    private String connectMethod;
+    private String searchBase;
+    private int initialCacheSize;
+    private boolean useCacheToStoreLdapUserGroupsMembership;
+    private long cacheRefreshInterval;
     private LdapConnectionSettings ldapConnectiionSettings;
-    private int lugCacheSize;
-    private long refreshInterval;
-    private boolean enableLUGCache = false;
 
     public SharepointConnector() {
 
@@ -113,39 +120,6 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
             }
         }
         return new SharepointSession(this, sharepointClientContext);
-    }
-
-    public LdapConnectionSettings getLdapConnectiionSettings() {
-        return ldapConnectiionSettings;
-    }
-
-    public void setLdapConnectiionSettings(
-            LdapConnectionSettings ldapConnectiionSettings) {
-        this.ldapConnectiionSettings = ldapConnectiionSettings;
-    }
-
-    public int getLugCacheSize() {
-        return lugCacheSize;
-    }
-
-    public void setLugCacheSize(int lugCacheSize) {
-        this.lugCacheSize = lugCacheSize;
-    }
-
-    public long getRefreshInterval() {
-        return refreshInterval;
-    }
-
-    public void setRefreshInterval(long refreshInterval) {
-        this.refreshInterval = refreshInterval;
-    }
-
-    public boolean isEnableLUGCache() {
-        return enableLUGCache;
-    }
-
-    public void setEnableLUGCache(boolean enableLUGCache) {
-        this.enableLUGCache = enableLUGCache;
     }
 
     /**
@@ -322,7 +296,18 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
                 + "googleConnectorWorkDir = [" + googleConnectorWorkDir
                 + "] , includedURls = [" + includedURls + "] , "
                 + "excludedURls = [" + excludedURls + "] , mySiteBaseURL = ["
-                + mySiteBaseURL + "] , aliasHostPort = [" + aliasMap + "]");
+                + mySiteBaseURL + "] , aliasHostPort = [" + aliasMap
+                + "], pushAcls = [" + pushAcls
+                + "], useCacheToStoreLdapUserGroupsMembership = ["
+                + useCacheToStoreLdapUserGroupsMembership
+                + "], initialCacheSize = [" + initialCacheSize
+                + "], cacheRefreshInterval = [" + cacheRefreshInterval
+                + "], ldapServerHostAddress = [" + ldapServerHostAddress
+                + "], portNumber = [" + portNumber
+                + "], authenticationType = [" + authenticationType
+                + "], connectMethod = [" + connectMethod + "], searchBase = ["
+                + searchBase + " ]");
+
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMap,
@@ -339,11 +324,12 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         sharepointClientContext.setFetchACLInBatches(this.fetchACLInBatches);
         sharepointClientContext.setAclBatchSizeFactor(this.aclBatchSizeFactor);
         sharepointClientContext.setWebServiceTimeOut(this.webServiceTimeOut);
-        sharepointClientContext.setEnableLUGCache(enableLUGCache);
         sharepointClientContext.setDomain(this.domain);
+        sharepointClientContext.setLdapConnectiionSettings(getLdapConnectiionSettings());
+        sharepointClientContext.setCacheRefreshInterval(this.cacheRefreshInterval);
+        sharepointClientContext.setInitialCacheSize(this.initialCacheSize);
+        sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
         sharepointClientContext.setLdapConnectiionSettings(this.ldapConnectiionSettings);
-        sharepointClientContext.setLugCacheSize(this.lugCacheSize);
-        sharepointClientContext.setRefreshInterval(this.refreshInterval);
 
     }
 
@@ -468,15 +454,14 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         try {
             queryProvider.init(locale);
             userDataStoreDAO = new UserDataStoreDAO(
-                localDatabseImpl.getDataSource(), queryProvider,
-                userGroupMembershipRowMapper);
+                    localDatabseImpl.getDataSource(), queryProvider,
+                    userGroupMembershipRowMapper);
             LOGGER.config("DAO for UserDataStore created successfully");
         } catch (SharepointException se) {
             LOGGER.log(Level.WARNING, "Failed to create UserDataStoreDAO object. ", se);
         }
         sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
     }
-
 
     /**
      * @return the fetchACLInBatches
@@ -528,5 +513,161 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         this.webServiceTimeOut = webServiceTimeOut;
     }
 
+    /**
+     * @return LDAp directory service host address.
+     */
+    public String getLdapServerHostAddress() {
+        return ldapServerHostAddress;
+    }
+
+    /**
+     * @param ldapServerHostAddress the ldapServerHostAddress to set.
+     */
+    public void setLdapServerHostAddress(String ldapServerHostAddress) {
+        this.ldapServerHostAddress = ldapServerHostAddress;
+    }
+
+    /**
+     * @return LDAP directory server port number.
+     */
+    public int getPortNumber() {
+        return portNumber;
+    }
+
+    /**
+     * @param portNumber the portNumber to set.
+     */
+    public void setPortNumber(int portNumber) {
+        this.portNumber = portNumber;
+    }
+
+    /**
+     * @return LDAP Authentication Type used to connect to LDAP directory server.
+     */
+    public String getAuthenticationType() {
+        AuthType authType;
+        if (AuthType.ANONYMOUS.toString().equalsIgnoreCase(this.authenticationType.toString())) {
+            authType = AuthType.ANONYMOUS;
+        } else {
+            authType = AuthType.SIMPLE;
+        }
+        return authType.toString();
+    }
+
+    /**
+     * @param authenticationType the authenticationType to set.
+     */
+    public void setAuthenticationType(String authenticationType) {
+        this.authenticationType = authenticationType;
+    }
+
+    /**
+     * @return LDAP directory server connect method.
+     */
+    public String getConnectMethod() {
+        Method method;
+        if (Method.SSL.toString().equalsIgnoreCase(this.connectMethod.toString())) {
+            method = Method.SSL;
+        } else {
+            method = Method.STANDARD;
+        }
+        return method.toString();
+    }
+
+    /**
+     * @param connectMethod the connectMethod to set.
+     */
+    public void setConnectMethod(String connectMethod) {
+        this.connectMethod = connectMethod;
+    }
+
+    /**
+     * @return LDAP user search base.
+     */
+    public String getSearchBase() {
+        return searchBase;
+    }
+
+    /**
+     * @param searchBase the searchBase to set.
+     */
+    public void setSearchBase(String searchBase) {
+        this.searchBase = searchBase;
+    }
+
+    /**
+     * @return LDAP user groups initial cache size.
+     */
+    public int getInitialCacheSize() {
+        return initialCacheSize;
+    }
+
+    /**
+     * @param initialCacheSize the initialCacheSize to set.
+     */
+    public void setInitialCacheSize(int initialCacheSize) {
+        this.initialCacheSize = initialCacheSize;
+    }
+
+    /**
+     * @return true indicates to create a LDAP user groups membership cache.
+     */
+    public boolean isUseCacheToStoreLdapUserGroupsMembership() {
+        return useCacheToStoreLdapUserGroupsMembership;
+    }
+
+    /**
+     * @param useCacheToStoreLdapUserGroupsMembership the useCacheToStoreLdapUserGroupsMembership to set.
+     */
+    public void setUseCacheToStoreLdapUserGroupsMembership(
+            boolean useCacheToStoreLdapUserGroupsMembership) {
+        this.useCacheToStoreLdapUserGroupsMembership = useCacheToStoreLdapUserGroupsMembership;
+    }
+
+    /**
+     * @return refresh interval time in seconds.
+     */
+    public long getCacheRefreshInterval() {
+        return cacheRefreshInterval;
+    }
+
+    /**
+     * @param cacheRefreshInterval the cacheRefreshInterval to set.
+     */
+    public void setCacheRefreshInterval(long cacheRefreshInterval) {
+        this.cacheRefreshInterval = cacheRefreshInterval;
+    }
+
+    /**
+     * @return {@linkplain LdapConnectionSettings}
+     */
+    public LdapConnectionSettings getLdapConnectiionSettings() {
+        AuthType authType;
+        if (AuthType.ANONYMOUS.toString().equalsIgnoreCase(this.authenticationType.toString())) {
+            authType = AuthType.ANONYMOUS;
+        } else {
+            authType = AuthType.SIMPLE;
+        }
+        Method method;
+        if (Method.SSL.toString().equalsIgnoreCase(this.connectMethod.toString())) {
+            method = Method.SSL;
+        } else {
+            method = Method.STANDARD;
+        }
+        LdapConnectionSettings ldapConnectiionSettings = new LdapConnectionSettings(
+                method, this.ldapServerHostAddress, this.portNumber,
+                this.searchBase, authType, this.username, this.password,
+                this.domain);
+        this.ldapConnectiionSettings = ldapConnectiionSettings;
+        return ldapConnectiionSettings;
+    }
+
+    /**
+     * @param ldapConnectiionSettings the ldapConnectiionSettings to set.
+     */
+    public void setLdapConnectiionSettings(
+            LdapConnectionSettings ldapConnectiionSettings) {
+        this.ldapConnectiionSettings = ldapConnectiionSettings;
+    }
 
 }

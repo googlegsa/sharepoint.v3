@@ -16,10 +16,12 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.common.StringUtils;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.Method;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
@@ -255,6 +257,239 @@ public class SharepointConnectorType implements ConnectorType {
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
                     buf.append(rb.getString(SPConstants.AUTHZ_BY_CONNECTOR));
+                } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.VALUE, SPConstants.AUTHENTICATION_TYPE_SIMPLE);
+
+                    if ((value.length() == 0)
+                            || value.equalsIgnoreCase(AuthType.SIMPLE.toString())) {
+                        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.AUTHENTICATION_TYPE_SIMPLE));
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.VALUE, SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
+
+                    if (value.equalsIgnoreCase(AuthType.ANONYMOUS.toString())) {
+                        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS));
+                } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
+                    LOGGER.info("in connect method.");
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.VALUE, SPConstants.CONNECT_METHOD_STANDARD);
+
+                    if ((value.length() == 0)
+                            || value.equalsIgnoreCase(Method.STANDARD.toString())) {
+                        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.CONNECT_METHOD_STANDARD));
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.VALUE, SPConstants.CONNECT_METHOD_SSL);
+
+                    if (value.equalsIgnoreCase(Method.SSL.toString())) {
+                        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.CONNECT_METHOD_SSL));
+                } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.PUSH_ACLS_LABEL));
+                    // The value can be true if its a pre-configured connector
+                    // being edited and blank if the default connector form is
+                    // being displayed.
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
+
+                } else if (collator.equals(key, SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
+
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
+                    // The value can be true if its a pre-configured connector
+                    // being edited and blank if the default connector form is
+                    // being displayed.
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.BREAK_LINE);
+                } else if (collator.equals(key, SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
+                    // The value can be true if its a pre-configured connector
+                    // being edited and blank if the default connector form is
+                    // being displayed.
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.BREAK_LINE);
+                } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
+                    LOGGER.info("in AuthN method.");
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.VALUE, SPConstants.AUTHENTICATION_TYPE_SIMPLE);
+                    // appendAttribute(buf, SPConstants.TITLE,
+                    // rb.getString(SPConstants.HELP_AUTHZ_BY_GSA));
+                    LOGGER.info("in authn type and value is : "
+                            + value.toString());
+                    if ((value.length() == 0)
+                            || value.equalsIgnoreCase(AuthType.SIMPLE.toString())) {
+                        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.AUTHENTICATION_TYPE_SIMPLE));
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.VALUE, SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
+                    // appendAttribute(buf, SPConstants.TITLE,
+                    // rb.getString(SPConstants.HELP_AUTHZ_BY_CONNECTOR));
+                    LOGGER.info("in authn type an dvalue is : "
+                            + value.toString());
+                    if (value.equalsIgnoreCase(AuthType.ANONYMOUS.toString())) {
+                        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS));
+                } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
+                    LOGGER.info("in connect method.");
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.VALUE, SPConstants.CONNECT_METHOD_STANDARD);
+                    // appendAttribute(buf, SPConstants.TITLE,
+                    // rb.getString(SPConstants.HELP_AUTHZ_BY_GSA));
+                    LOGGER.info("in connect method  an dvalue is : "
+                            + value.toString());
+                    if ((value.length() == 0)
+                            || value.equalsIgnoreCase(Method.STANDARD.toString())) {
+                        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.CONNECT_METHOD_STANDARD));
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.VALUE, SPConstants.CONNECT_METHOD_SSL);
+                    // appendAttribute(buf, SPConstants.TITLE,
+                    // rb.getString(SPConstants.HELP_AUTHZ_BY_CONNECTOR));
+                    LOGGER.info("in conn method  an dvalue is : "
+                            + value.toString());
+                    if (value.equalsIgnoreCase(Method.SSL.toString())) {
+                        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.CONNECT_METHOD_SSL));
+                } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
+                    // Handles the flag for Using SharePoint indexing options
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.PUSH_ACLS_LABEL));
+                    // The value can be true if its a pre-configured connector
+                    // being edited and blank if the default connector form is
+                    // being displayed.
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
+
+                } else if (collator.equals(key, SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
+                    // Handles the flag for Using SharePoint indexing options
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
+                    // The value can be true if its a pre-configured connector
+                    // being edited and blank if the default connector form is
+                    // being displayed.
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.BREAK_LINE);
+                } else if (collator.equals(key, SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
+                    // The value can be true if its a pre-configured connector
+                    // being edited and blank if the default connector form is
+                    // being displayed.
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.BREAK_LINE);
+
                 } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
                     // Handles the flag for Using SharePoint indexing options
                     buf.append(SPConstants.BREAK_LINE);
@@ -302,7 +537,14 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.VALUE, value);
                     if (collator.equals(key, SPConstants.SHAREPOINT_URL)
-                            || collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
+                            || collator.equals(key, SPConstants.MYSITE_BASE_URL)
+                            || collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)
+                            || collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)
+                            || collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)
+                            || collator.equals(key, SPConstants.PORT_NUMBER)
+                            || collator.equals(key, SPConstants.SEARCH_BASE)
+                            || collator.equals(key, SPConstants.INITAL_CACHE_SIZE)
+                            || collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
                         appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
                     }
                     buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
@@ -588,6 +830,24 @@ public class SharepointConnectorType implements ConnectorType {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(false));
         } else {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(true));
+        }
+
+        if (!configData.containsKey(SPConstants.PUSH_ACLS)) {
+            configData.put(SPConstants.PUSH_ACLS, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.PUSH_ACLS, Boolean.toString(true));
+        }
+
+        if (!configData.containsKey(SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
+            configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(true));
+        }
+
+        if (!configData.containsKey(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+            configData.put(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP, Boolean.toString(true));
         }
 
         if ((username != null)

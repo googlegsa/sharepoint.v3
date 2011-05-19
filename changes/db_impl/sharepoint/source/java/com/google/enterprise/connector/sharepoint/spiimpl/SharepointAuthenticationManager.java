@@ -64,9 +64,9 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
         ldapService = new LdapServiceImpl(
                 inSharepointClientContext.getLdapConnectiionSettings(),
-                inSharepointClientContext.getLugCacheSize(),
-                inSharepointClientContext.getRefreshInterval(),
-                inSharepointClientContext.isEnableLUGCache());
+                inSharepointClientContext.getInitialCacheSize(),
+                inSharepointClientContext.getCacheRefreshInterval(),
+                inSharepointClientContext.isUseCacheToStoreLdapUserGroupsMembership());
 
     }
 
@@ -155,23 +155,23 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         Set<String> groups = new HashSet<String>();
         try {
             groups = ldapService.getAllLdapGroups(ldapService.getSamAccountNameFromSearchUser(searchUserName));
-        }catch (RuntimeException re) {
+        } catch (RuntimeException re) {
             LOGGER.log(Level.WARNING, "Runtime exception is thrown while fetching all SharePoint and AD groups for the search user : "
                     + searchUserName, re);
         }
-            List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(groups, searchUserName);
-            Set<String> spGroups = new HashSet<String>();
-            StringBuffer groupName;
+        List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(groups, searchUserName);
+        Set<String> spGroups = new HashSet<String>();
+        StringBuffer groupName;
 
-            for (UserGroupMembership userGroupMembership : groupMemberList) {
-                if (!sharepointClientContext.isAppendNamespaceInSPGroup()) {
-                    groupName = new StringBuffer().append(userGroupMembership.getGroupName());
-                } else {
-                    groupName = new StringBuffer().append(SPConstants.LEFT_SQUARE_BRACKET).append(userGroupMembership.getNamespace()).append(SPConstants.RIGHT_SQUARE_BRACKET).append(userGroupMembership.getGroupName());
-                }
-                spGroups.add(groupName.toString());
+        for (UserGroupMembership userGroupMembership : groupMemberList) {
+            if (!sharepointClientContext.isAppendNamespaceInSPGroup()) {
+                groupName = new StringBuffer().append(userGroupMembership.getGroupName());
+            } else {
+                groupName = new StringBuffer().append(SPConstants.LEFT_SQUARE_BRACKET).append(userGroupMembership.getNamespace()).append(SPConstants.RIGHT_SQUARE_BRACKET).append(userGroupMembership.getGroupName());
             }
-            groups.addAll(spGroups);
+            spGroups.add(groupName.toString());
+        }
+        groups.addAll(spGroups);
 
         return new AuthenticationResponse(true, "", groups);
     }

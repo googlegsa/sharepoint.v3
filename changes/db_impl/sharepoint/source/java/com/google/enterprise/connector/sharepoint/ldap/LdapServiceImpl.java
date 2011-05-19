@@ -18,8 +18,8 @@ package com.google.enterprise.connector.sharepoint.ldap;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnectionError;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.Method;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticationManager;
 
@@ -282,6 +282,26 @@ public class LdapServiceImpl implements LdapService {
             STANDARD, SSL;
             static Method getDefault() {
                 return STANDARD;
+            }
+        public String toString() {
+                if (this.equals(STANDARD)) {
+                    return SPConstants.CONNECT_METHOD_STANDARD;
+                } else {
+                    return SPConstants.CONNECT_METHOD_SSL;
+                }
+            }
+        }
+        public enum AuthType {
+            ANONYMOUS, SIMPLE;
+            static AuthType getDefault() {
+                return ANONYMOUS;
+            }
+            public String toString() {
+                if (this.equals(ANONYMOUS)) {
+                    return SPConstants.AUTHENTICATION_TYPE_ANONYMOUS;
+                } else {
+                    return SPConstants.AUTHENTICATION_TYPE_SIMPLE;
+                }
             }
         }
 

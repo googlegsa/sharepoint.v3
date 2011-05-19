@@ -96,35 +96,10 @@ public class SharepointClientContext implements Cloneable {
     private boolean fetchACLInBatches = false;
     private int aclBatchSizeFactor = 2;
     private int webServiceTimeOut = 300000;
+    private int initialCacheSize;
+    private boolean useCacheToStoreLdapUserGroupsMembership;
+    private long cacheRefreshInterval;
     private LdapConnectionSettings ldapConnectiionSettings;
-    private int lugCacheSize;
-    private long refreshInterval;
-    private boolean enableLUGCache = false;
-
-    public boolean isEnableLUGCache() {
-        return enableLUGCache;
-    }
-
-    public void setEnableLUGCache(boolean enableLUGCache) {
-        this.enableLUGCache = enableLUGCache;
-    }
-
-    public int getLugCacheSize() {
-        return lugCacheSize;
-    }
-
-    public void setLugCacheSize(int lugCacheSize) {
-        this.lugCacheSize = lugCacheSize;
-    }
-
-    public long getRefreshInterval() {
-        return refreshInterval;
-    }
-
-    public void setRefreshInterval(long refreshInterval) {
-        this.refreshInterval = refreshInterval;
-    }
-
     public LdapConnectionSettings getLdapConnectiionSettings() {
         return ldapConnectiionSettings;
     }
@@ -226,9 +201,9 @@ public class SharepointClientContext implements Cloneable {
             spCl.setFetchACLInBatches(this.fetchACLInBatches);
             spCl.setWebServiceTimeOut(this.webServiceTimeOut);
             spCl.setLdapConnectiionSettings(this.ldapConnectiionSettings);
-            spCl.setEnableLUGCache(this.enableLUGCache);
-            spCl.setLugCacheSize(this.lugCacheSize);
-            spCl.setRefreshInterval(this.refreshInterval);
+            spCl.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
+            spCl.setInitialCacheSize(this.initialCacheSize);
+            spCl.setCacheRefreshInterval(this.cacheRefreshInterval);
 
             return spCl;
         } catch (final Throwable e) {
@@ -1088,4 +1063,50 @@ public class SharepointClientContext implements Cloneable {
     public void setWebServiceTimeOut(int webServiceTimeOut) {
         this.webServiceTimeOut = webServiceTimeOut;
     }
+
+    /**
+     * @return initial LDAP user groups membership cache size.
+     */
+    public int getInitialCacheSize() {
+        return initialCacheSize;
+    }
+
+    /**
+     * @param initialCacheSize the initialCacheSize to set.
+     */
+    public void setInitialCacheSize(int initialCacheSize) {
+        this.initialCacheSize = initialCacheSize;
+    }
+
+    /**
+     * @return true if connector administrator configure to use cache for LDAP
+     *         user groups membership.
+     */
+    public boolean isUseCacheToStoreLdapUserGroupsMembership() {
+        return useCacheToStoreLdapUserGroupsMembership;
+    }
+
+    /**
+     * @param useCacheToStoreLdapUserGroupsMembership the
+     *            useCacheToStoreLdapUserGroupsMembership to set.
+     */
+    public void setUseCacheToStoreLdapUserGroupsMembership(
+            boolean useCacheToStoreLdapUserGroupsMembership) {
+        this.useCacheToStoreLdapUserGroupsMembership = useCacheToStoreLdapUserGroupsMembership;
+    }
+
+    /**
+     * @return the interval to which LDAP cache should invalidate its cache.
+     */
+    public long getCacheRefreshInterval() {
+        return cacheRefreshInterval;
+    }
+
+    /**
+     * @param cacheRefreshInterval the cacheRefreshInterval to set.
+     */
+    public void setCacheRefreshInterval(long cacheRefreshInterval) {
+        this.cacheRefreshInterval = cacheRefreshInterval;
+    }
+
 }

@@ -31,39 +31,6 @@ public class LdapConstants {
         }
     }
 
-    public enum AuthType {
-        ANONYMOUS, SIMPLE;
-        public static ErrorMessages safeValueOf(String v) {
-            return LdapConstants.safeValueOf(ErrorMessages.class, v);
-        }
-
-        static AuthType getDefault() {
-            return ANONYMOUS;
-        }
-    }
-
-    public enum Method {
-        STANDARD, SSL;
-        public static ErrorMessages safeValueOf(String v) {
-            return LdapConstants.safeValueOf(ErrorMessages.class, v);
-        }
-
-        static Method getDefault() {
-            return STANDARD;
-        }
-    }
-
-    public enum ServerType {
-        ACTIVE_DIRECTORY, DOMINO, OPENLDAP, GENERIC;
-        public static ErrorMessages safeValueOf(String v) {
-            return LdapConstants.safeValueOf(ErrorMessages.class, v);
-        }
-
-        static ServerType getDefault() {
-            return GENERIC;
-        }
-    }
-
     public enum LdapConnectionError {
         AuthenticationNotSupported, NamingException, IOException, CommunicationException;
         public static ErrorMessages safeValueOf(String v) {

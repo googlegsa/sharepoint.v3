@@ -401,11 +401,32 @@ public class SPConstants {
     public static final String INVALID_INCLUDE_PATTERN = "Invalid_Include_Pattern";
     public static final String INVALID_EXCLUDE_PATTERN = "Invalid_Exclude_Pattern";
     public static final String REASON = "Reason";
-    public static final String KERBEROS_KDC_HOST_BLANK="Kerberos_Kdc_Hostname_Blank";
+    public static final String KERBEROS_KDC_HOST_BLANK = "Kerberos_Kdc_Hostname_Blank";
     public static final String USE_SP_SEARCH_VISIBILITY = "useSPSearchVisibility";
     public static final String USE_SP_SEARCH_VISIBILITY_LABEL = "Use_SP_SearchVisibility";
     public static final String USE_SP_SEARCH_VISIBILITY_HELP = "Use_SP_SearchVisibility_Help";
     public static final Object DOUBLE_CLOSE_PARENTHESIS = "))";
+    public static final String PUSH_ACLS = "pushAcls";
+    public static final String PUSH_ACLS_LABEL = "push_Acls";
+    public static final String APPEND_NAMESPACE_IN_SPGROUP = "appendNamespaceInSPGroup";
+    public static final String APPEND_NAMESPACE_IN_SPGROUP_LABEL = "append_Namespace_In_SPGroup";
+    public static final String USERNAME_FORMAT_IN_ACE = "Username Format in ACE";
+    public static final String GROUPNAME_FORMAT_IN_ACE = "Groupname Format in ACE";
+    public static final String CONNECT_METHOD_STANDARD_HELP = "connectMethodStandard_help";
+    public static final String CONNECT_METHOD_SSL_HELP = "connectMethodSSL_help";
+    public static final String LDAP_SERVER_HOST_ADDRESS = "ldapServerHostAddress";
+    public static final String PORT_NUMBER = "portNumber";
+    public static final String SEARCH_BASE = "searchBase";
+    public static final String USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP = "useCacheToStoreLdapUserGroupsMembership";
+    public static final String USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL = "use_Cache_To_Store_Ldap_UserGroups_Membership";
+    public static final String INITAL_CACHE_SIZE = "initialCacheSize";
+    public static final String CACHE_REFRESH_INTERVAL = "cacheRefreshInterval";
+    public static final String AUTHENTICATION_TYPE = "authenticationType";
+    public static final String CONNECT_METHOD = "connectMethod";
+    public static final String CONNECT_METHOD_STANDARD = "Standard";
+    public static final String CONNECT_METHOD_SSL = "SSL";
+    public static final String AUTHENTICATION_TYPE_SIMPLE = "Simple";
+    public static final String AUTHENTICATION_TYPE_ANONYMOUS = "Anonymous";
 
     public static final String CHECKPOINT_VALUE = "SharePoint";
     public static final int MAX_PORT_VALUE = 65535;
@@ -413,7 +434,7 @@ public class SPConstants {
     // HTTP response header constants
     public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
 
-    //Kerberos related constants
+    // Kerberos related constants
     public static final String CONFIG_KRB5 = "config/krb5.conf";
     public static final String CONFIG_LOGIN = "config/login.conf";
     public static final String NEGOTIATE = "Negotiate";
