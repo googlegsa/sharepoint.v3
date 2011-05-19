@@ -596,8 +596,13 @@ div.ms-areaseparatorright{
 </script>
 
 <script type="text/javascript">
-	function SetPageTitle()
+    function SetPageTitle()
 	{
+	   /*
+	   * Call the javascript function 'SearchTextOnBlur' already defined in GSASearchArea.ascx page, which will set the 
+	   * background image for the search box accordingly.
+	   */
+	   SearchTextOnBlur();
 	   var Query = "";
 	   if (window.top.location.search != 0) {
 	       Query = window.top.location.search;
@@ -612,8 +617,8 @@ div.ms-areaseparatorright{
 	           }
 	       }
 	   }
-	}
-		
+    }
+
 	function getParameter (queryString, parameterNameWithoutEquals)
 	{
 	   var parameterName = parameterNameWithoutEquals + "=";

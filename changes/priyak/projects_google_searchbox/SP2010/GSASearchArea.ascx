@@ -412,18 +412,30 @@ function SendSearchRequesttoGSAOnEnterClick()
 }
 
 
-// Function that will change the background of the search query textbox to plain white background whenever the user begins to type inside the query textbox.
+// Function that will set the background image to none whenever the user begins to type inside the query textbox.
 function SearchTextOnFocus()
 {
     var f = document.getElementById("<%=txtSearch.ClientID%>");
-    f.style.background = '#ffffff';
+    f.style.background = "background-image: none";
 }
 
-// Function that will change the background of the search query textbox to the Google search image whenever the user is done with typing the search query.
+// Function that will change the background of the search query textbox
 function SearchTextOnBlur()
 {
     var f = document.getElementById("<%=txtSearch.ClientID%>");
-    f.style.background = 'background-color: transparent';
+    if (f.value == "")
+    {
+        // Display the Google Search watermark image in searchbox when the searchbox is empty
+        f.style.background = "background-image: url('/_layouts/images/google_custom_search_watermark.gif')";
+    }
+    else
+    {
+        /*
+         * Do not display the Google Search watermark image in searchbox, when the searchbox contains text.
+         * Instead set background image to none.
+         */
+        f.style.background = "background-image: none";
+    }
 }
 
 </script>
