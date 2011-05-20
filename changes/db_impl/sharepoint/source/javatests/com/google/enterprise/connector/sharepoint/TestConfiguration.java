@@ -156,7 +156,7 @@ public class TestConfiguration {
         domain = properties.getProperty("domain");
         kdcserver = properties.getProperty("kdcserver");
         username = properties.getProperty("username");
-        Password = properties.getProperty("password");
+        Password = properties.getProperty("Password");
         mySiteBaseURL = properties.getProperty("mySiteBaseURL");
         includedURls = properties.getProperty("includedURls");
         excludedURls = properties.getProperty("excludedURls");

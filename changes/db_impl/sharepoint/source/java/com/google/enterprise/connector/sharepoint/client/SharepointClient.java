@@ -238,29 +238,55 @@ public class SharepointClient {
         }
 
         // Fetch ACL for all the documents crawled from the current WebState
-        // Do not try to re-fetch the ACLs when documents are pending from
-        // previous batch traversals
-        if (!sendPendingDocs && sharepointClientContext.isPushAcls()
-                && null != resultSet && resultSet.size() > 0) {
-            boolean aclRetrievalResult = false;
-            if (sharepointClientContext.isFetchACLInBatches()) {
-                aclRetrievalResult = fetchACLInBatches(resultSet, webState, globalState, sharepointClientContext.getAclBatchSizeFactor());
-            } else {
-                aclRetrievalResult = fetchACLForDocument(resultSet, webState, globalState);
-            }
-
-            if (!aclRetrievalResult) {
-                LOGGER.log(Level.WARNING, "No documents will be sent for site [ "
-                        + webState.getWebUrl()
-                        + " ] as ACL retrieval has failed. Please check the errors/logs associated with ACL retrieval befor this");
-                return null;
-            }
+        if (!handleACLForDocuments(resultSet, webState, globalState, sendPendingDocs)) {
+            return null;
         }
 
         LOGGER.config(noOfVisitedListStates + " lists scanned from site "
                 + webState.getWebUrl() + ". found " + resultSet + " docs");
 
         return resultSet;
+    }
+
+    /**
+     * If the connector is set to push ACL, fetches the ACL. Takes care to
+     * consider that ACL is not retrieved more than once esp. for when documents
+     * are pending from previous batch traversals
+     *
+     * @param resultSet The list of documents discovered in current/previous
+     *            batch traversals
+     * @param webState The web state representing the site
+     * @param globalState The global state representing the list of all sites
+     *            and their information
+     * @param sendPendingDocs True if the documents were discovered in previous
+     *            batch traversal but fed in the current traversal OR false
+     *            otherwise
+     * @return True if ACL was retrieved successfully OR false in case of any
+     *         exceptions/errors
+     */
+    boolean handleACLForDocuments(SPDocumentList resultSet, WebState webState,
+            GlobalState globalState, boolean sendPendingDocs) {
+        boolean aclRetrievalResult = false;
+        // Fetch ACL for all the documents crawled from the current WebState
+        // Do not try to re-fetch the ACL when documents are pending from
+        // previous batch traversals
+        if (!sendPendingDocs && sharepointClientContext.isPushAcls()
+                && null != resultSet && resultSet.size() > 0) {
+
+            if (sharepointClientContext.isFetchACLInBatches()) {
+                aclRetrievalResult = fetchACLInBatches(resultSet, webState, globalState, sharepointClientContext.getAclBatchSizeFactor());
+            } else {
+                aclRetrievalResult = fetchACLForDocuments(resultSet, webState, globalState);
+            }
+
+            if (!aclRetrievalResult) {
+                LOGGER.log(Level.WARNING, "No documents will be sent for site [ "
+                        + webState.getWebUrl()
+                        + " ] as ACL retrieval has failed. Please check the errors/logs associated with ACL retrieval before this");
+            }
+        }
+
+        return aclRetrievalResult;
     }
 
     /**
@@ -275,11 +301,17 @@ public class SharepointClient {
      * @param webState The web state representing the site
      * @param globalState The global state representing the list of all sites
      *            and their information
-     * @return True if ACLs were retrieved successfully OR false in case of any
+     * @return True if ACL was retrieved successfully OR false in case of any
      *         exceptions/errors
      */
-    private boolean fetchACLForDocument(SPDocumentList resultSet,
+    private boolean fetchACLForDocuments(SPDocumentList resultSet,
             WebState webState, GlobalState globalState) {
+
+        if (resultSet.size() <= 0) {
+            LOGGER.log(Level.CONFIG, "Result set is empty. No documents to fetch ACL");
+            return false;
+        }
+
         LOGGER.log(Level.INFO, "Fetching ACls for #" + resultSet.size()
                 + " documents crawled from web " + webState.getWebUrl());
         GssAclWS aclWs = null;
@@ -287,7 +319,7 @@ public class SharepointClient {
             aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
             aclWs.fetchAclForDocuments(resultSet, webState);
         } catch (Throwable t) {
-            logErrors(resultSet, webState, t);
+            logError(resultSet, webState, t);
             // Return false indicating that the ACL retrieval for current batch
             // has failed and skipped
             return false;
@@ -303,7 +335,7 @@ public class SharepointClient {
      * @param resultSet The document list for which ACL retrieval was attempted
      * @param te The error/exception encountered
      */
-    private void logErrors(SPDocumentList resultSet, WebState webState,
+    private void logError(SPDocumentList resultSet, WebState webState,
             Throwable te) {
 
         // Check for OOM and indicate that connector service needs to be
@@ -331,7 +363,7 @@ public class SharepointClient {
      * n/batchSizeFactor (n being he number of documents).</li>
      * </ul>
      *
-     * @param resultSet The set of documents whose ACL need to be re-fetched in
+     * @param resultSet The set of documents whose ACL needs to be re-fetched in
      *            smaller batches
      * @param webState The {@link WebState} to which the documents belong
      * @param globalState The {@link GlobalState} required primarily for the
@@ -342,16 +374,29 @@ public class SharepointClient {
      * @return True if ACLs were retrieved successfully OR false in case of any
      *         exceptions/errors
      */
-    private boolean fetchACLInBatches(SPDocumentList resultSet,
+    /*
+     * The access method is package level for JUnit test cases
+     */
+    boolean fetchACLInBatches(SPDocumentList resultSet,
             WebState webState, GlobalState globalState, int batchSizeFactor) {
 
-        // Default batch size should be one
+        if (resultSet.size() <= 0) {
+            LOGGER.log(Level.CONFIG, "Result set is empty. No documents to fetch ACL");
+            return false;
+        }
+
+        // Default is 1
         int batchSize = 1;
 
         if (batchSizeFactor > 1) {
-            // Connector should attempt ACL retrieval in batches of
-            // [resultSet.size() / 10]
+            // Connector should attempt ACL retrieval in batches. Determine the
+            // batchSize using batchSizeFactor.
             batchSize = resultSet.size() / batchSizeFactor;
+
+            // This is to handle the cases like [1/2=0] and the batchSize will
+            // be set to 0. This can result into an infinite loop
+            if (batchSize == 0)
+                batchSize = resultSet.size();
         }
 
         LOGGER.info("The connector will attempt to fetch ACLs for documents in batches of "
@@ -364,12 +409,19 @@ public class SharepointClient {
             toIndex += batchSize;
             if (toIndex > resultSet.size()) {
                 toIndex = resultSet.size();
+
+                // In case the start and end index is same it will result in an
+                // empty list. So ignore and proceed to next level
+                if (i == toIndex) {
+                    LOGGER.log(Level.WARNING, "The start and end index of the List of the documents should not be same");
+                    continue;
+                }
             }
             SPDocumentList docList = new SPDocumentList(
                     resultSet.getDocuments().subList(i, toIndex), globalState);
 
             // Fetch ACL
-            if (!fetchACLForDocument(docList, webState, globalState)) {
+            if (!fetchACLForDocuments(docList, webState, globalState)) {
                 // Return false indicating ACL retrieval has failed and the
                 // entire batch of documents need to be skipped
                 return false;
