@@ -11,7 +11,42 @@
 <%@ Import Namespace="System.IO" %>
 
 <%
-     // Registering the event handler for public search checkboxcheck
+    const string PublicAndSecureSearch = "publicAndSecure";
+    const string PublicSearch = "public";
+
+    if (!IsPostBack)
+    {
+        // Getting the default search type from web.config file.
+        string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
+        if (defaultSearchType == PublicAndSecureSearch)
+        {
+            /*
+             * If default search type is 'public and secure', set the status of the 
+             * controls, namely, public search checkbox the hfPublicSearch hiddenfield
+             * to boolean value false.
+             */
+            setInitialStatusForUIControlsAsPerSearchType(false);
+        }
+        else if (defaultSearchType == PublicSearch)
+        {
+            /*
+             * If default search type is 'public', set the status of the 
+             * controls, namely, public search checkbox the hfPublicSearch hiddenfield
+             * to boolean value true.
+             */
+            setInitialStatusForUIControlsAsPerSearchType(true);
+        }
+    }
+    
+    
+    
+    /*
+     * Call the function for checkbox checked changed event, so that the latest status for the 
+     * public search checkbox is assigned to 'hfPublicSearch' hiddenfield variable.
+     */
+    checkPublicSearch(this, EventArgs.Empty);
+     
+    // Registering the event handler for public search checkboxcheck
     chkPublicSearch.CheckedChanged += new EventHandler(this.checkPublicSearch);
 
     
@@ -437,16 +472,27 @@
             hfPublicSearch.Value = "false";
         }
     }
+
+
+    /// <summary>
+    /// Function that will set the initial status of UI control as per the Search Type
+    /// </summary>
+    /// <param name="publicSearchCheckBoxStatus">Boolean value either true or false</param>
+    void setInitialStatusForUIControlsAsPerSearchType(bool isInitialSearchTypeSetToPublic)
+    {
+        chkPublicSearch.Checked = isInitialSearchTypeSetToPublic;
+        hfPublicSearch.Value = Convert.ToString(isInitialSearchTypeSetToPublic);
+    }
 </script>
 
 
 <table border="0" cellpadding="0" cellspacing="0" class='ms-searchform'>
     <tr class='ms-searchbox'>
         <td>
-        <asp:HiddenField ID="hfPublicSearch" runat="server" Value="true"  />
+        <asp:HiddenField ID="hfPublicSearch" runat="server"   />
         <asp:HiddenField ID="hfStrEncodedUrl" runat="server"/>
         <asp:HiddenField id="hfUserSelectedScope" runat="server" />
-        <div  style="color:#003399" id="divPublicSearch" runat="server"><asp:CheckBox ID="chkPublicSearch" runat="server"  Checked="true"   OnCheckedChanged="checkPublicSearch" AutoPostBack="true"  ToolTip="Check this to search public content"   />Public&nbsp;Search</div> 
+        <div  style="color:#003399" id="divPublicSearch" runat="server"><asp:CheckBox ID="chkPublicSearch" runat="server"  OnCheckedChanged="checkPublicSearch" AutoPostBack="true"  ToolTip="Check this to search public content"   />Public&nbsp;Search</div> 
         </td>
         <td>
              
