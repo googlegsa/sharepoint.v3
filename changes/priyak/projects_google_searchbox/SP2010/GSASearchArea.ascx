@@ -11,6 +11,45 @@
 
     
 <%   
+    const string PublicAndSecureSearch = "publicAndSecure";
+    const string PublicSearch = "public";
+
+    /*
+     * Checking if session value is null for setting the initial type of search. Session value null means very first 
+     * time user has opened web application in web browser.
+     */
+    if (Session["PublicSearchStatus"] == null)
+    {
+        if (!IsPostBack)
+        {
+            // Getting the default search type from web.config file.
+            string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
+            if (defaultSearchType == PublicAndSecureSearch)
+            {
+                /*
+                 * If default search type is 'public and secure', set the status of the 
+                 * controls, namely, public search checkbox the hfPublicSearch hiddenfield
+                 * to boolean value false.
+                 */
+                setInitialStatusForUIControlsAsPerSearchType(false);
+            }
+            else if (defaultSearchType == PublicSearch)
+            {
+                /*
+                 * If default search type is 'public', set the status of the 
+                 * controls, namely, public search checkbox the hfPublicSearch hiddenfield
+                 * to boolean value true.
+                 */
+                setInitialStatusForUIControlsAsPerSearchType(true);
+            }
+        }
+    }
+
+    /*
+    * Call the function for checkbox checked changed event, so that the latest status for the 
+    * public search checkbox is assigned to 'hfPublicSearch' hiddenfield variable.
+    */
+    checkPublicSearch(this, EventArgs.Empty);
     
     // The forward slash is used to append to the sitesearch parameter. 
     string forwardSlash = "/";
@@ -31,7 +70,7 @@
      */
 
 
-
+    
     if (!IsPostBack)
     {
         string publicSearchStatus = "";
@@ -458,15 +497,25 @@ function SearchTextOnBlur()
             Session["PublicSearchStatus"] = "false";
         }
     }
+
+    /// <summary>
+    /// Function that will set the initial status of UI control as per the Search Type
+    /// </summary>
+    /// <param name="publicSearchCheckBoxStatus">Boolean value either true or false</param>
+    void setInitialStatusForUIControlsAsPerSearchType(bool isInitialSearchTypeSetToPublic)
+    {
+        chkPublicSearch.Checked = isInitialSearchTypeSetToPublic;
+        hfPublicSearch.Value = isInitialSearchTypeSetToPublic.ToString().ToLower();
+    }
     
     
 </script>
 
 <div style="float:left;font-size:small; color:Black">
-<asp:HiddenField ID="hfPublicSearch" runat="server"  Value="true"/>
+<asp:HiddenField ID="hfPublicSearch" runat="server" />
 <asp:HiddenField ID="hfStrEncodedUrl" runat="server"/>
 <asp:HiddenField id="hfUserSelectedScope" runat="server" />
-<asp:CheckBox ID="chkPublicSearch" runat="server"  Width="120px" Checked="true"  OnCheckedChanged="checkPublicSearch"   AutoPostBack="true" TextAlign="Right"  style="vertical-align:bottom;"  ToolTip="Check this to search public content"   />
+<asp:CheckBox ID="chkPublicSearch" runat="server"  Width="120px" OnCheckedChanged="checkPublicSearch"   AutoPostBack="true" TextAlign="Right"  style="vertical-align:bottom;"  ToolTip="Check this to search public content"   />
 <div id="divPublicSearch" runat="server">Public Search &nbsp;&nbsp;</div> 
 </div>
 
