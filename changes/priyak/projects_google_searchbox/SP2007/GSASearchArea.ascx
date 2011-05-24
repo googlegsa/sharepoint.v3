@@ -13,7 +13,10 @@
 <%
     const string PublicAndSecureSearch = "publicAndSecure";
     const string PublicSearch = "public";
-
+    
+    // Setting the URL for the Search Tips Link 
+    string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString()+ "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
+    
     if (!IsPostBack)
     {
         // Getting the default search type from web.config file.
@@ -515,6 +518,9 @@
                 id="onetIDGoSearch">
                 <img border='0' src="/_layouts/images/gosearch.gif" alt="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchImageToolTip),Response.Output);%>"></a>
             </div>
+        </td>
+        <td>
+            <a href="<%=SearchTipsHtmlPageURL %>" style="font-size:xx-small; color:#003399; text-decoration:underline" >Search&nbsp;Tips</a>
         </td>
     </tr>
 </table>
