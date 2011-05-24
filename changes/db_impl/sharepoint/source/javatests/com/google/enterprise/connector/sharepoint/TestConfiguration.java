@@ -21,9 +21,9 @@ import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
-import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl;
 import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.Method;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
@@ -156,7 +156,7 @@ public class TestConfiguration {
         domain = properties.getProperty("domain");
         kdcserver = properties.getProperty("kdcserver");
         username = properties.getProperty("username");
-        Password = properties.getProperty("Password");
+        Password = properties.getProperty("password");
         mySiteBaseURL = properties.getProperty("mySiteBaseURL");
         includedURls = properties.getProperty("includedURls");
         excludedURls = properties.getProperty("excludedURls");
@@ -642,9 +642,8 @@ public class TestConfiguration {
 
     public static LdapConnectionSettings getLdapConnetionSettings() {
         LdapConnectionSettings settings = new LdapConnectionSettings(
-                Method.STANDARD, "10.77.224.100", 389,
-                "DC=persistent,DC=co, DC=in", AuthType.SIMPLE,
-                "nageswara_sura", "xxxx", "persistent.co.in");
+				Method.STANDARD, "xxx.xxx.xxx.xxx", 389, "DC=gdc-psl,DC=net",
+				AuthType.SIMPLE, "googlesp", "xxxx", "gdc-psl.net");
         return settings;
     }
 
