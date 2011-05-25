@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,7 +24,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcDaoSupport;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -125,18 +125,17 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport
                         + query + " ]", e);
 
             } else {
-            	// Batch update failure exception in Oracle and fall-back to individual query execution.
-            	if (e.getCause() instanceof SQLException && !(e.getCause() instanceof BatchUpdateException)) {
-            		batchStatus = new int[params.length];
-            		for (int i=0; i<params.length; ++i) {
-            			batchStatus[i] = update (query, params[i]);
-            		}
-            		return batchStatus;
-            	}
-                batchStatus = handleBatchUpdateException((BatchUpdateException) e.getCause(), query, params);
-                LOGGER.info("BatchUpdate completed with a fallback for #"
-                        + batchStatus.length + " records. Query [ " + query
-                        + " ] ");
+				if ((e.getCause() instanceof BatchUpdateException)) {
+                    batchStatus = handleBatchUpdateException((BatchUpdateException) e.getCause(), query, params);
+                    LOGGER.info("BatchUpdate completed with a fallback for #"
+                            + batchStatus.length + " records. Query [ " + query
+                            + " ] ");
+                } else {
+                    batchStatus = handleBatchUpdateException((SQLException) e.getCause(), query, params);
+                    LOGGER.info("BatchUpdate completed with a fallback for #"
+                            + batchStatus.length + " records. Query [ " + query
+                            + " ] ");
+                }
             }
         } catch (Throwable t) {
             // This would be an error. No point in retrying, so no
@@ -148,60 +147,6 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport
         return batchStatus;
     }
 
-    /**
-     * Analyze the batch exception, identifies the exact position where the
-     * execution was stopped. Fall-back to individual query execution from this
-     * index
-     *
-     * @param batchUpdateException the exception to be handled
-     * @param params an array of {@link SqlParameterSource}; each representing
-     *            the parameters to construct one SQL query. Hence, The length
-     *            of the array will indicate the number of SQL queries executed
-     *            in batch.
-     * @param query query to be executed specified as {@link Query}
-     * @return status of each query execution (=no. of rows updated) in the same
-     *         order in which the queries were specified
-     */
-    public int[] handleBatchUpdateException(
-            BatchUpdateException batchUpdateException, Query query,
-            SqlParameterSource[] params) {
-        // the position where batch execution was stopped
-        int initPos = 0;
-        int[] batchStatus = null;
-        int[] optimisticBatchStatus = batchUpdateException.getUpdateCounts();
-        if (null != optimisticBatchStatus) {
-            if (optimisticBatchStatus.length == params.length) {
-                LOGGER.log(Level.FINE, "Not all the queries executed successfully however, the attempt for execution was made for all of them.", batchUpdateException);
-                return optimisticBatchStatus;
-            } else {
-                LOGGER.log(Level.WARNING, "Batch update processing was stopped at index "
-                        + (optimisticBatchStatus.length - 1)
-                        + " of "
-                        + (params.length - 1), batchUpdateException);
-                initPos = optimisticBatchStatus.length;
-                batchStatus = new int[params.length];
-                System.arraycopy(optimisticBatchStatus, 0, batchStatus, 0, optimisticBatchStatus.length);
-            }
-        } else {
-            batchStatus = new int[params.length];
-        }
-
-        LOGGER.log(Level.WARNING, "Falling back to individual query execution. starting from index "
-                + initPos);
-
-        while (initPos < params.length) {
-            try {
-                batchStatus[initPos] = update(query, params[initPos]);
-            } catch (SharepointException e) {
-                LOGGER.log(Level.WARNING, "Execution failed for query [ "
-                        + query + " ]", e);
-                batchStatus[initPos] = Statement.EXECUTE_FAILED;
-            }
-            ++initPos;
-        }
-
-        return batchStatus;
-    }
 
     /**
      * Executes a single update query. Used after the fall back from batch mode
@@ -218,11 +163,10 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport
         try {
             count = getSimpleJdbcTemplate().update(getSqlQuery(query), param);
         } catch (DataIntegrityViolationException e) {
-            LOGGER.log(Level.FINE, "entry already exists for " + param, e);
+            LOGGER.log(Level.FINE, "entry already exists in user data store for the group name [" + param.getValue(SPConstants.GROUP_NAME) + "], and user name [" + param.getValue(SPConstants.USER_NAME) + "]");
         } catch (Throwable e) {
             throw new SharepointException(
-                    "Failed to add the record for parameter [ " + param
-                            + " ]. ", e);
+                    "Failed to add the record for parameter [ " + param.getValue(SPConstants.GROUP_NAME) + "], user name [" + param.getValue(SPConstants.USER_NAME) + "]", e);
         }
         return count;
     }
@@ -239,5 +183,89 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport
 
     public QueryProvider getQueryProvider() {
         return queryProvider;
+    }
+
+    /**
+     * Overloaded method to handle Oracle data base specific exception while
+     * executing batch update.
+     *
+     * @param batchUpdateException the exception to be handled
+     * @param query an array of {@link SqlParameterSource}; each representing
+     *            the parameters to construct one SQL query. Hence, The length
+     *            of the array will indicate the number of SQL queries executed
+     *            in batch.
+     * @param params
+     * @return status of each query execution (=no. of rows updated) in the same
+     *         order in which the queries were specified
+     * @throws SharepointException
+     */
+    public int[] handleBatchUpdateException(SQLException batchUpdateException,
+            Query query, SqlParameterSource[] params)
+            throws SharepointException {
+        int[] batchStatus = new int[params.length];
+        for (int i = 0; i < params.length; ++i) {
+            batchStatus[i] = update(query, params[i]);
+        }
+        return batchStatus;
+    }
+
+	/**
+	 * Analyze the batch exception, identifies the return values from various
+	 * driver implementations during {@link BatchUpdateException}and fall-back
+	 * to individual query execution.
+	 * <p>
+	 * In case of MS SQL, the driver implementation never try to execute insert
+	 * query if there is at least one row matches against given memberships and
+	 * returns -2 always.
+	 * </p>
+	 * <p>
+	 * In case of MYSQL, it attempt to insert all new records and return -3 for
+	 * existing memberships.
+	 * </p>
+	 * 
+	 * @param batchUpdateException the exception to be handled
+	 * @param params an array of {@link SqlParameterSource}; each representing
+	 *            the parameters to construct one SQL query. Hence, The length
+	 *            of the array will indicate the number of SQL queries executed
+	 *            in batch.
+	 * @param query query to be executed specified as {@link Query}
+	 * @return status of each query execution (=no. of rows updated) in the same
+	 *         order in which the queries were specified
+	 */
+    public int[] handleBatchUpdateException(
+            BatchUpdateException batchUpdateException, Query query,
+            SqlParameterSource[] params) {
+        boolean fallBack = false;
+        int[] optimisticBatchStatus = batchUpdateException.getUpdateCounts();
+        if (null != optimisticBatchStatus) {
+            for (int i = 0; i < optimisticBatchStatus.length; i++) {
+                if (optimisticBatchStatus[i] == SPConstants.MINUS_THREE) {
+                    fallBack = true;
+                } else {
+					LOGGER.info("Fall back set to false.");
+                    fallBack = false;
+					break;
+                }
+            }
+            //getUpdateCount() should return params.lenth.
+			if (optimisticBatchStatus.length == params.length && !fallBack) {
+				return optimisticBatchStatus;
+			} else {
+                LOGGER.log(Level.FINE, "Not all the queries executed successfully however, the attempt for execution was made for all of them.", batchUpdateException);
+                if (fallBack) {
+                    for (int i = 0; i < optimisticBatchStatus.length; i++) {
+                        try {
+                            optimisticBatchStatus[i] = update(query, params[i]);
+                        } catch (SharepointException e) {
+							LOGGER.log(Level.WARNING, "Failed to add record to user data store with the group name ["
+                                    + params[i].getValue(SPConstants.GROUP_NAME) + ", user name [" + params[i].getValue(SPConstants.USERNAME)
+                                    + "]", e);
+                        }
+                    }
+                }
+                return optimisticBatchStatus;
+            }
+		}
+		return null;
     }
 }

@@ -100,15 +100,14 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         return memberships;
     }
 
-    /**
-     * Retrieves all the {@link UserGroupMembership} to which {@link Set} groups
-     * belongs to including the search user.
-     *
-     * @param groups
-     * @param searchUser
-     * @return
-     * @throws SharepointException
-     */
+	/**
+	 * Retrieves all the {@link UserGroupMembership} to which {@link Set} groups
+	 * belongs to including the search user.
+	 * 
+     * @param groups  set of AD groups whose SP groups are to be retrieved
+     * @param searchUser the sear user name
+	 * @throws SharepointException
+	 */
     public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
             Set<String> groups, String searchUser) throws SharepointException {
         Query query = Query.UDS_SELECT_FOR_ADGROUPS;
@@ -152,12 +151,16 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         if (null != udsCache && udsCache.size() > 0) {
             removeAllCached(memberships);
         }
+        int[] status = null;
+        // There should be at least one entry in memberships before performing batch update.
+        
+        if (memberships.size() > 0) {
+            Query query = Query.UDS_INSERT;
+            SqlParameterSource[] params = createParameter(query, memberships);
+            status = batchUpdate(query, params);
+        }
 
-        Query query = Query.UDS_INSERT;
-        SqlParameterSource[] params = createParameter(query, memberships);
-        int[] status = batchUpdate(query, params);
-
-        if (null != udsCache) {
+        if (null != udsCache && null != status) {
             addAllSucceeded(status, memberships);
         }
     }
@@ -362,20 +365,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         }
     }
 
-    /**
-     * Adds element into cache after performing strict checking about the status
-     * of the query execution.
-     */
-    private void addAllSucceeded(int[] status,
-            Collection<UserGroupMembership> memberships) {
-        if (null != udsCache && null != status
-                && status.length == memberships.size()) {
-            for (UserGroupMembership membership : memberships) {
-                udsCache.add(membership);
-            }
-        }
-    }
-
     public void setUdsCache(UserDataStoreCache<UserGroupMembership> udsCache) {
         this.udsCache = udsCache;
     }
@@ -492,6 +481,45 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
+        }
+    }
+    
+	/**
+	 * Adds element into the cache after performing strict checking against
+	 * cache.
+	 * <p>
+	 * In case of Oracle data base, -2 for new memberships and -1 for existing
+	 * records in user data store.
+	 * </p>
+	 * <p>
+	 * In case of MYSQL, +ve integer for new memberships and -3 for existing
+	 * records in user data store.
+	 * </p>
+	 * <p>
+	 * In case of MS SQL, +ve integer for new memberships and -3 for existing
+	 * records in user data store.
+	 * </p>
+	 */
+    private void addAllSucceeded(int[] status,
+            Collection<UserGroupMembership> memberships) {
+        int i = 0;
+        if (null != udsCache) {
+            for (UserGroupMembership membership : memberships) {
+                // Cache all the memberships whose entries are missed in cache
+                // as well as the new entries that are inserted successfully
+                // into user data store.
+                if (!udsCache.contains(membership)) {
+					// -1 represents missed cache entry and -2 represent newly
+					// inserted membership in Oracle data base. in MS SQL
+					// data base and -3 represents missed cache entry in MY SQL
+					// data base. hence it makes sense to have a check against
+					// status >=3.
+					if (status[i] >= SPConstants.MINUS_THREE) {
+                    udsCache.add(membership);
+                    }
+                }
+                i++;
+            }
         }
     }
 }
