@@ -48,7 +48,7 @@ import javax.naming.ldap.LdapContext;
  * with JNDI to get {@link LdapContext} and {@link LdapConnection} with
  * {@link LdapConnectionSettings} provided by
  * {@link SharepointAuthenticationManager}. This implementation is specific to
- * AD at the moment.
+ * Active Directory service at the moment.
  *
  * @author nageswara_sura
  */
@@ -134,7 +134,7 @@ public class LdapServiceImpl implements LdapService {
             LOGGER.info(ldapConnectionSettings.toString());
             this.settings = ldapConnectionSettings;
             Hashtable<String, String> env = configureLdapEnvironment();
-            this.ldapContext = makeContext(env);
+            this.ldapContext = createContext(env);
 
         }
 
@@ -151,16 +151,16 @@ public class LdapServiceImpl implements LdapService {
          * @param env hold LDAP
          * @return {@link LdapContext}
          */
-        private LdapContext makeContext(Hashtable<String, String> env) {
+        private LdapContext createContext(Hashtable<String, String> env) {
             LdapContext ctx = null;
             try {
                 ctx = new InitialLdapContext(env, null);
             } catch (CommunicationException e) {
-                LOGGER.log(Level.WARNING, "Could not obtain an initial context due to a communication failure.", e);
+                LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a communication failure.", e);
             } catch (AuthenticationNotSupportedException e) {
-                LOGGER.log(Level.WARNING, "Authentication is not sucessful and could not obtain an initial context.", e);
+                LOGGER.log(Level.WARNING, "Authentication is not sucessful and could not obtain an initial context to query LDAP (Active Directory).", e);
             } catch (NamingException e) {
-                LOGGER.log(Level.WARNING, "Could not obtain an initial context due to a naming exception.", e);
+                LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a naming exception.", e);
             }
             if (ctx == null) {
                 return null;
@@ -361,7 +361,7 @@ public class LdapServiceImpl implements LdapService {
             }
         } catch (NamingException ne) {
             LOGGER.log(Level.WARNING, "Failed to retrieve direct groups for the user name : ["
-                    + userName + " ]", ne);
+                    + userName + "]", ne);
         } finally {
             try {
                 ldapResults.close();
@@ -418,8 +418,7 @@ public class LdapServiceImpl implements LdapService {
     /**
      * Returns a set of all parent groups that the search user belongs to.
      *
-     * @param groupName is the group, whose the parent groups need to be
-     *            retrieved.
+     * @param groupName is the group, whose parent groups need to be retrieved.
      * @return a set of all parent groups
      */
     private Set<String> getAllParentGroupsForTheGroup(String groupName) {
@@ -452,7 +451,7 @@ public class LdapServiceImpl implements LdapService {
             }
         } catch (NamingException ne) {
             LOGGER.log(Level.WARNING, "Failed to retrieve parent groups for the group name : ["
-                    + groupName + " ]", ne);
+                    + groupName + "]", ne);
         } finally {
             try {
                 ldapResults.close();

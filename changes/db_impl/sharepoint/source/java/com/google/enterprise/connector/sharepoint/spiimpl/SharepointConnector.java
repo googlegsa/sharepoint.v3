@@ -325,11 +325,11 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         sharepointClientContext.setAclBatchSizeFactor(this.aclBatchSizeFactor);
         sharepointClientContext.setWebServiceTimeOut(this.webServiceTimeOut);
         sharepointClientContext.setDomain(this.domain);
-        sharepointClientContext.setLdapConnectiionSettings(getLdapConnectiionSettings());
+        sharepointClientContext.setLdapConnectionSettings(getLdapConnectiionSettings());
         sharepointClientContext.setCacheRefreshInterval(this.cacheRefreshInterval);
         sharepointClientContext.setInitialCacheSize(this.initialCacheSize);
         sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
-        sharepointClientContext.setLdapConnectiionSettings(this.ldapConnectionSettings);
+        sharepointClientContext.setLdapConnectionSettings(this.ldapConnectionSettings);
 
     }
 
@@ -654,20 +654,20 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         } else {
             method = Method.STANDARD;
         }
-        LdapConnectionSettings ldapConnectiionSettings = new LdapConnectionSettings(
+        LdapConnectionSettings ldapConnectionSettings = new LdapConnectionSettings(
                 method, this.ldapServerHostAddress, this.portNumber,
                 this.searchBase, authType, this.username, this.password,
                 this.domain);
-        this.ldapConnectionSettings = ldapConnectiionSettings;
-        return ldapConnectiionSettings;
+        this.ldapConnectionSettings = ldapConnectionSettings;
+        return ldapConnectionSettings;
     }
 
     /**
      * @param ldapConnectiionSettings the ldapConnectiionSettings to set.
      */
     public void setLdapConnectiionSettings(
-            LdapConnectionSettings ldapConnectiionSettings) {
-        this.ldapConnectionSettings = ldapConnectiionSettings;
+            LdapConnectionSettings ldapConnectionSettings) {
+        this.ldapConnectionSettings = ldapConnectionSettings;
     }
 
 }

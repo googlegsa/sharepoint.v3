@@ -100,13 +100,14 @@ public class SharepointClientContext implements Cloneable {
     private boolean useCacheToStoreLdapUserGroupsMembership;
     private long cacheRefreshInterval;
     private LdapConnectionSettings ldapConnectionSettings;
-    public LdapConnectionSettings getLdapConnectiionSettings() {
+
+    public LdapConnectionSettings getLdapConnectionSettings() {
         return ldapConnectionSettings;
     }
 
-    public void setLdapConnectiionSettings(
-            LdapConnectionSettings ldapConnectiionSettings) {
-        this.ldapConnectionSettings = ldapConnectiionSettings;
+    public void setLdapConnectionSettings(
+            LdapConnectionSettings ldapConnectionSettings) {
+        this.ldapConnectionSettings = ldapConnectionSettings;
     }
 
     /**
@@ -200,7 +201,7 @@ public class SharepointClientContext implements Cloneable {
             spCl.setAclBatchSizeFactor(this.aclBatchSizeFactor);
             spCl.setFetchACLInBatches(this.fetchACLInBatches);
             spCl.setWebServiceTimeOut(this.webServiceTimeOut);
-            spCl.setLdapConnectiionSettings(this.ldapConnectionSettings);
+            spCl.setLdapConnectionSettings(this.ldapConnectionSettings);
             spCl.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
             spCl.setInitialCacheSize(this.initialCacheSize);
             spCl.setCacheRefreshInterval(this.cacheRefreshInterval);
