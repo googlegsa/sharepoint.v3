@@ -694,25 +694,15 @@ else if(document.attachEvent)
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="PlaceHolderTitleBreadcrumb" runat="server" EnableViewState="true">
     <a name="mainContent"></a>
-    <table width="100%" cellpadding="2" cellspacing="0" border="0">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-            <td style="height: 5px">
-                <img src="/_layouts/images/blank.gif" width="1" height="1" alt="">
-            </td>
-        </tr>
-        <tr>
-            <td style="height: 5px">
-                <img src="/_layouts/images/blank.gif" width="1" height="1" alt="">
-            </td>
-        </tr>
-        <tr>
-            <td colspan="8">
+            <td style="padding-top:0px; padding-bottom:0px">
                 <SharePoint:DelegateControl ID="DelegateControl1" runat="server" ControlId="SmallSearchInputBox" />
             </td>
         </tr>
         <!--
         <tr>
-            <td valign="top" class="ms-descriptiontext" style="padding-bottom: 5px">
+            <td>
                 <b>
                     <label for="<%SPHttpUtility.AddQuote(SPHttpUtility.NoEncode(SearchString.ClientID),Response.Output);%>">
                         <SharePoint:EncodedLiteral ID="EncodedLiteral2" runat="server" Text="<%$Resources:wss,searchresults_searchforitems%>"
@@ -723,7 +713,7 @@ else if(document.attachEvent)
         </tr>
         
         <tr>
-            <td class="ms-vb">
+            <td>
                 <table border="0" cellpadding="0" cellspacing="0">
                     <tr>
                         <td>
@@ -744,11 +734,6 @@ else if(document.attachEvent)
             </td>
         </tr>
         -->
-        <tr>
-            <td colspan="8">
-                <img src="/_layouts/images/blank.gif" width="1" height="1" alt="">
-            </td>
-        </tr>
     </table>
 </asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="PlaceHolderMain" runat="server">
