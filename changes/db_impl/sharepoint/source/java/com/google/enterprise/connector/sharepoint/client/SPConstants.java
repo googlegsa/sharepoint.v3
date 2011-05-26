@@ -459,6 +459,11 @@ public class SPConstants {
     public static final String UDS_TABLE = "'TABLE'";
     public static final String SELECTED_DATABASE = "oracle";
     public static final String TABLE_NAME = "TABLE_NAME";
+	public static final String USER_NAME = "user_name";
+	public static final String GROUP_NAME = "group_name";
+	public static final String NAMESPACE = "namespace";
+	public static final int MINUS_THREE = -3;
+	public static final int MINUS_TWO = -2;
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

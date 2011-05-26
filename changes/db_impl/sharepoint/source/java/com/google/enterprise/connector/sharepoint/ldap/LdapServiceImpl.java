@@ -16,17 +16,17 @@
 package com.google.enterprise.connector.sharepoint.ldap;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnectionError;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.AuthType;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.Method;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.ServerType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnection;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticationManager;
 
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 import javax.naming.AuthenticationNotSupportedException;
 import javax.naming.CommunicationException;
 import javax.naming.Context;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -48,7 +47,8 @@ import javax.naming.ldap.LdapContext;
  * An implementation of {@link LdapService} and encapsulates all interaction
  * with JNDI to get {@link LdapContext} and {@link LdapConnection} with
  * {@link LdapConnectionSettings} provided by
- * {@link SharepointAuthenticationManager}
+ * {@link SharepointAuthenticationManager}. This implementation is specific to
+ * AD at the moment.
  *
  * @author nageswara_sura
  */
@@ -68,7 +68,7 @@ public class LdapServiceImpl implements LdapService {
     /**
      * Initializes LDAP context object for a given
      * {@link LdapConnectionSettings} and also Constructs
-     * {@code LdapUserGroupsCache} cache with a refresh interval ans custom
+     * {@code LdapUserGroupsCache} cache with a refresh interval and custom
      * capacity.
      *
      * @param ldapConnectionSettings
@@ -82,7 +82,7 @@ public class LdapServiceImpl implements LdapService {
         if (enableLUGCache) {
             this.lugCacheStore = new LdapUserGroupsCache<Object, Object>(
                     refreshInterval, cacheSize);
-            LOGGER.log(Level.CONFIG, "COnfigured AD user groups cache store with refresh interval [ "
+            LOGGER.log(Level.CONFIG, "Configured AD user groups cache store with refresh interval [ "
                     + refreshInterval
                     + " ] and with capacity [ "
                     + cacheSize
@@ -129,12 +129,10 @@ public class LdapServiceImpl implements LdapService {
 
         private final LdapConnectionSettings settings;
         private LdapContext ldapContext = null;
-        private final Map<LdapConnectionError, String> errors;
 
         public LdapConnection(LdapConnectionSettings ldapConnectionSettings) {
             LOGGER.info(ldapConnectionSettings.toString());
             this.settings = ldapConnectionSettings;
-            this.errors = Maps.newHashMap();
             Hashtable<String, String> env = configureLdapEnvironment();
             this.ldapContext = makeContext(env);
 
@@ -148,14 +146,6 @@ public class LdapServiceImpl implements LdapService {
         }
 
         /**
-         * @return a map of connector errors to caller and can be used during
-         *         connector configuration.
-         */
-        public Map<LdapConnectionError, String> getErrors() {
-            return errors;
-        }
-
-        /**
          * Returns {@link LdapContext} object.
          *
          * @param env hold LDAP
@@ -166,11 +156,11 @@ public class LdapServiceImpl implements LdapService {
             try {
                 ctx = new InitialLdapContext(env, null);
             } catch (CommunicationException e) {
-                errors.put(LdapConnectionError.CommunicationException, e.getMessage());
+                LOGGER.log(Level.WARNING, "Could not obtain an initial context due to a communication failure.", e);
             } catch (AuthenticationNotSupportedException e) {
-                errors.put(LdapConnectionError.AuthenticationNotSupported, e.getMessage());
+                LOGGER.log(Level.WARNING, "Authentication is not sucessful and could not obtain an initial context.", e);
             } catch (NamingException e) {
-                errors.put(LdapConnectionError.NamingException, e.getMessage());
+                LOGGER.log(Level.WARNING, "Could not obtain an initial context due to a naming exception.", e);
             }
             if (ctx == null) {
                 return null;
@@ -190,9 +180,9 @@ public class LdapServiceImpl implements LdapService {
             String url;
             Method connectMethod = settings.getConnectMethod();
             if (connectMethod == Method.SSL) {
-                url = "ldaps://"; //$NON-NLS-1$
+                url = "ldaps://"; // For SSL
             } else {
-                url = "ldap://"; //$NON-NLS-1$
+                url = "ldap://"; // for NON-SSL
             }
 
             // Construct the full URL
@@ -260,7 +250,7 @@ public class LdapServiceImpl implements LdapService {
             this.hostName = hostname;
             this.password = password;
             this.port = port;
-            this.serverType = ServerType.GENERIC;
+            this.serverType = ServerType.getDefault();
             this.userName = userName;
             this.domainName = domainName;
         }
@@ -273,43 +263,9 @@ public class LdapServiceImpl implements LdapService {
             this.hostName = hostName;
             this.password = null;
             this.port = port;
-            this.serverType = ServerType.GENERIC;
+            this.serverType = ServerType.getDefault();
             this.userName = null;
             this.domainName = domainName;
-        }
-
-        public enum Method {
-            STANDARD, SSL;
-            static Method getDefault() {
-                return STANDARD;
-            }
-        public String toString() {
-                if (this.equals(STANDARD)) {
-                    return SPConstants.CONNECT_METHOD_STANDARD;
-                } else {
-                    return SPConstants.CONNECT_METHOD_SSL;
-                }
-            }
-        }
-        public enum AuthType {
-            ANONYMOUS, SIMPLE;
-            static AuthType getDefault() {
-                return ANONYMOUS;
-            }
-            public String toString() {
-                if (this.equals(ANONYMOUS)) {
-                    return SPConstants.AUTHENTICATION_TYPE_ANONYMOUS;
-                } else {
-                    return SPConstants.AUTHENTICATION_TYPE_SIMPLE;
-                }
-            }
-        }
-
-        public enum ServerType {
-            ACTIVE_DIRECTORY, DOMINO, OPENLDAP, GENERIC;
-            static ServerType getDefault() {
-                return GENERIC;
-            }
         }
 
         @Override
@@ -373,11 +329,11 @@ public class LdapServiceImpl implements LdapService {
      * @param userName search user name
      * @return a set of direct groups that the user belongs to in AD.
      */
-    private Set<String> getDirectGroupsForTheSearchUser(String userName) {
+    Set<String> getDirectGroupsForTheSearchUser(String userName) {
         // Create the search controls.
         SearchControls searchCtls = makeSearhCtls();
         // Create the search filter.
-        String searchFilter = getSearchFilterForDirectGroups(userName);
+        String searchFilter = createSearchFilterForDirectGroups(userName);
         // Specify the Base DN for the search.
         String searchBase = ldapConnectionSettings.getBaseDN();
         int totalResults = 0;
@@ -403,12 +359,9 @@ public class LdapServiceImpl implements LdapService {
                     }
                 }
             }
-        } catch (CommunicationException e) {
-            throw new IllegalStateException(e);
-        } catch (NameNotFoundException e) {
-            throw new IllegalStateException(e);
-        } catch (NamingException e) {
-            throw new IllegalStateException(e);
+        } catch (NamingException ne) {
+            LOGGER.log(Level.WARNING, "Failed to retrieve direct groups for the user name : ["
+                    + userName + " ]", ne);
         } finally {
             try {
                 ldapResults.close();
@@ -433,7 +386,7 @@ public class LdapServiceImpl implements LdapService {
         return searchCtls;
     }
 
-    private String getSearchFilterForDirectGroups(String userName) {
+    private String createSearchFilterForDirectGroups(String userName) {
         StringBuffer filter;
         filter = new StringBuffer().append(LdapConstants.PREFIX_FOR_DIRECT_GROUPS_FILTER
                 + userName + SPConstants.DOUBLE_CLOSE_PARENTHESIS);
@@ -451,12 +404,10 @@ public class LdapServiceImpl implements LdapService {
     public void getAllParentGroups(String groupName,
             final Set<String> parentGroupsInfo) {
         if (!Strings.isNullOrEmpty(groupName)) {
-
-            // Not to add duplicate entries.
-            if (!parentGroupsInfo.contains(groupName)) {
-                parentGroupsInfo.add(getGroupDNForTheGroup(groupName));
-            }
+            parentGroupsInfo.add(getGroupDNForTheGroup(groupName));
             Set<String> parentGroups = getAllParentGroupsForTheGroup(groupName);
+            LOGGER.log(Level.INFO, "Parent groups for the group [" + groupName
+                    + "] : " + parentGroups);
 
             for (String group : parentGroups) {
                 getAllParentGroups(group, parentGroupsInfo);
@@ -467,7 +418,7 @@ public class LdapServiceImpl implements LdapService {
     /**
      * Returns a set of all parent groups that the search user belongs to.
      *
-     * @param groupName is the group, which the parent group should be
+     * @param groupName is the group, whose the parent groups need to be
      *            retrieved.
      * @return a set of all parent groups
      */
@@ -476,7 +427,7 @@ public class LdapServiceImpl implements LdapService {
         // Create the search controls
         SearchControls searchCtls = makeSearhCtls();
         // Create the search filter
-        String searchFilter = getSearchFilterForParentGroups(groupName);
+        String searchFilter = createSearchFilterForParentGroups(groupName);
         // Specify the Base DN for the search
         String searchBase = ldapConnectionSettings.getBaseDN();
         NamingEnumeration<SearchResult> ldapResults = null;
@@ -499,12 +450,9 @@ public class LdapServiceImpl implements LdapService {
                     }
                 }
             }
-        } catch (CommunicationException e) {
-            throw new IllegalStateException(e);
-        } catch (NameNotFoundException e) {
-            throw new IllegalStateException(e);
-        } catch (NamingException e) {
-            throw new IllegalStateException(e);
+        } catch (NamingException ne) {
+            LOGGER.log(Level.WARNING, "Failed to retrieve parent groups for the group name : ["
+                    + groupName + " ]", ne);
         } finally {
             try {
                 ldapResults.close();
@@ -515,12 +463,7 @@ public class LdapServiceImpl implements LdapService {
         return parentGroups;
     }
 
-    private String getSearchFilterForParentGroups(String groupName) {
-        // String searchFilter = "(&(objectClass=group)(CN="
-        // + getGroupDNForTheGroup(groupName) + "))";
-        // (&(objectClass=group)(Websense_jar_gz_file_Type_Allowed))"
-        // (&(objectClass=group)(CN=Websense_jar_gz_file_Type_Allowed))
-
+    private String createSearchFilterForParentGroups(String groupName) {
         StringBuffer filter;
         String groupDN = getGroupDNForTheGroup(groupName);
         filter = new StringBuffer().append(LdapConstants.PREFIX_FOR_PARENTS_GROUPS_FILTER
@@ -558,8 +501,7 @@ public class LdapServiceImpl implements LdapService {
         for (String groupName : directGroups) {
             getAllParentGroups(groupName, ldapGroups);
         }
-        LOGGER.info("[ " + userName
-                + " ] becomes a direct or indirect member of "
+        LOGGER.info("[ " + userName + " ] is a direct or indirect member of "
                 + ldapGroups.size() + " groups");
 
         if (ldapGroups.size() > 0) {
@@ -584,11 +526,12 @@ public class LdapServiceImpl implements LdapService {
     /*
      * Retrieves SAM account name for the search user for all the possible
      * primary verification identities sent by GSA and is require to query
-     * Directory service to fetch all direct groups he belongs to.
+     * Directory service to fetch all direct groups he belongs to. This
+     * implementation is specific to the AD.
      *
      * @param searchUserName search user name.
      */
-    public String getSamAccountNameFromSearchUser(final String searchUserName) {
+    public String getSamAccountNameForSearchUser(final String searchUserName) {
         String tmpUserName = null;
         if (null == searchUserName) {
             return null;

@@ -15,12 +15,15 @@
 package com.google.enterprise.connector.sharepoint.ldap;
 
 /**
+ * Provides methods that are needs to be implemented by the cache
+ * implementation.
+ *
  * @author nageswara_sura
  */
 public interface ILdapUserGroupCache<K, V> {
 
     /**
-     * Returns an object form the cache for a given key.
+     * Returns an object from the cache for a given key.
      *
      * @param name
      * @return

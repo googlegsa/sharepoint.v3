@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.ldap;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+
 /**
  * @author nageswara_sura
  */
@@ -24,37 +26,48 @@ public class LdapConstants {
     public static final Object PREFIX_FOR_DIRECT_GROUPS_FILTER = "(&(objectClass=user)(sAMAccountName=";
     public static final String RETURN_ATTRIBUTES_DIRECT_GROUPS_LIST = "memberOf";
 
-    public enum ErrorMessages {
-        CONNECTOR_INSTANTIATION_FAILED, MISSING_FIELDS, UNKNOWN_CONNECTION_ERROR, NO_RESULTS_FOR_GIVEN_SEARCH_STRING, ;
-        public static ErrorMessages safeValueOf(String v) {
-            return LdapConstants.safeValueOf(ErrorMessages.class, v);
-        }
-    }
-
-    public enum LdapConnectionError {
-        AuthenticationNotSupported, NamingException, IOException, CommunicationException;
-        public static ErrorMessages safeValueOf(String v) {
-            return LdapConstants.safeValueOf(ErrorMessages.class, v);
-        }
-    }
-
     public static final int DEFAULT_PORT = 389;
 
-    /**
-     * Wraps Enum.valueOf so it returns null if the string is not recognized
-     */
-    public static <T extends Enum<T>> T safeValueOf(Class<T> enumType,
-            String name) {
-        if (name == null || name.length() < 1) {
-            return null;
+    public enum Method {
+        STANDARD, SSL;
+        static Method getDefault() {
+            return STANDARD;
         }
-        T instance = null;
-        try {
-            instance = Enum.valueOf(enumType, name);
-        } catch (IllegalArgumentException e) {
-            instance = null;
+
+        public String toString() {
+            if (this.equals(STANDARD)) {
+                return SPConstants.CONNECT_METHOD_STANDARD;
+            } else {
+                return SPConstants.CONNECT_METHOD_SSL;
+            }
         }
-        return instance;
+    }
+
+    // Specifies the authentication mechanism to use while connecting to LDAp
+    // directory server. When the initial context is created, the underlying
+    // LDAP service provider extracts the authentication information from these
+    // environment properties and uses the LDAP "bind" operation to pass them to
+    // the server
+    public enum AuthType {
+        ANONYMOUS, SIMPLE;
+        static AuthType getDefault() {
+            return ANONYMOUS;
+        }
+
+        public String toString() {
+            if (this.equals(ANONYMOUS)) {
+                return SPConstants.AUTHENTICATION_TYPE_ANONYMOUS;
+            } else {
+                return SPConstants.AUTHENTICATION_TYPE_SIMPLE;
+            }
+        }
+    }
+
+    public enum ServerType {
+        ACTIVE_DIRECTORY, DOMINO, OPENLDAP, GENERIC;
+        static ServerType getDefault() {
+            return ACTIVE_DIRECTORY;
+        }
     }
 
 }

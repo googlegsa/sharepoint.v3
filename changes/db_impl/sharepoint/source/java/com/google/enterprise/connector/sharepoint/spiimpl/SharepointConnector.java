@@ -20,9 +20,9 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.AuthType;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.Method;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
@@ -83,7 +83,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     private int initialCacheSize;
     private boolean useCacheToStoreLdapUserGroupsMembership;
     private long cacheRefreshInterval;
-    private LdapConnectionSettings ldapConnectiionSettings;
+    private LdapConnectionSettings ldapConnectionSettings;
 
     public SharepointConnector() {
 
@@ -329,7 +329,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         sharepointClientContext.setCacheRefreshInterval(this.cacheRefreshInterval);
         sharepointClientContext.setInitialCacheSize(this.initialCacheSize);
         sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
-        sharepointClientContext.setLdapConnectiionSettings(this.ldapConnectiionSettings);
+        sharepointClientContext.setLdapConnectiionSettings(this.ldapConnectionSettings);
 
     }
 
@@ -658,7 +658,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
                 method, this.ldapServerHostAddress, this.portNumber,
                 this.searchBase, authType, this.username, this.password,
                 this.domain);
-        this.ldapConnectiionSettings = ldapConnectiionSettings;
+        this.ldapConnectionSettings = ldapConnectiionSettings;
         return ldapConnectiionSettings;
     }
 
@@ -667,7 +667,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
      */
     public void setLdapConnectiionSettings(
             LdapConnectionSettings ldapConnectiionSettings) {
-        this.ldapConnectiionSettings = ldapConnectiionSettings;
+        this.ldapConnectionSettings = ldapConnectiionSettings;
     }
 
 }

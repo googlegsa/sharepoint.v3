@@ -31,17 +31,17 @@ public interface LdapService {
     /**
      * Returns {@link LdapContext} for a given {@link LdapConnectionSettings}.
      *
-     * @param domain
      * @return context object.
      */
     LdapContext getLdapContext();
 
     /**
      * Fetches all parent groups for a given group that the user belongs to and
-     * it will recursively search parent groups for all direct groups.
+     * it will recursively search parent groups for all direct groups and
+     * populate a set of all parent groups.
      *
-     * @param groupName to which the search user is direct member of.
-     * @param parentGroups list of all parent groups for a given group name.
+     * @param groupName given group name.
+     * @param parentGroups set of all parent groups for a given group name.
      */
     void getAllParentGroups(String groupName, final Set<String> parentGroups);
 
@@ -61,6 +61,6 @@ public interface LdapService {
      * @param userName given search user name
      * @return a search user name
      */
-    String getSamAccountNameFromSearchUser(String userName);
+    String getSamAccountNameForSearchUser(String userName);
 
 }
