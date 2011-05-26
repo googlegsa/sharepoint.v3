@@ -92,7 +92,7 @@ public class SimpleSharePointDAOTest extends TestCase {
             }
             BatchUpdateException batchUpdateException = new BatchUpdateException(
                     reason, sqlState, vendorCode, updateCounts);
-            int[] status = simpleSPDAO.handleBatchUpdateException(batchUpdateException, Query.UDS_INSERT, namedParams);
+			int[] status = simpleSPDAO.handleBatchUpdateExceptionForMSSQLAndMySQL(batchUpdateException, Query.UDS_INSERT, namedParams);
             assertNotNull(status);
             assertEquals(status.length, namedParams.length);
         } catch (Exception e) {
@@ -112,7 +112,7 @@ public class SimpleSharePointDAOTest extends TestCase {
 
             BatchUpdateException batchUpdateException = new BatchUpdateException(reason,
                     sqlState, vendorCode, updateCounts);
-            int[] status = simpleSPDAO.handleBatchUpdateException(batchUpdateException, Query.UDS_INSERT, namedParams);
+			int[] status = simpleSPDAO.handleBatchUpdateExceptionForMSSQLAndMySQL(batchUpdateException, Query.UDS_INSERT, namedParams);
             assertNotNull(status);
             assertEquals(status.length, namedParams.length);
         } catch (Exception e) {

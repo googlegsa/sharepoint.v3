@@ -134,15 +134,15 @@ public class SharepointAuthenticationManagerTest extends TestCase {
     public void testGetSamAccountNameFromSearchUser() {
         String expectedUserName = TestConfiguration.username;
 
-        String userName3 = this.authMan.ldapService.getSamAccountNameFromSearchUser(TestConfiguration.userNameFormat3);
+        String userName3 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat3);
         assertNotNull(userName3);
         assertEquals(expectedUserName, userName3);
 
-        String userName1 = this.authMan.ldapService.getSamAccountNameFromSearchUser(TestConfiguration.userNameFormat1);
+        String userName1 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat1);
         assertNotNull(userName1);
         assertEquals(expectedUserName, userName1);
 
-        String userName2 = this.authMan.ldapService.getSamAccountNameFromSearchUser(TestConfiguration.userNameFormat2);
+        String userName2 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat2);
         assertNotNull(userName2);
         assertEquals(expectedUserName, userName2);
     }
