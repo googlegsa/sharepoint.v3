@@ -63,7 +63,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         }
         sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
         ldapService = new LdapServiceImpl(
-                inSharepointClientContext.getLdapConnectiionSettings(),
+                inSharepointClientContext.getLdapConnectionSettings(),
                 inSharepointClientContext.getInitialCacheSize(),
                 inSharepointClientContext.getCacheRefreshInterval(),
                 inSharepointClientContext.isUseCacheToStoreLdapUserGroupsMembership());
@@ -154,7 +154,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 
         Set<String> groups = new HashSet<String>();
         try {
-            groups = ldapService.getAllLdapGroups(ldapService.getSamAccountNameFromSearchUser(searchUserName));
+            groups = ldapService.getAllLdapGroups(ldapService.getSamAccountNameForSearchUser(searchUserName));
         } catch (RuntimeException re) {
             LOGGER.log(Level.WARNING, "Runtime exception is thrown while fetching all SharePoint and AD groups for the search user : "
                     + searchUserName, re);
