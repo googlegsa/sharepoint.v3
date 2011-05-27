@@ -14,6 +14,9 @@
     const string PublicAndSecureSearch = "publicAndSecure";
     const string PublicSearch = "public";
 
+    // Setting the URL for the Search Tips Link 
+    string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString() + "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
+
     /*
      * Checking if session value is null for setting the initial type of search. Session value null means very first 
      * time user has opened web application in web browser.
@@ -533,6 +536,9 @@ function SearchTextOnBlur()
 	ID=onetIDGoSearch>
 	<img border='0' src="/_layouts/images/gosearch.gif" alt='Go!'>
 </a>
+</div>
+<div>
+    <a href="<%=SearchTipsHtmlPageURL %>" style="font-size:xx-small; color:#003399; text-decoration:underline" >Search&nbsp;Tips</a>
 </div>
 
 
