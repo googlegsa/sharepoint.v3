@@ -14,8 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.common.StringUtils;
-
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -23,6 +23,8 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
@@ -57,6 +59,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.ldap.LdapContext;
+
 /**
  * ConnectorType implementation for Sharepoint This class is mainly desinged for
  * controlling the connector configuration which incompasses creation of
@@ -88,6 +92,18 @@ public class SharepointConnectorType implements ConnectorType {
 
     ResourceBundle rb = null;
     public static final String GOOGLE_CONN_WORK_DIR = "googleConnectorWorkDir";
+    private String pushAcls = null;
+    private String usernameFormatInAce;
+    private String groupnameFormatInAce;
+    private String ldapServerHostAddress;
+    private String portNumber;
+    private String authenticationType;
+    private String connectMethod;
+    private String searchBase;
+    private String initialCacheSize;
+    private String useCacheToStoreLdapUserGroupsMembership;
+    private String cacheRefreshInterval;
+    private LdapConnectionSettings ldapConnectionSettings;
 
     /**
      * Sets the keys that are required for configuration. These are the actual
@@ -286,14 +302,12 @@ public class SharepointConnectorType implements ConnectorType {
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
                     buf.append(rb.getString(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS));
                 } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
-                    LOGGER.info("in connect method.");
                     buf.append(SPConstants.OPEN_ELEMENT);
                     buf.append(SPConstants.INPUT);
                     appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.VALUE, SPConstants.CONNECT_METHOD_STANDARD);
-
                     if ((value.length() == 0)
                             || value.equalsIgnoreCase(Method.STANDARD.toString())) {
                         appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
@@ -321,10 +335,9 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.PUSH_ACLS_LABEL));
-                    // The value can be true if its a pre-configured connector
-                    // being edited and blank if the default connector form is
-                    // being displayed.
-                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                    if (value.equalsIgnoreCase("false") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+                    } else {
                         appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
@@ -339,10 +352,9 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
-                    // The value can be true if its a pre-configured connector
-                    // being edited and blank if the default connector form is
-                    // being displayed.
-                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                    if (value.equalsIgnoreCase("false") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+                    } else {
                         appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
@@ -357,10 +369,9 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
-                    // The value can be true if its a pre-configured connector
-                    // being edited and blank if the default connector form is
-                    // being displayed.
-                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                    if (value.equalsIgnoreCase("false") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+                    } else {
                         appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
@@ -368,17 +379,12 @@ public class SharepointConnectorType implements ConnectorType {
                     buf.append(SPConstants.BREAK_LINE);
                     buf.append(SPConstants.BREAK_LINE);
                 } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
-                    LOGGER.info("in AuthN method.");
                     buf.append(SPConstants.OPEN_ELEMENT);
                     buf.append(SPConstants.INPUT);
                     appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.VALUE, SPConstants.AUTHENTICATION_TYPE_SIMPLE);
-                    // appendAttribute(buf, SPConstants.TITLE,
-                    // rb.getString(SPConstants.HELP_AUTHZ_BY_GSA));
-                    LOGGER.info("in authn type and value is : "
-                            + value.toString());
                     if ((value.length() == 0)
                             || value.equalsIgnoreCase(AuthType.SIMPLE.toString())) {
                         appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
@@ -392,27 +398,18 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.VALUE, SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
-                    // appendAttribute(buf, SPConstants.TITLE,
-                    // rb.getString(SPConstants.HELP_AUTHZ_BY_CONNECTOR));
-                    LOGGER.info("in authn type an dvalue is : "
-                            + value.toString());
                     if (value.equalsIgnoreCase(AuthType.ANONYMOUS.toString())) {
                         appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
                     buf.append(rb.getString(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS));
                 } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
-                    LOGGER.info("in connect method.");
                     buf.append(SPConstants.OPEN_ELEMENT);
                     buf.append(SPConstants.INPUT);
                     appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.VALUE, SPConstants.CONNECT_METHOD_STANDARD);
-                    // appendAttribute(buf, SPConstants.TITLE,
-                    // rb.getString(SPConstants.HELP_AUTHZ_BY_GSA));
-                    LOGGER.info("in connect method  an dvalue is : "
-                            + value.toString());
                     if ((value.length() == 0)
                             || value.equalsIgnoreCase(Method.STANDARD.toString())) {
                         appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
@@ -426,71 +423,11 @@ public class SharepointConnectorType implements ConnectorType {
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
                     appendAttribute(buf, SPConstants.VALUE, SPConstants.CONNECT_METHOD_SSL);
-                    // appendAttribute(buf, SPConstants.TITLE,
-                    // rb.getString(SPConstants.HELP_AUTHZ_BY_CONNECTOR));
-                    LOGGER.info("in conn method  an dvalue is : "
-                            + value.toString());
                     if (value.equalsIgnoreCase(Method.SSL.toString())) {
                         appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
                     buf.append(rb.getString(SPConstants.CONNECT_METHOD_SSL));
-                } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
-                    // Handles the flag for Using SharePoint indexing options
-                    buf.append(SPConstants.BREAK_LINE);
-                    buf.append(SPConstants.OPEN_ELEMENT);
-                    buf.append(SPConstants.INPUT);
-                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
-                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.PUSH_ACLS_LABEL));
-                    // The value can be true if its a pre-configured connector
-                    // being edited and blank if the default connector form is
-                    // being displayed.
-                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
-                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-                    }
-                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-                    buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
-
-                } else if (collator.equals(key, SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
-                    // Handles the flag for Using SharePoint indexing options
-                    buf.append(SPConstants.BREAK_LINE);
-                    buf.append(SPConstants.OPEN_ELEMENT);
-                    buf.append(SPConstants.INPUT);
-                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
-                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
-                    // The value can be true if its a pre-configured connector
-                    // being edited and blank if the default connector form is
-                    // being displayed.
-                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
-                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-                    }
-                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-                    buf.append(rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
-                    buf.append(SPConstants.BREAK_LINE);
-                    buf.append(SPConstants.BREAK_LINE);
-                } else if (collator.equals(key, SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
-                    buf.append(SPConstants.BREAK_LINE);
-                    buf.append(SPConstants.OPEN_ELEMENT);
-                    buf.append(SPConstants.INPUT);
-                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
-                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
-                    // The value can be true if its a pre-configured connector
-                    // being edited and blank if the default connector form is
-                    // being displayed.
-                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
-                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-                    }
-                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-                    buf.append(rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
-                    buf.append(SPConstants.BREAK_LINE);
-                    buf.append(SPConstants.BREAK_LINE);
-
                 } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
                     // Handles the flag for Using SharePoint indexing options
                     buf.append(SPConstants.BREAK_LINE);
@@ -542,11 +479,14 @@ public class SharepointConnectorType implements ConnectorType {
                             || collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)
                             || collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)
                             || collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)
-                            || collator.equals(key, SPConstants.PORT_NUMBER)
-                            || collator.equals(key, SPConstants.SEARCH_BASE)
+                            || collator.equals(key, SPConstants.SEARCH_BASE)) {
+                        appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
+                    }
+                    if (collator.equals(key, SPConstants.PORT_NUMBER)
                             || collator.equals(key, SPConstants.INITAL_CACHE_SIZE)
                             || collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
-                        appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
+                        buf.append(SPConstants.SPACE + SPConstants.ONKEY_PRESS);
+                        buf.append("\"return onlyNumbers(event);\"");
                     }
                     buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
                 }
@@ -732,6 +672,28 @@ public class SharepointConnectorType implements ConnectorType {
             mySiteUrl = val.trim();
         } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
             useSPSearchVisibility = val.trim();
+        } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
+            this.pushAcls = val.trim();
+        } else if (collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)) {
+            this.usernameFormatInAce = val.trim();
+        } else if (collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
+            this.groupnameFormatInAce = val.trim();
+        } else if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)) {
+            this.ldapServerHostAddress = val.trim();
+        } else if (collator.equals(key, SPConstants.PORT_NUMBER)) {
+            this.portNumber = val.trim();
+        } else if (collator.equals(key, SPConstants.SEARCH_BASE)) {
+            this.searchBase = val.trim();
+        } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
+            this.authenticationType = val.trim();
+        } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
+            this.connectMethod = val.trim();
+        } else if (collator.equals(key, SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+            this.useCacheToStoreLdapUserGroupsMembership = val.trim();
+        } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
+            this.initialCacheSize = val.trim();
+        } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
+            this.cacheRefreshInterval = val.trim();
         }
     }
 
@@ -833,22 +795,12 @@ public class SharepointConnectorType implements ConnectorType {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(true));
         }
 
-        if (!configData.containsKey(SPConstants.PUSH_ACLS)) {
-            configData.put(SPConstants.PUSH_ACLS, Boolean.toString(false));
-        } else {
-            configData.put(SPConstants.PUSH_ACLS, Boolean.toString(true));
-        }
+        // Validating the feed ACLs related check boxes which are off by
+        // default.
+        validateFeedACLsAndLDAPUserGroupsCacheCheckBoxes(configData);
 
-        if (!configData.containsKey(SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
-            configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(false));
-        } else {
-            configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(true));
-        }
-
-        if (!configData.containsKey(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
-            configData.put(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP, Boolean.toString(false));
-        } else {
-            configData.put(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP, Boolean.toString(true));
+        if (!validateFeedACLsRelatedHtmlControles(ed)) {
+            return false;
         }
 
         if ((username != null)
@@ -1056,7 +1008,7 @@ public class SharepointConnectorType implements ConnectorType {
      *
      * @param buf contains the Form snippet
      */
-    private void addJavaScript(final StringBuffer buf) {
+    public void addJavaScript(final StringBuffer buf) {
         if (buf != null) {
             String js = "\r\n <script language=\"JavaScript\"> \r\n <![CDATA[ ";
             js += "\r\n function addRow() {"
@@ -1105,6 +1057,11 @@ public class SharepointConnectorType implements ConnectorType {
                     + SPConstants.ALIAS_ENTRIES_SEPARATOR + "';" + "\r\n }"
                     + "\r\n document.getElementById('" + SPConstants.ALIAS_MAP
                     + "').value=aliasString;" + "\r\n }";
+
+            js += "\r\n function onlyNumbers(evt){"
+                    + "\r\n  var charCode = (evt.which) ? evt.which : event.keyCode"
+                    + "\r\n if (charCode > 31 && (charCode < 48 || charCode > 57))"
+                    + "\r\n return false;" + "\r\n return true;" + "\r\n }";
 
             js += "\r\n function trim(s) {return s.replace( /^\\s*/, \"\" ).replace( /\\s*$/, \"\" );}";
 
@@ -1672,5 +1629,167 @@ public class SharepointConnectorType implements ConnectorType {
      */
     public void setUseSPSearchVisibility(String useSPSearchVisibility) {
         this.useSPSearchVisibility = useSPSearchVisibility;
+    }
+
+    /**
+     * Validating feed ACLs related check boxes.
+     *
+     * @param configData
+     */
+    private void validateFeedACLsAndLDAPUserGroupsCacheCheckBoxes(
+            final Map<String, String> configData) {
+        if (!configData.containsKey(SPConstants.PUSH_ACLS)) {
+            configData.put(SPConstants.PUSH_ACLS, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.PUSH_ACLS, Boolean.toString(true));
+        }
+
+        if (!configData.containsKey(SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
+            configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(true));
+        }
+
+        if (!configData.containsKey(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+            configData.put(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP, Boolean.toString(true));
+        }
+    }
+
+    /**
+     * Validating feed ACLs related HTML controls against blank, specific
+     * formats and for valid LDAP context.
+     *
+     * @return true if feed ACLs is not selected by the connector administrator
+     *         during setting of connector configuration at GSA and false in
+     *         case if any of its fields are blank, wrong user name format or
+     *         couldn't get valid initial LDAP context.
+     */
+    private boolean validateFeedACLsRelatedHtmlControles(
+            final ErrorDignostics ed) {
+        if (null != pushAcls && this.pushAcls.equalsIgnoreCase(SPConstants.ON)) {
+            LOGGER.config("Selected Feed ACLs option.");
+            if (!Strings.isNullOrEmpty(usernameFormatInAce)
+                    && !Strings.isNullOrEmpty(groupnameFormatInAce)) {
+                if (usernameFormatInAce.indexOf(SPConstants.AT) == SPConstants.MINUS_ONE
+                        && usernameFormatInAce.indexOf(SPConstants.DOUBLEBACKSLASH) == SPConstants.MINUS_ONE) {
+                    if ((usernameFormatInAce.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE)
+                            && (usernameFormatInAce.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE)) {
+                        ed.set(SPConstants.USERNAME_FORMAT_IN_ACE, rb.getString(SPConstants.WRONG_USERNAME_FORMAT));
+                        return false;
+                    }
+                }
+                if (!Strings.isNullOrEmpty(ldapServerHostAddress)
+                        && !Strings.isNullOrEmpty(portNumber)
+                        && !Strings.isNullOrEmpty(searchBase)
+                        && !Strings.isNullOrEmpty(domain)) {
+                    LOGGER.config("Checking for a valid LDAP host address.");
+                    if (!validateIPAddress(ldapServerHostAddress)) {
+                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.INVALID_LDAP_HOST_ADDRESS));
+                        return false;
+                    }
+                    LOGGER.config("Checking for a valid port number.");
+                    if (!checkForInteger(portNumber)) {
+                        ed.set(SPConstants.PORT_NUMBER, rb.getString(SPConstants.INVALID_PORT_NUMBER));
+                        return false;
+                    }
+                    Method method;
+                    if (Method.SSL.toString().equalsIgnoreCase(this.connectMethod.toString())) {
+                        method = Method.SSL;
+                    } else {
+                        method = Method.STANDARD;
+                    }
+
+                    AuthType authType;
+                    if (AuthType.ANONYMOUS.toString().equalsIgnoreCase(this.authenticationType.toString())) {
+                        authType = AuthType.ANONYMOUS;
+                    } else {
+                        authType = AuthType.SIMPLE;
+                    }
+                    LdapConnectionSettings settings = new LdapConnectionSettings(
+                            method, this.ldapServerHostAddress,
+                            Integer.parseInt(this.portNumber), this.searchBase,
+                            authType, this.username, this.password, this.domain);
+                    LOGGER.config("Created LDAP connection settings object to obtain LDAP context "
+                            + ldapConnectionSettings);
+                    LdapContext context = new LdapServiceImpl.LdapConnection(
+                            settings).getLdapContext();
+                    if (context == null) {
+                        LOGGER.log(Level.WARNING, "Couldn't obtain context object to query LDAP (AD) directory server.");
+                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.LDAP_CONNECTVITY_ERROR));
+                        return false;
+                    }
+                    LOGGER.log(Level.CONFIG, "Sucessfully created initial LDAP context to query LDAP directory server.");
+                } else {
+                    if (Strings.isNullOrEmpty(ldapServerHostAddress)) {
+                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.LDAP_SERVER_HOST_ADDRESS_BLANK));
+                        return false;
+                    } else if (Strings.isNullOrEmpty(portNumber)) {
+                        ed.set(SPConstants.PORT_NUMBER, rb.getString(SPConstants.PORT_NUMBER_BLANK));
+                        return false;
+                    } else if (Strings.isNullOrEmpty(searchBase)) {
+                        ed.set(SPConstants.SEARCH_BASE, rb.getString(SPConstants.SEARCH_BASE_BLANK));
+                        return false;
+                    } else if (Strings.isNullOrEmpty(domain)) {
+                        ed.set(SPConstants.DOMAIN, rb.getString(SPConstants.BLANK_DOMAIN_NAME_LDAP));
+                        return false;
+                    }
+                }
+                if (!Strings.isNullOrEmpty(useCacheToStoreLdapUserGroupsMembership)) {
+                    if (null != useCacheToStoreLdapUserGroupsMembership
+                            && this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(SPConstants.ON)) {
+                        if (!Strings.isNullOrEmpty(initialCacheSize)
+                                && !Strings.isNullOrEmpty(cacheRefreshInterval)) {
+                            if (!checkForInteger(this.initialCacheSize)) {
+                                ed.set(SPConstants.INITAL_CACHE_SIZE, rb.getString(SPConstants.INVALID_INITIAL_CACHE_SIZE));
+                                return false;
+                            }
+                            if (!checkForInteger(this.cacheRefreshInterval)) {
+                                ed.set(SPConstants.CACHE_REFRESH_INTERVAL, rb.getString(SPConstants.INVALID_CACHE_REFRESH_INTERVAL));
+                                return false;
+                            }
+                        } else {
+                            if (Strings.isNullOrEmpty(initialCacheSize)) {
+                                ed.set(SPConstants.INITAL_CACHE_SIZE, rb.getString(SPConstants.BLANK_INITIAL_CACHE_SIZE));
+                                return false;
+                            }
+                            if (Strings.isNullOrEmpty(cacheRefreshInterval)) {
+                                ed.set(SPConstants.CACHE_REFRESH_INTERVAL, rb.getString(SPConstants.BLANK_CACHE_REFRESH_INTERVAL));
+                                return false;
+                            }
+                        }
+                    }
+
+                }
+            } else {
+                if (!Strings.isNullOrEmpty(usernameFormatInAce)) {
+                    ed.set(SPConstants.GROUPNAME_FORMAT_IN_ACE, rb.getString(SPConstants.BLANK_GROUPNAME_FORMAT));
+                    return false;
+                } else {
+                    ed.set(SPConstants.USERNAME_FORMAT_IN_ACE, rb.getString(SPConstants.BLANK_USERNAME_FORMAT));
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+
+    /**
+     * Parses the string argument as a signed decimal integer. The characters in
+     * the string must all be decimal digits.
+     *
+     * @param number
+     * @return true if given string
+     */
+    private boolean checkForInteger(String number) {
+        try {
+            Integer.parseInt(number);
+        } catch (NumberFormatException ne) {
+            LOGGER.log(Level.WARNING, "Exception thrown while parsing LDAP port number.", ne);
+            return false;
+        }
+        return true;
     }
 }

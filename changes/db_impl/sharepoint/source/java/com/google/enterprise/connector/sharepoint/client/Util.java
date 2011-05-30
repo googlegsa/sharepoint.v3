@@ -54,7 +54,6 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -1391,5 +1390,28 @@ public final class Util {
             }
         }
         return hostName;
+    }
+
+    /**
+     * Return group name with domain name i.e. domain\\groupname
+     *
+     * @param userName
+     * @param domain
+     * @return
+     */
+    public static String getGroupNameWithDomain(final String userName,
+            final String domain) {
+        return getUserNameWithDomain(userName, domain);
+    }
+
+    /**
+     * Return group name at domain name i.e. groupname@domain
+     *
+     * @param userName
+     * @param domain
+     */
+    public static String getGroupNameAtDomain(String userName,
+            final String domain) {
+        return getUserNameAtDomain(userName, domain);
     }
 }

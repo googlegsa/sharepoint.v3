@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -64,10 +65,10 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     private boolean pushAcls = true;
     private String usernameFormatInAce;
     private String groupnameFormatInAce;
-    private boolean appendNamespaceInSPGroup;
+    private boolean appendNamespaceInSPGroup = false;
     private QueryProvider queryProvider;
     private UserGroupMembershipRowMapper userGroupMembershipRowMapper;
-    private boolean useSPSearchVisibility = true;
+    private boolean useSPSearchVisibility = false;
     private List<String> infoPathBaseTemplate;
     private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
     private boolean reWriteRecordUrlUsingAliasMappingRules;
@@ -76,13 +77,13 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     private int aclBatchSizeFactor = 2;
     private int webServiceTimeOut = 300000;
     private String ldapServerHostAddress;
-    private int portNumber;
+    private String portNumber;
     private String authenticationType;
     private String connectMethod;
     private String searchBase;
-    private int initialCacheSize;
+    private String initialCacheSize;
     private boolean useCacheToStoreLdapUserGroupsMembership;
-    private long cacheRefreshInterval;
+    private String cacheRefreshInterval;
     private LdapConnectionSettings ldapConnectionSettings;
 
     public SharepointConnector() {
@@ -325,12 +326,14 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         sharepointClientContext.setAclBatchSizeFactor(this.aclBatchSizeFactor);
         sharepointClientContext.setWebServiceTimeOut(this.webServiceTimeOut);
         sharepointClientContext.setDomain(this.domain);
-        sharepointClientContext.setLdapConnectionSettings(getLdapConnectiionSettings());
-        sharepointClientContext.setCacheRefreshInterval(this.cacheRefreshInterval);
-        sharepointClientContext.setInitialCacheSize(this.initialCacheSize);
-        sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
-        sharepointClientContext.setLdapConnectionSettings(this.ldapConnectionSettings);
-
+        if (pushAcls) {
+            sharepointClientContext.setLdapConnectionSettings(getLdapConnectionSettings());
+            if (useCacheToStoreLdapUserGroupsMembership) {
+                sharepointClientContext.setCacheRefreshInterval(Long.parseLong(this.cacheRefreshInterval));
+                sharepointClientContext.setInitialCacheSize(Integer.parseInt(this.initialCacheSize));
+                sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
+            }
+        }
     }
 
     /**
@@ -530,14 +533,17 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     /**
      * @return LDAP directory server port number.
      */
-    public int getPortNumber() {
+    public String getPortNumber() {
         return portNumber;
     }
 
     /**
      * @param portNumber the portNumber to set.
      */
-    public void setPortNumber(int portNumber) {
+    public void setPortNumber(String portNumber) {
+        if (!Strings.isNullOrEmpty(portNumber)) {
+            this.portNumber = SPConstants.LDAP_DEFAULT_PORT_NUMBER;
+        }
         this.portNumber = portNumber;
     }
 
@@ -598,14 +604,14 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     /**
      * @return LDAP user groups initial cache size.
      */
-    public int getInitialCacheSize() {
+    public String getInitialCacheSize() {
         return initialCacheSize;
     }
 
     /**
      * @param initialCacheSize the initialCacheSize to set.
      */
-    public void setInitialCacheSize(int initialCacheSize) {
+    public void setInitialCacheSize(String initialCacheSize) {
         this.initialCacheSize = initialCacheSize;
     }
 
@@ -627,21 +633,21 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     /**
      * @return refresh interval time in seconds.
      */
-    public long getCacheRefreshInterval() {
+    public String getCacheRefreshInterval() {
         return cacheRefreshInterval;
     }
 
     /**
      * @param cacheRefreshInterval the cacheRefreshInterval to set.
      */
-    public void setCacheRefreshInterval(long cacheRefreshInterval) {
+    public void setCacheRefreshInterval(String cacheRefreshInterval) {
         this.cacheRefreshInterval = cacheRefreshInterval;
     }
 
     /**
      * @return {@linkplain LdapConnectionSettings}
      */
-    public LdapConnectionSettings getLdapConnectiionSettings() {
+    public LdapConnectionSettings getLdapConnectionSettings() {
         AuthType authType;
         if (AuthType.ANONYMOUS.toString().equalsIgnoreCase(this.authenticationType.toString())) {
             authType = AuthType.ANONYMOUS;
@@ -655,7 +661,8 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
             method = Method.STANDARD;
         }
         LdapConnectionSettings ldapConnectionSettings = new LdapConnectionSettings(
-                method, this.ldapServerHostAddress, this.portNumber,
+                method, this.ldapServerHostAddress,
+                Integer.parseInt(this.portNumber),
                 this.searchBase, authType, this.username, this.password,
                 this.domain);
         this.ldapConnectionSettings = ldapConnectionSettings;

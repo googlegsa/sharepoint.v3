@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -44,10 +43,6 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
     // cleared.
     private final long refreshInterval;
 
-    // Provide methods to manage termination and methods that can produce
-    // a Future for tracking progress of one or more asynchronous tasks.
-    private final ExecutorService threads;
-
     // Used to constructs an LinkedHashMap instance.
     private static final float hashTableLoadFactor = 0.75f;
 
@@ -57,10 +52,10 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
     /**
      * Constructs the cache with a default refresh interval time for the
      * directory service user group memberships for 2 hours with an initial
-     * capacity of 10000+ (depends on the load factor).
+     * capacity of 1000+ (depends on the load factor).
      */
     public LdapUserGroupsCache() {
-        this(7200, 10000);
+        this(7200, 1000);
     }
 
     /**
@@ -87,14 +82,12 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
 
         this.refreshInterval = refreshInterval;
 
-        // Creates a thread pool that reuses a fixed set of threads with the 64
-        // number of threads in the pool. If any
+        // Creates a thread pool that can be scheduled to run removeExpiry()
+        // command with a fixed set of threads. If any
         // thread terminates due to a failure during execution prior to
         // shutdown, a new one will take its place if needed to execute
         // subsequent tasks.
 
-        //
-        this.threads = Executors.newCachedThreadPool();
         Executors.newScheduledThreadPool(20).scheduleWithFixedDelay(this.removeExpired(), this.refreshInterval / 2, this.refreshInterval, TimeUnit.SECONDS);
     }
 
@@ -105,13 +98,15 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
         return new Runnable() {
             public void run() {
                 for (final K name : expire.keySet()) {
-                    if (System.currentTimeMillis() > expire.get(name)) {
-                        threads.execute(createRemoveRunnable(name));
-                        LOGGER.log(Level.CONFIG, "Invalidating cache entry for the user [ "
-                                + name
-                                + " ] after "
-                                + refreshInterval
-                                + " in seconds. ");
+                    synchronized (expire) {
+                        if (System.currentTimeMillis() > expire.get(name)) {
+                            createRemoveRunnable(name);
+                            LOGGER.log(Level.CONFIG, "Invalidating cache entry for the user [ "
+                                    + name
+                                    + " ] after "
+                                    + refreshInterval
+                                    + " in seconds. ");
+                        }
                     }
                 }
             }
@@ -119,17 +114,13 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
     }
 
     /**
-     * Returns a runnable that removes a specific object from the cache.
+     * Removes a specific object from the cache.
      *
      * @param name the name of the object
      */
-    private final Runnable createRemoveRunnable(final K name) {
-        return new Runnable() {
-            public void run() {
-                cacheStore.remove(name);
-                expire.remove(name);
-            }
-        };
+    private void createRemoveRunnable(final K name) {
+        cacheStore.remove(name);
+        expire.remove(name);
     }
 
     /**
@@ -158,15 +149,15 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
      * @param obj the object
      * @param expireTime custom expiration time in seconds
      */
-    public void put(K key, V obj, final long expireTime) {
+    private void put(K key, V obj, final long expireTime) {
         try {
             this.cacheStore.put(key, obj);
-            LOGGER.log(Level.CONFIG, "Updated cache with an entry [ " + key
-                    + " ]");
             this.expire.put(key, System.currentTimeMillis() + expireTime * 1000);
+            LOGGER.log(Level.CONFIG, "Updated cache with an entry [ " + key
+                    + " ] with expiry time in seconds ["
+                    + System.currentTimeMillis() + expireTime * 1000 + "]");
         } catch (Throwable t) {
-            LOGGER.warning("Exception is thrown while updating cache with an entry : "
-                    + key);
+            LOGGER.log(Level.WARNING, "Exception is thrown while updating cache with an entry :", t);
         }
 
     }
@@ -187,7 +178,7 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
         if (System.currentTimeMillis() > expireTime) {
             LOGGER.log(Level.CONFIG, "Removing cache entry for the user [ "
                     + key + " ] since the key expired in cache");
-            this.threads.execute(this.createRemoveRunnable(key));
+            this.createRemoveRunnable(key);
             return null;
         }
         return this.cacheStore.get(key);
@@ -196,20 +187,6 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
     @SuppressWarnings("unchecked")
     public <R extends K> R get(K key, final Class<R> type) {
         return (R) this.get(key);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.google.enterprise.connector.sharepoint.ldap.ILdapUserGroupCache#contains
-     * (java.lang.Object)
-     */
-    public boolean contains(K t) {
-        if (null == t) {
-            return false;
-        }
-        return this.cacheStore.containsKey(t);
     }
 
     /*
@@ -229,5 +206,24 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
      */
     public int getSize() {
         return this.cacheStore.size();
+    }
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * com.google.enterprise.connector.sharepoint.ldap.ILdapUserGroupCache#contains
+     * (java.lang.Object)
+     */
+    public boolean contains(K key) {
+        final Long expireTime = this.expire.get(key);
+        if (expireTime == null)
+            return false;
+        if (System.currentTimeMillis() > expireTime) {
+            LOGGER.log(Level.CONFIG, "Removing cache entry for the user [ "
+                    + key + " ] since the key expired in cache");
+            this.createRemoveRunnable(key);
+            return false;
+        }
+        return this.cacheStore.containsKey(key);
     }
 }

@@ -26,6 +26,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -100,20 +101,23 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         return memberships;
     }
 
-	/**
-	 * Retrieves all the {@link UserGroupMembership} to which {@link Set} groups
-	 * belongs to including the search user.
-	 * 
-     * @param groups  set of AD groups whose SP groups are to be retrieved
+    /**
+     * Retrieves all the {@link UserGroupMembership} to which {@link Set} groups
+     * belongs to including the search user.
+     *
+     * @param groups set of AD groups whose SP groups are to be retrieved
      * @param searchUser the sear user name
-	 * @throws SharepointException
-	 */
+     * @throws SharepointException
+     */
     public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
             Set<String> groups, String searchUser) throws SharepointException {
         Query query = Query.UDS_SELECT_FOR_ADGROUPS;
-        groups.add(searchUser);
-        Map<String, Object> groupsObject = new HashMap<String, Object>();
-        groupsObject.put("groups", groups);
+        Map<String, Object> groupsObject = null;
+        if (null != groups) {
+            groups.add(searchUser);
+            groupsObject = new HashMap<String, Object>();
+            groupsObject.put(SPConstants.GROUPS, groups);
+        }
         List<UserGroupMembership> memberships = null;
         try {
             memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
@@ -123,7 +127,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
                     t);
         }
         LOGGER.log(Level.INFO, memberships.size()
-                + " Memberships identified for Directory groups in User Data Store.");
+                + " Memberships identified for LDAP directory groups in User Data Store.");
         groups.remove(searchUser);
         return memberships;
 
@@ -153,7 +157,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         }
         int[] status = null;
         // There should be at least one entry in memberships before performing batch update.
-        
         if (memberships.size() > 0) {
             Query query = Query.UDS_INSERT;
             SqlParameterSource[] params = createParameter(query, memberships);
@@ -438,6 +441,8 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         try {
             dbm = getConnection().getMetaData();
             tableName = getQueryProvider().getUdsTableName();
+            // Specific to oracle data base to check required entities in user
+            // data store data base.
             if (getQueryProvider().getDatabase().equalsIgnoreCase(SPConstants.SELECTED_DATABASE)) {
                 statement = getConnection().createStatement();
                 String query = getSqlQuery(Query.UDS_CHECK_TABLES);
@@ -470,7 +475,12 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
                     }
                 }
             }
-            rsTables.close();
+            try {
+                rsTables.close();
+                statement.close();
+            } catch (SQLException e) {
+                LOGGER.log(Level.WARNING, "Exception occurred while closing data base resources.", e);
+            }
             if (!tableFound) {
                 getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
                 LOGGER.config("Created user data store table with name : "
@@ -483,23 +493,23 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
         }
     }
-    
-	/**
-	 * Adds element into the cache after performing strict checking against
-	 * cache.
-	 * <p>
-	 * In case of Oracle data base, -2 for new memberships and -1 for existing
-	 * records in user data store.
-	 * </p>
-	 * <p>
-	 * In case of MYSQL, +ve integer for new memberships and -3 for existing
-	 * records in user data store.
-	 * </p>
-	 * <p>
-	 * In case of MS SQL, +ve integer for new memberships and -3 for existing
-	 * records in user data store.
-	 * </p>
-	 */
+
+    /**
+     * Adds element into the cache after performing strict checking against
+     * cache.
+     * <p>
+     * In case of Oracle data base, -2 for new memberships and -1 for existing
+     * records in user data store.
+     * </p>
+     * <p>
+     * In case of MYSQL, +ve integer for new memberships and -3 for existing
+     * records in user data store.
+     * </p>
+     * <p>
+     * In case of MS SQL, +ve integer for new memberships and -3 for existing
+     * records in user data store.
+     * </p>
+     */
     private void addAllSucceeded(int[] status,
             Collection<UserGroupMembership> memberships) {
         int i = 0;
@@ -509,12 +519,12 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
                 // as well as the new entries that are inserted successfully
                 // into user data store.
                 if (!udsCache.contains(membership)) {
-					// -1 represents missed cache entry and -2 represent newly
-					// inserted membership in Oracle data base. in MS SQL
-					// data base and -3 represents missed cache entry in MY SQL
-					// data base. hence it makes sense to have a check against
-					// status >=3.
-					if (status[i] >= SPConstants.MINUS_THREE) {
+                    // -1 represents missed cache entry and -2 represent newly
+                    // inserted membership in Oracle data base. in MS SQL
+                    // data base and -3 represents missed cache entry in MY SQL
+                    // data base. hence it makes sense to have a check against
+                    // status >=3.
+                    if (status[i] >= SPConstants.MINUS_THREE) {
                     udsCache.add(membership);
                     }
                 }

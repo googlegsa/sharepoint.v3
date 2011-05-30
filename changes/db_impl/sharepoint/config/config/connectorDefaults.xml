@@ -14,34 +14,18 @@
        <property name="aliasMap" value="${aliasMap}"/>
      <property name="authorization" value="${authorization}"/>
      <property name="useSPSearchVisibility" value="${useSPSearchVisibility}"/>
-     <!--
-     The pushACLs boolean property decides whether ACLs should be sent for the documents.
-     If true, ACLs will be sent as meta data with each document and by default is set to false.
-     -->
      <property name="pushAcls" value="${pushAcls}"/>
-     <!--  The property appendNamespaceInSPGroup will be used to send SPGroups in the format [site_collection_url]groupname. -->
      <property name="appendNamespaceInSPGroup" value="${appendNamespaceInSPGroup}"/>
-     <!-- To specify the username format to be used in ACL. for example, username, username@domain or domain\username. -->
      <property name="usernameFormatInAce" value="${usernameFormatInAce}"/>
-     <!-- Specify the groupname format to be used in ACL. for example, groupname, groupname@domain or domain\groupname. -->
      <property name="groupnameFormatInAce" value="${groupnameFormatInAce}"/>
-     <!-- LDAP directory server host address. -->
      <property name="ldapServerHostAddress" value="${ldapServerHostAddress}"/>
-     <!-- LDAP directory server port number.  -->
      <property name="portNumber" value="${portNumber}"/>
-     <!-- LDAP Authentication Type  -->
      <property name="authenticationType" value="${authenticationType}"/>
-     <!-- LDAP Connection Method. -->
      <property name="connectMethod" value="${connectMethod}"/>
-     <!-- LDAP user search base. -->
      <property name="searchBase" value="${searchBase}"/>
-     <!-- flag to indiate whether use ldap user gorups membership cache or not and by default set to false.-->
      <property name="useCacheToStoreLdapUserGroupsMembership" value="${useCacheToStoreLdapUserGroupsMembership}"/>
-     <!-- Spefifies the initial size of the LDAP user gruops membership cache. -->
      <property name="initialCacheSize" value="${initialCacheSize}"/>
-     <!-- Specifies the cache refresh interval time. -->
      <property name="cacheRefreshInterval" value="${cacheRefreshInterval}"/>
-
      <property name="included_metadata">
     <list>
       <!-- If you want to index only specific metadata, put them here.

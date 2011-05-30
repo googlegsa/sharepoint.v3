@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.AuthenticationException;
 import javax.naming.AuthenticationNotSupportedException;
 import javax.naming.CommunicationException;
 import javax.naming.Context;
@@ -58,7 +59,7 @@ public class LdapServiceImpl implements LdapService {
 
     private LdapConnectionSettings ldapConnectionSettings;
     private LdapContext context;
-    private LdapUserGroupsCache<Object, Object> lugCacheStore;
+    private LdapUserGroupsCache<Object, Object> lugCacheStore = null;
     private LdapConnection ldapConnection;
 
     public LdapServiceImpl() {
@@ -158,7 +159,9 @@ public class LdapServiceImpl implements LdapService {
             } catch (CommunicationException e) {
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a communication failure.", e);
             } catch (AuthenticationNotSupportedException e) {
-                LOGGER.log(Level.WARNING, "Authentication is not sucessful and could not obtain an initial context to query LDAP (Active Directory).", e);
+                LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication not supported exception.", e);
+            } catch (AuthenticationException ae) {
+                LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication exception.", ae);
             } catch (NamingException e) {
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a naming exception.", e);
             }
@@ -484,13 +487,15 @@ public class LdapServiceImpl implements LdapService {
         if (Strings.isNullOrEmpty(userName)) {
             return null;
         }
-        if (null != userName && null != lugCacheStore.get(userName)) {
-            ldapGroups = (Set<String>) lugCacheStore.get(userName, LinkedHashMap.class);
-            LOGGER.info("Found valid entry for search user : "
-                    + userName
-                    + "in cache store and he/she is a direct or indirect member of : "
-                    + ldapGroups.size());
-            return ldapGroups;
+        if (null != userName && null != lugCacheStore) {
+            if (null != lugCacheStore.get(userName)) {
+                ldapGroups = (Set<String>) lugCacheStore.get(userName, LinkedHashMap.class);
+                LOGGER.info("Found valid entry for search user : "
+                        + userName
+                        + "in cache store and he/she is a direct or indirect member of : "
+                        + ldapGroups.size());
+                return ldapGroups;
+            }
         } else {
             LOGGER.info("No entry found for the user [ "
                     + userName
@@ -503,22 +508,24 @@ public class LdapServiceImpl implements LdapService {
         LOGGER.info("[ " + userName + " ] is a direct or indirect member of "
                 + ldapGroups.size() + " groups");
 
-        if (ldapGroups.size() > 0) {
+        if (ldapGroups.size() > 0 && null != lugCacheStore) {
             this.lugCacheStore.put(userName, ldapGroups);
         }
         return ldapGroups;
     }
 
     /**
-     * Returns DN name for the given group.
+     * Returns DN name for the given group while making LDAP search query to get
+     * all parents groups for a given group we need to retrieve the DN name for
+     * a group.
      *
      * @param groupName
      * @return group DN from group name.
      */
     private String getGroupDNForTheGroup(String groupName) {
         String tmpGroupName;
-        tmpGroupName = groupName.substring(0, groupName.indexOf(","));
-        tmpGroupName = tmpGroupName.substring(tmpGroupName.indexOf("=") + 1);
+        tmpGroupName = groupName.substring(0, groupName.indexOf(SPConstants.COMMA));
+        tmpGroupName = tmpGroupName.substring(tmpGroupName.indexOf(SPConstants.DOUBLE_EQUAL_TO) + 1);
         return tmpGroupName;
     }
 

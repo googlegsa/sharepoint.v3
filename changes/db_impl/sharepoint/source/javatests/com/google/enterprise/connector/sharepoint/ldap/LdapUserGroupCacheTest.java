@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.ldap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
@@ -68,7 +69,7 @@ public class LdapUserGroupCacheTest {
         } catch (Throwable t) {
         }
         long end = System.currentTimeMillis() - start;
-        System.out.println("Putting took: " + end + "ms");
+		System.out.println("Adding took: " + end + "ms");
 
         start = System.currentTimeMillis();
         for (int i = 0; i < availableMemory * 900; i++) {
@@ -161,4 +162,19 @@ public class LdapUserGroupCacheTest {
         assertEquals(0, this.lugCacheStore.getSize());
     }
 
+	@Test
+	public void expire() throws InterruptedException {
+		Set<String> membership = null;
+		for (int i = 1; i <= 10; i++) {
+			membership = new HashSet<String>();
+			for (int j = 1; j <= 10; j++) {
+				membership.add("group" + j);
+			}
+			this.lugCacheStore.put("user" + i, membership);
+		}
+		assertEquals(membership.size(), this.lugCacheStore.get("test1", HashSet.class));
+		// wait until this object is expired
+		Thread.sleep(this.lugCacheStore.getExpire() * 1010);
+		assertNull(this.lugCacheStore.get("test1", HashSet.class));
+	}
 }

@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
@@ -22,6 +23,8 @@ import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -53,7 +56,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
                 TestConfiguration.getUserDataStoreQueryProvider(),
                 TestConfiguration.getUserGroupMembershipRowMapper());
         this.sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
-        sharepointClientContext.setLdapConnectiionSettings(TestConfiguration.getLdapConnetionSettings());
+		sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
         this.authMan = new SharepointAuthenticationManager(
                 this.sharepointClientContext);
         System.out.println("Initializing SharepointAuthenticationIdentity ...");
@@ -100,7 +103,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         assertNotNull(groups);
     }
 
-    public void testAAuthenticateWithDifferentUserNameFormats()
+	public void testAuthenticateWithDifferentUserNameFormats()
             throws Throwable {
         System.out.println("Testing Authenticate() with domain\\user");
         this.authID = new SimpleAuthenticationIdentity(
@@ -147,7 +150,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         assertEquals(expectedUserName, userName2);
     }
 
-    public void testgetAllGroupsForTheUser() throws SharepointException {
+	public void testGetAllGroupsForTheUser() throws SharepointException {
         this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
 
         assertNotNull(this.authenticationResponse);
@@ -162,6 +165,24 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.fakeusername);
         assertNotNull(this.authenticationResponse);
         assertTrue((this.authenticationResponse.getGroups().isEmpty()));
+	}
 
+    public void testAddGroupNameFormatForTheGroups() {
+        Set<String> groups = new HashSet<String>();
+		groups.add("group1");
+		groups.add("group2");
+		groups.add("group3");
+		groups.add("group4");
+        Set<String> egroups = new HashSet<String>();
+		egroups = this.authMan.addGroupNameFormatForTheGroups(groups);
+		for (String groupName : egroups) {
+			assertEquals(true, groupName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
+		}
+    }
+
+	public void testAddUserNameFormatForTheSearchUser() {
+		String userName = TestConfiguration.userNameFormat1;
+		String finalUserName = this.authMan.addUserNameFormatForTheSearchUser(userName);
+		assertEquals(true, finalUserName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
     }
 }

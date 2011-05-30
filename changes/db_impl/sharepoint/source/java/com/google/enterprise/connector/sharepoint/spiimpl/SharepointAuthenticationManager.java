@@ -62,13 +62,14 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
                     "SharePointClientContext can not be null");
         }
         sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
-        ldapService = new LdapServiceImpl(
+        if (sharepointClientContext.isPushAcls()) {
+           ldapService = new LdapServiceImpl(
                 inSharepointClientContext.getLdapConnectionSettings(),
                 inSharepointClientContext.getInitialCacheSize(),
                 inSharepointClientContext.getCacheRefreshInterval(),
                 inSharepointClientContext.isUseCacheToStoreLdapUserGroupsMembership());
-
-    }
+        }
+     }
 
     /**
      * Authenticates the user against the SharePoint server where Crawl URL
@@ -152,14 +153,21 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     AuthenticationResponse getAllGroupsForTheUser(String searchUserName)
             throws SharepointException {
 
-        Set<String> groups = new HashSet<String>();
+        Set<String> groups = null, finalADGroups = null;
         try {
             groups = ldapService.getAllLdapGroups(ldapService.getSamAccountNameForSearchUser(searchUserName));
         } catch (RuntimeException re) {
             LOGGER.log(Level.WARNING, "Runtime exception is thrown while fetching all SharePoint and AD groups for the search user : "
                     + searchUserName, re);
         }
-        List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(groups, searchUserName);
+        if (null != groups) {
+            finalADGroups = addGroupNameFormatForTheGroups(groups);
+        }
+        String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUserName);
+        LOGGER.info("Quering User data store with the AD groups :"
+                + finalADGroups + " and search user [" + finalSearchUserName
+                + "]");
+        List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(finalADGroups, finalSearchUserName);
         Set<String> spGroups = new HashSet<String>();
         StringBuffer groupName;
 
@@ -176,4 +184,47 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         return new AuthenticationResponse(true, "", groups);
     }
 
+    /**
+     * Returns a set of groups after after adding the specific format provided
+     * by connector administrator in the connector configuration page. It should
+     * be called before making a call to user data store to get all SP groups.
+     *
+     * @param groupNames set of AD group names.
+     */
+    Set<String> addGroupNameFormatForTheGroups(final Set<String> groupNames) {
+        String format = this.sharepointClientContext.getGroupnameFormatInAce();
+        LOGGER.config("Groupname format in ACE : " + format);
+        String domain = this.sharepointClientContext.getDomain();
+        Set<String> groups = new HashSet<String>();
+        if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+            for (String groupName : groupNames) {
+                groups.add(Util.getGroupNameAtDomain(groupName, domain));
+            }
+        } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+            for (String groupName : groupNames) {
+                groups.add(Util.getGroupNameWithDomain(groupName, domain));
+            }
+        }
+        return groups;
+    }
+
+    /**
+     * Returns the search user name after changing its format to the user name
+     * format specified by the connector administrator during connector
+     * configuration.
+     *
+     * @param username
+     */
+    String addUserNameFormatForTheSearchUser(final String userName) {
+        String format = this.sharepointClientContext.getUsernameFormatInAce();
+        LOGGER.config("Username format in ACE : " + format);
+        String domain = this.sharepointClientContext.getDomain();
+        if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+            return Util.getUserNameAtDomain(userName, domain);
+        } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+            return Util.getUserNameWithDomain(userName, domain);
+        } else {
+            return userName;
+        }
+    }
 }
