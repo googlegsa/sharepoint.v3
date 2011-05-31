@@ -22,8 +22,10 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnectionError;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl;
+import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
@@ -46,6 +48,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.Collator;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,10 +57,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.ldap.LdapContext;
 
@@ -1672,13 +1678,13 @@ public class SharepointConnectorType implements ConnectorType {
             LOGGER.config("Selected Feed ACLs option.");
             if (!Strings.isNullOrEmpty(usernameFormatInAce)
                     && !Strings.isNullOrEmpty(groupnameFormatInAce)) {
-                if (usernameFormatInAce.indexOf(SPConstants.AT) == SPConstants.MINUS_ONE
-                        && usernameFormatInAce.indexOf(SPConstants.DOUBLEBACKSLASH) == SPConstants.MINUS_ONE) {
-                    if ((usernameFormatInAce.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE)
-                            && (usernameFormatInAce.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE)) {
-                        ed.set(SPConstants.USERNAME_FORMAT_IN_ACE, rb.getString(SPConstants.WRONG_USERNAME_FORMAT));
-                        return false;
-                    }
+                if (!checkForSpecialCharacters(usernameFormatInAce)) {
+                    ed.set(SPConstants.USERNAME_FORMAT_IN_ACE, rb.getString(SPConstants.SPECIAL_CHARACTERS_IN_USERNAME_FORMAT));
+                    return false;
+                }
+                if (!checkForSpecialCharacters(groupnameFormatInAce)) {
+                    ed.set(SPConstants.GROUPNAME_FORMAT_IN_ACE, rb.getString(SPConstants.SPECIAL_CHARACTERS_IN_GROUPNAME_FORMAT));
+                    return false;
                 }
                 if (!Strings.isNullOrEmpty(ldapServerHostAddress)
                         && !Strings.isNullOrEmpty(portNumber)
@@ -1686,12 +1692,12 @@ public class SharepointConnectorType implements ConnectorType {
                         && !Strings.isNullOrEmpty(domain)) {
                     LOGGER.config("Checking for a valid LDAP host address.");
                     if (!validateIPAddress(ldapServerHostAddress)) {
-                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.INVALID_LDAP_HOST_ADDRESS));
+                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, MessageFormat.format(rb.getString(SPConstants.INVALID_LDAP_HOST_ADDRESS), ldapServerHostAddress));
                         return false;
                     }
                     LOGGER.config("Checking for a valid port number.");
                     if (!checkForInteger(portNumber)) {
-                        ed.set(SPConstants.PORT_NUMBER, rb.getString(SPConstants.INVALID_PORT_NUMBER));
+                        ed.set(SPConstants.PORT_NUMBER, MessageFormat.format(rb.getString(SPConstants.INVALID_PORT_NUMBER), portNumber));
                         return false;
                     }
                     Method method;
@@ -1713,6 +1719,20 @@ public class SharepointConnectorType implements ConnectorType {
                             authType, this.username, this.password, this.domain);
                     LOGGER.config("Created LDAP connection settings object to obtain LDAP context "
                             + ldapConnectionSettings);
+                    LdapConnection ldapConnection = new LdapConnection(settings);
+                    if (ldapConnection.getLdapContext() == null) {
+                        Map<LdapConnectionError, String> errors = ldapConnection.getErrors();
+                        Iterator<Entry<LdapConnectionError, String>> iterator = errors.entrySet().iterator();
+                        StringBuffer errorMessage = new StringBuffer();
+                        errorMessage.append(rb.getString(SPConstants.LDAP_CONNECTVITY_ERROR));
+                        while (iterator.hasNext()) {
+                            Map.Entry<LdapConnectionError, String> entry = iterator.next();
+                            errorMessage.append(SPConstants.SPACE
+                                    + entry.getValue());
+                        }
+                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, errorMessage.toString());
+                        return false;
+                    }
                     LdapContext context = new LdapServiceImpl.LdapConnection(
                             settings).getLdapContext();
                     if (context == null) {
@@ -1742,11 +1762,11 @@ public class SharepointConnectorType implements ConnectorType {
                         if (!Strings.isNullOrEmpty(initialCacheSize)
                                 && !Strings.isNullOrEmpty(cacheRefreshInterval)) {
                             if (!checkForInteger(this.initialCacheSize)) {
-                                ed.set(SPConstants.INITAL_CACHE_SIZE, rb.getString(SPConstants.INVALID_INITIAL_CACHE_SIZE));
+                                ed.set(SPConstants.INITAL_CACHE_SIZE, MessageFormat.format(rb.getString(SPConstants.INVALID_INITIAL_CACHE_SIZE), initialCacheSize));
                                 return false;
                             }
                             if (!checkForInteger(this.cacheRefreshInterval)) {
-                                ed.set(SPConstants.CACHE_REFRESH_INTERVAL, rb.getString(SPConstants.INVALID_CACHE_REFRESH_INTERVAL));
+                                ed.set(SPConstants.CACHE_REFRESH_INTERVAL, MessageFormat.format(rb.getString(SPConstants.INVALID_CACHE_REFRESH_INTERVAL), cacheRefreshInterval));
                                 return false;
                             }
                         } else {
@@ -1763,11 +1783,12 @@ public class SharepointConnectorType implements ConnectorType {
 
                 }
             } else {
-                if (!Strings.isNullOrEmpty(usernameFormatInAce)) {
-                    ed.set(SPConstants.GROUPNAME_FORMAT_IN_ACE, rb.getString(SPConstants.BLANK_GROUPNAME_FORMAT));
+                if (Strings.isNullOrEmpty(groupnameFormatInAce)) {
+                    ed.set(SPConstants.GROUPNAME_FORMAT_IN_ACE, MessageFormat.format(rb.getString(SPConstants.BLANK_GROUPNAME_FORMAT), groupnameFormatInAce));
                     return false;
-                } else {
-                    ed.set(SPConstants.USERNAME_FORMAT_IN_ACE, rb.getString(SPConstants.BLANK_USERNAME_FORMAT));
+                }
+                if (Strings.isNullOrEmpty(usernameFormatInAce)) {
+                    ed.set(SPConstants.USERNAME_FORMAT_IN_ACE, MessageFormat.format(rb.getString(SPConstants.BLANK_USERNAME_FORMAT), usernameFormatInAce));
                     return false;
                 }
             }
@@ -1788,6 +1809,23 @@ public class SharepointConnectorType implements ConnectorType {
             Integer.parseInt(number);
         } catch (NumberFormatException ne) {
             LOGGER.log(Level.WARNING, "Exception thrown while parsing LDAP port number.", ne);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks if the given name consist of special characters or not and returns
+     * true if there is no special characters found in the given name.
+     *
+     * @param nameFormat
+     * @return false if given name consist of at least on special character
+     *         other than '@' and '\'
+     */
+    private boolean checkForSpecialCharacters(String nameFormat) {
+        Pattern pattern = Pattern.compile("[^a-zA-Z0-9@\\\\]");
+        Matcher matcher = pattern.matcher(nameFormat);
+        if (matcher.find()) {
             return false;
         }
         return true;

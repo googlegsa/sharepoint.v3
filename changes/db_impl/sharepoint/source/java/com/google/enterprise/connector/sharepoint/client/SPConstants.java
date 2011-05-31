@@ -490,6 +490,10 @@ public class SPConstants {
     public static final String INVALID_CACHE_REFRESH_INTERVAL = "Invalid_Cache_Refresh_Interval";
     public static final String BLANK_INITIAL_CACHE_SIZE = "Blank_Initial_Cache_Size";
     public static final String BLANK_CACHE_REFRESH_INTERVAL = "Blank_Cache_Refresh_Interval";
+	public static final String SPECIAL_CHARACTERS_IN_USERNAME_FORMAT = "Special_Characters_In_Username_Format";
+	public static final String SPECIAL_CHARACTERS_IN_GROUPNAME_FORMAT = "Special_Characters_In_Groupname_Format";
+	public static final String SIMPLE = "simple";
+	public static final String ANONYMOUS = "ANONYMOUS";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

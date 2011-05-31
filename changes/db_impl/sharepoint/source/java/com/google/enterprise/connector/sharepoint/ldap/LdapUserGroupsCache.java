@@ -100,7 +100,7 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
                 for (final K name : expire.keySet()) {
                     synchronized (expire) {
                         if (System.currentTimeMillis() > expire.get(name)) {
-                            createRemoveRunnable(name);
+                            removeExpiredObjectFromCache(name);
                             LOGGER.log(Level.CONFIG, "Invalidating cache entry for the user [ "
                                     + name
                                     + " ] after "
@@ -118,7 +118,7 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
      *
      * @param name the name of the object
      */
-    private void createRemoveRunnable(final K name) {
+    private void removeExpiredObjectFromCache(final K name) {
         cacheStore.remove(name);
         expire.remove(name);
     }
@@ -152,12 +152,13 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
     private void put(K key, V obj, final long expireTime) {
         try {
             this.cacheStore.put(key, obj);
-            this.expire.put(key, System.currentTimeMillis() + expireTime * 1000);
+            long currentTime = System.currentTimeMillis() + expireTime * 1000;
+            this.expire.put(key, currentTime);
             LOGGER.log(Level.CONFIG, "Updated cache with an entry [ " + key
-                    + " ] with expiry time in seconds ["
-                    + System.currentTimeMillis() + expireTime * 1000 + "]");
+                    + " ] with expiry time in seconds [" + currentTime + "]");
         } catch (Throwable t) {
-            LOGGER.log(Level.WARNING, "Exception is thrown while updating cache with an entry :", t);
+            LOGGER.log(Level.WARNING, "Exception is thrown while updating cache for the key : "
+                    + key, t);
         }
 
     }
@@ -178,7 +179,7 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
         if (System.currentTimeMillis() > expireTime) {
             LOGGER.log(Level.CONFIG, "Removing cache entry for the user [ "
                     + key + " ] since the key expired in cache");
-            this.createRemoveRunnable(key);
+            this.removeExpiredObjectFromCache(key);
             return null;
         }
         return this.cacheStore.get(key);
@@ -215,15 +216,6 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
      * (java.lang.Object)
      */
     public boolean contains(K key) {
-        final Long expireTime = this.expire.get(key);
-        if (expireTime == null)
-            return false;
-        if (System.currentTimeMillis() > expireTime) {
-            LOGGER.log(Level.CONFIG, "Removing cache entry for the user [ "
-                    + key + " ] since the key expired in cache");
-            this.createRemoveRunnable(key);
-            return false;
-        }
-        return this.cacheStore.containsKey(key);
+        return (null != get(key));
     }
 }

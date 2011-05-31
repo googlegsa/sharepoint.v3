@@ -68,7 +68,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     private boolean appendNamespaceInSPGroup = false;
     private QueryProvider queryProvider;
     private UserGroupMembershipRowMapper userGroupMembershipRowMapper;
-    private boolean useSPSearchVisibility = false;
+    private boolean useSPSearchVisibility = true;
     private List<String> infoPathBaseTemplate;
     private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
     private boolean reWriteRecordUrlUsingAliasMappingRules;

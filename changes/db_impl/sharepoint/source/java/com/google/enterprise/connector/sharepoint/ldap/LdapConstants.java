@@ -70,4 +70,8 @@ public class LdapConstants {
         }
     }
 
+    public enum LdapConnectionError {
+        AuthenticationNotSupportedException, NamingException, AuthenticationFailedException, CommunicationException;
+    }
+
 }

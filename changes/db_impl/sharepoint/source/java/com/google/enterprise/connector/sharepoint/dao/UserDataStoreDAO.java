@@ -112,12 +112,9 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
             Set<String> groups, String searchUser) throws SharepointException {
         Query query = Query.UDS_SELECT_FOR_ADGROUPS;
-        Map<String, Object> groupsObject = null;
-        if (null != groups) {
-            groups.add(searchUser);
-            groupsObject = new HashMap<String, Object>();
-            groupsObject.put(SPConstants.GROUPS, groups);
-        }
+        Map<String, Object> groupsObject = new HashMap<String, Object>();
+        groups.add(searchUser);
+        groupsObject.put(SPConstants.GROUPS, groups);
         List<UserGroupMembership> memberships = null;
         try {
             memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
@@ -452,6 +449,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
                         tableFound = true;
                         LOGGER.config("User data store table found with name : "
                                 + tableName);
+                        break;
                     }
                 }
             } else {
@@ -472,12 +470,15 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
                         tableFound = true;
                         LOGGER.config("User data store table found with name : "
                                 + rsTables.getString("TABLE_NAME"));
+                        break;
                     }
                 }
             }
             try {
                 rsTables.close();
-                statement.close();
+                if (null != statement) {
+                    statement.close();
+                }
             } catch (SQLException e) {
                 LOGGER.log(Level.WARNING, "Exception occurred while closing data base resources.", e);
             }

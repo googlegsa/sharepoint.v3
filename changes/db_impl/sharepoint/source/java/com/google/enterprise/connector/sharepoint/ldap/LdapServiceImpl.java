@@ -16,17 +16,18 @@
 package com.google.enterprise.connector.sharepoint.ldap;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnectionError;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.ServerType;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnection;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticationManager;
 
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -126,17 +127,34 @@ public class LdapServiceImpl implements LdapService {
         return ldapConnection.getLdapContext();
     }
 
+    public Map<LdapConnectionError, String> getErrors() {
+        if (ldapConnection != null) {
+            return ldapConnection.getErrors();
+        }
+        throw new IllegalStateException(
+                "Must successfully set connection config before getting error state");
+    }
+
     public static class LdapConnection {
 
         private final LdapConnectionSettings settings;
         private LdapContext ldapContext = null;
+        private final Map<LdapConnectionError, String> errors;
 
         public LdapConnection(LdapConnectionSettings ldapConnectionSettings) {
             LOGGER.info(ldapConnectionSettings.toString());
             this.settings = ldapConnectionSettings;
             Hashtable<String, String> env = configureLdapEnvironment();
+			this.errors = Maps.newHashMap();
             this.ldapContext = createContext(env);
+        }
 
+        /**
+         * @return Map of errors with {@link LdapConnectionError} as a key and
+         *         detailed error message as a value.
+         */
+        public Map<LdapConnectionError, String> getErrors() {
+            return errors;
         }
 
         /**
@@ -157,12 +175,16 @@ public class LdapServiceImpl implements LdapService {
             try {
                 ctx = new InitialLdapContext(env, null);
             } catch (CommunicationException e) {
+				errors.put(LdapConnectionError.CommunicationException, e.getCause().toString());
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a communication failure.", e);
             } catch (AuthenticationNotSupportedException e) {
+				errors.put(LdapConnectionError.AuthenticationNotSupportedException, e.getCause().toString());
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication not supported exception.", e);
             } catch (AuthenticationException ae) {
+				errors.put(LdapConnectionError.AuthenticationFailedException, ae.getCause().toString());
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication exception.", ae);
             } catch (NamingException e) {
+				errors.put(LdapConnectionError.NamingException, e.getCause().toString());
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a naming exception.", e);
             }
             if (ctx == null) {
@@ -488,11 +510,11 @@ public class LdapServiceImpl implements LdapService {
             return null;
         }
         if (null != userName && null != lugCacheStore) {
-            if (null != lugCacheStore.get(userName)) {
+            if (lugCacheStore.contains(userName)) {
                 ldapGroups = (Set<String>) lugCacheStore.get(userName, LinkedHashMap.class);
                 LOGGER.info("Found valid entry for search user : "
                         + userName
-                        + "in cache store and he/she is a direct or indirect member of : "
+                        + " in cache store and he/she is a direct or indirect member of : "
                         + ldapGroups.size());
                 return ldapGroups;
             }
