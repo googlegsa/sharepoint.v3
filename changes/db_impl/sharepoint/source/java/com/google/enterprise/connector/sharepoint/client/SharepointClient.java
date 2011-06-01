@@ -266,11 +266,17 @@ public class SharepointClient {
      */
     boolean handleACLForDocuments(SPDocumentList resultSet, WebState webState,
             GlobalState globalState, boolean sendPendingDocs) {
+        if (sendPendingDocs) {
+            // This is to indicate that ACLs have been retrieved previously and
+            // hence just return the set of docs
+            return true;
+        }
+
         boolean aclRetrievalResult = false;
         // Fetch ACL for all the documents crawled from the current WebState
         // Do not try to re-fetch the ACL when documents are pending from
         // previous batch traversals
-        if (!sendPendingDocs && sharepointClientContext.isPushAcls()
+        if (sharepointClientContext.isPushAcls()
                 && null != resultSet && resultSet.size() > 0) {
 
             if (sharepointClientContext.isFetchACLInBatches()) {
