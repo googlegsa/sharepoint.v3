@@ -497,19 +497,21 @@ public class GssAclChangeCollection
     /// <param name="changeWebId"> Guid of the web site where the change has occured. </param>
     private bool IsEffectiveForWeb(SPSite site, SPWeb web, Guid changeWebId)
     {
-        SPWeb thisWeb = site.OpenWeb(changeWebId);
-        if (null == thisWeb)
+        using (SPWeb thisWeb = site.OpenWeb(changeWebId))
         {
-            return false;
-        }
+            if (null == thisWeb)
+            {
+                return false;
+            }
 
-        if (web.ID.Equals(thisWeb.ID))
-        {
-           return true;
-        }
-        else
-        {
-            return GssAclUtility.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);
+            if (web.ID.Equals(thisWeb.ID))
+            {
+                return true;
+            }
+            else
+            {
+                return GssAclUtility.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);
+            }
         }
     }
 
@@ -702,11 +704,21 @@ public class GssAclMonitor
         SPWeb web;
         init(out site, out web);
 
-        // Ensure that all the required APIs are accessible
-        SPUserCollection admins = web.SiteAdministrators;
-        SPPolicyCollection policies = site.WebApplication.Policies;
-        policies = site.WebApplication.ZonePolicies(site.Zone);
-        return "success";
+        try
+        {
+            // Ensure that all the required APIs are accessible
+            SPUserCollection admins = web.SiteAdministrators;
+            SPPolicyCollection policies = site.WebApplication.Policies;
+            policies = site.WebApplication.ZonePolicies(site.Zone);
+            return "success";
+        }
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
+        }
     }
 
     /// <summary>
@@ -772,6 +784,13 @@ public class GssAclMonitor
             {
                 acl = new GssAcl(url, 0);
                 acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
+            }
+            finally
+            {
+                if (web != null)
+                {
+                    web.Dispose(); // Dispose the SPWeb Object
+                }
             }
         }
 
@@ -840,6 +859,13 @@ public class GssAclMonitor
                 allChanges = new GssAclChangeCollection(changeTokenStart);
                 result.AddLogMessage("Exception occurred while change detection, Exception [ " + e.Message + " ] ");
             }
+            finally
+            {
+                if (web != null)
+                {
+                    web.Dispose(); // Dispose the SPWeb Object
+                }
+            }
         }
         else
         {
@@ -868,55 +894,66 @@ public class GssAclMonitor
 
         GssResolveSPGroupResult result = new GssResolveSPGroupResult();
         List<GssPrincipal> prinicpals = new List<GssPrincipal>();
-        if (null != groupId)
+        try
         {
-            foreach (string id in groupId)
+           
+            
+            if (null != groupId)
             {
-                GssPrincipal principal = null;
-                try
+                foreach (string id in groupId)
                 {
-                    if (GSSITEADMINGROUP.Equals(id))
+                    GssPrincipal principal = null;
+                    try
                     {
-                        principal = new GssPrincipal(GSSITEADMINGROUP, -1);
-                        // Get all the administrator users as member of the GSSITEADMINGROUP.
-                        List<GssPrincipal> admins = new List<GssPrincipal>();
-                        foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
+                        if (GSSITEADMINGROUP.Equals(id))
                         {
-                            GssPrincipal admin = GssAclUtility.GetGssPrincipalFromSPPrincipal(spPrincipal);
-                            if (null == admin)
+                            principal = new GssPrincipal(GSSITEADMINGROUP, -1);
+                            // Get all the administrator users as member of the GSSITEADMINGROUP.
+                            List<GssPrincipal> admins = new List<GssPrincipal>();
+                            foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
                             {
-                                continue;
+                                GssPrincipal admin = GssAclUtility.GetGssPrincipalFromSPPrincipal(spPrincipal);
+                                if (null == admin)
+                                {
+                                    continue;
+                                }
+                                admins.Add(admin);
                             }
-                            admins.Add(admin);
-                        }
-                        principal.Members = admins;
-                    }
-                    else
-                    {
-                        SPGroup spGroup = web.SiteGroups.GetByID(int.Parse(id));
-                        if(null != spGroup)
-                        {
-                            principal = new GssPrincipal(spGroup.Name, spGroup.ID);
-                            principal.Members = GssAclUtility.ResolveSPGroup(spGroup);
+                            principal.Members = admins;
                         }
                         else
                         {
-                            principal = new GssPrincipal(id, -2);
-                            principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                            SPGroup spGroup = web.SiteGroups.GetByID(int.Parse(id));
+                            if (null != spGroup)
+                            {
+                                principal = new GssPrincipal(spGroup.Name, spGroup.ID);
+                                principal.Members = GssAclUtility.ResolveSPGroup(spGroup);
+                            }
+                            else
+                            {
+                                principal = new GssPrincipal(id, -2);
+                                principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                            }
                         }
+                        principal.Type = GssPrincipal.PrincipalType.SPGROUP;
                     }
-                    principal.Type = GssPrincipal.PrincipalType.SPGROUP;
+                    catch (Exception e)
+                    {
+                        principal = new GssPrincipal(id, -2);
+                        principal.AddLogMessage("Could not resolve Group Id [ " + id + " ]. Exception: " + e.Message);
+                        principal.Type = GssPrincipal.PrincipalType.NA;
+                    }
+                    prinicpals.Add(principal);
                 }
-                catch (Exception e)
-                {
-                    principal = new GssPrincipal(id, -2);
-                    principal.AddLogMessage("Could not resolve Group Id [ " + id + " ]. Exception: " + e.Message);
-                    principal.Type = GssPrincipal.PrincipalType.NA;
-                }
-                prinicpals.Add(principal);
             }
         }
-
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
+        }
         result.Prinicpals = prinicpals;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
@@ -930,20 +967,30 @@ public class GssAclMonitor
     [WebMethod]
     public List<string> GetListsWithInheritingRoleAssignments()
     {
-      SPSite site;
+        SPSite site;
         SPWeb web;
         init(out site, out web);
 
-        List<string> listIDs = new List<string>();
-        SPListCollection lists = web.Lists;
-        foreach (SPList list in lists)
+        try
         {
-            if (!list.HasUniqueRoleAssignments && GssAclUtility.isSame(web.FirstUniqueAncestor, list.FirstUniqueAncestor))
+            List<string> listIDs = new List<string>();
+            SPListCollection lists = web.Lists;
+            foreach (SPList list in lists)
             {
-                listIDs.Add(list.ID.ToString());
+                if (!list.HasUniqueRoleAssignments && GssAclUtility.isSame(web.FirstUniqueAncestor, list.FirstUniqueAncestor))
+                {
+                    listIDs.Add(list.ID.ToString());
+                }
+            }
+            return listIDs;
+        }
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
             }
         }
-        return listIDs;
     }
 
     /// <summary>
@@ -972,6 +1019,13 @@ public class GssAclMonitor
         catch (Exception e)
         {
             throw new Exception("Passed in listId [ " + listGuId + " ] does not exist in the current web site context");
+        }
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
         }
 
         List<string> itemIDs = new List<string>();
@@ -1218,9 +1272,10 @@ public sealed class GssAclUtility
         SPListItem listItem = null;
         //check if the url ending with default.aspx, then return IsecureObejct
         // for the site not any of it's List/listItems to fetch Acl's.
+        
         if (!url.EndsWith("default.aspx"))
         {
-             listItem= web.GetListItem(url);
+            listItem = web.GetListItem(url);
             if (null != listItem)
             {
                 return listItem;
@@ -1250,6 +1305,8 @@ public sealed class GssAclUtility
         }
 
         return web.Site.OpenWeb(url);
+    
+            
     }
 
     /// <summary>
