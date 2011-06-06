@@ -1,15 +1,17 @@
-﻿<!-- *** Sharepoint GUI Framework Modified styleSheet          ***
+<?xml version="1.0"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+<!-- *** Sharepoint GUI Framework Modified styleSheet          ***
      *** Key components are marked in the file with SPSMod     *** -->
-
-
+     
+     
 <!-- *** START OF STYLESHEET *** -->
 
 <!-- **********************************************************************
  XSL to format the search output for Google Search Appliance
      ********************************************************************** -->
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  include customer-onebox.xsl, which is auto-generated from the customer's
  set of OneBox Module definitions, and in turn invokes either the default
  OneBox template, or the customer's:
@@ -18,7 +20,7 @@
 
   <xsl:output method="html"/>
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Logo setup (can be customized)
      - whether to show logo: 0 for FALSE, 1 (or non-zero) for TRUE
      - logo url
@@ -29,10 +31,10 @@
   <xsl:variable name="logo_width">100</xsl:variable>
   <xsl:variable name="logo_height">37</xsl:variable>
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Global Style variables (can be customized): '' for using browser's default
      ********************************************************************** -->
-  <!-- *** SPSMod:  Remove unecessary colours/formatting - will be controlled 
+<!-- *** SPSMod:  Remove unecessary colours/formatting - will be controlled 
 		largely by Sharepoint					*** -->
 
 
@@ -45,16 +47,16 @@
   <xsl:variable name="global_alink_color"></xsl:variable>
 
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Result page components (can be customized)
      - whether to show a component: 0 for FALSE, non-zero (e.g., 1) for TRUE
      - text and style
      ********************************************************************** -->
 
-  <!-- *** choose result page header: '', 'provided', 'mine', or 'both' *** -->
+<!-- *** choose result page header: '', 'provided', 'mine', or 'both' *** -->
   <xsl:variable name="choose_result_page_header">both</xsl:variable>
 
-  <!-- *** customize provided result page header *** -->
+<!-- *** customize provided result page header *** -->
   <xsl:variable name="show_swr_link">1</xsl:variable>
   <xsl:variable name="swr_search_anchor_text">Search Within Results</xsl:variable>
   <xsl:variable name="show_result_page_adv_link">0</xsl:variable>
@@ -64,167 +66,165 @@
   <xsl:variable name="show_alerts_link">0</xsl:variable>
   <xsl:variable name="alerts_anchor_text">Alerts</xsl:variable>
 
-  <!-- *** search boxes *** -->
+<!-- *** search boxes *** -->
   <xsl:variable name="show_top_search_box">0</xsl:variable>
   <xsl:variable name="show_bottom_search_box">0</xsl:variable>
   <xsl:variable name="search_box_size">32</xsl:variable>
 
-  <!-- *** choose search button type: 'text' or 'image' *** -->
+<!-- *** choose search button type: 'text' or 'image' *** -->
   <xsl:variable name="choose_search_button">text</xsl:variable>
   <xsl:variable name="search_button_text">Google Search</xsl:variable>
   <xsl:variable name="search_button_image_url"></xsl:variable>
   <xsl:variable name="search_collections_xslt"></xsl:variable>
 
-  <!-- *** search info bars *** -->
+<!-- *** search info bars *** -->
   <xsl:variable name="show_search_info">1</xsl:variable>
 
-  <!-- *** choose separation bar: 'ltblue', 'blue', 'line', 'nothing' *** -->
+<!-- *** choose separation bar: 'ltblue', 'blue', 'line', 'nothing' *** -->
   <xsl:variable name="choose_sep_bar">nothing</xsl:variable>
   <xsl:variable name="sep_bar_std_text"></xsl:variable>
   <xsl:variable name="sep_bar_adv_text">Advanced Search</xsl:variable>
   <xsl:variable name="sep_bar_error_text">Error</xsl:variable>
 
-  <!-- *** navigation bars: '', 'google', 'link', or 'simple'*** -->
+<!-- *** navigation bars: '', 'google', 'link', or 'simple'*** -->
   <xsl:variable name="show_top_navigation">1</xsl:variable>
   <xsl:variable name="choose_bottom_navigation">link</xsl:variable>
   <xsl:variable name="my_nav_align">right</xsl:variable>
   <xsl:variable name="my_nav_size">-1</xsl:variable>
   <xsl:variable name="my_nav_color">#6f6f6f</xsl:variable>
 
-  <!-- *** sort by date/relevance *** -->
+<!-- *** sort by date/relevance *** -->
   <xsl:variable name="show_sort_by">0</xsl:variable>
 
-  <!-- *** spelling suggestions *** -->
+<!-- *** spelling suggestions *** -->
   <xsl:variable name="show_spelling">1</xsl:variable>
   <xsl:variable name="spelling_text">Did you mean:</xsl:variable>
   <xsl:variable name="spelling_text_color">#cc0000</xsl:variable>
 
-  <!-- *** synonyms suggestions *** -->
+<!-- *** synonyms suggestions *** -->
   <xsl:variable name="show_synonyms">1</xsl:variable>
   <xsl:variable name="synonyms_text">You could also try:</xsl:variable>
   <xsl:variable name="synonyms_text_color">#cc0000</xsl:variable>
 
-  <!-- *** keymatch suggestions *** -->
+<!-- *** keymatch suggestions *** -->
   <xsl:variable name="show_keymatch">1</xsl:variable>
   <xsl:variable name="keymatch_text">KeyMatch</xsl:variable>
   <xsl:variable name="keymatch_text_color">#2255aa</xsl:variable>
   <xsl:variable name="keymatch_bg_color">#e8e8ff</xsl:variable>
 
-  <!-- *** Google Desktop integration *** -->
+<!-- *** Google Desktop integration *** -->
   <xsl:variable name="egds_show_search_tabs">1</xsl:variable>
   <xsl:variable name="egds_appliance_tab_label">Appliance</xsl:variable>
   <xsl:variable name="egds_show_desktop_results">1</xsl:variable>
 
-  <!-- *** onebox information *** -->
+<!-- *** onebox information *** -->
   <xsl:variable name="show_onebox">1</xsl:variable>
 
-  <!-- *** analytics information *** -->
+<!-- *** analytics information *** -->
   <xsl:variable name="analytics_account"></xsl:variable>
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Result elements (can be customized)
      - whether to show an element ('1' for yes, '0' for no)
      - font/size/color ('' for using style of the context)
      ********************************************************************** -->
 
-  <!-- *** result title and snippet *** -->
+<!-- *** result title and snippet *** -->
   <xsl:variable name="show_res_title">1</xsl:variable>
   <xsl:variable name="res_title_color">#003399</xsl:variable>
-  <xsl:variable name="res_title_size">1.2em</xsl:variable>
+  <xsl:variable name="res_title_size">0.8em</xsl:variable>
   <xsl:variable name="show_res_snippet">1</xsl:variable>
-  <xsl:variable name="res_snippet_size">80%</xsl:variable>
+  <xsl:variable name="res_snippet_size">9px</xsl:variable>
 
-  <!-- *** keyword match (in title or snippet) *** -->
+<!-- *** keyword match (in title or snippet) *** -->
   <xsl:variable name="res_keyword_color"></xsl:variable>
   <xsl:variable name="res_keyword_size"></xsl:variable>
-  <xsl:variable name="res_keyword_format">b</xsl:variable>
-  <!-- 'b' for bold -->
+  <xsl:variable name="res_keyword_format">b</xsl:variable>  <!-- 'b' for bold -->
 
-  <!-- *** link URL *** -->
+<!-- *** link URL *** -->
   <xsl:variable name="show_res_url">1</xsl:variable>
   <xsl:variable name="res_url_color">#008000</xsl:variable>
-  <xsl:variable name="res_url_size">-1</xsl:variable>
+  <xsl:variable name="res_url_size">1</xsl:variable>
   <xsl:variable name="truncate_result_urls">1</xsl:variable>
   <xsl:variable name="truncate_result_url_length">100</xsl:variable>
 
-  <!-- *** misc elements *** -->
+<!-- *** misc elements *** -->
   <xsl:variable name="show_meta_tags">1</xsl:variable>
   <xsl:variable name="show_res_size">1</xsl:variable>
   <xsl:variable name="show_res_date">1</xsl:variable>
   <xsl:variable name="show_res_cache">1</xsl:variable>
 
-  <!-- *** used in result cache link, similar pages link, and description *** -->
+<!-- *** used in result cache link, similar pages link, and description *** -->
   <xsl:variable name="faint_color">#7777cc</xsl:variable>
 
-  <!-- *** show secure results radio button *** -->
+<!-- *** show secure results radio button *** -->
   <xsl:variable name="show_secure_radio">1</xsl:variable>
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Other variables (can be customized)
      ********************************************************************** -->
 
-  <!-- *** SPSMod:  Sharepoint Variables *** -->
+<!-- *** SPSMod:  Sharepoint Variables *** -->
   <xsl:variable name="show_sps_icons">1</xsl:variable>
   <xsl:variable name="show_sps_linebreaks">1</xsl:variable>
 
-  <!-- *** page title *** -->
+<!-- *** page title *** -->
   <xsl:variable name="front_page_title">Search Home</xsl:variable>
   <xsl:variable name="result_page_title">Search Results</xsl:variable>
   <xsl:variable name="adv_page_title">Advanced Search</xsl:variable>
   <xsl:variable name="error_page_title">Error</xsl:variable>
   <xsl:variable name="swr_page_title">Search Within Results</xsl:variable>
 
-  <!-- *** choose adv_search page header: '', 'provided', 'mine', or 'both' *** -->
+<!-- *** choose adv_search page header: '', 'provided', 'mine', or 'both' *** -->
   <xsl:variable name="choose_adv_search_page_header">both</xsl:variable>
 
-  <!-- *** cached page header text *** -->
+<!-- *** cached page header text *** -->
   <xsl:variable name="cached_page_header_text">This is the cached copy of</xsl:variable>
 
-  <!-- *** error message text *** -->
+<!-- *** error message text *** -->
   <xsl:variable name="server_error_msg_text">A server error has occurred.</xsl:variable>
   <xsl:variable name="server_error_des_text">Check server response code in details.</xsl:variable>
   <xsl:variable name="xml_error_msg_text">Unknown XML result type.</xsl:variable>
   <xsl:variable name="xml_error_des_text">View page source to see the offending XML.</xsl:variable>
 
-  <!-- *** advanced search page panel background color *** -->
+<!-- *** advanced search page panel background color *** -->
   <xsl:variable name="adv_search_panel_bgcolor">#cbdced</xsl:variable>
 
-  <!-- *** dyanmic result cluster options *** -->
+<!-- *** dyanmic result cluster options *** -->
   <xsl:variable name="show_res_clusters">0</xsl:variable>
   <xsl:variable name="res_cluster_position">right</xsl:variable>
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  My global page header/footer (can be customized)
      ********************************************************************** -->
-  <xsl:template name="my_page_header">
+<xsl:template name="my_page_header">
     <!-- *** replace the following with your own xhtml code or replace the text
    between the xsl:text tags with html escaped html code *** -->
     <xsl:text disable-output-escaping="yes"> &lt;!-- Please enter html code below. --&gt;</xsl:text>
   </xsl:template>
 
-  <xsl:template name="my_page_footer">
+<xsl:template name="my_page_footer">
     <span class="p">
       <xsl:text disable-output-escaping="yes"> &lt;!-- Please enter html code below. --&gt;</xsl:text>
     </span>
-  </xsl:template>
+</xsl:template>
 
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Logo template (can be customized)
      ********************************************************************** -->
-  <xsl:template name="logo">
-    <a href="{$home_url}">
-      <img src="{$logo_url}"
+<xsl:template name="logo">
+    <a href="{$home_url}"><img src="{$logo_url}"
       width="{$logo_width}" height="{$logo_height}"
       alt="Go to Google Home" border="0" />
     </a>
-  </xsl:template>
+</xsl:template>
 
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Search result page header (can be customized): logo and search box
      ********************************************************************** -->
-  <xsl:template name="result_page_header">
+<xsl:template name="result_page_header">
     <table border="0" cellpadding="0" cellspacing="0">
       <xsl:if test="$show_logo != '0'">
         <tr>
@@ -253,10 +253,10 @@
         </tr>
       </xsl:if>
     </table>
-  </xsl:template>
+</xsl:template>
 
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Search within results page header (can be customized): logo and search box
      ********************************************************************** -->
   <xsl:template name="swr_page_header">
@@ -279,13 +279,13 @@
         </tr>
       </xsl:if>
     </table>
-  </xsl:template>
+</xsl:template>
 
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Home search page header (can be customized): logo and search box
      ********************************************************************** -->
-  <xsl:template name="home_page_header">
+<xsl:template name="home_page_header">
     <table border="0" cellpadding="0" cellspacing="0">
       <xsl:if test="$show_logo != '0'">
         <tr>
@@ -305,46 +305,40 @@
         </tr>
       </xsl:if>
     </table>
-  </xsl:template>
+</xsl:template>
 
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Separation bar variables (used in advanced search header and result page)
      ********************************************************************** -->
-  <xsl:variable name="sep_bar_border_color">
+<xsl:variable name="sep_bar_border_color">
     <xsl:choose>
       <xsl:when test="$choose_sep_bar = 'ltblue'">#3366cc</xsl:when>
       <xsl:when test="$choose_sep_bar = 'blue'">#3366cc</xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$global_bg_color"/>
-      </xsl:otherwise>
+      <xsl:otherwise><xsl:value-of select="$global_bg_color"/></xsl:otherwise>
     </xsl:choose>
-  </xsl:variable>
+</xsl:variable>
 
-  <xsl:variable name="sep_bar_bg_color">
+<xsl:variable name="sep_bar_bg_color">
     <xsl:choose>
       <xsl:when test="$choose_sep_bar = 'ltblue'">#e5ecf9</xsl:when>
       <xsl:when test="$choose_sep_bar = 'blue'">#3366cc</xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$global_bg_color"/>
-      </xsl:otherwise>
+      <xsl:otherwise><xsl:value-of select="$global_bg_color"/></xsl:otherwise>
     </xsl:choose>
   </xsl:variable>
 
-  <xsl:variable name="sep_bar_text_color">
+<xsl:variable name="sep_bar_text_color">
     <xsl:choose>
       <xsl:when test="$choose_sep_bar = 'ltblue'">#000000</xsl:when>
       <xsl:when test="$choose_sep_bar = 'blue'">#ffffff</xsl:when>
-      <xsl:otherwise>
-        <xsl:value-of select="$global_text_color"/>
-      </xsl:otherwise>
+      <xsl:otherwise><xsl:value-of select="$global_text_color"/></xsl:otherwise>
     </xsl:choose>
-  </xsl:variable>
+</xsl:variable>
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Advanced search page header HTML (can be customized)
      ********************************************************************** -->
-  <xsl:template name="advanced_search_header">
+<xsl:template name="advanced_search_header">
     <table border="0" cellpadding="0" cellspacing="0">
 
       <tr>
@@ -356,17 +350,17 @@
         </td>
       </tr>
     </table>
-  </xsl:template>
+</xsl:template>
 
 
-  <!-- **********************************************************************
+<!-- **********************************************************************
  Cached page header (can be customized)
      ********************************************************************** -->
-  <xsl:template name="cached_page_header">
+<xsl:template name="cached_page_header">
     <xsl:param name="cached_page_url"/>
     <xsl:variable name="stripped_url" select="substring-after($cached_page_url,
                                                             '://')"/>
-    <table border="1" width="100%">
+<table border="1" width="100%">
       <tr>
         <td>
           <table border="1" width="100%" cellpadding="10" cellspacing="0"
@@ -381,25 +375,19 @@
                                           $db_url_protocol)">
                       <a href="{concat('/db/',$stripped_url)}">
                         <font color="{$global_link_color}">
-                          <xsl:value-of select="$cached_page_url"/>
-                        </font>
-                      </a>.<br/>
+                          <xsl:value-of select="$cached_page_url"/></font></a>.<br/>
                     </xsl:when>
                     <xsl:when test="starts-with($cached_page_url,
                                           $nfs_url_protocol)">
                       <a href="{concat('/nfs/',$stripped_url)}">
                         <font color="{$global_link_color}">
-                          <xsl:value-of select="$cached_page_url"/>
-                        </font>
-                      </a>.<br/>
+                          <xsl:value-of select="$cached_page_url"/></font></a>.<br/>
                     </xsl:when>
                     <xsl:when test="starts-with($cached_page_url,
                                           $smb_url_protocol)">
                       <a href="{concat('/smb/',$stripped_url)}">
                         <font color="{$global_link_color}">
-                          <xsl:value-of select="$cached_page_url"/>
-                        </font>
-                      </a>.<br/>
+                          <xsl:value-of select="$cached_page_url"/></font></a>.<br/>
                     </xsl:when>
                     <xsl:when test="starts-with($cached_page_url,
                                           $unc_url_protocol)">
@@ -417,9 +405,7 @@
                     <xsl:otherwise>
                       <a href="{$cached_page_url}">
                         <font color="{$global_link_color}">
-                          <xsl:value-of select="$cached_page_url"/>
-                        </font>
-                      </a>.<br/>
+                          <xsl:value-of select="$cached_page_url"/></font></a>.<br/>
                     </xsl:otherwise>
                   </xsl:choose>
                 </font>
@@ -430,7 +416,7 @@
       </tr>
     </table>
     <hr/>
-  </xsl:template>
+</xsl:template>
 
 
   <!-- **********************************************************************
@@ -545,7 +531,7 @@
         body,div,td,.p,.s{color:<xsl:value-of select="$global_text_color"/>}
         body,.d,.p,.s{background-color:<xsl:value-of select="$global_bg_color"/>}
         .s{font-size: <xsl:value-of select="$res_snippet_size"/>}
-        .g{margin-top: 1em; margin-bottom: 1em}
+        .g{margin-top: 2px; margin-bottom: 2px}
         .s td{width:34em}
         .l{font-size: <xsl:value-of select="$res_title_size"/>}
         .l{color: <xsl:value-of select="$res_title_color"/>}
@@ -562,7 +548,7 @@
         .n a{font-size: 10pt; color:<xsl:value-of select="$global_text_color"/>}
         .n .i{font-size: 10pt; font-weight:bold}
         .q a:visited,.q a:link,.q a:active,.q {color:#0000cc;}
-        .b,.b a{font-size: 12pt; color:#0000cc; font-weight:bold}
+        .b,.b a{font-size: 9pt; color:#0000cc; font-weight:bold}
         .d{margin-right:1em; margin-left:1em;}
         div.oneboxResults {max-height:150px;overflow:hidden;}
         <xsl:if test="$show_res_clusters = '1'">
