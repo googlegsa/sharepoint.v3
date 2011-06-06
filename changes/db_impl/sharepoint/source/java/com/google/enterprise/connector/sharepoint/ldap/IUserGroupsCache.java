@@ -20,7 +20,7 @@ package com.google.enterprise.connector.sharepoint.ldap;
  *
  * @author nageswara_sura
  */
-public interface ILdapUserGroupCache<K, V> {
+public interface IUserGroupsCache<K, V> {
 
     /**
      * Returns an object from the cache for a given key.

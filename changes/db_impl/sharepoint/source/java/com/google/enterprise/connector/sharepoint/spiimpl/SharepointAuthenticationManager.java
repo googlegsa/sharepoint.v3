@@ -18,10 +18,8 @@ import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
-import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.ldap.LdapService;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
@@ -29,8 +27,6 @@ import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,11 +59,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         }
         sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
         if (sharepointClientContext.isPushAcls()) {
-           ldapService = new LdapServiceImpl(
-                inSharepointClientContext.getLdapConnectionSettings(),
-                inSharepointClientContext.getInitialCacheSize(),
-                inSharepointClientContext.getCacheRefreshInterval(),
-                inSharepointClientContext.isUseCacheToStoreLdapUserGroupsMembership());
+            ldapService = new UserGroupsService(inSharepointClientContext);
         }
      }
 
@@ -127,7 +119,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
              */
             if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
                 LOGGER.log(Level.INFO, "Authentication succeded for the user : ", userName);
-                if (null != this.sharepointClientContext.getUserDataStoreDAO()) {
+                if (null != this.ldapService) {
                     return getAllGroupsForTheUser(user);
                 }
             }
@@ -140,91 +132,28 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     }
 
     /**
-     * This method makes a successive calls to {@link LdapService} and
-     * {@link UserDataStoreDAO} to fetch all the groups to which he/she is a
-     * direct or indirect member of. Changed access level in write separate test
-     * cases.
+     * This method makes a call to {@link LdapService} to get all AD groups and
+     * SP groups of which he/she is a direct or indirect member of and returns
+     * {@link AuthenticationResponse}.
      *
-     * @param searchUserName to fetch all SharePoint groups and Directory groups
-     *            to which he/she is a direct or indirect member of.
+     * @param searchUser to fetch all SharePoint groups and Directory groups to
+     *            which he/she is a direct or indirect member of.
      * @return {@link AuthenticationResponse}
      * @throws SharepointException
      */
-    AuthenticationResponse getAllGroupsForTheUser(String searchUserName)
+    AuthenticationResponse getAllGroupsForTheUser(String searchUser)
             throws SharepointException {
-
-        Set<String> groups = null, finalADGroups = null;
-        try {
-            groups = ldapService.getAllLdapGroups(ldapService.getSamAccountNameForSearchUser(searchUserName));
-        } catch (RuntimeException re) {
-            LOGGER.log(Level.WARNING, "Runtime exception is thrown while fetching all SharePoint and AD groups for the search user : "
-                    + searchUserName, re);
+        Set<String> allSearchUserGroups = this.ldapService.getAllGroupsForSearchUser(sharepointClientContext, searchUser);
+        if (null != allSearchUserGroups && allSearchUserGroups.size() > 0) {
+            // Should return true is there is at least one group returned by
+            // LDAP service.
+            return new AuthenticationResponse(true, "", allSearchUserGroups);
         }
-        if (null != groups) {
-            finalADGroups = addGroupNameFormatForTheGroups(groups);
-        }
-        String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUserName);
-        LOGGER.info("Quering User data store with the AD groups :"
-                + finalADGroups + " and search user [" + finalSearchUserName
-                + "]");
-        List<UserGroupMembership> groupMemberList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(finalADGroups, finalSearchUserName);
-        Set<String> spGroups = new HashSet<String>();
-        StringBuffer groupName;
-
-        for (UserGroupMembership userGroupMembership : groupMemberList) {
-            if (!sharepointClientContext.isAppendNamespaceInSPGroup()) {
-                groupName = new StringBuffer().append(userGroupMembership.getGroupName());
-            } else {
-                groupName = new StringBuffer().append(SPConstants.LEFT_SQUARE_BRACKET).append(userGroupMembership.getNamespace()).append(SPConstants.RIGHT_SQUARE_BRACKET).append(userGroupMembership.getGroupName());
-            }
-            spGroups.add(groupName.toString());
-        }
-        groups.addAll(spGroups);
-
-        return new AuthenticationResponse(true, "", groups);
+        LOGGER.info("LDAP service returns no groups for the searh user: "
+                + searchUser);
+        // Should returns true with null groups.
+        return new AuthenticationResponse(true, "", null);
     }
 
-    /**
-     * Returns a set of groups after after adding the specific format provided
-     * by connector administrator in the connector configuration page. It should
-     * be called before making a call to user data store to get all SP groups.
-     *
-     * @param groupNames set of AD group names.
-     */
-    Set<String> addGroupNameFormatForTheGroups(final Set<String> groupNames) {
-        String format = this.sharepointClientContext.getGroupnameFormatInAce();
-        LOGGER.config("Groupname format in ACE : " + format);
-        String domain = this.sharepointClientContext.getDomain();
-        Set<String> groups = new HashSet<String>();
-        if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
-            for (String groupName : groupNames) {
-                groups.add(Util.getGroupNameAtDomain(groupName, domain));
-            }
-        } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
-            for (String groupName : groupNames) {
-                groups.add(Util.getGroupNameWithDomain(groupName, domain));
-            }
-        }
-        return groups;
-    }
 
-    /**
-     * Returns the search user name after changing its format to the user name
-     * format specified by the connector administrator during connector
-     * configuration.
-     *
-     * @param username
-     */
-    String addUserNameFormatForTheSearchUser(final String userName) {
-        String format = this.sharepointClientContext.getUsernameFormatInAce();
-        LOGGER.config("Username format in ACE : " + format);
-        String domain = this.sharepointClientContext.getDomain();
-        if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
-            return Util.getUserNameAtDomain(userName, domain);
-        } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
-            return Util.getUserNameWithDomain(userName, domain);
-        } else {
-            return userName;
-        }
-    }
 }

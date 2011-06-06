@@ -111,23 +111,34 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
      */
     public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
             Set<String> groups, String searchUser) throws SharepointException {
+        Set<String> ldapGroups = null;
         Query query = Query.UDS_SELECT_FOR_ADGROUPS;
         Map<String, Object> groupsObject = new HashMap<String, Object>();
-        groups.add(searchUser);
-        groupsObject.put(SPConstants.GROUPS, groups);
+        if (null == groups) {
+            ldapGroups = new HashSet<String>();
+            ldapGroups.add(searchUser);
+            groupsObject.put(SPConstants.GROUPS, ldapGroups);
+        } else {
+            groups.add(searchUser);
+            groupsObject.put(SPConstants.GROUPS, groups);
+        }
         List<UserGroupMembership> memberships = null;
         try {
             memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
         } catch (Throwable t) {
             throw new SharepointException(
-                    "Query execution failed while getting the membership info of a given user ",
+                    "Query execution failed while getting the membership info of a given user and AD gruops.",
                     t);
         }
         LOGGER.log(Level.INFO, memberships.size()
                 + " Memberships identified for LDAP directory groups in User Data Store.");
-        groups.remove(searchUser);
+        if (null == groups) {
+            ldapGroups.remove(searchUser);
+            ldapGroups = null;
+        } else {
+            groups.remove(searchUser);
+        }
         return memberships;
-
     }
 
     /**
@@ -333,6 +344,8 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
      * To cleanup the cache
      */
     public void cleanupCache() {
+        LOGGER.log(Level.INFO, "Current cache size , before cleanup "
+                + udsCache.size());
         udsCache.clearCache();
         LOGGER.log(Level.INFO, "Current cache size , after cleanup "
                 + udsCache.size());
@@ -533,4 +546,9 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             }
         }
     }
+
+    public int getUdsCacheSize() {
+        return this.udsCache.size();
+    }
+
 }

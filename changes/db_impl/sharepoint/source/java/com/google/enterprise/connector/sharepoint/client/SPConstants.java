@@ -484,7 +484,7 @@ public class SPConstants {
     public static final String DEFAULT_CACHE_REFRESH_INTERVAL = "7200";
     public static final String DEFAULT_INITAL_CACHE_SIZE = "10000";
     public static final String GROUPS = "groups";
-    public static final String DOUBLE_EQUAL_TO = "==";
+    public static final String EQUAL_TO = "=";
     public static final String INVALID_LDAP_HOST_ADDRESS = "Invalid_LDAP_HOST_Address_Blank";
     public static final String INVALID_INITIAL_CACHE_SIZE = "Invalid_Initial_Cache_Size";
     public static final String INVALID_CACHE_REFRESH_INTERVAL = "Invalid_Cache_Refresh_Interval";
@@ -494,6 +494,26 @@ public class SPConstants {
 	public static final String SPECIAL_CHARACTERS_IN_GROUPNAME_FORMAT = "Special_Characters_In_Groupname_Format";
 	public static final String SIMPLE = "simple";
 	public static final String ANONYMOUS = "ANONYMOUS";
+	public static final String ADGROUPS = "adgroups";
+	public static final String SPGROUPS = "spgroups";
+	public static final String START_BREAK = "<br>";
+	public static final String END_BREAK = "</br>";
+	public static final String GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME = "groupname";
+	public static final String GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN = "groupname@domain";
+	public static final String GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME = "domain\\groupname";
+	public static final String USERNAME_FORMAT_IN_ACE_ONLY_USERNAME = "username";
+	public static final String USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME = "username@doamin";
+	public static final String USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME = "domain\\username";
+	public static final String DISABLED = "disabled";
+	public static final String ON_CLICK = "onclick=";
+	public static final String OFF = "off";
+	public static final String LABEL_FOR = "label for";
+	public static final String FORWARD_SLASH = "/";
+	public static final String LABEL = "label";
+	public static final String SELECT = "select";
+	public static final String STYLE = "style=\"width:11em\"";
+	public static final String OPTION = "option";
+	public static final String SELECTED = "selected";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

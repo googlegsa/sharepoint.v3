@@ -18,8 +18,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnection;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 
 import org.junit.After;
 import org.junit.Before;
@@ -27,16 +27,17 @@ import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Test class for {@link LdapServiceImpl}
+ * Test class for {@link UserGroupsService}
  *
  * @author nageswara_sura
  */
-public class LdapServiceTest {
+public class UserGroupsServiceTest {
     private LdapConnectionSettings ldapConnectionSettings;
     private LdapConnection ldapConnection;
-    LdapServiceImpl ldapService;
+    UserGroupsService userGroupsService;
 
     /**
      * @throws java.lang.Exception
@@ -45,14 +46,14 @@ public class LdapServiceTest {
     public void setUp() throws Exception {
         this.ldapConnectionSettings = TestConfiguration.getLdapConnetionSettings();
         ldapConnection = new LdapConnection(ldapConnectionSettings);
-        this.ldapService = new LdapServiceImpl(ldapConnectionSettings,
+        this.userGroupsService = new UserGroupsService(ldapConnectionSettings,
                 TestConfiguration.cacheSize, TestConfiguration.refreshInterval,
                 true);
     }
 
     /**
      * Test method for
-     * {@link com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl#getLdapContext()}
+     * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsService#getLdapContext()}
      * .
      */
     @Test
@@ -62,67 +63,71 @@ public class LdapServiceTest {
 
     /**
      * Test method for
-     * {@link com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl#getAllParentGroups(java.lang.String, java.util.Set)}
+     * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsService#getAllParentGroups(java.lang.String, java.util.Set)}
      * .
      */
     @Test
     public void testGetAllParentGroups() {
         Set<String> parentGroups = new HashSet<String>();
 
-        ldapService.getAllParentGroups(TestConfiguration.ldapgroupname, parentGroups);
+        userGroupsService.getAllParentGroups(TestConfiguration.ldapgroupname, parentGroups);
         // including the group it self.
-        assertEquals(3, parentGroups.size());
+        assertEquals(1, parentGroups.size());
         assertEquals(new Boolean(true), parentGroups.contains(TestConfiguration.google));
         // I&SBU-Web is parent of Google group
         assertEquals(new Boolean(true), parentGroups.contains(TestConfiguration.expectedParentGroup));
         parentGroups = null;
-        ldapService.getAllParentGroups(TestConfiguration.fakeoremptyldapgroupname, parentGroups);
+        userGroupsService.getAllParentGroups(TestConfiguration.fakeoremptyldapgroupname, parentGroups);
         assertEquals(null, parentGroups);
     }
 
     /**
      * Test method for
-     * {@link com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl#getAllLdapGroups(java.lang.String)}
+     * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsService#getAllLdapGroups(java.lang.String)}
      * .
      */
     @Test
     public void testGetAllLdapGroups() {
-        Set<String> groups = ldapService.getAllLdapGroups(TestConfiguration.ldapuser1);
+		Set<String> groups = userGroupsService.getAllLdapGroups("u1");
         assertNotNull(groups); // cache for user1
-        ldapService.getAllLdapGroups(TestConfiguration.ldapuser2);
+        Set<String> ldapgroups = userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser1);
+        assertNotNull(ldapgroups); // cache for user1
+        userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser2);
         assertNotNull(groups); // cache for user2
-        ldapService.getAllLdapGroups(TestConfiguration.ldapuser3);
+        userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser3);
         assertNotNull(groups); // cache for user3
-        ldapService.getAllLdapGroups(TestConfiguration.ldapuser4);
+        userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser4);
         assertNotNull(groups); // cache for user4
-        LdapUserGroupsCache<Object, Object> cacheStore = ldapService.getLugCacheStore();
+
+        UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> cacheStore = userGroupsService.getLugCacheStore();
         if (cacheStore.get(TestConfiguration.ldapuser2) == null)
             throw new Error();
-        ldapService.getAllLdapGroups(TestConfiguration.ldapuser5);
-        ldapService.getAllLdapGroups(TestConfiguration.ldapuser6);
-        ldapService.getAllLdapGroups(TestConfiguration.ldapuser5);
-        ldapService.getAllLdapGroups(TestConfiguration.nullldapuser);
+
+        userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser5);
+        userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser6);
+        userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser5);
+        userGroupsService.getAllLdapGroups(TestConfiguration.nullldapuser);
 
     }
 
     /**
      * Test method for
-     * {@link com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl#getSamAccountNameFromSearchUser(java.lang.String)}
+     * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsService#getSamAccountNameFromSearchUser(java.lang.String)}
      * .
      */
     @Test
     public void testGetSamAccountNameFromSearchUser() {
         String expectedUserName = TestConfiguration.username;
 
-        String userName3 = ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat3);
+        String userName3 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat3);
         assertNotNull(userName3);
         assertEquals(expectedUserName, userName3);
 
-        String userName1 = ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat1);
+        String userName1 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat1);
         assertNotNull(userName1);
         assertEquals(expectedUserName, userName1);
 
-        String userName2 = ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat2);
+        String userName2 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat2);
         assertNotNull(userName2);
         assertEquals(expectedUserName, userName2);
     }
@@ -133,6 +138,6 @@ public class LdapServiceTest {
     @After
     public void tearDown() throws Exception {
         this.ldapConnection = null;
-        this.ldapService = null;
+        this.userGroupsService = null;
     }
 }

@@ -18,17 +18,25 @@ package com.google.enterprise.connector.sharepoint.ldap;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnectionError;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.ServerType;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticationManager;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,21 +57,23 @@ import javax.naming.ldap.LdapContext;
  * An implementation of {@link LdapService} and encapsulates all interaction
  * with JNDI to get {@link LdapContext} and {@link LdapConnection} with
  * {@link LdapConnectionSettings} provided by
- * {@link SharepointAuthenticationManager}. This implementation is specific to
- * Active Directory service at the moment.
- *
+ * {@link SharepointAuthenticationManager} and also it talks to
+ * {@link UserDataStoreDAO} to get all SP groups. This implementation is
+ * specific to Active Directory service at the moment.
+ * 
  * @author nageswara_sura
  */
-public class LdapServiceImpl implements LdapService {
+public class UserGroupsService implements LdapService {
 
-    private static final Logger LOGGER = Logger.getLogger(LdapServiceImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UserGroupsService.class.getName());
 
     private LdapConnectionSettings ldapConnectionSettings;
     private LdapContext context;
-    private LdapUserGroupsCache<Object, Object> lugCacheStore = null;
+	private UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> lugCacheStore = null;
     private LdapConnection ldapConnection;
+    private SharepointClientContext sharepointClientContext;
 
-    public LdapServiceImpl() {
+    public UserGroupsService() {
 
     }
 
@@ -76,13 +86,13 @@ public class LdapServiceImpl implements LdapService {
      * @param ldapConnectionSettings
      * @param domain
      */
-    public LdapServiceImpl(LdapConnectionSettings ldapConnectionSettings,
+    public UserGroupsService(LdapConnectionSettings ldapConnectionSettings,
             int cacheSize, long refreshInterval, boolean enableLUGCache) {
         this.ldapConnectionSettings = ldapConnectionSettings;
         ldapConnection = new LdapConnection(ldapConnectionSettings);
         context = getLdapContext();
         if (enableLUGCache) {
-            this.lugCacheStore = new LdapUserGroupsCache<Object, Object>(
+            this.lugCacheStore = new UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>>(
                     refreshInterval, cacheSize);
             LOGGER.log(Level.CONFIG, "Configured AD user groups cache store with refresh interval [ "
                     + refreshInterval
@@ -94,6 +104,25 @@ public class LdapServiceImpl implements LdapService {
         }
     }
 
+    public UserGroupsService(LdapConnectionSettings ldapConnectionSettings,
+            SharepointClientContext inSharepointClientContext) {
+        this.ldapConnectionSettings = ldapConnectionSettings;
+        ldapConnection = new LdapConnection(ldapConnectionSettings);
+        context = getLdapContext();
+        this.sharepointClientContext = inSharepointClientContext;
+        if (sharepointClientContext.isUseCacheToStoreLdapUserGroupsMembership()) {
+            this.lugCacheStore = new UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>>(
+                    sharepointClientContext.getCacheRefreshInterval(),
+                    sharepointClientContext.getInitialCacheSize());
+        } else {
+			LOGGER.log(Level.INFO, "No cache has been configured to keep AD user group memberships.");
+        }
+    }
+
+    public UserGroupsService(SharepointClientContext inSharepointClientContext) {
+        this(inSharepointClientContext.getLdapConnectionSettings(),
+                inSharepointClientContext);
+    }
     /**
      * A setter method used to set {@link LdapConnectionSettings} and creates a
      * {@link LdapConnection} object.
@@ -108,7 +137,7 @@ public class LdapServiceImpl implements LdapService {
 
     }
 
-    public LdapUserGroupsCache<Object, Object> getLugCacheStore() {
+    public UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> getLugCacheStore() {
         return lugCacheStore;
     }
 
@@ -145,7 +174,7 @@ public class LdapServiceImpl implements LdapService {
             LOGGER.info(ldapConnectionSettings.toString());
             this.settings = ldapConnectionSettings;
             Hashtable<String, String> env = configureLdapEnvironment();
-			this.errors = Maps.newHashMap();
+            this.errors = Maps.newHashMap();
             this.ldapContext = createContext(env);
         }
 
@@ -175,16 +204,16 @@ public class LdapServiceImpl implements LdapService {
             try {
                 ctx = new InitialLdapContext(env, null);
             } catch (CommunicationException e) {
-				errors.put(LdapConnectionError.CommunicationException, e.getCause().toString());
+                errors.put(LdapConnectionError.CommunicationException, e.getCause().toString());
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a communication failure.", e);
             } catch (AuthenticationNotSupportedException e) {
-				errors.put(LdapConnectionError.AuthenticationNotSupportedException, e.getCause().toString());
+                errors.put(LdapConnectionError.AuthenticationNotSupportedException, e.getCause().toString());
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication not supported exception.", e);
             } catch (AuthenticationException ae) {
-				errors.put(LdapConnectionError.AuthenticationFailedException, ae.getCause().toString());
+                errors.put(LdapConnectionError.AuthenticationFailedException, ae.getCause().toString());
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication exception.", ae);
             } catch (NamingException e) {
-				errors.put(LdapConnectionError.NamingException, e.getCause().toString());
+                errors.put(LdapConnectionError.NamingException, e.getCause().toString());
                 LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a naming exception.", e);
             }
             if (ctx == null) {
@@ -388,11 +417,13 @@ public class LdapServiceImpl implements LdapService {
             LOGGER.log(Level.WARNING, "Failed to retrieve direct groups for the user name : ["
                     + userName + "]", ne);
         } finally {
-            try {
-                ldapResults.close();
-            } catch (NamingException e) {
-                LOGGER.log(Level.WARNING, "Exception during clean up of ldap results for the search user : "
-                        + userName, e);
+            if (null != ldapResults) {
+                try {
+                    ldapResults.close();
+                } catch (NamingException e) {
+                    LOGGER.log(Level.WARNING, "Exception during clean up of ldap results for the search user : "
+                            + userName, e);
+                }
             }
         }
         LOGGER.info("[ " + userName + " ] is a direct member of "
@@ -407,7 +438,6 @@ public class LdapServiceImpl implements LdapService {
         // Specify the attributes to return
         String returnedAtts[] = { LdapConstants.RETURN_ATTRIBUTES_DIRECT_GROUPS_LIST };
         searchCtls.setReturningAttributes(returnedAtts);
-        LOGGER.config("search controles : " + searchCtls);
         return searchCtls;
     }
 
@@ -415,7 +445,7 @@ public class LdapServiceImpl implements LdapService {
         StringBuffer filter;
         filter = new StringBuffer().append(LdapConstants.PREFIX_FOR_DIRECT_GROUPS_FILTER
                 + userName + SPConstants.DOUBLE_CLOSE_PARENTHESIS);
-        LOGGER.config("search filter value for fetching direct gruops :"
+        LOGGER.config("search filter value for fetching direct groups :"
                 + filter);
         return filter.toString();
     }
@@ -479,7 +509,9 @@ public class LdapServiceImpl implements LdapService {
                     + groupName + "]", ne);
         } finally {
             try {
-                ldapResults.close();
+                if (null != ldapResults) {
+                    ldapResults.close();
+                }
             } catch (NamingException e) {
                 LOGGER.log(Level.WARNING, "Exception during clean up of ldap results.", e);
             }
@@ -502,36 +534,22 @@ public class LdapServiceImpl implements LdapService {
      * com.google.enterprise.connector.sharepoint.ldap.LdapService#getAllLdapGroups
      * (java.lang.String)
      */
-    @SuppressWarnings("unchecked")
     public Set<String> getAllLdapGroups(String userName) {
-        Set<String> ldapGroups = new HashSet<String>();
-        Set<String> directGroups = new HashSet<String>();
         if (Strings.isNullOrEmpty(userName)) {
             return null;
         }
-        if (null != userName && null != lugCacheStore) {
-            if (lugCacheStore.contains(userName)) {
-                ldapGroups = (Set<String>) lugCacheStore.get(userName, LinkedHashMap.class);
-                LOGGER.info("Found valid entry for search user : "
-                        + userName
-                        + " in cache store and he/she is a direct or indirect member of : "
-                        + ldapGroups.size());
-                return ldapGroups;
-            }
-        } else {
-            LOGGER.info("No entry found for the user [ "
-                    + userName
-                    + " ] in cache. Hence querying server to fetch groups, to which the search user belongs to.");
-            directGroups = getDirectGroupsForTheSearchUser(userName);
-        }
+        Set<String> ldapGroups = new HashSet<String>();
+        Set<String> directGroups = new HashSet<String>();
+		LOGGER.info("Quering LDAP directory server to fetch all direct groups for the search user: "
+                + userName);
+        directGroups = getDirectGroupsForTheSearchUser(userName);
         for (String groupName : directGroups) {
             getAllParentGroups(groupName, ldapGroups);
         }
         LOGGER.info("[ " + userName + " ] is a direct or indirect member of "
                 + ldapGroups.size() + " groups");
-
-        if (ldapGroups.size() > 0 && null != lugCacheStore) {
-            this.lugCacheStore.put(userName, ldapGroups);
+        if (null != directGroups) {
+            directGroups = null;
         }
         return ldapGroups;
     }
@@ -547,7 +565,7 @@ public class LdapServiceImpl implements LdapService {
     private String getGroupDNForTheGroup(String groupName) {
         String tmpGroupName;
         tmpGroupName = groupName.substring(0, groupName.indexOf(SPConstants.COMMA));
-        tmpGroupName = tmpGroupName.substring(tmpGroupName.indexOf(SPConstants.DOUBLE_EQUAL_TO) + 1);
+        tmpGroupName = tmpGroupName.substring(tmpGroupName.indexOf(SPConstants.EQUAL_TO) + 1);
         return tmpGroupName;
     }
 
@@ -574,4 +592,183 @@ public class LdapServiceImpl implements LdapService {
         return tmpUserName;
     }
 
+	/**
+	 * It is a helper method that returns a set of SPGroups for the search user
+	 * and the AD groups of which he/she is a direct or indirect member of.
+	 * 
+	 * @param searchUser the searchUser
+	 * @param adGroups a set of AD groups to which search user is a direct of
+	 *            indirect member of.
+	 */
+    private Set<String> getAllSPGroupsForSearchUserAndLdapGroups(
+            String searchUser, Set<String> adGroups) {
+        StringBuffer groupName;
+        // Search user and SP groups memberships found in user data store.
+        List<UserGroupMembership> groupMembershipList = null;
+        Set<String> spGroups = new HashSet<String>();
+        try {
+            if (null != this.sharepointClientContext.getUserDataStoreDAO()) {
+                groupMembershipList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(adGroups, searchUser);
+                for (UserGroupMembership userGroupMembership : groupMembershipList) {
+                    // check for the flag appendNamespaceInSPGroup and append
+                    // name space to SP groups.
+                    if (!sharepointClientContext.isAppendNamespaceInSPGroup()) {
+                        groupName = new StringBuffer().append(userGroupMembership.getGroupName());
+                    } else {
+                        groupName = new StringBuffer().append(SPConstants.LEFT_SQUARE_BRACKET).append(userGroupMembership.getNamespace()).append(SPConstants.RIGHT_SQUARE_BRACKET).append(userGroupMembership.getGroupName());
+                    }
+                    spGroups.add(groupName.toString());
+                }
+            }
+        } catch (SharepointException se) {
+            LOGGER.warning("Exception occured while fetching user groups memberships for the search user ["
+                    + searchUser + "] and AD groups [" + adGroups + "]");
+        } finally {
+            if (null != groupMembershipList) {
+                groupMembershipList = null;
+            }
+        }
+        return spGroups;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.google.enterprise.connector.sharepoint.ldap.LdapService#
+     * getAllSearchUserGroups
+     * (com.google.enterprise.connector.sharepoint.client.
+     * SharepointClientContext , java.lang.String)
+     */
+    public Set<String> getAllGroupsForSearchUser(
+            SharepointClientContext sharepointClientContext, String searchUser)
+            throws SharepointException {
+        ConcurrentHashMap<String, Set<String>> userGroupsMap = new ConcurrentHashMap<String, Set<String>>(
+				20);
+        Set<String> allUserGroups = new HashSet<String>();
+        if (null != searchUser && null != lugCacheStore) {
+            if (lugCacheStore.getSize() > 0
+                    && lugCacheStore.contains(searchUser.toLowerCase())) {
+                userGroupsMap = lugCacheStore.get(searchUser);
+				if (null != userGroupsMap) {
+					allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
+					allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
+				}
+                LOGGER.info("Found valid entry for search user ["
+                        + searchUser
+                        + "] in cache store and he/she is a direct or indirect member of "
+                        + allUserGroups.size() + " groups");
+                return allUserGroups;
+            } else {
+                LOGGER.info("No entry found for the user [ "
+                        + searchUser
+                        + " ] in cache store. Hence querying LDAP server and User data store to fetch all AD and SP groups, to which the search user belongs to.");
+                userGroupsMap = getAllADGroupsAndSPGroupsForSearchUser(searchUser);
+				if (null != userGroupsMap) {
+					allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
+					allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
+                }
+
+				this.lugCacheStore.put(searchUser.toLowerCase(), userGroupsMap);
+
+                return allUserGroups;
+            }
+        } else {
+			if (Strings.isNullOrEmpty(searchUser)) {
+                return null;
+            }
+            LOGGER.info("The LDAP cache is not yet initialized and hence querying LDAP and User Data Store directly.");
+            userGroupsMap = getAllADGroupsAndSPGroupsForSearchUser(searchUser);
+            allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
+            allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
+        }
+        if (null != userGroupsMap) {
+            userGroupsMap = null;
+        }
+        return allUserGroups;
+    }
+
+    /**
+     * Returns a set of groups after adding the specific group name format provided
+     * by connector administrator in the connector configuration page. It should
+     * be called before making a call to user data store to get all SP groups.
+     *
+     * @param groupNames set of AD group names.
+     */
+    Set<String> addGroupNameFormatForTheGroups(Set<String> groupNames) {
+        String format = this.sharepointClientContext.getGroupnameFormatInAce();
+        LOGGER.config("Groupname format in ACE : " + format);
+        String domain = this.sharepointClientContext.getDomain();
+        LOGGER.config("Domain : " + domain);
+        Set<String> groups = new HashSet<String>();
+        if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+            for (String groupName : groupNames) {
+				groups.add(Util.getGroupNameAtDomain(groupName.toLowerCase(), domain.toUpperCase()));
+            }
+			return groups;
+        } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+            for (String groupName : groupNames) {
+				groups.add(Util.getGroupNameWithDomain(groupName.toLowerCase(), domain.toUpperCase()));
+			}
+			return groups;
+		} else {
+			for (String groupName : groups) {
+				groups.add(groupName.toLowerCase());
+            }
+			return groups;
+        }
+    }
+
+    /**
+     * Returns the search user name after changing its format to the user name
+     * format specified by the connector administrator during connector
+     * configuration.
+     *
+     * @param username
+     */
+    String addUserNameFormatForTheSearchUser(final String userName) {
+        String format = this.sharepointClientContext.getUsernameFormatInAce();
+        LOGGER.config("Username format in ACE : " + format);
+        String domain = this.sharepointClientContext.getDomain();
+        if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+            return Util.getUserNameAtDomain(userName, domain);
+        } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+            return Util.getUserNameWithDomain(userName, domain);
+        } else {
+            return userName;
+        }
+    }
+
+    /**
+     * Create and returns a {@link ConcurrentHashMap} by querying LDAP directory
+     * server to fetch all AD groups that the search user belongs to and then
+     * queries User Data Store with a {@link Set}of AD groups and search user to
+     * fetch all SP groups.
+     *
+     * @param searchUser the searchUser
+     * @throws SharepointException
+     */
+    private ConcurrentHashMap<String, Set<String>> getAllADGroupsAndSPGroupsForSearchUser(
+            String searchUser) {
+        ConcurrentHashMap<String, Set<String>> userGroupsMap = new ConcurrentHashMap<String, Set<String>>(
+                2);
+        Set<String> adGroups = null, finalADGroups = null, spGroups = null;
+        try {
+            adGroups = getAllLdapGroups(searchUser);
+            if (null != adGroups && adGroups.size() > 0) {
+                finalADGroups = addGroupNameFormatForTheGroups(adGroups);
+            }
+            String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
+            LOGGER.info("Quering User data store with the AD groups :"
+                    + finalADGroups + " and search user ["
+                    + finalSearchUserName + "]");
+            spGroups = getAllSPGroupsForSearchUserAndLdapGroups(searchUser, finalADGroups);
+            userGroupsMap.put(SPConstants.ADGROUPS, finalADGroups);
+            userGroupsMap.put(SPConstants.SPGROUPS, spGroups);
+        } finally {
+            if (null != adGroups) {
+                adGroups = finalADGroups = spGroups = null;
+            }
+        }
+        return userGroupsMap;
+    }
 }

@@ -741,7 +741,8 @@ public class SharepointClient {
         globalState.setBFullReCrawl(doCrawl);
         globalState.endRecrawl(sharepointClientContext);
 
-        if (null != sharepointClientContext.getUserDataStoreDAO()) {
+		if (null != sharepointClientContext.getUserDataStoreDAO()
+				&& sharepointClientContext.getUserDataStoreDAO().getUdsCacheSize() > 0) {
             sharepointClientContext.getUserDataStoreDAO().cleanupCache();
         }
         LOGGER.log(Level.INFO, "Returning after crawl cycle.. ");

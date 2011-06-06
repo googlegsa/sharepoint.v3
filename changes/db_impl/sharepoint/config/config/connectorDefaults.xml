@@ -119,18 +119,18 @@
                 <prop key="aliasMap"></prop>
                 <prop key="authorization">Metadata-and-URL</prop>
                 <prop key="useSPSearchVisibility">true</prop>
-                <prop key="pushAcls">false</prop>
-                <prop key="appendNamespaceInSPGroup">false</prop>
-                <prop key="usernameFormatInAce"></prop>
-                <prop key="groupnameFormatInAce"></prop>
+                <prop key="pushAcls">true</prop>
+                <prop key="appendNamespaceInSPGroup">true</prop>
+                <prop key="usernameFormatInAce">username</prop>
+                <prop key="groupnameFormatInAce">domain\\username</prop>
                 <prop key="ldapServerHostAddress"></prop>
                 <prop key="portNumber"></prop>
                 <prop key="authenticationType"></prop>
                 <prop key="connectMethod"></prop>
                 <prop key="searchBase"></prop>
                 <prop key="useCacheToStoreLdapUserGroupsMembership">false</prop>
-                <prop key="initialCacheSize"></prop>
-                <prop key="cacheRefreshInterval"></prop>
+                <prop key="initialCacheSize">1000</prop>
+                <prop key="cacheRefreshInterval">7200</prop>
             </props>
         </property>
     </bean>

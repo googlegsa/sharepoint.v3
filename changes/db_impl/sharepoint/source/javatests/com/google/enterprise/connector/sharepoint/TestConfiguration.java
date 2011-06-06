@@ -21,10 +21,10 @@ import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.AuthType;
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings.Method;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -140,6 +140,9 @@ public class TestConfiguration {
     public static String ldapgroup;
     public static String ldapuser;
     public static String fakeusername;
+	public static String searchUser1;
+	public static String searchUser2;
+	public static String ldapGroup1;
 
     static {
         final Properties properties = new Properties();
@@ -255,6 +258,9 @@ public class TestConfiguration {
 
         ldapgroup = properties.getProperty("ldapgroup");
         ldapuser = properties.getProperty("ldapuser");
+		searchUser2 = properties.getProperty("searchUser2");
+		searchUser1 = properties.getProperty("searchUser1");
+		ldapGroup1 = properties.getProperty("ldapGroup1");
     }
 
     public static Map<String, String> getConfigMap() {
@@ -649,7 +655,7 @@ public class TestConfiguration {
 
     public static LdapContext getLdapContext() {
         LdapConnectionSettings ldapConnectionSettings = getLdapConnetionSettings();
-        LdapServiceImpl serviceImpl = new LdapServiceImpl(
+        UserGroupsService serviceImpl = new UserGroupsService(
                 ldapConnectionSettings, TestConfiguration.cacheSize,
                 TestConfiguration.refreshInterval, true);
         return serviceImpl.getLdapContext();

@@ -45,19 +45,6 @@
     <!--
     <property name="FQDNConversion"><value>false</value></property>
        -->
-
-       <!-- ACL Related flags:
-        pushAcls: Whether ACLs should be sent for the documents. If true, ACLs will be sent as metadata with each document.
-        usernameFormatInAce: Specify the username format to be used in ACL. for example, username, username@domain or domain\username.
-        groupnameFormatInAce: Specify the groupname format to be used in ACL. for example, groupname, groupname@domain or domain\groupname.
-        appendNamespaceInSPGroup: SPGroups will be sent in the format [site_collection_url]groupname.  -->
-    <!--
-    <property name="pushAcls"><value>true</value></property>
-      <property name="usernameFormatInAce"><value>username</value></property>
-      <property name="groupnameFormatInAce"><value>domain\groupname</value></property>
-      <property name="appendNamespaceInSPGroup"><value>true</value></property>
-      -->
-
   <!--
     The following two properties define if the ACLs for documents need to
     be fetched in batches and what should be the factor to determine an

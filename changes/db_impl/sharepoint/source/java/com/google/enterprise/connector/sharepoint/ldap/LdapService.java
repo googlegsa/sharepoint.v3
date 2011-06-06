@@ -15,7 +15,9 @@
 
 package com.google.enterprise.connector.sharepoint.ldap;
 
-import com.google.enterprise.connector.sharepoint.ldap.LdapServiceImpl.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import java.util.Set;
 
@@ -63,4 +65,20 @@ public interface LdapService {
      */
     String getSamAccountNameForSearchUser(String userName);
 
+	/**
+	 * Returns all groups (AD groups + SP groups) for the search user by
+	 * querying LDAP directory server and User Data Store respectively. The
+	 * class that implements this interface should deal with user group’s cache.
+	 * I.e. If user groups cache is enabled on the connector configuration page,
+	 * the implementation should check for the groups in cache. If there is no
+	 * entry found for the search user, the implementation should query LDAP
+	 * server to get ADGroups and then store in cache.
+	 * 
+	 * @param sharepointClientContext the sharepointClientContext
+	 * @param searchUser the searchUser
+	 * @throws SharepointException
+	 */
+	Set<String> getAllGroupsForSearchUser(
+			SharepointClientContext sharepointClientContext, String searchUser)
+			throws SharepointException;
 }

@@ -30,9 +30,9 @@ import java.util.logging.Logger;
  *
  * @author nageswara_sura
  */
-public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
+public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
 
-    private static final Logger LOGGER = Logger.getLogger(LdapUserGroupsCache.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(UserGroupsCache.class.getName());
     // To store LDAP user and its groups (direct , parent)
     private final Map<K, V> cacheStore;
 
@@ -54,7 +54,7 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
      * directory service user group memberships for 2 hours with an initial
      * capacity of 1000+ (depends on the load factor).
      */
-    public LdapUserGroupsCache() {
+    public UserGroupsCache() {
         this(7200, 1000);
     }
 
@@ -65,7 +65,12 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
      *
      * @param refreshInterval to maintain entries in cache time in seconds
      */
-    public LdapUserGroupsCache(final long refreshInterval, final int cacheSize) {
+    public UserGroupsCache(final long refreshInterval, final int cacheSize) {
+        LOGGER.log(Level.CONFIG, "Creating LDAP user groups cache store with refresh interval [ "
+                + refreshInterval
+                + " ] and with capacity [ "
+                + cacheSize
+                + " ]");
         this.cacheSize = cacheSize;
         int hashTableCapacity = (int) Math.ceil(this.cacheSize
                 / hashTableLoadFactor) + 1;
@@ -74,7 +79,16 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
             private static final long serialVersionUID = 1;
 
             protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-                return size() > LdapUserGroupsCache.this.cacheSize;
+                if (size() > UserGroupsCache.this.cacheSize) {
+					LOGGER.info("Removing the cached entry for the search user ["
+                            + eldest.getKey()
+							+ "] from the user groups cache since the cache is full.");
+                    UserGroupsCache.this.expire.remove(eldest.getKey());
+                    return true;
+                } else {
+                    return false;
+                }
+
             }
         });
 
@@ -154,13 +168,13 @@ public class LdapUserGroupsCache<K, V> implements ILdapUserGroupCache<K, V> {
             this.cacheStore.put(key, obj);
             long currentTime = System.currentTimeMillis() + expireTime * 1000;
             this.expire.put(key, currentTime);
-            LOGGER.log(Level.CONFIG, "Updated cache with an entry [ " + key
-                    + " ] with expiry time in seconds [" + currentTime + "]");
+			LOGGER.log(Level.INFO, "Updated cache for the search user [" + key
+					+ "] with expiry time in seconds [" + currentTime
+                    + "] and now the cache size is : " + this.getSize());
         } catch (Throwable t) {
             LOGGER.log(Level.WARNING, "Exception is thrown while updating cache for the key : "
                     + key, t);
         }
-
     }
 
     /**
