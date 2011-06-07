@@ -28,6 +28,7 @@
   <property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
   <property name="connector.jarfile" value="${connector-manager.dir}/${jar.dir}/connector.jar" />
   <property name="lib.jar.dir" value="lib" />
+  <property name="lib.dev.jar.dir" value="${lib.jar.dir}/dev" />
   <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
   <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
   <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
@@ -59,7 +60,7 @@
      <!--Cobertura properties -->
        <property file="${config}/build_code_coverage.properties" />
        <path id="cobertura.classpath">
-         <fileset dir="${lib.jar.dir}">
+         <fileset dir="${lib.dev.jar.dir}">
            <include name="**/*.jar" />
          </fileset>
        </path>
