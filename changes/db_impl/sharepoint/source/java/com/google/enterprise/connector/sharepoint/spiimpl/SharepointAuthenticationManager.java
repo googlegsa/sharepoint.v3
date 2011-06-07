@@ -118,9 +118,16 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
              * data base for a given user and add it to AuthenticationResponse.             *
              */
             if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
-                LOGGER.log(Level.INFO, "Authentication succeded for the user : ", userName);
-                if (null != this.ldapService) {
+                LOGGER.log(Level.INFO, "Authentication succeeded for the user : "
+                        + user + " with identity : " + userName);
+                if (sharepointClientContext.isPushAcls()
+                        && null != this.ldapService) {
                     return getAllGroupsForTheUser(user);
+                } else {
+                    // Handle the cases when connector should just return true
+                    // indicating successfull authN
+                    LOGGER.config("No group resolution has been attempted as connector is not set to feed ACL");
+                    return new AuthenticationResponse(true, "", null);
                 }
             }
         } else {
@@ -143,13 +150,17 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
      */
     AuthenticationResponse getAllGroupsForTheUser(String searchUser)
             throws SharepointException {
+        LOGGER.info("Attempting group resolution for user : " + searchUser);
         Set<String> allSearchUserGroups = this.ldapService.getAllGroupsForSearchUser(sharepointClientContext, searchUser);
         if (null != allSearchUserGroups && allSearchUserGroups.size() > 0) {
             // Should return true is there is at least one group returned by
             // LDAP service.
+            StringBuffer buf = new StringBuffer(
+                    "Group resolution service returned following groups for the search user: ").append(searchUser).append(" \n").append(allSearchUserGroups.toString());
+            LOGGER.info(buf.toString());
             return new AuthenticationResponse(true, "", allSearchUserGroups);
         }
-        LOGGER.info("LDAP service returns no groups for the searh user: "
+        LOGGER.info("Group resolution service returned no groups for the search user: "
                 + searchUser);
         // Should returns true with null groups.
         return new AuthenticationResponse(true, "", null);
