@@ -266,6 +266,13 @@ public class SharepointClient {
      */
     boolean handleACLForDocuments(SPDocumentList resultSet, WebState webState,
             GlobalState globalState, boolean sendPendingDocs) {
+
+        if (!sharepointClientContext.isPushAcls()) {
+            // When the connector is not set to feed ACLs no further checks are
+            // required, just return true to send docs to CM and GSA
+            return true;
+        }
+
         if (sendPendingDocs) {
             // This is to indicate that ACLs have been retrieved previously and
             // hence just return the set of docs
@@ -276,8 +283,7 @@ public class SharepointClient {
         // Fetch ACL for all the documents crawled from the current WebState
         // Do not try to re-fetch the ACL when documents are pending from
         // previous batch traversals
-        if (sharepointClientContext.isPushAcls()
-                && null != resultSet && resultSet.size() > 0) {
+        if (null != resultSet && resultSet.size() > 0) {
 
             if (sharepointClientContext.isFetchACLInBatches()) {
                 aclRetrievalResult = fetchACLInBatches(resultSet, webState, globalState, sharepointClientContext.getAclBatchSizeFactor());
@@ -741,8 +747,8 @@ public class SharepointClient {
         globalState.setBFullReCrawl(doCrawl);
         globalState.endRecrawl(sharepointClientContext);
 
-		if (null != sharepointClientContext.getUserDataStoreDAO()
-				&& sharepointClientContext.getUserDataStoreDAO().getUdsCacheSize() > 0) {
+        if (null != sharepointClientContext.getUserDataStoreDAO()
+                && sharepointClientContext.getUserDataStoreDAO().getUdsCacheSize() > 0) {
             sharepointClientContext.getUserDataStoreDAO().cleanupCache();
         }
         LOGGER.log(Level.INFO, "Returning after crawl cycle.. ");

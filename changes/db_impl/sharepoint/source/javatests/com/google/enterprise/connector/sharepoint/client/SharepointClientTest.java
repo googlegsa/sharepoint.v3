@@ -212,4 +212,53 @@ public class SharepointClientTest extends TestCase {
         assertFalse(spclient.fetchACLInBatches(docList2, ws, gs, 2));
 
     }
+
+    /**
+     * @throws SharepointException
+     */
+    public void testHandleACLForDocumentsForNonACLCrawl()
+            throws SharepointException {
+        SharepointClientContext spContext = TestConfiguration.initContext();
+        spContext.setPushAcls(false);
+
+        SharepointClient spclient = new SharepointClient(spContext);
+
+        GlobalState gs = TestConfiguration.initState(spContext);
+        WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);
+
+        // Test that when feeding ACLs is turned off, you still get true to
+        // indicate docs need to be fed to GSA
+        assertTrue(spclient.handleACLForDocuments(null, ws, gs, false));
+
+        SPDocumentList docList = getDocList(spContext, gs);
+        spContext.setPushAcls(true);
+
+        // Should fetch ACL and return true to indicate success
+        assertTrue(spclient.handleACLForDocuments(docList, ws, gs, false));
+
+        // Should just return true without fetching ACLs
+        assertTrue(spclient.handleACLForDocuments(docList, ws, gs, true));
+
+    }
+
+    /**
+     * Returns a doc list for test cases
+     *
+     * @param spContext The context info
+     * @param gs The global state holding all web states and list states
+     * @return The doc list
+     */
+    private SPDocumentList getDocList(SharepointClientContext spContext,
+            GlobalState gs) {
+        SPDocument doc = new SPDocument("122",
+                TestConfiguration.Site1_List1_URL, Calendar.getInstance(),
+                ActionType.ADD);
+
+        doc.setSharepointClientContext(spContext);
+
+        List<SPDocument> list = new ArrayList<SPDocument>();
+        list.add(doc);
+        SPDocumentList docList = new SPDocumentList(list, gs);
+        return docList;
+    }
 }
