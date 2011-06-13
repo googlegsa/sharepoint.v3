@@ -1,4 +1,4 @@
-//Copyright 2007 Google Inc.
+//Copyright 2007-2011 Google Inc.
 
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 package com.google.enterprise.connector.sharepoint.wsclient;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetAttachmentCollectionResponseGetAttachmentCollectionResult;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenContains;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQuery;
@@ -36,7 +36,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.wsclient.handlers.InvalidXmlCharacterHandler;
-import com.google.enterprise.connector.spi.Value;
+import com.google.enterprise.connector.sharepoint.wsclient.util.DateUtil;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.apache.axis.AxisFault;
@@ -53,7 +53,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -304,9 +303,10 @@ public class ListsWS {
         }
 
         if (c != null) {
-            date = Value.calendarToIso8601(c);
-            final Date dt = (Date) SPConstants.ISO8601_DATE_FORMAT_MILLIS.parse(date);
-            date = SPConstants.ISO8601_DATE_FORMAT_SECS.format(dt);
+            date = DateUtil.calendarToIso8601(c, DateUtil.Iso8601DateAccuracy.SECS);
+            LOGGER
+                .config("The ISO 8601 date passed to WS for change detection of content modified since is: "
+                    + date);
         }
 
         String strMyString = "<Query/>";// empty Query String
@@ -1700,7 +1700,10 @@ public class ListsWS {
 
         Calendar calMod;
         try {
-            calMod = Value.iso8601ToCalendar(lastModified);
+            LOGGER.config("The ISO 8601 date received from WS for last modified is: " 
+              + lastModified 
+              + " It will be stored in the snapshot and used for change detection.");
+            calMod = DateUtil.iso8601ToCalendar(lastModified);
         } catch (final ParseException pe) {
             LOGGER.log(Level.WARNING, "Unable to parse the document's last modified date vale. Using parent's last modified.");
             calMod = list.getLastModCal();
