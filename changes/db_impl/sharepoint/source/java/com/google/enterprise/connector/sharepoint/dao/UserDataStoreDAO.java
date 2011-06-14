@@ -498,10 +498,10 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
             if (!tableFound) {
                 getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
                 LOGGER.config("Created user data store table with name : "
-                        + Query.UDS_CREATE_TABLE + "sucessfully");
+                        + Query.UDS_CREATE_TABLE + " sucessfully");
                 getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
                 LOGGER.config("Created user data store table index with name : "
-                        + Query.UDS_CREATE_INDEX + "sucessfully");
+                        + Query.UDS_CREATE_INDEX + " sucessfully");
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);

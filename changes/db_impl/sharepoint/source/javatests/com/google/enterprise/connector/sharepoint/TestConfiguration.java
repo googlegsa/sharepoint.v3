@@ -69,6 +69,19 @@ public class TestConfiguration {
     public static String authorization;
     public static boolean useSPSearchVisibility;
 
+    private static boolean pushAcls = true;
+    private static String appendNamespaceInSPGroup;
+    private static String usernameFormatInAce;
+    private static String groupnameFormatInAce;
+    private static String ldapServerHostAddress;
+    private static String portNumber = "389";
+    private static String authenticationType;
+    private static String connectMethod;
+    private static String searchBase;
+    private static String initialCacheSize;
+    private static boolean useCacheToStoreLdapUserGroupsMembership = false;
+    private static String cacheRefreshInterval;
+
     public static String searchUserID;
     public static String searchUserPwd;
     public static String SearchDocID1;
@@ -143,6 +156,8 @@ public class TestConfiguration {
 	public static String searchUser1;
 	public static String searchUser2;
 	public static String ldapGroup1;
+	public static String groupNameFormatInACE;
+	public static String userNameFormatInACE;
 
     static {
         final Properties properties = new Properties();
@@ -258,9 +273,21 @@ public class TestConfiguration {
 
         ldapgroup = properties.getProperty("ldapgroup");
         ldapuser = properties.getProperty("ldapuser");
-		searchUser2 = properties.getProperty("searchUser2");
-		searchUser1 = properties.getProperty("searchUser1");
-		ldapGroup1 = properties.getProperty("ldapGroup1");
+        searchUser2 = properties.getProperty("searchUser2");
+        searchUser1 = properties.getProperty("searchUser1");
+        ldapGroup1 = properties.getProperty("ldapGroup1");
+        ldapServerHostAddress = properties.getProperty("ldapServerHostAddress");
+        portNumber = properties.getProperty("portNumber");
+        authenticationType = properties.getProperty("authenticationType");
+        connectMethod = properties.getProperty("connectMethod");
+        initialCacheSize = properties.getProperty("initialCacheSize");
+        pushAcls = new Boolean(properties.getProperty("pushAcls")).booleanValue();
+        useCacheToStoreLdapUserGroupsMembership = new Boolean(
+            properties.getProperty("useCacheToStoreLdapUserGroupsMembership")).booleanValue();
+        appendNamespaceInSPGroup = properties.getProperty("appendNamespaceInSPGroup");
+        usernameFormatInAce = properties.getProperty("usernameFormatInAce");
+        groupnameFormatInAce = properties.getProperty("groupnameFormatInAce");
+        
     }
 
     public static Map<String, String> getConfigMap() {
@@ -277,6 +304,18 @@ public class TestConfiguration {
         configMap.put("excludedURls", excludedURls);
         configMap.put("authorization", authorization);
         configMap.put("useSPSearchVisibility", Boolean.toString(useSPSearchVisibility));
+        configMap.put("pushAcls", Boolean.toString(pushAcls));
+        configMap.put("usernameFormatInAce", usernameFormatInAce);
+        configMap.put("groupnameFormatInAce", groupnameFormatInAce);
+        configMap.put("ldapServerHostAddress", ldapServerHostAddress);
+        configMap.put("portNumber", portNumber);
+        configMap.put("authenticationType", authenticationType);
+        configMap.put("connectMethod", connectMethod);
+        configMap.put("searchBase", searchBase);
+        configMap.put("appendNamespaceInSPGroup", appendNamespaceInSPGroup);
+        configMap.put("initialCacheSize", initialCacheSize);
+        configMap.put("cacheRefreshInterval", cacheRefreshInterval);
+        configMap.put("useCacheToStoreLdapUserGroupsMembership", Boolean.toString(useCacheToStoreLdapUserGroupsMembership));
 
         return configMap;
     }

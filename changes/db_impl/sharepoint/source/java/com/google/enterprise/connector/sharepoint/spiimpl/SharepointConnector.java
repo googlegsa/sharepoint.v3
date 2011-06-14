@@ -328,10 +328,10 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         sharepointClientContext.setDomain(this.domain);
         if (pushAcls) {
             sharepointClientContext.setLdapConnectionSettings(getLdapConnectionSettings());
+			sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
             if (useCacheToStoreLdapUserGroupsMembership) {
                 sharepointClientContext.setCacheRefreshInterval(Long.parseLong(this.cacheRefreshInterval));
                 sharepointClientContext.setInitialCacheSize(Integer.parseInt(this.initialCacheSize));
-                sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
             }
         }
     }

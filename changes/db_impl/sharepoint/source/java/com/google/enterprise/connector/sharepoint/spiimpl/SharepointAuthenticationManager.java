@@ -27,6 +27,9 @@ import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -152,11 +155,12 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
             throws SharepointException {
         LOGGER.info("Attempting group resolution for user : " + searchUser);
         Set<String> allSearchUserGroups = this.ldapService.getAllGroupsForSearchUser(sharepointClientContext, searchUser);
-        if (null != allSearchUserGroups && allSearchUserGroups.size() > 0) {
+    Set<String> finalGroupNames = encodeGroupNames(allSearchUserGroups);
+    if (null != finalGroupNames && finalGroupNames.size() > 0) {
             // Should return true is there is at least one group returned by
             // LDAP service.
             StringBuffer buf = new StringBuffer(
-                    "Group resolution service returned following groups for the search user: ").append(searchUser).append(" \n").append(allSearchUserGroups.toString());
+          "Group resolution service returned following groups for the search user: ").append(searchUser).append(" \n").append(finalGroupNames.toString());
             LOGGER.info(buf.toString());
             return new AuthenticationResponse(true, "", allSearchUserGroups);
         }
@@ -166,5 +170,22 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         return new AuthenticationResponse(true, "", null);
     }
 
+  /**
+   * Returns a set of encoded group names by iterating to all the groups.
+   *
+   * @param allSearchUserGroups set of group names to encode.
+   */
+  private Set<String> encodeGroupNames(Set<String> allSearchUserGroups) {
+    Set<String> tmpGroups = new HashSet<String>();
+    if (null != allSearchUserGroups && allSearchUserGroups.size() > 0) {
+      for (String groupName : allSearchUserGroups) {
+        tmpGroups.add(StringEscapeUtils.escapeXml(groupName));
+      }
+      return tmpGroups;
+    } else {
+      LOGGER.info("Recieved zero or null groups to encode.");
+      return null;
+    }
+  }
 
 }

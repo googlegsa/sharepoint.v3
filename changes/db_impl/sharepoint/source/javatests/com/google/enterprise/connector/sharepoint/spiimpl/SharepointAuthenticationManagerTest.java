@@ -15,16 +15,15 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationResponse;
+import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.RepositoryLoginException;
 import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -41,7 +40,8 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         System.out.println("Initializing SharepointClientContext ...");
         this.sharepointClientContext = new SharepointClientContext(
                 TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
+                TestConfiguration.kdcserver, TestConfiguration.username,
+                TestConfiguration.Password,
                 TestConfiguration.googleConnectorWorkDir,
                 TestConfiguration.includedURls, TestConfiguration.excludedURls,
                 TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
@@ -50,13 +50,19 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+        sharepointClientContext.setPushAcls(true);
+        sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(true);
+        sharepointClientContext.setCacheRefreshInterval(300);
+        sharepointClientContext.setInitialCacheSize(5);
+        sharepointClientContext.setGroupnameFormatInAce(TestConfiguration.groupNameFormatInACE);
+        sharepointClientContext.setUsernameFormatInAce(TestConfiguration.userNameFormatInACE);
         System.out.println("Initializing SharepointAuthenticationManager ...");
         userDataStoreDAO = new UserDataStoreDAO(
                 TestConfiguration.getUserDataSource(),
                 TestConfiguration.getUserDataStoreQueryProvider(),
                 TestConfiguration.getUserGroupMembershipRowMapper());
         this.sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
-		sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
+        sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
         this.authMan = new SharepointAuthenticationManager(
                 this.sharepointClientContext);
         System.out.println("Initializing SharepointAuthenticationIdentity ...");
@@ -103,7 +109,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         assertNotNull(groups);
     }
 
-	public void testAuthenticateWithDifferentUserNameFormats()
+    public void testAuthenticateWithDifferentUserNameFormats()
             throws Throwable {
         System.out.println("Testing Authenticate() with domain\\user");
         this.authID = new SimpleAuthenticationIdentity(
@@ -150,7 +156,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         assertEquals(expectedUserName, userName2);
     }
 
-	public void testGetAllGroupsForTheUser() throws SharepointException {
+    public void testGetAllGroupsForTheUser() throws SharepointException {
         this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
 
         assertNotNull(this.authenticationResponse);
@@ -165,24 +171,39 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.fakeusername);
         assertNotNull(this.authenticationResponse);
         assertTrue((this.authenticationResponse.getGroups().isEmpty()));
-	}
-
-    public void testAddGroupNameFormatForTheGroups() {
-        Set<String> groups = new HashSet<String>();
-		groups.add("group1");
-		groups.add("group2");
-		groups.add("group3");
-		groups.add("group4");
-        Set<String> egroups = new HashSet<String>();
-		egroups = this.authMan.addGroupNameFormatForTheGroups(groups);
-		for (String groupName : egroups) {
-			assertEquals(true, groupName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
-		}
     }
 
-	public void testAddUserNameFormatForTheSearchUser() {
-		String userName = TestConfiguration.userNameFormat1;
-		String finalUserName = this.authMan.addUserNameFormatForTheSearchUser(userName);
-		assertEquals(true, finalUserName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
+    /**
+     * Test Authenticate method of AuthN manager by setting feed ACLs option as
+     * not selected.
+     *
+     * @throws RepositoryLoginException
+     * @throws RepositoryException
+     */
+    public void testAuthencateIfFeedAclsTurnedOff()
+            throws RepositoryLoginException, RepositoryException {
+        System.out.println("Testing authenticate() by setting feed ACLs off onthe configuration page.");
+        this.authenticationResponse = this.authMan.authenticate(this.authID);
+        assertNotNull(authenticationResponse);
+        assertTrue(authenticationResponse.isValid());
+        assertNull(this.authenticationResponse.getGroups());
+        System.out.println("[ authenticate() ] test completed if feed acls set to off.");
+    }
+
+    /**
+     * Test Authenticate method of AuthN manager by setting feed ACLs option as
+     * selected.
+     *
+     * @throws RepositoryLoginException
+     * @throws RepositoryException
+     */
+    public void testAuthencateIfFeedAclsTurnedOn()
+            throws RepositoryLoginException, RepositoryException {
+        System.out.println("Testing authenticate() by setting feed ACLs on on the configuration page.");
+        this.authenticationResponse = this.authMan.authenticate(this.authID);
+        assertNotNull(authenticationResponse);
+        assertTrue(authenticationResponse.isValid());
+        assertNotNull(this.authenticationResponse.getGroups());
+        System.out.println("[ authenticate() ] test completed if feed acls set to on at the connector configuration page.");
     }
 }

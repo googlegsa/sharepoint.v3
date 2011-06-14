@@ -514,6 +514,7 @@ public class SPConstants {
 	public static final String STYLE = "style=\"width:11em\"";
 	public static final String OPTION = "option";
 	public static final String SELECTED = "selected";
+	public static final boolean EDIT_MODE = true;
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

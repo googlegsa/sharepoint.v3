@@ -60,7 +60,7 @@ import javax.naming.ldap.LdapContext;
  * {@link SharepointAuthenticationManager} and also it talks to
  * {@link UserDataStoreDAO} to get all SP groups. This implementation is
  * specific to Active Directory service at the moment.
- * 
+ *
  * @author nageswara_sura
  */
 public class UserGroupsService implements LdapService {
@@ -69,7 +69,7 @@ public class UserGroupsService implements LdapService {
 
     private LdapConnectionSettings ldapConnectionSettings;
     private LdapContext context;
-	private UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> lugCacheStore = null;
+    private UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> lugCacheStore = null;
     private LdapConnection ldapConnection;
     private SharepointClientContext sharepointClientContext;
 
@@ -94,13 +94,13 @@ public class UserGroupsService implements LdapService {
         if (enableLUGCache) {
             this.lugCacheStore = new UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>>(
                     refreshInterval, cacheSize);
-            LOGGER.log(Level.CONFIG, "Configured AD user groups cache store with refresh interval [ "
+            LOGGER.log(Level.CONFIG, "Configured user groups cache store with refresh interval [ "
                     + refreshInterval
                     + " ] and with capacity [ "
                     + cacheSize
                     + " ]");
         } else {
-            LOGGER.log(Level.CONFIG, "No cache has been configured to keep AD user group memberships.");
+            LOGGER.log(Level.CONFIG, "No cache has been configured to keep user groups memberships.");
         }
     }
 
@@ -115,7 +115,7 @@ public class UserGroupsService implements LdapService {
                     sharepointClientContext.getCacheRefreshInterval(),
                     sharepointClientContext.getInitialCacheSize());
         } else {
-			LOGGER.log(Level.INFO, "No cache has been configured to keep AD user group memberships.");
+            LOGGER.log(Level.INFO, "No cache has been configured to keep user groups memberships.");
         }
     }
 
@@ -540,8 +540,11 @@ public class UserGroupsService implements LdapService {
         }
         Set<String> ldapGroups = new HashSet<String>();
         Set<String> directGroups = new HashSet<String>();
-		LOGGER.info("Quering LDAP directory server to fetch all direct groups for the search user: "
+        LOGGER.info("Quering LDAP directory server to fetch all direct groups for the search user: "
                 + userName);
+        if (this.context == null) {
+            context = getLdapConnection().getLdapContext();
+        }
         directGroups = getDirectGroupsForTheSearchUser(userName);
         for (String groupName : directGroups) {
             getAllParentGroups(groupName, ldapGroups);
@@ -592,14 +595,14 @@ public class UserGroupsService implements LdapService {
         return tmpUserName;
     }
 
-	/**
-	 * It is a helper method that returns a set of SPGroups for the search user
-	 * and the AD groups of which he/she is a direct or indirect member of.
-	 * 
-	 * @param searchUser the searchUser
-	 * @param adGroups a set of AD groups to which search user is a direct of
-	 *            indirect member of.
-	 */
+    /**
+     * It is a helper method that returns a set of SPGroups for the search user
+     * and the AD groups of which he/she is a direct or indirect member of.
+     *
+     * @param searchUser the searchUser
+     * @param adGroups a set of AD groups to which search user is a direct of
+     *            indirect member of.
+     */
     private Set<String> getAllSPGroupsForSearchUserAndLdapGroups(
             String searchUser, Set<String> adGroups) {
         StringBuffer groupName;
@@ -643,16 +646,16 @@ public class UserGroupsService implements LdapService {
             SharepointClientContext sharepointClientContext, String searchUser)
             throws SharepointException {
         ConcurrentHashMap<String, Set<String>> userGroupsMap = new ConcurrentHashMap<String, Set<String>>(
-				20);
+                20);
         Set<String> allUserGroups = new HashSet<String>();
         if (null != searchUser && null != lugCacheStore) {
             if (lugCacheStore.getSize() > 0
                     && lugCacheStore.contains(searchUser.toLowerCase())) {
                 userGroupsMap = lugCacheStore.get(searchUser);
-				if (null != userGroupsMap) {
-					allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
-					allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
-				}
+                if (null != userGroupsMap) {
+                    allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
+                    allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
+                }
                 LOGGER.info("Found valid entry for search user ["
                         + searchUser
                         + "] in cache store and he/she is a direct or indirect member of "
@@ -663,17 +666,17 @@ public class UserGroupsService implements LdapService {
                         + searchUser
                         + " ] in cache store. Hence querying LDAP server and User data store to fetch all AD and SP groups, to which the search user belongs to.");
                 userGroupsMap = getAllADGroupsAndSPGroupsForSearchUser(searchUser);
-				if (null != userGroupsMap) {
-					allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
-					allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
+                if (null != userGroupsMap) {
+                    allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
+                    allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
                 }
 
-				this.lugCacheStore.put(searchUser.toLowerCase(), userGroupsMap);
+                this.lugCacheStore.put(searchUser.toLowerCase(), userGroupsMap);
 
                 return allUserGroups;
             }
         } else {
-			if (Strings.isNullOrEmpty(searchUser)) {
+            if (Strings.isNullOrEmpty(searchUser)) {
                 return null;
             }
             LOGGER.info("The LDAP cache is not yet initialized and hence querying LDAP and User Data Store directly.");
@@ -702,19 +705,19 @@ public class UserGroupsService implements LdapService {
         Set<String> groups = new HashSet<String>();
         if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
             for (String groupName : groupNames) {
-				groups.add(Util.getGroupNameAtDomain(groupName.toLowerCase(), domain.toUpperCase()));
+                groups.add(Util.getGroupNameAtDomain(groupName.toLowerCase(), domain.toUpperCase()));
             }
-			return groups;
+            return groups;
         } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
             for (String groupName : groupNames) {
-				groups.add(Util.getGroupNameWithDomain(groupName.toLowerCase(), domain.toUpperCase()));
-			}
-			return groups;
-		} else {
-			for (String groupName : groups) {
-				groups.add(groupName.toLowerCase());
+                groups.add(Util.getGroupNameWithDomain(groupName.toLowerCase(), domain.toUpperCase()));
             }
-			return groups;
+            return groups;
+        } else {
+            for (String groupName : groups) {
+                groups.add(groupName.toLowerCase());
+            }
+            return groups;
         }
     }
 

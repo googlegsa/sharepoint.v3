@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 
@@ -139,5 +140,28 @@ public class UserGroupsServiceTest {
     public void tearDown() throws Exception {
         this.ldapConnection = null;
         this.userGroupsService = null;
+    }
+
+	public void testAddGroupNameFormatForTheGroups() {
+		Set<String> groups = new HashSet<String>();
+		groups.add("group1");
+		groups.add("group2");
+		groups.add("group3");
+		groups.add("group4");
+		Set<String> egroups = new HashSet<String>();
+
+        egroups = this.userGroupsService.addGroupNameFormatForTheGroups(groups);
+		for (String groupName : egroups) {
+			assertEquals(true, groupName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
+		}
+
+    }
+
+    public void testAddUserNameFormatForTheSearchUser() {
+		String userName = TestConfiguration.userNameFormat1;
+
+        String finalUserName = this.userGroupsService.addUserNameFormatForTheSearchUser(userName);
+		assertEquals(true, finalUserName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
+
     }
 }
