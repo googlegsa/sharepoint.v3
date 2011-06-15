@@ -257,7 +257,32 @@
     if (Request.QueryString["k"] != null)
     {
         // If this is the first request for search, populate the search query text with querystring 'k' parameter.
-        txtSearch.Text = Request.QueryString["k"].ToString();
+        string searchQuery = "";
+        searchQuery = Request.QueryString["k"];
+        int strCache = searchQuery.IndexOf("cache:");
+
+        if (strCache > -1)
+        {
+            /*
+             * The search query string contains the term 'cache', means that user has clicked either the
+             * 'Cached' or 'Text Version' link for a search result. Hence, set the text for the 
+             * search box using the value from the Session variable.
+             */
+            if (Session["SearchQuery"] != null)
+            {
+                txtSearch.Text = Convert.ToString(Session["SearchQuery"]);
+            }
+        }
+        else
+        {
+            txtSearch.Text = searchQuery;
+            Session["SearchQuery"] = txtSearch.Text; /* 
+                                                      * Store search query in Session variable, and then retrieve
+                                                      * at the time when user clicks on the 'Cached'/ 'Text Version'
+                                                      * Links
+                                                      */
+
+        }
     }
     else if(Request.QueryString["q"] != null)
     {

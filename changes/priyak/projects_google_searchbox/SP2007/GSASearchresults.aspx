@@ -659,15 +659,6 @@
 			{
 			   end = queryString.length;
 			}
-			var x = document.getElementById("idSearchString");
-			var mystring = decodeURIComponent(queryString.substring (begin, end))
-			
-			
-			var myindex = mystring.indexOf('cache:');
-			if(myindex>-1)
-			{
-			    x.value="";//for cached result do not show the search string as it looks wierd
-			}
 			return decodeURIComponent(queryString.substring (begin, end));
 		 }
 	   }
