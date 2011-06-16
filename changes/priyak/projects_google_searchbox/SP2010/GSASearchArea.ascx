@@ -18,33 +18,31 @@
     string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString() + "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
 
     /*
-     * Checking if session value is null for setting the initial type of search. Session value null means very first 
-     * time user has opened web application in web browser.
+     * Checking if session value is null for setting the initial type of search. Session value null means 
+     * either the user is done with the searching or he/ she has opened the web application for the first time
+     * in the browser.
      */
     if (Session["PublicSearchStatus"] == null)
     {
-        if (!IsPostBack)
+        // Getting the default search type from web.config file.
+        string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
+        if (defaultSearchType == PublicAndSecureSearch)
         {
-            // Getting the default search type from web.config file.
-            string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
-            if (defaultSearchType == PublicAndSecureSearch)
-            {
-                /*
-                 * If default search type is 'public and secure', set the status of the 
-                 * controls, namely, public search checkbox the hfPublicSearch hiddenfield
-                 * to boolean value false.
-                 */
-                setInitialStatusForUIControlsAsPerSearchType(false);
-            }
-            else if (defaultSearchType == PublicSearch)
-            {
-                /*
-                 * If default search type is 'public', set the status of the 
-                 * controls, namely, public search checkbox the hfPublicSearch hiddenfield
-                 * to boolean value true.
-                 */
-                setInitialStatusForUIControlsAsPerSearchType(true);
-            }
+            /*
+             * If default search type is 'public and secure', set the status of the 
+             * controls, namely, public search checkbox the hfPublicSearch hiddenfield
+             * to boolean value false.
+             */
+            setInitialStatusForUIControlsAsPerSearchType(false);
+        }
+        else if (defaultSearchType == PublicSearch)
+        {
+            /*
+             * If default search type is 'public', set the status of the 
+             * controls, namely, public search checkbox the hfPublicSearch hiddenfield
+             * to boolean value true.
+             */
+            setInitialStatusForUIControlsAsPerSearchType(true);
         }
     }
 
@@ -72,8 +70,6 @@
      * 'isPublicSearch'
      */
 
-
-    
     if (!IsPostBack)
     {
         string publicSearchStatus = "";
@@ -81,10 +77,23 @@
         {
             // This code will be executed for the first search request sent to GSA.
             publicSearchStatus = Request.QueryString["isPublicSearch"].ToString();
+            if (publicSearchStatus != "")
+            {
+                hfPublicSearch.Value = publicSearchStatus;
+                Session["PublicSearchStatus"] = publicSearchStatus;
+            }
+            else if(Session["PublicSearchStatus"] != null) /*
+                                                            * If querystring parameter value is empty string, assign
+                                                            * the value from session variable to the hiddenfield.
+                                                            */
+            {
+                hfPublicSearch.Value = Convert.ToString(Session["PublicSearchStatus"]);
+            }
 
-            // Save value in a session varaible.
-            Session["PublicSearchStatus"] = Request.QueryString["isPublicSearch"].ToString();
-            if (publicSearchStatus == "true")
+            /*
+             * Set the Public Search checkbox status as per the value of the hiddenfield 'hfPublicSearch'
+             */
+            if (hfPublicSearch.Value == "true")
             {
                 chkPublicSearch.Checked = true;
             }
@@ -106,23 +115,13 @@
                 string accessStatus = Request.QueryString["access"].ToString();
                 if (accessStatus == "a")
                 {
-                    if (Session["PublicSearchStatus"] != null)
-                    {
-                        publicSearchStatus = Convert.ToString(Session["PublicSearchStatus"]); // Get value from the session variable
-                        if (publicSearchStatus == "true")
-                        {
-                            chkPublicSearch.Checked = true;
-                        }
-                        else
-                        {
-                            chkPublicSearch.Checked = false;
-                        }
-                    }
+                    chkPublicSearch.Checked = false;
+                    Session["PublicSearchStatus"] = "false"; // Assign same value to the session variable, so that it it persisted.
                 }
                 else // Means only public search is performed by the user (i.e. access = p)
                 {
                     chkPublicSearch.Checked = true;
-                    Session["PublicSearchStatus"] = "true";
+                    Session["PublicSearchStatus"] = "true"; // Assign same value to the session variable, so that it it persisted.
                 }
             }
         }
@@ -266,7 +265,32 @@
     if (Request.QueryString["k"] != null)
     {
         // If this is the first request for search, populate the search query text with querystring 'k' parameter.
-        txtSearch.Text = Request.QueryString["k"].ToString();
+        string searchQuery = "";
+        searchQuery = Request.QueryString["k"];
+        int strCache = searchQuery.IndexOf("cache:");
+
+        if (strCache > -1)
+        {
+            /*
+             * The search query string contains the term 'cache', means that user has clicked either the
+             * 'Cached' or 'Text Version' link for a search result. Hence, set the text for the 
+             * search box using the value from the Session variable.
+             */
+            if (Session["SearchQuery"] != null)
+            {
+                txtSearch.Text = Convert.ToString(Session["SearchQuery"]);
+            }
+        }
+        else
+        {
+            txtSearch.Text = searchQuery;
+            Session["SearchQuery"] = txtSearch.Text; /* 
+                                                      * Store search query in Session variable, and then retrieve
+                                                      * at the time when user clicks on the 'Cached'/ 'Text Version'
+                                                      * Links
+                                                      */
+
+        }
     }
     else if (Request.QueryString["q"] != null)
     {
@@ -458,7 +482,7 @@ function SendSearchRequesttoGSAOnEnterClick()
 function SearchTextOnFocus()
 {
     var f = document.getElementById("<%=txtSearch.ClientID%>");
-    f.style.background = "background-image: none";
+    f.style.background = '#ffffff';
 }
 
 // Function that will change the background of the search query textbox
@@ -474,12 +498,11 @@ function SearchTextOnBlur()
     {
         /*
          * Do not display the Google Search watermark image in searchbox, when the searchbox contains text.
-         * Instead set background image to none.
+         * Instead set background colour to white.
          */
-        f.style.background = "background-image: none";
+        f.style.background = '#ffffff';
     }
 }
-
 </script>
 
 
@@ -489,15 +512,18 @@ function SearchTextOnBlur()
     // Function that will change the value of hiddenfield and session variable whenever checkbox is checked/ unchecked.
     public void checkPublicSearch(object sender, EventArgs e)
     {
-        if (chkPublicSearch.Checked)
+        if (IsPostBack)
         {
-            hfPublicSearch.Value = "true";
-            Session["PublicSearchStatus"] = "true";
-        }
-        else
-        {
-            hfPublicSearch.Value = "false";
-            Session["PublicSearchStatus"] = "false";
+            if (chkPublicSearch.Checked)
+            {
+                hfPublicSearch.Value = "true";
+                Session["PublicSearchStatus"] = "true";
+            }
+            else
+            {
+                hfPublicSearch.Value = "false";
+                Session["PublicSearchStatus"] = "false";
+            }
         }
     }
 
@@ -509,6 +535,7 @@ function SearchTextOnBlur()
     {
         chkPublicSearch.Checked = isInitialSearchTypeSetToPublic;
         hfPublicSearch.Value = isInitialSearchTypeSetToPublic.ToString().ToLower();
+        Session["PublicSearchStatus"] = isInitialSearchTypeSetToPublic.ToString().ToLower();
     }
     
     

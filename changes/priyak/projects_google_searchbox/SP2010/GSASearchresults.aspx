@@ -633,13 +633,6 @@ div.ms-areaseparatorright{
 			{
 			   end = queryString.length;
 			}
-			var x = document.getElementById("idSearchString");
-			var mystring = decodeURIComponent(queryString.substring (begin, end))
-			var myindex = mystring.indexOf('cache:');
-			if(myindex>-1)
-			{
-			    x.value="";//for cached result do not show the search string as it looks wierd
-			}
 			return decodeURIComponent(queryString.substring (begin, end));
 		 }
 	   }
@@ -823,9 +816,24 @@ else if(document.attachEvent)
                                 {
                                     gProps.accessLevel = "a"; // Perform 'public and secure search'
                                 }
-                                else
+                                else if (inquery["isPublicSearch"] == "true")
                                 {
                                     gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                                else if(Session["PublicSearchStatus"] != null)
+                                {
+                                    /*
+                                     * If querystring parameter value is null, assign value from the
+                                     * Session to the accesslevel search parameter.
+                                     */
+                                    if (Convert.ToString(Session["PublicSearchStatus"]) == "false")
+                                    {
+                                        gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                    }
+                                    else if (Convert.ToString(Session["PublicSearchStatus"]) == "true")
+                                    {
+                                        gProps.accessLevel = "p";  // Perform 'public search'
+                                    }
                                 }
                             }
                             else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
@@ -851,8 +859,10 @@ else if(document.attachEvent)
                                 }
                             }
                         }
-                        
-                    
+                        /*
+                         * Setting the Session variable for PublicSearchStatus to null
+                         */
+                        Session["PublicSearchStatus"] = null;
                        
                         searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")
