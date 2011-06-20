@@ -71,6 +71,13 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
                 + " ] and with capacity [ "
                 + cacheSize
                 + " ]");
+        if (refreshInterval < 7200) {
+            this.refreshInterval = 7200;
+            LOGGER.info("Configured refresh interval for user groups cache with "
+                    + this.refreshInterval + " seconds");
+        } else {
+            this.refreshInterval = refreshInterval;
+        }
         this.cacheSize = cacheSize;
         int hashTableCapacity = (int) Math.ceil(this.cacheSize
                 / hashTableLoadFactor) + 1;
@@ -80,9 +87,9 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
 
             protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
                 if (size() > UserGroupsCache.this.cacheSize) {
-					LOGGER.info("Removing the cached entry for the search user ["
+                    LOGGER.info("Removing the cached entry for the search user ["
                             + eldest.getKey()
-							+ "] from the user groups cache since the cache is full.");
+                            + "] from the user groups cache since the cache is full.");
                     UserGroupsCache.this.expire.remove(eldest.getKey());
                     return true;
                 } else {
@@ -93,8 +100,6 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
         });
 
         this.expire = Collections.synchronizedMap(new HashMap<K, Long>());
-
-        this.refreshInterval = refreshInterval;
 
         // Creates a thread pool that can be scheduled to run removeExpiry()
         // command with a fixed set of threads. If any
@@ -115,11 +120,11 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
                     synchronized (expire) {
                         if (System.currentTimeMillis() > expire.get(name)) {
                             removeExpiredObjectFromCache(name);
-                            LOGGER.log(Level.CONFIG, "Invalidating cache entry for the user [ "
+                            LOGGER.log(Level.CONFIG, "Invalidating cache entry for the search user [ "
                                     + name
                                     + " ] after "
                                     + refreshInterval
-                                    + " in seconds. ");
+                                    + " seconds. ");
                         }
                     }
                 }
@@ -168,8 +173,8 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
             this.cacheStore.put(key, obj);
             long currentTime = System.currentTimeMillis() + expireTime * 1000;
             this.expire.put(key, currentTime);
-			LOGGER.log(Level.INFO, "Updated cache for the search user [" + key
-					+ "] with expiry time in seconds [" + currentTime
+            LOGGER.log(Level.INFO, "Updated cache for the search user [" + key
+                    + "] with expiry time in seconds [" + currentTime
                     + "] and now the cache size is : " + this.getSize());
         } catch (Throwable t) {
             LOGGER.log(Level.WARNING, "Exception is thrown while updating cache for the key : "

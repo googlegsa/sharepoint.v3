@@ -1952,11 +1952,7 @@ public class SharepointConnectorType implements ConnectorType {
                         && !Strings.isNullOrEmpty(portNumber)
                         && !Strings.isNullOrEmpty(searchBase)
                         && !Strings.isNullOrEmpty(domain)) {
-                    LOGGER.config("Checking for a valid LDAP host address.");
-                    if (!validateIPAddress(ldapServerHostAddress)) {
-                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, MessageFormat.format(rb.getString(SPConstants.INVALID_LDAP_HOST_ADDRESS), ldapServerHostAddress));
-                        return false;
-                    }
+
                     LOGGER.config("Checking for a valid port number.");
                     if (!checkForInteger(portNumber)) {
                         ed.set(SPConstants.PORT_NUMBER, MessageFormat.format(rb.getString(SPConstants.INVALID_PORT_NUMBER), portNumber));

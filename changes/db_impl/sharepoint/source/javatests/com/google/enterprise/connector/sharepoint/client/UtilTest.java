@@ -231,4 +231,37 @@ public class UtilTest extends TestCase {
         assertEquals(expectedUrl, mappedUrl);
         aliasMap.clear();
     }
+
+	/**
+	 * @Test Tests {@link Util#getGroupNameWithDomain(groupname, domain)}
+	 */
+	public final void testGetGroupNameWithDomain() {
+		String expectedGroupNameFormat = "testdomain\\testgroup";
+		String format1 = Util.getGroupNameWithDomain("testgroup", "testdomain");
+		assertNotNull(format1);
+		assertEquals(expectedGroupNameFormat, format1);
+		String format2 = Util.getGroupNameWithDomain("testgroup@testdomain", "testdomain");
+		assertNotNull(format2);
+		assertEquals(expectedGroupNameFormat, format2);
+		String format3 = Util.getGroupNameWithDomain("testdomain\\testgroup", "testdomain");
+		assertNotNull(format3);
+		assertEquals(expectedGroupNameFormat, format3);
+	}
+
+    /**
+	 * @Test Tests {@link Util#getGroupNameAtDomain(groupname, domain)}
+	 */
+    public final void testGetGroupNameAtDomain() {
+		String expectedGroupNameFormat = "testgroup@testdomain";
+		String format1 = Util.getGroupNameAtDomain("testgroup", "testdomain");
+		assertNotNull(format1);
+		assertEquals(expectedGroupNameFormat, format1);
+		String format2 = Util.getGroupNameAtDomain("testgroup@testdomain", "testdomain");
+		assertNotNull(format2);
+		assertEquals(expectedGroupNameFormat, format2);
+		String format3 = Util.getGroupNameAtDomain("testdomain\\testgroup", "testdomain");
+		assertNotNull(format3);
+		assertEquals(expectedGroupNameFormat, format3);
+    }
+
 }

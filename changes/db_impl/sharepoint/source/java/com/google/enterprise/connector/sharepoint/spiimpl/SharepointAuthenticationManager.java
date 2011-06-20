@@ -155,12 +155,12 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
             throws SharepointException {
         LOGGER.info("Attempting group resolution for user : " + searchUser);
         Set<String> allSearchUserGroups = this.ldapService.getAllGroupsForSearchUser(sharepointClientContext, searchUser);
-    Set<String> finalGroupNames = encodeGroupNames(allSearchUserGroups);
-    if (null != finalGroupNames && finalGroupNames.size() > 0) {
+        Set<String> finalGroupNames = encodeGroupNames(allSearchUserGroups);
+        if (null != finalGroupNames && finalGroupNames.size() > 0) {
             // Should return true is there is at least one group returned by
             // LDAP service.
             StringBuffer buf = new StringBuffer(
-          "Group resolution service returned following groups for the search user: ").append(searchUser).append(" \n").append(finalGroupNames.toString());
+                    "Group resolution service returned following groups for the search user: ").append(searchUser).append(" \n").append(finalGroupNames.toString());
             LOGGER.info(buf.toString());
             return new AuthenticationResponse(true, "", allSearchUserGroups);
         }

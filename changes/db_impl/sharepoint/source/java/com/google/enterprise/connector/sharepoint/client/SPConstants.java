@@ -502,7 +502,7 @@ public class SPConstants {
 	public static final String GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN = "groupname@domain";
 	public static final String GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME = "domain\\groupname";
 	public static final String USERNAME_FORMAT_IN_ACE_ONLY_USERNAME = "username";
-	public static final String USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME = "username@doamin";
+	public static final String USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME = "username@domain";
 	public static final String USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME = "domain\\username";
 	public static final String DISABLED = "disabled";
 	public static final String ON_CLICK = "onclick=";

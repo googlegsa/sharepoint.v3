@@ -193,6 +193,9 @@ public class UserGroupsService implements LdapService {
             return ldapContext;
         }
 
+        private LdapContext createContext() {
+            return createContext(configureLdapEnvironment());
+        }
         /**
          * Returns {@link LdapContext} object.
          *
@@ -219,8 +222,7 @@ public class UserGroupsService implements LdapService {
             if (ctx == null) {
                 return null;
             }
-            LOGGER.info("Sucessfully created an Initial LDAP context with the properties : "
-                    + env);
+            LOGGER.info("Sucessfully created an Initial LDAP context");
             return ctx;
         }
 
@@ -542,9 +544,10 @@ public class UserGroupsService implements LdapService {
         Set<String> directGroups = new HashSet<String>();
         LOGGER.info("Quering LDAP directory server to fetch all direct groups for the search user: "
                 + userName);
-        if (this.context == null) {
-            context = getLdapConnection().getLdapContext();
-        }
+        // fix me by creating a LDAP connection poll instead of creating context
+        // object on demand.
+        this.context = new LdapConnection(
+                sharepointClientContext.getLdapConnectionSettings()).createContext();
         directGroups = getDirectGroupsForTheSearchUser(userName);
         for (String groupName : directGroups) {
             getAllParentGroups(groupName, ldapGroups);
@@ -553,6 +556,7 @@ public class UserGroupsService implements LdapService {
                 + ldapGroups.size() + " groups");
         if (null != directGroups) {
             directGroups = null;
+            this.context = null;
         }
         return ldapGroups;
     }
@@ -754,7 +758,8 @@ public class UserGroupsService implements LdapService {
             String searchUser) {
         ConcurrentHashMap<String, Set<String>> userGroupsMap = new ConcurrentHashMap<String, Set<String>>(
                 2);
-        Set<String> adGroups = null, finalADGroups = null, spGroups = null;
+        Set<String> adGroups = null, spGroups = null;
+        Set<String> finalADGroups = new HashSet<String>();
         try {
             adGroups = getAllLdapGroups(searchUser);
             if (null != adGroups && adGroups.size() > 0) {
