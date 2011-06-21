@@ -485,6 +485,18 @@ public class WSContext
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', formsPos));
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
                 isTrimmed = true;
+
+                /*
+                 * For blog site template, picture library list URL (i.e. URL for "Photos" List)
+                 * contains both "lists" and "forms" string in the url. Hence removing the "lists"
+                 * from the url, so as to get the correct server relative URL for the picture library. 
+                 */ 
+                int listPos1 = listUrl.IndexOf("/lists", 0, StringComparison.InvariantCultureIgnoreCase);
+                if (listPos1 >= 0)
+                {
+                    listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+                    isTrimmed = true;
+                }
             }
 
             if (!isTrimmed)
