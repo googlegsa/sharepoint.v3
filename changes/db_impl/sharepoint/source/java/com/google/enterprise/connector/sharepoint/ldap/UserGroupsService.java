@@ -718,7 +718,7 @@ public class UserGroupsService implements LdapService {
             }
             return groups;
         } else {
-            for (String groupName : groups) {
+            for (String groupName : groupNames) {
                 groups.add(groupName.toLowerCase());
             }
             return groups;

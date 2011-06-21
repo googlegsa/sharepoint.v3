@@ -16,9 +16,11 @@ package com.google.enterprise.connector.sharepoint.ldap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 
@@ -39,6 +41,7 @@ public class UserGroupsServiceTest {
     private LdapConnectionSettings ldapConnectionSettings;
     private LdapConnection ldapConnection;
     UserGroupsService userGroupsService;
+    SharepointClientContext sharepointClientContext;
 
     /**
      * @throws java.lang.Exception
@@ -47,9 +50,19 @@ public class UserGroupsServiceTest {
     public void setUp() throws Exception {
         this.ldapConnectionSettings = TestConfiguration.getLdapConnetionSettings();
         ldapConnection = new LdapConnection(ldapConnectionSettings);
-        this.userGroupsService = new UserGroupsService(ldapConnectionSettings,
-                TestConfiguration.cacheSize, TestConfiguration.refreshInterval,
-                true);
+        sharepointClientContext = new SharepointClientContext(
+                TestConfiguration.sharepointUrl, TestConfiguration.domain,
+                TestConfiguration.kdcserver, TestConfiguration.username,
+                TestConfiguration.Password,
+                TestConfiguration.googleConnectorWorkDir,
+                TestConfiguration.includedURls, TestConfiguration.excludedURls,
+                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+                TestConfiguration.feedType,
+                TestConfiguration.useSPSearchVisibility);
+        sharepointClientContext.setGroupnameFormatInAce(TestConfiguration.groupnameFormatInAce);
+        sharepointClientContext.setUsernameFormatInAce(TestConfiguration.usernameFormatInAce);
+        sharepointClientContext.setLdapConnectionSettings(ldapConnectionSettings);
+        this.userGroupsService = new UserGroupsService(sharepointClientContext);
     }
 
     /**
@@ -89,7 +102,7 @@ public class UserGroupsServiceTest {
      */
     @Test
     public void testGetAllLdapGroups() {
-		Set<String> groups = userGroupsService.getAllLdapGroups("u1");
+        Set<String> groups = userGroupsService.getAllLdapGroups("u1");
         assertNotNull(groups); // cache for user1
         Set<String> ldapgroups = userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser1);
         assertNotNull(ldapgroups); // cache for user1
@@ -133,6 +146,58 @@ public class UserGroupsServiceTest {
         assertEquals(expectedUserName, userName2);
     }
 
+    @Test
+    public void testAddGroupNameFormatForTheGroups() {
+        Set<String> groups = new HashSet<String>();
+        groups.add("group1");
+        groups.add("group2");
+        groups.add("group3");
+        groups.add("group4");
+        Set<String> egroups = new HashSet<String>();
+
+        egroups = this.userGroupsService.addGroupNameFormatForTheGroups(groups);
+        if (sharepointClientContext.getGroupnameFormatInAce().indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+            for (String groupName : egroups) {
+                assertEquals(true, groupName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
+            }
+            for (String groupName : groups) {
+                assertEquals(true, egroups.contains(this.sharepointClientContext.getDomain().toUpperCase()
+                        + "\\" + groupName));
+            }
+        } else if (sharepointClientContext.getGroupnameFormatInAce().indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+            for (String groupName : egroups) {
+                assertEquals(true, groupName.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE);
+            }
+            for (String groupName : groups) {
+                assertEquals(true, egroups.contains(this.sharepointClientContext.getDomain().toUpperCase()
+                        + "@" + groupName));
+            }
+        } else {
+            for (String groupName : egroups) {
+                assertEquals(true, groups.contains(groupName));
+
+            }
+        }
+    }
+
+    @Test
+    public void testAddUserNameFormatForTheSearchUser() {
+        String userName = TestConfiguration.usernameFormatInAce;
+        String searchUserName = TestConfiguration.userNameFormat1;
+        String finalUserName = this.userGroupsService.addUserNameFormatForTheSearchUser(searchUserName);
+        if (sharepointClientContext.getUsernameFormatInAce().indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+            assertEquals(true, finalUserName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
+            assertEquals(sharepointClientContext.getDomain()
+                    + SPConstants.DOUBLEBACKSLASH + searchUserName, finalUserName);
+        } else if (sharepointClientContext.getUsernameFormatInAce().indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+            assertEquals(true, finalUserName.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE);
+            assertEquals(searchUserName + SPConstants.AT
+                    + sharepointClientContext.getDomain(), finalUserName);
+        } else {
+            assertTrue(userName.equalsIgnoreCase(finalUserName));
+        }
+    }
+
     /**
      * @throws java.lang.Exception
      */
@@ -140,28 +205,5 @@ public class UserGroupsServiceTest {
     public void tearDown() throws Exception {
         this.ldapConnection = null;
         this.userGroupsService = null;
-    }
-
-	public void testAddGroupNameFormatForTheGroups() {
-		Set<String> groups = new HashSet<String>();
-		groups.add("group1");
-		groups.add("group2");
-		groups.add("group3");
-		groups.add("group4");
-		Set<String> egroups = new HashSet<String>();
-
-        egroups = this.userGroupsService.addGroupNameFormatForTheGroups(groups);
-		for (String groupName : egroups) {
-			assertEquals(true, groupName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
-		}
-
-    }
-
-    public void testAddUserNameFormatForTheSearchUser() {
-		String userName = TestConfiguration.userNameFormat1;
-
-        String finalUserName = this.userGroupsService.addUserNameFormatForTheSearchUser(userName);
-		assertEquals(true, finalUserName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
-
     }
 }

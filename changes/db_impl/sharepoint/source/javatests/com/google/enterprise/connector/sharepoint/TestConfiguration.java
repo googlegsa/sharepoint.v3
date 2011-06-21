@@ -69,18 +69,18 @@ public class TestConfiguration {
     public static String authorization;
     public static boolean useSPSearchVisibility;
 
-    private static boolean pushAcls = true;
-    private static String appendNamespaceInSPGroup;
-    private static String usernameFormatInAce;
-    private static String groupnameFormatInAce;
-    private static String ldapServerHostAddress;
-    private static String portNumber = "389";
-    private static String authenticationType;
-    private static String connectMethod;
-    private static String searchBase;
-    private static String initialCacheSize;
-    private static boolean useCacheToStoreLdapUserGroupsMembership = false;
-    private static String cacheRefreshInterval;
+    public static boolean pushAcls = true;
+    public static String appendNamespaceInSPGroup;
+    public static String usernameFormatInAce;
+    public static String groupnameFormatInAce;
+    public static String ldapServerHostAddress;
+    public static String portNumber = "389";
+    public static String authenticationType;
+    public static String connectMethod;
+    public static String searchBase;
+    public static String initialCacheSize;
+    public static boolean useCacheToStoreLdapUserGroupsMembership = false;
+    public static String cacheRefreshInterval;
 
     public static String searchUserID;
     public static String searchUserPwd;
@@ -153,11 +153,11 @@ public class TestConfiguration {
     public static String ldapgroup;
     public static String ldapuser;
     public static String fakeusername;
-	public static String searchUser1;
-	public static String searchUser2;
-	public static String ldapGroup1;
-	public static String groupNameFormatInACE;
-	public static String userNameFormatInACE;
+    public static String searchUser1;
+    public static String searchUser2;
+    public static String ldapGroup1;
+    public static String groupNameFormatInACE;
+    public static String userNameFormatInACE;
 
     static {
         final Properties properties = new Properties();
@@ -287,7 +287,7 @@ public class TestConfiguration {
         appendNamespaceInSPGroup = properties.getProperty("appendNamespaceInSPGroup");
         usernameFormatInAce = properties.getProperty("usernameFormatInAce");
         groupnameFormatInAce = properties.getProperty("groupnameFormatInAce");
-        
+
     }
 
     public static Map<String, String> getConfigMap() {
