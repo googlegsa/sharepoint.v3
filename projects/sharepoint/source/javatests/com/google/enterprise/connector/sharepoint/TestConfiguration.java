@@ -15,8 +15,16 @@
 package com.google.enterprise.connector.sharepoint;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
+import com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -26,6 +34,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,6 +46,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.naming.ldap.LdapContext;
+import javax.sql.DataSource;
 
 public class TestConfiguration {
     public static String googleConnectorWorkDir;
@@ -47,6 +61,7 @@ public class TestConfiguration {
     public static String domain;
     public static String kdcserver;
     public static String username;
+    public static String testuser;
     public static String Password;
     public static String mySiteBaseURL;
     public static String includedURls;
@@ -54,11 +69,26 @@ public class TestConfiguration {
     public static String authorization;
     public static boolean useSPSearchVisibility;
 
+    public static boolean pushAcls = true;
+    public static String appendNamespaceInSPGroup;
+    public static String usernameFormatInAce;
+    public static String groupnameFormatInAce;
+    public static String ldapServerHostAddress;
+    public static String portNumber = "389";
+    public static String authenticationType;
+    public static String connectMethod;
+    public static String searchBase;
+    public static String initialCacheSize;
+    public static boolean useCacheToStoreLdapUserGroupsMembership = false;
+    public static String cacheRefreshInterval;
+
     public static String searchUserID;
     public static String searchUserPwd;
     public static String SearchDocID1;
     public static String SearchDocID2;
     public static String SearchDocID3;
+    public static String SearchDocID25;
+    public static String SearchDocID26;
 
     public static String Site1_URL;
     public static String Site1_List1_GUID;
@@ -95,6 +125,40 @@ public class TestConfiguration {
     public static boolean FQDNflag;
     public static FeedType feedType;
 
+    public static String driverClass;
+    public static String dbUrl;
+    public static String dbUsername;
+    public static String dbPassword;
+    public static String dbVendor;
+    public static String connectorName;
+    private static String UDS_TABLE_NAME;
+    private static String UDS_INDEX_NAME;
+    public static String userNameFormat1;
+    public static String userNameFormat2;
+    public static String userNameFormat3;
+    // LDAP
+    public static long refreshInterval;
+    public static int cacheSize;
+    public static String ldapuser1;
+    public static String ldapuser2;
+    public static String ldapuser3;
+    public static String ldapuser4;
+    public static String ldapuser5;
+    public static String ldapuser6;
+    public static String nullldapuser;
+    public static String ldapgroupname;
+    public static String fakeoremptyldapgroupname;
+    public static String expectedParentGroup;
+    public static Object google;
+    public static String ldapgroup;
+    public static String ldapuser;
+    public static String fakeusername;
+    public static String searchUser1;
+    public static String searchUser2;
+    public static String ldapGroup1;
+    public static String groupNameFormatInACE;
+    public static String userNameFormatInACE;
+
     static {
         final Properties properties = new Properties();
         try {
@@ -118,12 +182,20 @@ public class TestConfiguration {
         useSPSearchVisibility = new Boolean(
                 properties.getProperty("useSPSearchVisibility")).booleanValue();
 
+        // authorization = properties.getProperty("authorization");
+        authorization = "metadata-and-URL";
+
+        useSPSearchVisibility = new Boolean(
+                properties.getProperty("useSPSearchVisibility")).booleanValue();
+
         searchUserID = properties.getProperty("SearchUserID");
         searchUserPwd = properties.getProperty("SearchUserPwd");
         SearchDocID1 = properties.getProperty("SearchDocID1");
         SearchDocID2 = properties.getProperty("SearchDocID2");
         SearchDocID3 = properties.getProperty("SearchDocID3");
-
+        SearchDocID25 = properties.getProperty("SearchDocID25");
+        SearchDocID26 = properties.getProperty("SearchDocID26");
+        testuser = properties.getProperty("testuser");
         Site1_URL = properties.getProperty("Site1_URL");
         Site1_List1_GUID = properties.getProperty("Site1_List1_GUID");
         Site1_List1_URL = properties.getProperty("Site1_List1_URL");
@@ -172,6 +244,53 @@ public class TestConfiguration {
          */
         FQDNflag = false;
         feedType = FeedType.METADATA_URL_FEED;
+
+        driverClass = properties.getProperty("DriverClass");
+        dbUrl = properties.getProperty("DBURL");
+        dbUsername = properties.getProperty("DBUsername");
+        dbPassword = properties.getProperty("DBPassword");
+        dbVendor = properties.getProperty("DBVendor");
+        connectorName = properties.getProperty("ConnectorName");
+        UDS_TABLE_NAME = properties.getProperty("UDS_TABLE_NAME");
+        UDS_INDEX_NAME = properties.getProperty("UDS_INDEX_NAME");
+        userNameFormat1 = properties.getProperty("userNameFormat1");
+        userNameFormat1 = properties.getProperty("userNameFormat2");
+        userNameFormat1 = properties.getProperty("userNameFormat3");
+
+        refreshInterval = new Long(properties.getProperty("refreshInterval")).longValue();
+        cacheSize = new Integer(properties.getProperty("cacheSize")).intValue();
+
+        ldapuser1 = properties.getProperty("ldapuser1");
+        ldapuser2 = properties.getProperty("ldapuser2");
+        ldapuser3 = properties.getProperty("ldapuser3");
+        ldapuser4 = properties.getProperty("ldapuser4");
+        ldapuser5 = properties.getProperty("ldapuser5");
+        ldapuser5 = properties.getProperty("ldapuser5");
+        ldapuser5 = properties.getProperty("ldapuser6");
+        nullldapuser = properties.getProperty("nullldapuser");
+
+        ldapgroupname = properties.getProperty("ldapgroupname");
+        expectedParentGroup = properties.getProperty("expectedParentGroup");
+        google = properties.getProperty("google");
+        fakeoremptyldapgroupname = properties.getProperty("fakeoremptyldapgroupname");
+
+        ldapgroup = properties.getProperty("ldapgroup");
+        ldapuser = properties.getProperty("ldapuser");
+        searchUser2 = properties.getProperty("searchUser2");
+        searchUser1 = properties.getProperty("searchUser1");
+        ldapGroup1 = properties.getProperty("ldapGroup1");
+        ldapServerHostAddress = properties.getProperty("ldapServerHostAddress");
+        portNumber = properties.getProperty("portNumber");
+        authenticationType = properties.getProperty("authenticationType");
+        connectMethod = properties.getProperty("connectMethod");
+        initialCacheSize = properties.getProperty("initialCacheSize");
+        pushAcls = new Boolean(properties.getProperty("pushAcls")).booleanValue();
+        useCacheToStoreLdapUserGroupsMembership = new Boolean(
+            properties.getProperty("useCacheToStoreLdapUserGroupsMembership")).booleanValue();
+        appendNamespaceInSPGroup = properties.getProperty("appendNamespaceInSPGroup");
+        usernameFormatInAce = properties.getProperty("usernameFormatInAce");
+        groupnameFormatInAce = properties.getProperty("groupnameFormatInAce");
+
     }
 
     public static Map<String, String> getConfigMap() {
@@ -188,6 +307,18 @@ public class TestConfiguration {
         configMap.put("excludedURls", excludedURls);
         configMap.put("authorization", authorization);
         configMap.put("useSPSearchVisibility", Boolean.toString(useSPSearchVisibility));
+        configMap.put("pushAcls", Boolean.toString(pushAcls));
+        configMap.put("usernameFormatInAce", usernameFormatInAce);
+        configMap.put("groupnameFormatInAce", groupnameFormatInAce);
+        configMap.put("ldapServerHostAddress", ldapServerHostAddress);
+        configMap.put("portNumber", portNumber);
+        configMap.put("authenticationType", authenticationType);
+        configMap.put("connectMethod", connectMethod);
+        configMap.put("searchBase", searchBase);
+        configMap.put("appendNamespaceInSPGroup", appendNamespaceInSPGroup);
+        configMap.put("initialCacheSize", initialCacheSize);
+        configMap.put("cacheRefreshInterval", cacheRefreshInterval);
+        configMap.put("useCacheToStoreLdapUserGroupsMembership", Boolean.toString(useCacheToStoreLdapUserGroupsMembership));
 
         return configMap;
     }
@@ -213,7 +344,7 @@ public class TestConfiguration {
         ls.setType(SPConstants.GENERIC_LIST);
         SPDocument doc = new SPDocument(new Integer(docId).toString(), "X",
                 Calendar.getInstance(), null);
-        ls.setLastDocProcessedForWS(doc);
+        ls.setLastDocProcessed(doc);
         ls.setUrl(url);
 
         ls.setLastMod(dt);
@@ -484,7 +615,8 @@ public class TestConfiguration {
      *
      * @return Instance of {@link SharepointConnector}
      */
-    public static SharepointConnector getConnectorInstance() {
+    public static SharepointConnector getConnectorInstance()
+            throws SharepointException {
         SharepointConnector connector = new SharepointConnector();
         connector.setSharepointUrl(TestConfiguration.sharepointUrl);
         connector.setDomain(TestConfiguration.domain);
@@ -500,6 +632,74 @@ public class TestConfiguration {
         connector.setIncluded_metadata(TestConfiguration.whiteList);
         connector.setExcluded_metadata(TestConfiguration.blackList);
         connector.setFQDNConversion(true);
+        connector.init();
         return connector;
+    }
+
+
+    /**
+     * gets a sample data source for user data store
+     *
+     * @return
+     */
+    public static DataSource getUserDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName(TestConfiguration.driverClass);
+        dataSource.setUrl(TestConfiguration.dbUrl);
+        dataSource.setUsername(TestConfiguration.dbUsername);
+        dataSource.setPassword(TestConfiguration.dbPassword);
+        return dataSource;
+    }
+
+    public static UserGroupMembershipRowMapper getUserGroupMembershipRowMapper() {
+        UserGroupMembershipRowMapper rowMapper = new UserGroupMembershipRowMapper();
+        rowMapper.setUserID("SPUserID");
+        rowMapper.setUserName("SPUserName");
+        rowMapper.setGroupID("SPGroupID");
+        rowMapper.setGroupName("SPGroupName");
+        rowMapper.setNamespace("SPSite");
+        return rowMapper;
+    }
+
+    public static QueryProvider getUserDataStoreQueryProvider()
+            throws SharepointException {
+        SimpleQueryProvider queryProvider = new SimpleQueryProvider(
+                "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
+        queryProvider.setUdsTableName(TestConfiguration.UDS_TABLE_NAME);
+        queryProvider.setUdsIndexName(TestConfiguration.UDS_INDEX_NAME);
+        queryProvider.setDatabase(TestConfiguration.dbVendor);
+        queryProvider.init(TestConfiguration.dbVendor);
+        return queryProvider;
+    }
+
+    public static Set<UserGroupMembership> getMembershipsForNameSpace(
+            String namespace) throws SharepointException {
+        Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
+        UserGroupMembership membership1 = new UserGroupMembership(1, "user1",
+                2, "group1", namespace);
+        memberships.add(membership1);
+        UserGroupMembership membership2 = new UserGroupMembership(2, "user2",
+                2, "group1", namespace);
+        memberships.add(membership2);
+        UserGroupMembership membership3 = new UserGroupMembership(3, "user3",
+                2, "group2", namespace);
+        memberships.add(membership3);
+
+        return memberships;
+    }
+
+    public static LdapConnectionSettings getLdapConnetionSettings() {
+        LdapConnectionSettings settings = new LdapConnectionSettings(
+				Method.STANDARD, "xxx.xxx.xxx.xxx", 389, "DC=gdc-psl,DC=net",
+				AuthType.SIMPLE, "googlesp", "xxxx", "gdc-psl.net");
+        return settings;
+    }
+
+    public static LdapContext getLdapContext() {
+        LdapConnectionSettings ldapConnectionSettings = getLdapConnetionSettings();
+        UserGroupsService serviceImpl = new UserGroupsService(
+                ldapConnectionSettings, TestConfiguration.cacheSize,
+                TestConfiguration.refreshInterval, true);
+        return serviceImpl.getLdapContext();
     }
 }

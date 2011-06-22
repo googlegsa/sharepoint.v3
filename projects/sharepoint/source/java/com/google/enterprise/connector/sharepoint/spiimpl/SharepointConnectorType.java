@@ -14,12 +14,18 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.common.StringUtils;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnectionError;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
@@ -41,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.text.Collator;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,10 +56,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * ConnectorType implementation for Sharepoint This class is mainly desinged for
@@ -85,6 +95,19 @@ public class SharepointConnectorType implements ConnectorType {
 
     ResourceBundle rb = null;
     public static final String GOOGLE_CONN_WORK_DIR = "googleConnectorWorkDir";
+    private String pushAcls = null;
+    private String usernameFormatInAce;
+    private String groupnameFormatInAce;
+    private String ldapServerHostAddress;
+    private String portNumber;
+    private String authenticationType;
+    private String connectMethod;
+    private String searchBase;
+    private String initialCacheSize;
+    private String useCacheToStoreLdapUserGroupsMembership;
+    private String cacheRefreshInterval;
+    private LdapConnectionSettings ldapConnectionSettings;
+    private boolean editMode;
 
     /**
      * Sets the keys that are required for configuration. These are the actual
@@ -255,6 +278,183 @@ public class SharepointConnectorType implements ConnectorType {
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
                     buf.append(rb.getString(SPConstants.AUTHZ_BY_CONNECTOR));
+                } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    buf.append(SPConstants.SPACE + SPConstants.STYLE);
+
+                    if (editMode) {
+                        if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+                            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                                    + SPConstants.EQUAL_TO + "\""
+                                    + SPConstants.TRUE + "\"");
+                        }
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
+                            + SPConstants.SPACE + SPConstants.VALUE
+                            + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.AUTHENTICATION_TYPE_SIMPLE);
+                    buf.append("\"");
+                    if (Strings.isNullOrEmpty(value)
+                            || value.equalsIgnoreCase(SPConstants.AUTHENTICATION_TYPE_SIMPLE)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT
+                            + SPConstants.AUTHENTICATION_TYPE_SIMPLE);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + SPConstants.OPTION + SPConstants.SPACE
+                            + SPConstants.VALUE + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
+                    buf.append("\"");
+                    if (value.equalsIgnoreCase(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT
+                            + SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + "/" + SPConstants.SELECT
+                            + SPConstants.CLOSE_ELEMENT);
+                } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    buf.append(SPConstants.SPACE + SPConstants.STYLE);
+                    if (editMode) {
+                        if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+                            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                                    + SPConstants.EQUAL_TO + "\""
+                                    + SPConstants.TRUE + "\"");
+                        }
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
+                            + SPConstants.SPACE + SPConstants.VALUE
+                            + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.CONNECT_METHOD_STANDARD);
+                    buf.append("\"");
+                    if (Strings.isNullOrEmpty(value)
+                            || value.equalsIgnoreCase(SPConstants.CONNECT_METHOD_STANDARD)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT
+                            + SPConstants.CONNECT_METHOD_STANDARD);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + SPConstants.OPTION + SPConstants.SPACE
+                            + SPConstants.VALUE + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.CONNECT_METHOD_SSL);
+                    buf.append("\"");
+                    if (value.equalsIgnoreCase(SPConstants.CONNECT_METHOD_SSL)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT
+                            + SPConstants.CONNECT_METHOD_SSL);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + "/" + SPConstants.SELECT
+                            + SPConstants.CLOSE_ELEMENT);
+                } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.PUSH_ACLS_LABEL));
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    } else {
+                        appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+                        this.pushAcls = SPConstants.OFF;
+                    }
+                    buf.append(SPConstants.SPACE + SPConstants.ON_CLICK);
+                    buf.append("\"enableFeedAclsRelatedHtmlControles();\"");
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    // It allows to select check box using it's label.
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+                            + SPConstants.EQUAL_TO + "\"" + key + "\""
+                            + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
+                    buf.append(SPConstants.OPEN_ELEMENT
+                            + SPConstants.FORWARD_SLASH + SPConstants.LABEL
+                            + SPConstants.CLOSE_ELEMENT);
+                } else if (collator.equals(key, SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
+
+                    // buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    } else {
+                        appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+                        if (editMode
+                                && this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+                            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                                    + SPConstants.EQUAL_TO + "\""
+                                    + SPConstants.TRUE + "\"");
+                        }
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    // It allows to select check box using it's label.
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+                            + SPConstants.EQUAL_TO + "\"" + key + "\""
+                            + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
+                    buf.append(SPConstants.OPEN_ELEMENT
+                            + SPConstants.FORWARD_SLASH + SPConstants.LABEL
+                            + SPConstants.CLOSE_ELEMENT);
+
+                    buf.append(SPConstants.BREAK_LINE);
+                } else if (collator.equals(key, SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
+                    if (value.equalsIgnoreCase("false") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+                        if (editMode) {
+                            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                                    + SPConstants.EQUAL_TO + "\""
+                                    + SPConstants.TRUE + "\"");
+                        }
+                    } else {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
+
+                    buf.append(SPConstants.SPACE + SPConstants.ON_CLICK);
+                    buf.append("\"enableOrDisableUserGroupsCacheControles();\"");
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    // It allows to select check box using it's label.
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+                            + SPConstants.EQUAL_TO + "\"" + key + "\""
+                            + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
+                    buf.append(SPConstants.OPEN_ELEMENT
+                            + SPConstants.FORWARD_SLASH + SPConstants.LABEL
+                            + SPConstants.CLOSE_ELEMENT);
                 } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
                     // Handles the flag for Using SharePoint indexing options
                     buf.append(SPConstants.BREAK_LINE);
@@ -271,7 +471,14 @@ public class SharepointConnectorType implements ConnectorType {
                         appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
                     }
                     buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    // It allows to select check box using it's label.
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+                            + SPConstants.EQUAL_TO + "\"" + key + "\""
+                            + SPConstants.CLOSE_ELEMENT);
                     buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
+                    buf.append(SPConstants.OPEN_ELEMENT
+                            + SPConstants.FORWARD_SLASH + SPConstants.LABEL
+                            + SPConstants.CLOSE_ELEMENT);
                 } else if ((collator.equals(key, SPConstants.EXCLUDED_URLS))
                         || (collator.equals(key, SPConstants.INCLUDED_URLS))) {
                     buf.append(SPConstants.OPEN_ELEMENT);
@@ -288,6 +495,134 @@ public class SharepointConnectorType implements ConnectorType {
                     buf.append(SPConstants.OPEN_ELEMENT);
                     buf.append(SPConstants.END_TEXTAREA);
                     buf.append(SPConstants.CLOSE_ELEMENT);
+                } else if (collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)) {
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    buf.append(SPConstants.SPACE + SPConstants.STYLE);
+                    if (editMode) {
+                        if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+                            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                                    + SPConstants.EQUAL_TO + "\""
+                                    + SPConstants.TRUE + "\"");
+                        }
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
+                            + SPConstants.SPACE + SPConstants.VALUE
+                            + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME);
+                    buf.append("\"");
+                    if (Strings.isNullOrEmpty(value)
+                            || value.equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT
+                            + SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + SPConstants.OPTION + SPConstants.SPACE
+                            + SPConstants.VALUE + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME);
+                    buf.append("\"");
+                    if (value.equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT
+                            + SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + SPConstants.OPTION + SPConstants.SPACE
+                            + SPConstants.VALUE + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME);
+                    buf.append("\"");
+                    if (value.equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.SPACE
+                            + ">"
+                            + SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME
+                            + SPConstants.SPACE);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + "/" + SPConstants.SELECT
+                            + SPConstants.CLOSE_ELEMENT);
+                } else if (collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
+
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    buf.append(SPConstants.SPACE + SPConstants.STYLE);
+                    if (editMode) {
+                        if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+                            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                                    + SPConstants.EQUAL_TO + "\""
+                                    + SPConstants.TRUE + "\"");
+                        }
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
+                            + SPConstants.SPACE + SPConstants.VALUE
+                            + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME);
+                    buf.append("\"");
+                    if (value.equalsIgnoreCase(SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT
+                            + SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + SPConstants.OPTION + SPConstants.SPACE
+                            + SPConstants.VALUE + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME);
+                    buf.append("\"");
+                    if (Strings.isNullOrEmpty(value)
+                            || value.equalsIgnoreCase(SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(SPConstants.CLOSE_ELEMENT
+                            + SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + SPConstants.OPTION + SPConstants.SPACE
+                            + SPConstants.VALUE + SPConstants.EQUAL_TO + "\"");
+                    buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN);
+                    buf.append("\"");
+                    if (value.equalsIgnoreCase(SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN)) {
+                        buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                                + SPConstants.EQUAL_TO + "\""
+                                + SPConstants.SELECTED + "\"");
+                    }
+                    buf.append(">"
+                            + SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN);
+                    buf.append(SPConstants.OPEN_ELEMENT + "/"
+                            + SPConstants.OPTION + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+                            + "/" + SPConstants.SELECT
+                            + SPConstants.CLOSE_ELEMENT);
+                    buf.append(SPConstants.TD_END);
+                    buf.append(SPConstants.TR_END);
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.TR_START + SPConstants.TD_START
+                            + SPConstants.START_BOLD);
+                    buf.append("LDAP Configuration Settings");
+                    buf.append(SPConstants.END_BOLD);
                 } else {
                     buf.append(SPConstants.OPEN_ELEMENT);
                     buf.append(SPConstants.INPUT);
@@ -300,12 +635,75 @@ public class SharepointConnectorType implements ConnectorType {
                     }
                     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
                     appendAttribute(buf, SPConstants.CONFIG_ID, key);
-                    appendAttribute(buf, SPConstants.VALUE, value);
+                    if (collator.equals(key, SPConstants.PORT_NUMBER)
+                            || collator.equals(key, SPConstants.INITAL_CACHE_SIZE)
+                            || collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
+                        if (collator.equals(key, SPConstants.PORT_NUMBER)) {
+                            if (Strings.isNullOrEmpty(value)) {
+                                appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_DEFAULT_PORT_NUMBER);
+                            } else if (value.equalsIgnoreCase(SPConstants.LDAP_DEFAULT_PORT_NUMBER)) {
+                                appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_DEFAULT_PORT_NUMBER);
+                            } else {
+                                appendAttribute(buf, SPConstants.VALUE, value.trim());
+                            }
+                            if (editMode) {
+                                if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+                                    buf.append(SPConstants.SPACE
+                                            + SPConstants.DISABLED
+                                            + SPConstants.EQUAL_TO + "\""
+                                            + SPConstants.TRUE + "\"");
+                                }
+                            }
+                        } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
+                            if (Strings.isNullOrEmpty(value)) {
+                                appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_INITIAL_CACHE_SIZE);
+                                buf.append(SPConstants.SPACE
+                                        + SPConstants.DISABLED
+                                        + SPConstants.EQUAL_TO + "\""
+                                        + SPConstants.TRUE + "\"");
+                            } else if (value.equalsIgnoreCase(SPConstants.LDAP_INITIAL_CACHE_SIZE)) {
+                                appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_INITIAL_CACHE_SIZE);
+                            } else {
+                                appendAttribute(buf, SPConstants.VALUE, this.initialCacheSize);
+                            }
+                        } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
+                            if (Strings.isNullOrEmpty(value)) {
+                                buf.append(SPConstants.SPACE
+                                        + SPConstants.DISABLED
+                                        + SPConstants.EQUAL_TO + "\""
+                                        + SPConstants.TRUE + "\"");
+                                appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
+                            } else if (value.equalsIgnoreCase(SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME)) {
+                                appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
+                            } else {
+                                appendAttribute(buf, SPConstants.VALUE, value.trim());
+                            }
+                        }
+                        buf.append(SPConstants.SPACE + SPConstants.ONKEY_PRESS);
+                        buf.append("\"return onlyNumbers(event);\"");
+                    } else {
+                        appendAttribute(buf, SPConstants.VALUE, value);
+                    }
                     if (collator.equals(key, SPConstants.SHAREPOINT_URL)
                             || collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
                         appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
                     }
+
+                    if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)
+                            || collator.equals(key, SPConstants.SEARCH_BASE)) {
+                        appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
+                        if (editMode) {
+                            if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+                                buf.append(SPConstants.SPACE
+                                        + SPConstants.DISABLED
+                                        + SPConstants.EQUAL_TO + "\""
+                                        + SPConstants.TRUE + "\"");
+                            }
+                        }
+                    }
+
                     buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
+
                 }
                 buf.append(SPConstants.TD_END);
                 buf.append(SPConstants.TR_END);
@@ -489,6 +887,28 @@ public class SharepointConnectorType implements ConnectorType {
             mySiteUrl = val.trim();
         } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
             useSPSearchVisibility = val.trim();
+        } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
+            this.pushAcls = val.trim();
+        } else if (collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)) {
+            this.usernameFormatInAce = val.trim();
+        } else if (collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
+            this.groupnameFormatInAce = val.trim();
+        } else if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)) {
+            this.ldapServerHostAddress = val.trim();
+        } else if (collator.equals(key, SPConstants.PORT_NUMBER)) {
+            this.portNumber = val.trim();
+        } else if (collator.equals(key, SPConstants.SEARCH_BASE)) {
+            this.searchBase = val.trim();
+        } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
+            this.authenticationType = val.trim();
+        } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
+            this.connectMethod = val.trim();
+        } else if (collator.equals(key, SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+            this.useCacheToStoreLdapUserGroupsMembership = val.trim();
+        } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
+            this.initialCacheSize = val.trim();
+        } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
+            this.cacheRefreshInterval = val.trim();
         }
     }
 
@@ -501,6 +921,13 @@ public class SharepointConnectorType implements ConnectorType {
         if (configData == null) {
             LOGGER.warning("configData map is not found");
             return false;
+        }
+        LOGGER.info("push acls validate :" + configData.get("pushAcls"));
+        if (!configData.containsKey(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+            this.useCacheToStoreLdapUserGroupsMembership = SPConstants.OFF;
+        }
+        if (null == configData.get(SPConstants.PUSH_ACLS)) {
+            this.pushAcls = SPConstants.OFF;
         }
 
         FeedType feedType = null;
@@ -588,6 +1015,14 @@ public class SharepointConnectorType implements ConnectorType {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(false));
         } else {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(true));
+        }
+
+        // Validating the feed ACLs related check boxes which are off by
+        // default.
+        validateFeedACLsAndLDAPUserGroupsCacheCheckBoxes(configData);
+
+        if (!validateFeedACLsRelatedHtmlControles(ed)) {
+            return false;
         }
 
         if ((username != null)
@@ -699,6 +1134,7 @@ public class SharepointConnectorType implements ConnectorType {
      */
     public ConfigureResponse getConfigForm(final Locale locale) {
         LOGGER.config("Locale " + locale);
+        this.editMode = false;
 
         collator = Util.getCollator(locale);
         rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
@@ -717,6 +1153,12 @@ public class SharepointConnectorType implements ConnectorType {
             final Map<String, String> configMap,
             final Locale locale) {
         LOGGER.config("Locale " + locale);
+        String isSelected = configMap.get(SPConstants.PUSH_ACLS);
+        if (!isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
+            this.editMode = SPConstants.EDIT_MODE;
+        } else {
+            this.editMode = false;
+        }
 
         collator = Util.getCollator(locale);
         rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
@@ -795,7 +1237,7 @@ public class SharepointConnectorType implements ConnectorType {
      *
      * @param buf contains the Form snippet
      */
-    private void addJavaScript(final StringBuffer buf) {
+    public void addJavaScript(final StringBuffer buf) {
         if (buf != null) {
             String js = "\r\n <script language=\"JavaScript\"> \r\n <![CDATA[ ";
             js += "\r\n function addRow() {"
@@ -845,7 +1287,54 @@ public class SharepointConnectorType implements ConnectorType {
                     + "\r\n document.getElementById('" + SPConstants.ALIAS_MAP
                     + "').value=aliasString;" + "\r\n }";
 
+            js += "\r\n function enableOrDisableUserGroupsCacheControles () {"
+                    + ""
+                    + "\r\n if (document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").checked == true){ "
+                    + "\r\n document.getElementById(\"initialCacheSize\").disabled=false"
+                    + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=false"
+
+                    + "\r\n } else {"
+                    + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=true"
+                    + "\r\n document.getElementById(\"initialCacheSize\").disabled=true"
+
+                    + "\r\n }" + "\r\n }";
+
+            js += "\r\n function enableFeedAclsRelatedHtmlControles () {"
+                    + ""
+                    + "\r\n if (document.getElementById(\"pushAcls\").checked == true){ "
+                    + "\r\n document.getElementById(\"portNumber\").disabled=false"
+                    + "\r\n document.getElementById(\"ldapServerHostAddress\").disabled=false"
+                    + "\r\n document.getElementById(\"groupnameFormatInAce\").disabled=false"
+                    + "\r\n document.getElementById(\"usernameFormatInAce\").disabled=false"
+                    + "\r\n document.getElementById(\"searchBase\").disabled=false"
+                    + "\r\n document.getElementById(\"authenticationType\").disabled=false"
+                    + "\r\n document.getElementById(\"connectMethod\").disabled=false"
+                    + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").disabled=false"
+                    + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=false"
+                    + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").checked=true"
+
+                    + "\r\n } else {"
+                    + "\r\n document.getElementById(\"portNumber\").disabled=true"
+                    + "\r\n document.getElementById(\"ldapServerHostAddress\").disabled=true"
+                    + "\r\n document.getElementById(\"groupnameFormatInAce\").disabled=true"
+                    + "\r\n document.getElementById(\"usernameFormatInAce\").disabled=true"
+                    + "\r\n document.getElementById(\"searchBase\").disabled=true"
+                    + "\r\n document.getElementById(\"authenticationType\").disabled=true"
+                    + "\r\n document.getElementById(\"connectMethod\").disabled=true"
+                    + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").disabled=true"
+                    + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=true"
+
+                    + "\r\n }" + "\r\n }";
+
+            js += "\r\n function onlyNumbers(evt){"
+                    + "\r\n  var charCode = (evt.which) ? evt.which : event.keyCode"
+                    + "\r\n if (charCode > 31 && (charCode < 48 || charCode > 57))"
+                    + "\r\n return false;" + "\r\n return true;" + "\r\n }";
+
             js += "\r\n function trim(s) {return s.replace( /^\\s*/, \"\" ).replace( /\\s*$/, \"\" );}";
+
+            js += "document.getElementById('" + SPConstants.SHAREPOINT_URL
+                    + "').focus()";
 
             js += "\r\n ]]> \r\n </script> \r\n";
             buf.append(js);
@@ -1408,5 +1897,194 @@ public class SharepointConnectorType implements ConnectorType {
      */
     public void setUseSPSearchVisibility(String useSPSearchVisibility) {
         this.useSPSearchVisibility = useSPSearchVisibility;
+    }
+
+    /**
+     * Validating feed ACLs related check boxes.
+     *
+     * @param configData
+     */
+    private void validateFeedACLsAndLDAPUserGroupsCacheCheckBoxes(
+            final Map<String, String> configData) {
+        if (!configData.containsKey(SPConstants.PUSH_ACLS)) {
+            configData.put(SPConstants.PUSH_ACLS, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.PUSH_ACLS, Boolean.toString(true));
+        }
+
+        if (!configData.containsKey(SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
+            configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(true));
+        }
+
+        if (!configData.containsKey(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+            configData.put(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP, Boolean.toString(true));
+        }
+    }
+
+    /**
+     * Validating feed ACLs related HTML controls against blank, specific
+     * formats and for valid LDAP context.
+     *
+     * @return true if feed ACLs is not selected by the connector administrator
+     *         during setting of connector configuration at GSA and false in
+     *         case if any of its fields are blank, wrong user name format or
+     *         couldn't get valid initial LDAP context.
+     */
+    private boolean validateFeedACLsRelatedHtmlControles(
+            final ErrorDignostics ed) {
+        if (null != pushAcls && this.pushAcls.equalsIgnoreCase(SPConstants.ON)) {
+            LOGGER.config("Selected Feed ACLs option.");
+            if (!Strings.isNullOrEmpty(usernameFormatInAce)
+                    && !Strings.isNullOrEmpty(groupnameFormatInAce)) {
+                if (!checkForSpecialCharacters(usernameFormatInAce)) {
+                    ed.set(SPConstants.USERNAME_FORMAT_IN_ACE, rb.getString(SPConstants.SPECIAL_CHARACTERS_IN_USERNAME_FORMAT));
+                    return false;
+                }
+                if (!checkForSpecialCharacters(groupnameFormatInAce)) {
+                    ed.set(SPConstants.GROUPNAME_FORMAT_IN_ACE, rb.getString(SPConstants.SPECIAL_CHARACTERS_IN_GROUPNAME_FORMAT));
+                    return false;
+                }
+                if (!Strings.isNullOrEmpty(ldapServerHostAddress)
+                        && !Strings.isNullOrEmpty(portNumber)
+                        && !Strings.isNullOrEmpty(searchBase)
+                        && !Strings.isNullOrEmpty(domain)) {
+
+                    LOGGER.config("Checking for a valid port number.");
+                    if (!checkForInteger(portNumber)) {
+                        ed.set(SPConstants.PORT_NUMBER, MessageFormat.format(rb.getString(SPConstants.INVALID_PORT_NUMBER), portNumber));
+                        return false;
+                    }
+                    Method method;
+                    if (Method.SSL.toString().equalsIgnoreCase(this.connectMethod.toString())) {
+                        method = Method.SSL;
+                    } else {
+                        method = Method.STANDARD;
+                    }
+
+                    AuthType authType;
+                    if (AuthType.ANONYMOUS.toString().equalsIgnoreCase(this.authenticationType.toString())) {
+                        authType = AuthType.ANONYMOUS;
+                    } else {
+                        authType = AuthType.SIMPLE;
+                    }
+                    LdapConnectionSettings settings = new LdapConnectionSettings(
+                            method, this.ldapServerHostAddress,
+                            Integer.parseInt(this.portNumber), this.searchBase,
+                            authType, this.username, this.password, this.domain);
+                    LOGGER.config("Created LDAP connection settings object to obtain LDAP context "
+                            + ldapConnectionSettings);
+                    LdapConnection ldapConnection = new LdapConnection(settings);
+                    if (ldapConnection.getLdapContext() == null) {
+                        Map<LdapConnectionError, String> errors = ldapConnection.getErrors();
+                        Iterator<Entry<LdapConnectionError, String>> iterator = errors.entrySet().iterator();
+                        StringBuffer errorMessage = new StringBuffer();
+                        errorMessage.append(rb.getString(SPConstants.LDAP_CONNECTVITY_ERROR));
+                        while (iterator.hasNext()) {
+                            Map.Entry<LdapConnectionError, String> entry = iterator.next();
+                            errorMessage.append(SPConstants.SPACE
+                                    + entry.getValue());
+                        }
+                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, errorMessage.toString());
+                        return false;
+                    }
+
+                    if (ldapConnection.getLdapContext() == null) {
+                        LOGGER.log(Level.WARNING, "Couldn't obtain context object to query LDAP (AD) directory server.");
+                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.LDAP_CONNECTVITY_ERROR));
+                        return false;
+                    }
+                    LOGGER.log(Level.CONFIG, "Sucessfully created initial LDAP context to query LDAP directory server.");
+                } else {
+                    if (Strings.isNullOrEmpty(ldapServerHostAddress)) {
+                        ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.LDAP_SERVER_HOST_ADDRESS_BLANK));
+                        return false;
+                    } else if (Strings.isNullOrEmpty(portNumber)) {
+                        ed.set(SPConstants.PORT_NUMBER, rb.getString(SPConstants.PORT_NUMBER_BLANK));
+                        return false;
+                    } else if (Strings.isNullOrEmpty(searchBase)) {
+                        ed.set(SPConstants.SEARCH_BASE, rb.getString(SPConstants.SEARCH_BASE_BLANK));
+                        return false;
+                    } else if (Strings.isNullOrEmpty(domain)) {
+                        ed.set(SPConstants.DOMAIN, rb.getString(SPConstants.BLANK_DOMAIN_NAME_LDAP));
+                        return false;
+                    }
+                }
+                if (!Strings.isNullOrEmpty(useCacheToStoreLdapUserGroupsMembership)) {
+                    if (null != useCacheToStoreLdapUserGroupsMembership
+                            && this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(SPConstants.ON)) {
+                        if (!Strings.isNullOrEmpty(initialCacheSize)
+                                && !Strings.isNullOrEmpty(cacheRefreshInterval)) {
+                            if (!checkForInteger(this.initialCacheSize)) {
+                                ed.set(SPConstants.INITAL_CACHE_SIZE, MessageFormat.format(rb.getString(SPConstants.INVALID_INITIAL_CACHE_SIZE), initialCacheSize));
+                                return false;
+                            }
+                            if (!checkForInteger(this.cacheRefreshInterval)) {
+                                ed.set(SPConstants.CACHE_REFRESH_INTERVAL, MessageFormat.format(rb.getString(SPConstants.INVALID_CACHE_REFRESH_INTERVAL), cacheRefreshInterval));
+                                return false;
+                            }
+                        } else {
+                            if (Strings.isNullOrEmpty(initialCacheSize)) {
+                                ed.set(SPConstants.INITAL_CACHE_SIZE, rb.getString(SPConstants.BLANK_INITIAL_CACHE_SIZE));
+                                return false;
+                            }
+                            if (Strings.isNullOrEmpty(cacheRefreshInterval)) {
+                                ed.set(SPConstants.CACHE_REFRESH_INTERVAL, rb.getString(SPConstants.BLANK_CACHE_REFRESH_INTERVAL));
+                                return false;
+                            }
+                        }
+                    }
+
+                }
+            } else {
+                if (Strings.isNullOrEmpty(groupnameFormatInAce)) {
+                    ed.set(SPConstants.GROUPNAME_FORMAT_IN_ACE, MessageFormat.format(rb.getString(SPConstants.BLANK_GROUPNAME_FORMAT), groupnameFormatInAce));
+                    return false;
+                }
+                if (Strings.isNullOrEmpty(usernameFormatInAce)) {
+                    ed.set(SPConstants.USERNAME_FORMAT_IN_ACE, MessageFormat.format(rb.getString(SPConstants.BLANK_USERNAME_FORMAT), usernameFormatInAce));
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+
+    /**
+     * Parses the string argument as a signed decimal integer. The characters in
+     * the string must all be decimal digits.
+     *
+     * @param number
+     * @return true if given string
+     */
+    private boolean checkForInteger(String number) {
+        try {
+            Integer.parseInt(number);
+        } catch (NumberFormatException ne) {
+            LOGGER.log(Level.WARNING, "Exception thrown while parsing LDAP port number.", ne);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks if the given name consist of special characters or not and returns
+     * true if there is no special characters found in the given name.
+     *
+     * @param nameFormat
+     * @return false if given name consist of at least on special character
+     *         other than '@' and '\'
+     */
+    private boolean checkForSpecialCharacters(String nameFormat) {
+        Pattern pattern = Pattern.compile("[^a-zA-Z0-9@\\\\]");
+        Matcher matcher = pattern.matcher(nameFormat);
+        if (matcher.find()) {
+            return false;
+        }
+        return true;
     }
 }

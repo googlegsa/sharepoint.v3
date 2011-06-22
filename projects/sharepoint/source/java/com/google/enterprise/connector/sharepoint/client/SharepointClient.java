@@ -120,6 +120,9 @@ public class SharepointClient {
         // FIXME These could be set in traversal manager just before returning
         // start/resumeTraversal
         if (null != sharepointClientContext) {
+            // FIXME These could be set in traversal manager just before
+            // returning
+            // start/resumeTraversal
             docList.setAliasMap(sharepointClientContext.getAliasMap());
             docList.setFQDNConversion(sharepointClientContext.isFQDNConversion());
             docList.setReWriteDisplayUrlUsingAliasMappingRules(sharepointClientContext.isReWriteDisplayUrlUsingAliasMappingRules());
@@ -137,13 +140,47 @@ public class SharepointClient {
      * that same list is not scanned twice in case the traversal has been
      * resumed.
      * <p/>
+     * <p>
      * At the end, fetches the ACL of all the documents contained in the
-     * {@link SPDocumentList} object.
+     * {@link SPDocumentList} object. Ensures that ACL are not re-fetched when
+     * documents from previous batch traversal are being returned.
+     * </p>
+     * <p>
+     * <b>No documents are returned in case there are failures/errors while
+     * retrieving ACLs</b>
+     * </p>
+     * <p>
+     * Logs the {@link OutOfMemoryError} when fetching ACLs. For retry, need to
+     * edit properties in connectorInstance.xml and restart
+     * <ul>
+     * <li>If 'fetchACLInBatches' is enabled, tries to fetch ACLs in smaller
+     * batches of (n/aclBatchSizeFactor) (n being the number of documents).</li>
+     * <li>Both 'fetchACLInBatches' and 'aclBatchSizeFactor' can be edited from
+     * connectorInstance.xml</li>
+     * </ul>
+     * </p>
      *
+     * @param globalState The {@link GlobalState} representing all the
+     *            SharePoint sites. Primary required when constructing the
+     *            {@link SPDocumentList}
+     * @param webState The {@link WebState} whose lists ned to be scanned for
+     *            documents
+     * @param sizeSoFar This indicates the number documents that have been
+     *            previously fetched and added to the global crawl queue. This
+     *            is useful in cases when a single list/site does not have
+     *            sufficient documents that can match the batchHint and hence
+     *            multiple site/lists need to be scanned.
+     * @param sendPendingDocs True will indicate that documents retrieved as
+     *            part of previous batch traversal need to be sent. This will be
+     *            the case when connector returned batch Hint or little more
+     *            docs, but the CM did not feed all of them to GSA and
+     *            checkPoint() was called, implying there are docs from previous
+     *            batch traversal to be sent. In such a case, ACLs should not be
+     *            re-fetched
      * @return {@link SPDocumentList} containing crawled {@link SPDocument}.
      */
     public SPDocumentList traverse(final GlobalState globalState,
-            final WebState webState, int sizeSoFar) {
+            final WebState webState, int sizeSoFar, boolean sendPendingDocs) {
         if (webState == null) {
             LOGGER.warning("global state is null");
             return null;
@@ -187,35 +224,224 @@ public class SharepointClient {
                 LOGGER.log(Level.FINE, "No documents to be sent from list URL [ "
                         + list.getListURL() + " ]. ");
             }
-            if (resultSet != null) {
-                sizeSoFar += resultSet.size();
+            if (resultsList != null) {
+                sizeSoFar += resultsList.size();
             }
 
-            // we heed the batch hint, but always finish a List before checking:
+            // Check if the docs added so far meet the batchHint
             if (sizeSoFar >= sharepointClientContext.getBatchHint()) {
                 LOGGER.info("Stopping traversal because batch hint "
                         + sharepointClientContext.getBatchHint()
-                        + " has been reached");
+                        + " has been reached. Processed documents: "
+                        + sizeSoFar);
                 break;
             }
         }
 
         // Fetch ACL for all the documents crawled from the current WebState
-        if (sharepointClientContext.isPushAcls()) {
-            try {
-                GssAclWS aclWs = new GssAclWS(sharepointClientContext,
-                        webState.getWebUrl());
-                aclWs.fetchAclForDocuments(resultSet, webState);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Problem while fetching ACLs for documents crawled under WebState [ "
-                        + webState.getWebUrl() + " ] ", e);
-            }
+        if (!handleACLForDocuments(resultSet, webState, globalState, sendPendingDocs)) {
+            return null;
         }
 
         LOGGER.config(noOfVisitedListStates + " lists scanned from site "
                 + webState.getWebUrl() + ". found " + resultSet + " docs");
 
         return resultSet;
+    }
+
+    /**
+     * If the connector is set to push ACL, fetches the ACL. Takes care to
+     * consider that ACL is not retrieved more than once esp. for when documents
+     * are pending from previous batch traversals
+     *
+     * @param resultSet The list of documents discovered in current/previous
+     *            batch traversals
+     * @param webState The web state representing the site
+     * @param globalState The global state representing the list of all sites
+     *            and their information
+     * @param sendPendingDocs True if the documents were discovered in previous
+     *            batch traversal but fed in the current traversal OR false
+     *            otherwise
+     * @return True if ACL was retrieved successfully OR false in case of any
+     *         exceptions/errors
+     */
+    boolean handleACLForDocuments(SPDocumentList resultSet, WebState webState,
+            GlobalState globalState, boolean sendPendingDocs) {
+
+        if (!sharepointClientContext.isPushAcls()) {
+            // When the connector is not set to feed ACLs no further checks are
+            // required, just return true to send docs to CM and GSA
+            return true;
+        }
+
+        if (sendPendingDocs) {
+            // This is to indicate that ACLs have been retrieved previously and
+            // hence just return the set of docs
+            return true;
+        }
+
+        boolean aclRetrievalResult = false;
+        // Fetch ACL for all the documents crawled from the current WebState
+        // Do not try to re-fetch the ACL when documents are pending from
+        // previous batch traversals
+        if (null != resultSet && resultSet.size() > 0) {
+
+            if (sharepointClientContext.isFetchACLInBatches()) {
+                aclRetrievalResult = fetchACLInBatches(resultSet, webState, globalState, sharepointClientContext.getAclBatchSizeFactor());
+            } else {
+                aclRetrievalResult = fetchACLForDocuments(resultSet, webState, globalState);
+            }
+
+            if (!aclRetrievalResult) {
+                LOGGER.log(Level.WARNING, "No documents will be sent for site [ "
+                        + webState.getWebUrl()
+                        + " ] as ACL retrieval has failed. Please check the errors/logs associated with ACL retrieval before this");
+            }
+        }
+
+        return aclRetrievalResult;
+    }
+
+    /**
+     * Fetches the ACL for documents.
+     * <p>
+     * Based on the size of ACL per document, the WS response can be large and
+     * result in {@link java.lang.OutOfMemoryError}. In such a case, the
+     * connector will log the error
+     * </p>
+     *
+     * @param resultSet The list of documents for which ACL should be fetched.
+     * @param webState The web state representing the site
+     * @param globalState The global state representing the list of all sites
+     *            and their information
+     * @return True if ACL was retrieved successfully OR false in case of any
+     *         exceptions/errors
+     */
+    private boolean fetchACLForDocuments(SPDocumentList resultSet,
+            WebState webState, GlobalState globalState) {
+
+        if (resultSet.size() <= 0) {
+            LOGGER.log(Level.CONFIG, "Result set is empty. No documents to fetch ACL");
+            return false;
+        }
+
+        LOGGER.log(Level.INFO, "Fetching ACls for #" + resultSet.size()
+                + " documents crawled from web " + webState.getWebUrl());
+        GssAclWS aclWs = null;
+        try {
+            aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
+            aclWs.fetchAclForDocuments(resultSet, webState);
+        } catch (Throwable t) {
+            logError(resultSet, webState, t);
+            // Return false indicating that the ACL retrieval for current batch
+            // has failed and skipped
+            return false;
+        }
+
+        // Return true indicating successful retrieval of ACL
+        return true;
+    }
+
+    /**
+     * Common method to log ACL retrieval errors
+     *
+     * @param resultSet The document list for which ACL retrieval was attempted
+     * @param te The error/exception encountered
+     */
+    private void logError(SPDocumentList resultSet, WebState webState,
+            Throwable te) {
+
+        // Check for OOM and indicate that connector service needs to be
+        // restarted
+        if (te instanceof OutOfMemoryError) {
+            LOGGER.log(Level.SEVERE, "Connector encountered fatal error : \"OutOfMemoryError\" which might be due to a large web service response while fetching ACL for "
+                    + resultSet.size()
+                    + " documents for documents crawled under WebState [ "
+                    + webState.getWebUrl()
+                    + " ]. Please enable 'fetchACLInBatches' flag and modify the 'aclBatchSizeFactor' in connectorInstance.xml and restart the connector service", te);
+        } else {
+            LOGGER.log(Level.WARNING, "Problem while fetching ACLs for documents crawled under WebState [ "
+                    + webState.getWebUrl() + " ] . ", te);
+        }
+
+        LOGGER.warning("Skipping ACL retrieval for the document list : "
+                + resultSet.toString());
+    }
+
+    /**
+     * Fetches ACL for documents in batches. Required to handle the
+     * {@link OutOfMemoryError} kind errors
+     * <ul>
+     * <li>When re-fetching ACLs, tries to fetch in smaller batches of
+     * n/batchSizeFactor (n being he number of documents).</li>
+     * </ul>
+     *
+     * @param resultSet The set of documents whose ACL needs to be re-fetched in
+     *            smaller batches
+     * @param webState The {@link WebState} to which the documents belong
+     * @param globalState The {@link GlobalState} required primarily for the
+     *            {@link SPDocumentList}
+     * @param batchSizeFactor The factor by which the current batch of documents
+     *            should be divided to arrive at a smaller batch. The formula
+     *            used is [n/batchSizeFactor]
+     * @return True if ACLs were retrieved successfully OR false in case of any
+     *         exceptions/errors
+     */
+    /*
+     * The access method is package level for JUnit test cases
+     */
+    boolean fetchACLInBatches(SPDocumentList resultSet,
+            WebState webState, GlobalState globalState, int batchSizeFactor) {
+
+        if (resultSet.size() <= 0) {
+            LOGGER.log(Level.CONFIG, "Result set is empty. No documents to fetch ACL");
+            return false;
+        }
+
+        // Default is 1
+        int batchSize = 1;
+
+        if (batchSizeFactor > 1) {
+            // Connector should attempt ACL retrieval in batches. Determine the
+            // batchSize using batchSizeFactor.
+            batchSize = resultSet.size() / batchSizeFactor;
+
+            // This is to handle the cases like [1/2=0] and the batchSize will
+            // be set to 0. This can result into an infinite loop
+            if (batchSize == 0)
+                batchSize = resultSet.size();
+        }
+
+        LOGGER.info("The connector will attempt to fetch ACLs for documents in batches of "
+                + batchSize);
+
+        int toIndex = 0;
+        for (int i = 0; i < resultSet.size(); i += batchSize) {
+            // Use the batchSize to identify the subset of docs. The toIndex
+            // indicates the end of sub-set with 'i' indicating the start.
+            toIndex += batchSize;
+            if (toIndex > resultSet.size()) {
+                toIndex = resultSet.size();
+
+                // In case the start and end index is same it will result in an
+                // empty list. So ignore and proceed to next level
+                if (i == toIndex) {
+                    LOGGER.log(Level.WARNING, "The start and end index of the List of the documents should not be same");
+                    continue;
+                }
+            }
+            SPDocumentList docList = new SPDocumentList(
+                    resultSet.getDocuments().subList(i, toIndex), globalState);
+
+            // Fetch ACL
+            if (!fetchACLForDocuments(docList, webState, globalState)) {
+                // Return false indicating ACL retrieval has failed and the
+                // entire batch of documents need to be skipped
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -521,6 +747,12 @@ public class SharepointClient {
 
         globalState.setBFullReCrawl(doCrawl);
         globalState.endRecrawl(sharepointClientContext);
+
+        if (null != sharepointClientContext.getUserDataStoreDAO()
+                && sharepointClientContext.getUserDataStoreDAO().getUdsCacheSize() > 0) {
+            sharepointClientContext.getUserDataStoreDAO().cleanupCache();
+        }
+        LOGGER.log(Level.INFO, "Returning after crawl cycle.. ");
     }
 
     public boolean isDoCrawl() {
@@ -741,8 +973,8 @@ public class SharepointClient {
                     }
                 }
             } else {
-                LOGGER.info("revisiting listState [ "
-                        + listState.getListURL() + " ]. ");
+                LOGGER.info("revisiting listState [ " + listState.getListURL()
+                        + " ]. ");
                 listState.setExisting(true);
                 listState.setNextPage(null);
 
@@ -864,6 +1096,7 @@ public class SharepointClient {
                     listState.setNewList(false);
                 }
             } else {
+
                 // If any of the list has not been traversed completely, doCrawl
                 // must not be set true.
                 doCrawl = false;
@@ -995,6 +1228,9 @@ public class SharepointClient {
                     // getAlerts WS call is made.
                     LOGGER.fine("Getting alerts under site [ " + webURL + " ]");
                     processAlerts(ws, sharePointClientContext);
+                    // get site data for the web and update webState.
+                    LOGGER.fine("Geting landing page data for the site [ " + webURL + " ]");
+                    processSiteData(ws, sharepointClientContext);
                 }
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Following exception occured while traversing/updating web state URL [ "
@@ -1045,5 +1281,67 @@ public class SharepointClient {
      */
     public int getNoOfVisitedListStates() {
         return noOfVisitedListStates;
+    }
+
+    /**
+     * Makes a call to SiteData web service to get data for a site and update
+     * global state. Site data in SharePoint is created at site level. Though,
+     * in the state file that connector maintains a SPDocument can only be inside
+     * a ListState. Hence we need to create a dummy list here.
+     *
+     * @param webState for which SPDcocument needs to be constructed.
+     * @param tempCtx is the temporary SharepointClientContext object.
+     */
+    private void processSiteData(final WebState webState,
+            final SharepointClientContext tempCtx) {
+        if (null == webState) {
+            return;
+        }
+
+        final Calendar cLastMod = Calendar.getInstance();
+        cLastMod.setTime(new Date());
+
+        cLastMod.setTime(new Date());
+        ListState currentDummySiteDataList = null;
+
+        try {
+            currentDummySiteDataList = new ListState(webState.getPrimaryKey(),
+                    webState.getTitle(), webState.getPrimaryKey(), cLastMod,
+                    SPConstants.SITE, webState.getPrimaryKey(), webState);
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "Unable to create the dummy list state for site. " + webState.getWebUrl(), e);
+            return;
+        }
+
+        // find the list in the Web state
+        ListState dummySiteListState = webState.lookupList(currentDummySiteDataList.getPrimaryKey());
+        if (dummySiteListState == null) {
+            dummySiteListState = currentDummySiteDataList;
+        }
+        LOGGER.log(Level.INFO, "Getting site data. internalName [ " + webState.getWebUrl() + " ] ");
+        List<SPDocument> documentList = new ArrayList<SPDocument>();
+        SPDocument document = null;
+
+        try {
+            final SiteDataWS siteDataWS = new SiteDataWS(tempCtx);
+            // need to check whether the site exist or not and is not null
+            if (webState.isExisting() && null != webState) {
+               document = siteDataWS.getSiteData(webState);
+               if (null != document) {
+                   documentList.add(document);
+               }
+            }
+        } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "Problem while getting site data. ", e);
+        }
+
+        if (dummySiteListState.isExisting() && null != document) {
+            // Mark dummy list state to true in order to differentiate this list state with
+            // other lists in web state.
+            dummySiteListState.setSiteDefaultPage(true);
+            webState.AddOrUpdateListStateInWebState(dummySiteListState,
+                    currentDummySiteDataList.getLastMod());
+            dummySiteListState.setCrawlQueue(documentList);
+        }
     }
 }

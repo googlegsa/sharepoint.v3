@@ -61,7 +61,7 @@ public class ListsWSTest extends TestCase {
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
  FeedType.CONTENT_FEED);
-        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
+        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.sharepointUrl);
 
         final List listCollection = siteDataWS.getNamedLists(ws);
 

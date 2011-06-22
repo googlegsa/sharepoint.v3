@@ -33,6 +33,10 @@ using Microsoft.SharePoint.Utilities;
 [Serializable]
 public class GssPrincipal
 {
+    // Site Collection specific ID. This is very useful to track such users/groups which have been deleted
+    // A -1 value is used for the hypoyhetical site collection group and anything smaller than -1 is considered to be unknown
+    private int id;
+
     // Name of the prinicpal
     private string name;
 
@@ -49,6 +53,11 @@ public class GssPrincipal
     private List<GssPrincipal> members;
     private StringBuilder logMessage = new StringBuilder();
 
+    public int ID
+    {
+        get { return id; }
+        set { id = value; }
+    }
     public string Name
     {
         get { return name; }
@@ -73,8 +82,9 @@ public class GssPrincipal
     // A web service always require a default constructor. But, we do not want to use it intentionally
     private GssPrincipal() { }
 
-    public GssPrincipal(string name)
+    public GssPrincipal(string name, int id)
     {
+        ID = id;
         Name = name;
         Members = new List<GssPrincipal>();
     }
@@ -89,7 +99,7 @@ public class GssPrincipal
                 return false;
             }
 
-            if (principal.Name.Equals(this.Name) && principal.Type == this.Type)
+            if (principal.ID == this.ID && principal.Name.Equals(this.Name) && principal.Type == this.Type)
             {
                 return true;
             }
@@ -99,7 +109,7 @@ public class GssPrincipal
 
     public override int GetHashCode()
     {
-        return 13 * (this.Name.GetHashCode() + this.Type.GetHashCode());
+        return 13 * (this.Name.GetHashCode() + this.Type.GetHashCode() + ID);
     }
 
     public void AddLogMessage(string logMsg)
@@ -487,21 +497,22 @@ public class GssAclChangeCollection
     /// <param name="changeWebId"> Guid of the web site where the change has occured. </param>
     private bool IsEffectiveForWeb(SPSite site, SPWeb web, Guid changeWebId)
     {
-        SPWeb thisWeb = site.OpenWeb(changeWebId);
-        if (null == thisWeb)
+        using (SPWeb thisWeb = site.OpenWeb(changeWebId))
         {
-            return false;
-        }
+            if (null == thisWeb)
+            {
+                return false;
+            }
 
-        if (web.ID.Equals(thisWeb.ID))
-        {
-            return true;
+            if (web.ID.Equals(thisWeb.ID))
+            {
+                return true;
+            }
+            else
+            {
+                return GssAclUtility.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);
+            }
         }
-        else
-        {
-            return GssAclUtility.isSame(web.FirstUniqueAncestor, thisWeb.FirstUniqueAncestor);
-        }
-        return false;
     }
 
     public void UpdateChangeToken(SPChangeToken inToken)
@@ -655,7 +666,7 @@ public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
 public class GssAclMonitor
 {
     // A random guess about how many items should be query at a time. Such threshold is required to save the web service from being unresponsive for a long time
-    public const int ROWLIMIT = 500;
+    private const int ROWLIMIT = 500;
 
     // A hypothetical name given to the site collection administrator group. This is required because the web service treats
     // site collection administrators as one of the SharePoitn groups. This is in benefit of avoiding re-crawling all the documents
@@ -693,11 +704,21 @@ public class GssAclMonitor
         SPWeb web;
         init(out site, out web);
 
-        // Ensure that all the required APIs are accessible
-        SPUserCollection admins = web.SiteAdministrators;
-        SPPolicyCollection policies = site.WebApplication.Policies;
-        policies = site.WebApplication.ZonePolicies(site.Zone);
-        return "success";
+        try
+        {
+            // Ensure that all the required APIs are accessible
+            SPUserCollection admins = web.SiteAdministrators;
+            SPPolicyCollection policies = site.WebApplication.Policies;
+            policies = site.WebApplication.ZonePolicies(site.Zone);
+            return "success";
+        }
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
+        }
     }
 
     /// <summary>
@@ -750,24 +771,26 @@ public class GssAclMonitor
                 }
                 allAcls.Add(acl);
 
-                SPUser owner = null;
                 try
                 {
-                    owner = GssAclUtility.GetOwner(secobj);
+                    acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
                 }
                 catch (Exception e)
                 {
-                    acl.AddLogMessage(e.Message);
-                }
-                if (null != owner)
-                {
-                    acl.Owner = owner.LoginName;
+                    acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
                 }
             }
             catch (Exception e)
             {
                 acl = new GssAcl(url, 0);
                 acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
+            }
+            finally
+            {
+                if (web != null)
+                {
+                    web.Dispose(); // Dispose the SPWeb Object
+                }
             }
         }
 
@@ -793,7 +816,7 @@ public class GssAclMonitor
         SPWeb web;
         init(out site, out web);
 
-        GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
+    GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         GssAclChangeCollection allChanges = null;
         SPChangeToken changeTokenEnd = null;
         if (null != fromChangeToken && fromChangeToken.Length != 0)
@@ -836,6 +859,13 @@ public class GssAclMonitor
                 allChanges = new GssAclChangeCollection(changeTokenStart);
                 result.AddLogMessage("Exception occurred while change detection, Exception [ " + e.Message + " ] ");
             }
+            finally
+            {
+                if (web != null)
+                {
+                    web.Dispose(); // Dispose the SPWeb Object
+                }
+            }
         }
         else
         {
@@ -864,51 +894,66 @@ public class GssAclMonitor
 
         GssResolveSPGroupResult result = new GssResolveSPGroupResult();
         List<GssPrincipal> prinicpals = new List<GssPrincipal>();
-        if (null != groupId)
+        try
         {
-            foreach (string id in groupId)
+           
+            
+            if (null != groupId)
             {
-                GssPrincipal principal = new GssPrincipal(id);
-                principal.Type = GssPrincipal.PrincipalType.SPGROUP;
-                try
+                foreach (string id in groupId)
                 {
-                    if (GSSITEADMINGROUP.Equals(id))
+                    GssPrincipal principal = null;
+                    try
                     {
-                        // Get all the administrator users as member of the GSSITEADMINGROUP.
-                        List<GssPrincipal> admins = new List<GssPrincipal>();
-                        foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
+                        if (GSSITEADMINGROUP.Equals(id))
                         {
-                            GssPrincipal admin = GssAclUtility.GetGssPrincipalFromSPPrincipal(spPrincipal);
-                            if (null == admin)
+                            principal = new GssPrincipal(GSSITEADMINGROUP, -1);
+                            // Get all the administrator users as member of the GSSITEADMINGROUP.
+                            List<GssPrincipal> admins = new List<GssPrincipal>();
+                            foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
                             {
-                                continue;
+                                GssPrincipal admin = GssAclUtility.GetGssPrincipalFromSPPrincipal(spPrincipal);
+                                if (null == admin)
+                                {
+                                    continue;
+                                }
+                                admins.Add(admin);
                             }
-                            admins.Add(admin);
-                        }
-                        principal.Members = admins;
-                    }
-                    else
-                    {
-                        SPGroup spGroup = web.Groups[id];
-                        if (null == spGroup)
-                        {
-                            principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                            principal.Members = admins;
                         }
                         else
                         {
-                            principal.Members = GssAclUtility.ResolveSPGroup(spGroup);
+                            SPGroup spGroup = web.SiteGroups.GetByID(int.Parse(id));
+                            if (null != spGroup)
+                            {
+                                principal = new GssPrincipal(spGroup.Name, spGroup.ID);
+                                principal.Members = GssAclUtility.ResolveSPGroup(spGroup);
+                            }
+                            else
+                            {
+                                principal = new GssPrincipal(id, -2);
+                                principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                            }
                         }
+                        principal.Type = GssPrincipal.PrincipalType.SPGROUP;
                     }
+                    catch (Exception e)
+                    {
+                        principal = new GssPrincipal(id, -2);
+                        principal.AddLogMessage("Could not resolve Group Id [ " + id + " ]. Exception: " + e.Message);
+                        principal.Type = GssPrincipal.PrincipalType.NA;
+                    }
+                    prinicpals.Add(principal);
                 }
-                catch (Exception e)
-                {
-                    principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
-                    principal.Type = GssPrincipal.PrincipalType.NA;
-                }
-                prinicpals.Add(principal);
             }
         }
-
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
+        }
         result.Prinicpals = prinicpals;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
@@ -926,16 +971,26 @@ public class GssAclMonitor
         SPWeb web;
         init(out site, out web);
 
-        List<string> listIDs = new List<string>();
-        SPListCollection lists = web.Lists;
-        foreach (SPList list in lists)
+        try
         {
-            if (!list.HasUniqueRoleAssignments && GssAclUtility.isSame(web.FirstUniqueAncestor, list.FirstUniqueAncestor))
+            List<string> listIDs = new List<string>();
+            SPListCollection lists = web.Lists;
+            foreach (SPList list in lists)
             {
-                listIDs.Add(list.ID.ToString());
+                if (!list.HasUniqueRoleAssignments && GssAclUtility.isSame(web.FirstUniqueAncestor, list.FirstUniqueAncestor))
+                {
+                    listIDs.Add(list.ID.ToString());
+                }
+            }
+            return listIDs;
+        }
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
             }
         }
-        return listIDs;
     }
 
     /// <summary>
@@ -964,6 +1019,13 @@ public class GssAclMonitor
         catch (Exception e)
         {
             throw new Exception("Passed in listId [ " + listGuId + " ] does not exist in the current web site context");
+        }
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
         }
 
         List<string> itemIDs = new List<string>();
@@ -1049,7 +1111,9 @@ public class GssAclMonitor
         allAttrs.Remove(ows_MetaInfo);
         foreach (DictionaryEntry propEntry in props)
         {
-            XmlAttribute attr = xmlDoc.CreateAttribute("ows_MetaInfo_" + propEntry.Key.ToString());
+            // xmlDoc.CreateAttribute throws exception if aatribute contains space
+            string propName = propEntry.Key.ToString().Replace(" ", "_x0020_");
+            XmlAttribute attr = xmlDoc.CreateAttribute("ows_MetaInfo_" + propName);
             attr.Value = propEntry.Value.ToString();
             allAttrs.Append(attr);
         }
@@ -1058,15 +1122,17 @@ public class GssAclMonitor
 }
 
 /// <summary>
-/// Provides general purpose utility methods
+/// Provides general purpose utility methods.
+/// This class must be stateless becasue it is a member instance of the web service
 /// </summary>
 public sealed class GssAclUtility
 {
+
     private GssAclUtility()
     {
-        throw new Exception("Operation not allowed! ");    
+        throw new Exception("Operation not allowed! ");
     }
-    
+
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from the web application security policies
     /// </summary>
@@ -1078,7 +1144,7 @@ public sealed class GssAclUtility
         SPPolicyCollection policies = site.WebApplication.Policies;
         foreach (SPPolicy policy in policies)
         {
-            GssPrincipal principal = GetGssPrincipalFromLogin(site.WebApplication, policy.UserName);
+            GssPrincipal principal = GetGssPrincipalForSecPolicyUser(site, policy.UserName);
             if (null == principal)
             {
                 continue;
@@ -1106,7 +1172,7 @@ public sealed class GssAclUtility
         policies = site.WebApplication.ZonePolicies(site.Zone);
         foreach (SPPolicy policy in policies)
         {
-            GssPrincipal principal = GetGssPrincipalFromLogin(site.WebApplication, policy.UserName);
+            GssPrincipal principal = GetGssPrincipalForSecPolicyUser(site, policy.UserName);
             if (null == principal)
             {
                 continue;
@@ -1139,7 +1205,7 @@ public sealed class GssAclUtility
     /// <param name="userAceMap"> ACE Map to be updated </param>
     public static void FetchSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
-        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP);
+        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP, -1);
         principal.Type = GssPrincipal.PrincipalType.SPGROUP;
         GssSharepointPermission permission = new GssSharepointPermission();
         // Administrators have Full Rights in the site collection.
@@ -1203,10 +1269,22 @@ public sealed class GssAclUtility
     /// <returns></returns>
     public static ISecurableObject IdentifyObject(string url, SPWeb web)
     {
-        SPListItem listItem = web.GetListItem(url);
-        if (null != listItem)
+        SPListItem listItem = null;
+        //check if the url ending with default.aspx, then return IsecureObejct
+        // for the site not any of it's List/listItems to fetch Acl's.
+        
+        if (!url.EndsWith("default.aspx"))
         {
-            return listItem;
+            listItem = web.GetListItem(url);
+            if (null != listItem)
+            {
+                return listItem;
+            }
+        }
+        else
+        {
+            return web.Site.OpenWeb();
+
         }
 
         SPList list = web.GetList(url);
@@ -1227,6 +1305,8 @@ public sealed class GssAclUtility
         }
 
         return web.Site.OpenWeb(url);
+    
+            
     }
 
     /// <summary>
@@ -1254,21 +1334,14 @@ public sealed class GssAclUtility
             {
                 // Case of other generic lists
                 String key = "Created By";
-                try
+                SPFieldUser field = item.Fields[key] as SPFieldUser;
+                if (field != null)
                 {
-                    SPFieldUser field = item.Fields[key] as SPFieldUser;
-                    if (field != null)
+                    SPFieldUserValue fieldValue = field.GetFieldValue(item[key].ToString()) as SPFieldUserValue;
+                    if (fieldValue != null)
                     {
-                        SPFieldUserValue fieldValue = field.GetFieldValue(item[key].ToString()) as SPFieldUserValue;
-                        if (fieldValue != null)
-                        {
-                            owner = fieldValue.User;
-                        }
+                        owner = fieldValue.User;
                     }
-                }
-                catch (Exception e)
-                {
-                    throw new Exception("Failed to detect Owner for the list item [ " + item.Url + " ] ", e);
                 }
             }
         }
@@ -1278,7 +1351,7 @@ public sealed class GssAclUtility
         }
         else
         {
-            throw new Exception("Failed to detect Owner becasue the entity is neither a listitem, list or a web. ");
+            throw new Exception("Uncompatible entity type. A listitem, list or a web is expected. ");
         }
         return owner;
     }
@@ -1360,7 +1433,7 @@ public sealed class GssAclUtility
         if (spPrincipal is SPUser)
         {
             SPUser user = (SPUser)spPrincipal;
-            gssPrincipal = new GssPrincipal(user.LoginName);
+            gssPrincipal = new GssPrincipal(user.LoginName, user.ID);
             if (user.IsDomainGroup)
             {
                 gssPrincipal.Type = GssPrincipal.PrincipalType.DOMAINGROUP;
@@ -1369,13 +1442,13 @@ public sealed class GssAclUtility
         else if (spPrincipal is SPGroup)
         {
             SPGroup group = (SPGroup)spPrincipal;
-            gssPrincipal = new GssPrincipal(group.Name);
+            gssPrincipal = new GssPrincipal(group.Name, group.ID);
             gssPrincipal.Type = GssPrincipal.PrincipalType.SPGROUP;
             gssPrincipal.Members = ResolveSPGroup(group);
         }
         else
         {
-            gssPrincipal = new GssPrincipal(spPrincipal.Name);
+            gssPrincipal = new GssPrincipal(spPrincipal.Name, -2);
             gssPrincipal.AddLogMessage("could not create GssPrincipal for SPSprincipal [ " + spPrincipal.Name + " ] since it's neither a SPGroup nor a SPUser. ");
         }
 
@@ -1383,28 +1456,29 @@ public sealed class GssAclUtility
     }
 
     /// <summary>
-    /// Creates a GssPrincipal object from the user's login name. The login name must e identifiable in the passed in web application
+    /// Creates a GssPrincipal object from the user's login name. The login name must e identifiable in the web application and UrlZone to which the specified site belongs
     /// </summary>
-    /// <param name="webApp"></param>
-    /// <param name="login"></param>
+    /// <param name="site">SharePoint Site Collection whose context is to be used for constructing the prinicpal</param>
+    /// <param name="login">user login name for which the prinicipal is to be created</param>
     /// <returns></returns>
-    public static GssPrincipal GetGssPrincipalFromLogin(SPWebApplication webApp, string login)
+    public static GssPrincipal GetGssPrincipalForSecPolicyUser(SPSite site, string login)
     {
-        if (null == webApp || null == login)
+        if (null == site || null == login)
         {
             return null;
         }
         GssPrincipal gssPrincipal = null;
-        SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(webApp, login, SPPrincipalType.All, false);
+        SPPrincipalInfo userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, login, SPPrincipalType.All, SPPrincipalSource.All, false);
         if (null == userInfo)
         {
-            gssPrincipal = new GssPrincipal(login);
-            gssPrincipal.AddLogMessage("[ " + login + " ] could not be resolved a valid windows principal. ");
+            gssPrincipal = new GssPrincipal(login, -2);
+            gssPrincipal.AddLogMessage("[ " + login + " ] could not be resolved to a valid windows principal. ");
             gssPrincipal.Type = GssPrincipal.PrincipalType.NA;
             return gssPrincipal;
         }
 
-        gssPrincipal = new GssPrincipal(userInfo.LoginName);
+        // There is no concept of ID for security policy users. IDs are an offset defined in context of a site collection and policies are defined at web application level
+        gssPrincipal = new GssPrincipal(userInfo.LoginName, -2);
 
         if (userInfo.PrincipalType.Equals(SPPrincipalType.DistributionList) || userInfo.PrincipalType.Equals(SPPrincipalType.SecurityGroup))
         {

@@ -29,7 +29,7 @@ public class GssAclChangeCollection  implements java.io.Serializable {
 
     /**
      * Gets the changeToken value for this GssAclChangeCollection.
-     *
+     * 
      * @return changeToken
      */
     public java.lang.String getChangeToken() {
@@ -39,7 +39,7 @@ public class GssAclChangeCollection  implements java.io.Serializable {
 
     /**
      * Sets the changeToken value for this GssAclChangeCollection.
-     *
+     * 
      * @param changeToken
      */
     public void setChangeToken(java.lang.String changeToken) {
@@ -49,7 +49,7 @@ public class GssAclChangeCollection  implements java.io.Serializable {
 
     /**
      * Gets the changes value for this GssAclChangeCollection.
-     *
+     * 
      * @return changes
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChange[] getChanges() {
@@ -59,7 +59,7 @@ public class GssAclChangeCollection  implements java.io.Serializable {
 
     /**
      * Sets the changes value for this GssAclChangeCollection.
-     *
+     * 
      * @param changes
      */
     public void setChanges(com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChange[] changes) {
@@ -69,7 +69,7 @@ public class GssAclChangeCollection  implements java.io.Serializable {
 
     /**
      * Gets the logMessage value for this GssAclChangeCollection.
-     *
+     * 
      * @return logMessage
      */
     public java.lang.String getLogMessage() {
@@ -79,7 +79,7 @@ public class GssAclChangeCollection  implements java.io.Serializable {
 
     /**
      * Sets the logMessage value for this GssAclChangeCollection.
-     *
+     * 
      * @param logMessage
      */
     public void setLogMessage(java.lang.String logMessage) {
@@ -97,14 +97,14 @@ public class GssAclChangeCollection  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.changeToken==null && other.getChangeToken()==null) ||
+        _equals = true && 
+            ((this.changeToken==null && other.getChangeToken()==null) || 
              (this.changeToken!=null &&
               this.changeToken.equals(other.getChangeToken()))) &&
-            ((this.changes==null && other.getChanges()==null) ||
+            ((this.changes==null && other.getChanges()==null) || 
              (this.changes!=null &&
               java.util.Arrays.equals(this.changes, other.getChanges()))) &&
-            ((this.logMessage==null && other.getLogMessage()==null) ||
+            ((this.logMessage==null && other.getLogMessage()==null) || 
              (this.logMessage!=null &&
               this.logMessage.equals(other.getLogMessage())));
         __equalsCalc = null;
@@ -180,10 +180,10 @@ public class GssAclChangeCollection  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -192,10 +192,10 @@ public class GssAclChangeCollection  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

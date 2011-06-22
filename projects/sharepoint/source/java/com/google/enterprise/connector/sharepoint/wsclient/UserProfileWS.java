@@ -91,6 +91,11 @@ public class UserProfileWS {
                         .getUserNameWithDomain(strUserName, strDomain);
                 stub.setUsername(strUserName);
                 stub.setPassword(strPassword);
+                // The web service time-out value
+                stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
+                LOGGER.fine("Set time-out of : "
+                        + sharepointClientContext.getWebServiceTimeOut()
+                        + " milliseconds");
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Problem while creating the stub for UserProfile WS", e);
             }

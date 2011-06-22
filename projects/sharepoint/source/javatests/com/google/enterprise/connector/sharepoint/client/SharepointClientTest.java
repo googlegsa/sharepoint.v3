@@ -25,7 +25,11 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -38,15 +42,7 @@ public class SharepointClientTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         System.out.println("Initializing SharepointClientContext ...");
-        final SharepointClientContext sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType,
-                TestConfiguration.useSPSearchVisibility);
-
+        final SharepointClientContext sharepointClientContext = TestConfiguration.initContext();
         assertNotNull(sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
@@ -75,7 +71,7 @@ public class SharepointClientTest extends TestCase {
         this.sharepointClient.updateGlobalState(this.globalState);
         final Set webStates = this.globalState.getAllWebStateSet();
         final WebState curr_webState = (WebState) (webStates.toArray())[0];
-        final SPDocumentList rs = this.sharepointClient.traverse(this.globalState, curr_webState, iPageSizeHint);
+        final SPDocumentList rs = this.sharepointClient.traverse(this.globalState, curr_webState, iPageSizeHint, false);
         int numDocs = 0;
         try {
             System.out.println("Documents found - ");
@@ -164,25 +160,105 @@ public class SharepointClientTest extends TestCase {
      * @throws SharepointException
      */
     public void testTraverseToCheckValidLists() throws SharepointException {
-
-        GlobalState gs = new GlobalState(
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.feedType);
         SharepointClientContext spContext = TestConfiguration.initContext();
-        WebState ws = TestConfiguration.createWebState(gs, spContext, TestConfiguration.sharepointUrl, 1);
-        gs.addOrUpdateWebStateInGlobalState(ws);
-
-        // Set the last crawled list and web id as set in web state
-        gs.setLastCrawledList(ws.getLastCrawledList());
-        gs.setLastCrawledWeb(ws);
-
-        SharepointClient spclient = new SharepointClient(null);
+        spContext.setBatchHint(Integer.MAX_VALUE);
+        GlobalState gs = TestConfiguration.initState(spContext);
+        WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);
+        SharepointClient spclient = new SharepointClient(spContext);
 
         // Traverse the lists for the given web state
-        spclient.traverse(gs, ws, 50);
+        spclient.traverse(gs, ws, 50, true);
 
         // Since there are 4 lists, the third list being set as last crawled,
         // the total no. of lists visited should be 2
         assertEquals(2, spclient.getNoOfVisitedListStates());
+    }
+
+    /**
+     * Test case for
+     * {@link SharepointClient#fetchACLInBatches(SPDocumentList, WebState, GlobalState, int)}
+     *
+     * @throws SharepointException
+     */
+    public void testFetchACLInBatches() throws SharepointException {
+        SharepointClientContext spContext = TestConfiguration.initContext();
+        spContext.setBatchHint(Integer.MAX_VALUE);
+        spContext.setAclBatchSizeFactor(2);
+        spContext.setFetchACLInBatches(true);
+        GlobalState gs = TestConfiguration.initState(spContext);
+        WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);
+        SharepointClient spclient = new SharepointClient(spContext);
+
+        SPDocument doc = new SPDocument(
+                "122",
+                TestConfiguration.Site1_List1_URL,
+                Calendar.getInstance(), ActionType.ADD);
+
+
+        doc.setSharepointClientContext(spContext);
+
+        List<SPDocument> list = new ArrayList<SPDocument>();
+        list.add(doc);
+        SPDocumentList docList = new SPDocumentList(list, gs);
+
+        // Test that whenever 1 document, the batchsize is set to 1 and the
+        // method does return and does not run into infinite loop
+        boolean result = spclient.fetchACLInBatches(docList, ws, gs, 2);
+        assertTrue(result);
+
+        // Negative test case with 0 documents
+        List<SPDocument> list2 = new ArrayList<SPDocument>();
+        SPDocumentList docList2 = new SPDocumentList(list2, gs);
+        assertFalse(spclient.fetchACLInBatches(docList2, ws, gs, 2));
+
+    }
+
+    /**
+     * @throws SharepointException
+     */
+    public void testHandleACLForDocumentsForNonACLCrawl()
+            throws SharepointException {
+        SharepointClientContext spContext = TestConfiguration.initContext();
+        spContext.setPushAcls(false);
+
+        SharepointClient spclient = new SharepointClient(spContext);
+
+        GlobalState gs = TestConfiguration.initState(spContext);
+        WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);
+
+        // Test that when feeding ACLs is turned off, you still get true to
+        // indicate docs need to be fed to GSA
+        assertTrue(spclient.handleACLForDocuments(null, ws, gs, false));
+
+        SPDocumentList docList = getDocList(spContext, gs);
+        spContext.setPushAcls(true);
+
+        // Should fetch ACL and return true to indicate success
+        assertTrue(spclient.handleACLForDocuments(docList, ws, gs, false));
+
+        // Should just return true without fetching ACLs
+        assertTrue(spclient.handleACLForDocuments(docList, ws, gs, true));
+
+    }
+
+    /**
+     * Returns a doc list for test cases
+     *
+     * @param spContext The context info
+     * @param gs The global state holding all web states and list states
+     * @return The doc list
+     */
+    private SPDocumentList getDocList(SharepointClientContext spContext,
+            GlobalState gs) {
+        SPDocument doc = new SPDocument("122",
+                TestConfiguration.Site1_List1_URL, Calendar.getInstance(),
+                ActionType.ADD);
+
+        doc.setSharepointClientContext(spContext);
+
+        List<SPDocument> list = new ArrayList<SPDocument>();
+        list.add(doc);
+        SPDocumentList docList = new SPDocumentList(list, gs);
+        return docList;
     }
 }

@@ -127,6 +127,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     /// <param name="wsContext">serves specific details like SPUser and SPWeb required for authZ</param>
     private void Authorize(AuthData authData, SPWeb web, SPUser user)
     {
+        String url = authData.Container.Url;
         if (authData.Type == AuthData.EntityType.ALERT)
         {
             Guid alert_guid = new Guid(authData.ItemId);
@@ -140,9 +141,11 @@ public class BulkAuthorization : System.Web.Services.WebService
                 authData.IsAllowed = true;
             }
         }
-        else
-        {
-            SPList list = web.GetListFromUrl(authData.Container.Url);
+        else if (authData.Type == AuthData.EntityType.SITE) {
+            bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
+            authData.IsAllowed = isAllowd;
+        } else {
+            SPList list = web.GetListFromUrl(url);
             if (authData.Type == AuthData.EntityType.LIST)
             {
                 bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
@@ -325,7 +328,7 @@ public class AuthData
 
     public enum EntityType
     {
-        LISTITEM, LIST, ALERT
+        LISTITEM, LIST, ALERT, SITE
     }
     private EntityType type;
     public EntityType Type
@@ -460,6 +463,16 @@ public class WSContext
     string GetServerRelativeWebUrl(Container container)
     {
         String listUrl = container.Url;
+        //If the container type is SITE return only site name.
+        if (container.Type == Container.ContainerType.SITE)
+        {
+            String siteUrl = container.Url;
+            siteUrl = siteUrl.Substring(siteUrl.IndexOf(':') + 1);
+            siteUrl = siteUrl.Substring(siteUrl.IndexOf(':') + 1);
+            siteUrl = siteUrl.Substring(siteUrl.IndexOf('/') + 1);
+            siteUrl = siteUrl.Substring(0, siteUrl.LastIndexOf('/'));
+            return siteUrl;
+        }
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf('/'));
@@ -472,6 +485,18 @@ public class WSContext
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/', formsPos));
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
                 isTrimmed = true;
+
+                /*
+                 * For blog site template, picture library list URL (i.e. URL for "Photos" List)
+                 * contains both "lists" and "forms" string in the url. Hence removing the "lists"
+                 * from the url, so as to get the correct server relative URL for the picture library. 
+                 */ 
+                int listPos1 = listUrl.IndexOf("/lists", 0, StringComparison.InvariantCultureIgnoreCase);
+                if (listPos1 >= 0)
+                {
+                    listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+                    isTrimmed = true;
+                }
             }
 
             if (!isTrimmed)

@@ -384,13 +384,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
         if (SPType.SP2007.equals(getSPType())) {
             if (null != getParentFolder() && null != doc.getParentFolder()) {
-				if (null != getRenamedFolder()
-						&& null != doc.getRenamedFolder()) {
-					comparison = getRenamedFolder().compareTo(doc.getRenamedFolder());
-					if (comparison != 0) {
-						return comparison;
-					}
-				}
+                if (null != getRenamedFolder()
+                        && null != doc.getRenamedFolder()) {
+                    comparison = getRenamedFolder().compareTo(doc.getRenamedFolder());
+                    if (comparison != 0) {
+                        return comparison;
+                    }
+                }
                 comparison = getParentFolder().compareTo(doc.getParentFolder());
                 if (comparison != 0) {
                     return comparison;
@@ -638,7 +638,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      * @return the status of download
      * @throws RepositoryException
      */
-    private String downloadContents() throws RepositoryException {
+    /*
+     * public for testing purpose
+     */
+    public String downloadContents() throws RepositoryException {
         if (null == sharepointClientContext) {
             LOGGER.log(Level.SEVERE, "Failed to download document content because the connector context is not found!");
             return SPConstants.CONNECTIVITY_FAIL;

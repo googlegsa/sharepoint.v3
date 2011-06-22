@@ -68,6 +68,7 @@
           <s:enumeration value="LISTITEM" />
           <s:enumeration value="LIST" />
           <s:enumeration value="ALERT" />
+          <s:enumeration value="SITE" />
         </s:restriction>
       </s:simpleType>
       <s:element name="AuthorizeResponse">

@@ -405,42 +405,52 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         } catch (final UnsupportedEncodingException e1) {
             LOGGER.log(Level.WARNING, "Unable to Decode!", e1);
         }
-
         final Container container = new Container();
-        container.setType(ContainerType.LIST);
+        final StringTokenizer strTok = new StringTokenizer(complexDocId,
+                SPConstants.DOC_TOKEN);
+        String URL = strTok.nextToken();
+        if(URL != null && URL.endsWith(SPConstants.DEFAULT_SITE_LANDING_PAGE)) {
+            //If the URL ends with default.aspx, the container type should be SITE.
+            container.setType(ContainerType.SITE);
+        } else {
+            container.setType(ContainerType.LIST);
+        }
         final AuthData authData = new AuthData();
         authData.setContainer(container);
 
-        final StringTokenizer strTok = new StringTokenizer(complexDocId,
-                SPConstants.DOC_TOKEN);
+
         boolean isAttachment = false;
-        String listURL = strTok.nextToken();
+
         final String DocID = strTok.nextToken();
         try {
             Integer.parseInt(DocID);
             authData.setType(EntityType.LISTITEM);
         } catch (final Exception e) {
-            authData.setType(EntityType.LIST);
+            if (URL.endsWith(SPConstants.DEFAULT_SITE_LANDING_PAGE)) {
+                authData.setType(EntityType.SITE);
+            } else {
+                authData.setType(EntityType.LIST);
+            }
         }
 
-        final Matcher match = SPConstants.ATTACHMENT_SUFFIX_PATTERN.matcher(listURL);
+        final Matcher match = SPConstants.ATTACHMENT_SUFFIX_PATTERN.matcher(URL);
         if (match.find()) {
             final int index = match.end();
-            listURL = listURL.substring(index);
+            URL = URL.substring(index);
             isAttachment = true;
-        } else if (listURL.startsWith(SPConstants.ALERT_SUFFIX_IN_DOCID)) {
-            listURL = listURL.substring(SPConstants.ALERT_SUFFIX_IN_DOCID.length());
-            if (listURL.endsWith("_" + SPConstants.ALERTS_TYPE)) {
-                listURL = listURL.substring(0, listURL.length()
+        } else if (URL.startsWith(SPConstants.ALERT_SUFFIX_IN_DOCID)) {
+            URL = URL.substring(SPConstants.ALERT_SUFFIX_IN_DOCID.length());
+            if (URL.endsWith("_" + SPConstants.ALERTS_TYPE)) {
+                URL = URL.substring(0, URL.length()
                         - (1 + SPConstants.ALERTS_TYPE.length()));
             }
             container.setType(ContainerType.SITE);
             authData.setType(EntityType.ALERT);
         }
-        container.setUrl(listURL);
+        container.setUrl(URL);
 
         if(isAttachment) {
-            AttachmentKey attachmentKey = new AttachmentKey(listURL, DocID);
+            AttachmentKey attachmentKey = new AttachmentKey(URL, DocID);
             if (attachments.containsKey(attachmentKey)) {
                 attachments.get(attachmentKey).add(originalComplexDocId);
                 return null;

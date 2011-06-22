@@ -382,8 +382,9 @@ public class GlobalState {
                     webs.endRecrawl(spContext);
                     if (!webs.isExisting()) {
                         // Case of web deletion. Delete this web State only if
-                        // does not contain any list State info.
-                        if (webs.getAllListStateSet().size() == 0) {
+                        // does not contain any list State info and having a
+                        // single list state that represents site data.
+                        if (webs.getAllListStateSet().size() == 0 || webs.getAllListStateSet().first().isSiteDefaultPage()) {
                             int responseCode = 0;
                             try {
                                 responseCode = spContext.checkConnectivity(Util.encodeURL(webs.getWebUrl()), null);

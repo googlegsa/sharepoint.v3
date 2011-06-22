@@ -20,9 +20,11 @@ public class EntityType implements java.io.Serializable {
     public static final java.lang.String _LISTITEM = "LISTITEM";
     public static final java.lang.String _LIST = "LIST";
     public static final java.lang.String _ALERT = "ALERT";
+    public static final java.lang.String _SITE = "SITE";
     public static final EntityType LISTITEM = new EntityType(_LISTITEM);
     public static final EntityType LIST = new EntityType(_LIST);
     public static final EntityType ALERT = new EntityType(_ALERT);
+    public static final EntityType SITE = new EntityType(_SITE);
     public java.lang.String getValue() { return _value_;}
     public static EntityType fromValue(java.lang.String value)
           throws java.lang.IllegalArgumentException {
@@ -40,18 +42,18 @@ public class EntityType implements java.io.Serializable {
     public java.lang.String toString() { return _value_;}
     public java.lang.Object readResolve() throws java.io.ObjectStreamException { return fromValue(_value_);}
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new org.apache.axis.encoding.ser.EnumSerializer(
             _javaType, _xmlType);
     }
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new org.apache.axis.encoding.ser.EnumDeserializer(
             _javaType, _xmlType);
     }

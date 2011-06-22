@@ -33,7 +33,7 @@ public class ListCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the listGuid value for this ListCrawlInfo.
-     *
+     * 
      * @return listGuid
      */
     public java.lang.String getListGuid() {
@@ -43,7 +43,7 @@ public class ListCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the listGuid value for this ListCrawlInfo.
-     *
+     * 
      * @param listGuid
      */
     public void setListGuid(java.lang.String listGuid) {
@@ -53,7 +53,7 @@ public class ListCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the noCrawl value for this ListCrawlInfo.
-     *
+     * 
      * @return noCrawl
      */
     public boolean isNoCrawl() {
@@ -63,7 +63,7 @@ public class ListCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the noCrawl value for this ListCrawlInfo.
-     *
+     * 
      * @param noCrawl
      */
     public void setNoCrawl(boolean noCrawl) {
@@ -73,7 +73,7 @@ public class ListCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the status value for this ListCrawlInfo.
-     *
+     * 
      * @return status
      */
     public boolean isStatus() {
@@ -83,7 +83,7 @@ public class ListCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the status value for this ListCrawlInfo.
-     *
+     * 
      * @param status
      */
     public void setStatus(boolean status) {
@@ -93,7 +93,7 @@ public class ListCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the error value for this ListCrawlInfo.
-     *
+     * 
      * @return error
      */
     public java.lang.String getError() {
@@ -103,7 +103,7 @@ public class ListCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the error value for this ListCrawlInfo.
-     *
+     * 
      * @param error
      */
     public void setError(java.lang.String error) {
@@ -121,13 +121,13 @@ public class ListCrawlInfo  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.listGuid==null && other.getListGuid()==null) ||
+        _equals = true && 
+            ((this.listGuid==null && other.getListGuid()==null) || 
              (this.listGuid!=null &&
               this.listGuid.equals(other.getListGuid()))) &&
             this.noCrawl == other.isNoCrawl() &&
             this.status == other.isStatus() &&
-            ((this.error==null && other.getError()==null) ||
+            ((this.error==null && other.getError()==null) || 
              (this.error!=null &&
               this.error.equals(other.getError())));
         __equalsCalc = null;
@@ -198,10 +198,10 @@ public class ListCrawlInfo  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -210,10 +210,10 @@ public class ListCrawlInfo  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

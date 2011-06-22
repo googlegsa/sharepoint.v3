@@ -45,14 +45,48 @@
     <!--
     <property name="FQDNConversion"><value>false</value></property>
        -->
+  <!--
+    The following two properties define if the ACLs for documents need to
+    be fetched in batches and what should be the factor to determine an
+    appropriate batch size
+  -->
+  <!--
+    True indicates ACL for documents will be retrieved in batches. . The
+    batchSize will be less than the batchHint. This is typically required
+    when the ACL per document is large, implying fetching ACL for
+    batchHint number of documents will result in a large WS response and
+    result in OutOfMemoryError
+  -->
+  <!--
+    <property name="fetchACLInBatches"> <value>true</value> </property>
+  -->
+  <!--
+    The batchSizeFactor is used to arrive at an appropriate batch size
+    value. The formula used is: n/batchSizeFactor where 'n' is the number
+    of documents discovered in each batch traversal. Value should be > 0
+  -->
+  <!--
+    <property name="aclBatchSizeFactor"> <value>2</value> </property>
+  -->
 
-       <!-- ACL Related flags:
-        pushAcls: Whether ACLs should be sent for the documents. If true, ACLs will be sent as metadata with each document.
-        stripDomainFromAces: the domain will be stripped off from username send in the ACLs. -->
-    <!--
-    <property name="pushAcls"><value>true</value></property>
-      <property name="stripDomainFromAces"><value>true</value></property>
-      -->
+  <!-- Web service time out value. Value should be mentioned in milliseconds -->
+  <!--
+  <property name="webServiceTimeOut"><value>300000</value></property>
+  -->
+  <!--
+  <property name="infoPathBaseTemplate">
+      <list>
+        <value>XMLForm</value>
+      </list>
+    </property>
+  -->
+
+  <!-- Applicable for both Metadata-and-URL and content feed. If set to true, the document display URL (shown to the search users) will be re-written using alias mapping rule specified on connector configuration page. -->
+  <!-- <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property> -->
+
+  <!-- Applicable only for Metadata-and-URL feed. If set to true, the document record URL will also be re-written using alias mapping rule specified on connector configuration page. -->
+  <!-- <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property> -->
+
   <!--
   <property name="infoPathBaseTemplate">
       <list>
@@ -68,5 +102,4 @@
   <!-- <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property> -->
 
   </bean>
-
 </beans>
