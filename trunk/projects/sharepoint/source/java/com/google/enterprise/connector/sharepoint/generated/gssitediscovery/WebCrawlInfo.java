@@ -37,7 +37,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the webKey value for this WebCrawlInfo.
-     *
+     * 
      * @return webKey
      */
     public java.lang.String getWebKey() {
@@ -47,7 +47,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the webKey value for this WebCrawlInfo.
-     *
+     * 
      * @param webKey
      */
     public void setWebKey(java.lang.String webKey) {
@@ -57,7 +57,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the crawlAspxPages value for this WebCrawlInfo.
-     *
+     * 
      * @return crawlAspxPages
      */
     public boolean isCrawlAspxPages() {
@@ -67,7 +67,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the crawlAspxPages value for this WebCrawlInfo.
-     *
+     * 
      * @param crawlAspxPages
      */
     public void setCrawlAspxPages(boolean crawlAspxPages) {
@@ -77,7 +77,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the noCrawl value for this WebCrawlInfo.
-     *
+     * 
      * @return noCrawl
      */
     public boolean isNoCrawl() {
@@ -87,7 +87,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the noCrawl value for this WebCrawlInfo.
-     *
+     * 
      * @param noCrawl
      */
     public void setNoCrawl(boolean noCrawl) {
@@ -97,7 +97,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the status value for this WebCrawlInfo.
-     *
+     * 
      * @return status
      */
     public boolean isStatus() {
@@ -107,7 +107,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the status value for this WebCrawlInfo.
-     *
+     * 
      * @param status
      */
     public void setStatus(boolean status) {
@@ -117,7 +117,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Gets the error value for this WebCrawlInfo.
-     *
+     * 
      * @return error
      */
     public java.lang.String getError() {
@@ -127,7 +127,7 @@ public class WebCrawlInfo  implements java.io.Serializable {
 
     /**
      * Sets the error value for this WebCrawlInfo.
-     *
+     * 
      * @param error
      */
     public void setError(java.lang.String error) {
@@ -145,14 +145,14 @@ public class WebCrawlInfo  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.webKey==null && other.getWebKey()==null) ||
+        _equals = true && 
+            ((this.webKey==null && other.getWebKey()==null) || 
              (this.webKey!=null &&
               this.webKey.equals(other.getWebKey()))) &&
             this.crawlAspxPages == other.isCrawlAspxPages() &&
             this.noCrawl == other.isNoCrawl() &&
             this.status == other.isStatus() &&
-            ((this.error==null && other.getError()==null) ||
+            ((this.error==null && other.getError()==null) || 
              (this.error!=null &&
               this.error.equals(other.getError())));
         __equalsCalc = null;
@@ -230,10 +230,10 @@ public class WebCrawlInfo  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -242,10 +242,10 @@ public class WebCrawlInfo  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

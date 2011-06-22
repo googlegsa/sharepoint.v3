@@ -5,9 +5,208 @@ Google Search Appliance Connector for Microsoft SharePoint
 
 This document contains the release notes for Google Search Appliance Connector for Microsoft SharePoint.
 The following sections describe the release in detail and provide information that supplements the main documentation.
-See the Issues Tab on the Code Site for the current list of known issues and workarounds.
 
-Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+
+Release 2.8 , <Month> <Date>, <Year>
+====================================
+
+Introduction
+------------
+This is an upgrade release with some enhancements. Users of previous releases are encouraged to upgrade. Your feedback is important to us.
+Keep in mind that we are continuing to work on Google Enterprise Connector for Microsoft SharePoint and things may change in the future.
+
+Summary of Changes / New Features
+---------------------------------
+This patch contains fix for the following issues
+
+--Issue 177/3290338:For ACL indexing, add ability to differentiate identical group names in Sharepoint, Active Directory, and local computer
+Description:
+It has been observed that there is some discrepancy between the way GSA handles users and groups during ACL based authorization.
+This discrepancy is mainly related to the format that GSA uses for usernames and groupnames while matching them with the entries in ACL.
+For username, it uses just the username (without domain). But, for groups it uses domain\groupname. This, in turn, is because of the fact that
+while constructing the Primary Verified Identity, GSA strips off domain from username but it does not do the same with group names that are returned in response to a
+user group resolution query. The cookie cracker always returns the user/groupname in the format domain\username or domain\groupname.
+
+Owing to the above explanation, the policy ACL authorization works only when usernames in ACEs are in the format <username> and group names are
+in <domain\groupname>. SharePoint connector 2.8 has a fix for this. In the earlier versions, it used a single format for both user names and group names.
+Now on, it can be configured to send user/group names either with or without domains. But, there is no way to distinguish the format
+for the two.
+
+--Issue 3403786:SharePoint sites default.aspx page is not crawled by SharePoint connector.
+
+--Issue 4415189: Implementation of SPI changes in SharePoint connector to send groups(SP local groups and LDAP nested groups) during AuthN.
+Description: The basic idea is to send groups information for a given search user to resolve as and when needed through GSA query session channel
+support.In this release we have addressed the issue and handled different use cases related to connector-manager SPI changes.
+1. GSA makes an AuthN request to CM with valid authentication Identity.
+      -If the GSA makes AuthN request to CM with a valid Authentication Identity, then the CM will ask connector to supply group
+      memberships (LDAP groups + SP groups), implying that the connector should make an attempt to authenticate the user.
+2. GSA makes an AuthN request to CM with valid authentication Identity with out password.
+      -If the GSA makes AuthN request to CM without a password, then the CM will ask connector to supply group memberships
+      (LDAP groups + SP groups), implying that the connector should not make an attempt to authenticate the user.
+3. GSA makes an AuthN request to CM with valid authentication Identity but connector should return false with null group
+memberships if authentication is not successful.
+
+So with the Query session channel support in 6.10 GSA, connector will return AuthenticationResponse with true or false in addition to it the connector will send all
+search user groups (AD groups + SP groups) to GSA.
+This feature will work only with HTTP Based NTLM and Connectors authentication in GSA 6.10. It will not work with LDAP, Kerberos and SAML authentication.
+
+--Issue 4380742:SharePoint connector throws OutOfMemory errors when parsing ACL web service response.
+Description:The OutOfMemory are usually caused when the ACLs per document are large, resulting in a very large web service response.
+Since it is difficult to recover from java.lang.OutOfMemory errors, there is no way to re-cover and retry of fetching of ACLs
+without connector restart is not feasible. Usually, in such cases the JVM needs to be re-started. Hence, the alternative
+approach will be to expose flags in connectorInstance.xml to retry in batches which will need to be changed by the connector administrator.
+Steps to follow in case of OutOfMemory errors:
+1. By default the connector will fetch ACLs for all the documents discovered in a batch traversal.
+2. In case of OutOfMemory errors, it will log  SEVERE error message indicating to restart the connector service
+3. The administrator will have to stop the connector service, edit the properties in connectorInstance.xml and restart the connector service
+  a. Enable a flag to attempt ACL retrieval in batches.
+  b. Set appropriate value to a factor used to determine the new batch size. The formula used will be [n/batchSizeFactor] implying
+     that instead of retrieving ACL for 'n' documents, the connector will now do it in smaller batches which reduces the original
+     value by batchSizeFactor.
+Note: The connector administrator will have to arrive at an optimal value for batchSizeFactor based on their deployment.
+
+--Issue 4321636:Investigate and fix the performance problems associated with the ACL web service.
+Description:The performance problems associated with ACL web service were mainly caused due to the non-disposal of objects which
+consume lot of memory. It was observed that some in-built SharePoint objects were not disposed after their use in the web service code.
+In our case, the SPWeb object which corresponds to a SharePoint Web Site was not disposed correctly. Hence, the code for the ACL web service
+is modified to dispose these SPWeb objects. To make sure that the web service works properly, after the suggested changes, test
+methods are created for the web service to test its behavior.
+
+--Issue 4384079:SharePoint connector should feed ACLs in the index by default.
+Description:In this release feed ACLs option moved to connector configuration page to feed ACLs to search appliance by default.
+This option get selected by default when connector administrator configure SharePoint 2.8 version of connector.
+
+--Issue 4348216:SP connector should continue to crawl all contents of SharePoint server and it shouldn’t throw an exception
+while inserting user group memberships.
+Description:Its been observed that when batchUpdate called to update user data store table(Oracle) Connector throws an exception and causing the
+connector not to proceed further to complete its traversal.In this release, we have handled different exceptions that are thrown by different database drivers.
+
+--Issue 3260602:SP connector batch authZ should handle site collection URLs correctly.
+Description:Its been found that the authorization fails for the picture library URL found inside a Blog Site.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager Version 2.4.0 and above.
+It is recommended to upgrade to the latest Connector Manager version which is 2.6.6
+Versions lower than 2.4.0 of the Connector Manager will not work correctly with this version of the connector.
+Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
+SharePoint local group resolution support will work only with HTTP Based NTLM and Connector authentication with GSA 6.10.4.G.22.
+All the old connector features will continue to work on GSA 6.10.4.G.22 and 6.8.0.G.30.
+
+Steps to manually upgrade the existing connector
+------------------------------------------------
+1. Stop the SharePoint Connector Service.
+2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
+3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+4. Uncomment the below lines from applicationContext.properties file and then specify values for all these properties.
+for example in case of MySQL data base:
+jdbc.datasource.type=mysql
+jdbc.datasource.mysql.url=jdbc:mysql://myserver/google_connectors
+jdbc.datasource.mysql.user=<username>
+jdbc.datasource.mysql.password=<encrypted password>
+Refer connector-manager wiki page http://code.google.com/p/google-enterprise-connector-manager/wiki/EncryptPassword to encrypt password.
+5.Replace $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/$CONNECTOR_INSTANCE$/connectorInstance.xml with
+the new connectorInstance.xml provided with the build. If you had updated some properties in your older connectorInstance.xml, you'll have to
+update them explicitly in the new connectorInstance.xml.
+6. Start the SharePoint Connector Service.
+
+Note: If you have deployed Google Services on the SharePoint server, you need to upgrade them to 2.8 version. Next section gives the complete manual upgrade
+instructions for Google services for SharePoint. Next section gives the complete manual upgrade instruction for all services.
+Also, to have an optimal authorization performance, it is recommended to install/update the site discovery service along with bulk authorization service..
+
+Steps to manually deploy the Google services for SharePoint
+-----------------------------------------------------------
+Google services for SharePoint which are installed as web service files at the following location of your SharePoint server:
+for SharePoint 2007 : C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI
+for SharePoint 2010 : For SharePoint 2010, C:\Program Files\Common Files\microsoft shared\Web Server Extensions\14\ISAPI
+
+To update bulk authorization web service, to replace the following three files:
+GSBulkAuthorization.asmx
+GSBulkAuthorizationdisco.aspx
+GSBulkAuthorizationwsdl.aspx
+
+To update site discovery web service, to replace the following three files:
+GSSiteDiscovery.asmx
+GSSiteDiscoverydisco.aspx
+GSSiteDiscoverywsdl.aspx
+
+To update ACL web service, to replace the following three files:
+GssAcl.asmx
+GssAcldisco.aspx
+GssAclwsdl.aspx
+
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Note: This patch has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
+
+GSA Support:
+---------------------
+This connector version has been certified against GSA 6.8.0.G.30 and 6.10.4.G.22.
+Known Issues/Limitations
+------------------------
+1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
+java.net.BindException: Address already in use: JVM_Bind
+Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
+http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
+
+2) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
+the credentials used are of a local machine user.
+
+4) In this release, following features are not supported on SharePoint versions prior to SP2007
+- Fix for issue#53 (Connector should support SharePoint farm )
+- Bulk Authorization by connector
+- ACL
+
+5) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
+
+6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+7) Issue 139: Upgrade HTTPClient library and AXis to newer versions
+-- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
+document. One observation is that this exception occurs whenever the
+"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
+occurs as reported in Issue 59
+
+Stacktrace seen in logs:
+java.io.IOException: Attempted read on closed stream.
+at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
+at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
+
+Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
+Possible workaround:
+-- Ensure that the SharePoint server is fast enough for serving content
+-- Also please see the workaround mentioned in Issue 59
+
+8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
+Type1Message are not initialized properly and hence connector configuration does not get saved.
+
+_______________________________________________________________________
 
 Release 2.6.8 , 7 Dec 2010
 =======================================

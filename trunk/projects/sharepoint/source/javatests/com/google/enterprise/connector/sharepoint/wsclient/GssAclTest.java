@@ -14,20 +14,21 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.util.List;
-
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+
+import java.util.List;
+
+import junit.framework.TestCase;
 
 public class GssAclTest extends TestCase {
 
@@ -42,6 +43,8 @@ public class GssAclTest extends TestCase {
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setPushAcls(true);
         sharepointClientContext.setBatchHint(2);
+        aclWS = new GssAclWS(sharepointClientContext,
+                TestConfiguration.sharepointUrl);
         globalState = TestConfiguration.initState(sharepointClientContext);
     }
 
@@ -71,7 +74,7 @@ public class GssAclTest extends TestCase {
 
     public void testGetAclChangesSinceToken() throws Exception {
         WebState webstate = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
-        String changeToken = "1;1;1648c1de-0093-4fb8-a888-f032f5a2da4c;634087497264430000;1603";
+        String changeToken = "1;1;1648c1de-0093-4fb8-a888-f032f5a2da4c;634103077352630000;2263";
         webstate.setNextAclChangeToken(changeToken);
         webstate.commitAclChangeToken();
         this.aclWS = new GssAclWS(this.sharepointClientContext,
@@ -94,7 +97,7 @@ public class GssAclTest extends TestCase {
     }
 
     public void testResolveSPGroup() throws Exception {
-        String[] groupIds = { "1", "[GsSiteCollectionAdministrator]", "234" };
+        String[] groupIds = { "1", "[GSSiteCollectionAdministrator]", "5" };
         this.aclWS = new GssAclWS(this.sharepointClientContext,
                 TestConfiguration.sharepointUrl);
         GssResolveSPGroupResult result = aclWS.resolveSPGroup(groupIds);
@@ -106,7 +109,42 @@ public class GssAclTest extends TestCase {
     public void testCheckConnectivity() throws Exception {
         aclWS = new GssAclWS(sharepointClientContext,
                 TestConfiguration.sharepointUrl);
-        String status = aclWS.checkConnectivity();
-        assertEquals(SPConstants.CONNECTIVITY_SUCCESS, status);
+        try {
+            aclWS.checkConnectivity();
+        } catch (Exception e) {
+            fail();
+        }
+        assertTrue(true);
+    }
+
+    public void testGetPrincipalName() {
+        runBatchForGetPrincipalName("google\\users", "google\\users", PrincipalType.DOMAINGROUP, "domain\\username", "domain\\groupname");
+        runBatchForGetPrincipalName("google\\searchuser", "google\\searchuser", PrincipalType.USER, "domain\\username", "domain\\groupname");
+        runBatchForGetPrincipalName("users@google", "google\\users", PrincipalType.DOMAINGROUP, "domain\\username", "domain\\groupname");
+        runBatchForGetPrincipalName("searchuser@google", "google\\searchuser", PrincipalType.USER, "domain\\username", "domain\\groupname");
+
+        runBatchForGetPrincipalName("google\\users", "users@google", PrincipalType.DOMAINGROUP, "username@domain", "groupname@domain");
+        runBatchForGetPrincipalName("google\\searchuser", "searchuser@google", PrincipalType.USER, "username@domain", "groupname@domain");
+        runBatchForGetPrincipalName("users@google", "users@google", PrincipalType.DOMAINGROUP, "username@domain", "groupname@domain");
+        runBatchForGetPrincipalName("searchuser@google", "searchuser@google", PrincipalType.USER, "username@domain", "groupname@domain");
+
+        runBatchForGetPrincipalName("google\\users", "users", PrincipalType.DOMAINGROUP, "username", "groupname");
+        runBatchForGetPrincipalName("google\\searchuser", "searchuser", PrincipalType.USER, "username", "groupname");
+        runBatchForGetPrincipalName("users@google", "users", PrincipalType.DOMAINGROUP, "username", "groupname");
+        runBatchForGetPrincipalName("searchuser@google", "searchuser", PrincipalType.USER, "username", "groupname");
+
+        runBatchForGetPrincipalName("google\\domain users", "google\\domain users", PrincipalType.DOMAINGROUP, "domain\\username", "domain\\groupname");
+        runBatchForGetPrincipalName("google\\domain admin", "google\\domain admin", PrincipalType.USER, "domain\\username", "domain\\groupname");
+    }
+
+    public void runBatchForGetPrincipalName(String principalname,
+            String expectedPrincipalname, PrincipalType principalType,
+            String usernameFormat, String groupnameFormat) {
+        sharepointClientContext.setUsernameFormatInAce(usernameFormat);
+        sharepointClientContext.setGroupnameFormatInAce(groupnameFormat);
+        GssPrincipal principal = new GssPrincipal();
+        principal.setType(principalType);
+        principal.setName(principalname);
+        assertEquals(expectedPrincipalname, aclWS.getPrincipalName(principal));
     }
 }

@@ -21,7 +21,7 @@ public class GetWebCrawlInfoInBatch  implements java.io.Serializable {
 
     /**
      * Gets the webUrls value for this GetWebCrawlInfoInBatch.
-     *
+     * 
      * @return webUrls
      */
     public java.lang.String[] getWebUrls() {
@@ -31,7 +31,7 @@ public class GetWebCrawlInfoInBatch  implements java.io.Serializable {
 
     /**
      * Sets the webUrls value for this GetWebCrawlInfoInBatch.
-     *
+     * 
      * @param webUrls
      */
     public void setWebUrls(java.lang.String[] webUrls) {
@@ -49,8 +49,8 @@ public class GetWebCrawlInfoInBatch  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.webUrls==null && other.getWebUrls()==null) ||
+        _equals = true && 
+            ((this.webUrls==null && other.getWebUrls()==null) || 
              (this.webUrls!=null &&
               java.util.Arrays.equals(this.webUrls, other.getWebUrls())));
         __equalsCalc = null;
@@ -106,10 +106,10 @@ public class GetWebCrawlInfoInBatch  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -118,10 +118,10 @@ public class GetWebCrawlInfoInBatch  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

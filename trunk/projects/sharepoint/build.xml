@@ -1,361 +1,451 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="sharepoint-connector" default="sharepoint-connector" basedir=".">
-  <!-- Set the reference to build.properties -->
-  <property file="build.properties" />
-  <!-- ========================= PROPERTIES ============================= -->
-  <property name="version" value="${BUILD_VERSION}" />
-  <property name="product" value="Google Search Appliance Connector for Microsoft SharePoint 2003,2007" />
-  <property name="projects.dir" value=".." />
-  <property name="COMPILE_DEBUG_FLAG" value="true" />
-  <property name="COMPILE_DEBUG_LEVEL" value="source,lines,vars" />
-  <property name="build" value="build" />
-  <property name="javadoc" value="javadoc" />
-  <property name="dist" value="dist" />
-  <property name="src" value="source/java" />
-  <property name="src_generated" value="source/java/com/google/enterprise/connector/sharepoint/generated" />
-  <property name="classes" value="${build}/classes" />
-  <property name="config" value="config" />
-  <property environment="env" />
-  <property name="wsdl" value="wsdl" />
-  <property name="axis2_home" value="${env.AXIS2_HOME}" />
-  <property name="tests.src" value="source/javatests" />
-  <property name="tests.build" value="build/tests" />
-  <property name="tests.classes" value="${tests.build}/classes" />
-  <property name="tests.todir" value="tests_outdir" />
-  <property name="jar.dir" value="${dist}/jarfile" />
-  <property name="jarfile" value="${jar.dir}/connector-sharepoint.jar" />
-  <property name="connector-manager.dir" value="${CONNECTOR_MANAGER_DIR}" />
-  <property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
-  <property name="connector.jarfile" value="${connector-manager.dir}/${jar.dir}/connector.jar" />
-  <property name="lib.jar.dir" value="lib" />
-  <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
-  <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
-  <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
-  <property name="downloads.dir" value="downloads" />
+    <!-- Set the reference to build.properties -->
+    <property file="build.properties" />
+    <!-- ========================= PROPERTIES ============================= -->
+    <property name="version" value="${BUILD_VERSION}" />
+    <property name="product" value="Google Search Appliance Connector for Microsoft SharePoint 2003,2007, 2010" />
+    <property name="projects.dir" value=".." />
+    <property name="COMPILE_DEBUG_FLAG" value="true" />
+    <property name="COMPILE_DEBUG_LEVEL" value="source,lines,vars" />
+    <property name="build" value="build" />
+    <property name="javadoc" value="javadoc" />
+    <property name="dist" value="dist" />
+    <property name="src" value="source/java" />
+    <property name="src_generated" value="source/java/com/google/enterprise/connector/sharepoint/generated" />
+    <property name="classes" value="${build}/classes" />
+    <property name="config" value="config" />
+    <property environment="env" />
+    <property name="wsdl" value="wsdl" />
+    <property name="axis2_home" value="${env.AXIS2_HOME}" />
+    <property name="tests.src" value="source/javatests" />
+    <property name="tests.build" value="build/tests" />
+    <property name="tests.classes" value="${tests.build}/classes" />
+    <property name="tests.todir" value="tests_outdir" />
+    <property name="jar.dir" value="${dist}/jarfile" />
+    <property name="jarfile" value="${jar.dir}/connector-sharepoint.jar" />
+    <property name="connector-manager.dir" value="${CONNECTOR_MANAGER_DIR}" />
+    <property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
+    <property name="connector.jarfile" value="${connector-manager.dir}/${jar.dir}/connector.jar" />
+    <property name="lib.jar.dir" value="lib" />
+    <property name="lib.dev.jar.dir" value="${lib.jar.dir}/dev" />
+    <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
+    <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
+    <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
+    <property name="downloads.dir" value="downloads" />
+    <property name="cm-third-paty.jar" value="${connector-manager.dir}/third-party/prod/" />
+    <condition property="wsdl2java" value="wsdl2java.sh">
+        <os family="unix" />
+    </condition>
+    <condition property="wsdl2java" value="wsdl2java.bat">
+        <os family="windows" />
+    </condition>
 
-  <condition property="wsdl2java" value="wsdl2java.sh">
-    <os family="unix" />
-  </condition>
-  <condition property="wsdl2java" value="wsdl2java.bat">
-    <os family="windows" />
-  </condition>
+    <condition property="console" value="/bin/sh">
+        <os family="unix" />
+    </condition>
+    <condition property="console" value="cmd">
+        <os family="windows" />
+    </condition>
 
-  <condition property="console" value="/bin/sh">
-    <os family="unix" />
-  </condition>
-  <condition property="console" value="cmd">
-    <os family="windows" />
-  </condition>
-
-  <condition property="family" value="unix">
-    <os family="unix" />
-  </condition>
-  <condition property="family" value="windows">
-    <os family="windows" />
-  </condition>
-
-
-  <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
-  <!-- =========================== TASKS =============================== -->
-  <target name="sharepoint-connector" depends="clean,init, compile, jar,
-    download-sharepoint-connector">
-  </target>
-
-  <target name="init" >
-    <mkdir dir="${build}" />
-    <mkdir dir="${dist}" />
-    <mkdir dir="${classes}" />
-    <mkdir dir="${wsdl}" />
-    <mkdir dir="${tests.build}" />
-    <mkdir dir="${tests.classes}" />
-    <mkdir dir="${tests.todir}" />
-    <mkdir dir="${jar.dir}" />
-    <mkdir dir="${src_generated}" />
-    <mkdir dir="${downloads.dir}" />
-    <mkdir dir="${javadoc}" />
-  </target>
-
-  <target name="stubs" depends="init">
-    <!-- for SiteData.wsdl -->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-         <arg line="${wsdl}/SiteData.wsdl -p com.google.enterprise.connector.sharepoint.generated.sitedata -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
+    <condition property="family" value="unix">
+        <os family="unix" />
+    </condition>
+    <condition property="family" value="windows">
+        <os family="windows" />
+    </condition>
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+    <!--Cobertura properties -->
+    <property file="${config}/build_code_coverage.properties" />
+    <path id="cobertura.classpath">
+        <fileset dir="${lib.dev.jar.dir}">
             <include name="**/*.jar" />
         </fileset>
-      </classpath>
-     </java>
+    </path>
+    <!-- =========================== TASKS =============================== -->
+    <target name="sharepoint-connector" depends="clean,init, compile, jar,
+    download-sharepoint-connector">
+    </target>
+    <target name="init" >
+        <mkdir dir="${build}" />
+        <mkdir dir="${dist}" />
+        <mkdir dir="${classes}" />
+        <mkdir dir="${wsdl}" />
+        <mkdir dir="${tests.build}" />
+        <mkdir dir="${tests.classes}" />
+        <mkdir dir="${tests.todir}" />
+        <mkdir dir="${jar.dir}" />
+        <mkdir dir="${src_generated}" />
+        <mkdir dir="${downloads.dir}" />
+        <mkdir dir="${javadoc}" />
+    </target>
+    <target name="stubs" depends="init">
+        <!-- for SiteData.wsdl -->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/SiteData.wsdl -p com.google.enterprise.connector.sharepoint.generated.sitedata -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
 
-    <!--for GSBulkAuthorization.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-             <arg line="${wsdl}/GSBulkAuthorization.wsdl -p com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization -o ${src}"/>
-          <classpath>
-            <fileset dir="${lib.jar.dir}">
-                <include name="**/*.jar" />
+        <!--for GSBulkAuthorization.wsdl-->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/GSBulkAuthorization.wsdl -p com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
+
+        <!--for Lists.wsdl-->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/Lists.wsdl -p com.google.enterprise.connector.sharepoint.generated.lists -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
+
+        <!--for Webs.wsdl-->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/Webs.wsdl -p com.google.enterprise.connector.sharepoint.generated.webs -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
+
+        <!--for GSSiteDiscovery.wsdl-->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/GSSiteDiscovery.wsdl -p com.google.enterprise.connector.sharepoint.generated.gssitediscovery -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
+
+        <!--for UserProfileService.wsdl (SP2007)-->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.userprofileservice -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
+
+        <!--for UserProfileService.wsdl (SP2003)-->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/sp2003/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
+
+        <!--for Alerts.wsdl-->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/Alerts.wsdl -p com.google.enterprise.connector.sharepoint.generated.alerts -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
+
+        <!--for GssAcl.wsdl-->
+        <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="${wsdl}/GssAcl.wsdl -p com.google.enterprise.connector.sharepoint.generated.gssacl -o ${src}"/>
+            <classpath>
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </java>
+    </target>
+    <target name="compile" depends="init, stubs">
+        <!-- compile java source files -->
+        <javac srcdir="${src}" destdir="${classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" source="1.5" target="1.5" includeantruntime="true">
+
+            <classpath>
+                <pathelement location="${spi.jarfile}" />
+                <pathelement location="${connector.jarfile}" />
+                <pathelement location="${lib.jar.dir}" />
+                <pathelement location="${config}" />
+                <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+                <fileset dir="${lib.jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+                <fileset dir="${connector-manager.dir}/${jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="compile_tests" depends="init, compile">
+        <!-- compile java source files for tests -->
+
+        <javac srcdir="${tests.src}" destdir="${tests.classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" source="1.5" target="1.5">
+            <classpath>
+                <pathelement location="${spi.jar.dir}/connector.jar" />
+                <pathelement location="${tests.jarfile}" />
+                <pathelement location="${spi.jarfile}" />
+                <pathelement location="${config}" />
+                <pathelement location="${classes}" />
+                <pathelement location="${junit.jarfile}" />
+                <fileset dir="${lib.jar.dir}">
+                    <include name="*.jar" />
+                </fileset>
+                <fileset dir="${connector-manager.dir}/${jar.dir}">
+                    <include name="**/*.jar" />
+                </fileset>
+            </classpath>
+        </javac>
+
+    </target>
+
+    <target name="run_tests" depends="compile_tests,instrument">
+        <junit haltonfailure="yes">
+            <!-- The instrumented classes reference classes used by the Cobertura runtime, so
+            Cobertura and its dependencies must be on your classpath. -->
+            <classpath location="${instrumented.dir}" />
+            <classpath refid="cobertura.classpath" />
+
+            <classpath>
+                <pathelement location="${spi.jar.dir}/connector.jar" />
+                <pathelement location="${spi.jar.dir}/connector-spi.jar" />
+                <pathelement location="${tests.jarfile}" />
+                <pathelement location="${spi.jar.dir}/connector-util.jar" />
+                <pathelement location="${jarfile}" />
+                <pathelement location="${config}" />
+                <fileset dir="${lib.jar.dir}">
+                    <include name="*.jar" />
+                    <include name="**/*.properties" />
+                </fileset>
+                <pathelement location="${tests.classes}" />
+                <pathelement location="${tests.src}" />
+                <pathelement path="${java.class.path}" />
+            </classpath>
+            <formatter type="xml" />
+            <test name="${testcase}" todir="${reports.xml.dir}" if="testcase" />
+            <batchtest todir="${reports.xml.dir}" unless="testcase">
+                <fileset dir="${test.dir}">
+                    <include name="**/*Test.java" />
+                </fileset>
+            </batchtest>
+
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${tests.todir}">
+                <fileset dir="${tests.src}">
+                    <include name="**/*Test.java" />
+                </fileset>
+            </batchtest>
+        </junit>
+
+        <junitreport todir="${reports.xml.dir}">
+            <fileset dir="${reports.xml.dir}">
+                <include name="TEST-*.xml" />
             </fileset>
-          </classpath>
-    </java>
+            <report format="frames" todir="${reports.html.dir}" />
+        </junitreport>
 
-    <!--for Lists.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-             <arg line="${wsdl}/Lists.wsdl -p com.google.enterprise.connector.sharepoint.generated.lists -o ${src}"/>
-          <classpath>
-            <fileset dir="${lib.jar.dir}">
-                <include name="**/*.jar" />
+    </target>
+
+    <target name="jar" depends="compile" description="sharepoint-connector">
+        <jar jarfile="${jarfile}">
+            <fileset dir="${classes}" />
+            <fileset dir="${config}" >
+                <exclude name="**/logging.properties"/>
             </fileset>
-          </classpath>
-    </java>
-
-    <!--for Webs.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-             <arg line="${wsdl}/Webs.wsdl -p com.google.enterprise.connector.sharepoint.generated.webs -o ${src}"/>
-          <classpath>
-            <fileset dir="${lib.jar.dir}">
-                <include name="**/*.jar" />
+            <fileset dir="${src}">
+                <include name="**/*.properties" />
             </fileset>
-          </classpath>
-    </java>
 
-    <!--for GSSiteDiscovery.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-             <arg line="${wsdl}/GSSiteDiscovery.wsdl -p com.google.enterprise.connector.sharepoint.generated.gssitediscovery -o ${src}"/>
-          <classpath>
-            <fileset dir="${lib.jar.dir}">
-                <include name="**/*.jar" />
+            <fileset dir="source/java/org/apache/axis/client">
+                <include name="**/*.wsdd" />
             </fileset>
-          </classpath>
-    </java>
+            <!--creation of manifest file-->
+            <manifest>
+                <attribute name="Implementation-Title" value="${product}"/>
+                <attribute name="Implementation-Version" value="${version}"/>
+                <attribute name="Implementation-Vendor" value="Google Inc."/>
+                <attribute name="Specification-Title" value="Connector Manager SPI"/>
+                <attribute name="Specification-Version" value="${CONN_VERSION}"/>
+                <attribute name="Specification-Vendor" value="Google Inc."/>
+                <attribute name="Main-Class" value="com.google.enterprise.connector.sharepoint.SharePointMain" />
 
-    <!--for UserProfileService.wsdl (SP2007)-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-             <arg line="${wsdl}/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.userprofileservice -o ${src}"/>
-          <classpath>
-            <fileset dir="${lib.jar.dir}">
-                <include name="**/*.jar" />
-            </fileset>
-          </classpath>
-    </java>
+            </manifest>
+        </jar>
+    </target>
 
-    <!--for UserProfileService.wsdl (SP2003)-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-             <arg line="${wsdl}/sp2003/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice -o ${src}"/>
-          <classpath>
-            <fileset dir="${lib.jar.dir}">
-                <include name="**/*.jar" />
-            </fileset>
-          </classpath>
-    </java>
+    <target name="make-downloads-dir">
+        <mkdir dir="${downloads.dir}" />
+    </target>
 
-    <!--for Alerts.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-             <arg line="${wsdl}/Alerts.wsdl -p com.google.enterprise.connector.sharepoint.generated.alerts -o ${src}"/>
-          <classpath>
-            <fileset dir="${lib.jar.dir}">
-                <include name="**/*.jar" />
-            </fileset>
-          </classpath>
-    </java>
+    <target name="download-sharepoint-connector" depends="jar,javadoc,make-downloads-dir">
 
-    <!--for GssAcl.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-             <arg line="${wsdl}/GssAcl.wsdl -p com.google.enterprise.connector.sharepoint.generated.gssacl -o ${src}"/>
-          <classpath>
-            <fileset dir="${lib.jar.dir}">
-                <include name="**/*.jar" />
-            </fileset>
-          </classpath>
-    </java>
-  </target>
-
-
-
-  <target name="compile" depends="init, stubs">
-    <!-- compile java source files -->
-    <javac srcdir="${src}" destdir="${classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" source="1.5" target="1.5">
-
-      <classpath>
-        <pathelement location="${spi.jarfile}" />
-        <pathelement location="${connector.jarfile}" />
-        <pathelement location="${lib.jar.dir}" />
-        <pathelement location="${config}" />
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-        <fileset dir="${connector-manager.dir}/${jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="compile_tests" depends="init, compile">
-    <!-- compile java source files for tests -->
-
-    <javac srcdir="${tests.src}" destdir="${tests.classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" source="1.5" target="1.5">
-      <classpath>
-        <pathelement location="${spi.jar.dir}/connector.jar" />
-        <pathelement location="${tests.jarfile}" />
-        <pathelement location="${spi.jarfile}" />
-        <pathelement location="${config}" />
-        <pathelement location="${classes}" />
-        <pathelement location="${junit.jarfile}" />
-        <fileset dir="${lib.jar.dir}">
-          <include name="*.jar" />
-        </fileset>
-        <fileset dir="${connector-manager.dir}/${jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </javac>
-
-  </target>
-
-  <target name="run_tests" depends="compile_tests">
-    <junit haltonfailure="yes">
-      <classpath>
-        <pathelement location="${spi.jar.dir}/connector.jar" />
-        <pathelement location="${spi.jar.dir}/connector-spi.jar" />
-        <pathelement location="${tests.jarfile}" />
-        <pathelement location="${spi.jar.dir}/connector-util.jar" />
-        <pathelement location="${jarfile}" />
-        <pathelement location="${config}" />
-        <fileset dir="${lib.jar.dir}">
-          <include name="*.jar" />
-          <include name="**/*.properties" />
-        </fileset>
-        <pathelement location="${tests.classes}" />
-        <pathelement location="${tests.src}" />
-        <pathelement path="${java.class.path}" />
-      </classpath>
-      <formatter type="xml" />
-      <batchtest fork="yes" todir="${tests.todir}">
-        <fileset dir="${tests.src}">
-          <include name="**/*Test.java" />
-        </fileset>
-      </batchtest>
-    </junit>
-  </target>
-
-  <target name="jar" depends="compile" description="sharepoint-connector">
-    <jar jarfile="${jarfile}">
-      <fileset dir="${classes}" />
-      <fileset dir="${config}" >
-        <exclude name="**/logging.properties"/>
-      </fileset>
-      <fileset dir="${src}">
-        <include name="**/*.properties" />
-      </fileset>
-
-      <fileset dir="source/java/org/apache/axis/client">
-        <include name="**/*.wsdd" />
-      </fileset>
-
-
-      <!--creation of manifest file-->
-      <manifest>
-          <attribute name="Implementation-Title" value="${product}"/>
-              <attribute name="Implementation-Version" value="${version}"/>
-          <attribute name="Implementation-Vendor" value="Google Inc."/>
-          <attribute name="Specification-Title" value="Connector Manager SPI"/>
-          <attribute name="Specification-Version" value="${CONN_VERSION}"/>
-          <attribute name="Specification-Vendor" value="Google Inc."/>
-        <attribute name="Main-Class" value="com.google.enterprise.connector.sharepoint.SharePointMain" />
-
-      </manifest>
-    </jar>
-  </target>
-
-  <target name="make-downloads-dir">
-    <mkdir dir="${downloads.dir}" />
-  </target>
-
-  <target name="download-sharepoint-connector" depends="jar,javadoc,make-downloads-dir">
-
-    <zip destfile="${downloads.dir}/connector-sharepoint-${version}-src.zip" basedir="."
+        <zip destfile="${downloads.dir}/connector-sharepoint-${version}-src.zip" basedir="."
       includes="javadoc/**/*, config/**/*, License/**/*, source/**/*, wsdl/**/*, source_net/**/*, build.xml, Build_ReadMe.txt, COPYING, README, RELEASE_NOTES" />
-    <checksum file="${downloads.dir}/connector-sharepoint-${version}-src.zip" />
+        <checksum file="${downloads.dir}/connector-sharepoint-${version}-src.zip" />
 
-    <zip destfile="${downloads.dir}/connector-sharepoint-${version}.zip">
-      <zipfileset dir="." includes="README,RELEASE_NOTES,License/**/*,Scripts,lib/**/*" excludes="License/dev,lib/dev,License/dev/**/*,lib/dev/**/*"/>
-      <zipfileset dir="." includes="COPYING" prefix="License" />
-      <zipfileset dir="config/config/" includes="logging.properties" fullpath="config/logging.properties" />
-      <zipfileset dir="${jar.dir}" includes="connector-sharepoint.jar" fullpath="connector-sharepoint.jar" />
-    </zip>
-    <!--<checksum file="${downloads.dir}/connector-sharepoint-${version}.zip" />-->
+        <zip destfile="${downloads.dir}/connector-sharepoint-${version}.zip">
+            <zipfileset dir="." includes="README,RELEASE_NOTES,License/**/*,Scripts,lib/**/*" excludes="License/dev,lib/dev,License/dev/**/*,lib/dev/**/*"/>
+            <zipfileset dir="." includes="COPYING" prefix="License" />
+            <zipfileset dir="config/config/" includes="logging.properties" fullpath="config/logging.properties" />
+            <zipfileset dir="${jar.dir}" includes="connector-sharepoint.jar" fullpath="connector-sharepoint.jar" />
+        </zip>
+        <!--<checksum file="${downloads.dir}/connector-sharepoint-${version}.zip" />-->
 
-  </target>
+    </target>
 
+    <target name="clean" description="Deletes files produced by compile and test.">
+        <available file="${build}" property="exists"/>
+        <if>
+            <equals arg1="${exists}" arg2="true" />
+            <then>
+                <delete dir="${build}" />
+            </then>
+        </if>
 
-  <target name="clean" description="Deletes files produced by compile and test.">
-    <available file="${build}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-       <then>
-        <delete dir="${build}" />
-      </then>
-    </if>
+        <available file="${dist}" property="exists"/>
+        <if>
+            <equals arg1="${exists}" arg2="true" />
+            <then>
+                <delete dir="${dist}" />
+            </then>
+        </if>
 
-    <available file="${dist}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-       <then>
-        <delete dir="${dist}" />
-      </then>
-    </if>
+        <available file="${downloads.dir}" property="exists"/>
+        <if>
+            <equals arg1="${exists}" arg2="true" />
+            <then>
+                <delete dir="${downloads.dir}" />
+            </then>
+        </if>
 
-    <available file="${downloads.dir}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-       <then>
-         <delete dir="${downloads.dir}" />
-      </then>
-    </if>
+        <available file="${tests.todir}" property="exists"/>
+        <if>
+            <equals arg1="${exists}" arg2="true" />
+            <then>
+                <delete dir="${tests.todir}" />
+            </then>
+        </if>
 
-    <available file="${tests.todir}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-       <then>
-         <delete dir="${tests.todir}" />
-      </then>
-    </if>
+        <available file="${javadoc}" property="exists"/>
+        <if>
+            <equals arg1="${exists}" arg2="true" />
+            <then>
+                <delete dir="${build}" />
+            </then>
+        </if>
+    </target>
 
-    <available file="${javadoc}" property="exists"/>
-      <if>
-      <equals arg1="${exists}" arg2="true" />
-       <then>
-        <delete dir="${build}" />
-      </then>
-    </if>
-  </target>
-
-  <target name="javadoc" depends="compile" description="Create component Javadoc documentation">
-      <javadoc sourcepath   ="${src}"
+    <target name="javadoc" depends="compile" description="Create component Javadoc documentation">
+        <javadoc sourcepath   ="${src}"
                destdir      ="${javadoc}"
                packagenames ="com.google.enterprise.connector.sharepoint.*,com.google.enterprise.connector.sharepoint.client.*,com.google.enterprise.connector.sharepoint.client.wsclient.*,com.google.enterprise.connector.sharepoint.client.wsclient.sp2003.*,com.google.enterprise.connector.sharepoint.state.*"
                author       ="true"
-             private    ="true"
+               private    ="true"
                version      ="true"
                doctitle     ="&lt;h2&gt;${product}&lt;/h2&gt;"
                windowtitle  ="${product} (Version ${version})"
-               bottom       ="Copyright 2009 Google Inc."
-      >
-        <classpath>
-        <pathelement location="${spi.jar.dir}/connector.jar" />
-        <pathelement location="${spi.jar.dir}/connector-spi.jar" />
-        <pathelement location="${tests.jarfile}" />
-        <pathelement location="${spi.jar.dir}/connector-util.jar" />
-        <pathelement location="${jarfile}" />
-        <pathelement location="${config}" />
-        <fileset dir="${lib.jar.dir}">
-          <include name="*.jar" />
-          <include name="**/*.properties" />
-        </fileset>
-        <pathelement location="${tests.classes}" />
-        <pathelement location="${tests.src}" />
-        <pathelement path="${java.class.path}" />
-        </classpath>
-      </javadoc>
+               bottom       ="Copyright 2009 Google Inc.">
+            <classpath>
+                <pathelement location="${spi.jar.dir}/connector.jar" />
+                <pathelement location="${spi.jar.dir}/connector-spi.jar" />
+                <pathelement location="${tests.jarfile}" />
+                <pathelement location="${spi.jar.dir}/connector-util.jar" />
+                <pathelement location="${jarfile}" />
+                <pathelement location="${config}" />
+                <fileset dir="${lib.jar.dir}">
+                    <include name="*.jar" />
+                    <include name="**/*.properties" />
+                </fileset>
+                <pathelement location="${tests.classes}" />
+                <pathelement location="${tests.src}" />
+                <pathelement path="${java.class.path}" />
+            </classpath>
+        </javadoc>
     </target>
 
-  <target name="everything" description="Do it all!" depends="clean,sharepoint-connector,run_tests" />
+    <target name="everything" description="Do it all!" depends="clean,sharepoint-connector,run_tests" />
+
+    <!-- Cobertura Tasks -->
+
+    <taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
+
+    <target name="init_code_coverage">
+        <mkdir dir="${classes.dir}" />
+        <mkdir dir="${instrumented.dir}" />
+        <mkdir dir="${reports.xml.dir}" />
+        <mkdir dir="${reports.html.dir}" />
+        <mkdir dir="${coverage.xml.dir}" />
+        <mkdir dir="${coverage.summaryxml.dir}" />
+        <mkdir dir="${coverage.html.dir}" />
+    </target>
+
+
+    <target name="compile_code_coverage" depends="init_code_coverage">
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" debug="true">
+            <classpath>
+                <fileset dir="${spi.jar.dir}" includes="**/*.jar" />
+                <fileset dir="${lib.jar.dir}" includes="**/*.jar" />
+            </classpath>
+        </javac>
+        <javac srcdir="${test.dir}" destdir="${classes.dir}" debug="true">
+            <classpath>
+                <fileset dir="${spi.jar.dir}" includes="**/*.jar" />
+                <fileset dir="${lib.jar.dir}" includes="**/*.jar" />
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="instrument" depends="compile_code_coverage">
+        <!-- Remove the coverage data file and any old instrumentation. -->
+        <delete file="cobertura.ser"/>
+        <!-- <delete dir="${instrumented.dir}" /> -->
+
+        <cobertura-instrument todir="${instrumented.dir}">
+            <!--  The following line causes instrument to ignore any  source line
+            containing a reference to log4j, for the purposes of coverage reporting. -->
+            <ignore regex="org.apache.log4j.*" />
+            <fileset dir="${classes.dir}">
+                <!-- Instrument all the application classes, but don't instrument the test classes. -->
+                <include name="**/*.class" />
+                <exclude name="**/*Test.class" />
+            </fileset>
+        </cobertura-instrument>
+    </target>
+
+    <target name="coverage-report">
+        <!-- Generate an XML file containing the coverage data using the "srcdir" attribute. -->
+        <cobertura-report srcdir="${src.dir}" destdir="${coverage.xml.dir}" format="xml" />
+    </target>
+
+    <target name="alternate-coverage-report">
+        <!-- Generate a series of HTML files containing the coverage data in a user-readable form using nested source filesets. -->
+        <cobertura-report destdir="${coverage.html.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/*.java"/>
+            </fileset>
+        </cobertura-report>
+    </target>
+
+
+    <target name="clean_code_coverage" description="Remove all files created by the build/test process.">
+        <delete dir="${classes.dir}" />
+        <delete dir="${instrumented.dir}" />
+        <delete dir="${reports.dir}" />
+        <delete file="cobertura.log" />
+        <delete file="cobertura.ser" />
+    </target>
+    <target name="run_code_coverage" depends="run_tests,coverage-report,alternate-coverage-report" description="Compile, instrument ourself, run the tests and generate JUnit and coverage reports."/>
 </project>

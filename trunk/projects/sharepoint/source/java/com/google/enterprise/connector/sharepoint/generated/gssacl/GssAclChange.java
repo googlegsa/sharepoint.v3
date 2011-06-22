@@ -33,7 +33,7 @@ public class GssAclChange  implements java.io.Serializable {
 
     /**
      * Gets the changedObject value for this GssAclChange.
-     *
+     * 
      * @return changedObject
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType getChangedObject() {
@@ -43,7 +43,7 @@ public class GssAclChange  implements java.io.Serializable {
 
     /**
      * Sets the changedObject value for this GssAclChange.
-     *
+     * 
      * @param changedObject
      */
     public void setChangedObject(com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType changedObject) {
@@ -53,7 +53,7 @@ public class GssAclChange  implements java.io.Serializable {
 
     /**
      * Gets the changeType value for this GssAclChange.
-     *
+     * 
      * @return changeType
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.SPChangeType getChangeType() {
@@ -63,7 +63,7 @@ public class GssAclChange  implements java.io.Serializable {
 
     /**
      * Sets the changeType value for this GssAclChange.
-     *
+     * 
      * @param changeType
      */
     public void setChangeType(com.google.enterprise.connector.sharepoint.generated.gssacl.SPChangeType changeType) {
@@ -73,7 +73,7 @@ public class GssAclChange  implements java.io.Serializable {
 
     /**
      * Gets the hint value for this GssAclChange.
-     *
+     * 
      * @return hint
      */
     public java.lang.String getHint() {
@@ -83,7 +83,7 @@ public class GssAclChange  implements java.io.Serializable {
 
     /**
      * Sets the hint value for this GssAclChange.
-     *
+     * 
      * @param hint
      */
     public void setHint(java.lang.String hint) {
@@ -93,7 +93,7 @@ public class GssAclChange  implements java.io.Serializable {
 
     /**
      * Gets the isEffectiveInCurrentWeb value for this GssAclChange.
-     *
+     * 
      * @return isEffectiveInCurrentWeb
      */
     public boolean isIsEffectiveInCurrentWeb() {
@@ -103,7 +103,7 @@ public class GssAclChange  implements java.io.Serializable {
 
     /**
      * Sets the isEffectiveInCurrentWeb value for this GssAclChange.
-     *
+     * 
      * @param isEffectiveInCurrentWeb
      */
     public void setIsEffectiveInCurrentWeb(boolean isEffectiveInCurrentWeb) {
@@ -121,14 +121,14 @@ public class GssAclChange  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.changedObject==null && other.getChangedObject()==null) ||
+        _equals = true && 
+            ((this.changedObject==null && other.getChangedObject()==null) || 
              (this.changedObject!=null &&
               this.changedObject.equals(other.getChangedObject()))) &&
-            ((this.changeType==null && other.getChangeType()==null) ||
+            ((this.changeType==null && other.getChangeType()==null) || 
              (this.changeType!=null &&
               this.changeType.equals(other.getChangeType()))) &&
-            ((this.hint==null && other.getHint()==null) ||
+            ((this.hint==null && other.getHint()==null) || 
              (this.hint!=null &&
               this.hint.equals(other.getHint()))) &&
             this.isEffectiveInCurrentWeb == other.isIsEffectiveInCurrentWeb();
@@ -201,10 +201,10 @@ public class GssAclChange  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -213,10 +213,10 @@ public class GssAclChange  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

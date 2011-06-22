@@ -14,9 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.ldap.LdapService;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
@@ -24,6 +27,10 @@ import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
 
+import org.apache.commons.lang.StringEscapeUtils;
+
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +47,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     Logger LOGGER = Logger.getLogger(SharepointAuthenticationManager.class.getName());
 
     SharepointClientContext sharepointClientContext = null;
+    LdapService ldapService = null;
 
     /**
      * @param inSharepointClientContext Context Information is required to
@@ -53,7 +61,10 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
                     "SharePointClientContext can not be null");
         }
         sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
-    }
+        if (sharepointClientContext.isPushAcls()) {
+            ldapService = new UserGroupsService(inSharepointClientContext);
+        }
+     }
 
     /**
      * Authenticates the user against the SharePoint server where Crawl URL
@@ -82,39 +93,103 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         LOGGER.log(Level.INFO, "Received authN request for Username [ "
                 + user + " ], domain [ " + domain + " ]. ");
 
+
+        LOGGER.log(Level.INFO, "Received authN request for Username [ "
+                + user + " ], domain [ " + domain + " ]. ");
+
         // If domain is not received as part of the authentication request, use
         // the one from SharePointClientContext
         if ((domain == null) || (domain.length() == 0)) {
             domain = sharepointClientContext.getDomain();
         }
 
-        final String userName = Util.getUserNameWithDomain(user, domain);
-        LOGGER.log(Level.INFO, "Authenticating User: " + userName);
-
-        sharepointClientContext.setUsername(userName);
-        sharepointClientContext.setPassword(password);
-
-        try {
-            bulkAuth = new GSBulkAuthorizationWS(sharepointClientContext);
-        } catch (final Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize GSBulkAuthorizationWS.", e);
-            return null;
+        if (!Strings.isNullOrEmpty(password)) {
+            final String userName = Util.getUserNameWithDomain(user, domain);
+            LOGGER.log(Level.INFO, "Authenticating User: " + userName);
+            sharepointClientContext.setUsername(userName);
+            sharepointClientContext.setPassword(password);
+            try {
+                bulkAuth = new GSBulkAuthorizationWS(sharepointClientContext);
+            } catch (final Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to initialize GSBulkAuthorozationWS.", e);
+                return null;
+            }
+            /*
+             * If you can make a call to Web Service with the given credential,
+             * the user is valid user. This should not be assumed as a valid
+             * SharePoint user. A valid user is any user who is identified on the
+             * SharePoint server.The Google Services deployed on the SharePoint server
+             * can be called with such user credentials.
+             *
+             * If Authentication is successful get groups information from UserDataStore
+             * data base for a given user and add it to AuthenticationResponse.             *
+             */
+            if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
+                LOGGER.log(Level.INFO, "Authentication succeeded for the user : "
+                        + user + " with identity : " + userName);
+                if (sharepointClientContext.isPushAcls()
+                        && null != this.ldapService) {
+                    return getAllGroupsForTheUser(user);
+                } else {
+                    // Handle the cases when connector should just return true
+                    // indicating successfull authN
+                    LOGGER.config("No group resolution has been attempted as connector is not set to feed ACL");
+                    return new AuthenticationResponse(true, "", null);
+                }
+            }
+        } else {
+            LOGGER.config("AuthN was not attempted as password is empty and groups are being returned.");
+            return getAllGroupsForTheUser(user);
         }
-
-        /*
-         * If we can make a call to the Web Service with the given credetial,
-         * the user is a valid user. This should not be assumed as a valid
-         * SharePoint user. A valid user is any user who is identified on the
-         * SharePoint server. He may no have any access to the SharePoint site.
-         * The Google Services deployed on the SharePoint can be called with any
-         * such user's credential.
-         */
-        if (SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(bulkAuth.checkConnectivity())) {
-            LOGGER.log(Level.INFO, "Authentication succeded for " + userName);
-            return new AuthenticationResponse(true, "");
-        }
-
         LOGGER.log(Level.WARNING, "Authentication failed for " + user);
-        return new AuthenticationResponse(false, "");
+        return new AuthenticationResponse(false, "", null);
     }
+
+    /**
+     * This method makes a call to {@link LdapService} to get all AD groups and
+     * SP groups of which he/she is a direct or indirect member of and returns
+     * {@link AuthenticationResponse}.
+     *
+     * @param searchUser to fetch all SharePoint groups and Directory groups to
+     *            which he/she is a direct or indirect member of.
+     * @return {@link AuthenticationResponse}
+     * @throws SharepointException
+     */
+    AuthenticationResponse getAllGroupsForTheUser(String searchUser)
+            throws SharepointException {
+        LOGGER.info("Attempting group resolution for user : " + searchUser);
+        Set<String> allSearchUserGroups = this.ldapService.getAllGroupsForSearchUser(sharepointClientContext, searchUser);
+        Set<String> finalGroupNames = encodeGroupNames(allSearchUserGroups);
+        if (null != finalGroupNames && finalGroupNames.size() > 0) {
+            // Should return true is there is at least one group returned by
+            // LDAP service.
+            StringBuffer buf = new StringBuffer(
+                    "Group resolution service returned following groups for the search user: ").append(searchUser).append(" \n").append(finalGroupNames.toString());
+            LOGGER.info(buf.toString());
+            return new AuthenticationResponse(true, "", allSearchUserGroups);
+        }
+        LOGGER.info("Group resolution service returned no groups for the search user: "
+                + searchUser);
+        // Should returns true with null groups.
+        return new AuthenticationResponse(true, "", null);
+    }
+
+  /**
+   * Returns a set of encoded group names by iterating to all the groups.
+   *
+   * @param allSearchUserGroups set of group names to encode.
+   */
+  private Set<String> encodeGroupNames(Set<String> allSearchUserGroups) {
+    Set<String> tmpGroups = new HashSet<String>();
+    if (null != allSearchUserGroups && allSearchUserGroups.size() > 0) {
+      for (String groupName : allSearchUserGroups) {
+        tmpGroups.add(StringEscapeUtils.escapeXml(groupName));
+      }
+      return tmpGroups;
+    } else {
+      LOGGER.info("Recieved zero or null groups to encode.");
+      return null;
+    }
+  }
+
 }

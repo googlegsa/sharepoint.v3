@@ -16,6 +16,8 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
 
@@ -43,7 +45,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-// FIXME We can get rid of this class since it is unnecessarily creating a hop between SharePointConector and spi implementations. config values can be passed to the appropriate classes directly using IoC.
+//FIXME Should we can get rid of this class since it is unnecessarily creating a hop between SharePointConector and spi implementations
+// config values can be passed to the appropriate classes directly using IoC.
 
 /**
  * Class to hold the context information for sharepoint client connection. The
@@ -78,13 +81,34 @@ public class SharepointClientContext implements Cloneable {
     private TraversalContext traversalContext;
 
     private boolean pushAcls = true;
-    private boolean stripDomainFromAces = true;
+    private String usernameFormatInAce;
+    private String groupnameFormatInAce;
+    private boolean appendNamespaceInSPGroup;
+
+    private UserDataStoreDAO userDataStoreDAO;
 
     private boolean useSPSearchVisibility = true;
     private List<String> infoPathBaseTemplate = null;
 
-    boolean reWriteDisplayUrlUsingAliasMappingRules = true;
-    boolean reWriteRecordUrlUsingAliasMappingRules;
+    private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
+    private boolean reWriteRecordUrlUsingAliasMappingRules;
+
+    private boolean fetchACLInBatches = false;
+    private int aclBatchSizeFactor = 2;
+    private int webServiceTimeOut = 300000;
+    private int initialCacheSize;
+    private boolean useCacheToStoreLdapUserGroupsMembership;
+    private long cacheRefreshInterval;
+    private LdapConnectionSettings ldapConnectionSettings;
+
+    public LdapConnectionSettings getLdapConnectionSettings() {
+        return ldapConnectionSettings;
+    }
+
+    public void setLdapConnectionSettings(
+            LdapConnectionSettings ldapConnectionSettings) {
+        this.ldapConnectionSettings = ldapConnectionSettings;
+    }
 
     /**
      * For cloning
@@ -147,7 +171,6 @@ public class SharepointClientContext implements Cloneable {
             spCl.setFQDNConversion(bFQDNConversion);
             spCl.setBatchHint(batchHint);
             spCl.setPushAcls(pushAcls);
-            spCl.setStripDomainFromAces(stripDomainFromAces);
 
             if (null != included_metadata) {
                 spCl.included_metadata.addAll(included_metadata);
@@ -160,11 +183,29 @@ public class SharepointClientContext implements Cloneable {
                 spCl.excludedURL_ParentDir = excludedURL_ParentDir;
             }
 
+            if (null != userDataStoreDAO) {
+                // It's ok if we do a shallow copy here
+                spCl.userDataStoreDAO = this.userDataStoreDAO;
+            }
+
             spCl.useSPSearchVisibility = useSPSearchVisibility;
             spCl.infoPathBaseTemplate = infoPathBaseTemplate;
 
             spCl.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
             spCl.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
+
+            spCl.setUsernameFormatInAce(this.getUsernameFormatInAce());
+            spCl.setGroupnameFormatInAce(this.getGroupnameFormatInAce());
+
+            spCl.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
+            spCl.setAclBatchSizeFactor(this.aclBatchSizeFactor);
+            spCl.setFetchACLInBatches(this.fetchACLInBatches);
+            spCl.setWebServiceTimeOut(this.webServiceTimeOut);
+            spCl.setLdapConnectionSettings(this.ldapConnectionSettings);
+            spCl.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
+            spCl.setInitialCacheSize(this.initialCacheSize);
+            spCl.setCacheRefreshInterval(this.cacheRefreshInterval);
+
             return spCl;
         } catch (final Throwable e) {
             LOGGER.log(Level.FINEST, "Unable to clone client context.", e);
@@ -286,7 +327,6 @@ public class SharepointClientContext implements Cloneable {
         feedType = inFeedType;
         LOGGER.finest("feedType set to " + feedType);
         LOGGER.finest("bFQDNConversion set to " + bFQDNConversion);
-
 
         this.useSPSearchVisibility = useSPSearchVisibility;
 
@@ -913,12 +953,12 @@ public class SharepointClientContext implements Cloneable {
         this.pushAcls = pushAcls;
     }
 
-    public boolean isStripDomainFromAces() {
-        return stripDomainFromAces;
+    public UserDataStoreDAO getUserDataStoreDAO() {
+        return userDataStoreDAO;
     }
 
-    public void setStripDomainFromAces(boolean stripDomainFromAces) {
-        this.stripDomainFromAces = stripDomainFromAces;
+    public void setUserDataStoreDAO(UserDataStoreDAO userDataStoreDAO) {
+        this.userDataStoreDAO = userDataStoreDAO;
     }
 
     public boolean isUseSPSearchVisibility() {
@@ -958,4 +998,116 @@ public class SharepointClientContext implements Cloneable {
             boolean reWriteRecordUrlUsingAliasMappingRules) {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
+
+    public String getUsernameFormatInAce() {
+        return usernameFormatInAce;
+    }
+
+    public void setUsernameFormatInAce(String usernameFormatInAce) {
+        this.usernameFormatInAce = usernameFormatInAce;
+    }
+
+    public String getGroupnameFormatInAce() {
+        return groupnameFormatInAce;
+    }
+
+    public void setGroupnameFormatInAce(String groupnameFormatInAce) {
+        this.groupnameFormatInAce = groupnameFormatInAce;
+    }
+
+    public boolean isAppendNamespaceInSPGroup() {
+        return appendNamespaceInSPGroup;
+    }
+
+    public void setAppendNamespaceInSPGroup(boolean appendNamespaceInSPGroup) {
+        this.appendNamespaceInSPGroup = appendNamespaceInSPGroup;
+    }
+
+    /**
+     * @return the fetchACLInBatches
+     */
+    public boolean isFetchACLInBatches() {
+        return fetchACLInBatches;
+    }
+
+    /**
+     * @param fetchACLInBatches the fetchACLInBatches to set
+     */
+    public void setFetchACLInBatches(boolean fetchACLInBatches) {
+        this.fetchACLInBatches = fetchACLInBatches;
+    }
+
+    /**
+     * @return the aclBatchSizeFactor
+     */
+    public int getAclBatchSizeFactor() {
+        return aclBatchSizeFactor;
+    }
+
+    /**
+     * @param aclBatchSizeFactor the aclBatchSizeFactor to set
+     */
+    public void setAclBatchSizeFactor(int aclBatchSizeFactor) {
+        this.aclBatchSizeFactor = aclBatchSizeFactor;
+    }
+
+    /**
+     * @return the webServiceTimeOut
+     */
+    public int getWebServiceTimeOut() {
+        return webServiceTimeOut;
+    }
+
+    /**
+     * @param webServiceTimeOut the webServiceTimeOut to set
+     */
+    public void setWebServiceTimeOut(int webServiceTimeOut) {
+        this.webServiceTimeOut = webServiceTimeOut;
+    }
+
+    /**
+     * @return initial LDAP user groups membership cache size.
+     */
+    public int getInitialCacheSize() {
+        return initialCacheSize;
+    }
+
+    /**
+     * @param initialCacheSize the initialCacheSize to set.
+     */
+    public void setInitialCacheSize(int initialCacheSize) {
+        this.initialCacheSize = initialCacheSize;
+    }
+
+    /**
+     * @return true if connector administrator configure to use cache for LDAP
+     *         user groups membership.
+     */
+    public boolean isUseCacheToStoreLdapUserGroupsMembership() {
+        return useCacheToStoreLdapUserGroupsMembership;
+    }
+
+    /**
+     * @param useCacheToStoreLdapUserGroupsMembership the
+     *            useCacheToStoreLdapUserGroupsMembership to set.
+     */
+    public void setUseCacheToStoreLdapUserGroupsMembership(
+            boolean useCacheToStoreLdapUserGroupsMembership) {
+        this.useCacheToStoreLdapUserGroupsMembership = useCacheToStoreLdapUserGroupsMembership;
+    }
+
+    /**
+     * @return the interval to which LDAP cache should invalidate its cache.
+     */
+    public long getCacheRefreshInterval() {
+        return cacheRefreshInterval;
+    }
+
+    /**
+     * @param cacheRefreshInterval the cacheRefreshInterval to set.
+     */
+    public void setCacheRefreshInterval(long cacheRefreshInterval) {
+        this.cacheRefreshInterval = cacheRefreshInterval;
+    }
+
 }

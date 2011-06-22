@@ -49,8 +49,8 @@ public class SPDocumentList implements DocumentList {
     // Holds the index position of the doc last sent to CM
     private int docsFedIndexPosition = 0;
 
-    boolean reWriteDisplayUrlUsingAliasMappingRules = true;
-    boolean reWriteRecordUrlUsingAliasMappingRules;
+    private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
+    private boolean reWriteRecordUrlUsingAliasMappingRules;
 
     /**
      * @param inDocuments List of {@link SPDocument} to be sent to GSA
@@ -137,7 +137,7 @@ public class SPDocumentList implements DocumentList {
             docsFedIndexPosition++;
 
             if (!spDocument.isToBeFed()) {
-                LOGGER.log(Level.FINE, "Document skipped from feed because it is excluded: "
+                LOGGER.log(Level.WARNING, "Excluding document from feed "
                         + spDocument.getUrl());
             }
 
@@ -430,5 +430,15 @@ public class SPDocumentList implements DocumentList {
     public void setReWriteRecordUrlUsingAliasMappingRules(
             boolean reWriteRecordUrlUsingAliasMappingRules) {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer msg = new StringBuffer(" SPDocumentList for "
+                + documents.size() + " documents with docId & URL : \n");
+        for (SPDocument spDoc : documents) {
+            msg.append("Document -- ").append(spDoc.toString()).append(" \n");
+        }
+        return msg.toString();
     }
 }

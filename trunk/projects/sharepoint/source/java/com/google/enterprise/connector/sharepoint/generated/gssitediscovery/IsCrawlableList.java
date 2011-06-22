@@ -21,7 +21,7 @@ public class IsCrawlableList  implements java.io.Serializable {
 
     /**
      * Gets the listGUID value for this IsCrawlableList.
-     *
+     * 
      * @return listGUID
      */
     public java.lang.String getListGUID() {
@@ -31,7 +31,7 @@ public class IsCrawlableList  implements java.io.Serializable {
 
     /**
      * Sets the listGUID value for this IsCrawlableList.
-     *
+     * 
      * @param listGUID
      */
     public void setListGUID(java.lang.String listGUID) {
@@ -49,8 +49,8 @@ public class IsCrawlableList  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.listGUID==null && other.getListGUID()==null) ||
+        _equals = true && 
+            ((this.listGUID==null && other.getListGUID()==null) || 
              (this.listGUID!=null &&
               this.listGUID.equals(other.getListGUID())));
         __equalsCalc = null;
@@ -97,10 +97,10 @@ public class IsCrawlableList  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -109,10 +109,10 @@ public class IsCrawlableList  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

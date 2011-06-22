@@ -21,7 +21,7 @@ public class IsCrawlableListResponse  implements java.io.Serializable {
 
     /**
      * Gets the isCrawlableListResult value for this IsCrawlableListResponse.
-     *
+     * 
      * @return isCrawlableListResult
      */
     public boolean isIsCrawlableListResult() {
@@ -31,7 +31,7 @@ public class IsCrawlableListResponse  implements java.io.Serializable {
 
     /**
      * Sets the isCrawlableListResult value for this IsCrawlableListResponse.
-     *
+     * 
      * @param isCrawlableListResult
      */
     public void setIsCrawlableListResult(boolean isCrawlableListResult) {
@@ -49,7 +49,7 @@ public class IsCrawlableListResponse  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
+        _equals = true && 
             this.isCrawlableListResult == other.isIsCrawlableListResult();
         __equalsCalc = null;
         return _equals;
@@ -92,10 +92,10 @@ public class IsCrawlableListResponse  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -104,10 +104,10 @@ public class IsCrawlableListResponse  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

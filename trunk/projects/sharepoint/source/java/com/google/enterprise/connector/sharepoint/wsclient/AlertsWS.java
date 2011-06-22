@@ -90,6 +90,11 @@ public class AlertsWS {
                 strUser = Util.getUserNameWithDomain(strUser, strDomain);
                 stub.setUsername(strUser);
                 stub.setPassword(strPassword);
+                // The web service time-out value
+                stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
+                LOGGER.fine("Set time-out of : "
+                        + sharepointClientContext.getWebServiceTimeOut()
+                        + " milliseconds");
             } catch (final Throwable e) {
                 LOGGER.log(Level.WARNING, "Unable to connect to alerts service stub.", e);
                 throw new SharepointException(e.toString());

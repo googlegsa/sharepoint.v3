@@ -33,7 +33,7 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     /**
      * Gets the authDataArray value for this AuthDataPacket.
-     *
+     * 
      * @return authDataArray
      */
     public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData[] getAuthDataArray() {
@@ -43,7 +43,7 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     /**
      * Sets the authDataArray value for this AuthDataPacket.
-     *
+     * 
      * @param authDataArray
      */
     public void setAuthDataArray(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthData[] authDataArray) {
@@ -53,7 +53,7 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     /**
      * Gets the container value for this AuthDataPacket.
-     *
+     * 
      * @return container
      */
     public com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container getContainer() {
@@ -63,7 +63,7 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     /**
      * Sets the container value for this AuthDataPacket.
-     *
+     * 
      * @param container
      */
     public void setContainer(com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.Container container) {
@@ -73,7 +73,7 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     /**
      * Gets the message value for this AuthDataPacket.
-     *
+     * 
      * @return message
      */
     public java.lang.String getMessage() {
@@ -83,7 +83,7 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     /**
      * Sets the message value for this AuthDataPacket.
-     *
+     * 
      * @param message
      */
     public void setMessage(java.lang.String message) {
@@ -93,7 +93,7 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     /**
      * Gets the isDone value for this AuthDataPacket.
-     *
+     * 
      * @return isDone
      */
     public boolean isIsDone() {
@@ -103,7 +103,7 @@ public class AuthDataPacket  implements java.io.Serializable {
 
     /**
      * Sets the isDone value for this AuthDataPacket.
-     *
+     * 
      * @param isDone
      */
     public void setIsDone(boolean isDone) {
@@ -121,14 +121,14 @@ public class AuthDataPacket  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.authDataArray==null && other.getAuthDataArray()==null) ||
+        _equals = true && 
+            ((this.authDataArray==null && other.getAuthDataArray()==null) || 
              (this.authDataArray!=null &&
               java.util.Arrays.equals(this.authDataArray, other.getAuthDataArray()))) &&
-            ((this.container==null && other.getContainer()==null) ||
+            ((this.container==null && other.getContainer()==null) || 
              (this.container!=null &&
               this.container.equals(other.getContainer()))) &&
-            ((this.message==null && other.getMessage()==null) ||
+            ((this.message==null && other.getMessage()==null) || 
              (this.message!=null &&
               this.message.equals(other.getMessage()))) &&
             this.isDone == other.isIsDone();
@@ -212,10 +212,10 @@ public class AuthDataPacket  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -224,10 +224,10 @@ public class AuthDataPacket  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

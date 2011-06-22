@@ -14,17 +14,17 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.sp2003;
 
+import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.spi.RepositoryException;
+
 import java.net.MalformedURLException;
 import java.util.Set;
 
 import junit.framework.TestCase;
 
-import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.spi.RepositoryException;
-
 /**
- * Test the functionaltily of UserProfile web service (SP2007).
+ * Test the functionality of UserProfile web service (SP2007).
  *
  * @author amit_kagrawal
  */
@@ -53,7 +53,7 @@ public class UserProfileWSTest extends TestCase {
     public void testGetPersonalSiteList() throws MalformedURLException,
             RepositoryException {
         System.out.println("Testing getPersonalSiteList()...");
-        final Set items = this.userProfileWS.getPersonalSiteList();
+        final Set<String> items = this.userProfileWS.getPersonalSiteList();
         assertNotNull(items);
         System.out.println("[ getPersonalSiteList() ] Test Passed.");
     }

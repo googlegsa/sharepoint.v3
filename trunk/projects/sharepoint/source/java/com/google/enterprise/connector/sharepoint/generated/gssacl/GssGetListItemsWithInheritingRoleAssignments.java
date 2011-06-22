@@ -36,7 +36,7 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
 
     /**
      * Gets the docXml value for this GssGetListItemsWithInheritingRoleAssignments.
-     *
+     * 
      * @return docXml
      */
     public java.lang.String getDocXml() {
@@ -46,7 +46,7 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
 
     /**
      * Sets the docXml value for this GssGetListItemsWithInheritingRoleAssignments.
-     *
+     * 
      * @param docXml
      */
     public void setDocXml(java.lang.String docXml) {
@@ -56,7 +56,7 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
 
     /**
      * Gets the moreDocs value for this GssGetListItemsWithInheritingRoleAssignments.
-     *
+     * 
      * @return moreDocs
      */
     public boolean isMoreDocs() {
@@ -66,7 +66,7 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
 
     /**
      * Sets the moreDocs value for this GssGetListItemsWithInheritingRoleAssignments.
-     *
+     * 
      * @param moreDocs
      */
     public void setMoreDocs(boolean moreDocs) {
@@ -76,7 +76,7 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
 
     /**
      * Gets the lastIdVisited value for this GssGetListItemsWithInheritingRoleAssignments.
-     *
+     * 
      * @return lastIdVisited
      */
     public int getLastIdVisited() {
@@ -86,7 +86,7 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
 
     /**
      * Sets the lastIdVisited value for this GssGetListItemsWithInheritingRoleAssignments.
-     *
+     * 
      * @param lastIdVisited
      */
     public void setLastIdVisited(int lastIdVisited) {
@@ -104,8 +104,8 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = super.equals(obj) &&
-            ((this.docXml==null && other.getDocXml()==null) ||
+        _equals = super.equals(obj) && 
+            ((this.docXml==null && other.getDocXml()==null) || 
              (this.docXml!=null &&
               this.docXml.equals(other.getDocXml()))) &&
             this.moreDocs == other.isMoreDocs() &&
@@ -168,10 +168,10 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -180,10 +180,10 @@ public class GssGetListItemsWithInheritingRoleAssignments  extends com.google.en
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

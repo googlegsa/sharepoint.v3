@@ -25,7 +25,7 @@ public class GssAce  implements java.io.Serializable {
 
     /**
      * Gets the principal value for this GssAce.
-     *
+     * 
      * @return principal
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal getPrincipal() {
@@ -35,7 +35,7 @@ public class GssAce  implements java.io.Serializable {
 
     /**
      * Sets the principal value for this GssAce.
-     *
+     * 
      * @param principal
      */
     public void setPrincipal(com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal principal) {
@@ -45,7 +45,7 @@ public class GssAce  implements java.io.Serializable {
 
     /**
      * Gets the permission value for this GssAce.
-     *
+     * 
      * @return permission
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssSharepointPermission getPermission() {
@@ -55,7 +55,7 @@ public class GssAce  implements java.io.Serializable {
 
     /**
      * Sets the permission value for this GssAce.
-     *
+     * 
      * @param permission
      */
     public void setPermission(com.google.enterprise.connector.sharepoint.generated.gssacl.GssSharepointPermission permission) {
@@ -73,11 +73,11 @@ public class GssAce  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.principal==null && other.getPrincipal()==null) ||
+        _equals = true && 
+            ((this.principal==null && other.getPrincipal()==null) || 
              (this.principal!=null &&
               this.principal.equals(other.getPrincipal()))) &&
-            ((this.permission==null && other.getPermission()==null) ||
+            ((this.permission==null && other.getPermission()==null) || 
              (this.permission!=null &&
               this.permission.equals(other.getPermission())));
         __equalsCalc = null;
@@ -134,10 +134,10 @@ public class GssAce  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -146,10 +146,10 @@ public class GssAce  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

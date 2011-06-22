@@ -25,7 +25,7 @@ public class GssSharepointPermission  implements java.io.Serializable {
 
     /**
      * Gets the allowedPermissions value for this GssSharepointPermission.
-     *
+     * 
      * @return allowedPermissions
      */
     public java.lang.String[] getAllowedPermissions() {
@@ -35,7 +35,7 @@ public class GssSharepointPermission  implements java.io.Serializable {
 
     /**
      * Sets the allowedPermissions value for this GssSharepointPermission.
-     *
+     * 
      * @param allowedPermissions
      */
     public void setAllowedPermissions(java.lang.String[] allowedPermissions) {
@@ -45,7 +45,7 @@ public class GssSharepointPermission  implements java.io.Serializable {
 
     /**
      * Gets the deniedPermission value for this GssSharepointPermission.
-     *
+     * 
      * @return deniedPermission
      */
     public java.lang.String[] getDeniedPermission() {
@@ -55,7 +55,7 @@ public class GssSharepointPermission  implements java.io.Serializable {
 
     /**
      * Sets the deniedPermission value for this GssSharepointPermission.
-     *
+     * 
      * @param deniedPermission
      */
     public void setDeniedPermission(java.lang.String[] deniedPermission) {
@@ -73,11 +73,11 @@ public class GssSharepointPermission  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.allowedPermissions==null && other.getAllowedPermissions()==null) ||
+        _equals = true && 
+            ((this.allowedPermissions==null && other.getAllowedPermissions()==null) || 
              (this.allowedPermissions!=null &&
               java.util.Arrays.equals(this.allowedPermissions, other.getAllowedPermissions()))) &&
-            ((this.deniedPermission==null && other.getDeniedPermission()==null) ||
+            ((this.deniedPermission==null && other.getDeniedPermission()==null) || 
              (this.deniedPermission!=null &&
               java.util.Arrays.equals(this.deniedPermission, other.getDeniedPermission())));
         __equalsCalc = null;
@@ -152,10 +152,10 @@ public class GssSharepointPermission  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -164,10 +164,10 @@ public class GssSharepointPermission  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

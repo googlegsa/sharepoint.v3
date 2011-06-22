@@ -692,115 +692,115 @@ public final class Util {
     }
 
     /**
-     * return username in the format domain\\username
+     * return username in the format domain\\username or groupname in the format
+     * domain\\groupname.
      *
-     * @param userName
+     * @param name user or group name
      * @param domain
      */
-    public static String getUserNameWithDomain(final String userName,
+    public static String getUserNameWithDomain(final String name,
             final String domain) {
-        String tmpUsername = userName;
-        if (userName == null) {
-            LOGGER.log(Level.FINEST, "returning username [ " + userName
-                    + " for input username [ " + tmpUsername + " ], domain [ "
+        String tmpName = name;
+        if (name == null) {
+            LOGGER.log(Level.FINEST, "returning [ " + name + " for input [ "
+                    + tmpName + " ], domain [ "
                     + domain + " ]. ");
             return null;
         }
-        String modified_userName = null;
-        if (userName.lastIndexOf(SPConstants.AT) != -1) {
-            final String[] user_and_domain = userName.split(SPConstants.AT);// user@domain
-            if ((user_and_domain != null) && (user_and_domain.length == 2)) {
-                modified_userName = user_and_domain[1]
-                        + SPConstants.DOUBLEBACKSLASH + user_and_domain[0]; // convert
-                // to
-                // domain\\user
-                // format
-                LOGGER.log(Level.FINEST, "returning username [ "
-                        + modified_userName + " for input username [ "
-                        + tmpUsername + " ], domain [ " + domain + " ]. ");
-                return modified_userName;
+        String modified_name = null;
+        if (name.lastIndexOf(SPConstants.AT) != -1) {
+            final String[] user_or_group_and_domain = name.split(SPConstants.AT);
+            // user@domain or group@domain
+            if ((user_or_group_and_domain != null)
+                    && (user_or_group_and_domain.length == 2)) {
+                modified_name = user_or_group_and_domain[1]
+                        + SPConstants.DOUBLEBACKSLASH
+                        + user_or_group_and_domain[0];
+                // convert to domain\\user format
+                LOGGER.log(Level.FINEST, "returning [ " + modified_name
+                        + " for input [ " + tmpName + " ], domain [ " + domain
+                        + " ]. ");
+                return modified_name;
             }
-        } else if (userName.lastIndexOf(SPConstants.SLASH) != SPConstants.MINUS_ONE) {
-            final String[] user_and_domain = userName.split(SPConstants.SLASH);// domain/user
+        } else if (name.lastIndexOf(SPConstants.SLASH) != SPConstants.MINUS_ONE) {
+            final String[] user_and_domain = name.split(SPConstants.SLASH);// domain/user
             if ((user_and_domain != null) && (user_and_domain.length == 2)) {
-                modified_userName = user_and_domain[0]
-                        + SPConstants.DOUBLEBACKSLASH + user_and_domain[1]; // convert
-                // to
-                // domain\\user
-                // format
-                LOGGER.log(Level.FINEST, "returning username [ "
-                        + modified_userName + " for input username [ "
-                        + tmpUsername + " ], domain [ " + domain + " ]. ");
-                return modified_userName;
+                modified_name = user_and_domain[0]
+                        + SPConstants.DOUBLEBACKSLASH + user_and_domain[1];
+                // convert to domain\\user format
+                LOGGER.log(Level.FINEST, "returning [ " + modified_name
+                        + " for input [ " + tmpName + " ], domain [ " + domain
+                        + " ]. ");
+                return modified_name;
             }
-        } else if (userName.lastIndexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
-            LOGGER.log(Level.FINEST, "returning username [ " + userName
-                    + " for input username [ " + tmpUsername + " ], domain [ "
+        } else if (name.lastIndexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+            LOGGER.log(Level.FINEST, "returning [ " + name + " for input [ "
+                    + tmpName + " ], domain [ "
                     + domain + " ]. ");
-            return userName;
+            return name;
         } else if (null != domain) {
-            modified_userName = domain + SPConstants.DOUBLEBACKSLASH + userName;
-            LOGGER.log(Level.FINEST, "returning username [ "
-                    + modified_userName + " for input username [ "
-                    + tmpUsername + " ], domain [ " + domain + " ]. ");
-            return modified_userName;
+            modified_name = domain + SPConstants.DOUBLEBACKSLASH + name;
+            LOGGER.log(Level.FINEST, "returning [ " + modified_name
+                    + " for input [ " + tmpName + " ], domain [ " + domain
+                    + " ]. ");
+            return modified_name;
         }
-        LOGGER.log(Level.FINEST, "returning username [ " + userName
-                + " for input username [ " + tmpUsername + " ], domain [ "
+        LOGGER.log(Level.FINEST, "returning [ " + name + " for input [ "
+                + tmpName + " ], domain [ "
                 + domain + " ]. ");
-        return userName;
+        return name;
     }
 
     /**
-     * return username in the format username@domain
+     * return username in the format username@domain or groupname in the format
+     * domain\\groupname.
      *
-     * @param userName
+     * @param name user or group name
      * @param domain
      */
-    public static String getUserNameAtDomain(String userName,
+    public static String getUserNameAtDomain(String name,
             final String domain) {
-        String tmpUsername = userName;
-        if (userName == null) {
-            LOGGER.log(Level.WARNING, "returning username [ " + userName
-                    + " for input username [ " + tmpUsername + " ], domain [ "
+        String tmpname = name;
+        if (name == null) {
+            LOGGER.log(Level.WARNING, "returning [ " + name + " for input [ "
+                    + tmpname + " ], domain [ "
                     + domain + " ]. ");
             return null;
         }
-        String modified_userName = null;
-        if (userName.lastIndexOf(SPConstants.DOUBLEBACKSLASH) != -1) {
-            userName = userName.replace(SPConstants.DOUBLEBACKSLASH_CHAR, SPConstants.SLASH_CHAR);// else
-            // gives
-            // pattern
-            // exception
-            // while parsing
+        String modified_Name = null;
+        if (name.lastIndexOf(SPConstants.DOUBLEBACKSLASH) != -1) {
+            name = name.replace(SPConstants.DOUBLEBACKSLASH_CHAR, SPConstants.SLASH_CHAR);
+            // else gives pattern exception while parsing
         }
-
-        if (userName.lastIndexOf(SPConstants.SLASH) != -1) {
-            final String[] user_and_domain = userName.split(SPConstants.SLASH);
-            if ((user_and_domain != null) && (user_and_domain.length == 2)) {
-                modified_userName = user_and_domain[1] + SPConstants.AT
-                        + user_and_domain[0]; // convert to user@domain format
-                LOGGER.log(Level.FINEST, "returning username [ "
-                        + modified_userName + " for input username [ "
-                        + tmpUsername + " ], domain [ " + domain + " ]. ");
-                return modified_userName;
+        if (name.lastIndexOf(SPConstants.SLASH) != -1) {
+            final String[] user_or_group_and_domain = name.split(SPConstants.SLASH);
+            if ((user_or_group_and_domain != null)
+                    && (user_or_group_and_domain.length == 2)) {
+                modified_Name = user_or_group_and_domain[1] + SPConstants.AT
+                        + user_or_group_and_domain[0];
+                // convert to user@domain or group@domain format
+                LOGGER.log(Level.FINEST, "returning [ " + modified_Name
+                        + " for input [ " + tmpname + " ], domain [ " + domain
+                        + " ]. ");
+                return modified_Name;
             }
-        } else if (userName.lastIndexOf(SPConstants.AT) != -1) {
-            LOGGER.log(Level.FINEST, "returning username [ " + userName
-                    + " for input username [ " + tmpUsername + " ], domain [ "
+        } else if (name.lastIndexOf(SPConstants.AT) != -1) {
+            LOGGER.log(Level.FINEST, "returning [ " + name + " for input [ "
+                    + tmpname + " ], domain [ "
                     + domain + " ]. ");
-            return userName; // when username is already in requred format
+            // when username/groupname is already in required format
+            return name;
         } else if (null != domain) {
-            modified_userName = userName + SPConstants.AT + domain;
-            LOGGER.log(Level.FINEST, "returning username [ "
-                    + modified_userName + " for input username [ "
-                    + tmpUsername + " ], domain [ " + domain + " ]. ");
-            return modified_userName;
+            modified_Name = name + SPConstants.AT + domain;
+            LOGGER.log(Level.FINEST, "returning [ " + modified_Name
+                    + " for input [ " + tmpname + " ], domain [ " + domain
+                    + " ]. ");
+            return modified_Name;
         }
-        LOGGER.log(Level.FINEST, "returning username [ " + userName
-                + " for input username [ " + tmpUsername + " ], domain [ "
+        LOGGER.log(Level.FINEST, "returning [ " + name + " for input [ "
+                + tmpname + " ], domain [ "
                 + domain + " ]. ");
-        return userName;
+        return name;
     }
 
     /**
@@ -1216,14 +1216,14 @@ public final class Util {
                 open = true;
             }
 
-            if (objectType.ITEM.equals(objectType)) {
+            if (ObjectType.ITEM.equals(objectType)) {
                 if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
                     roleTypes.add(RoleType.WRITER);
                 }
                 if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
                     roleTypes.add(RoleType.READER);
                 }
-            } else if (objectType.LIST.equals(objectType)) {
+            } else if (ObjectType.LIST.equals(objectType)) {
                 if (!managelist
                         && SPBasePermissions.MANAGELISTS.equals(permission)) {
                     managelist = true;
@@ -1241,7 +1241,7 @@ public final class Util {
             // to be added here
         }
 
-        if (objectType.LIST.equals(objectType) && managelist && additems) {
+        if (ObjectType.LIST.equals(objectType) && managelist && additems) {
             roleTypes.add(RoleType.WRITER);
         }
         if (viewFormPages && open) {
@@ -1250,7 +1250,7 @@ public final class Util {
         return roleTypes;
     }
 
-    /**
+   /**
      * Re-writes a given URL using the alias mapping rule specified.
      *
      * @param url URL to be re-written/mapped
@@ -1390,5 +1390,28 @@ public final class Util {
             }
         }
         return hostName;
+    }
+
+    /**
+     * Return group name with domain name i.e. domain\\groupname
+     *
+     * @param groupName
+     * @param domain
+     * @return
+     */
+    public static String getGroupNameWithDomain(final String groupName,
+            final String domain) {
+        return getUserNameWithDomain(groupName, domain);
+    }
+
+    /**
+     * Return group name at domain name i.e. groupname@domain
+     *
+     * @param groupName
+     * @param domain
+     */
+    public static String getGroupNameAtDomain(String groupName,
+            final String domain) {
+        return getUserNameAtDomain(groupName, domain);
     }
 }

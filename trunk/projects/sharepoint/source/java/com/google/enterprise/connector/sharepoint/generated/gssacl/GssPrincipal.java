@@ -8,6 +8,8 @@
 package com.google.enterprise.connector.sharepoint.generated.gssacl;
 
 public class GssPrincipal  implements java.io.Serializable {
+    private int ID;
+
     private java.lang.String name;
 
     private com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType type;
@@ -20,10 +22,12 @@ public class GssPrincipal  implements java.io.Serializable {
     }
 
     public GssPrincipal(
+           int ID,
            java.lang.String name,
            com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType type,
            com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] members,
            java.lang.String logMessage) {
+           this.ID = ID;
            this.name = name;
            this.type = type;
            this.members = members;
@@ -32,8 +36,28 @@ public class GssPrincipal  implements java.io.Serializable {
 
 
     /**
+     * Gets the ID value for this GssPrincipal.
+     * 
+     * @return ID
+     */
+    public int getID() {
+        return ID;
+    }
+
+
+    /**
+     * Sets the ID value for this GssPrincipal.
+     * 
+     * @param ID
+     */
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+
+    /**
      * Gets the name value for this GssPrincipal.
-     *
+     * 
      * @return name
      */
     public java.lang.String getName() {
@@ -43,7 +67,7 @@ public class GssPrincipal  implements java.io.Serializable {
 
     /**
      * Sets the name value for this GssPrincipal.
-     *
+     * 
      * @param name
      */
     public void setName(java.lang.String name) {
@@ -53,7 +77,7 @@ public class GssPrincipal  implements java.io.Serializable {
 
     /**
      * Gets the type value for this GssPrincipal.
-     *
+     * 
      * @return type
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType getType() {
@@ -63,7 +87,7 @@ public class GssPrincipal  implements java.io.Serializable {
 
     /**
      * Sets the type value for this GssPrincipal.
-     *
+     * 
      * @param type
      */
     public void setType(com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType type) {
@@ -73,7 +97,7 @@ public class GssPrincipal  implements java.io.Serializable {
 
     /**
      * Gets the members value for this GssPrincipal.
-     *
+     * 
      * @return members
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] getMembers() {
@@ -83,7 +107,7 @@ public class GssPrincipal  implements java.io.Serializable {
 
     /**
      * Sets the members value for this GssPrincipal.
-     *
+     * 
      * @param members
      */
     public void setMembers(com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] members) {
@@ -93,7 +117,7 @@ public class GssPrincipal  implements java.io.Serializable {
 
     /**
      * Gets the logMessage value for this GssPrincipal.
-     *
+     * 
      * @return logMessage
      */
     public java.lang.String getLogMessage() {
@@ -103,7 +127,7 @@ public class GssPrincipal  implements java.io.Serializable {
 
     /**
      * Sets the logMessage value for this GssPrincipal.
-     *
+     * 
      * @param logMessage
      */
     public void setLogMessage(java.lang.String logMessage) {
@@ -121,17 +145,18 @@ public class GssPrincipal  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.name==null && other.getName()==null) ||
+        _equals = true && 
+            this.ID == other.getID() &&
+            ((this.name==null && other.getName()==null) || 
              (this.name!=null &&
               this.name.equals(other.getName()))) &&
-            ((this.type==null && other.getType()==null) ||
+            ((this.type==null && other.getType()==null) || 
              (this.type!=null &&
               this.type.equals(other.getType()))) &&
-            ((this.members==null && other.getMembers()==null) ||
+            ((this.members==null && other.getMembers()==null) || 
              (this.members!=null &&
               java.util.Arrays.equals(this.members, other.getMembers()))) &&
-            ((this.logMessage==null && other.getLogMessage()==null) ||
+            ((this.logMessage==null && other.getLogMessage()==null) || 
              (this.logMessage!=null &&
               this.logMessage.equals(other.getLogMessage())));
         __equalsCalc = null;
@@ -145,6 +170,7 @@ public class GssPrincipal  implements java.io.Serializable {
         }
         __hashCodeCalc = true;
         int _hashCode = 1;
+        _hashCode += getID();
         if (getName() != null) {
             _hashCode += getName().hashCode();
         }
@@ -176,6 +202,12 @@ public class GssPrincipal  implements java.io.Serializable {
     static {
         typeDesc.setXmlType(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "GssPrincipal"));
         org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("ID");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "ID"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("name");
         elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "Name"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
@@ -216,10 +248,10 @@ public class GssPrincipal  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -228,10 +260,10 @@ public class GssPrincipal  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

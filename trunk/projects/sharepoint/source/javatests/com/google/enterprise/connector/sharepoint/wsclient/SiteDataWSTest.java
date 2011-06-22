@@ -15,17 +15,19 @@
 //Copyright 2007 Google Inc.  All Rights Reserved.
 package com.google.enterprise.connector.sharepoint.wsclient;
 
+import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
+import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.spi.RepositoryException;
+
 import java.net.MalformedURLException;
 import java.util.List;
 
 import junit.framework.TestCase;
-
-import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.spi.RepositoryException;
 
 public class SiteDataWSTest extends TestCase {
     SharepointClientContext sharepointClientContext;
@@ -58,7 +60,7 @@ public class SiteDataWSTest extends TestCase {
         final GlobalState state = new GlobalState(
                 TestConfiguration.googleConnectorWorkDir,
  FeedType.CONTENT_FEED);
-        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
+        WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.sharepointUrl);
         final List items = this.siteDataWS.getNamedLists(ws);
         assertNotNull(items);
         System.out.println("[ getNamedLists() ] Test Passed.");
@@ -74,5 +76,21 @@ public class SiteDataWSTest extends TestCase {
         } catch (final Exception e) {
             System.out.println("[ getTitle() ] Test Failed.");
         }
+    }
+
+    public void testGetSiteData() throws MalformedURLException,
+            RepositoryException {
+        System.out.println("Testing getSiteDataAsList()...");
+        final GlobalState state = new GlobalState(
+                TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
+        WebState ws = state.makeWebState(sharepointClientContext,
+                TestConfiguration.sharepointUrl + SPConstants.DEFAULT_SITE_LANDING_PAGE);
+        final SPDocument document = this.siteDataWS.getSiteData(ws);
+        assertNotNull(document);
+        String author = document.getAuthor();
+        String objectType = document.getObjType();
+        assertEquals("googlesp", author);
+        assertEquals("Site", objectType);
+        System.out.println("[ getSiteData() ] Test Passed.");
     }
 }

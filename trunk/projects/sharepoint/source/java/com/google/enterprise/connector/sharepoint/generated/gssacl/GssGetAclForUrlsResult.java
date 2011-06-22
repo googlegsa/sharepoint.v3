@@ -28,7 +28,7 @@ public class GssGetAclForUrlsResult  extends com.google.enterprise.connector.sha
 
     /**
      * Gets the allAcls value for this GssGetAclForUrlsResult.
-     *
+     * 
      * @return allAcls
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssAcl[] getAllAcls() {
@@ -38,7 +38,7 @@ public class GssGetAclForUrlsResult  extends com.google.enterprise.connector.sha
 
     /**
      * Sets the allAcls value for this GssGetAclForUrlsResult.
-     *
+     * 
      * @param allAcls
      */
     public void setAllAcls(com.google.enterprise.connector.sharepoint.generated.gssacl.GssAcl[] allAcls) {
@@ -56,8 +56,8 @@ public class GssGetAclForUrlsResult  extends com.google.enterprise.connector.sha
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = super.equals(obj) &&
-            ((this.allAcls==null && other.getAllAcls()==null) ||
+        _equals = super.equals(obj) && 
+            ((this.allAcls==null && other.getAllAcls()==null) || 
              (this.allAcls!=null &&
               java.util.Arrays.equals(this.allAcls, other.getAllAcls())));
         __equalsCalc = null;
@@ -113,10 +113,10 @@ public class GssGetAclForUrlsResult  extends com.google.enterprise.connector.sha
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -125,10 +125,10 @@ public class GssGetAclForUrlsResult  extends com.google.enterprise.connector.sha
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

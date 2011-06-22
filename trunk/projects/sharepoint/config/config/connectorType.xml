@@ -13,9 +13,24 @@
         <value>mySiteBaseURL</value>
         <value>includedURls</value>
         <value>excludedURls</value>
-      <value>aliasMap</value>
+        <value>aliasMap</value>
         <value>authorization</value>
         <value>useSPSearchVisibility</value>
+        <!-- Push ACLs configuration -->
+        <value>pushAcls</value>
+        <value>appendNamespaceInSPGroup</value>
+        <value>usernameFormatInAce</value>
+        <value>groupnameFormatInAce</value>
+        <!-- ldap configuration -->
+        <value>ldapServerHostAddress</value>
+        <value>portNumber</value>
+        <value>searchBase</value>
+        <value>authenticationType</value>
+        <value>connectMethod</value>
+        <!--  LDAP user groups membership cache settings -->
+        <value>useCacheToStoreLdapUserGroupsMembership</value>
+        <value>initialCacheSize</value>
+        <value>cacheRefreshInterval</value>
       </list>
     </property>
   </bean>

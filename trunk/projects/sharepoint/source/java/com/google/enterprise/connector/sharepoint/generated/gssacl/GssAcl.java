@@ -33,7 +33,7 @@ public class GssAcl  implements java.io.Serializable {
 
     /**
      * Gets the entityUrl value for this GssAcl.
-     *
+     * 
      * @return entityUrl
      */
     public java.lang.String getEntityUrl() {
@@ -43,7 +43,7 @@ public class GssAcl  implements java.io.Serializable {
 
     /**
      * Sets the entityUrl value for this GssAcl.
-     *
+     * 
      * @param entityUrl
      */
     public void setEntityUrl(java.lang.String entityUrl) {
@@ -53,7 +53,7 @@ public class GssAcl  implements java.io.Serializable {
 
     /**
      * Gets the owner value for this GssAcl.
-     *
+     * 
      * @return owner
      */
     public java.lang.String getOwner() {
@@ -63,7 +63,7 @@ public class GssAcl  implements java.io.Serializable {
 
     /**
      * Sets the owner value for this GssAcl.
-     *
+     * 
      * @param owner
      */
     public void setOwner(java.lang.String owner) {
@@ -73,7 +73,7 @@ public class GssAcl  implements java.io.Serializable {
 
     /**
      * Gets the allAce value for this GssAcl.
-     *
+     * 
      * @return allAce
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssAce[] getAllAce() {
@@ -83,7 +83,7 @@ public class GssAcl  implements java.io.Serializable {
 
     /**
      * Sets the allAce value for this GssAcl.
-     *
+     * 
      * @param allAce
      */
     public void setAllAce(com.google.enterprise.connector.sharepoint.generated.gssacl.GssAce[] allAce) {
@@ -93,7 +93,7 @@ public class GssAcl  implements java.io.Serializable {
 
     /**
      * Gets the logMessage value for this GssAcl.
-     *
+     * 
      * @return logMessage
      */
     public java.lang.String getLogMessage() {
@@ -103,7 +103,7 @@ public class GssAcl  implements java.io.Serializable {
 
     /**
      * Sets the logMessage value for this GssAcl.
-     *
+     * 
      * @param logMessage
      */
     public void setLogMessage(java.lang.String logMessage) {
@@ -121,17 +121,17 @@ public class GssAcl  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.entityUrl==null && other.getEntityUrl()==null) ||
+        _equals = true && 
+            ((this.entityUrl==null && other.getEntityUrl()==null) || 
              (this.entityUrl!=null &&
               this.entityUrl.equals(other.getEntityUrl()))) &&
-            ((this.owner==null && other.getOwner()==null) ||
+            ((this.owner==null && other.getOwner()==null) || 
              (this.owner!=null &&
               this.owner.equals(other.getOwner()))) &&
-            ((this.allAce==null && other.getAllAce()==null) ||
+            ((this.allAce==null && other.getAllAce()==null) || 
              (this.allAce!=null &&
               java.util.Arrays.equals(this.allAce, other.getAllAce()))) &&
-            ((this.logMessage==null && other.getLogMessage()==null) ||
+            ((this.logMessage==null && other.getLogMessage()==null) || 
              (this.logMessage!=null &&
               this.logMessage.equals(other.getLogMessage())));
         __equalsCalc = null;
@@ -217,10 +217,10 @@ public class GssAcl  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -229,10 +229,10 @@ public class GssAcl  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

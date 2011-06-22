@@ -1,4 +1,4 @@
-//Copyright 2009 Google Inc.
+//Copyright 2010 Google Inc.
 //
 //Licensed under the Apache License, Version 2.0 (the "License");
 //you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.wsclient;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAce;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAcl;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChange;
@@ -47,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,10 +112,12 @@ public class GssAclWS {
         strUser = Util.getUserNameWithDomain(strUser, strDomain);
         stub.setUsername(strUser);
         stub.setPassword(strPassword);
+        // The web service time-out value
+        stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
+        LOGGER.fine("Set time-out of : "
+                + sharepointClientContext.getWebServiceTimeOut()
+                + " milliseconds");
     }
-
-    // TODO: It's better use command pattern for executing web services methods.
-    // This is applicable to all the WS Java clients in the current package.
 
     /**
      * Executes GetAclForUrls() web method of GssAcl web service. Used to get
@@ -159,10 +163,13 @@ public class GssAclWS {
      * objects must be passed in form of a map with their URLs as keys. If a
      * user have more than one permission assigned on SHarePoint, connector will
      * include each of them in the ACE. Hence, the {@link RoleType} that is sent
-     * to CM may include a list of role types. Also, due to the current GSA
-     * limitation, deny permissions are not handled. We may include some logics
-     * to decide when to ignore a DENY when to skip. But, that would be an
-     * overkill as this limitation is going to be fixed in future GSA releases
+     * to CM may include a list of role types.
+     * <p/>
+     * Also, due to the current GSA limitation, deny permissions are not
+     * handled. We may include some logics to decide when to ignore a DENY when
+     * to skip. But, that would be an overkill as this limitation is going to be
+     * fixed in future GSA releases
+     * <p/>
      *
      * @param wsResult Web Service response to be parsed
      * @param urlToDocMap Documents whose ACLs are to be set. The keys in the
@@ -177,6 +184,7 @@ public class GssAclWS {
                 + wsResult.getLogMessage() + " ]");
         GssAcl[] allAcls = wsResult.getAllAcls();
         if (null != allAcls && allAcls.length != 0) {
+            Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
             ACL:
             for (GssAcl acl : allAcls) {
                 String entityUrl = acl.getEntityUrl();
@@ -248,38 +256,37 @@ public class GssAclWS {
                             // preference over GRANT
                             LOGGER.log(Level.WARNING, "Skipping the ACL for entity URL [ "
                                     + entityUrl
-                                    + " ] it contains some deny permissions [ "
-                                    + deniedPermissions
-                                    + " ] for Principal [ "
+                                    + " ] it contains some deny permissions for Principal [ "
                                     + principal.getName() + " ] ");
                             continue ACL;
                         }
                     }
 
-                    // TODO:Stripping off the domain from UID is temporary as
-                    // GSA
-                    // does not support it currently. In future, domains will be
-                    // sent as namespace. This will also be useful for sending
-                    // SP Groups as they must be defined in the context of site
-                    // collection. Here is Max's comment about this:
-                    // A change is coming in the June train: user and group
-                    // names will be associated with a namespace. By default,
-                    // this will be the empty namespace, but other namespaces
-                    // will be possible. This is important for sharepoint-local
-                    // groups, but less so for user names - probably. In the
-                    // meantime, please use the simple name (with domain
-                    // stripped off) but later we will put the domain in the
-                    // namespace field of the principal (user or group) name.
-                    String principalName = principal.getName();
-                    if (sharepointClientContext.isStripDomainFromAces()) {
-                        principalName = Util.getUserFromUsername(principalName);
-                    }
+                    final String principalName = getPrincipalName(principal);
                     Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
                     if (PrincipalType.USER.equals(principal.getType())) {
                         userPermissionMap.put(principalName, allowedRoleTypes);
                     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
                             || PrincipalType.SPGROUP.equals(principal.getType())) {
-                        groupPermissionMap.put(principalName, allowedRoleTypes);
+                        // If it's a SharePoint group, add the membership info
+                        // into the User Data Store
+                        if (PrincipalType.SPGROUP.equals(principal.getType()) && null != sharepointClientContext.getUserDataStoreDAO()) {
+                            GssPrincipal[] members = principal.getMembers();
+                            for(GssPrincipal member : members) {
+                                memberships.add(new UserGroupMembership(
+                                        member.getID(),
+                                        getPrincipalName(member),
+                                        principal.getID(), principalName,
+                                        wsResult.getSiteCollectionUrl()));
+                            }
+                        }
+
+                        if(PrincipalType.SPGROUP.equals(principal.getType()) && sharepointClientContext.isAppendNamespaceInSPGroup()) {
+                            // FIXME This is temporary
+                            groupPermissionMap.put(new StringBuffer().append("[").append(wsResult.getSiteCollectionUrl()).append("]").append(principalName).toString(), allowedRoleTypes);
+                        } else {
+                            groupPermissionMap.put(principalName, allowedRoleTypes);
+                        }
                     } else {
                         LOGGER.log(Level.WARNING, "Skipping ACE for principal [ "
                                 + principal.getName()
@@ -291,8 +298,62 @@ public class GssAclWS {
                 document.setUsersAclMap(userPermissionMap);
                 document.setGroupsAclMap(groupPermissionMap);
             }
-        }
 
+            if (null != sharepointClientContext.getUserDataStoreDAO()) {
+                try {
+                    sharepointClientContext.getUserDataStoreDAO().addMemberships(memberships);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to add #"
+                            + memberships.size()
+                            + " memberships in user data store. ", e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns user/group name in the format as specified in
+     * connectorInstance.xml
+     *
+     * @param principal
+     * @return
+     */
+    /*
+     * marked package-private because of JUnit test case
+     * GssAclTest.testGetPrincipalName
+     */
+    String getPrincipalName(GssPrincipal principal) {
+        String principalname = Util.getUserFromUsername(principal.getName());
+        final String domain = Util.getDomainFromUsername(principal.getName());
+        String domainStringConst = SPConstants.DOMAIN_CONSTANT_IN_ACL;
+
+        if (null != domain) {
+            if (PrincipalType.USER.equals(principal.getType())) {
+                String usernameFormatInAcl = sharepointClientContext.getUsernameFormatInAce();
+                if (null != usernameFormatInAcl
+                        && usernameFormatInAcl.trim().length() > 0) {
+                    if (principalname.contains(domainStringConst)) {
+                        usernameFormatInAcl = usernameFormatInAcl.replace(domainStringConst, domainStringConst = "_"
+                                + domainStringConst);
+                    }
+                    principalname = usernameFormatInAcl.replace(SPConstants.USERNAME_CONSTANT_IN_ACL, principalname);
+                    principalname = principalname.replace(domainStringConst, domain);
+                }
+            } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
+                    || PrincipalType.SPGROUP.equals(principal.getType())) {
+                String groupnameFormatInAcl = sharepointClientContext.getGroupnameFormatInAce();
+                if (null != groupnameFormatInAcl
+                        && groupnameFormatInAcl.trim().length() > 0) {
+                    if (principalname.contains(domainStringConst)) {
+                        groupnameFormatInAcl = groupnameFormatInAcl.replace(domainStringConst, domainStringConst = "_"
+                                + domainStringConst);
+                    }
+                    principalname = groupnameFormatInAcl.replace(SPConstants.GROUPNAME_CONSTANT_IN_ACL, principalname);
+                    principalname = principalname.replace(domainStringConst, domain);
+                }
+            }
+        }
+        return principalname;
     }
 
     /**
@@ -320,7 +381,8 @@ public class GssAclWS {
                 }
                 LOGGER.log(Level.CONFIG, "Getting ACL for #"
                         + urlToDocMap.size() + " entities crawled from site [ "
-                        + webState.getWebUrl() + " ]");
+                        + webState.getWebUrl() + " ]. Document list : "
+                        + resultSet.toString());
                 GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl);
                 processWsResponse(wsResult, urlToDocMap);
             } catch (Exception e) {
@@ -502,6 +564,11 @@ public class GssAclWS {
         // avoid re-processing of the same list due to multiple changes
         Set<ListState> processedLists = new HashSet<ListState>();
 
+        // All groups where there are some membership changes
+        // TODO: why not this is integer?
+        Set<String> changedGroups = new TreeSet<String>();
+        Set<Integer> deletedGroups = new TreeSet<Integer>();
+        Set<Integer> deletedUsers = new TreeSet<Integer>();
         for (GssAclChange change : changes) {
             if (null == change) {
                 continue;
@@ -584,36 +651,52 @@ public class GssAclWS {
                 }
 
             } else if (objType == ObjectType.USER
+            // For user-related changes, we only consider deletion changes.
+                    // Rest all are covered as part of web/list/item/group
+                    // specific changes. Refer to the WS impl. for more details
                     && changeType == SPChangeType.Delete) {
-                // For user-related changes, we only consider deletion changes.
-                // Rest all are covered as part of web/list/item/group specific
-                // changes. Refer to the WS impl. for more details
+                try {
+                    deletedUsers.add(new Integer(changeObjectHint));
+                } catch(Exception e) {
+                    LOGGER.log(Level.WARNING, "UserId [ " + changeObjectHint + " ] is invalid. skipping... ", e);
+                    continue;
+                }
+
+                // TODO: Even if the user is not known to the user data store,
+                // we would proceed here. This is because, the user data store,
+                // currently, stores only those users who are member of some
+                // groups. A re-crawl due to user deletion can be avoided
+                // by storing all the SharePoint users (sent into ACLs in past)
+                // in the local data store.
+
                 LOGGER.log(Level.INFO, "Resetting all list states under web [ "
                         + webstate.getWebUrl()
                         + " ] becasue a user has been deleted from the SharePoint.");
                 webstate.resetState();
                 isWebReset = true;
-                // TODO: Initiating a complete re-crawl due to USER deletion is
-                // not a good approach. Imagine a case when the deleted user
-                // did not have any permission on anything. The re-crawl would
-                // be completely unnecessary in that case.
-                // A better approach could be, GSA sending the authentication
-                // request to connector
-                // where the user existence in SharePoint will be verified. If
-                // the authentication succeeds, than only proceed with the ACL
-                // based authorization. This can be done along with the session
-                // creation channel approach.
-            } else if (objType == ObjectType.GROUP) {
-                // TODO: Group related changes are not being handled currently.
-                // The vision is to maintain a local DB of user group
-                // memberships. Once that is done, this change will be reflected
-                // in the local DB.
-            } else if (objType == ObjectType.ADMINISTRATORS) {
-                // Administrators are to be treated as another SharePoint groups
-                // so that any change on the administrators list does not
-                // enforce a re-crawl as we are doing for user deletion case.
-                // Hence, this case will also be handled with the implementation
-                // of local DB for user group memberships
+                // TODO: A re-crawl due to User deletion can be avoided
+                // by storing more ACL information in the local data
+                // store.
+            }
+            // Administrators are treated as another SPGroup
+            else if (objType == ObjectType.GROUP || objType == ObjectType.ADMINISTRATORS) {
+                if(changeType == SPChangeType.Delete) {
+                    try {
+                        deletedGroups.add(Integer.parseInt(changeObjectHint));
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "GroupId [ "
+                                + changeObjectHint
+                                + " ] is invalid. skipping... ", e);
+                        continue;
+                    }
+                    // TODO: A re-crawl due to Group deletion can be avoided
+                    // by storing more ACL information in the local data
+                    // store.
+                    webstate.resetState();
+                    isWebReset = true;
+                } else {
+                    changedGroups.add(changeObjectHint);
+                }
             }
 
             if (isWebReset) {
@@ -621,10 +704,99 @@ public class GssAclWS {
             }
         }
 
+        // Sync the membership of all changed groups
+        syncGroupMembership(deletedUsers, deletedGroups, changedGroups, wsResult.getSiteCollectionUrl());
+
         if (null == webstate.getNextAclChangeToken()
                 || webstate.getNextAclChangeToken().trim().length() == 0) {
             webstate.setNextAclChangeToken(allChanges.getChangeToken());
         }
+    }
+
+    /**
+     * Updates all the deleted/changed user group membership information into
+     * the user data store.
+     *
+     * @param deletedUsers
+     * @param deletedGroups
+     * @param changedGroups
+     * @param siteCollectionUrl
+     */
+    private void syncGroupMembership(Set<Integer> deletedUsers,
+            Set<Integer> deletedGroups, Set<String> changedGroups,
+            String siteCollectionUrl) {
+        if (null == sharepointClientContext.getUserDataStoreDAO()) {
+            return;
+        }
+
+        if (null != deletedUsers && deletedUsers.size() > 0) {
+            try {
+                sharepointClientContext.getUserDataStoreDAO().removeUserMembershipsFromNamespace(deletedUsers, siteCollectionUrl);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to remove user memberships from namespace [ "
+                        + siteCollectionUrl + " ] ");
+            }
+        }
+
+        if (null != deletedGroups && deletedGroups.size() > 0) {
+            try {
+                sharepointClientContext.getUserDataStoreDAO().removeGroupMembershipsFromNamespace(deletedGroups, siteCollectionUrl);
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to remove group memberships from namespace [ "
+                        + siteCollectionUrl + " ] ");
+            }
+        }
+
+        if (null != changedGroups && changedGroups.size() > 0) {
+            try {
+                Map<Integer, Set<UserGroupMembership>> groupToMemberships = processChangedGroupsToSync(changedGroups);
+                if (null != groupToMemberships && groupToMemberships.size() > 0) {
+                    try {
+                        sharepointClientContext.getUserDataStoreDAO().syncGroupMemberships(groupToMemberships, siteCollectionUrl);
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "Failure while syncing memberships from namespace [ "
+                                + siteCollectionUrl + " ]");
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to update/sync group memberships from namespace [ "
+                        + siteCollectionUrl + " ] ");
+            }
+        }
+    }
+
+    /**
+     * Resolves a set of groups identified by their IDs and returns a map
+     * <groupID, latest_memberships>. This is useful when a group has been
+     * changed and its membership is to be re-synced with the user data store.
+     *
+     * @param changedGroups IDs of the groups that is to be resolved
+     * @return
+     */
+    private Map<Integer, Set<UserGroupMembership>> processChangedGroupsToSync(
+            Set<String> changedGroups) {
+        Map<Integer, Set<UserGroupMembership>> groupsToMemberships = new HashMap<Integer, Set<UserGroupMembership>>();
+        if (null != changedGroups && changedGroups.size() > 0) {
+            String[] groupIds = new String[changedGroups.size()];
+            changedGroups.toArray(groupIds);
+            GssResolveSPGroupResult wsResult = resolveSPGroup(groupIds);
+            if (null != wsResult) {
+                GssPrincipal[] groups = wsResult.getPrinicpals();
+                if (null != groups && groups.length > 0) {
+                    for (GssPrincipal group : groups) {
+                        Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
+                        for (GssPrincipal member : group.getMembers()) {
+                            memberships.add(new UserGroupMembership(
+                                    member.getID(), getPrincipalName(member),
+                                    group.getID(), group.getName(),
+                                    wsResult.getSiteCollectionUrl()));
+                        }
+                        groupsToMemberships.put(group.getID(), memberships);
+                    }
+                }
+            }
+        }
+        return groupsToMemberships;
     }
 
     /**
@@ -750,7 +922,7 @@ public class GssAclWS {
      *
      * @return the Web Service connectivity status
      */
-    public String checkConnectivity() {
+    public void checkConnectivity() throws SharepointException {
         try {
             stub.checkConnectivity();
         } catch (final AxisFault af) {
@@ -763,21 +935,20 @@ public class GssAclWS {
                 try {
                     stub.checkConnectivity();
                 } catch (final Exception e) {
-                    LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
+                    throw new SharepointException(
+                            "Call to checkConnectivity failed. endpoint [ "
                             + endpoint + " ].", e);
-                    return e.getLocalizedMessage();
                 }
             } else {
-                LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
-                        + endpoint + " ].", af);
-                return af.getLocalizedMessage();
+                throw new SharepointException(
+                        "Call to checkConnectivity failed. endpoint [ "
+                                + endpoint + " ].", af);
             }
         } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Call to checkConnectivity failed. endpoint [ "
+            throw new SharepointException(
+                    "Call to checkConnectivity failed. endpoint [ "
                     + endpoint + " ].", e);
-            return e.getLocalizedMessage();
-        }
 
-        return SPConstants.CONNECTIVITY_SUCCESS;
+        }
     }
 }

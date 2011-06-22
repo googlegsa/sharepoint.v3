@@ -29,7 +29,7 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
 
     /**
      * Gets the siteCollectionUrl value for this GssAclBaseResult.
-     *
+     * 
      * @return siteCollectionUrl
      */
     public java.lang.String getSiteCollectionUrl() {
@@ -39,7 +39,7 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
 
     /**
      * Sets the siteCollectionUrl value for this GssAclBaseResult.
-     *
+     * 
      * @param siteCollectionUrl
      */
     public void setSiteCollectionUrl(java.lang.String siteCollectionUrl) {
@@ -49,7 +49,7 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
 
     /**
      * Gets the siteCollectionGuid value for this GssAclBaseResult.
-     *
+     * 
      * @return siteCollectionGuid
      */
     public java.lang.String getSiteCollectionGuid() {
@@ -59,7 +59,7 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
 
     /**
      * Sets the siteCollectionGuid value for this GssAclBaseResult.
-     *
+     * 
      * @param siteCollectionGuid
      */
     public void setSiteCollectionGuid(java.lang.String siteCollectionGuid) {
@@ -69,7 +69,7 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
 
     /**
      * Gets the logMessage value for this GssAclBaseResult.
-     *
+     * 
      * @return logMessage
      */
     public java.lang.String getLogMessage() {
@@ -79,7 +79,7 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
 
     /**
      * Sets the logMessage value for this GssAclBaseResult.
-     *
+     * 
      * @param logMessage
      */
     public void setLogMessage(java.lang.String logMessage) {
@@ -97,14 +97,14 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.siteCollectionUrl==null && other.getSiteCollectionUrl()==null) ||
+        _equals = true && 
+            ((this.siteCollectionUrl==null && other.getSiteCollectionUrl()==null) || 
              (this.siteCollectionUrl!=null &&
               this.siteCollectionUrl.equals(other.getSiteCollectionUrl()))) &&
-            ((this.siteCollectionGuid==null && other.getSiteCollectionGuid()==null) ||
+            ((this.siteCollectionGuid==null && other.getSiteCollectionGuid()==null) || 
              (this.siteCollectionGuid!=null &&
               this.siteCollectionGuid.equals(other.getSiteCollectionGuid()))) &&
-            ((this.logMessage==null && other.getLogMessage()==null) ||
+            ((this.logMessage==null && other.getLogMessage()==null) || 
              (this.logMessage!=null &&
               this.logMessage.equals(other.getLogMessage())));
         __equalsCalc = null;
@@ -170,10 +170,10 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -182,10 +182,10 @@ public abstract class GssAclBaseResult  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }
