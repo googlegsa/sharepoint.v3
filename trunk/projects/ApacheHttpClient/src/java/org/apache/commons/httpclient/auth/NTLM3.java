@@ -30,6 +30,7 @@
 package org.apache.commons.httpclient.auth;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.util.EncodingUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -120,9 +121,16 @@ final class NTLM3 {
           t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
           t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
           t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
+          // The below constructor of Type3Message of jcifs library has been changed
+          // to fix issues while updating latest jcifs-1.3.5.jar in SP connector.
+          // The extra parameter int represents flag to support ntlm2, support message integrity,
+          // confidentiality, session security and 128-bit encryption while creating TYpe3Message. 
+          // As the immediate lines of code below to the constructor set all these required flags, passing 0 as a parameter/falg to create 
+          // Type3Message object is valid. Please refer the below URL for more details.
+          // http://code.google.com/p/google-enterprise-connector-sharepoint/issues/detail?id=63
 
-          Type3Message t3m = new Type3Message(t2m, password, domain, username, host);
-          
+		  Type3Message t3m = new Type3Message(t2m, password, domain, username, host, 0);
+
           t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
           t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
           t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
@@ -176,9 +184,16 @@ final class NTLM3 {
       t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
       t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
       t2m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_128,true);
-      
-      Type3Message t3m = new Type3Message(t2m, password, domain, username, host);
-      
+      // The below constructor of Type3Message of jcifs library has been changed
+      // to fix issues while updating latest jcifs-1.3.5.jar in SP connector 2.8v.
+      // The extra parameter int represents flag to support ntlm2, support message integrity,
+      // confidentiality, session security and 128-bit encryption while creating TYpe3Message 
+      // object.as the immediate lines of code below to this constructor set all these required flags, passing 0 as a parameter/falg to create 
+      // Type3Message object is valid. Please refer the below URL for more details.
+      // http://code.google.com/p/google-enterprise-connector-sharepoint/issues/detail?id=63
+
+      Type3Message t3m = new Type3Message(t2m, password, domain, username, host, 0);
+
       t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SIGN,true);
       t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_SEAL,true);
       t3m.setFlag(NtlmSsp.NTLMSSP_NEGOTIATE_NTLM2,true);
