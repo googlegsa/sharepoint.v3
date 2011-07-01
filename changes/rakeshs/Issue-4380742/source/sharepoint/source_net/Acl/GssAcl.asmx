@@ -1175,34 +1175,46 @@ public sealed class GssAclUtility
 
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from a list of role assignments
+    /// An SPRoleAssignment with "Limited Access" permissions will not be added to the
+    /// aceMap dictionary i.e. the acls for such a group or user having limited access
+    /// permission on an entity (list or document library) will not be sent.
     /// </summary>
     /// <param name="roles"> list of role assignments </param>
     /// <param name="userAceMap"> ACE Map to be updated </param>
     public static void FetchRoleAssignmentsForAcl(SPRoleAssignmentCollection roles, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
+        // Retrieve role definitions in the current web site with Limited access permission
+        SPRoleDefinition limitedAccessRole = SPContext.Current.Web.RoleDefinitions["Limited Access"];
         foreach (SPRoleAssignment roleAssg in roles)
         {
-            GssPrincipal principal = GetGssPrincipalFromSPPrincipal(roleAssg.Member);
-            GssSharepointPermission permission = null;
+         /* 
+          * Check to see whether SPRoleAssignmentCollection consists of Limited Access 
+          * SPRoleAssignment entries or not.If there is no such entry, add to the ACE map. 
+          */
+            if (!roleAssg.RoleDefinitionBindings.Contains(limitedAccessRole))
+            {
+                GssPrincipal principal = GetGssPrincipalFromSPPrincipal(roleAssg.Member);
+                GssSharepointPermission permission = null;
 
-            if (null == principal)
-            {
-                continue;
-            }
+                if (null == principal)
+                {
+                    continue;
+                }
 
-            if (aceMap.ContainsKey(principal))
-            {
-                permission = aceMap[principal];
-            }
-            else
-            {
-                permission = new GssSharepointPermission();
-                aceMap.Add(principal, permission);
-            }
+                if (aceMap.ContainsKey(principal))
+                {
+                    permission = aceMap[principal];
+                }
+                else
+                {
+                    permission = new GssSharepointPermission();
+                    aceMap.Add(principal, permission);
+                }
 
-            foreach (SPRoleDefinition roledef in roleAssg.RoleDefinitionBindings)
-            {
-                permission.UpdatePermission(roledef.BasePermissions, SPBasePermissions.EmptyMask);
+                foreach (SPRoleDefinition roledef in roleAssg.RoleDefinitionBindings)
+                {
+                    permission.UpdatePermission(roledef.BasePermissions, SPBasePermissions.EmptyMask);
+                }
             }
         }
     }
