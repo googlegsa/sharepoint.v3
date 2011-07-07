@@ -667,7 +667,7 @@ public class SharepointConnectorType implements ConnectorType {
                             } else if (value.equalsIgnoreCase(SPConstants.LDAP_INITIAL_CACHE_SIZE)) {
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_INITIAL_CACHE_SIZE);
                             } else {
-                                appendAttribute(buf, SPConstants.VALUE, this.initialCacheSize);
+                                appendAttribute(buf, SPConstants.VALUE, value);
                             }
                         } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
                             if (Strings.isNullOrEmpty(value)) {
