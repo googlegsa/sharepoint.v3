@@ -1017,14 +1017,6 @@ public class SharepointConnectorType implements ConnectorType {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(true));
         }
 
-        // Validating the feed ACLs related check boxes which are off by
-        // default.
-        validateFeedACLsAndLDAPUserGroupsCacheCheckBoxes(configData);
-
-        if (!validateFeedACLsRelatedHtmlControles(ed)) {
-            return false;
-        }
-
         if ((username != null)
                 && ((username.indexOf("@") != -1) || (username.indexOf("\\") != -1))
                 && (domain != null) && !domain.equals(SPConstants.BLANK_STRING)) {
@@ -1047,6 +1039,14 @@ public class SharepointConnectorType implements ConnectorType {
             return false;
         }
         status = null;
+
+        // Validating the feed ACLs related check boxes which are off by
+        // default.
+        validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(configData);
+
+        if (!validateFeedAclsRelatedHtmlControls(ed)) {
+            return false;
+        }
 
         if (FeedType.CONTENT_FEED == feedType) {
             status = checkGSConnectivity(sharepointUrl);
@@ -1904,7 +1904,7 @@ public class SharepointConnectorType implements ConnectorType {
      *
      * @param configData
      */
-    private void validateFeedACLsAndLDAPUserGroupsCacheCheckBoxes(
+    private void validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(
             final Map<String, String> configData) {
         if (!configData.containsKey(SPConstants.PUSH_ACLS)) {
             configData.put(SPConstants.PUSH_ACLS, Boolean.toString(false));
@@ -1934,7 +1934,7 @@ public class SharepointConnectorType implements ConnectorType {
      *         case if any of its fields are blank, wrong user name format or
      *         couldn't get valid initial LDAP context.
      */
-    private boolean validateFeedACLsRelatedHtmlControles(
+    private boolean validateFeedAclsRelatedHtmlControls(
             final ErrorDignostics ed) {
         if (null != pushAcls && this.pushAcls.equalsIgnoreCase(SPConstants.ON)) {
             LOGGER.config("Selected Feed ACLs option.");
