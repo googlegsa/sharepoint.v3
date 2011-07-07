@@ -656,11 +656,14 @@ public class SharepointConnectorType implements ConnectorType {
                             }
                         } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
                             if (Strings.isNullOrEmpty(value)) {
+                                if (null == this.useCacheToStoreLdapUserGroupsMembership
+                                        || this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(SPConstants.OFF)) {
+                                    buf.append(SPConstants.SPACE
+                                            + SPConstants.DISABLED
+                                            + SPConstants.EQUAL_TO + "\""
+                                            + SPConstants.TRUE + "\"");
+                                }
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_INITIAL_CACHE_SIZE);
-                                buf.append(SPConstants.SPACE
-                                        + SPConstants.DISABLED
-                                        + SPConstants.EQUAL_TO + "\""
-                                        + SPConstants.TRUE + "\"");
                             } else if (value.equalsIgnoreCase(SPConstants.LDAP_INITIAL_CACHE_SIZE)) {
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_INITIAL_CACHE_SIZE);
                             } else {
@@ -668,10 +671,13 @@ public class SharepointConnectorType implements ConnectorType {
                             }
                         } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
                             if (Strings.isNullOrEmpty(value)) {
-                                buf.append(SPConstants.SPACE
-                                        + SPConstants.DISABLED
-                                        + SPConstants.EQUAL_TO + "\""
-                                        + SPConstants.TRUE + "\"");
+                                if (null == this.useCacheToStoreLdapUserGroupsMembership
+                                        || this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(SPConstants.OFF)) {
+                                    buf.append(SPConstants.SPACE
+                                            + SPConstants.DISABLED
+                                            + SPConstants.EQUAL_TO + "\""
+                                            + SPConstants.TRUE + "\"");
+                                }
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
                             } else if (value.equalsIgnoreCase(SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME)) {
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
@@ -1323,7 +1329,8 @@ public class SharepointConnectorType implements ConnectorType {
                     + "\r\n document.getElementById(\"connectMethod\").disabled=true"
                     + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").disabled=true"
                     + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=true"
-
+                    + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=true"
+                    + "\r\n document.getElementById(\"initialCacheSize\").disabled=true"
                     + "\r\n }" + "\r\n }";
 
             js += "\r\n function onlyNumbers(evt){"
