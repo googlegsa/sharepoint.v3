@@ -660,6 +660,18 @@ public class ListsWS {
             }
         }
 
+        if(listItems.size() >= Integer.parseInt(rowLimit)) {
+          LOGGER.finer("At least rowlimit number of documents were found, so next page might exist, " 
+            + " setting the next page value to non null. rowlimit = ["
+            + rowLimit + "] listitemcount = [" + listItems.size() + "]");
+          list.setNextPage("next page might exist so setting to - not null");
+        }
+        else {
+          LOGGER.finer("Less than rowlimit number of documents were found, so next page does not exist," 
+            + " leaving next page value unchanged. rowlimit = ["
+            + rowLimit + "] listitemcount = [" + listItems.size() + "]");
+        }        
+        
         Collections.sort(listItems);
         if (listItems.size() > 0) {
             LOGGER.info("found: " + listItems.size()
