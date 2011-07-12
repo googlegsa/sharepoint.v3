@@ -69,7 +69,8 @@
     <property name="aclBatchSizeFactor"> <value>2</value> </property>
   -->
 
-  <!-- Web service time out value. Value should be mentioned in milliseconds -->
+  <!-- Web service time out value. Value should be mentioned in milliseconds
+    Value should be greater than 1000 milliseconds.By default set to 5 minutes. -->
   <!--
   <property name="webServiceTimeOut"><value>300000</value></property>
   -->

@@ -656,22 +656,28 @@ public class SharepointConnectorType implements ConnectorType {
                             }
                         } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
                             if (Strings.isNullOrEmpty(value)) {
+                                if (null == this.useCacheToStoreLdapUserGroupsMembership
+                                        || this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(SPConstants.OFF)) {
+                                    buf.append(SPConstants.SPACE
+                                            + SPConstants.DISABLED
+                                            + SPConstants.EQUAL_TO + "\""
+                                            + SPConstants.TRUE + "\"");
+                                }
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_INITIAL_CACHE_SIZE);
-                                buf.append(SPConstants.SPACE
-                                        + SPConstants.DISABLED
-                                        + SPConstants.EQUAL_TO + "\""
-                                        + SPConstants.TRUE + "\"");
                             } else if (value.equalsIgnoreCase(SPConstants.LDAP_INITIAL_CACHE_SIZE)) {
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_INITIAL_CACHE_SIZE);
                             } else {
-                                appendAttribute(buf, SPConstants.VALUE, this.initialCacheSize);
+                                appendAttribute(buf, SPConstants.VALUE, value);
                             }
                         } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
                             if (Strings.isNullOrEmpty(value)) {
-                                buf.append(SPConstants.SPACE
-                                        + SPConstants.DISABLED
-                                        + SPConstants.EQUAL_TO + "\""
-                                        + SPConstants.TRUE + "\"");
+                                if (null == this.useCacheToStoreLdapUserGroupsMembership
+                                        || this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(SPConstants.OFF)) {
+                                    buf.append(SPConstants.SPACE
+                                            + SPConstants.DISABLED
+                                            + SPConstants.EQUAL_TO + "\""
+                                            + SPConstants.TRUE + "\"");
+                                }
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
                             } else if (value.equalsIgnoreCase(SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME)) {
                                 appendAttribute(buf, SPConstants.VALUE, SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
@@ -1017,14 +1023,6 @@ public class SharepointConnectorType implements ConnectorType {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(true));
         }
 
-        // Validating the feed ACLs related check boxes which are off by
-        // default.
-        validateFeedACLsAndLDAPUserGroupsCacheCheckBoxes(configData);
-
-        if (!validateFeedACLsRelatedHtmlControles(ed)) {
-            return false;
-        }
-
         if ((username != null)
                 && ((username.indexOf("@") != -1) || (username.indexOf("\\") != -1))
                 && (domain != null) && !domain.equals(SPConstants.BLANK_STRING)) {
@@ -1065,6 +1063,14 @@ public class SharepointConnectorType implements ConnectorType {
             return false;
         }
         status = null;
+
+		// Validating the feed ACLs related check boxes which are off by
+		// default.
+		validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(configData);
+
+		if (!validateFeedAclsRelatedHtmlControls(ed)) {
+			return false;
+		}
 
         final SPType SPVersion = sharepointClientContext.checkSharePointType(sharepointUrl);
         if (SPType.SP2007 == SPVersion && mySiteUrl != null
@@ -1154,7 +1160,8 @@ public class SharepointConnectorType implements ConnectorType {
             final Locale locale) {
         LOGGER.config("Locale " + locale);
         String isSelected = configMap.get(SPConstants.PUSH_ACLS);
-        if (!isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
+		if (null != isSelected
+				&& !isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
             this.editMode = SPConstants.EDIT_MODE;
         } else {
             this.editMode = false;
@@ -1312,6 +1319,10 @@ public class SharepointConnectorType implements ConnectorType {
                     + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").disabled=false"
                     + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=false"
                     + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").checked=true"
+					+ "\r\n if (document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").checked == true){ "
+					+ "\r\n document.getElementById(\"initialCacheSize\").disabled=false"
+					+ "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=false"
+					+ "\r\n }"
 
                     + "\r\n } else {"
                     + "\r\n document.getElementById(\"portNumber\").disabled=true"
@@ -1323,7 +1334,8 @@ public class SharepointConnectorType implements ConnectorType {
                     + "\r\n document.getElementById(\"connectMethod\").disabled=true"
                     + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").disabled=true"
                     + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=true"
-
+                    + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=true"
+                    + "\r\n document.getElementById(\"initialCacheSize\").disabled=true"
                     + "\r\n }" + "\r\n }";
 
             js += "\r\n function onlyNumbers(evt){"
@@ -1904,7 +1916,7 @@ public class SharepointConnectorType implements ConnectorType {
      *
      * @param configData
      */
-    private void validateFeedACLsAndLDAPUserGroupsCacheCheckBoxes(
+    private void validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(
             final Map<String, String> configData) {
         if (!configData.containsKey(SPConstants.PUSH_ACLS)) {
             configData.put(SPConstants.PUSH_ACLS, Boolean.toString(false));
@@ -1934,7 +1946,7 @@ public class SharepointConnectorType implements ConnectorType {
      *         case if any of its fields are blank, wrong user name format or
      *         couldn't get valid initial LDAP context.
      */
-    private boolean validateFeedACLsRelatedHtmlControles(
+    private boolean validateFeedAclsRelatedHtmlControls(
             final ErrorDignostics ed) {
         if (null != pushAcls && this.pushAcls.equalsIgnoreCase(SPConstants.ON)) {
             LOGGER.config("Selected Feed ACLs option.");

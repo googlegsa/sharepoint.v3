@@ -14,10 +14,10 @@
 package com.google.enterprise.connector.sharepoint.state;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
@@ -36,8 +36,9 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -515,22 +516,29 @@ public class GlobalState {
      *             in any way.
      */
     public void loadState() throws SharepointException {
-        final File f = getStateFileLocation();
+        final File stateFile = getStateFileLocation();
+        XMLReader parser;
+        InputSource inputSource = null;
         try {
-            if (!f.exists()) {
-                LOGGER.warning("state file '" + f.getCanonicalPath()
+            if (!stateFile.exists()) {
+                LOGGER.warning("state file '" + stateFile.getCanonicalPath()
                         + "' does not exist");
                 return;
             }
-            LOGGER.info("loading state from " + f.getCanonicalPath());
-            XMLReader parser = new SAXParser();
+            LOGGER.info("loading state from " + stateFile.getCanonicalPath());
+            parser = new SAXParser();
+            inputSource = new InputSource(new InputStreamReader(
+                    new FileInputStream(stateFile), "UTF-8"));
+            inputSource.setEncoding("UTF-8");
             parser.setContentHandler(new StateHandler());
-            parser.parse(new InputSource(new FileReader(f)));
+            parser.parse(inputSource);
         } catch (final Exception e) {
             LOGGER.log(Level.SEVERE, "Unable to load state XML file", e);
             throw new SharepointException(e);
         } catch (final Throwable t) {
             LOGGER.log(Level.SEVERE, "error/Exception while loading state file. ", t);
+        }finally {            
+                inputSource = null;            
         }
     }
 

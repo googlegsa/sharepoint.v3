@@ -328,7 +328,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         sharepointClientContext.setDomain(this.domain);
         if (pushAcls) {
             sharepointClientContext.setLdapConnectionSettings(getLdapConnectionSettings());
-			sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
+            sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
             if (useCacheToStoreLdapUserGroupsMembership) {
                 sharepointClientContext.setCacheRefreshInterval(Long.parseLong(this.cacheRefreshInterval));
                 sharepointClientContext.setInitialCacheSize(Integer.parseInt(this.initialCacheSize));
@@ -510,10 +510,12 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
      */
     public void setWebServiceTimeOut(int webServiceTimeOut) {
         if (webServiceTimeOut < SPConstants.MINIMUM_TIMEOUT_FOR_WS) {
-            throw new IllegalArgumentException(
-                    "The webServiceTimeOut should be greater than 1000 milliseconds");
+            LOGGER.warning("webServiceTimeOut value specified in the advance configuration of "
+                    + "connector is less than 1 second, Hence setting it to 5 minitus.");
+			this.webServiceTimeOut = SPConstants.DEFAULT_TIMEOUT_FOR_WS;
+        } else {
+            this.webServiceTimeOut = webServiceTimeOut;
         }
-        this.webServiceTimeOut = webServiceTimeOut;
     }
 
     /**
@@ -541,10 +543,11 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
      * @param portNumber the portNumber to set.
      */
     public void setPortNumber(String portNumber) {
-        if (!Strings.isNullOrEmpty(portNumber)) {
+        if (Strings.isNullOrEmpty(portNumber)) {
             this.portNumber = SPConstants.LDAP_DEFAULT_PORT_NUMBER;
+        } else {
+            this.portNumber = portNumber;
         }
-        this.portNumber = portNumber;
     }
 
     /**
