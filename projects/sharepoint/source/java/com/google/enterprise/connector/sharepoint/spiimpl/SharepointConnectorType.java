@@ -1319,6 +1319,10 @@ public class SharepointConnectorType implements ConnectorType {
                     + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").disabled=false"
                     + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=false"
                     + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").checked=true"
+					+ "\r\n if (document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").checked == true){ "
+					+ "\r\n document.getElementById(\"initialCacheSize\").disabled=false"
+					+ "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=false"
+					+ "\r\n }"
 
                     + "\r\n } else {"
                     + "\r\n document.getElementById(\"portNumber\").disabled=true"
