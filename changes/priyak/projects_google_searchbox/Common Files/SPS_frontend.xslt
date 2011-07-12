@@ -134,7 +134,7 @@
   <xsl:variable name="res_title_color">#003399</xsl:variable>
   <xsl:variable name="res_title_size">0.8em</xsl:variable>
   <xsl:variable name="show_res_snippet">1</xsl:variable>
-  <xsl:variable name="res_snippet_size">9px</xsl:variable>
+  <xsl:variable name="res_snippet_size">80%</xsl:variable>
 
 <!-- *** keyword match (in title or snippet) *** -->
   <xsl:variable name="res_keyword_color"></xsl:variable>
@@ -144,7 +144,7 @@
 <!-- *** link URL *** -->
   <xsl:variable name="show_res_url">1</xsl:variable>
   <xsl:variable name="res_url_color">#008000</xsl:variable>
-  <xsl:variable name="res_url_size">1</xsl:variable>
+  <xsl:variable name="res_url_size">2</xsl:variable>
   <xsl:variable name="truncate_result_urls">1</xsl:variable>
   <xsl:variable name="truncate_result_url_length">100</xsl:variable>
 
@@ -548,7 +548,7 @@
         .n a{font-size: 10pt; color:<xsl:value-of select="$global_text_color"/>}
         .n .i{font-size: 10pt; font-weight:bold}
         .q a:visited,.q a:link,.q a:active,.q {color:#0000cc;}
-        .b,.b a{font-size: 9pt; color:#0000cc; font-weight:bold}
+        .b,.b a{font-size: 9pt; color:#003399;}
         .d{margin-right:1em; margin-left:1em;}
         div.oneboxResults {max-height:150px;overflow:hidden;}
         <xsl:if test="$show_res_clusters = '1'">
@@ -2794,7 +2794,7 @@
           </xsl:choose>
           <xsl:text disable-output-escaping='yes'>"&gt;</xsl:text>
         </xsl:if>
-        <span class="l">
+        <span class="b">
           <xsl:choose>
             <xsl:when test="T">
               <xsl:call-template name="reformat_keyword">

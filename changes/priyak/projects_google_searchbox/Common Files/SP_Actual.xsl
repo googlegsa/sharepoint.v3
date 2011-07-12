@@ -138,19 +138,21 @@
       </a>
     </span>
     <span class="srch-Title">
-      <a href="{$url}" id="{concat('CSR_',$id)}" title="{$url}">
-        <xsl:choose>
-          <xsl:when test="hithighlightedproperties/HHTitle[. != '']">
-            <xsl:call-template name="HitHighlighting">
-              <xsl:with-param name="hh" select="hithighlightedproperties/HHTitle" />
-            </xsl:call-template>
-          </xsl:when>
-          <xsl:otherwise>
+    <font size="2">
+        <a href="{$url}" id="{concat('CSR_',$id)}" title="{$url}">
+            <xsl:choose>
+               <xsl:when test="hithighlightedproperties/HHTitle[. != '']">
+                  <xsl:call-template name="HitHighlighting">
+                      <xsl:with-param name="hh" select="hithighlightedproperties/HHTitle" />
+                  </xsl:call-template>
+              </xsl:when>
+            <xsl:otherwise>
             <xsl:value-of select="title" disable-output-escaping="yes"/>
-          </xsl:otherwise>
+            </xsl:otherwise>
         </xsl:choose>
-      </a>
-      <br/>
+        </a>
+    </font>
+    <br/>
     </span>
 
     <xsl:choose>
@@ -162,7 +164,7 @@
         </div>
       </xsl:when>
     </xsl:choose>
-    <div class="srch-Description">
+    <div style="font-size:12px">
       <xsl:choose>
         <xsl:when test="hithighlightedsummary[. != '']">
           <xsl:call-template name="HitHighlighting">
