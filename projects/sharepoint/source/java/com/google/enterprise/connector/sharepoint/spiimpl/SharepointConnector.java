@@ -512,6 +512,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         if (webServiceTimeOut < SPConstants.MINIMUM_TIMEOUT_FOR_WS) {
             LOGGER.warning("webServiceTimeOut value specified in the advance configuration of "
                     + "connector is less than 1 second, Hence setting it to 5 minitus.");
+			this.webServiceTimeOut = SPConstants.DEFAULT_TIMEOUT_FOR_WS;
         } else {
             this.webServiceTimeOut = webServiceTimeOut;
         }
