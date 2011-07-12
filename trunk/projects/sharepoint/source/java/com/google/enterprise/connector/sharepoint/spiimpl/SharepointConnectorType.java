@@ -1046,14 +1046,6 @@ public class SharepointConnectorType implements ConnectorType {
         }
         status = null;
 
-        // Validating the feed ACLs related check boxes which are off by
-        // default.
-        validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(configData);
-
-        if (!validateFeedAclsRelatedHtmlControls(ed)) {
-            return false;
-        }
-
         if (FeedType.CONTENT_FEED == feedType) {
             status = checkGSConnectivity(sharepointUrl);
             if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
@@ -1071,6 +1063,14 @@ public class SharepointConnectorType implements ConnectorType {
             return false;
         }
         status = null;
+
+		// Validating the feed ACLs related check boxes which are off by
+		// default.
+		validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(configData);
+
+		if (!validateFeedAclsRelatedHtmlControls(ed)) {
+			return false;
+		}
 
         final SPType SPVersion = sharepointClientContext.checkSharePointType(sharepointUrl);
         if (SPType.SP2007 == SPVersion && mySiteUrl != null
@@ -1160,7 +1160,8 @@ public class SharepointConnectorType implements ConnectorType {
             final Locale locale) {
         LOGGER.config("Locale " + locale);
         String isSelected = configMap.get(SPConstants.PUSH_ACLS);
-        if (!isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
+		if (null != isSelected
+				&& !isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
             this.editMode = SPConstants.EDIT_MODE;
         } else {
             this.editMode = false;
