@@ -542,10 +542,11 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
      * @param portNumber the portNumber to set.
      */
     public void setPortNumber(String portNumber) {
-        if (!Strings.isNullOrEmpty(portNumber)) {
+        if (Strings.isNullOrEmpty(portNumber)) {
             this.portNumber = SPConstants.LDAP_DEFAULT_PORT_NUMBER;
+        } else {
+            this.portNumber = portNumber;
         }
-        this.portNumber = portNumber;
     }
 
     /**
