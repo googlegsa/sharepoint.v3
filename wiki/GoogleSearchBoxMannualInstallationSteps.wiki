@@ -1,5 +1,5 @@
 #summary Manual installation steps for Google Search Box
-==Instructions for manual deployment of Google Search Box for SharePoint == 
+==Instructions for manual deployment of Google Search Box for SharePoint 2.6.10== 
   
    * The search Box can be deployed on machine with WSS 3.0 or MOSS 2007 installed (32-bit)
    * The search Box can also be deployed on machine with MOSS 2010 installed (64-bit)
