@@ -6,8 +6,8 @@
 
 There are certain advanced properties that can change connector's behavior. These properties are not available on the configuration UI but they can be changed by editing connectorInstance.xml file which gets copied to every new connector that gets created. Following section explains purpose of each of these properties and enlists all the possible values along with default value for each of them. Please note that these advanced properties in this form are available only in SharePoint connector version 2.8 and above. 
 
-Including all the properties mentioned in the below section, SharePoint connector 2.8 version introduce 3 more new properties.
-
+Including all the properties mentioned in the below section, SharePoint connector 2.8 version introduces 3 more new properties.
+{{{
 <!--
     The following two properties define if the ACLs for documents need to
     be fetched in batches and what should be the factor to determine an
@@ -37,7 +37,7 @@ Including all the properties mentioned in the below section, SharePoint connecto
   <!--
   <property name="webServiceTimeOut"><value>300000</value></property>
   -->
-
+}}}
 
 The advanced configuration is done through the modification of the file "connectorInstance.xml". 
 This file is available in the connector instance directory \GoogleConnectors\Sharepoint{{{<number>}}}\Tomcat\webapps\connector-manager\WEB-INF\sharepoint-connector\{{{<connector-instance>}}}
