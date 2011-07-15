@@ -58,9 +58,9 @@
     <!--Cobertura properties -->
     <property file="${config}/build_code_coverage.properties" />
     <path id="cobertura.classpath">
-        <fileset dir="${lib.dev.jar.dir}">
-            <include name="**/*.jar" />
-        </fileset>
+      <fileset dir="${connector-manager.dir}/third-party/cobertura">
+        <include name="**/*.jar" />
+      </fileset>
     </path>
     <!-- =========================== TASKS =============================== -->
     <target name="sharepoint-connector" depends="clean,init, compile, jar,
@@ -202,7 +202,7 @@
                 <pathelement location="${classes}" />
                 <pathelement location="${junit.jarfile}" />
                 <fileset dir="${lib.jar.dir}">
-                    <include name="*.jar" />
+                    <include name="**/*.jar" />
                 </fileset>
                 <fileset dir="${connector-manager.dir}/${jar.dir}">
                     <include name="**/*.jar" />
@@ -213,12 +213,12 @@
     </target>
 
     <target name="run_tests" depends="compile_tests,instrument">
-        <junit haltonfailure="yes">
+      <property name="test.suite" value="*" />
+      <junit haltonfailure="yes">
             <!-- The instrumented classes reference classes used by the Cobertura runtime, so
             Cobertura and its dependencies must be on your classpath. -->
             <classpath location="${instrumented.dir}" />
             <classpath refid="cobertura.classpath" />
-
             <classpath>
                 <pathelement location="${spi.jar.dir}/connector.jar" />
                 <pathelement location="${spi.jar.dir}/connector-spi.jar" />
@@ -227,7 +227,7 @@
                 <pathelement location="${jarfile}" />
                 <pathelement location="${config}" />
                 <fileset dir="${lib.jar.dir}">
-                    <include name="*.jar" />
+                    <include name="**/*.jar" />
                     <include name="**/*.properties" />
                 </fileset>
                 <pathelement location="${tests.classes}" />
@@ -238,14 +238,14 @@
             <test name="${testcase}" todir="${reports.xml.dir}" if="testcase" />
             <batchtest todir="${reports.xml.dir}" unless="testcase">
                 <fileset dir="${test.dir}">
-                    <include name="**/*Test.java" />
+                    <include name="**/${test.suite}Test.java" />
                 </fileset>
             </batchtest>
 
             <formatter type="xml" />
             <batchtest fork="yes" todir="${tests.todir}">
                 <fileset dir="${tests.src}">
-                    <include name="**/*Test.java" />
+                    <include name="**/${test.suite}Test.java" />
                 </fileset>
             </batchtest>
         </junit>
@@ -398,22 +398,20 @@
             <classpath>
                 <fileset dir="${spi.jar.dir}" includes="**/*.jar" />
                 <fileset dir="${lib.jar.dir}" includes="**/*.jar" />
+              <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
             </classpath>
         </javac>
         <javac srcdir="${test.dir}" destdir="${classes.dir}" debug="true">
             <classpath>
                 <fileset dir="${spi.jar.dir}" includes="**/*.jar" />
                 <fileset dir="${lib.jar.dir}" includes="**/*.jar" />
+              <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
             </classpath>
         </javac>
     </target>
 
     <target name="instrument" depends="compile_code_coverage">
-        <!-- Remove the coverage data file and any old instrumentation. -->
-        <delete file="cobertura.ser"/>
-        <!-- <delete dir="${instrumented.dir}" /> -->
-
-        <cobertura-instrument todir="${instrumented.dir}">
+       <cobertura-instrument todir="${instrumented.dir}">
             <!--  The following line causes instrument to ignore any  source line
             containing a reference to log4j, for the purposes of coverage reporting. -->
             <ignore regex="org.apache.log4j.*" />
