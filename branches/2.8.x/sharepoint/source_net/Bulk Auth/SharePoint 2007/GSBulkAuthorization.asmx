@@ -467,29 +467,32 @@ public class WSContext
         if (container.Type == Container.ContainerType.SITE)
         {
             String siteUrl = container.Url;
-            siteUrl = siteUrl.Substring(siteUrl.IndexOf(':') + 1);
-            siteUrl = siteUrl.Substring(siteUrl.IndexOf(':') + 1);
             /*
              * Retrieves proper server relative URL for a site. This logic works for both
-             * - i.e. site collection created using "/" or "/sites/" path.
-             * This works correctly for following url patterns -
+             * - i.e. site collection created using "/" or "/sites/" path. Also works for 
+             * sites created using the HTTP port 80. This works correctly for following url patterns -
              
                 1 - URL of the default.aspx page for a site, whose site collection is 
-                created using the '/sites/' path
+                created using the '/sites/' path. 
+                http://SharePointURL:portno/sites/site1/default.aspx
                 http://SharePointURL/sites/site1/default.aspx
 
                 2 - URL of site using "Social Meeting Workspace" template and the 
                 sitecollection for the site is created using the "/sites/" path
+                http://SharePointURL:portno/sites/site1/socialsite/default.aspx
                 http://SharePointURL/sites/site1/socialsite/default.aspx
 
                 3 - URL of site using "Blank" template and the sitecollection for the
                 site is created using the "/" path
+                http://SharePointURL:portno/default.aspx
                 http://SharePointURL/default.aspx
+             * 
              */
-            siteUrl = siteUrl.Substring(siteUrl.IndexOf('/'));
-            siteUrl = siteUrl.Substring(0, siteUrl.LastIndexOf('/'));
+
+            siteUrl = SPContext.Current.Web.ServerRelativeUrl.ToString();
             return siteUrl;
         }
+
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf('/'));
