@@ -1,4 +1,4 @@
-﻿<%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
     Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
@@ -9,12 +9,17 @@
 <%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
 <%@ Assembly Name="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c"%> 
-<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults"   EnableViewState="false" EnableViewStateMac="false"    %> 
-<%@ Import Namespace="Microsoft.Office.Server.Search.Internal.UI" %> <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
-<%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Import Namespace="Microsoft.SharePoint" %> 
+
+<%-- <% Enabled the Session state in the page by setting the attribute 'EnableSessionState' to true  %>--%>
+<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults" EnableSessionState="True"   %> 
+<%@ Import Namespace="Microsoft.Office.Server.Search.Internal.UI" %> 
+<%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
+<%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
+<%@ Import Namespace="Microsoft.SharePoint" %> 
 <%@ Assembly Name="Microsoft.Web.CommandUI, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 
-<%@ Register Tagprefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
+<%@ Register Tagprefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
+<%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
 <%@ Register Tagprefix="SearchWC" Namespace="Microsoft.Office.Server.Search.WebControls" Assembly="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register Tagprefix="SPSWC" Namespace="Microsoft.SharePoint.Portal.WebControls" Assembly="Microsoft.SharePoint.Portal, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
@@ -41,6 +46,7 @@
 </asp:content>
 
 <asp:content id="Content2" contentplaceholderid="PlaceHolderAdditionalPageHead" runat="server">
+
     <style type="text/css">
 .ms-titlearea
 {
@@ -64,6 +70,7 @@ div.ms-areaseparatorright{
         public const String PREV = "Previous";
         public const String NEXT = "Next";
         public const String PAGENAME = "GSASearchresults.aspx";
+        //public const String PAGENAME = "GSASearchresults.aspx";
         public string tempvar = "";
         public const string PREVSTMT = "";//initially prev should be hidden
         public const string NEXTSTMT = "";
@@ -71,6 +78,14 @@ div.ms-areaseparatorright{
         public int start = 0;/* E.g. start = 1 and num =5 (return 11-15 results)*/
         int endB = 0;
 
+		public const string currentSite = "Current Site";
+        public const string currentSiteAndAllSubsites = "Current Site and all subsites";
+        public const string currentList = "Current List";
+        public const string currentFolder = "Current Folder";
+        public const string currentFolderAndAllSubfolders = "Current Folder and all subfolders";
+
+        public const string secureCookieToBeDiscarded = "secure";
+        
         /*Enumeration which defines Search Box Log levels*/
         public enum LOG_LEVEL
         {
@@ -82,7 +97,7 @@ div.ms-areaseparatorright{
         class GoogleSearchBox
         {
             public string GSALocation;
-            public string accessLevel="a";//Do a Public and Secured search
+            public string accessLevel;//Do a Public and Secured search
             public string siteCollection;
             public string frontEnd;
             public string enableInfoLogging;
@@ -138,7 +153,7 @@ div.ms-areaseparatorright{
                     HttpContext.Current.Response.End();
                 }
 
-                //set thelog location
+                //set the log location
                 LogLocation = getLogLocationFromConfig();
 
                 //set the current log level
@@ -254,6 +269,32 @@ div.ms-areaseparatorright{
 
                 return ConfigLogLocation;
             }
+
+            /// <summary>
+            /// Function to check the existance to cookie and discard if the setting is enabled in web.config file. (Currently function is defined for secure cookie. 
+            /// If problem for other cookies, change parameter 'cookieNameToBeChecked' accordingly, while calling the function.
+            /// </summary>
+            /// <param name="webConfigSetting">Value from the web.config custom key value pair for cookie to be discarded</param>
+            /// <param name="name">Variable holding the name of cookie</param>
+            /// <param name="cookieNameToBeChecked">Name of cookie to be discarded. Can be any name, usually string variable</param>
+            /// <param name="value">value">Value of the cookie to be discarded</param>
+            /// <returns>Boolean check whether to discard the cookie, as per web.config setting</returns>
+            public bool CheckCookieToBeDroppedAndLogMessage(string webConfigSetting, string name, string cookieNameToBeChecked, string value)
+            {
+                bool secureCookieDecision = true;
+                log("The " + cookieNameToBeChecked + " cookie exists with value as " + value + ".", LOG_LEVEL.INFO);
+                if (cookieNameToBeChecked.Equals(name) && webConfigSetting == "true")
+                {
+                    secureCookieDecision = true;
+                    log("Currently the " + cookieNameToBeChecked + "cookie is being discarded.  To avoid discarding of the" + cookieNameToBeChecked + "cookie, set the value for 'omitSecureCookie' key existing in the web.config file of the web application to 'false', as this value is configurable through the web.config file.", LOG_LEVEL.INFO);
+                }
+                else
+                {
+                    secureCookieDecision = false;
+                }
+                return secureCookieDecision;
+
+            }
             
             /// <summary>
             /// Add the cookie from the cookie collection to the container. Your container may have some existing cookies
@@ -279,7 +320,26 @@ div.ms-areaseparatorright{
                         c.Value = HttpUtility.UrlEncode(value, utf8);//Encoding the cookie value
                         c.Domain = domain;
                         c.Expires = CookieCollection[i].Expires;
-                        cc.Add(c);
+                        
+                        ///* 
+                        // * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                        // * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                        // */
+
+                        if (tempCookieName.ToLower() == secureCookieToBeDiscarded)
+                        {
+                            bool secureCookieDiscardDecision = CheckCookieToBeDroppedAndLogMessage(WebConfigurationManager.AppSettings["omitSecureCookie"], tempCookieName.ToLower(), secureCookieToBeDiscarded, value);
+                            if (secureCookieDiscardDecision == false)
+                            {
+                                cc.Add(c);
+                            }
+                        }
+                        else
+                        {
+
+                            // Add the other cookies to the cookie container
+                            cc.Add(c);
+                        }
 
                         /*Cookie Information*/
                         log("Cookie Name= " + tempCookieName+ "| Value= " + value+ "| Domain= " + domain+ "| Expires= " + c.Expires, LOG_LEVEL.INFO);
@@ -536,36 +596,29 @@ div.ms-areaseparatorright{
 </script>
 
 <script type="text/javascript">
-  	function _spFormOnSubmit()
+    function SetPageTitle()
 	{
-		return GoSearch();
-	}
-	function SetPageTitle()
-	{
+	   /*
+	   * Call the javascript function 'SearchTextOnBlur' already defined in GSASearchArea.ascx page, which will set the 
+	   * background image for the search box accordingly.
+	   */
+	   SearchTextOnBlur();
 	   var Query = "";
-	   if (window.top.location.search != 0)
-	   {
-		  Query = window.top.location.search;
-		  var keywordQuery = getParameter(Query, 'k');
-		  if(keywordQuery != null)
-		  {
-            
-            //set the value of query
-            var myTextField = document.getElementById('idSearchString');
-        	{
-		        myTextField.value=keywordQuery;
-		    }
-			 
-			//set the title of the document
-			if(keywordQuery!="")
-		    {
-			 var titlePrefix = '<asp:Literal runat="server" text="<%$Resources:wss,searchresults_pagetitle%>"/>';
-			 document.title = titlePrefix + ": " +keywordQuery;
-			 }
-		  }
-	   }	 
-	}
-		
+	   if (window.top.location.search != 0) {
+	       Query = window.top.location.search;
+	       var keywordQuery = getParameter(Query, 'k');
+	       if (keywordQuery != null)
+	       {
+	           //set the title of the document
+	           if (keywordQuery != "")
+	           {
+	               var titlePrefix = '<asp:Literal runat="server" text="<%$Resources:wss,searchresults_pagetitle%>"/>';
+	               document.title = titlePrefix + ": " + keywordQuery;
+	           }
+	       }
+	   }
+    }
+
 	function getParameter (queryString, parameterNameWithoutEquals)
 	{
 	   var parameterName = parameterNameWithoutEquals + "=";
@@ -580,18 +633,12 @@ div.ms-areaseparatorright{
 			{
 			   end = queryString.length;
 			}
-			var x = document.getElementById("idSearchString");
-			var mystring = decodeURIComponent(queryString.substring (begin, end))
-			var myindex = mystring.indexOf('cache:');
-			if(myindex>-1)
-			{
-			    x.value="";//for cached result do not show the search string as it looks wierd
-			}
 			return decodeURIComponent(queryString.substring (begin, end));
 		 }
 	   }
 	   return null;
 	}
+
 	
 if (document.addEventListener)
 {
@@ -602,6 +649,7 @@ else if(document.attachEvent)
 	document.attachEvent("onreadystatechange", SetPageTitle);
 }
 </script>
+
 
 </asp:content>
 <asp:content id="Content3" contentplaceholderid="PlaceHolderTitleAreaClass" runat="server">
@@ -619,8 +667,9 @@ else if(document.attachEvent)
             <td style="height: 5px"> <img src="/_layouts/images/blank.gif" width="1" height="1" alt=""></td>
         </tr>
         <tr>
+        
             <td colspan="8">
-                <SharePoint:DelegateControl ID="DelegateControl1" runat="server" ControlId="SmallSearchInputBox" />
+                <SharePoint:DelegateControl ID="DelegateControl1" runat="server" ControlId="SmallSearchInputBox"  />
             </td>
             
         </tr>
@@ -673,8 +722,11 @@ else if(document.attachEvent)
         <tr>
            
             <td id="TD1" colspan="4" >
+            
                 
                 <%
+                    
+                    
                     GoogleSearchBox gProps = new GoogleSearchBox();
                     NameValueCollection inquery = HttpContext.Current.Request.QueryString;
                     string searchResp;
@@ -682,6 +734,8 @@ else if(document.attachEvent)
                     string searchReq = string.Empty;
                     string qQuery = string.Empty;
                     gProps.initGoogleSearchBox();//initialize the SearchBox parameters
+                    string finalURL = "";
+                    string strURL = "";
                     
                     ////////////////////////////CONSTRUCT THE SEARCH QUERY FOR GOOGLE SEARCH APPLIANCE ///////////////////////////////////
                     //The search query comes in 'k' parameter
@@ -693,24 +747,129 @@ else if(document.attachEvent)
                             qQuery = inquery["cachedurl"];
                         }
                         myquery = qQuery;//for paging in custom stylesheet
-
+                        
                         //Using U parameter to create scoped searches on the GSA
-                        if ((inquery["u"] != null))
+                        string temp = "";
+                        if (inquery["selectedScope"] != "Enterprise")
                         {
-                            string port = "";
-                            string temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
+                            /* 
+                             * This code will be executed whenever search is performed by the user, except when search is performed
+                             * for any suggestions listed, if any.
+                             */
+                            if ((inquery["u"] != null))
+                            {
+
+
+                                temp = System.Web.HttpUtility.UrlDecode(inquery["u"]);
+                                strURL = System.Web.HttpUtility.UrlDecode(inquery["scopeUrl"]);
+                            }
+                            else if (inquery["sitesearch"] != null) /* This code will be executed only when suggestions are
+                                                                         * provided by the GSA. Here, the scope url's value
+                                                                         * will be retrieved from the GSA's search request 
+                                                                         * 'sitesearch' parameter.
+                                                                         */
+                            {
+                                temp = System.Web.HttpUtility.UrlDecode(inquery["sitesearch"]);
+                                strURL = temp;
+                            }
+
                             temp = temp.ToLower();
                             temp = temp.Replace("http://", "");// Delete http from url
-                            qQuery += " inurl:\"" + temp + "\"";//  Change functionality to use "&sitesearch="  - when GSA Bug 11882 has been closed
+                            qQuery += "&inurl:\"" + temp + "\"";//  Change functionality to use "&sitesearch="  - when GSA Bug 11882 has been closed
+
+                            // The finalURL contains complete URL for the currently selected scope
+                            finalURL = strURL;
+                            finalURL = finalURL.Replace("'", "");// Removing the single quotes from the URL
+                            qQuery += "&sitesearch=" + finalURL;
                         }
 
-                        /*Get the user suppiled parameters from the web.config file*/
+
+                        // Code to log error message if accesslevel parameter value is other than 'a' or 'p'
+
+                        if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
+                        {
+                            gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ", which indicates that both 'public and secure' and 'public' searches can be performed. Enable the Public Search checkbox to perform a public search, and disable the checkbox to perform a public and secure search.", LOG_LEVEL.INFO);
+                        }
+                        else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
+                        {
+                            gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ", which indicates that only 'public' search can be performed.", LOG_LEVEL.INFO);
+                        }
+                        else
+                        {
+                            gProps.log("Access Level parameter value is " + WebConfigurationManager.AppSettings["accesslevel"].ToString() + ". Permitted values are only 'a' and 'p'. Change the value to either 'a' or 'p'. 'a' indicates a public and secure search, and 'p' indicates a public search.", LOG_LEVEL.ERROR);
+                        }
+
+                        /* 
+                         * This code will be executed whenever search is performed by the user, except when search is performed
+                         * for any suggestions listed, if any. Here, the value for the public search parameter will be retrieved 
+                         * from the querystring's 'isPublicSearch' parameter.
+                         */
+                        if (inquery["isPublicSearch"] != null)
+                        {
+                            /* 
+                            * Here the value for the access parameter will be decided on the basis of the value of
+                            * isPublicSearch and the saved web.config file settings.
+                            */
+                            if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
+                            {
+                                if (inquery["isPublicSearch"] == "false")
+                                {
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else if (inquery["isPublicSearch"] == "true")
+                                {
+                                    gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                                else if(Session["PublicSearchStatus"] != null)
+                                {
+                                    /*
+                                     * If querystring parameter value is null, assign value from the
+                                     * Session to the accesslevel search parameter.
+                                     */
+                                    if (Convert.ToString(Session["PublicSearchStatus"]) == "false")
+                                    {
+                                        gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                    }
+                                    else if (Convert.ToString(Session["PublicSearchStatus"]) == "true")
+                                    {
+                                        gProps.accessLevel = "p";  // Perform 'public search'
+                                    }
+                                }
+                            }
+                            else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
+                            {
+                                gProps.accessLevel = "p";  // Perform 'public search'
+                            }
+                        }
+                        else     /* 
+                                  * This code will be executed only when suggestions are provided by the GSA. Here, the scope url's value
+                                  * will be retrieved from the GSA's search request 'access' parameter.
+                                  */
+                        {
+                            if (inquery["access"] != null)
+                            {
+                                string publicSearchCheckboxStatus = inquery["access"].ToString();
+                                if (publicSearchCheckboxStatus == "a")
+                                {
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else
+                                {
+                                    gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                            }
+                        }
+                        /*
+                         * Setting the Session variable for PublicSearchStatus to null
+                         */
+                        Session["PublicSearchStatus"] = null;
+                       
                         searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")
                         {
                             //check for the flag whether to enable custom styling locally or use GSA style
                             if (gProps.bUseGSAStyling == true)
-                            {
+                            { 
                                 searchReq += "&proxystylesheet=" + gProps.frontEnd /*+ "&proxyreload=1"*/;
                             }
                             searchReq += "&client=" + gProps.frontEnd;
@@ -752,6 +911,7 @@ else if(document.attachEvent)
                     else
                     {
                         searchReq = HttpContext.Current.Request.Url.Query;
+                        searchReq = HttpUtility.UrlDecode(searchReq); // Decoding the URL received from the current request 
                     }
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -765,7 +925,6 @@ else if(document.attachEvent)
                         CookieContainer cc = new CookieContainer();
                         int i;
 						String GSASearchUrl= gProps.GSALocation + "/search" + searchReq;
-						
                         ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
                         objResp = (HttpWebResponse)gProps.GetResponse(false, GSASearchUrl,null,null);//fire getresponse
                         string contentEncoding = objResp.Headers["Content-Encoding"];
@@ -802,7 +961,24 @@ else if(document.attachEvent)
                                 gProps.log("Cookie Name= " + responseCookies.Name + "| Value= " + value + "| Domain= " + responseCookies.Domain
                                     + "| Expires= " + responseCookies.Expires.ToString(), LOG_LEVEL.INFO);
                                 
-                                newcc.Add(responseCookies);
+                                ///* 
+                                // * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                // * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                // */
+
+                                if (responseCookies.Name.ToLower() == secureCookieToBeDiscarded)
+                                {
+                                    bool secureCookieDiscardDecision = gProps.CheckCookieToBeDroppedAndLogMessage(WebConfigurationManager.AppSettings["omitSecureCookie"], responseCookies.Name.ToLower(), secureCookieToBeDiscarded, value);
+                                    if (secureCookieDiscardDecision == false)
+                                    {
+                                        newcc.Add(responseCookies);
+                                    }
+                                }
+                                else
+                                {
+                                    // Add the other cookies to the cookie container
+                                    newcc.Add(responseCookies);
+                                }
                             }
                             
                             
@@ -878,7 +1054,26 @@ else if(document.attachEvent)
                                         Uri GoogleUri = new Uri(GSASearchUrl);
                                         responseCookies.Domain = GoogleUri.Host;
                                         responseCookies.Expires = DateTime.Now.AddDays(1);//add 1 day from now 
-                                        newcc.Add(responseCookies);
+
+                                        ///* 
+                                        // * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                        // * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                        // */
+
+                                        if (responseCookies.Name.ToLower() == secureCookieToBeDiscarded)
+                                        {
+                                            bool secureCookieDiscardDecision = gProps.CheckCookieToBeDroppedAndLogMessage(WebConfigurationManager.AppSettings["omitSecureCookie"], responseCookies.Name.ToLower(), secureCookieToBeDiscarded, value);
+                                            if (secureCookieDiscardDecision == false)
+                                            {
+                                                newcc.Add(responseCookies);
+                                            }
+                                        }
+                                        else
+                                        {
+
+                                            // Add the other cookies to the cookie container
+                                            newcc.Add(responseCookies);
+                                        }
 
                                         /*Cookie Information*/
                                         gProps.log("Cookie Name= " + responseCookies.Name
@@ -906,7 +1101,28 @@ else if(document.attachEvent)
                                 responseCookies.Value = objResp.Cookies[j].Value;
                                 responseCookies.Domain = objReq.RequestUri.Host;
                                 responseCookies.Expires = objResp.Cookies[j].Expires;
-                                HttpContext.Current.Response.Cookies.Add(responseCookies);
+
+                                ///* 
+                                // * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
+                                // * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
+                                // */
+
+                                if (objResp.Cookies[j].Name.ToLower() == secureCookieToBeDiscarded)
+                                {
+                                    bool secureCookieDiscardDecision = gProps.CheckCookieToBeDroppedAndLogMessage(WebConfigurationManager.AppSettings["omitSecureCookie"], objResp.Cookies[j].Name.ToLower(), secureCookieToBeDiscarded, objResp.Cookies[j].Value);
+                                    if (secureCookieDiscardDecision == false)
+                                    {
+                                        HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                    }
+                                }
+                                else
+                                {
+
+
+                                    // Add the other cookies to the cookie containe
+                                    HttpContext.Current.Response.Cookies.Add(responseCookies);
+                                }
+                                
                                 responseCookies = null;
 
                                 /*Cookie Information*/
@@ -1085,7 +1301,8 @@ else if(document.attachEvent)
                 
             %>
             
-              <a href="<%=PAGENAME%>?k=<%=myquery%>&start=<%=start+num%>"><%=tempvar %></a>     
+              <a href="<%=PAGENAME%>?k=<%=myquery%>&start=<%=start+num%>"><%=tempvar %></a> 
+              
              </td>
              
              
