@@ -422,6 +422,15 @@ public class TestConfiguration {
 
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+        sharepointClientContext.setPushAcls(TestConfiguration.pushAcls);
+		sharepointClientContext.setAppendNamespaceInSPGroup(new Boolean(
+				appendNamespaceInSPGroup));
+        sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
+		sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(new Boolean(
+				useCacheToStoreLdapUserGroupsMembership));
+		sharepointClientContext.setInitialCacheSize(TestConfiguration.cacheSize);
+		sharepointClientContext.setCacheRefreshInterval(new Long(
+				TestConfiguration.cacheRefreshInterval));
         return sharepointClientContext;
     }
 
