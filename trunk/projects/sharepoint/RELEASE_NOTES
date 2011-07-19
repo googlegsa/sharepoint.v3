@@ -8,7 +8,7 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 2.8.0 , July 8, 2011
+Release 2.8.0 , July 12, 2011
 ====================================
 
 Introduction
@@ -25,8 +25,7 @@ Description:
 There is a discrepancy between the way GSA handles users and groups during ACL based authorization.
 This discrepancy is mainly related to the format that GSA uses for usernames and group names while matching them with the entries in ACL.
 For username, it uses just the username (without domain). But, for groups it uses domain\groupname. This, in turn, is because of the fact that
-while constructing the Primary Verified Identity, GSA strips off domain from username but it does not do the same with group names that are returned in response to a
-user group resolution query. The cookie cracker always returns the user or group name in the format domain\username or domain\groupname.
+while constructing the Primary Verified Identity, GSA strips off domain from username but it does not do the same with group names that are returned in response to a user group resolution query. The cookie cracker always returns the user or group name in the format domain\username or domain\groupname.
 
 Owing to the above explanation, the policy ACL authorization works only when usernames in ACEs are in the format <username> and group names are
 in <domain\groupname>. In the earlier versions, the SharePoint connector used a single format for both user names and group names.
@@ -47,8 +46,7 @@ support. In this release we have addressed the issue and handled different use c
 3. GSA makes an AuthN request to Connector Manager with valid authentication Identity but connector should return false with null group
 memberships if authentication is not successful.
 
-So with the Query session channel support in 6.10 GSA, connector will return AuthenticationResponse with true or false in addition to it the connector will send all
-search user groups (AD groups + SharePoint groups) to GSA.
+So with the Query session channel support in 6.10 GSA, connector will return AuthenticationResponse with true or false in addition to it the connector will send all search user groups (AD groups + SharePoint groups) to GSA.
 This feature will work only with HTTP Based NTLM and Connector authentication in GSA 6.10. It will not work with LDAP, Kerberos and SAML authentication.
 
 --Issue 4380742: The SharePoint connector throws OutOfMemory errors when parsing ACL web service response.
@@ -96,41 +94,51 @@ All the old connector features will continue to work on GSA 6.10.4.G.22 and 6.8.
 Steps to manually upgrade the existing connector
 ------------------------------------------------
 1. Stop the SharePoint Connector Service.
+2. Upgrade Connector manager to 2.8.0 version.
 2. Open the directory $CATALINA_HOME/webapps/connector-manager/WEB-INF/lib.
-3. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
-4. Uncomment the below lines from applicationContext.properties file and then specify values for all these properties.
+3. Remove jcifs-1.3.15.jar from lib folder and copy jcifs.jar
+4. Replace the file "connector-sharepoint.jar" with the new jar downloaded from the Code Site.
+5. Uncomment the below lines from applicationContext.properties file and then specify values for all these properties.
 for example in case of MySQL data base:
 jdbc.datasource.type=mysql
 jdbc.datasource.mysql.url=jdbc:mysql://myserver/google_connectors
 jdbc.datasource.mysql.user=<username>
 jdbc.datasource.mysql.password=<encrypted password>
 Refer connector-manager wiki page http://code.google.com/p/google-enterprise-connector-manager/wiki/EncryptPassword to encrypt password.
+
+Note: The External database used for configuring User Data Store must support UTF-8 characters if the user/group names use UTF-8 characters.
+
 5. Replace $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/$CONNECTOR_INSTANCE$/connectorInstance.xml with
 the new connectorInstance.xml provided with the build. If you had updated some properties in your older connectorInstance.xml, you'll have to
 update them explicitly in the new connectorInstance.xml.
 6. Start the SharePoint Connector Service.
 
-Note: If you have deployed Google Services on the SharePoint server, you need to upgrade them to 2.8 version. Next section gives the complete manual upgrade
-instructions for Google services for SharePoint. Next section gives the complete manual upgrade instruction for all services.
-Also, to have an optimal authorization performance, it is recommended to install/update the site discovery service along with bulk authorization service..
+Note: If you have deployed Google Services on the SharePoint server, you need to upgrade them to 2.8.0 version. Next section gives the complete manual upgrade instructions for Google services for SharePoint.
 
 Steps to manually deploy the Google services for SharePoint
 -----------------------------------------------------------
-Google services for SharePoint which are installed as web service files at the following location of your SharePoint server:
-for SharePoint 2007 : C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI
-for SharePoint 2010 : For SharePoint 2010, C:\Program Files\Common Files\microsoft shared\Web Server Extensions\14\ISAPI
 
-To update bulk authorization web service, to replace the following three files:
+1. Download SharePoint source zip file at the following location. I.e. connector-sharepoint-2.8.0-src.zip
+   http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list
+2. Extract the zip file and then go the path <extracted-location>/connector-sharepoint-2.6.8-src/source_net to
+   locate the Google services for SharePoint.
+
+Google services for SharePoint which are installed as web service files at the following location of your SharePoint server:
+
+for SharePoint 2007 : C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI
+for SharePoint 2010 : C:\Program Files\Common Files\microsoft shared\Web Server Extensions\14\ISAPI
+
+To update bulk authorization web service, replace the following three files:
 GSBulkAuthorization.asmx
 GSBulkAuthorizationdisco.aspx
 GSBulkAuthorizationwsdl.aspx
 
-To update site discovery web service, to replace the following three files:
+To update site discovery web service, replace the following three files:
 GSSiteDiscovery.asmx
 GSSiteDiscoverydisco.aspx
 GSSiteDiscoverywsdl.aspx
 
-To update ACL web service, to replace the following three files:
+To update ACL web service, replace the following three files:
 GssAcl.asmx
 GssAcldisco.aspx
 GssAclwsdl.aspx
@@ -202,8 +210,12 @@ Possible workaround:
 -- Also please see the workaround mentioned in Issue 59
 
 8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
--- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
-Type1Message are not initialized properly and hence connector configuration does not get saved.
+-- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
+9) 4903561: SharePoint connector has no validation for the LDAP search base.
+10) 4902133: SharePoint Connector authN at serve time fails for Chinese username.
+11) 5032165: SharePoint connector Alias mapping is not working for default.aspx pages.
+12) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
+13) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
 
 _______________________________________________________________________
 
