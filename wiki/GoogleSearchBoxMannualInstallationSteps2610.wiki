@@ -10,17 +10,31 @@
 
 = Steps: =
 
- # Place GSASearchresults.aspx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS
+1.    Place GSASearchresults.aspx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS
    (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\LAYOUTS directory)
- # Place GSASearchArea.ascx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES 
+
+2.    Place GSASearchArea.ascx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES 
+
+
    (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\CONTROLTEMPLATES directory) 
- # Place file google_custom_search_watermark.gif in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\IMAGES 
+
+3.    Place file google_custom_search_watermark.gif in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\IMAGES 
+
+
    (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\IMAGES directory) 
- # Place Folder "GSAFeature" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\FEATURES 
+
+4.    Place Folder "GSAFeature" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\FEATURES 
+
+
    (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\FEATURES directory) 
- # Place the files "GSA2SP.xsl" and "SP_Actual.xsl" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE
+
+
+5.    Place the files "GSA2SP.xsl" and "SP_Actual.xsl" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE
+
+
  (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE directory)
- # For installation and activatation of the "GSAFeature" 
+
+6.    For installation and activatation of the "GSAFeature" 
 
 
      {{{ 
@@ -31,8 +45,8 @@
                  stsadm.exe -o installfeature -name GSAFeature -force 
                  stsadm.exe -o activatefeature -name GSAFeature -force 
       }}}
-
-   7.    To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application. 
+ 
+7.    To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application. 
 
 
      {{{
@@ -71,7 +85,7 @@
        <add key="accesslevel" value="a" />
        <add key="omitSecureCookie" value="false" />
        <add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\GSA2SP.xsl" /> 
-         <add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\SP_Actual.xsl" /> 
+       <add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\SP_Actual.xsl" /> 
        <add key="logLocation" value="C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\" /> 
 <!--Default Search Type : value "publicAndSecure" means public and secure search is enabled by default, and value "public" means public search is enabled by default-->
        <add key="defaultSearchType" value="publicAndSecure" />
@@ -81,7 +95,7 @@
       
  }}}
 
-    8.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to enable session state for a given SharePoint web application. 
+8.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to enable session state for a given SharePoint web application. 
 
 {{{
 
@@ -95,7 +109,7 @@
 
 }}}
 
-    9.   To setup SharePoint like frontend: 
+9.   To setup SharePoint like frontend: 
 
 {{{
 
@@ -106,8 +120,11 @@
 
 }}}
 
+
 10. Save the web.config file. 
-	   
+
+	 
+  
 11. GSAapplication.master is a newly added file for reference purpose. This file is used to reduce the whitespace displayed at the top of the search results. (steps below are applicable only for SharePoint 2007)
      To use this sample master page, copy the file to the Layouts folder (path - C:\Program Files\Common Files\microsoft shared\Web Server Extensions\12\TEMPLATE\LAYOUTS).
      Modify the Page Directive MasterPageFile attribute like -  MasterPageFile="~/_layouts/GSAapplication.master" in the GSASearchresults.aspx page found on the same path.
