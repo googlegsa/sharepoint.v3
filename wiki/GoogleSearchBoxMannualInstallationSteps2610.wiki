@@ -6,9 +6,6 @@
  * The search Box can also be deployed on machine with MOSS 2010 installed (64-bit). It does not support WSS 4.0 or SharePoint Foundation 2010
  * The documents should be fed and indexed on appliance before doing search  
  * For a SharePoint farm scenario, you need to install the Search Box for all the SharePoint Web Front Ends connected to the farm. 
- * The Google Search Box for SharePoint 2007 can be downloaded from [http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/detail?name=GSBS-2.6.8_SharePoint2007.zip&can=2&q=#makechanges] 
- * The Google Search Box for SharePoint 2010 can be downloaded from [http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/detail?name=GSBS-2.6.8_SharePoint2010.zip&can=2&q=#makechanges] 
-
 
 
 = Steps: =
