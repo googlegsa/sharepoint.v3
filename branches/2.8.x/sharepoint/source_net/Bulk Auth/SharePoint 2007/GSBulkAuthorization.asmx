@@ -486,10 +486,25 @@ public class WSContext
                 site is created using the "/" path
                 http://SharePointURL:portno/default.aspx
                 http://SharePointURL/default.aspx
-             * 
+               
              */
-
-            siteUrl = SPContext.Current.Web.ServerRelativeUrl.ToString();
+            siteUrl = siteUrl.Substring(siteUrl.IndexOf(':') + 1);
+            /* 
+             * Checking whether the url contains port number, by testing whether the url contains another instance of
+             * colon i.e. ":".
+             */
+            int colonPos = siteUrl.IndexOf(':');
+            if (colonPos >= 0)// Means URL contains Port No.
+            {
+                siteUrl = siteUrl.Substring(siteUrl.IndexOf(':') + 1);
+            }
+            else              // Means URL does not contain Port No.
+            {
+                siteUrl = siteUrl.Substring(siteUrl.IndexOf('/') + 1);
+                siteUrl = siteUrl.Substring(siteUrl.IndexOf('/') + 1);
+            }
+            siteUrl = siteUrl.Substring(siteUrl.IndexOf('/'));
+            siteUrl = siteUrl.Substring(0, siteUrl.LastIndexOf('/'));
             return siteUrl;
         }
 
