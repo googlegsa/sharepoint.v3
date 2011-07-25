@@ -162,9 +162,9 @@ public class UserDataStoreDAOTest extends TestCase {
     
     public void testGetAllMembershipsForUserWithNull() {
         try {
-            String userName = TestConfiguration.testuser;
-            List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser(userName);
-            assertNull(members);            
+			// String userName = TestConfiguration.testuser;
+			List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser("testuser1");
+			assertNull(members);
         } catch (Exception e) {
             fail(e.getMessage());
         }

@@ -25,10 +25,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import junit.framework.TestCase;
 
@@ -85,9 +85,12 @@ public class SharepointAuthorizationManagerTest extends TestCase {
                 TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
 
         Set<String> docids = new HashSet<String>();
-        docids.add(TestConfiguration.SearchDocID1);
-        docids.add(TestConfiguration.SearchDocID2);
+        // docids.add(TestConfiguration.SearchDocID1);
+        // docids.add(TestConfiguration.SearchDocID2);
         docids.add(TestConfiguration.SearchDocID3);
+        docids.add(TestConfiguration.SearchDocID4);
+        docids.add(TestConfiguration.SearchDocID113);
+        docids.add(TestConfiguration.SearchDocID114);
 
         final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
         assertEquals(docids.size(), authZResponses.size());
