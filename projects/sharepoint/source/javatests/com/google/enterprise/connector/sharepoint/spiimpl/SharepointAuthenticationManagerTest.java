@@ -86,7 +86,11 @@ public class SharepointAuthenticationManagerTest extends TestCase {
      */
     public void testAuthenticateWithNullGroups () throws Throwable {
         System.out.println("Testing Authenticate() with null groups");
-        testAuthenticate();
+        this.authID = null;
+        this.authID = new SimpleAuthenticationIdentity("testuser",
+                TestConfiguration.searchUserPwd);
+        this.authenticationResponse = null;
+        this.authenticationResponse = this.authMan.authenticate(this.authID);
         Collection<String> groups = this.authenticationResponse.getGroups();
         assertNull(groups);
     }
@@ -170,7 +174,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
         // should fetch results from service.
         this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.fakeusername);
         assertNotNull(this.authenticationResponse);
-        assertTrue((this.authenticationResponse.getGroups().isEmpty()));
+        assertNull((this.authenticationResponse.getGroups()));
     }
 
     /**
@@ -180,13 +184,13 @@ public class SharepointAuthenticationManagerTest extends TestCase {
      * @throws RepositoryLoginException
      * @throws RepositoryException
      */
-    public void testAuthencateIfFeedAclsTurnedOff()
+    public void testAuthenticateIfFeedAclsTurnedOff()
             throws RepositoryLoginException, RepositoryException {
         System.out.println("Testing authenticate() by setting feed ACLs off onthe configuration page.");
         this.authenticationResponse = this.authMan.authenticate(this.authID);
         assertNotNull(authenticationResponse);
         assertTrue(authenticationResponse.isValid());
-        assertNull(this.authenticationResponse.getGroups());
+        assertNotNull(this.authenticationResponse.getGroups());
         System.out.println("[ authenticate() ] test completed if feed acls set to off.");
     }
 

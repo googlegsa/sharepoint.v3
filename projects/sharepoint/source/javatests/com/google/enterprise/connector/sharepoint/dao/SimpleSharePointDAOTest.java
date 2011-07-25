@@ -114,7 +114,7 @@ public class SimpleSharePointDAOTest extends TestCase {
                     sqlState, vendorCode, updateCounts);
 			int[] status = simpleSPDAO.handleBatchUpdateExceptionForMSSQLAndMySQL(batchUpdateException, Query.UDS_INSERT, namedParams);
             assertNotNull(status);
-            assertEquals(status.length, namedParams.length);
+			assertEquals(status.length, namedParams.length - 1);
         } catch (Exception e) {
             fail(e.getMessage());
         }
