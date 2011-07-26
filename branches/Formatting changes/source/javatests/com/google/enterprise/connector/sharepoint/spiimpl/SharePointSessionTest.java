@@ -14,8 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -24,59 +22,61 @@ import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalManager;
 
+import junit.framework.TestCase;
+
 public class SharePointSessionTest extends TestCase {
 
-    SharepointClientContext sharepointClientContext;
-    SharepointSession session;
+  SharepointClientContext sharepointClientContext;
+  SharepointSession session;
 
-    protected void setUp() throws Exception {
-        System.out.println("\n...Setting Up...");
-        System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = TestConfiguration.initContext();
-        assertNotNull(this.sharepointClientContext);
-        sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
+  protected void setUp() throws Exception {
+    System.out.println("\n...Setting Up...");
+    System.out.println("Initializing SharepointClientContext ...");
+    this.sharepointClientContext = TestConfiguration.initContext();
+    assertNotNull(this.sharepointClientContext);
+    sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
 
-        System.out.println("Initializing SharepointConnector ...");
-        final SharepointConnector connector = new SharepointConnector();
-        connector.setFQDNConversion(TestConfiguration.FQDNflag);
-        System.out.println("Initializing SharepointSession ...");
-        this.session = new SharepointSession(connector,
-                this.sharepointClientContext);
+    System.out.println("Initializing SharepointConnector ...");
+    final SharepointConnector connector = new SharepointConnector();
+    connector.setFQDNConversion(TestConfiguration.FQDNflag);
+    System.out.println("Initializing SharepointSession ...");
+    this.session = new SharepointSession(connector,
+        this.sharepointClientContext);
+  }
+
+  public void testGetAuthenticationManager() {
+    System.out.println("Testing getAuthenticationManager()...");
+    try {
+      final AuthenticationManager authZMan = this.session.getAuthenticationManager();
+      assertNotNull(authZMan);
+      System.out.println("[ getAuthenticationManager() ] Test Passed.");
+    } catch (final RepositoryException re) {
+      System.out.println(re);
+      System.out.println("[ getAuthenticationManager() ] Test Failed.");
     }
+  }
 
-    public void testGetAuthenticationManager() {
-        System.out.println("Testing getAuthenticationManager()...");
-        try {
-            final AuthenticationManager authZMan = this.session.getAuthenticationManager();
-            assertNotNull(authZMan);
-            System.out.println("[ getAuthenticationManager() ] Test Passed.");
-        } catch (final RepositoryException re) {
-            System.out.println(re);
-            System.out.println("[ getAuthenticationManager() ] Test Failed.");
-        }
+  public void testGetAuthorizationManager() {
+    System.out.println("Testing getAuthorizationManager()...");
+    try {
+      final AuthorizationManager authNMan = this.session.getAuthorizationManager();
+      assertNotNull(authNMan);
+      System.out.println("[ getAuthorizationManager() ] Test Passed.");
+    } catch (final RepositoryException re) {
+      System.out.println(re);
+      System.out.println("[ getAuthorizationManager() ] Test Failed.");
     }
+  }
 
-    public void testGetAuthorizationManager() {
-        System.out.println("Testing getAuthorizationManager()...");
-        try {
-            final AuthorizationManager authNMan = this.session.getAuthorizationManager();
-            assertNotNull(authNMan);
-            System.out.println("[ getAuthorizationManager() ] Test Passed.");
-        } catch (final RepositoryException re) {
-            System.out.println(re);
-            System.out.println("[ getAuthorizationManager() ] Test Failed.");
-        }
+  public void testGetTraversalManager() {
+    System.out.println("Testing getTraversalManager()...");
+    try {
+      final TraversalManager travMan = this.session.getTraversalManager();
+      assertNotNull(travMan);
+      System.out.println("[ getTraversalManager() ] Test Passed.");
+    } catch (final RepositoryException re) {
+      System.out.println(re);
+      System.out.println("[ getTraversalManager() ] Test Failed.");
     }
-
-    public void testGetTraversalManager() {
-        System.out.println("Testing getTraversalManager()...");
-        try {
-            final TraversalManager travMan = this.session.getTraversalManager();
-            assertNotNull(travMan);
-            System.out.println("[ getTraversalManager() ] Test Passed.");
-        } catch (final RepositoryException re) {
-            System.out.println(re);
-            System.out.println("[ getTraversalManager() ] Test Failed.");
-        }
-    }
+  }
 }

@@ -30,55 +30,55 @@ import javax.naming.ldap.LdapContext;
  */
 public interface LdapService {
 
-    /**
-     * Returns {@link LdapContext} for a given {@link LdapConnectionSettings}.
-     *
-     * @return context object.
-     */
-    LdapContext getLdapContext();
+  /**
+   * Returns {@link LdapContext} for a given {@link LdapConnectionSettings}.
+   *
+   * @return context object.
+   */
+  LdapContext getLdapContext();
 
-    /**
-     * Fetches all parent groups for a given group that the user belongs to and
-     * it will recursively search parent groups for all direct groups and
-     * populate a set of all parent groups.
-     *
-     * @param groupName given group name.
-     * @param parentGroups set of all parent groups for a given group name.
-     */
-    void getAllParentGroups(String groupName, final Set<String> parentGroups);
+  /**
+   * Fetches all parent groups for a given group that the user belongs to and it
+   * will recursively search parent groups for all direct groups and populate a
+   * set of all parent groups.
+   *
+   * @param groupName given group name.
+   * @param parentGroups set of all parent groups for a given group name.
+   */
+  void getAllParentGroups(String groupName, final Set<String> parentGroups);
 
-    /**
-     * Retrieves all direct and indirect groups that the user belongs to in
-     * Directory service implementation.
-     *
-     * @param userName Search user name
-     * @return set of LDAP/AD groups that the search user belongs to.
-     */
-    Set<String> getAllLdapGroups(String userName);
+  /**
+   * Retrieves all direct and indirect groups that the user belongs to in
+   * Directory service implementation.
+   *
+   * @param userName Search user name
+   * @return set of LDAP/AD groups that the search user belongs to.
+   */
+  Set<String> getAllLdapGroups(String userName);
 
-    /**
-     * Retrieves SAM account name for a given search user to start querying
-     * LDAP/AD server to get all direct groups that the user belongs to.
-     *
-     * @param userName given search user name
-     * @return a search user name
-     */
-    String getSamAccountNameForSearchUser(String userName);
+  /**
+   * Retrieves SAM account name for a given search user to start querying
+   * LDAP/AD server to get all direct groups that the user belongs to.
+   *
+   * @param userName given search user name
+   * @return a search user name
+   */
+  String getSamAccountNameForSearchUser(String userName);
 
-	/**
-	 * Returns all groups (AD groups + SP groups) for the search user by
-	 * querying LDAP directory server and User Data Store respectively. The
-	 * class that implements this interface should deal with user group’s cache.
-	 * I.e. If user groups cache is enabled on the connector configuration page,
-	 * the implementation should check for the groups in cache. If there is no
-	 * entry found for the search user, the implementation should query LDAP
-	 * server to get ADGroups and then store in cache.
-	 * 
-	 * @param sharepointClientContext the sharepointClientContext
-	 * @param searchUser the searchUser
-	 * @throws SharepointException
-	 */
-	Set<String> getAllGroupsForSearchUser(
-			SharepointClientContext sharepointClientContext, String searchUser)
-			throws SharepointException;
+  /**
+   * Returns all groups (AD groups + SP groups) for the search user by querying
+   * LDAP directory server and User Data Store respectively. The class that
+   * implements this interface should deal with user group’s cache. I.e. If user
+   * groups cache is enabled on the connector configuration page, the
+   * implementation should check for the groups in cache. If there is no entry
+   * found for the search user, the implementation should query LDAP server to
+   * get ADGroups and then store in cache.
+   *
+   * @param sharepointClientContext the sharepointClientContext
+   * @param searchUser the searchUser
+   * @throws SharepointException
+   */
+  Set<String> getAllGroupsForSearchUser(
+      SharepointClientContext sharepointClientContext, String searchUser)
+      throws SharepointException;
 }
