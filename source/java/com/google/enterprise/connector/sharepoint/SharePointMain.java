@@ -14,12 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
+
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 
 /**
  * Dump the Version info from the Manifest for the Connector's JAR file. This is
@@ -29,28 +29,27 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
  * /path/to/connector-sharepoint.jar
  */
 public class SharePointMain {
-    public static void main(final String[] args) throws Exception {
-        // From our class, get the jar file URL to this class file, and
-        // make our way to the the Manifest located in that jar file.
-        final Class thisClass = SharePointMain.class;
-        final String resName = SPConstants.SLASH
-                + thisClass.getName().replace('.', SPConstants.SLASH_CHAR)
-                + ".class";
+  public static void main(final String[] args) throws Exception {
+    // From our class, get the jar file URL to this class file, and
+    // make our way to the the Manifest located in that jar file.
+    final Class thisClass = SharePointMain.class;
+    final String resName = SPConstants.SLASH
+        + thisClass.getName().replace('.', SPConstants.SLASH_CHAR) + ".class";
 
-        // Locate the Jar file containing our class.
-        final URL url = thisClass.getResource(resName);
-        final JarURLConnection connection = (JarURLConnection) url.openConnection();
+    // Locate the Jar file containing our class.
+    final URL url = thisClass.getResource(resName);
+    final JarURLConnection connection = (JarURLConnection) url.openConnection();
 
-        // Get the Manifest for our Jar and extract the Implementation-Title
-        // and Implementation-Version.
-        final Manifest manifest = connection.getManifest();
-        final Attributes attrs = manifest.getMainAttributes();
-        String name = attrs.getValue("Implementation-Title");
-        if (name != null) {
-            name = name.replaceAll("[ \t\r\n][ \t\r\n]+", " ");
-        }
-        final String version = attrs.getValue("Implementation-Version");
-
-        System.out.println(name + " v" + version);
+    // Get the Manifest for our Jar and extract the Implementation-Title
+    // and Implementation-Version.
+    final Manifest manifest = connection.getManifest();
+    final Attributes attrs = manifest.getMainAttributes();
+    String name = attrs.getValue("Implementation-Title");
+    if (name != null) {
+      name = name.replaceAll("[ \t\r\n][ \t\r\n]+", " ");
     }
+    final String version = attrs.getValue("Implementation-Version");
+
+    System.out.println(name + " v" + version);
+  }
 }
