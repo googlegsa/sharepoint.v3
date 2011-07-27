@@ -15,8 +15,8 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -58,6 +58,7 @@ public class SharepointConnector implements Connector {
     private List<String> infoPathBaseTemplate;
     boolean reWriteDisplayUrlUsingAliasMappingRules = true;
     boolean reWriteRecordUrlUsingAliasMappingRules;
+    private boolean feedUnPublishedDocuments;
 
     public SharepointConnector() {
 
@@ -271,12 +272,15 @@ public class SharepointConnector implements Connector {
                 + "googleConnectorWorkDir = [" + googleConnectorWorkDir
                 + "] , includedURls = [" + includedURls + "] , "
                 + "excludedURls = [" + excludedURls + "] , mySiteBaseURL = ["
-                + mySiteBaseURL + "] , aliasHostPort = [" + aliasMap + "]");
+                + mySiteBaseURL + "] , aliasHostPort = [" + aliasMap
+                + "] , feedUnPublishedDocuments = [" + feedUnPublishedDocuments
+                + "]");
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
                 includedURls, excludedURls, mySiteBaseURL, aliasMap,
                 FeedType.getFeedType(authorizationAsfeedType),
                 useSPSearchVisibility);
+
         sharepointClientContext.setFQDNConversion(FQDNConversion);
         sharepointClientContext.setIncluded_metadata(included_metadata);
         sharepointClientContext.setExcluded_metadata(excluded_metadata);
@@ -285,6 +289,7 @@ public class SharepointConnector implements Connector {
         sharepointClientContext.setInfoPathBaseTemplate(infoPathBaseTemplate);
         sharepointClientContext.setReWriteDisplayUrlUsingAliasMappingRules(reWriteDisplayUrlUsingAliasMappingRules);
         sharepointClientContext.setReWriteRecordUrlUsingAliasMappingRules(reWriteRecordUrlUsingAliasMappingRules);
+        sharepointClientContext.setFeedUnPublishedDocuments(feedUnPublishedDocuments);
     }
 
     /**
@@ -358,4 +363,13 @@ public String getKdcserver() {
             boolean reWriteRecordUrlUsingAliasMappingRules) {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
+
+    public boolean isFeedUnPublishedDocuments() {
+        return feedUnPublishedDocuments;
+    }
+
+    public void setFeedUnPublishedDocuments(boolean feedUnPublishedDocuments) {
+        this.feedUnPublishedDocuments = feedUnPublishedDocuments;
+    }
+
 }

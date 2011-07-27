@@ -85,6 +85,7 @@ public class SharepointClientContext implements Cloneable {
 
     boolean reWriteDisplayUrlUsingAliasMappingRules = true;
     boolean reWriteRecordUrlUsingAliasMappingRules;
+	private boolean feedUnPublishedDocuments;
 
     /**
      * For cloning
@@ -165,6 +166,7 @@ public class SharepointClientContext implements Cloneable {
 
             spCl.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
             spCl.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
+			spCl.setFeedUnPublishedDocuments(feedUnPublishedDocuments);
             return spCl;
         } catch (final Throwable e) {
             LOGGER.log(Level.FINEST, "Unable to clone client context.", e);
@@ -958,4 +960,13 @@ public class SharepointClientContext implements Cloneable {
             boolean reWriteRecordUrlUsingAliasMappingRules) {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
+
+	public boolean isFeedUnPublishedDocuments() {
+		return feedUnPublishedDocuments;
+	}
+
+    public void setFeedUnPublishedDocuments(boolean feedUnPublishedDocuments) {
+		this.feedUnPublishedDocuments = feedUnPublishedDocuments;
+	}
+
 }

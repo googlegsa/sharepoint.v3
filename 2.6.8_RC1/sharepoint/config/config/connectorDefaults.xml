@@ -14,6 +14,7 @@
        <property name="aliasMap" value="${aliasMap}"/>
      <property name="authorization" value="${authorization}"/>
      <property name="useSPSearchVisibility" value="${useSPSearchVisibility}"/>
+     <property name="feedUnPublishedDocuments" value="${feedUnPublishedDocuments}"/>
 
      <property name="included_metadata">
     <list>
@@ -67,6 +68,7 @@
                 <prop key="aliasMap"></prop>
                 <prop key="authorization">Metadata-and-URL</prop>
                 <prop key="useSPSearchVisibility">true</prop>
+                <prop key="feedUnPublishedDocuments">true</prop>
             </props>
         </property>
     </bean>
