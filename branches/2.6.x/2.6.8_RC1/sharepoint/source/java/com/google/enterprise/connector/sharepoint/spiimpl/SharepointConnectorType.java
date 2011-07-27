@@ -16,10 +16,10 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.common.StringUtils;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
@@ -288,6 +288,28 @@ public class SharepointConnectorType implements ConnectorType {
                     buf.append(SPConstants.OPEN_ELEMENT);
                     buf.append(SPConstants.END_TEXTAREA);
                     buf.append(SPConstants.CLOSE_ELEMENT);
+                } else if (collator.equals(key, SPConstants.FEED_UNPUBLISHED_CONTENT)) {
+                    buf.append(SPConstants.BREAK_LINE);
+                    buf.append(SPConstants.OPEN_ELEMENT);
+                    buf.append(SPConstants.INPUT);
+                    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+                    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+                    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+                    appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
+                    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    } else {
+                        appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+                    }
+                    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+                    // It allows to select check box using it's label.
+                    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+                            + SPConstants.EQUAL_TO + "\"" + key + "\""
+                            + SPConstants.CLOSE_ELEMENT);
+                    buf.append(rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
+                    buf.append(SPConstants.OPEN_ELEMENT
+                            + SPConstants.FORWARD_SLASH + SPConstants.LABEL
+                            + SPConstants.CLOSE_ELEMENT);
                 } else {
                     buf.append(SPConstants.OPEN_ELEMENT);
                     buf.append(SPConstants.INPUT);
@@ -588,6 +610,11 @@ public class SharepointConnectorType implements ConnectorType {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(false));
         } else {
             configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY, Boolean.toString(true));
+        }
+        if (!configData.containsKey(SPConstants.FEED_UNPUBLISHED_CONTENT)) {
+            configData.put(SPConstants.FEED_UNPUBLISHED_CONTENT, Boolean.toString(false));
+        } else {
+            configData.put(SPConstants.FEED_UNPUBLISHED_CONTENT, Boolean.toString(true));
         }
 
         if ((username != null)

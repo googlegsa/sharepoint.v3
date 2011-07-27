@@ -15,9 +15,9 @@
 package com.google.enterprise.connector.sharepoint.wsclient;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetAttachmentCollectionResponseGetAttachmentCollectionResult;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenContains;
 import com.google.enterprise.connector.sharepoint.generated.lists.GetListItemChangesSinceTokenQuery;
@@ -36,8 +36,8 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.wsclient.handlers.InvalidXmlCharacterHandler;
-import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+import com.google.enterprise.connector.spi.Value;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.message.MessageElement;
@@ -1484,7 +1484,32 @@ public class ListsWS {
                  * If we'll not reach the batch hint with such documents then
                  * only we'll process the updated items.
                  */
-                updatedListItems.add(row);
+                if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
+                    if (null != row.getAttribute(SPConstants.MODERATION_STATUS)) {
+                        int docVersion = Integer.parseInt(row.getAttribute(SPConstants.MODERATION_STATUS));
+                        if (docVersion != 0) {
+                            // Added unpublished documents to delete list if
+                            // FeedUnPublishedDocuments set to false, so
+                            // that connector send delete feeds for unpublished
+                            // content in SharePoint to GSA.
+                            deletedIDs.add(docId);
+                            LOGGER.warning("Adding the list item or document ["
+                                    + row.getAttribute(SPConstants.FILEREF)
+                                    + "] to the deleted ID's list to send delete feeds for unpublished content in the list URL :"
+                                    + list.getListURL());
+                        } else {
+                            // Add only published documents to the list to send
+                            // add feeds if FeedUnPublishedDocuments set to
+                            // false.
+                            updatedListItems.add(row);
+                        }
+                    }
+                } else {
+                    // Add all published and unpublished content to the
+                    // updatedListItems to send add feeds if
+                    // feedUnPublishedDocuments set to true.
+                    updatedListItems.add(row);
+                }
 
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Problem occured while parsing the rs:data node", e);
@@ -1577,6 +1602,33 @@ public class ListsWS {
      */
     private SPDocument processListItemElement(final MessageElement listItem,
             final ListState list, final Set<String> allWebs) {
+        // check for feedUnpublishedDocuments flag
+        if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
+            if (null != listItem.getAttribute(SPConstants.MODERATION_STATUS)) {
+                int docVersion = Integer.parseInt(listItem.getAttribute(SPConstants.MODERATION_STATUS));
+                if (docVersion != 0) {
+                    // ModerationStatus="0" for approved/ published list
+                    // list item or document status
+                    // ModerationStatus="1" for rejected list item or document
+                    // status
+                    // ModerationStatus="2" for pending list item or document
+                    // status
+                    // ModerationStatus="3" for draft list item or document
+                    // status
+
+                    LOGGER.warning("List Item or Document is not yet published on SharePoint site, hence discarding the ID ["
+                            + listItem.getAttribute(SPConstants.ID)
+                            + "] under the List/Document Library URL "
+                            + list.getListURL()
+                            + " , and it's current version is " + docVersion);
+                    return null;
+                }
+            } else {
+                LOGGER.log(Level.WARNING, SPConstants.MODERATION_STATUS
+                        + " is not found for one of the items in list or document library [ "
+                        + list.getListURL() + " ]. ");
+            }
+        }
         // Get all the required attributes.
         String fileref = listItem.getAttribute(SPConstants.FILEREF);
         if (fileref == null) {
