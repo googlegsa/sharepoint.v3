@@ -26,6 +26,7 @@
      <property name="useCacheToStoreLdapUserGroupsMembership" value="${useCacheToStoreLdapUserGroupsMembership}"/>
      <property name="initialCacheSize" value="${initialCacheSize}"/>
      <property name="cacheRefreshInterval" value="${cacheRefreshInterval}"/>
+     <property name="feedUnPublishedDocuments" value="${feedUnPublishedDocuments}"/>
      <property name="included_metadata">
     <list>
       <!-- If you want to index only specific metadata, put them here.
@@ -131,6 +132,7 @@
                 <prop key="useCacheToStoreLdapUserGroupsMembership">false</prop>
                 <prop key="initialCacheSize">1000</prop>
                 <prop key="cacheRefreshInterval">7200</prop>
+                <prop key="feedUnPublishedDocuments">true</prop>
             </props>
         </property>
     </bean>

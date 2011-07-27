@@ -517,6 +517,9 @@ public class SPConstants {
 	public static final String SELECTED = "selected";
 	public static final boolean EDIT_MODE = true;
 	public static final int DEFAULT_TIMEOUT_FOR_WS = 300000;
+	public static final String MODERATION_STATUS = "ows__ModerationStatus";
+	public static final String FEED_UNPUBLISHED_CONTENT = "feedUnPublishedDocuments";
+	public static final String FEED_UNPUBLISHED_CONTENT_LABEL = "feed_Un_Published_Documents";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";

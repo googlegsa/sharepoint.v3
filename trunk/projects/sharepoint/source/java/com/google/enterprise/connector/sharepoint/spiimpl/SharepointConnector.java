@@ -85,6 +85,7 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     private boolean useCacheToStoreLdapUserGroupsMembership;
     private String cacheRefreshInterval;
     private LdapConnectionSettings ldapConnectionSettings;
+    private boolean feedUnPublishedDocuments;
 
     public SharepointConnector() {
 
@@ -307,7 +308,8 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
                 + "], portNumber = [" + portNumber
                 + "], authenticationType = [" + authenticationType
                 + "], connectMethod = [" + connectMethod + "], searchBase = ["
-                + searchBase + " ]");
+                + searchBase + " ]" + "], feedUnPublishedDocuments = ["
+                + feedUnPublishedDocuments + "]");
 
         sharepointClientContext = new SharepointClientContext(sharepointUrl,
                 domain, kdcserver, username, password, googleConnectorWorkDir,
@@ -326,6 +328,8 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
         sharepointClientContext.setAclBatchSizeFactor(this.aclBatchSizeFactor);
         sharepointClientContext.setWebServiceTimeOut(this.webServiceTimeOut);
         sharepointClientContext.setDomain(this.domain);
+        sharepointClientContext.setFeedUnPublishedDocuments(this.feedUnPublishedDocuments);
+
         if (pushAcls) {
             sharepointClientContext.setLdapConnectionSettings(getLdapConnectionSettings());
             sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
@@ -678,6 +682,14 @@ public class SharepointConnector implements Connector, ConnectorPersistentStoreA
     public void setLdapConnectiionSettings(
             LdapConnectionSettings ldapConnectionSettings) {
         this.ldapConnectionSettings = ldapConnectionSettings;
+    }
+
+    public boolean isFeedUnPublishedDocuments() {
+        return feedUnPublishedDocuments;
+    }
+
+    public void setFeedUnPublishedDocuments(boolean feedUnPublishedDocuments) {
+        this.feedUnPublishedDocuments = feedUnPublishedDocuments;
     }
 
 }
