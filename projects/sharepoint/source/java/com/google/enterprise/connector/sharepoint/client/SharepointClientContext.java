@@ -100,6 +100,15 @@ public class SharepointClientContext implements Cloneable {
     private boolean useCacheToStoreLdapUserGroupsMembership;
     private long cacheRefreshInterval;
     private LdapConnectionSettings ldapConnectionSettings;
+	private boolean feedUnPublishedDocuments;
+
+    public boolean isFeedUnPublishedDocuments() {
+		return feedUnPublishedDocuments;
+	}
+
+    public void setFeedUnPublishedDocuments(boolean feedUnPublishedDocuments) {
+		this.feedUnPublishedDocuments = feedUnPublishedDocuments;
+	}
 
     public LdapConnectionSettings getLdapConnectionSettings() {
         return ldapConnectionSettings;
@@ -205,6 +214,7 @@ public class SharepointClientContext implements Cloneable {
             spCl.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
             spCl.setInitialCacheSize(this.initialCacheSize);
             spCl.setCacheRefreshInterval(this.cacheRefreshInterval);
+			spCl.setFeedUnPublishedDocuments(this.feedUnPublishedDocuments);
 
             return spCl;
         } catch (final Throwable e) {

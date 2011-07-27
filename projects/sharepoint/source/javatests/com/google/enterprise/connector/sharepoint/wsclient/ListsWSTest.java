@@ -16,9 +16,9 @@ package com.google.enterprise.connector.sharepoint.wsclient;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -49,7 +49,8 @@ public class ListsWSTest extends TestCase {
         assertNotNull(this.sharepointClientContext);
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
-        // sharepointClientContext.setBatchHint(3);
+        sharepointClientContext.setBatchHint(10);
+        sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
 
         System.out.println("Initializing ListsWS ...");
         this.listWS = new ListsWS(this.sharepointClientContext);
@@ -129,6 +130,7 @@ public class ListsWSTest extends TestCase {
         // testList.commitChangeTokenForWSCall();
         final List items = this.listWS.getListItemChangesSinceToken(this.testList, null);
         assertNotNull(items);
+        assertEquals(4, items.size());
     }
 
     public void testGetListItemChangesSinceTokenWithInvalidChangeToken()
@@ -149,5 +151,29 @@ public class ListsWSTest extends TestCase {
             final List items = this.listWS.getListItemChangesSinceToken(this.testList, null);
             assertNotNull(items);
         }
+    }
+
+    public void testGetListItemsForPublishedContent()
+            throws MalformedURLException, RepositoryException {
+        System.out.println("Testing getListItems() by setting FeedUnPublishedDocuments to false.");
+        this.listWS = null;
+        this.sharepointClientContext.setFeedUnPublishedDocuments(false);
+        this.listWS = new ListsWS(this.sharepointClientContext);
+        final List items = this.listWS.getListItems(this.testList, null, null, null);
+        assertNotNull(items);
+        assertEquals(2, items.size());
+        System.out.println("[ getListItems() ] test passed.");
+    }
+
+    public void testGetListItemsForUnPublishedContent()
+            throws MalformedURLException, RepositoryException {
+        System.out.println("Testing getListItems() by setting FeedUnPublishedDocuments true");
+        this.listWS = null;
+        this.sharepointClientContext.setFeedUnPublishedDocuments(true);
+        this.listWS = new ListsWS(this.sharepointClientContext);
+        final List items = this.listWS.getListItems(this.testList, null, null, null);
+        assertNotNull(items);
+        assertEquals(4, items.size());
+        System.out.println("[ getListItems() ] test passed");
     }
 }

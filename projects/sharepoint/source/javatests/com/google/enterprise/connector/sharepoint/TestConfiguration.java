@@ -87,6 +87,9 @@ public class TestConfiguration {
     public static String SearchDocID1;
     public static String SearchDocID2;
     public static String SearchDocID3;
+	public static String SearchDocID4;
+	public static String SearchDocID113;
+	public static String SearchDocID114;
     public static String SearchDocID25;
     public static String SearchDocID26;
 
@@ -195,6 +198,10 @@ public class TestConfiguration {
         SearchDocID3 = properties.getProperty("SearchDocID3");
         SearchDocID25 = properties.getProperty("SearchDocID25");
         SearchDocID26 = properties.getProperty("SearchDocID26");
+		SearchDocID4 = properties.getProperty("SearchDocID4");
+		SearchDocID114 = properties.getProperty("SearchDocID113");
+		SearchDocID113 = properties.getProperty("SearchDocID114");
+
         testuser = properties.getProperty("testuser");
         Site1_URL = properties.getProperty("Site1_URL");
         Site1_List1_GUID = properties.getProperty("Site1_List1_GUID");
@@ -254,8 +261,8 @@ public class TestConfiguration {
         UDS_TABLE_NAME = properties.getProperty("UDS_TABLE_NAME");
         UDS_INDEX_NAME = properties.getProperty("UDS_INDEX_NAME");
         userNameFormat1 = properties.getProperty("userNameFormat1");
-        userNameFormat1 = properties.getProperty("userNameFormat2");
-        userNameFormat1 = properties.getProperty("userNameFormat3");
+		userNameFormat2 = properties.getProperty("userNameFormat2");
+		userNameFormat3 = properties.getProperty("userNameFormat3");
 
         refreshInterval = new Long(properties.getProperty("refreshInterval")).longValue();
         cacheSize = new Integer(properties.getProperty("cacheSize")).intValue();
@@ -422,6 +429,7 @@ public class TestConfiguration {
 
         sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
         sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+		sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
         sharepointClientContext.setPushAcls(TestConfiguration.pushAcls);
 		sharepointClientContext.setAppendNamespaceInSPGroup(new Boolean(
 				appendNamespaceInSPGroup));
@@ -429,8 +437,7 @@ public class TestConfiguration {
 		sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(new Boolean(
 				useCacheToStoreLdapUserGroupsMembership));
 		sharepointClientContext.setInitialCacheSize(TestConfiguration.cacheSize);
-		sharepointClientContext.setCacheRefreshInterval(new Long(
-				TestConfiguration.cacheRefreshInterval));
+		sharepointClientContext.setCacheRefreshInterval(TestConfiguration.refreshInterval);
         return sharepointClientContext;
     }
 
@@ -641,6 +648,16 @@ public class TestConfiguration {
         connector.setIncluded_metadata(TestConfiguration.whiteList);
         connector.setExcluded_metadata(TestConfiguration.blackList);
         connector.setFQDNConversion(true);
+		connector.setPushAcls(true);
+		connector.setAppendNamespaceInSPGroup(true);
+		connector.setCacheRefreshInterval("7200");
+		connector.setInitialCacheSize("1000");
+		connector.setPortNumber("389");
+		connector.setLdapServerHostAddress("10.88.33.159");
+		connector.setAuthenticationType("simple");
+		connector.setConnectMethod("standard");
+		connector.setSearchBase("DC=gdc-psl,DC=net");
+		connector.setLdapConnectiionSettings(TestConfiguration.getLdapConnetionSettings());
         connector.init();
         return connector;
     }

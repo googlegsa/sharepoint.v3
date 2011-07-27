@@ -16,6 +16,7 @@
         <value>aliasMap</value>
         <value>authorization</value>
         <value>useSPSearchVisibility</value>
+        <value>feedUnPublishedDocuments</value>
         <!-- Push ACLs configuration -->
         <value>pushAcls</value>
         <value>appendNamespaceInSPGroup</value>
