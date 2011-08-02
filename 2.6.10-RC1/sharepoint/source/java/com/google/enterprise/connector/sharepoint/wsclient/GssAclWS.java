@@ -43,6 +43,7 @@ import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 import org.apache.axis.AxisFault;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -244,7 +245,7 @@ public class GssAclWS {
 
                     String[] deniedPermissions = permissions.getDeniedPermission();
                     if (null != deniedPermissions) {
-                        Set<RoleType> deniedRoleTypes = Util.getRoleTypesFor(deniedPermissions, objectType);
+                        Set<RoleType> deniedRoleTypes = Util.getRoleTypesFor(deniedPermissions, objectType, permissions.isLimitedAccessPermission());
                         if (null != deniedRoleTypes
                                 && deniedRoleTypes.size() > 0) {
                             // GSA does not support DENY permissions in the ACL.
@@ -263,7 +264,14 @@ public class GssAclWS {
                     }
 
                     final String principalName = getPrincipalName(principal);
-                    Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
+                    // Logging list of all permissions for a limited access
+                    // user.
+                    if (permissions.isLimitedAccessPermission()) {
+                        LOGGER.info("Permission list "
+                                + Arrays.asList(permissions.getAllowedPermissions())
+                                + " for the User " + principalName);
+                    }
+                    Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType, permissions.isLimitedAccessPermission());
                     if (PrincipalType.USER.equals(principal.getType())) {
                         userPermissionMap.put(principalName, allowedRoleTypes);
                     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
