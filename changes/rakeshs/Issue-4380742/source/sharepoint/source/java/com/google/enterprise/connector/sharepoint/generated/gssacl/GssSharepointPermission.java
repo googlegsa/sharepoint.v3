@@ -10,6 +10,8 @@ package com.google.enterprise.connector.sharepoint.generated.gssacl;
 public class GssSharepointPermission  implements java.io.Serializable {
     private java.lang.String[] allowedPermissions;
 
+    private boolean limitedAccessPermission;
+
     private java.lang.String[] deniedPermission;
 
     public GssSharepointPermission() {
@@ -17,15 +19,17 @@ public class GssSharepointPermission  implements java.io.Serializable {
 
     public GssSharepointPermission(
            java.lang.String[] allowedPermissions,
+           boolean limitedAccessPermission,
            java.lang.String[] deniedPermission) {
            this.allowedPermissions = allowedPermissions;
+           this.limitedAccessPermission = limitedAccessPermission;
            this.deniedPermission = deniedPermission;
     }
 
 
     /**
      * Gets the allowedPermissions value for this GssSharepointPermission.
-     *
+     * 
      * @return allowedPermissions
      */
     public java.lang.String[] getAllowedPermissions() {
@@ -35,7 +39,7 @@ public class GssSharepointPermission  implements java.io.Serializable {
 
     /**
      * Sets the allowedPermissions value for this GssSharepointPermission.
-     *
+     * 
      * @param allowedPermissions
      */
     public void setAllowedPermissions(java.lang.String[] allowedPermissions) {
@@ -44,8 +48,28 @@ public class GssSharepointPermission  implements java.io.Serializable {
 
 
     /**
+     * Gets the limitedAccessPermission value for this GssSharepointPermission.
+     * 
+     * @return limitedAccessPermission
+     */
+    public boolean isLimitedAccessPermission() {
+        return limitedAccessPermission;
+    }
+
+
+    /**
+     * Sets the limitedAccessPermission value for this GssSharepointPermission.
+     * 
+     * @param limitedAccessPermission
+     */
+    public void setLimitedAccessPermission(boolean limitedAccessPermission) {
+        this.limitedAccessPermission = limitedAccessPermission;
+    }
+
+
+    /**
      * Gets the deniedPermission value for this GssSharepointPermission.
-     *
+     * 
      * @return deniedPermission
      */
     public java.lang.String[] getDeniedPermission() {
@@ -55,7 +79,7 @@ public class GssSharepointPermission  implements java.io.Serializable {
 
     /**
      * Sets the deniedPermission value for this GssSharepointPermission.
-     *
+     * 
      * @param deniedPermission
      */
     public void setDeniedPermission(java.lang.String[] deniedPermission) {
@@ -73,11 +97,12 @@ public class GssSharepointPermission  implements java.io.Serializable {
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = true &&
-            ((this.allowedPermissions==null && other.getAllowedPermissions()==null) ||
+        _equals = true && 
+            ((this.allowedPermissions==null && other.getAllowedPermissions()==null) || 
              (this.allowedPermissions!=null &&
               java.util.Arrays.equals(this.allowedPermissions, other.getAllowedPermissions()))) &&
-            ((this.deniedPermission==null && other.getDeniedPermission()==null) ||
+            this.limitedAccessPermission == other.isLimitedAccessPermission() &&
+            ((this.deniedPermission==null && other.getDeniedPermission()==null) || 
              (this.deniedPermission!=null &&
               java.util.Arrays.equals(this.deniedPermission, other.getDeniedPermission())));
         __equalsCalc = null;
@@ -102,6 +127,7 @@ public class GssSharepointPermission  implements java.io.Serializable {
                 }
             }
         }
+        _hashCode += (isLimitedAccessPermission() ? Boolean.TRUE : Boolean.FALSE).hashCode();
         if (getDeniedPermission() != null) {
             for (int i=0;
                  i<java.lang.reflect.Array.getLength(getDeniedPermission());
@@ -132,6 +158,12 @@ public class GssSharepointPermission  implements java.io.Serializable {
         elemField.setItemQName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "string"));
         typeDesc.addFieldDesc(elemField);
         elemField = new org.apache.axis.description.ElementDesc();
+        elemField.setFieldName("limitedAccessPermission");
+        elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "LimitedAccessPermission"));
+        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "boolean"));
+        elemField.setNillable(false);
+        typeDesc.addFieldDesc(elemField);
+        elemField = new org.apache.axis.description.ElementDesc();
         elemField.setFieldName("deniedPermission");
         elemField.setXmlName(new javax.xml.namespace.QName("gssAcl.generated.sharepoint.connector.enterprise.google.com", "DeniedPermission"));
         elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
@@ -152,10 +184,10 @@ public class GssSharepointPermission  implements java.io.Serializable {
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -164,10 +196,10 @@ public class GssSharepointPermission  implements java.io.Serializable {
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }

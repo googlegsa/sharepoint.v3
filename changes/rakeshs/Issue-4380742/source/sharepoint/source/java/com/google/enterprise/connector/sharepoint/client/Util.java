@@ -1182,7 +1182,7 @@ public final class Util {
      * @return a list of {@link RoleType}
      */
     public static Set<RoleType> getRoleTypesFor(String[] permissions,
-            ObjectType objectType) {
+            ObjectType objectType, boolean isLimitedAccessPermission) {
         Set<RoleType> roleTypes = new HashSet<RoleType>();
         if (null == permissions || permissions.length == 0
                 || null == objectType) {
@@ -1234,7 +1234,11 @@ public final class Util {
                     additems = true;
                 }
                 if (SPBasePermissions.VIEWPAGES.equals(permission)) {
-                    roleTypes.add(RoleType.READER);
+                    // Add role type as reader for the user, if it is not a limited 
+                    // access permission.
+                    if (!isLimitedAccessPermission) {
+                        roleTypes.add(RoleType.READER);
+                    }
                 }
             }
             // Currently, only list and list-items are fed as documents. In

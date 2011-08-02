@@ -132,6 +132,9 @@ public class GssSharepointPermission
     // List of allowed permissions
     private List<string> allowedPermissions = new List<string>();
 
+    // Boolean variable to check Limited Access permission
+    private Boolean limitedAccessPermission;
+    
     // List denied permission
     private List<string> deniedPermission = new List<string>();
 
@@ -140,6 +143,13 @@ public class GssSharepointPermission
         get { return allowedPermissions; }
         set { allowedPermissions = value; }
     }
+
+    public Boolean LimitedAccessPermission
+    {
+        get { return limitedAccessPermission; }
+        set { limitedAccessPermission = value; }
+    }
+    
     public List<string> DeniedPermission
     {
         get { return deniedPermission; }
@@ -1175,9 +1185,8 @@ public sealed class GssAclUtility
 
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from a list of role assignments
-    /// An SPRoleAssignment with "Limited Access" permissions will not be added to the
-    /// aceMap dictionary i.e. the acls for such a group or user having limited access
-    /// permission on an entity (list or document library) will not be sent.
+    /// For the SPRoleAssignment with "Limited Access" permissions, the "LimitedAccessPermission" boolean
+    /// field's value will be set to true.
     /// </summary>
     /// <param name="roles"> list of role assignments </param>
     /// <param name="userAceMap"> ACE Map to be updated </param>
@@ -1187,34 +1196,47 @@ public sealed class GssAclUtility
         SPRoleDefinition limitedAccessRole = SPContext.Current.Web.RoleDefinitions["Limited Access"];
         foreach (SPRoleAssignment roleAssg in roles)
         {
-         /* 
-          * Check to see whether SPRoleAssignmentCollection consists of Limited Access 
-          * SPRoleAssignment entries or not.If there is no such entry, add to the ACE map. 
-          */
-            if (!roleAssg.RoleDefinitionBindings.Contains(limitedAccessRole))
+            GssPrincipal principal = GetGssPrincipalFromSPPrincipal(roleAssg.Member);
+            GssSharepointPermission permission = null;
+
+            if (null == principal)
             {
-                GssPrincipal principal = GetGssPrincipalFromSPPrincipal(roleAssg.Member);
-                GssSharepointPermission permission = null;
+                continue;
+            }
 
-                if (null == principal)
-                {
-                    continue;
-                }
+            if (aceMap.ContainsKey(principal))
+            {
+                permission = aceMap[principal];
 
-                if (aceMap.ContainsKey(principal))
+                /* 
+                * Check to see whether SPRoleAssignmentCollection consists of Limited Access 
+                * SPRoleAssignment entries or not.If there is such an entry, set value for 
+                * "LimitedAccessPermission" boolean field to true.
+                */
+                if (roleAssg.RoleDefinitionBindings.Contains(limitedAccessRole))
                 {
-                    permission = aceMap[principal];
-                }
-                else
-                {
-                    permission = new GssSharepointPermission();
-                    aceMap.Add(principal, permission);
-                }
+                    permission.LimitedAccessPermission = true;
+                }     
+            }
+            else
+            {
+                permission = new GssSharepointPermission();
 
-                foreach (SPRoleDefinition roledef in roleAssg.RoleDefinitionBindings)
+                /* 
+                * Check to see whether SPRoleAssignmentCollection consists of Limited Access 
+                * SPRoleAssignment entries or not.If there is such an entry, set value for 
+                * "LimitedAccessPermission" boolean field to true.
+                */
+                if (roleAssg.RoleDefinitionBindings.Contains(limitedAccessRole))
                 {
-                    permission.UpdatePermission(roledef.BasePermissions, SPBasePermissions.EmptyMask);
-                }
+                    permission.LimitedAccessPermission = true;
+                }     
+                aceMap.Add(principal, permission);
+            }
+
+            foreach (SPRoleDefinition roledef in roleAssg.RoleDefinitionBindings)
+            {
+                permission.UpdatePermission(roledef.BasePermissions, SPBasePermissions.EmptyMask);
             }
         }
     }

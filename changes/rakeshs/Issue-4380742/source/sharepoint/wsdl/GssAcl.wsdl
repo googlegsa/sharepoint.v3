@@ -97,6 +97,7 @@
       <s:complexType name="GssSharepointPermission">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="AllowedPermissions" type="tns:ArrayOfString" />
+          <s:element minOccurs="1" maxOccurs="1" name="LimitedAccessPermission" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="DeniedPermission" type="tns:ArrayOfString" />
         </s:sequence>
       </s:complexType>

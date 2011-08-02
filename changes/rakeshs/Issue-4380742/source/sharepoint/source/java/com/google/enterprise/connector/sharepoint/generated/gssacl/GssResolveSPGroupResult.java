@@ -28,7 +28,7 @@ public class GssResolveSPGroupResult  extends com.google.enterprise.connector.sh
 
     /**
      * Gets the prinicpals value for this GssResolveSPGroupResult.
-     *
+     * 
      * @return prinicpals
      */
     public com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] getPrinicpals() {
@@ -38,7 +38,7 @@ public class GssResolveSPGroupResult  extends com.google.enterprise.connector.sh
 
     /**
      * Sets the prinicpals value for this GssResolveSPGroupResult.
-     *
+     * 
      * @param prinicpals
      */
     public void setPrinicpals(com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal[] prinicpals) {
@@ -56,8 +56,8 @@ public class GssResolveSPGroupResult  extends com.google.enterprise.connector.sh
         }
         __equalsCalc = obj;
         boolean _equals;
-        _equals = super.equals(obj) &&
-            ((this.prinicpals==null && other.getPrinicpals()==null) ||
+        _equals = super.equals(obj) && 
+            ((this.prinicpals==null && other.getPrinicpals()==null) || 
              (this.prinicpals!=null &&
               java.util.Arrays.equals(this.prinicpals, other.getPrinicpals())));
         __equalsCalc = null;
@@ -113,10 +113,10 @@ public class GssResolveSPGroupResult  extends com.google.enterprise.connector.sh
      * Get Custom Serializer
      */
     public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanSerializer(
             _javaType, _xmlType, typeDesc);
     }
@@ -125,10 +125,10 @@ public class GssResolveSPGroupResult  extends com.google.enterprise.connector.sh
      * Get Custom Deserializer
      */
     public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType,
-           java.lang.Class _javaType,
+           java.lang.String mechType, 
+           java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
-        return
+        return 
           new  org.apache.axis.encoding.ser.BeanDeserializer(
             _javaType, _xmlType, typeDesc);
     }
