@@ -10,7 +10,7 @@ SharePoint is a Content Management System. With SharePoint, documents can be upl
 
 *GSBS*: Google Search Box for SharePoint
 
-== New Features in GSBS 2.6.8 ==
+== New Features in GSBS 2.6.8 or later==
 
 GSBS 2.6.8 supports following new features -
 
@@ -22,7 +22,13 @@ GSBS 2.6.8 supports following new features -
 
 Google Search Box for SharePoint 2.6.0 supported intranet search at an Enterprise level i.e. all the data indexed and matching the entered search query term is returned. This may at times be cumbersome if the user is intending to search only within a site/ list/ folder, and that the search results are plenty in number.
 
-The Google Search Box for SharePoint 2.6.8 supports context search i.e. user can search for documents within a site/ list/ folder matching the search query term, provided the SharePoint connector is configured in Metadata-URL feed mode. (feed mode essential is working with GSA 6.8, as the display and record urls are different in case of content feed mode. For scope search, the url of the site or list the user is currently browsing is extracted, which is of the form “http://sharepointsite:portnumber/”. In content feed mode, the record URL is of the form “googleconnector://”). The site, list and folder levels are termed as scopes. Scopes make it possible to narrow searches to particular locations/ entities.
+The Google Search Box for SharePoint 2.6.8 or later supports context search i.e. user can search for documents within a site/ list/ folder matching the search query term, provided the SharePoint connector is configured in Metadata-URL feed mode. (feed mode essentially works with GSA 6.8, as the display and record urls are different in case of content feed mode. For scope search, the url of the site or list the user is currently browsing is extracted, which is of the form “http://sharepointsite:portnumber/”. In content feed mode, the record URL is of the form “googleconnector://”), hence this feature will not be supported.The site, list and folder levels are termed as scopes. Scopes make it possible to narrow searches to particular locations/ entities.
+
+Note that for metadata and URL feed mode of the connector, following two conditions should be met in order for authorization to work with the Search box:
+
+1. The indexed SharePoint URLs should be Kerberized.
+
+2. You need to configure either Kerberos or SAML authentication along with SAML authorization on the GSA, as connector will not be doing authorization in the meta-URL feed mode.
 
 There are in all six scopes defined in Google Search Box for SharePoint 2.6.8  -
 
@@ -35,7 +41,7 @@ There are in all six scopes defined in Google Search Box for SharePoint 2.6.8  -
 
 === Enterprise Scope === 
 
-        Supports search at a global level i.e. all the search results, belonging to SharePoint or other content management systems, and indexed by the GSA will be returned matching the search query term.
+        Supports search at a global level i.e. all the search results, belonging to SharePoint or other content management systems, and indexed by the GSA will be returned matching the search query term. For SharePoint connector content feeds, users can still use the default "Enterprise" scope.
 
 === Current Site Scope ===
 
@@ -68,11 +74,17 @@ There are in all six scopes defined in Google Search Box for SharePoint 2.6.8  -
 
                 For facilitating user to select scope while searching, a scopes dropdown is provided alongwith Google search box for SharePoint. By default the scopes 'Enterprise', 'Current Site' and 'Current Site and all subsites' are displayed. As and when the user browses through the list/ folder, the remaining scopes get displayed. (For GSBS 2010, the scopes will be disabled at first, and on browsing through the list/ folder, respective scopes corresponding to list/ folder will be enabled).
                 The user can perform search only as per the current context selected i.e. as per the current scope that is browsed. By default, the search occurs at a site scope, hence scopes Enterprise, Current Site and Current Site and all subsites are displayed.     
+
+==Known Limitations==
+
+1.Context search works with only metadata and URL feeds in GSA.
+2.Context search for list item fails when the SharePoint site collection is created using the “/sites/” path.
+
        
 
 == Support for public search with Google Search Box for SharePoint ==
 
-            The Google Search Box for SharePoint 2.6.8 supports public search. Earlier version i.e. Google Search Box for SharePoint 2.6.0 had support for public and secure search. For facilitating public search with Google Search Box for SharePoint 2.6.8, a checkbox named 'Public Search' has been provided. User can change the checkbox status before performing a search with search box.
+            The Google Search Box for SharePoint 2.6.8 or later supports public search. Earlier version i.e. Google Search Box for SharePoint 2.6.0 had support for public and secure search. For facilitating public search with Google Search Box for SharePoint 2.6.8 or later, a checkbox named 'Public Search' has been provided. User can change the checkbox status before performing a search with search box.
 
              On checking the public search check-box, a public search is performed by the search box. On unchecking the public search checkbox, a public and secure search is performed by the search box.
 
