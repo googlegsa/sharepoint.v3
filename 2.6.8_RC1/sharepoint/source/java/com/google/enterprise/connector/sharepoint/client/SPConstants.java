@@ -73,6 +73,20 @@ public class SPConstants {
         }
     }
 
+    public static enum DocVersion {
+        APPROVED("0"), REJECTED("1"), DRAFT("3"), PENDING("2");
+        private String docVersion;
+
+        DocVersion(String docVersion) {
+            this.docVersion = docVersion;
+        }
+
+        @Override
+        public String toString() {
+            return docVersion;
+        }
+    }
+
     // used while forming URLs
     public static final String URL_SEP = "://";
     public static final String COLON = ":";
@@ -424,14 +438,14 @@ public class SPConstants {
     public static final String SYS_PROP_AUTH_USESUBJETCREDSONLY = "javax.security.auth.useSubjectCredsOnly";
     public static final String FALSE = "false";
     public static final String PERIOD = ".";
-	public static final String MODERATION_STATUS = "ows__ModerationStatus";
-	public static final String FEED_UNPUBLISHED_CONTENT = "feedUnPublishedDocuments";
-	public static final String FEED_UNPUBLISHED_CONTENT_LABEL = "feed_Un_Published_Documents";
-	public static final String UNCHECKED = "unchecked";
-	public static final String LABEL_FOR = "label for";
-	public static final String EQUAL_TO = "=";
-	public static final String FORWARD_SLASH = "/";
-	public static final String LABEL = "label";
+    public static final String MODERATION_STATUS = "ows__ModerationStatus";
+    public static final String FEED_UNPUBLISHED_CONTENT = "feedUnPublishedDocuments";
+    public static final String FEED_UNPUBLISHED_CONTENT_LABEL = "feed_Un_Published_Documents";
+    public static final String UNCHECKED = "unchecked";
+    public static final String LABEL_FOR = "label for";
+    public static final String EQUAL_TO = "=";
+    public static final String FORWARD_SLASH = "/";
+    public static final String LABEL = "label";
 
     public static class SPBasePermissions {
         public static final String EMPTYMASK = "EmptyMask";
