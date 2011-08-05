@@ -9,7 +9,7 @@ See the Issues Tab on the Code Site for the current list of known issues and wor
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
-Release 2.6.8 RC2, 27 July 2011
+Release 2.6.12 RC1 , 05 August 2011
 =======================================
 
 Introduction
@@ -25,12 +25,12 @@ This patch contains fix for the following issues
 
 Description:
 Introduced a new flag on the Connector configuration page to provide an selectable option to the Connector administrator
-to send add feeds for only published content and delete feeds for unpublished content from SharePoint site or send add 
+to send add feeds for only published content and delete feeds for unpublished content from SharePoint site or send add
 feeds for both published and unpublished content from SharePoint.
 
-By default Feed Unpublished content flag on the configuration UI is set to true means that SharePoint connector will 
+By default Feed Unpublished content flag on the configuration UI is set to true means that SharePoint connector will
 be able to send add feeds for both published and unpublished content in SharePoint site.If the flag Feed Unpublished
-content set to false means Connector is able to send add feeds for only published content on SharePoint site and 
+content set to false means Connector is able to send add feeds for only published content on SharePoint site and
 delete feeds for Unpublished content on SharePoint site.
 
 Version Compatibility

@@ -1486,17 +1486,25 @@ public class ListsWS {
                  */
                 if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
                     if (null != row.getAttribute(SPConstants.MODERATION_STATUS)) {
-                        int docVersion = Integer.parseInt(row.getAttribute(SPConstants.MODERATION_STATUS));
-                        if (docVersion != 0) {
+                        String docVersion = row.getAttribute(SPConstants.MODERATION_STATUS);
+                        if (!docVersion.equalsIgnoreCase(SPConstants.DocVersion.APPROVED.toString())) {
                             // Added unpublished documents to delete list if
                             // FeedUnPublishedDocuments set to false, so
                             // that connector send delete feeds for unpublished
                             // content in SharePoint to GSA.
-                            deletedIDs.add(docId);
-                            LOGGER.warning("Adding the list item or document ["
-                                    + row.getAttribute(SPConstants.FILEREF)
-                                    + "] to the deleted ID's list to send delete feeds for unpublished content in the list URL :"
-                                    + list.getListURL());
+                            if (!sharepointClientContext.isInitialTraversal()) {
+                                LOGGER.warning("Adding the list item or document ["
+                                        + row.getAttribute(SPConstants.FILEREF)
+                                        + "] to the deleted ID's list to send delete feeds for unpublished content in the list URL :"
+                                        + list.getListURL());
+                                deletedIDs.add(docId);
+                            } else {
+                                // Log unpublished content URLs to
+                                // exclude_urls#.txt file.
+                                sharepointClientContext.logExcludedURL(list.getListURL()
+                                        + "#"
+                                        + row.getAttribute(SPConstants.FILEREF));
+                            }
                         } else {
                             // Add only published documents to the list to send
                             // add feeds if FeedUnPublishedDocuments set to
@@ -1605,8 +1613,8 @@ public class ListsWS {
         // check for feedUnpublishedDocuments flag
         if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
             if (null != listItem.getAttribute(SPConstants.MODERATION_STATUS)) {
-                int docVersion = Integer.parseInt(listItem.getAttribute(SPConstants.MODERATION_STATUS));
-                if (docVersion != 0) {
+                String docVersion = listItem.getAttribute(SPConstants.MODERATION_STATUS);
+                if (!docVersion.equalsIgnoreCase(SPConstants.DocVersion.APPROVED.toString())) {
                     // ModerationStatus="0" for approved/ published list
                     // list item or document status
                     // ModerationStatus="1" for rejected list item or document

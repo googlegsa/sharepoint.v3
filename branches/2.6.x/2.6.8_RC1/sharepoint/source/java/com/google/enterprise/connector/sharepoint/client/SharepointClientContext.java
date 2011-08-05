@@ -85,7 +85,8 @@ public class SharepointClientContext implements Cloneable {
 
     boolean reWriteDisplayUrlUsingAliasMappingRules = true;
     boolean reWriteRecordUrlUsingAliasMappingRules;
-	private boolean feedUnPublishedDocuments;
+    private boolean feedUnPublishedDocuments;
+    private boolean initialTraversal;
 
     /**
      * For cloning
@@ -166,7 +167,8 @@ public class SharepointClientContext implements Cloneable {
 
             spCl.reWriteDisplayUrlUsingAliasMappingRules = reWriteDisplayUrlUsingAliasMappingRules;
             spCl.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
-			spCl.setFeedUnPublishedDocuments(feedUnPublishedDocuments);
+            spCl.setFeedUnPublishedDocuments(feedUnPublishedDocuments);
+            spCl.setInitialTraversal(initialTraversal);
             return spCl;
         } catch (final Throwable e) {
             LOGGER.log(Level.FINEST, "Unable to clone client context.", e);
@@ -961,12 +963,19 @@ public class SharepointClientContext implements Cloneable {
         this.reWriteRecordUrlUsingAliasMappingRules = reWriteRecordUrlUsingAliasMappingRules;
     }
 
-	public boolean isFeedUnPublishedDocuments() {
-		return feedUnPublishedDocuments;
-	}
+    public boolean isFeedUnPublishedDocuments() {
+        return feedUnPublishedDocuments;
+    }
 
     public void setFeedUnPublishedDocuments(boolean feedUnPublishedDocuments) {
-		this.feedUnPublishedDocuments = feedUnPublishedDocuments;
-	}
+        this.feedUnPublishedDocuments = feedUnPublishedDocuments;
+    }
 
+    public boolean isInitialTraversal() {
+        return initialTraversal;
+    }
+
+    public void setInitialTraversal(boolean initialTraversal) {
+        this.initialTraversal = initialTraversal;
+    }
 }
