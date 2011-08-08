@@ -43,6 +43,7 @@ import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 import org.apache.axis.AxisFault;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -263,6 +264,9 @@ public class GssAclWS {
                     }
 
                     final String principalName = getPrincipalName(principal);
+                    LOGGER.info("Permission list "
+                            + Arrays.asList(permissions.getAllowedPermissions())
+                            + " for the User " + principalName);
                     Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
                     if (PrincipalType.USER.equals(principal.getType())) {
                         userPermissionMap.put(principalName, allowedRoleTypes);
