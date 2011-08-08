@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <bean id="sharepoint-connector-defaults">
+    <property name="sharepointUrl" value="${sharepointUrl}"/>
+    <property name="kdcserver" value="${kdcserver}"/>
+    <property name="domain" value="${domain}"/>
+       <property name="username" value="${username}"/>
+       <property name="password" value="${password}"/>
+       <property name="googleConnectorWorkDir" value="${googleConnectorWorkDir}"/>
+       <property name="includedURls" value="${includedURls}"/>
+       <property name="excludedURls" value="${excludedURls}"/>
+       <property name="mySiteBaseURL" value="${mySiteBaseURL}"/>
+       <property name="aliasMap" value="${aliasMap}"/>
+     <property name="authorization" value="${authorization}"/>
+     <property name="useSPSearchVisibility" value="${useSPSearchVisibility}"/>
+
+     <property name="included_metadata">
+    <list>
+      <!-- If you want to index only specific metadata, put them here.
+        For example, putting the following entry will cause only Title to be sent to GSA. -->
+      <!-- <value>Title</value> -->
+    </list>
+    </property>
+
+   <property name="excluded_metadata">
+      <list>
+        <!-- Remove any of the following metadata entries if you want them to be indexed in GSA. -->
+      <value>.*cachedcustomprops$</value>
+      <value>.*parserversion$</value>
+      <value>.*cachedtitle$</value>
+      <value>.*ContentTypeId$</value>
+      <value>.*DocIcon$</value>
+      <value>.*cachedhastheme$</value>
+      <value>.*metatags$</value>
+      <value>.*charset$</value>
+      <value>.*cachedbodystyle$</value>
+      <value>.*cachedneedsrewrite$</value>
+    </list>
+    </property>
+
+    <property name="FQDNConversion"><value>false</value></property>
+
+
+    <property name="pushAcls"><value>true</value></property>
+    <property name="usernameFormatInAce"><value>username</value></property>
+    <property name="groupnameFormatInAce"><value>domain\groupname</value></property>
+    <property name="appendNamespaceInSPGroup"><value>true</value></property>
+
+     <!--
+      The following two properties define if the ACLs for documents need to
+      be fetched in batches and what should be the factor to determine an
+      appropriate batch size
+    -->
+    <!--
+      True indicates ACL for documents will be retrieved in batches. The
+      batchSize will be less than the batchHint. This is typically required
+      when the ACL per document is large, implying fetching ACL for
+      batchHint number of documents will result in a large WS response and
+      result in OutOfMemoryError
+    -->
+  <property name="fetchACLInBatches"><value>false</value></property>
+    <!--
+      The aclBatchSizeFactor is used to arrive at an appropriate batch size
+      value. The formula used is: n/batchSizeFactor where 'n' is the number
+      of documents discovered in each batch traversal. Value should be > 0
+    -->
+  <property name="aclBatchSizeFactor"><value>2</value></property>
+
+    <!-- Web service time out value. Value should be mentioned in milliseconds -->
+  <property name="webServiceTimeOut"><value>300000</value></property>
+
+    <property name="queryProvider" ref="queryProvider" />
+    <property name="userGroupMembershipRowMapper" ref="userGroupMembershipRowMapper" />
+    <property name="infoPathBaseTemplate">
+      <list>
+        <value>XMLForm</value>
+      </list>
+    </property>
+    <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property>
+    <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property>
+  </bean>
+
+    <bean id="queryProvider" class="com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider">
+      <constructor-arg value="com.google.enterprise.connector.sharepoint.sql.sqlQueries" />
+      <property name="udsTableName" value="User_Group_Memberships" />
+      <property name="udsIndexName" value="UDS_Index_SPUserId" />
+    </bean>
+
+    <bean id="userGroupMembershipRowMapper" class="com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper">
+      <property name="userID" value="SPUserId" />
+      <property name="userName" value="SPUserName" />
+      <property name="groupID" value="SPGroupId" />
+      <property name="groupName" value="SPGroupName" />
+      <property name="namespace" value="SPSite" />
+    </bean>
+
+
+  <bean id="propertyPlaceholderConfigurer"
+          class="com.google.enterprise.connector.instantiator.EncryptedPropertyPlaceholderConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="sharepointUrl"></prop>
+                <prop key="kdcserver"></prop>
+                <prop key="domain"></prop>
+                <prop key="username"></prop>
+                <prop key="password"></prop>
+                <prop key="googleConnectorWorkDir"></prop>
+                <prop key="includedURls"></prop>
+                <prop key="excludedURls"></prop>
+                <prop key="mySiteBaseURL"></prop>
+                <prop key="aliasMap"></prop>
+                <prop key="authorization">Metadata-and-URL</prop>
+                <prop key="useSPSearchVisibility">true</prop>
+            </props>
+        </property>
+    </bean>
+</beans>
