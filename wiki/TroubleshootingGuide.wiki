@@ -132,6 +132,7 @@ This section details some of the important log messages that are written into th
 || Getting child sites for web `[` siteCollectionURL `]` || Sub sites are being discovered for a given site collection || INFO ||
 || global state has been updated with newly intermediate webs || Connector has discovered new sites to be crawled and have been added to the connector's state information || INFO ||
 || Total MyLinks returned: `<# of MySite URLs>`|| The total # of MySites discovered by the connector from the MySite base URL provided with the connector configuration || INFO ||
+|| Connector completed a full crawl cycle traversing all the known site collections at time <TIMESTAMP> || Connector completed a full crawl cycle traversing all the known site collections in the farm at the indicated time. This is indicates end of the full crawl cycle. || INFO ||
 
      
 === Metadata-and-URL Feed Mode ===
