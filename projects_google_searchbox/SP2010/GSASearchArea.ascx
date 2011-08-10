@@ -126,7 +126,8 @@
             }
         }
     }
-    
+
+    SPSite site = null;
     string strScopeWeb = null;
     string strScopeList = null;
     string strWebSelected = null;
@@ -134,6 +135,7 @@
     string siteUrl = "";
     string listType = "";
     string listUrl = "";
+    string listParentWebUrl = "";
 
 
     // Display the Public Search checkbox only if the user has selected 'public ans secure' search while installing the search box.
@@ -165,7 +167,7 @@
     if (ctx != null)
     {
         // Retrieve the URL of the SharePoint site collection
-        SPSite site = ctx.Site;
+        site = ctx.Site;
         siteUrl = site.Url;
     }
         
@@ -221,8 +223,8 @@
     SPList list = SPContext.Current.List;
     if (list != null)
     {
-              
         listUrl = list.DefaultViewUrl.ToString();   // Retrieve list url
+        listParentWebUrl = list.ParentWeb.Url.ToString(); // Get the parent website for the list
         listType = list.GetType().ToString();       // Get type for the current list and accordingly construct the url
 
         switch (listType)
@@ -233,22 +235,32 @@
                 listUrl = listUrl.Remove(iStartIndex);
                 int iStartIndex1 = listUrl.LastIndexOf("/");
                 listUrl = listUrl.Remove(iStartIndex1);
+                listUrl = listUrl.Substring(listUrl.LastIndexOf("/"));
+                strScopeList = listParentWebUrl + listUrl; // Construct the url for current list browsed by the user
+                /*
+                 * For example, if the document library url is http://SharePointSiteURL:portnumber/sites/site1/doclib/Forms/AllItems.aspx, then 
+                 * listParentWebUrl will be "http://SharePointSiteURL:portnumber/sites/site1" and listUrl will be "/doclib". 
+                 */
                 break;
 
             case "Microsoft.SharePoint.SPList":
 
-                int iStartIndex2 = listUrl.LastIndexOf("/");
-                listUrl = listUrl.Remove(iStartIndex2);
+                listUrl = list.DefaultView.Url.Substring(0, list.DefaultView.Url.LastIndexOf("/"));// Remove the string "/AllItems.aspx" from the url
+                strScopeList = listParentWebUrl + "/" + listUrl; // Construct the url for current list browsed by the user
                 break;
         } // end switch-case statement
 
-        strScopeList = siteUrl + listUrl;
+        
         hfSelectedScope.Value = strScopeList;
         lstItem3.Value = strScopeList;
         
         if (this.Context.Request.QueryString["RootFolder"] != null)
         {
-            strScopeFolder = siteUrl + this.Context.Request.QueryString["RootFolder"].ToString(); // Retrieve the folder path
+            web = SPControl.GetContextWeb(Context); // Get the current SPWeb object
+            string rootFolder = this.Context.Request.QueryString["RootFolder"].ToString();
+            SPFolder folder = web.GetFolder(rootFolder); // Get folder located at the url represented by "rootFolder"    
+                 
+            strScopeFolder = listParentWebUrl + "/" + folder.Url; // Construct the url for current folder browsed by the user
             lstItem4.Value = strScopeFolder + forwardSlash;
             lstItem5.Value = strScopeFolder;
             hfSelectedScope.Value = strScopeFolder;
