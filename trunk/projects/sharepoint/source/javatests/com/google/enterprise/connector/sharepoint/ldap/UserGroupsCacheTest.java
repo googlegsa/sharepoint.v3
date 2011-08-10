@@ -51,9 +51,9 @@ public class UserGroupsCacheTest {
         long start = System.currentTimeMillis();
         ConcurrentHashMap<String, Set<String>> members = null;
         Set<String> membership;
-        int availableMemory = getAvailableMemory();
+        // int availableMemory = getAvailableMemory();
         try {
-            for (int i = 1; i <= availableMemory * 500; i++) {
+            for (int i = 1; i <= 500; i++) {
                 members = new ConcurrentHashMap<String, Set<String>>();
                 membership = new HashSet<String>();
                 for (int j = 0; j <= 2; j++) {
@@ -73,7 +73,7 @@ public class UserGroupsCacheTest {
         System.out.println("Adding took: " + end + "ms");
 
         start = System.currentTimeMillis();
-        for (int i = 1; i <= availableMemory * 500; i++) {
+        for (int i = 1; i <= 500; i++) {
             assertEquals(new Boolean(true), this.lugCacheStore.contains("searchuser"
                     + i));
         }
