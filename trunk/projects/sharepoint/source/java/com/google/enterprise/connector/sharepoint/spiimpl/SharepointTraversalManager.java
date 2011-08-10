@@ -104,6 +104,7 @@ public class SharepointTraversalManager implements TraversalManager,
             LOGGER.log(Level.INFO, "feedType updated. initiating a full recrawl. ");
             return startTraversal();
         } else {
+			sharepointClientContext.setInitialTraversal(false);
             return doTraversal();
         }
     }
@@ -133,6 +134,7 @@ public class SharepointTraversalManager implements TraversalManager,
         final String workDir = sharepointClientContext.getGoogleConnectorWorkDir();
         GlobalState.forgetState(workDir);
         sharepointClientContext.clearExcludedURLLogs();
+		sharepointClientContext.setInitialTraversal(true);
         globalState = new GlobalState(
                 sharepointClientContext.getGoogleConnectorWorkDir(),
                 sharepointClientContext.getFeedType());

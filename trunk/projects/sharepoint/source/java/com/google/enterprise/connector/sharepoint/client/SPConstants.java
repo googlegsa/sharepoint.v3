@@ -72,6 +72,20 @@ public class SPConstants {
         }
     }
 
+    public static enum DocVersion {
+		APPROVED("0"), REJECTED("1"), DRAFT("3"), PENDING("2");
+		private String docVersion;
+
+        DocVersion(String docVersion) {
+			this.docVersion = docVersion;
+		}
+
+        @Override
+		public String toString() {
+			return docVersion;
+        }
+    }
+
     // used while forming URLs
     public static final String URL_SEP = "://";
     public static final String COLON = ":";

@@ -101,6 +101,7 @@ public class SharepointClientContext implements Cloneable {
     private long cacheRefreshInterval;
     private LdapConnectionSettings ldapConnectionSettings;
 	private boolean feedUnPublishedDocuments;
+	private boolean initialTraversal;
 
     public boolean isFeedUnPublishedDocuments() {
 		return feedUnPublishedDocuments;
@@ -1119,5 +1120,13 @@ public class SharepointClientContext implements Cloneable {
     public void setCacheRefreshInterval(long cacheRefreshInterval) {
         this.cacheRefreshInterval = cacheRefreshInterval;
     }
+
+	public boolean isInitialTraversal() {
+		return initialTraversal;
+	}
+
+	public void setInitialTraversal(boolean initialTraversal) {
+		this.initialTraversal = initialTraversal;
+	}
 
 }

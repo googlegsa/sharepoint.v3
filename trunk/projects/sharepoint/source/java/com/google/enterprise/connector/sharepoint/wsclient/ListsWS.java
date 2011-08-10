@@ -661,17 +661,17 @@ public class ListsWS {
         }
 
         if(listItems.size() >= Integer.parseInt(rowLimit)) {
-          LOGGER.finer("At least rowlimit number of documents were found, so next page might exist, " 
+			LOGGER.finer("At least rowlimit number of documents were found, so next page might exist, "
             + " setting the next page value to non null. rowlimit = ["
             + rowLimit + "] listitemcount = [" + listItems.size() + "]");
           list.setNextPage("next page might exist so setting to - not null");
         }
         else {
-          LOGGER.finer("Less than rowlimit number of documents were found, so next page does not exist," 
+			LOGGER.finer("Less than rowlimit number of documents were found, so next page does not exist,"
             + " leaving next page value unchanged. rowlimit = ["
             + rowLimit + "] listitemcount = [" + listItems.size() + "]");
-        }        
-        
+		}
+
         Collections.sort(listItems);
         if (listItems.size() > 0) {
             LOGGER.info("found: " + listItems.size()
@@ -1504,17 +1504,19 @@ public class ListsWS {
 
 				if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
 					if (null != row.getAttribute(SPConstants.MODERATION_STATUS)) {
-						int docVersion = Integer.parseInt(row.getAttribute(SPConstants.MODERATION_STATUS));
-						if (docVersion != 0) {
+						String docVersion = row.getAttribute(SPConstants.MODERATION_STATUS);
+						if (docVersion != SPConstants.DocVersion.APPROVED.toString()) {
 							// Added unpublished documents to delete list if
 							// FeedUnPublishedDocuments set to false, so
 							// that connector send delete feeds for unpublished
 							// content in SharePoint to GSA.
-							deletedIDs.add(docId);
-							LOGGER.warning("Adding the list item or document ["
-									+ row.getAttribute(SPConstants.FILEREF)
-									+ "] to the deleted ID's list to send delete feeds for unpublished content in the list URL :"
-									+ list.getListURL());
+							if (!sharepointClientContext.isInitialTraversal()) {
+								LOGGER.warning("Adding the list item or document ["
+										+ row.getAttribute(SPConstants.FILEREF)
+										+ "] to the deleted ID's list to send delete feeds for unpublished content in the list URL :"
+										+ list.getListURL());
+								deletedIDs.add(docId);
+							}
 						} else {
 							// Add only published documents to the list to send
 							// add feeds if FeedUnPublishedDocuments set to
