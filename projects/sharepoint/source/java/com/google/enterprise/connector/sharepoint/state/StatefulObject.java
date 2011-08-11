@@ -15,7 +15,6 @@ package com.google.enterprise.connector.sharepoint.state;
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-
 /**
  * StatefulObject is an interface which is implemented by any object which
  * maintains the traversal state of a SharePoint object. ListState is the
@@ -30,34 +29,34 @@ package com.google.enterprise.connector.sharepoint.state;
  */
 public interface StatefulObject extends Comparable<StatefulObject> {
 
-    /**
-     * Getter for the primary key.
-     *
-     * @return primary key
-     */
-    String getPrimaryKey();
+  /**
+   * Getter for the primary key.
+   *
+   * @return primary key
+   */
+  String getPrimaryKey();
 
-    /**
-     * Setter for the primary key.
-     *
-     * @param newKey
-     */
-    void setPrimaryKey(String newKey);
+  /**
+   * Setter for the primary key.
+   *
+   * @param newKey
+   */
+  void setPrimaryKey(String newKey);
 
-    /**
-     * Get the "existing" state. This is intended for use in traversal, to be
-     * able to detect deleted lists from one WebServices call to another.
-     *
-     * @return existing state
-     */
-    boolean isExisting();
+  /**
+   * Get the "existing" state. This is intended for use in traversal, to be able
+   * to detect deleted lists from one WebServices call to another.
+   *
+   * @return existing state
+   */
+  boolean isExisting();
 
-    /**
-     * Set the "existing" state. This is intended for use in traversal, to be
-     * able to detect deleted lists from one WebServices call to another.
-     *
-     * @param existing
-     */
-    void setExisting(boolean existing);
+  /**
+   * Set the "existing" state. This is intended for use in traversal, to be able
+   * to detect deleted lists from one WebServices call to another.
+   *
+   * @param existing
+   */
+  void setExisting(boolean existing);
 
 }

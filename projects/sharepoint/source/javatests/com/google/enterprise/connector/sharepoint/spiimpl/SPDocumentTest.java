@@ -36,62 +36,60 @@ import junit.framework.TestCase;
 
 public class SPDocumentTest extends TestCase {
 
-    SPDocument doc;
+  SPDocument doc;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        SharepointClientContext spContext = TestConfiguration.initContext();
-        List<SPDocument> allDocs = TestConfiguration.initState(spContext).lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID).getCrawlQueue();
-        this.doc = allDocs.get(0);
-        this.doc.setSharepointClientContext(spContext);
-        this.doc.setContentDwnldURL(doc.getUrl());
-        try {
-            String str = UrlUtil.encode(doc.getUrl(), "UTF-8");
-            String charset = new GetMethod(str).getParams().getUriCharset();
-            URI uri = new URI(doc.getUrl(), true, charset);
-            System.out.println(str);
-            System.out.println(uri.toString());
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+  protected void setUp() throws Exception {
+    super.setUp();
+    SharepointClientContext spContext = TestConfiguration.initContext();
+    List<SPDocument> allDocs = TestConfiguration.initState(spContext).lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID).getCrawlQueue();
+    this.doc = allDocs.get(0);
+    this.doc.setSharepointClientContext(spContext);
+    this.doc.setContentDwnldURL(doc.getUrl());
+    try {
+      String str = UrlUtil.encode(doc.getUrl(), "UTF-8");
+      String charset = new GetMethod(str).getParams().getUriCharset();
+      URI uri = new URI(doc.getUrl(), true, charset);
+      System.out.println(str);
+      System.out.println(uri.toString());
+    } catch (Exception e) {
+      System.out.println(e);
     }
+  }
 
-    public void testCompare() {
-        final SPDocument tmpdoc1 = new SPDocument("1", "HTTP://MYCOMP.COM",
-                Calendar.getInstance(), SPConstants.NO_AUTHOR,
-                SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-                FeedType.CONTENT_FEED, SPType.SP2007);
-        final SPDocument tmpdoc2 = new SPDocument("2", "HTTP://MYCOMP.COM",
-                Calendar.getInstance(), SPConstants.NO_AUTHOR,
-                SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-                FeedType.CONTENT_FEED, SPType.SP2007);
-        final List<SPDocument> testSet = new ArrayList<SPDocument>();
-        testSet.add(tmpdoc1);
-        testSet.add(tmpdoc2);
-        Collections.sort(testSet);
-        System.out.println(testSet);
-    }
+  public void testCompare() {
+    final SPDocument tmpdoc1 = new SPDocument("1", "HTTP://MYCOMP.COM",
+        Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
+        SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED, SPType.SP2007);
+    final SPDocument tmpdoc2 = new SPDocument("2", "HTTP://MYCOMP.COM",
+        Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
+        SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED, SPType.SP2007);
+    final List<SPDocument> testSet = new ArrayList<SPDocument>();
+    testSet.add(tmpdoc1);
+    testSet.add(tmpdoc2);
+    Collections.sort(testSet);
+    System.out.println(testSet);
+  }
 
-    public final void testFindProperty() {
-        System.out.println("Testing findProperty()..");
-        try {
-            final Property prop = this.doc.findProperty(SpiConstants.PROPNAME_DOCID);
-            assertNotNull(prop);
-            System.out.println("[ findProperty(() ] Test passd");
-        } catch (final Exception e) {
-            System.out.println("[ findProperty(() ] Test failed");
-        }
+  public final void testFindProperty() {
+    System.out.println("Testing findProperty()..");
+    try {
+      final Property prop = this.doc.findProperty(SpiConstants.PROPNAME_DOCID);
+      assertNotNull(prop);
+      System.out.println("[ findProperty(() ] Test passd");
+    } catch (final Exception e) {
+      System.out.println("[ findProperty(() ] Test failed");
     }
+  }
 
-    public final void testDownloadContents() {
-        System.out.println("Testing downloadContents()..");
-        try {
-            final String responseCode = this.doc.downloadContents();
-            assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
-        } catch (final Exception e) {
-            assertTrue(false);
-        }
-        System.out.println("[ downloadContents(() ] Test passd");
+  public final void testDownloadContents() {
+    System.out.println("Testing downloadContents()..");
+    try {
+      final String responseCode = this.doc.downloadContents();
+      assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
+    } catch (final Exception e) {
+      assertTrue(false);
     }
+    System.out.println("[ downloadContents(() ] Test passd");
+  }
 
 }

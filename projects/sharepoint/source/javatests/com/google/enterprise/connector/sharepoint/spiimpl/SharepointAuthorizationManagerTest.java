@@ -25,77 +25,76 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import junit.framework.TestCase;
 
 public class SharepointAuthorizationManagerTest extends TestCase {
-    SharepointClientContext sharepointClientContext;
+  SharepointClientContext sharepointClientContext;
 
-    protected void setUp() throws Exception {
-        System.out.println("\n...Setting Up...");
-        System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username, TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType,
-                TestConfiguration.useSPSearchVisibility);
-        assertNotNull(this.sharepointClientContext);
-        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
-        System.out.println("Initializing SharepointAutho rizationManager ...");
+  protected void setUp() throws Exception {
+    System.out.println("\n...Setting Up...");
+    System.out.println("Initializing SharepointClientContext ...");
+    this.sharepointClientContext = new SharepointClientContext(
+        TestConfiguration.sharepointUrl, TestConfiguration.domain,
+        TestConfiguration.kdcserver, TestConfiguration.username,
+        TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.includedURls, TestConfiguration.excludedURls,
+        TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+        TestConfiguration.feedType, TestConfiguration.useSPSearchVisibility);
+    assertNotNull(this.sharepointClientContext);
+    sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+    sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+    System.out.println("Initializing SharepointAutho rizationManager ...");
+  }
+
+  public void testDocIdGrouping() throws SharepointException {
+    String[] allUrls = "http://mycomp.com/,http://mycomp.com/site1,http://mycomp.com/site2".split(",");
+    List<String> lstAllUrls = Arrays.asList(allUrls);
+    Set<String> siteCollUrls = new TreeSet<String>(lstAllUrls);
+    SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+        sharepointClientContext, siteCollUrls);
+
+    // Assure that
+    // 1. no URLs got skipped while grouping
+    // 2. the longer the URL, the early it comes in sequence
+    int countForAssert = 0;
+    for (Entry<String, Set<String>> webAppEntry : authMan.getWebappToSiteCollections().entrySet()) {
+      Set<String> sortedUrls = webAppEntry.getValue();
+      countForAssert += sortedUrls.size();
+
+      assertTrue(sortedUrls instanceof SortedSet<?>);
+      String prevUrl = ((SortedSet<String>) sortedUrls).first();
+      for (String currUrl : sortedUrls) {
+        assertTrue(prevUrl.length() >= currUrl.length());
+        prevUrl = currUrl;
+      }
     }
+    assertEquals(siteCollUrls.size(), countForAssert);
+  }
 
-    public void testDocIdGrouping() throws SharepointException {
-        String[] allUrls = "http://mycomp.com/,http://mycomp.com/site1,http://mycomp.com/site2".split(",");
-        List<String> lstAllUrls = Arrays.asList(allUrls);
-        Set<String> siteCollUrls = new TreeSet<String>(lstAllUrls);
-        SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
-                sharepointClientContext, siteCollUrls);
+  public void testAuthorizeDocids() throws Throwable {
+    SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+        this.sharepointClientContext, new GSSiteDiscoveryWS(
+            sharepointClientContext, null).getMatchingSiteCollections());
+    AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
+        TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
 
-        // Assure that
-        // 1. no URLs got skipped while grouping
-        // 2. the longer the URL, the early it comes in sequence
-        int countForAssert = 0;
-        for(Entry<String, Set<String>> webAppEntry : authMan.getWebappToSiteCollections().entrySet()) {
-            Set<String> sortedUrls = webAppEntry.getValue();
-            countForAssert += sortedUrls.size();
+    Set<String> docids = new HashSet<String>();
+    // docids.add(TestConfiguration.SearchDocID1);
+    // docids.add(TestConfiguration.SearchDocID2);
+    docids.add(TestConfiguration.SearchDocID3);
+    docids.add(TestConfiguration.SearchDocID4);
+    docids.add(TestConfiguration.SearchDocID113);
+    docids.add(TestConfiguration.SearchDocID114);
 
-            assertTrue(sortedUrls instanceof SortedSet<?>);
-            String prevUrl = ((SortedSet<String>) sortedUrls).first();
-            for (String currUrl : sortedUrls) {
-                assertTrue(prevUrl.length() >= currUrl.length());
-                prevUrl = currUrl;
-            }
-        }
-        assertEquals(siteCollUrls.size(), countForAssert);
+    final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
+    assertEquals(docids.size(), authZResponses.size());
+    for (AuthorizationResponse authZResponse : authZResponses) {
+      assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
     }
-
-    public void testAuthorizeDocids() throws Throwable {
-        SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
-                this.sharepointClientContext,
-                new GSSiteDiscoveryWS(sharepointClientContext, null).getMatchingSiteCollections());
-        AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
-                TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
-
-        Set<String> docids = new HashSet<String>();
-        // docids.add(TestConfiguration.SearchDocID1);
-        // docids.add(TestConfiguration.SearchDocID2);
-        docids.add(TestConfiguration.SearchDocID3);
-        docids.add(TestConfiguration.SearchDocID4);
-        docids.add(TestConfiguration.SearchDocID113);
-        docids.add(TestConfiguration.SearchDocID114);
-
-        final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
-        assertEquals(docids.size(), authZResponses.size());
-        for (AuthorizationResponse authZResponse : authZResponses) {
-            assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
-        }
-    }
+  }
 }

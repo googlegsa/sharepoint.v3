@@ -35,207 +35,207 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author nageswara_sura
  */
 public class UserGroupsCacheTest {
-    private UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> lugCacheStore;
+  private UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> lugCacheStore;
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-        this.lugCacheStore = new UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>>(
-                TestConfiguration.refreshInterval, getAvailableMemory() * 500);
-    }
+  /**
+   * @throws java.lang.Exception
+   */
+  @Before
+  public void setUp() throws Exception {
+    this.lugCacheStore = new UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>>(
+        TestConfiguration.refreshInterval, getAvailableMemory() * 500);
+  }
 
-    @Test
-    public void perf() throws InterruptedException {
-        long start = System.currentTimeMillis();
-        ConcurrentHashMap<String, Set<String>> members = null;
-        Set<String> membership;
-        // int availableMemory = getAvailableMemory();
-        try {
-            for (int i = 1; i <= 500; i++) {
-                members = new ConcurrentHashMap<String, Set<String>>();
-                membership = new HashSet<String>();
-                for (int j = 0; j <= 2; j++) {
-                    membership.add("group" + j);
-                }
-                members.put("type1", membership);
-                for (int j = 0; j <= 2; j++) {
-                    membership.add("group" + j);
-                }
-                members.put("type2", membership);
-                this.lugCacheStore.put("searchuser" + i, members);
-            }
-        } catch (Throwable t) {
-            t.printStackTrace();
+  @Test
+  public void perf() throws InterruptedException {
+    long start = System.currentTimeMillis();
+    ConcurrentHashMap<String, Set<String>> members = null;
+    Set<String> membership;
+    // int availableMemory = getAvailableMemory();
+    try {
+      for (int i = 1; i <= 500; i++) {
+        members = new ConcurrentHashMap<String, Set<String>>();
+        membership = new HashSet<String>();
+        for (int j = 0; j <= 2; j++) {
+          membership.add("group" + j);
         }
-        long end = System.currentTimeMillis() - start;
-        System.out.println("Adding took: " + end + "ms");
-
-        start = System.currentTimeMillis();
-        for (int i = 1; i <= 500; i++) {
-            assertEquals(new Boolean(true), this.lugCacheStore.contains("searchuser"
-                    + i));
+        members.put("type1", membership);
+        for (int j = 0; j <= 2; j++) {
+          membership.add("group" + j);
         }
+        members.put("type2", membership);
+        this.lugCacheStore.put("searchuser" + i, members);
+      }
+    } catch (Throwable t) {
+      t.printStackTrace();
+    }
+    long end = System.currentTimeMillis() - start;
+    System.out.println("Adding took: " + end + "ms");
 
-        end = System.currentTimeMillis() - start;
-        System.out.println("Getting took: " + end + "ms");
+    start = System.currentTimeMillis();
+    for (int i = 1; i <= 500; i++) {
+      assertEquals(new Boolean(true), this.lugCacheStore.contains("searchuser"
+          + i));
     }
 
-    private int getAvailableMemory() {
-        Runtime rt = Runtime.getRuntime();
-        // test for free amount of memory * 500 number of entries.
-        // it assumes that for a given 1 MB HEAP memory, the cache can group up
-        // to 500 memberships.
+    end = System.currentTimeMillis() - start;
+    System.out.println("Getting took: " + end + "ms");
+  }
 
-        long finalM = (rt.maxMemory() - (rt.totalMemory() - rt.freeMemory()));
-        int availableMemory = (int) ((finalM / 1024) / 1024);
-        System.out.println(availableMemory);
-        return availableMemory;
-    }
+  private int getAvailableMemory() {
+    Runtime rt = Runtime.getRuntime();
+    // test for free amount of memory * 500 number of entries.
+    // it assumes that for a given 1 MB HEAP memory, the cache can group up
+    // to 500 memberships.
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-        this.lugCacheStore.clearCache();
-    }
+    long finalM = (rt.maxMemory() - (rt.totalMemory() - rt.freeMemory()));
+    int availableMemory = (int) ((finalM / 1024) / 1024);
+    System.out.println(availableMemory);
+    return availableMemory;
+  }
 
-    /**
-     * Test method for
-     * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsCache#put(java.lang.Object, java.lang.Object)}
-     * .
-     */
-    @Test
-    public final void testPutAngGet() {
-        ConcurrentHashMap<String, Set<String>> members = null;
-        Set<String> membership;
-        for (int i = 1; i <= 10; i++) {
-            members = new ConcurrentHashMap<String, Set<String>>();
-            membership = new HashSet<String>();
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type1", membership);
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type2", membership);
-            this.lugCacheStore.put("searchuser" + i, members);
-        }
-		assertTrue(this.lugCacheStore.contains("searchuser1"));
-        assertNull(this.lugCacheStore.get(TestConfiguration.ldapuser6, ConcurrentHashMap.class));
-    }
+  /**
+   * @throws java.lang.Exception
+   */
+  @After
+  public void tearDown() throws Exception {
+    this.lugCacheStore.clearCache();
+  }
 
-    /**
-     * Test method for
-     * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsCache#contains(java.lang.Object)}
-     * .
-     */
-    @Test
-    public final void testContains() {
-        ConcurrentHashMap<String, Set<String>> members = null;
-        Set<String> membership;
-        for (int i = 1; i <= 10; i++) {
-            members = new ConcurrentHashMap<String, Set<String>>();
-            membership = new HashSet<String>();
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type1", membership);
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type2", membership);
-            this.lugCacheStore.put("searchuser" + i, members);
-        }
-		assertTrue(this.lugCacheStore.contains("searchuser1"));
-        assertFalse(this.lugCacheStore.contains(TestConfiguration.ldapuser));
+  /**
+   * Test method for
+   * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsCache#put(java.lang.Object, java.lang.Object)}
+   * .
+   */
+  @Test
+  public final void testPutAngGet() {
+    ConcurrentHashMap<String, Set<String>> members = null;
+    Set<String> membership;
+    for (int i = 1; i <= 10; i++) {
+      members = new ConcurrentHashMap<String, Set<String>>();
+      membership = new HashSet<String>();
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type1", membership);
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type2", membership);
+      this.lugCacheStore.put("searchuser" + i, members);
     }
+    assertTrue(this.lugCacheStore.contains("searchuser1"));
+    assertNull(this.lugCacheStore.get(TestConfiguration.ldapuser6, ConcurrentHashMap.class));
+  }
 
-    /**
-     * Test method for
-     * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsCache#clearCache()}
-     * .
-     */
-    @Test
-    public final void testClearCache() {
-        this.lugCacheStore.clearCache();
-        ConcurrentHashMap<String, Set<String>> members = null;
-        Set<String> membership;
-        for (int i = 1; i <= 10; i++) {
-            members = new ConcurrentHashMap<String, Set<String>>();
-            membership = new HashSet<String>();
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type1", membership);
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type2", membership);
-            this.lugCacheStore.put("searchuser" + i, members);
-        }
-        assertEquals(10, this.lugCacheStore.getSize());
-        this.lugCacheStore.clearCache();
-        assertEquals(0, this.lugCacheStore.getSize());
+  /**
+   * Test method for
+   * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsCache#contains(java.lang.Object)}
+   * .
+   */
+  @Test
+  public final void testContains() {
+    ConcurrentHashMap<String, Set<String>> members = null;
+    Set<String> membership;
+    for (int i = 1; i <= 10; i++) {
+      members = new ConcurrentHashMap<String, Set<String>>();
+      membership = new HashSet<String>();
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type1", membership);
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type2", membership);
+      this.lugCacheStore.put("searchuser" + i, members);
     }
+    assertTrue(this.lugCacheStore.contains("searchuser1"));
+    assertFalse(this.lugCacheStore.contains(TestConfiguration.ldapuser));
+  }
 
-    @Test
-    public void expire() throws InterruptedException {
-        ConcurrentHashMap<String, Set<String>> members = null;
-        Set<String> membership;
-        for (int i = 1; i <= 10; i++) {
-            members = new ConcurrentHashMap<String, Set<String>>();
-            membership = new HashSet<String>();
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type1", membership);
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type2", membership);
-            this.lugCacheStore.put("searchuser" + i, members);
-        }
-        assertEquals(new Boolean(true), this.lugCacheStore.contains("searchuser1"));
-		// wait until this object is expired. Commented the below line not wait
-		// so long time to get Cobertura reports.
-		// Thread.sleep(this.lugCacheStore.getExpire() * 1010);
-		this.lugCacheStore.clearCache();
-        assertNull(this.lugCacheStore.get("searchuser1", ConcurrentHashMap.class));
+  /**
+   * Test method for
+   * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsCache#clearCache()}
+   * .
+   */
+  @Test
+  public final void testClearCache() {
+    this.lugCacheStore.clearCache();
+    ConcurrentHashMap<String, Set<String>> members = null;
+    Set<String> membership;
+    for (int i = 1; i <= 10; i++) {
+      members = new ConcurrentHashMap<String, Set<String>>();
+      membership = new HashSet<String>();
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type1", membership);
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type2", membership);
+      this.lugCacheStore.put("searchuser" + i, members);
     }
+    assertEquals(10, this.lugCacheStore.getSize());
+    this.lugCacheStore.clearCache();
+    assertEquals(0, this.lugCacheStore.getSize());
+  }
 
-    /**
-     * Test method for
-     * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsCache#put(java.lang.Object, java.lang.Object)}
-     * .
-     *
-     * @throws InterruptedException
-     */
-    @Test
-    public final void testPutAndGetConcurrentHashMap()
-            throws InterruptedException {
-        ConcurrentHashMap<String, Set<String>> members;
-        Set<String> membership;
-        for (int i = 1; i <= 10; i++) {
-            members = new ConcurrentHashMap<String, Set<String>>();
-            membership = new HashSet<String>();
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type1", membership);
-            for (int j = 0; j <= 2; j++) {
-                membership.add("group" + j);
-            }
-            members.put("type2", membership);
-            this.lugCacheStore.put("searchuser" + i, members);
-        }
-		// wait until this object is expired. Commented the below line not wait
-		// so long time to get Cobertura reports.
-		// Thread.sleep(this.lugCacheStore.getExpire() * 1010);
-		this.lugCacheStore.clearCache();
-        assertNull(this.lugCacheStore.get("searchuser1", ConcurrentHashMap.class));
+  @Test
+  public void expire() throws InterruptedException {
+    ConcurrentHashMap<String, Set<String>> members = null;
+    Set<String> membership;
+    for (int i = 1; i <= 10; i++) {
+      members = new ConcurrentHashMap<String, Set<String>>();
+      membership = new HashSet<String>();
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type1", membership);
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type2", membership);
+      this.lugCacheStore.put("searchuser" + i, members);
     }
+    assertEquals(new Boolean(true), this.lugCacheStore.contains("searchuser1"));
+    // wait until this object is expired. Commented the below line not wait
+    // so long time to get Cobertura reports.
+    // Thread.sleep(this.lugCacheStore.getExpire() * 1010);
+    this.lugCacheStore.clearCache();
+    assertNull(this.lugCacheStore.get("searchuser1", ConcurrentHashMap.class));
+  }
+
+  /**
+   * Test method for
+   * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsCache#put(java.lang.Object, java.lang.Object)}
+   * .
+   *
+   * @throws InterruptedException
+   */
+  @Test
+  public final void testPutAndGetConcurrentHashMap()
+      throws InterruptedException {
+    ConcurrentHashMap<String, Set<String>> members;
+    Set<String> membership;
+    for (int i = 1; i <= 10; i++) {
+      members = new ConcurrentHashMap<String, Set<String>>();
+      membership = new HashSet<String>();
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type1", membership);
+      for (int j = 0; j <= 2; j++) {
+        membership.add("group" + j);
+      }
+      members.put("type2", membership);
+      this.lugCacheStore.put("searchuser" + i, members);
+    }
+    // wait until this object is expired. Commented the below line not wait
+    // so long time to get Cobertura reports.
+    // Thread.sleep(this.lugCacheStore.getExpire() * 1010);
+    this.lugCacheStore.clearCache();
+    assertNull(this.lugCacheStore.get("searchuser1", ConcurrentHashMap.class));
+  }
 }

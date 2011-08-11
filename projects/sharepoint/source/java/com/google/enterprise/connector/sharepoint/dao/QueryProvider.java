@@ -32,50 +32,50 @@ import java.util.List;
  */
 public interface QueryProvider {
 
-    /**
-     * Initializes the QueryProvider to serve SQL queries. ConnectorNames are
-     * used to ensure that that every connector possess its own schema. XXX
-     * Essence of this constraint may be re-thought in future.
-     *
-     * @param connectorName Connector that will be using this QueryProvider
-     * @param vendor specifies the vendor for which the queries will be provided
-     * @param attr specifies additional attributes that should be considered
-     *            along with vendor name while loading the queries
-     * @throws SharepointException
-     */
-    void init(String vendor, String... attr)
-            throws SharepointException;
+  /**
+   * Initializes the QueryProvider to serve SQL queries. ConnectorNames are used
+   * to ensure that that every connector possess its own schema. XXX Essence of
+   * this constraint may be re-thought in future.
+   *
+   * @param connectorName Connector that will be using this QueryProvider
+   * @param vendor specifies the vendor for which the queries will be provided
+   * @param attr specifies additional attributes that should be considered along
+   *          with vendor name while loading the queries
+   * @throws SharepointException
+   */
+  void init(String vendor, String... attr) throws SharepointException;
 
-    /**
-     * Returns the actual SQL query that can be executed
-     *
-     * @param key
-     * @return
-     */
-    String getSqlQuery(Query query);
+  /**
+   * Returns the actual SQL query that can be executed
+   *
+   * @param key
+   * @return
+   */
+  String getSqlQuery(Query query);
 
-    /**
-     * The database to be used
-     *
-     * @return
-     */
-    String getDatabase();
+  /**
+   * The database to be used
+   *
+   * @return
+   */
+  String getDatabase();
 
-    void setDatabase(String database);
-    /**
-     * Name of the table representing User Group Memberships
-     *
-     * @return
-     */
-    String getUdsTableName();
+  void setDatabase(String database);
 
-    /**
-     * Name of the index to be created in for user data store. Currently, there
-     * is only one such index.
-     *
-     * @return
-     */
-    String getUdsIndexName();
+  /**
+   * Name of the table representing User Group Memberships
+   *
+   * @return
+   */
+  String getUdsTableName();
+
+  /**
+   * Name of the index to be created in for user data store. Currently, there is
+   * only one such index.
+   *
+   * @return
+   */
+  String getUdsIndexName();
 }
 
 /**
@@ -94,67 +94,68 @@ public interface QueryProvider {
  * @author nitendra_thakur
  */
 enum Query {
-    UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES, UDS_SELECT_FOR_ADGROUPS("groups"),
+  UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES, UDS_SELECT_FOR_ADGROUPS(
+      "groups"),
 
-    UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"), UDS_SELECT_FOR_USERNAME(
-            "user_name"),
+  UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"), UDS_SELECT_FOR_USERNAME(
+      "user_name"),
 
-    UDS_SELECT_FOR_USERID_NAMESPACE("user_id", "namespace"), UDS_DELETE_FOR_USERID_NAMESPACE(
-            "user_id", "namespace"),
+  UDS_SELECT_FOR_USERID_NAMESPACE("user_id", "namespace"), UDS_DELETE_FOR_USERID_NAMESPACE(
+      "user_id", "namespace"),
 
-    UDS_SELECT_FOR_GROUPID_NAMESPACE("group_id", "namespace"), UDS_DELETE_FOR_GROUPID_NAMESPACE(
-            "group_id", "namespace"),
+  UDS_SELECT_FOR_GROUPID_NAMESPACE("group_id", "namespace"), UDS_DELETE_FOR_GROUPID_NAMESPACE(
+      "group_id", "namespace"),
 
-    UDS_SELECT_FOR_NAMESPACE("namespace"), UDS_DELETE_FOR_NAMESPACE("namespace");
+  UDS_SELECT_FOR_NAMESPACE("namespace"), UDS_DELETE_FOR_NAMESPACE("namespace");
 
-    String[] parameters;
+  String[] parameters;
 
-    Query(String... parameters) {
-        this.parameters = parameters;
+  Query(String... parameters) {
+    this.parameters = parameters;
+  }
+
+  /**
+   * Creates a name-value map to that can be used to execute the query
+   *
+   * @param values
+   * @return {@link MapSqlParameterSource}
+   */
+  public SqlParameterSource createParameter(Object... values) {
+    check(values);
+    MapSqlParameterSource namedParam = new MapSqlParameterSource();
+    int i = 0;
+    for (String placeholder : parameters) {
+      namedParam.addValue(placeholder, values[i++]);
     }
+    return namedParam;
+  }
 
-    /**
-     * Creates a name-value map to that can be used to execute the query
-     *
-     * @param values
-     * @return {@link MapSqlParameterSource}
-     */
-    public SqlParameterSource createParameter(Object... values) {
-        check(values);
-        MapSqlParameterSource namedParam = new MapSqlParameterSource();
-        int i = 0;
-        for (String placeholder : parameters) {
-            namedParam.addValue(placeholder, values[i++]);
-        }
-        return namedParam;
+  /**
+   * Checks if the no. of passed-in values is equal to the parameters that the
+   * query uses
+   */
+  private void check(Object... param) {
+    if (null == parameters && param.length == 0) {
+      return;
     }
+    if (param.length != parameters.length) {
+      throw new IllegalArgumentException("No. of expected parameters "
+          + parameters.length + " ] is not equal to the passed-in values "
+          + param.length);
+    }
+  }
 
-    /**
-     * Checks if the no. of passed-in values is equal to the parameters that the
-     * query uses
-     */
-    private void check(Object... param) {
-        if (null == parameters && param.length == 0) {
-            return;
-        }
-        if (param.length != parameters.length) {
-            throw new IllegalArgumentException("No. of expected parameters "
-                    + parameters.length
-                    + " ] is not equal to the passed-in values " + param.length);
-        }
+  /**
+   * Creates placeholder names that should be used while construction of the
+   * actual SQL query
+   *
+   * @return
+   */
+  public List<String> getParameterPlaceholders() {
+    List<String> placeholders = new LinkedList<String>();
+    for (String parameter : parameters) {
+      placeholders.add(":" + parameter);
     }
-
-    /**
-     * Creates placeholder names that should be used while construction of the
-     * actual SQL query
-     *
-     * @return
-     */
-    public List<String> getParameterPlaceholders() {
-        List<String> placeholders = new LinkedList<String>();
-        for (String parameter : parameters) {
-            placeholders.add(":" + parameter);
-        }
-        return placeholders;
-    }
+    return placeholders;
+  }
 }
