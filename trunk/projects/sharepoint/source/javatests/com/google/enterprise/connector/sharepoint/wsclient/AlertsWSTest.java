@@ -14,12 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-
-import junit.framework.TestCase;
-
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -27,46 +21,51 @@ import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+
+import junit.framework.TestCase;
+
 public class AlertsWSTest extends TestCase {
-    SharepointClientContext sharepointClientContext;
-    AlertsWS alertWS;
+  SharepointClientContext sharepointClientContext;
+  AlertsWS alertWS;
 
-    protected void setUp() throws Exception {
-        System.out.println("\n...Setting Up...");
-        System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = TestConfiguration.initContext();
+  protected void setUp() throws Exception {
+    System.out.println("\n...Setting Up...");
+    System.out.println("Initializing SharepointClientContext ...");
+    this.sharepointClientContext = TestConfiguration.initContext();
 
-        assertNotNull(this.sharepointClientContext);
-        System.out.println("Initializing AlertsWS ...");
-        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+    assertNotNull(this.sharepointClientContext);
+    System.out.println("Initializing AlertsWS ...");
+    sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+    sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-        this.alertWS = new AlertsWS(this.sharepointClientContext);
-    }
+    this.alertWS = new AlertsWS(this.sharepointClientContext);
+  }
 
-    public final void testAlertsWS() throws Throwable {
-        System.out.println("Testing AlertsWS(SharepointClientContext, siteName)...");
-        sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
-        this.alertWS = new AlertsWS(this.sharepointClientContext);
-        assertNotNull(this.alertWS);
-        System.out.println("[ AlertsWS(SharepointClientContext, siteName) ] Test Passed");
-    }
+  public final void testAlertsWS() throws Throwable {
+    System.out.println("Testing AlertsWS(SharepointClientContext, siteName)...");
+    sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
+    this.alertWS = new AlertsWS(this.sharepointClientContext);
+    assertNotNull(this.alertWS);
+    System.out.println("[ AlertsWS(SharepointClientContext, siteName) ] Test Passed");
+  }
 
-    public final void testAlerts() throws Throwable {
-        System.out.println("Testing getAlerts()...");
-        final String internalName = this.sharepointClientContext.getSiteURL();
-        final Calendar cLastMod = Calendar.getInstance();
-        cLastMod.setTime(new Date());
-        GlobalState gs = new GlobalState(
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.feedType);
-        WebState ws = gs.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
-        final ListState currentDummyAlertList = new ListState(internalName,
-                SPConstants.ALERTS_TYPE, SPConstants.ALERTS_TYPE, cLastMod,
-                SPConstants.ALERTS_TYPE, internalName, ws);
+  public final void testAlerts() throws Throwable {
+    System.out.println("Testing getAlerts()...");
+    final String internalName = this.sharepointClientContext.getSiteURL();
+    final Calendar cLastMod = Calendar.getInstance();
+    cLastMod.setTime(new Date());
+    GlobalState gs = new GlobalState(TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.feedType);
+    WebState ws = gs.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
+    final ListState currentDummyAlertList = new ListState(internalName,
+        SPConstants.ALERTS_TYPE, SPConstants.ALERTS_TYPE, cLastMod,
+        SPConstants.ALERTS_TYPE, internalName, ws);
 
-        final ArrayList lstAlerts = (ArrayList) this.alertWS.getAlerts(ws, currentDummyAlertList);
-        assertNotNull(lstAlerts);
-        System.out.println("[ getAlerts() ] Test Passed");
-    }
+    final ArrayList lstAlerts = (ArrayList) this.alertWS.getAlerts(ws, currentDummyAlertList);
+    assertNotNull(lstAlerts);
+    System.out.println("[ getAlerts() ] Test Passed");
+  }
 }

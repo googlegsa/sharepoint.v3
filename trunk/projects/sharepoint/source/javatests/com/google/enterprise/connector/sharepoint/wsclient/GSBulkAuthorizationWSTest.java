@@ -21,32 +21,32 @@ import junit.framework.TestCase;
 
 public class GSBulkAuthorizationWSTest extends TestCase {
 
-    SharepointClientContext sharepointClientContext;
-    GSBulkAuthorizationWS bulkAuth;
+  SharepointClientContext sharepointClientContext;
+  GSBulkAuthorizationWS bulkAuth;
 
-    protected void setUp() throws Exception {
-        System.out.println("\n...Setting Up...");
-        System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = TestConfiguration.initContext();
-        assertNotNull(this.sharepointClientContext);
-        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+  protected void setUp() throws Exception {
+    System.out.println("\n...Setting Up...");
+    System.out.println("Initializing SharepointClientContext ...");
+    this.sharepointClientContext = TestConfiguration.initContext();
+    assertNotNull(this.sharepointClientContext);
+    sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+    sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-        System.out.println("Initializing GSBulkAuthorizationWS ...");
-        this.bulkAuth = new GSBulkAuthorizationWS(this.sharepointClientContext);
-    }
+    System.out.println("Initializing GSBulkAuthorizationWS ...");
+    this.bulkAuth = new GSBulkAuthorizationWS(this.sharepointClientContext);
+  }
 
-    public final void testGSBulkAuthorizationWS() throws Throwable {
-        System.out.println("Testing GSBulkAuthorizationWS(SharepointClientContext, siteName)...");
-        sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
-        this.bulkAuth = new GSBulkAuthorizationWS(this.sharepointClientContext);
-        assertNotNull(this.bulkAuth);
-        System.out.println("[ GSBulkAuthorizationWS(SharepointClientContext, siteName) ] Test Passed");
-    }
+  public final void testGSBulkAuthorizationWS() throws Throwable {
+    System.out.println("Testing GSBulkAuthorizationWS(SharepointClientContext, siteName)...");
+    sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
+    this.bulkAuth = new GSBulkAuthorizationWS(this.sharepointClientContext);
+    assertNotNull(this.bulkAuth);
+    System.out.println("[ GSBulkAuthorizationWS(SharepointClientContext, siteName) ] Test Passed");
+  }
 
-    public void testCheckConnectivity() throws Throwable {
-        System.out.println("Testing checkConnectivity()...");
-        this.bulkAuth.checkConnectivity();
-        System.out.println("[ checkConnectivity() ] Test Conpleted.");
-    }
+  public void testCheckConnectivity() throws Throwable {
+    System.out.println("Testing checkConnectivity()...");
+    this.bulkAuth.checkConnectivity();
+    System.out.println("[ checkConnectivity() ] Test Conpleted.");
+  }
 }

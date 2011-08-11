@@ -18,41 +18,41 @@ import junit.framework.TestCase;
 
 public class AttributeTest extends TestCase {
 
-    Attribute attr;
+  Attribute attr;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        System.out.println("Creating new temporary attribute with name=Key and value=Value");
-        this.attr = new Attribute("Key", "value");
-    }
+  protected void setUp() throws Exception {
+    super.setUp();
+    System.out.println("Creating new temporary attribute with name=Key and value=Value");
+    this.attr = new Attribute("Key", "value");
+  }
 
-    public final void testHashCode() {
-        System.out.println("Testing hashCode()...");
-        System.out.println("Generated Has Code: " + this.attr.hashCode());
-        System.out.println("[ hashCode() ] Test Completed");
-    }
+  public final void testHashCode() {
+    System.out.println("Testing hashCode()...");
+    System.out.println("Generated Has Code: " + this.attr.hashCode());
+    System.out.println("[ hashCode() ] Test Completed");
+  }
 
-    public final void testGetName() {
-        System.out.println("Testing getName()...");
-        System.out.println("Attribute Name: " + this.attr.hashCode());
-        System.out.println("[ getName() ] Test Completed");
-    }
+  public final void testGetName() {
+    System.out.println("Testing getName()...");
+    System.out.println("Attribute Name: " + this.attr.hashCode());
+    System.out.println("[ getName() ] Test Completed");
+  }
 
-    public final void testGetValue() {
-        System.out.println("Testing getValue()...");
-        System.out.println("Attribute Value: " + this.attr.hashCode());
-        System.out.println("[ getValue() ] Test Completed");
-    }
+  public final void testGetValue() {
+    System.out.println("Testing getValue()...");
+    System.out.println("Attribute Value: " + this.attr.hashCode());
+    System.out.println("[ getValue() ] Test Completed");
+  }
 
-    public final void testEqualsObject() {
-        System.out.println("Testing equals()...");
-        System.out.println("Creating new temporary attribute with same key and value..");
-        final Attribute attr1 = new Attribute(this.attr.getName(),
-                this.attr.getValue());
-        System.out.println("Equality: " + this.attr.equals(attr1));
-        System.out.println("Creating new temporary attribute with different key and value..");
-        final Attribute attr2 = new Attribute("sdrg", "dfgedr");
-        System.out.println("Equality: " + this.attr.equals(attr2));
-        System.out.println("[ equals() ] Test Completed");
-    }
+  public final void testEqualsObject() {
+    System.out.println("Testing equals()...");
+    System.out.println("Creating new temporary attribute with same key and value..");
+    final Attribute attr1 = new Attribute(this.attr.getName(),
+        this.attr.getValue());
+    System.out.println("Equality: " + this.attr.equals(attr1));
+    System.out.println("Creating new temporary attribute with different key and value..");
+    final Attribute attr2 = new Attribute("sdrg", "dfgedr");
+    System.out.println("Equality: " + this.attr.equals(attr2));
+    System.out.println("[ equals() ] Test Completed");
+  }
 }

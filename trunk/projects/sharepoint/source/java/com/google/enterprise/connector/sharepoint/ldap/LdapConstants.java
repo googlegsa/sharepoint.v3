@@ -21,57 +21,57 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
  */
 public class LdapConstants {
 
-    public static final String COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
-    public static final Object PREFIX_FOR_PARENTS_GROUPS_FILTER = "(&(objectClass=group)(CN=";
-    public static final Object PREFIX_FOR_DIRECT_GROUPS_FILTER = "(&(objectClass=user)(sAMAccountName=";
-    public static final String RETURN_ATTRIBUTES_DIRECT_GROUPS_LIST = "memberOf";
+  public static final String COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
+  public static final Object PREFIX_FOR_PARENTS_GROUPS_FILTER = "(&(objectClass=group)(CN=";
+  public static final Object PREFIX_FOR_DIRECT_GROUPS_FILTER = "(&(objectClass=user)(sAMAccountName=";
+  public static final String RETURN_ATTRIBUTES_DIRECT_GROUPS_LIST = "memberOf";
 
-    public static final int DEFAULT_PORT = 389;
+  public static final int DEFAULT_PORT = 389;
 
-    public enum Method {
-        STANDARD, SSL;
-        static Method getDefault() {
-            return STANDARD;
-        }
-
-        public String toString() {
-            if (this.equals(STANDARD)) {
-                return SPConstants.CONNECT_METHOD_STANDARD;
-            } else {
-                return SPConstants.CONNECT_METHOD_SSL;
-            }
-        }
+  public enum Method {
+    STANDARD, SSL;
+    static Method getDefault() {
+      return STANDARD;
     }
 
-    // Specifies the authentication mechanism to use while connecting to LDAp
-    // directory server. When the initial context is created, the underlying
-    // LDAP service provider extracts the authentication information from these
-    // environment properties and uses the LDAP "bind" operation to pass them to
-    // the server
-    public enum AuthType {
-        ANONYMOUS, SIMPLE;
-        static AuthType getDefault() {
-            return ANONYMOUS;
-        }
+    public String toString() {
+      if (this.equals(STANDARD)) {
+        return SPConstants.CONNECT_METHOD_STANDARD;
+      } else {
+        return SPConstants.CONNECT_METHOD_SSL;
+      }
+    }
+  }
 
-        public String toString() {
-            if (this.equals(ANONYMOUS)) {
-                return SPConstants.AUTHENTICATION_TYPE_ANONYMOUS;
-            } else {
-                return SPConstants.AUTHENTICATION_TYPE_SIMPLE;
-            }
-        }
+  // Specifies the authentication mechanism to use while connecting to LDAp
+  // directory server. When the initial context is created, the underlying
+  // LDAP service provider extracts the authentication information from these
+  // environment properties and uses the LDAP "bind" operation to pass them to
+  // the server
+  public enum AuthType {
+    ANONYMOUS, SIMPLE;
+    static AuthType getDefault() {
+      return ANONYMOUS;
     }
 
-    public enum ServerType {
-        ACTIVE_DIRECTORY, DOMINO, OPENLDAP, GENERIC;
-        static ServerType getDefault() {
-            return ACTIVE_DIRECTORY;
-        }
+    public String toString() {
+      if (this.equals(ANONYMOUS)) {
+        return SPConstants.AUTHENTICATION_TYPE_ANONYMOUS;
+      } else {
+        return SPConstants.AUTHENTICATION_TYPE_SIMPLE;
+      }
     }
+  }
 
-    public enum LdapConnectionError {
-        AuthenticationNotSupportedException, NamingException, AuthenticationFailedException, CommunicationException;
+  public enum ServerType {
+    ACTIVE_DIRECTORY, DOMINO, OPENLDAP, GENERIC;
+    static ServerType getDefault() {
+      return ACTIVE_DIRECTORY;
     }
+  }
+
+  public enum LdapConnectionError {
+    AuthenticationNotSupportedException, NamingException, AuthenticationFailedException, CommunicationException;
+  }
 
 }

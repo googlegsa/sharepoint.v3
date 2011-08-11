@@ -20,51 +20,51 @@ package com.google.enterprise.connector.sharepoint.state;
  * @author nitendra_thakur
  */
 public final class Folder implements Comparable<Folder> {
-    private final String path;
-    private final String id;
-    private final int intId;
+  private final String path;
+  private final String id;
+  private final int intId;
 
-    public Folder(String path, String id) {
-        if (null == id || null == path) {
-            throw new NullPointerException("Folder path/Id cannot be null! ");
-        }
-        intId = Integer.parseInt(id);
-        this.path = path;
-        this.id = id;
+  public Folder(String path, String id) {
+    if (null == id || null == path) {
+      throw new NullPointerException("Folder path/Id cannot be null! ");
     }
+    intId = Integer.parseInt(id);
+    this.path = path;
+    this.id = id;
+  }
 
-    public String getPath() {
-        return path;
-    }
+  public String getPath() {
+    return path;
+  }
 
-    public String getId() {
-        return id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public int getIntId() {
-        return intId;
-    }
+  public int getIntId() {
+    return intId;
+  }
 
-    public int compareTo(Folder folder) {
-        return getIntId() - folder.getIntId();
-    }
+  public int compareTo(Folder folder) {
+    return getIntId() - folder.getIntId();
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof Folder)) {
-            return false;
-        }
-        Folder folder = (Folder) obj;
-        return getIntId() == folder.getIntId();
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Folder)) {
+      return false;
     }
+    Folder folder = (Folder) obj;
+    return getIntId() == folder.getIntId();
+  }
 
-    @Override
-    public int hashCode() {
-        return 13 * intId;
-    }
+  @Override
+  public int hashCode() {
+    return 13 * intId;
+  }
 
-    @Override
-    public String toString() {
-        return "Path [ " + path + " ], Id [ " + id + " ] ";
-    }
+  @Override
+  public String toString() {
+    return "Path [ " + path + " ], Id [ " + id + " ] ";
+  }
 }

@@ -26,37 +26,37 @@ import java.sql.SQLException;
  * @author nitendra_thakur
  */
 public final class UserGroupMembershipRowMapper implements
-        ParameterizedRowMapper<UserGroupMembership> {
-    private String userID;
-    private String userName;
-    private String groupID;
-    private String groupName;
-    private String namespace;
+    ParameterizedRowMapper<UserGroupMembership> {
+  private String userID;
+  private String userName;
+  private String groupID;
+  private String groupName;
+  private String namespace;
 
-    public UserGroupMembership mapRow(ResultSet result, int rowNum)
-            throws SQLException {
-        return new UserGroupMembership(result.getInt(userID),
-                result.getString(userName), result.getInt(groupID),
-                result.getString(groupName), result.getString(namespace));
-    }
+  public UserGroupMembership mapRow(ResultSet result, int rowNum)
+      throws SQLException {
+    return new UserGroupMembership(result.getInt(userID),
+        result.getString(userName), result.getInt(groupID),
+        result.getString(groupName), result.getString(namespace));
+  }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
-    }
+  public void setUserID(String userID) {
+    this.userID = userID;
+  }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
 
-    public void setGroupID(String groupID) {
-        this.groupID = groupID;
-    }
+  public void setGroupID(String groupID) {
+    this.groupID = groupID;
+  }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
+  public void setGroupName(String groupName) {
+    this.groupName = groupName;
+  }
 
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
 }

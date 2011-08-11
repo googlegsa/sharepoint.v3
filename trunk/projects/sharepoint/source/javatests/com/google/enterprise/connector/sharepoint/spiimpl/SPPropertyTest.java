@@ -14,36 +14,35 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import junit.framework.TestCase;
-
-import com.google.enterprise.connector.sharepoint.spiimpl.SPProperty;
 import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spiimpl.StringValue;
 
+import junit.framework.TestCase;
+
 public class SPPropertyTest extends TestCase {
 
-    SPProperty prop;
+  SPProperty prop;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        this.prop = new SPProperty("prop1", new StringValue("Value"));
-    }
+  protected void setUp() throws Exception {
+    super.setUp();
+    this.prop = new SPProperty("prop1", new StringValue("Value"));
+  }
 
-    public final void testNextValue() {
-        System.out.println("Testing nextValue()..");
-        try {
-            final Value val = this.prop.nextValue();
-            assertNotNull(val);
-            System.out.println("[ nextValue() ] Test Passed.");
-        } catch (final Exception e) {
-            System.out.println("[ nextValue() ] Test Failed.");
-        }
+  public final void testNextValue() {
+    System.out.println("Testing nextValue()..");
+    try {
+      final Value val = this.prop.nextValue();
+      assertNotNull(val);
+      System.out.println("[ nextValue() ] Test Passed.");
+    } catch (final Exception e) {
+      System.out.println("[ nextValue() ] Test Failed.");
     }
+  }
 
-    public final void testGetName() {
-        System.out.println("Testing nextValue()..");
-        final String propName = this.prop.getName();
-        assertNotNull(propName);
-        System.out.println("[ nextValue() ] Test Passed.");
-    }
+  public final void testGetName() {
+    System.out.println("Testing nextValue()..");
+    final String propName = this.prop.getName();
+    assertNotNull(propName);
+    System.out.println("[ nextValue() ] Test Passed.");
+  }
 }

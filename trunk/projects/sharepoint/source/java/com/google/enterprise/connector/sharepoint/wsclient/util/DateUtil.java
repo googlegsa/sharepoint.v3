@@ -26,9 +26,8 @@ import java.util.TimeZone;
  * All conversions are restricted to GMT as per SharePoint web-service
  * specifications. The date management here governs important state management
  * and change detection for WSS 2.0 and SPS 2003.
- * 
+ *
  * @author darshanj@google.com (Darshan Jawalebhoi)
- * 
  */
 public class DateUtil {
   // The date management here governs important state management and change
@@ -66,12 +65,13 @@ public class DateUtil {
 
   /**
    * Converts the given calendar date to its equivalent ISo 8601 string in GMT
-   * 
+   *
    * @param c The calendar value to be converted to ISO 8601 format
    * @param accuracy The accuracy at which the date is to be trimmed
    * @return a String in ISO-8601 format - always in GMT zone
    */
-  public static synchronized String calendarToIso8601(Calendar c, Iso8601DateAccuracy accuracy) {
+  public static synchronized String calendarToIso8601(Calendar c,
+      Iso8601DateAccuracy accuracy) {
     Date d = c.getTime();
     String isoString;
     if (accuracy.equals(Iso8601DateAccuracy.MILLIS)) {
@@ -86,7 +86,8 @@ public class DateUtil {
     return isoString;
   }
 
-  private static synchronized Date iso8601ToDate(String s) throws ParseException {
+  private static synchronized Date iso8601ToDate(String s)
+      throws ParseException {
     Date d = null;
     try {
       d = ISO8601_DATE_FORMAT_MILLIS.parse(s);
@@ -107,12 +108,13 @@ public class DateUtil {
   /**
    * Parses a String in ISO-8601 format (GMT zone) and returns an equivalent
    * java.util.Calendar object.
-   * 
+   *
    * @param s
    * @return a Calendar object
    * @throws ParseException if the the String can not be parsed
    */
-  public static synchronized Calendar iso8601ToCalendar(String s) throws ParseException {
+  public static synchronized Calendar iso8601ToCalendar(String s)
+      throws ParseException {
     Date d = iso8601ToDate(s);
     Calendar c = Calendar.getInstance(TIME_ZONE_GMT);
     c.setTime(d);

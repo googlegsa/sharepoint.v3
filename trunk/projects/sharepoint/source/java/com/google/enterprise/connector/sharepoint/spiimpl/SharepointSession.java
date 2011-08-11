@@ -34,63 +34,61 @@ import java.util.logging.Logger;
  */
 public class SharepointSession implements Session {
 
-    private SharepointConnector connector = null;
-    private SharepointClientContext sharepointClientContext = null;
-    private final Logger LOGGER = Logger.getLogger(SharepointSession.class.getName());
+  private SharepointConnector connector = null;
+  private SharepointClientContext sharepointClientContext = null;
+  private final Logger LOGGER = Logger.getLogger(SharepointSession.class.getName());
 
-    /**
-     * @param inConnector
-     * @param inSharepointClientContext
+  /**
+   * @param inConnector
+   * @param inSharepointClientContext
+   */
+  public SharepointSession(final SharepointConnector inConnector,
+      final SharepointClientContext inSharepointClientContext) {
+    /*
+     * throws RepositoryException
      */
-    public SharepointSession(final SharepointConnector inConnector,
-            final SharepointClientContext inSharepointClientContext)/*
-                                                                     * throws
-                                                                     * RepositoryException
-                                                                     */{
-        if (inConnector != null) {
-            connector = inConnector;
-        }
-
-        if (inSharepointClientContext != null) {
-            sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
-        }
-        LOGGER.info("SharepointSession(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext)");
+    if (inConnector != null) {
+      connector = inConnector;
     }
 
-    /**
-     * For getting the Authentication Manager using the current connector
-     * context
-     */
-    public AuthenticationManager getAuthenticationManager()
-            throws RepositoryException {
-        LOGGER.info("getAuthenticationManager()");
-        if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
-            return null;
-        }
-        return new SharepointAuthenticationManager(sharepointClientContext);
+    if (inSharepointClientContext != null) {
+      sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
     }
+    LOGGER.info("SharepointSession(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext)");
+  }
 
-    /**
-     * For getting the Authorization manager form the current connector context
-     */
-    public AuthorizationManager getAuthorizationManager()
-            throws RepositoryException {
-        LOGGER.info("getAuthorizationManager()");
-        if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
-            return null;
-        }
-        return new SharepointAuthorizationManager(
-                sharepointClientContext,
-                new GSSiteDiscoveryWS(sharepointClientContext, null).getMatchingSiteCollections());
+  /**
+   * For getting the Authentication Manager using the current connector context
+   */
+  public AuthenticationManager getAuthenticationManager()
+      throws RepositoryException {
+    LOGGER.info("getAuthenticationManager()");
+    if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
+      return null;
     }
+    return new SharepointAuthenticationManager(sharepointClientContext);
+  }
 
-    /**
-     * For getting the Traversal manager form the current connector context
-     */
-    public TraversalManager getTraversalManager() throws RepositoryException {
-        LOGGER.info("getTraversalManager()");
-        return new SharepointTraversalManager(connector,
-                sharepointClientContext);
+  /**
+   * For getting the Authorization manager form the current connector context
+   */
+  public AuthorizationManager getAuthorizationManager()
+      throws RepositoryException {
+    LOGGER.info("getAuthorizationManager()");
+    if (FeedType.METADATA_URL_FEED == sharepointClientContext.getFeedType()) {
+      return null;
     }
+    return new SharepointAuthorizationManager(
+        sharepointClientContext,
+        new GSSiteDiscoveryWS(sharepointClientContext, null).getMatchingSiteCollections());
+  }
+
+  /**
+   * For getting the Traversal manager form the current connector context
+   */
+  public TraversalManager getTraversalManager() throws RepositoryException {
+    LOGGER.info("getTraversalManager()");
+    return new SharepointTraversalManager(connector, sharepointClientContext);
+  }
 
 }
