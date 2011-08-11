@@ -214,10 +214,11 @@
 
     <target name="run_tests" depends="compile_tests,instrument">
       <property name="test.suite" value="*" />
-      <junit haltonfailure="yes">
+      <junit haltonfailure="no" printsummary="yes">
             <!-- The instrumented classes reference classes used by the Cobertura runtime, so
             Cobertura and its dependencies must be on your classpath. -->
             <classpath location="${instrumented.dir}" />
+            <classpath location="${classes.dir}" />
             <classpath refid="cobertura.classpath" />
             <classpath>
                 <pathelement location="${spi.jar.dir}/connector.jar" />
@@ -225,6 +226,7 @@
                 <pathelement location="${tests.jarfile}" />
                 <pathelement location="${spi.jar.dir}/connector-util.jar" />
                 <pathelement location="${jarfile}" />
+                <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
                 <pathelement location="${config}" />
                 <fileset dir="${lib.jar.dir}">
                     <include name="**/*.jar" />
@@ -238,13 +240,6 @@
             <test name="${testcase}" todir="${reports.xml.dir}" if="testcase" />
             <batchtest todir="${reports.xml.dir}" unless="testcase">
                 <fileset dir="${test.dir}">
-                    <include name="**/${test.suite}Test.java" />
-                </fileset>
-            </batchtest>
-
-            <formatter type="xml" />
-            <batchtest fork="yes" todir="${tests.todir}">
-                <fileset dir="${tests.src}">
                     <include name="**/${test.suite}Test.java" />
                 </fileset>
             </batchtest>
@@ -416,10 +411,22 @@
             containing a reference to log4j, for the purposes of coverage reporting. -->
             <ignore regex="org.apache.log4j.*" />
             <fileset dir="${classes.dir}">
-                <!-- Instrument all the application classes, but don't instrument the test classes. -->
-                <include name="**/*.class" />
-                <exclude name="**/*Test.class" />
+             <!-- Instrument all the application classes, but don't instrument the test classes. -->
+             <!-- Instrument all the classes except the generated web services classes -->
+            <include name="com/google/enterprise/connector/sharepoint/*.class" />
+            <include name="com/google/enterprise/connector/sharepoint/cache/*.class" />
+            <include name="com/google/enterprise/connector/sharepoint/client/*.class" />
+            <include name="com/google/enterprise/connector/sharepoint/dao/*.class" />
+            <include name="com/google/enterprise/connector/sharepoint/ldap/*.class" />
+            <include name="com/google/enterprise/connector/sharepoint/spiimpl/*.class" />
+            <include name="com/google/enterprise/connector/sharepoint/state/*.class" />
+            <include name="com/google/enterprise/connector/sharepoint/wsclient/**/*.class" />
+            <exclude name="com/google/enterprise/connector/sharepoint/generated/*.class" />
+            <exclude name="**/*Test.class" />
             </fileset>
+           <fileset dir="${classes.dir}/org/apache/commons/httpclient/contrib/ssl">
+             <include name="**/*.class"/>
+           </fileset>
         </cobertura-instrument>
     </target>
 
