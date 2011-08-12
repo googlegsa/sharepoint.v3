@@ -108,9 +108,6 @@ Refer connector-manager wiki page http://code.google.com/p/google-enterprise-con
 
 Note: The External database used for configuring User Data Store must support UTF-8 characters if the user/group names use UTF-8 characters.
 
-5. Replace $CATALINA_HOME/webapps/connector-manager/WEB-INF/connectors/sharepoint-connector/$CONNECTOR_INSTANCE$/connectorInstance.xml with
-the new connectorInstance.xml provided with the build. If you had updated some properties in your older connectorInstance.xml, you'll have to
-update them explicitly in the new connectorInstance.xml.
 6. Start the SharePoint Connector Service.
 
 Note: If you have deployed Google Services on the SharePoint server, you need to upgrade them to 2.8.0 version. Next section gives the complete manual upgrade instructions for Google services for SharePoint.
