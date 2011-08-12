@@ -60,6 +60,10 @@ This section describes some commonly encountered error messages and their likely
  * *Domain has been specified twice under Domain/Username. Please provide the credentials in right format.*
  This message appears when domain has been specified twice under domain field as well as in the username. You should always enter domain as domain and username as username; i.e, for a user dom\user or user@dom username is user and domain is dom.
 
+ * *Cannot connect to the Google Services for SharePoint on the given Crawl URL with the supplied Domain/Username/Password.Reason:; nested exception is: java.net.UnknownHostException: <Your SharePoint Host>*
+
+This message appears when the SharePoint Host is not reachable from the connector host. Work-around for this is to add host entry for the SharePoint machine in your connector host. In case of on-board connector, you need to add the host entry under Administration -> DNS Override section of the Admin console.
+
 
  * *Web service gets a SAXParseException due to an invalid XML character in the web service response*
  This is a known issue, see: .[http://code.google.com/p/google-enterprise-connector-sharepoint/issues/detail?id=50] The SharePoint web-service call fails with error `org.xml.sax.SAXParseException: Character reference "&#11" is an invalid XML character`. This is because the web-service response received from SharePoint contains an invalid XML character. 
@@ -580,3 +584,7 @@ http://social.technet.microsoft.com/Forums/en/sharepointsearch/thread/0e5205a5-3
 http://sharepointlogics.com/2010/02/how-to-check-sharepoint-2007-versions.html
 
 http://social.msdn.microsoft.com/Forums/en/sharepointinfopath/thread/d2acfa81-14d6-4830-8518-34f61eaf77b7
+
+*Q. Are the Include patterns in the connector configuration case sensitive? Some of my URLs are not getting indexed. They have upper-case characters but my Include patterns are all in lower-case.
+
+Yes. The Include patterns in the connector configuration case sensitive. You should include the patterns in the exact case as that of the SharePoint URLs or have the pattern using regular expression that matches both the cases i.e. regexpIgnoreCase:yourpattern
