@@ -46,7 +46,8 @@ This section describes some commonly encountered error messages and their likely
  You must provide the appropriate SharePoint Site URL with a fully qualified domain name for SharePoint Site URL field on Configuring Connector Instances.
 
 
- * *Cannot connect to the given SharePoint Site URL with the supplied Domain/Username/Password. Please re-enter.*
+ * *Cannot connect to the given SharePoint Site URL with the supplied Domain/Username/Password. Please re-enter. OR Cannot connect to the Google Services for SharePoint on the given Crawl URL with the supplied Domain/Username/Password.Reason:(401)Unauthorized*
+
  This occurs when the web service call fails for the given SharePoint URL. The exact reason for this is displayed along with the error message.
  Possible reasons:
   * 401 Unauthorized: Check the credential (domain/username/password) for the correctness and the privilege that is assigned to this on the SharePoint URL.
