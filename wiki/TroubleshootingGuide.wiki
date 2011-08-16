@@ -210,6 +210,7 @@ In order to allow any other host to connect to the Connector Manager, you need t
 
  Set the {{{feedLoggingLevel}}} property to {{{ALL}}} in the {{{applicationContext.properties}}} found under {{{$CATALINA_HOME/webapps/connector-manager/WEB-INF/}}}. Restart the connector and let it run for some time. Check out the google-connectors.feed log files generated under {{{$CATALINA_HOME/logs/}}} folder.
 
+In GSA 6.10 and above, you can see the feeds coming to the GSA from connectors by downloading the feeds at Crawl and Index -> Feeds page of the admin console.
 
 *Q. How can I change the log level so that only the relevant log messages are generated?*
 
@@ -219,7 +220,7 @@ In order to allow any other host to connect to the Connector Manager, you need t
 *Q. Does connector maintain the list of excluded URLs?*
 
  Yes. It stores the list of excluded URLs in {{{excluded-URLs/excluded_url%g.txt}}} under the connector instance directory. Please note that these URLs are excluded by the connector during the traversal and not by the GSA when the feed is sent.
- Available since version 2.0
+This feature is available in connector version 2.0 and above.
 
 
 *Q. Is it possible for a single connector to send feed to more then one GSA?*
@@ -261,8 +262,8 @@ This information is required in case of SharePoint 2007 because, MySites can be 
 
 *Q. How can I search metadata for a document?*
 
- Use inmeta search for this. For details, refer to http://code.google.com/apis/searchappliance/documentation/52/xml_reference.html#inmeta_filter
-
+ Use inmeta search for this. For details, refer to 
+http://code.google.com/apis/searchappliance/documentation/610/xml_reference.html#inmeta_filter
 
 *Q: Do I need to restart the connector service each time I modify the connector configuration?*
 
@@ -310,12 +311,12 @@ This information is required in case of SharePoint 2007 because, MySites can be 
 
 *Q. I have many sites under multiple site collections each organized into multiple web applications. Will single connector instance be able to crawl all these?*
 
-No. One connector instance can crawl only one site collection. For discovering and crawling multiple site collections and web applications (possibly distributed across multiple SharePoint servers in a farm), deploy the Google Services for SharePoint on each of the SharePoint servers. You can then configure only connector instance for discovering and crawling  all content in the farm.
+No. One connector instance can crawl only one site collection. For discovering and crawling multiple site collections and web applications (possibly distributed across multiple SharePoint servers in a farm), deploy the Google Services for SharePoint on each of the SharePoint servers. You can then configure only one connector instance for discovering and crawling  all content in the farm.
 
 
 *Q. What if I have a Site Directory listing all the site collections? Do I need to still install the Google Services for SharePoint?*
 
-If the deployment has a Site Directory where all the site collections are listed, only one connector instance will work. No need to deploy the Google Services for SharePoint
+If the deployment has a Site Directory where all the site collections are listed, only one connector instance will work. No need to deploy the Google Services for SharePoint.
 
 
 *Q. I don't want to install Google Services for SharePoint on my SharePoint server. Is there any way I can create a single connector instance to crawl all site collections?*
