@@ -385,6 +385,7 @@ public class SPConstants {
 	public static final String MYSITE_BASE_URL = "mySiteBaseURL";
 	public static final String ALIAS_MAP = "aliasMap";
 	public static final String AUTHORIZATION = "authorization";
+	public static final String SHAREPOINT_CRAWLING_OPTION = "sharepointCrawlingOptions";
 	public static final String AUTHZ_BY_CONNECTOR = "AuthZ_By_Connector";
 	public static final String HELP_AUTHZ_BY_CONNECTOR = "Help_AuthZ_By_Connector";
 	public static final String AUTHZ_BY_GSA = "AuthZ_By_GSA";
