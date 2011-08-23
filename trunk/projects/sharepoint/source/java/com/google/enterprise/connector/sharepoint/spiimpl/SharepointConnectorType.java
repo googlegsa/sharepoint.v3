@@ -256,6 +256,7 @@ public class SharepointConnectorType implements ConnectorType {
 
 				if (collator.equals(key, SPConstants.AUTHORIZATION)) {
 
+					buf.append(SPConstants.BREAK_LINE);
 					buf.append(SPConstants.OPEN_ELEMENT);
 					buf.append(SPConstants.INPUT);
 					appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
@@ -282,6 +283,52 @@ public class SharepointConnectorType implements ConnectorType {
 					}
 					buf.append(" /" + SPConstants.CLOSE_ELEMENT);
 					buf.append(rb.getString(SPConstants.AUTHZ_BY_CONNECTOR));
+				} else if (collator.equals(key, SPConstants.SHAREPOINT_CRAWLING_OPTION)) {
+					// displaying search visiblity option
+					buf.append(SPConstants.OPEN_ELEMENT);
+					buf.append(SPConstants.INPUT);
+					appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+					appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+					appendAttribute(buf, SPConstants.CONFIG_ID, key);
+					appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_HELP));
+					// The value can be true if its a pre-configured connector
+					// being edited and blank if the default connector form is
+					// being displayed.
+					if (value.equalsIgnoreCase("true") || value.length() == 0) {
+						appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+					}
+					buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+					// It allows to select check box using it's label.
+					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+							+ SPConstants.EQUAL_TO + "\"" + key + "\""
+							+ SPConstants.CLOSE_ELEMENT);
+					buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
+					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+							+ SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
+
+					// dispplaying unpublished content feed option
+					buf.append(SPConstants.BREAK_LINE);
+					buf.append(SPConstants.OPEN_ELEMENT);
+					buf.append(SPConstants.INPUT);
+					appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+					appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+					appendAttribute(buf, SPConstants.CONFIG_ID, key);
+					appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
+					if (value.equalsIgnoreCase("true") || value.length() == 0) {
+						appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+					} else {
+						appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+					}
+					buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+					// It allows to select check box using it's label.
+					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+							+ SPConstants.EQUAL_TO + "\"" + key + "\""
+							+ SPConstants.CLOSE_ELEMENT);
+					buf.append(rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
+					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+							+ SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
+					buf.append(SPConstants.BREAK_LINE);
+
 				} else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
 					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
 					appendAttribute(buf, SPConstants.CONFIG_NAME, key);
@@ -365,7 +412,6 @@ public class SharepointConnectorType implements ConnectorType {
 					buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
 							+ SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
 				} else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
-					buf.append(SPConstants.BREAK_LINE);
 					buf.append(SPConstants.OPEN_ELEMENT);
 					buf.append(SPConstants.INPUT);
 					appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
@@ -386,27 +432,6 @@ public class SharepointConnectorType implements ConnectorType {
 							+ SPConstants.EQUAL_TO + "\"" + key + "\""
 							+ SPConstants.CLOSE_ELEMENT);
 					buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
-					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
-							+ SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
-				} else if (collator.equals(key, SPConstants.FEED_UNPUBLISHED_CONTENT)) {
-					buf.append(SPConstants.BREAK_LINE);
-					buf.append(SPConstants.OPEN_ELEMENT);
-					buf.append(SPConstants.INPUT);
-					appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-					appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-					appendAttribute(buf, SPConstants.CONFIG_ID, key);
-					appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
-					if (value.equalsIgnoreCase("true") || value.length() == 0) {
-						appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-					} else {
-						appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
-					}
-					buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-					// It allows to select check box using it's label.
-					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-							+ SPConstants.EQUAL_TO + "\"" + key + "\""
-							+ SPConstants.CLOSE_ELEMENT);
-					buf.append(rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
 					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
 							+ SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
 				} else if (collator.equals(key, SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
@@ -463,29 +488,6 @@ public class SharepointConnectorType implements ConnectorType {
 							+ SPConstants.EQUAL_TO + "\"" + key + "\""
 							+ SPConstants.CLOSE_ELEMENT);
 					buf.append(rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
-					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
-							+ SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
-				} else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
-					// Handles the flag for Using SharePoint indexing options
-					buf.append(SPConstants.BREAK_LINE);
-					buf.append(SPConstants.OPEN_ELEMENT);
-					buf.append(SPConstants.INPUT);
-					appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-					appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-					appendAttribute(buf, SPConstants.CONFIG_ID, key);
-					appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_HELP));
-					// The value can be true if its a pre-configured connector
-					// being edited and blank if the default connector form is
-					// being displayed.
-					if (value.equalsIgnoreCase("true") || value.length() == 0) {
-						appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-					}
-					buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-					// It allows to select check box using it's label.
-					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-							+ SPConstants.EQUAL_TO + "\"" + key + "\""
-							+ SPConstants.CLOSE_ELEMENT);
-					buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
 					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
 							+ SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
 				} else if ((collator.equals(key, SPConstants.EXCLUDED_URLS))
@@ -804,7 +806,6 @@ public class SharepointConnectorType implements ConnectorType {
 			final String configKey, final boolean red/*
 																								 * , final String displayValue
 																								 */) {
-
 		buf.append(SPConstants.TR_START);
 		buf.append(SPConstants.TD_START);
 
