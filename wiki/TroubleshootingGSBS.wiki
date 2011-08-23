@@ -33,6 +33,10 @@ You see this message when
 
 Check http://code.google.com/apis/searchappliance/documentation/connectors/260/connector_admin/searchbox_sharepoint.html#MultipleColl for more error messages.
 
+*I'm getting error 'No local SharePoint web applications found in this machine' while installing the Search Box using GSARKS installer*
+
+In SharePoint farm deployment, it is possible that the WFE (Web Front-end) is configured NOT to host any web-application. In that case, no web application is installed on that host. GSARKS installer looks whether the web-application is deployed locally. If not, it will throw this error. You can check this by browsing the SP URLs and looking at the host name shown in the URL. Installer should definately work if the web applications are hosted locally. Note that search box must be deployed on all the WFEs in the farm that host the web-applications.
+
 == FAQ ==
 
 *1. Does Google Search Box for SharePoint support Public search?*
