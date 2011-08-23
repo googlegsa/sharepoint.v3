@@ -21,6 +21,18 @@ You see this message when
 
 To avoid getting this error for a secure search, configure the search box to omit the secure cookie. Open web.config file for the SharePoint site/s. Set the omitSecureCookie flag (available in version 2.6.8) to true and perform a fresh search. You should get the search results.
 
+Procedure to change the omitSecureCookie flag:
+
+1. Open the web.config file for the SharePoint web application
+(web.config file is on path - C:\inetpub\wwwroot\wss\VirtualDirectories\<PORT NO>
+Where <PORT NO>. Is the port number for the SharePoint web application)
+
+2. Modify the value for the "omitSecureCookie"  key in line
+<add key="omitSecureCookie" value="false" /> from "false" to "true".
+
+3. Restart IIS
+
+
 *500-Internal Server Error*
 
 You see this message when
