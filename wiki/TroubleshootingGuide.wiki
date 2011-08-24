@@ -437,7 +437,7 @@ Following are the probable reasons for content not being fed to Search Appliance
   # Unknown MIME type
 Please check supported MIME types at: CONNECTOR_HOME\Tomcat\webapps\connector-manager\WEB-INF\applicationContext.xml
 
-*Q. What if I have dual authenitcation enabled on SharePoint?*
+*Q. What if I have dual authentication enabled on SharePoint?*
 
 http://msdn.microsoft.com/en-us/library/cc441429.aspx
 http://grounding.co.za/blogs/brett/archive/2008/01/09/setting-up-dual-authentication-on-windows-sharepoint-services-3-0-forms-and-ntlm.aspx
@@ -470,7 +470,14 @@ Two important points to note:
 
 Metadata and URL feed is an invalid feed mode for connector authN with Security Manager so you don't get search results. Content feed is an appropriate feed mode for using Security Manager Connector authN. 
 
-*Q. How to enable ACL feature?*
+*Q. What is early and late binding with respect to the SharePoint connector?*
+
+Early binding means authorization by ACLs that are present per URL on the GSA. Connector 2.6.0 onward can feed ACLs to GSA.Connector v2.8 has full support for ACLs as LDAP groups /SP local groups are also supported in this version.
+
+Late binding is authorization by either head request (metadata and URL feed) or connector authorization (content feed mode) where connector is not configure to feed ACLs.
+
+
+*Q. How to enable ACL feature in connector (v 2.6.x)?*
 
     1. Go to the connector instance directory of the connector for which you want to 
        turn on ACL.The connector instance directory can be found under           
@@ -485,6 +492,10 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
     5. If pushAcls value is false make it true.   
     6. Save the updated connectorInstance.xml
     7. Restart the connector
+
+*Q. How to enable ACL feature in connector 2.8?*
+
+Connector 2.8 has a flag 'Feed ACLs' as a part of configuration UI. You need to specify LDAP credentials to use this feature. LDAP credentials are required by the connector to resolve LDAP groups and SharePoint local groups in the ACL during serve time authentication.
 
 *Q. How to deploy the ACL web service on SharePoint? *
     1. Go to the SharePoint front server which is serving the sites
