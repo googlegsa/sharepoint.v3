@@ -1,3 +1,4 @@
+#labels Deprecated
 For building tests, download the JSR-170 api: jcr-1.0.jar.  See the [http://jcp.org/en/jsr/detail?id=170 JSR-170] Site.
 
 Note on the JDK version: the connector manager is designed so that it can be built and run using JDK 1.4.2.  It should work fine with newer JDKs.
