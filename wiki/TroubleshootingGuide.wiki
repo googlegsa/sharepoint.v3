@@ -474,7 +474,7 @@ Metadata and URL feed is an invalid feed mode for connector authN with Security 
 
 Early binding means authorization by ACLs that are present per URL on the GSA. Connector 2.6.0 onward can feed ACLs to GSA.Connector v2.8 has full support for ACLs as LDAP groups /SP local groups are also supported in this version.
 
-Late binding is authorization by either head request (metadata and URL feed) or connector authorization (content feed mode) where connector is not configure to feed ACLs.
+Late binding is authorization by either head request (metadata and URL feed) or connector authorization (content feed mode) where connector is not configured to feed ACLs.
 
 
 *Q. How to enable ACL feature in connector (v 2.6.x)?*
