@@ -520,8 +520,8 @@ Connector 2.8 has a flag 'Feed ACLs' as a part of configuration UI. You need to 
     that you use to configure the connector must have either of these two permissions if  
     you are willing to use ACL based authorization of search results.
 
-*Q. Do we support Share Point 2010 ?*
-     Yes, Connector 2.6.0 onward supports Share Point 2010 and SharePoint Foundation 2010.
+*Q. Does the connector support SharePoint 2010 ?*
+     Yes, Connector 2.6.0 onward supports Share Point 2010 and SharePoint Foundation 2010. You need to use corresponding version of the Google services for SharePoint.
 
 *Q. How to include/exclude a site/page in the search results? *
     Connector, during the crawl checks if a site/list search visibility is turned on.  
