@@ -50,7 +50,8 @@ This section describes some commonly encountered error messages and their likely
 
  This occurs when the web service call fails for the given SharePoint URL. The exact reason for this is displayed along with the error message.
  Possible reasons:
-  * 401 Unauthorized: Check the credential (domain/username/password) for the correctness and the privilege that is assigned to this on the SharePoint URL.
+  * 401 Unauthorized: Check the credential (domain/username/password) for the correctness and the privilege that is assigned to this on the SharePoint URL. Connector requires at least 'Contribute' permission on the site collection to be crawled. Site collection administrator is the recommended privilege in order to crawl maximum content.
+
   * 404 Not Found: The requested SharePoint URL could not be found but may be available again in the future.
   * 403 Forbidden: Often caused by the SharePoint site being configured to use Forms Based Authentication.
 
@@ -560,7 +561,7 @@ Connector 2.8 has a flag 'Feed ACLs' as a part of configuration UI. You need to 
     Click on the Webapp and change the URL.
 
 *Q. I'm trying to setup SharePoint connector to crawl a Kerberos based site using Kerberos crawling feature. When I enter a valid KDC hostname, I get this error "Cannot connect to the given SharePoint Site URL with the supplied Domain/Username/Password.Reason:(401)Unauthorized". When I remove KDC hostname, connector gets saved.*
-    > Make sure that you are using correct credentials for the site.
+    > Make sure that you are using correct credentials for the site. Connector requires at least 'Contribute' permission on the site collection to be crawled. Site collection administrator is the recommended privilege in order to crawl maximum content.
 
     > Make sure that there are no duplicate service principal names (SPN) set for the SharePoint server
 
