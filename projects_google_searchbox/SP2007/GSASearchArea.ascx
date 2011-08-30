@@ -13,6 +13,8 @@
 <%
     const string PublicAndSecureSearch = "publicAndSecure";
     const string PublicSearch = "public";
+    string accessStatus = "";
+    string searchQuery = "";
     
     // Setting the URL for the Search Tips Link 
     string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString()+ "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
@@ -101,7 +103,7 @@
              */
             if (Request.QueryString["access"] != null)
             {
-                string accessStatus = Request.QueryString["access"].ToString();
+                accessStatus = Request.QueryString["access"].ToString();
                 if (accessStatus == "a")
                 {
                    chkPublicSearch.Checked = false;
@@ -144,6 +146,9 @@
     string currentList = "Current List";
     string currentFolder = "Current Folder";
     string currentFolderAndAllSubfolders = "Current Folder and all subfolders";
+    
+    string scopeText = "";
+    string scopeValue = "";
 
 	SPWeb web = SPControl.GetContextWeb(Context);
     
@@ -269,7 +274,7 @@
     if (Request.QueryString["k"] != null)
     {
         // If this is the first request for search, populate the search query text with querystring 'k' parameter.
-        string searchQuery = "";
+        searchQuery = "";
         searchQuery = Request.QueryString["k"];
         int strCache = searchQuery.IndexOf("cache:");
 
@@ -298,9 +303,40 @@
     }
     else if(Request.QueryString["q"] != null)
     {
-        // If this is not the first request for search, populate search query text with querystring 'q' parameter.
-        txtSearch.Text = Request.QueryString["q"].ToString();
+        /* If this is not the first request for search, populate search query text with querystring 'q' parameter.
+         * This code will also be executed when user clicks on the "All Results" and "Clear" links, which are displayed 
+         * for dynamic navigation search results.
+         */
+        string strInMeta = Convert.ToString(Request.QueryString["q"]); // Search Query exists in querystring "q" parameter
+        /*
+         * The string inmeta:<AttributeName>=<matchingAttributeValue> gets appended to the search query term when user
+         * clicks on any of the dynamic navigation search results. This inserts arbitrary characters into the search box.
+         * Hence, adding the code to get the search query term from the session variable. 
+         */ 
+        if (strInMeta.IndexOf("inmeta:") != -1)
+        {
+            if (Session["SearchQuery"] != null)
+            {
+                txtSearch.Text = Convert.ToString(Session["SearchQuery"]);
+            }
+        }
+        else
+        {
+            txtSearch.Text = Request.QueryString["q"].ToString();
+        }
     }
+    else /*
+          * This code will be executed when the user clicks on any one of the dynamic navigation results displayed 
+          * in the left sidebar. Here, the search query textbox will be populated with the value from the "SearchQuery"
+          * session variable.
+          */
+    {
+        if (Session["SearchQuery"] != null)
+        {
+            txtSearch.Text = Convert.ToString(Session["SearchQuery"]);
+        }
+    }
+    
     /* This code is executed for the very first search performed on the site. This code will also execute when the user performs  
      * the first search, after changing the scope from the scopes dropdown.
      */
@@ -342,11 +378,45 @@
                                             */
     {
         
-        string scopeText = Session["ScopeText"].ToString();
-        string scopeValue = "";
+        scopeText = Session["ScopeText"].ToString();
+        scopeValue = "";
         if(Request.QueryString["sitesearch"] != null) // The sitesearch parameter comes in the GSA search URL.
         {
             scopeValue = System.Web.HttpUtility.UrlDecode(Request.QueryString["sitesearch"].ToString());
+        }
+         else /* This code will be executed when the user clicks on any of the dynamic navigation results displayed in 
+              * left sidebar. Hence, retrieve the values for the scope value and scope text from the current request and 
+              * make the item as selected in the dropdown. With this, the scope value is persisted when user is using 
+              * dynamic navigation.
+              */
+        {
+            string searchReq = HttpContext.Current.Request.Url.Query;
+            searchReq = HttpUtility.UrlDecode(searchReq); // Decoding the URL received from the current request 
+            /*
+             * If sitesearch is present in the current request, execute code for extracting its value and 
+             * assign the same to scopeValue variable.
+             */
+            if (searchReq.IndexOf("sitesearch") > -1) // Means sitesearch is present
+            {
+                // Getting index for question mark (?). Code for extracting the sitesearch parameter's value
+                if (searchReq.IndexOf("?") > -1)
+                {
+                    searchReq = searchReq.Substring(searchReq.IndexOf("?"));
+
+                    /*
+                     * Get  "?sitesearch=<sitesearchParameterValue>" where "sitesearchParameterValue"
+                     * represents the scope value for a site/ list or folder
+                     */ 
+                    searchReq = searchReq.Substring(0, searchReq.IndexOf("&")); 
+
+                    if (searchReq.IndexOf("=") > -1)
+                    {
+                        searchReq = searchReq.Substring(searchReq.IndexOf("=")); // Gets "=<sitesearchParameterValue>"
+                        searchReq = searchReq.Replace("=", "");// Gets "<sitesearchParameterValue>"
+                        scopeValue = searchReq;
+                    }
+                }
+            }
         }
         if (scopeValue != "")
         {
