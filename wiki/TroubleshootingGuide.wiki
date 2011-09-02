@@ -603,3 +603,18 @@ http://social.msdn.microsoft.com/Forums/en/sharepointinfopath/thread/d2acfa81-14
 *Q. Are the Include patterns in the connector configuration case sensitive? Some of my URLs are not getting indexed. They have upper-case characters but my Include patterns are all in lower-case.
 
 Yes. The Include patterns in the connector configuration case sensitive. You should include the patterns in the exact case as that of the SharePoint URLs or have the pattern using regular expression that matches both the cases i.e. regexpIgnoreCase:yourpattern
+
+*Q. Does the connector support crawling secure SharePoint sites which use self-signed certificate?
+
+Yes. Connector supports crawling SSL based sites which use IIS self-signed certificate. The connector uses Axis and HTTPClient to make web service calls to SharePoint.
+
+If you have a self signed cetificate which is not from a trusted authority, the HTTPClient library (internally uses Java SSL suport) fails to find a valid certificate to be presented to the SharePoint server along with the request.
+
+One of ways is to import the certificate into the JVM default keystore and check if 
+that works. Here are couple of helpful links:
+
+http://www.java-samples.com/showtutorial.php?tutorialid=210
+http://www.nabble.com/ssl-failure-td15753599.html
+
+
+The connector supports certificate, but in case it is not from a trusted authority it will have to be imported to the JDK keystore as identified above.
