@@ -5,29 +5,28 @@
     <property name="sharepointUrl" value="${sharepointUrl}"/>
     <property name="kdcserver" value="${kdcserver}"/>
     <property name="domain" value="${domain}"/>
-       <property name="username" value="${username}"/>
-       <property name="password" value="${password}"/>
-       <property name="googleConnectorWorkDir" value="${googleConnectorWorkDir}"/>
-       <property name="includedURls" value="${includedURls}"/>
-       <property name="excludedURls" value="${excludedURls}"/>
-       <property name="mySiteBaseURL" value="${mySiteBaseURL}"/>
-       <property name="aliasMap" value="${aliasMap}"/>
-     <property name="authorization" value="${authorization}"/>
-     <property name="useSPSearchVisibility" value="${useSPSearchVisibility}"/>
-     <property name="pushAcls" value="${pushAcls}"/>
-     <property name="appendNamespaceInSPGroup" value="${appendNamespaceInSPGroup}"/>
-     <property name="usernameFormatInAce" value="${usernameFormatInAce}"/>
-     <property name="groupnameFormatInAce" value="${groupnameFormatInAce}"/>
-     <property name="ldapServerHostAddress" value="${ldapServerHostAddress}"/>
-     <property name="portNumber" value="${portNumber}"/>
-     <property name="authenticationType" value="${authenticationType}"/>
-     <property name="connectMethod" value="${connectMethod}"/>
-     <property name="searchBase" value="${searchBase}"/>
-     <property name="useCacheToStoreLdapUserGroupsMembership" value="${useCacheToStoreLdapUserGroupsMembership}"/>
-     <property name="initialCacheSize" value="${initialCacheSize}"/>
-     <property name="cacheRefreshInterval" value="${cacheRefreshInterval}"/>
-     <property name="feedUnPublishedDocuments" value="${feedUnPublishedDocuments}"/>
-     <property name="included_metadata">
+    <property name="username" value="${username}"/>
+    <property name="password" value="${password}"/>
+    <property name="googleConnectorWorkDir" value="${googleConnectorWorkDir}"/>
+    <property name="includedURls" value="${includedURls}"/>
+    <property name="excludedURls" value="${excludedURls}"/>
+    <property name="mySiteBaseURL" value="${mySiteBaseURL}"/>
+    <property name="aliasMap" value="${aliasMap}"/>
+    <property name="authorization" value="${authorization}"/>
+    <property name="useSPSearchVisibility" value="${useSPSearchVisibility}"/>
+    <property name="pushAcls" value="${pushAcls}"/>
+    <property name="usernameFormatInAce" value="${usernameFormatInAce}"/>
+    <property name="groupnameFormatInAce" value="${groupnameFormatInAce}"/>
+    <property name="ldapServerHostAddress" value="${ldapServerHostAddress}"/>
+    <property name="portNumber" value="${portNumber}"/>
+    <property name="authenticationType" value="${authenticationType}"/>
+    <property name="connectMethod" value="${connectMethod}"/>
+    <property name="searchBase" value="${searchBase}"/>
+    <property name="useCacheToStoreLdapUserGroupsMembership" value="${useCacheToStoreLdapUserGroupsMembership}"/>
+    <property name="initialCacheSize" value="${initialCacheSize}"/>
+    <property name="cacheRefreshInterval" value="${cacheRefreshInterval}"/>
+    <property name="feedUnPublishedDocuments" value="${feedUnPublishedDocuments}"/>
+    <property name="included_metadata">
     <list>
       <!-- If you want to index only specific metadata, put them here.
         For example, putting the following entry will cause only Title to be sent to GSA.
@@ -36,7 +35,7 @@
     </list>
     </property>
 
-   <property name="excluded_metadata">
+    <property name="excluded_metadata">
       <list>
         <!-- Remove any of the following metadata entries if you want them to be indexed in GSA.
         -->
@@ -121,7 +120,6 @@
                 <prop key="authorization">Metadata-and-URL</prop>
                 <prop key="useSPSearchVisibility">true</prop>
                 <prop key="pushAcls">true</prop>
-                <prop key="appendNamespaceInSPGroup">true</prop>
                 <prop key="usernameFormatInAce">username</prop>
                 <prop key="groupnameFormatInAce">domain\\username</prop>
                 <prop key="ldapServerHostAddress"></prop>

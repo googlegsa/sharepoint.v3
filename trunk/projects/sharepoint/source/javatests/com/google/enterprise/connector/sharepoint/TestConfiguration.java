@@ -430,8 +430,6 @@ public class TestConfiguration {
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
     sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
     sharepointClientContext.setPushAcls(TestConfiguration.pushAcls);
-    sharepointClientContext.setAppendNamespaceInSPGroup(new Boolean(
-        appendNamespaceInSPGroup));
     sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
     sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(new Boolean(
         useCacheToStoreLdapUserGroupsMembership));
@@ -635,7 +633,6 @@ public class TestConfiguration {
     connector.setExcluded_metadata(TestConfiguration.blackList);
     connector.setFQDNConversion(true);
     connector.setPushAcls(true);
-    connector.setAppendNamespaceInSPGroup(true);
     connector.setCacheRefreshInterval("7200");
     connector.setInitialCacheSize("1000");
     connector.setPortNumber("389");

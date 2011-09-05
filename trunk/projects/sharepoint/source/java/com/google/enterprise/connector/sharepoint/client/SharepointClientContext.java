@@ -83,7 +83,6 @@ public class SharepointClientContext implements Cloneable {
   private boolean pushAcls = true;
   private String usernameFormatInAce;
   private String groupnameFormatInAce;
-  private boolean appendNamespaceInSPGroup;
 
   private UserDataStoreDAO userDataStoreDAO;
 
@@ -205,8 +204,6 @@ public class SharepointClientContext implements Cloneable {
 
       spCl.setUsernameFormatInAce(this.getUsernameFormatInAce());
       spCl.setGroupnameFormatInAce(this.getGroupnameFormatInAce());
-
-      spCl.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
       spCl.setAclBatchSizeFactor(this.aclBatchSizeFactor);
       spCl.setFetchACLInBatches(this.fetchACLInBatches);
       spCl.setWebServiceTimeOut(this.webServiceTimeOut);
@@ -1008,14 +1005,6 @@ public class SharepointClientContext implements Cloneable {
 
   public void setGroupnameFormatInAce(String groupnameFormatInAce) {
     this.groupnameFormatInAce = groupnameFormatInAce;
-  }
-
-  public boolean isAppendNamespaceInSPGroup() {
-    return appendNamespaceInSPGroup;
-  }
-
-  public void setAppendNamespaceInSPGroup(boolean appendNamespaceInSPGroup) {
-    this.appendNamespaceInSPGroup = appendNamespaceInSPGroup;
   }
 
   /**

@@ -610,13 +610,8 @@ public class UserGroupsService implements LdapService {
       if (null != this.sharepointClientContext.getUserDataStoreDAO()) {
         groupMembershipList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(adGroups, searchUser);
         for (UserGroupMembership userGroupMembership : groupMembershipList) {
-          // check for the flag appendNamespaceInSPGroup and append
-          // name space to SP groups.
-          if (!sharepointClientContext.isAppendNamespaceInSPGroup()) {
-            groupName = new StringBuffer().append(userGroupMembership.getGroupName());
-          } else {
-            groupName = new StringBuffer().append(SPConstants.LEFT_SQUARE_BRACKET).append(userGroupMembership.getNamespace()).append(SPConstants.RIGHT_SQUARE_BRACKET).append(userGroupMembership.getGroupName());
-          }
+          // append name space to SP groups.
+          groupName = new StringBuffer().append(SPConstants.LEFT_SQUARE_BRACKET).append(userGroupMembership.getNamespace()).append(SPConstants.RIGHT_SQUARE_BRACKET).append(userGroupMembership.getGroupName());
           spGroups.add(groupName.toString());
         }
       }
