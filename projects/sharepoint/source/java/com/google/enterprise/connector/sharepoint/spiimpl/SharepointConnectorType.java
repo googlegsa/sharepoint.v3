@@ -434,34 +434,6 @@ public class SharepointConnectorType implements ConnectorType {
           buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
           buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
               + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
-        } else if (collator.equals(key, SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
-
-          // buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
-          if (value.equalsIgnoreCase("true") || value.length() == 0) {
-            appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-          } else {
-            appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
-            if (editMode && this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
-              buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                  + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-            }
-          }
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          // It allows to select check box using it's label.
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-              + SPConstants.EQUAL_TO + "\"" + key + "\""
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.APPEND_NAMESPACE_IN_SPGROUP_LABEL));
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
-              + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
-
-          buf.append(SPConstants.BREAK_LINE);
         } else if (collator.equals(key, SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
           buf.append(SPConstants.BREAK_LINE);
           buf.append(SPConstants.OPEN_ELEMENT);
@@ -1890,12 +1862,6 @@ public class SharepointConnectorType implements ConnectorType {
       configData.put(SPConstants.FEED_UNPUBLISHED_CONTENT, Boolean.toString(false));
     } else {
       configData.put(SPConstants.FEED_UNPUBLISHED_CONTENT, Boolean.toString(true));
-    }
-
-    if (!configData.containsKey(SPConstants.APPEND_NAMESPACE_IN_SPGROUP)) {
-      configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(false));
-    } else {
-      configData.put(SPConstants.APPEND_NAMESPACE_IN_SPGROUP, Boolean.toString(true));
     }
 
     if (!configData.containsKey(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {

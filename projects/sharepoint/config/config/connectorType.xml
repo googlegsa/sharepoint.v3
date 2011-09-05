@@ -18,7 +18,6 @@
         <value>authorization</value>
         <!-- Push ACLs configuration -->
         <value>pushAcls</value>
-        <value>appendNamespaceInSPGroup</value>
         <value>usernameFormatInAce</value>
         <value>groupnameFormatInAce</value>
         <!-- ldap configuration -->

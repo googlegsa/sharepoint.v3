@@ -66,7 +66,6 @@ public class SharepointConnector implements Connector,
   private boolean pushAcls = true;
   private String usernameFormatInAce;
   private String groupnameFormatInAce;
-  private boolean appendNamespaceInSPGroup = false;
   private QueryProvider queryProvider;
   private UserGroupMembershipRowMapper userGroupMembershipRowMapper;
   private boolean useSPSearchVisibility = true;
@@ -320,14 +319,12 @@ public class SharepointConnector implements Connector,
     sharepointClientContext.setInfoPathBaseTemplate(infoPathBaseTemplate);
     sharepointClientContext.setUsernameFormatInAce(getUsernameFormatInAce());
     sharepointClientContext.setGroupnameFormatInAce(this.getGroupnameFormatInAce());
-    sharepointClientContext.setAppendNamespaceInSPGroup(this.isAppendNamespaceInSPGroup());
     sharepointClientContext.setPushAcls(pushAcls);
     sharepointClientContext.setFetchACLInBatches(this.fetchACLInBatches);
     sharepointClientContext.setAclBatchSizeFactor(this.aclBatchSizeFactor);
     sharepointClientContext.setWebServiceTimeOut(this.webServiceTimeOut);
     sharepointClientContext.setDomain(this.domain);
     sharepointClientContext.setFeedUnPublishedDocuments(this.feedUnPublishedDocuments);
-
     if (pushAcls) {
       sharepointClientContext.setLdapConnectionSettings(getLdapConnectionSettings());
       sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(this.useCacheToStoreLdapUserGroupsMembership);
@@ -425,14 +422,6 @@ public class SharepointConnector implements Connector,
 
   public void setGroupnameFormatInAce(String groupnameFormatInAce) {
     this.groupnameFormatInAce = groupnameFormatInAce;
-  }
-
-  public boolean isAppendNamespaceInSPGroup() {
-    return appendNamespaceInSPGroup;
-  }
-
-  public void setAppendNamespaceInSPGroup(boolean appendNamespaceInSPGroup) {
-    this.appendNamespaceInSPGroup = appendNamespaceInSPGroup;
   }
 
   public void setDatabaseAccess(ConnectorPersistentStore databaseAccess) {

@@ -421,8 +421,6 @@ public class SPConstants {
   public static final Object DOUBLE_CLOSE_PARENTHESIS = "))";
   public static final String PUSH_ACLS = "pushAcls";
   public static final String PUSH_ACLS_LABEL = "push_Acls";
-  public static final String APPEND_NAMESPACE_IN_SPGROUP = "appendNamespaceInSPGroup";
-  public static final String APPEND_NAMESPACE_IN_SPGROUP_LABEL = "append_Namespace_In_SPGroup";
   public static final String USERNAME_FORMAT_IN_ACE = "Username Format in ACE";
   public static final String GROUPNAME_FORMAT_IN_ACE = "Groupname Format in ACE";
   public static final String CONNECT_METHOD_STANDARD_HELP = "connectMethodStandard_help";
