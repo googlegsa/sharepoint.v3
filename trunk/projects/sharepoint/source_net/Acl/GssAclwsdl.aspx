@@ -156,6 +156,7 @@
           <s:enumeration value="WEB" />
           <s:enumeration value="LIST" />
           <s:enumeration value="ITEM" />
+          <s:enumeration value="SITE_LANDING_PAGE" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="SPChangeType">
