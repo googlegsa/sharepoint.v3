@@ -604,6 +604,12 @@ http://social.msdn.microsoft.com/Forums/en/sharepointinfopath/thread/d2acfa81-14
 
 Yes. The Include patterns in the connector configuration case sensitive. You should include the patterns in the exact case as that of the SharePoint URLs or have the pattern using regular expression that matches both the cases i.e. regexpIgnoreCase:yourpattern
 
+*Q. Which are number of TCP Ports for Windows Machine which host external Sharepoint connector ?
+
+1.For manual deployment of SharePoint connector, Tomcat uses TCP port 8080, so this port should be available for deploying sharepoint connector.
+2.For installing SharePoint connector using GCI, available ports can be identified by using netstat command on command prompt.
+ 
+
 *Q. Does the connector support crawling secure SharePoint sites which use self-signed certificate?
 
 Yes. Connector supports crawling SSL based sites which use IIS self-signed certificate. The connector uses Axis and HTTPClient to make web service calls to SharePoint.
