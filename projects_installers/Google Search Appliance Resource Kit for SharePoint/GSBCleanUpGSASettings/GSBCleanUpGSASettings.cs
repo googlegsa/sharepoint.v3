@@ -59,12 +59,18 @@ namespace GSBCleanUpGSASettings
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSALocation']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='frontEnd']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='verbose']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='accesslevel']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='omitSecureCookie']");
+
 
                                 //for custom stylesheet
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslGSA2SP']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslSP2result']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSAStyle']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='logLocation']");
+                                
+                                // Deleting the HTTPModule corresponding to the session state from web.config file
+                                mgr.DeleteNode("//httpModules//add[@name='Session']");
 
                                 mgr.SaveXML();
                                 #endregion save results to file
@@ -103,12 +109,17 @@ namespace GSBCleanUpGSASettings
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSALocation']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='frontEnd']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='verbose']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='accesslevel']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='omitSecureCookie']");
 
                                 //for custom stylesheet
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslGSA2SP']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslSP2result']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSAStyle']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='logLocation']");
+
+                                // Deleting the HTTPModule corresponding to the session state from web.config file
+                                mgr.DeleteNode("//httpModules//add[@name='Session']");
 
                                 mgr.SaveXML();
                                 #endregion delete APP setting nodes
