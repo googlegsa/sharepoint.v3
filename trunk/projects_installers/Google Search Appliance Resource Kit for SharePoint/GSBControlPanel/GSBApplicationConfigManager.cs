@@ -28,6 +28,8 @@ namespace GSBControlPanel
         public const string ADD_ELEMENT = "add";
         public const string KEY_ATTRIBUTE = "key";
         public const string VALUE_ATTRIBUTE = "value";
+        public const string TYPE_ATTRIBUTE = "type";
+        public const string NAME_ATTRIBUTE = "name";
 
         private string myFileName = "";
         private XmlDocument xd = new XmlDocument();
@@ -141,6 +143,40 @@ namespace GSBControlPanel
                 }
             }//end: if ((xd != null) && (pattern != null))
 
+        }
+
+        /// <summary>
+        /// Modify the Node value for the HTTPModule
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="value"></param>
+        public void ModifyNodeForHttpModule(string pattern, string attributename, string type)
+        {
+            // Load up the httpModules node.
+            XmlNode xmlNode = xd.SelectSingleNode(pattern);
+            
+            if (xmlNode != null)
+            {
+                XmlElement ele = xmlNode as XmlElement;
+                //Attempt to load up the entry for httpModule.
+                ele = (XmlElement)xmlNode.SelectSingleNode(String.Format("//add[@name='{0}']", attributename));
+
+                // Check if it exists...
+                if (ele != null)
+                {
+                    // Name was found, change value for 'type' attribute here (only needed if you want to change it).
+                    ele.SetAttribute(TYPE_ATTRIBUTE, type);
+                }
+                else
+                {
+                    // Name was not found, so create the 'add' element and set it's name/type attributes.
+
+                    ele = xd.CreateElement(ADD_ELEMENT);
+                    ele.SetAttribute(NAME_ATTRIBUTE, attributename);
+                    ele.SetAttribute(TYPE_ATTRIBUTE, type);
+                    xmlNode.AppendChild(ele);
+                }
+            }
         }
 
         /// <summary>

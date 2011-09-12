@@ -2133,6 +2133,7 @@
 		<col def="s255">Destination</col>
 		<col def="s50">Target</col>
 		<col def="i4">Platform</col>
+		<col def="S255">StartScreenIcon</col>
 	</table>
 
 	<table name="ISChainPackage">
@@ -2959,6 +2960,19 @@
 		<col def="I2">Order</col>
 		<col def="I2">ISSetupLocation</col>
 		<col def="S255">ISReleaseFlags</col>
+	</table>
+
+	<table name="ISSetupType">
+		<col key="yes" def="s38">ISSetupType</col>
+		<col def="L255">Description</col>
+		<col def="L255">Display_Name</col>
+		<col def="i2">Display</col>
+		<col def="S255">Comments</col>
+	</table>
+
+	<table name="ISSetupTypeFeatures">
+		<col key="yes" def="s38">ISSetupType_</col>
+		<col key="yes" def="s38">Feature_</col>
 	</table>
 
 	<table name="ISStorages">
@@ -4389,6 +4403,7 @@
 		<row><td>IsolateComponents</td><td/><td>950</td><td>IsolateComponents</td><td/></row>
 		<row><td>LaunchConditions</td><td>Not Installed</td><td>410</td><td>LaunchConditions</td><td/></row>
 		<row><td>MigrateFeatureStates</td><td/><td>1010</td><td>MigrateFeatureStates</td><td/></row>
+		<row><td>MsiConfigureServices</td><td>VersionMsi &gt;= "5.00"</td><td>5801</td><td>MSI5 MsiConfigureServices</td><td/></row>
 		<row><td>MsiPublishAssemblies</td><td/><td>6250</td><td>MsiPublishAssemblies</td><td/></row>
 		<row><td>MsiUnpublishAssemblies</td><td/><td>1750</td><td>MsiUnpublishAssemblies</td><td/></row>
 		<row><td>PatchFiles</td><td/><td>4090</td><td>PatchFiles</td><td/></row>
@@ -4474,7 +4489,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>SaveAsSchema</td><td/></row>
 		<row><td>SccEnabled</td><td>0</td></row>
 		<row><td>SccPath</td><td/></row>
-		<row><td>SchemaVersion</td><td>769</td></row>
+		<row><td>SchemaVersion</td><td>770</td></row>
 		<row><td>Type</td><td>MSI</td></row>
 	</table>
 
@@ -4691,7 +4706,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 
 	<table name="MsiServiceConfig">
 		<col key="yes" def="s72">MsiServiceConfig</col>
-		<col def="l72">Name</col>
+		<col def="s255">Name</col>
 		<col def="i2">Event</col>
 		<col def="i4">ConfigType</col>
 		<col def="S0">Argument</col>
@@ -4700,7 +4715,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 
 	<table name="MsiServiceConfigFailureActions">
 		<col key="yes" def="s72">MsiServiceConfigFailureActions</col>
-		<col def="l72">Name</col>
+		<col def="s255">Name</col>
 		<col def="i2">Event</col>
 		<col def="I4">ResetPeriod</col>
 		<col def="L255">RebootMessage</col>
@@ -5494,6 +5509,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>ISCEShtCut</td><td>DisplayName</td><td>N</td><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>ISCEShtCut</td><td>Platform</td><td>N</td><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>ISCEShtCut</td><td>ShtCutKey</td><td>N</td><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>ISCEShtCut</td><td>StartScreenIcon</td><td>Y</td><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>ISCEShtCut</td><td>Target</td><td>N</td><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>ISChainPackage</td><td>DisplayName</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Display name for the chained package. Used only in the IDE.</td></row>
 		<row><td>ISChainPackage</td><td>ISReleaseFlags</td><td>Y</td><td/><td/><td/><td/><td/><td/><td/></row>
@@ -5950,6 +5966,13 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>ISSetupPrerequisites</td><td>ISSetupLocation</td><td>Y</td><td/><td/><td/><td/><td/><td>0;1;2</td><td/></row>
 		<row><td>ISSetupPrerequisites</td><td>ISSetupPrerequisites</td><td>N</td><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>ISSetupPrerequisites</td><td>Order</td><td>Y</td><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>ISSetupType</td><td>Comments</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>User Comments.</td></row>
+		<row><td>ISSetupType</td><td>Description</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Longer descriptive text describing a visible feature item.</td></row>
+		<row><td>ISSetupType</td><td>Display</td><td>N</td><td>0</td><td>32767</td><td/><td/><td/><td/><td>Numeric sort order, used to force a specific display ordering.</td></row>
+		<row><td>ISSetupType</td><td>Display_Name</td><td>Y</td><td/><td/><td/><td/><td>Formatted</td><td/><td>A string used to set the initial text contained within a control (if appropriate).</td></row>
+		<row><td>ISSetupType</td><td>ISSetupType</td><td>N</td><td/><td/><td/><td/><td>Identifier</td><td/><td>Primary key used to identify a particular feature record.</td></row>
+		<row><td>ISSetupTypeFeatures</td><td>Feature_</td><td>N</td><td/><td/><td>Feature</td><td>1</td><td>Identifier</td><td/><td>Foreign key into Feature table.</td></row>
+		<row><td>ISSetupTypeFeatures</td><td>ISSetupType_</td><td>N</td><td/><td/><td>ISSetupType</td><td>1</td><td>Identifier</td><td/><td>Foreign key into ISSetupType table.</td></row>
 		<row><td>ISStorages</td><td>ISBuildSourcePath</td><td>Y</td><td/><td/><td/><td/><td/><td/><td>Path to the file to stream into sub-storage</td></row>
 		<row><td>ISStorages</td><td>Name</td><td>N</td><td/><td/><td/><td/><td/><td/><td>Name of the sub-storage key</td></row>
 		<row><td>ISString</td><td>Comment</td><td>Y</td><td/><td/><td/><td/><td>Text</td><td/><td>Comment</td></row>

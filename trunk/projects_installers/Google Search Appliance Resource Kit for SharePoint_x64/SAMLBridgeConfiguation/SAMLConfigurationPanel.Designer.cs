@@ -66,7 +66,7 @@ namespace SAMLConfiguration
             this.tbArtifactConsumerURL.Name = "tbArtifactConsumerURL";
             this.tbArtifactConsumerURL.Size = new System.Drawing.Size(369, 20);
             this.tbArtifactConsumerURL.TabIndex = 1;
-            this.tbArtifactConsumerURL.Text = "https://gsa_host/SamlArtifactConsumer";
+            this.tbArtifactConsumerURL.Text = "https://gsa-host/security-manager/samlassertionconsumer";
             this.toolTip1.SetToolTip(this.tbArtifactConsumerURL, "Enter the SAML Bridge artifact consumer URL");
             this.tbArtifactConsumerURL.TextChanged += new System.EventHandler(this.tbGSALocation_TextChanged);
             // 

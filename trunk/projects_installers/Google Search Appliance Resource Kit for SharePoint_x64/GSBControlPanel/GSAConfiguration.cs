@@ -35,6 +35,9 @@ namespace GSBControlPanel
         private string xslSP2result = "";
         private string GSAStyle = "true";
         private string logLocation="";
+        private string accesslevel = "a";
+        private string omitSecureCookie = "false";
+        private string sessionStateModule = "System.Web.SessionState.SessionStateModule";
 
         public string LogLocation
         {
@@ -66,6 +69,23 @@ namespace GSBControlPanel
             set { enableLogging = value; }
         }
 
+        public string AccessLevel
+        {
+            get { return accesslevel; }
+            set { accesslevel = value; }
+        }
+
+        public string OmitSecureCookie
+        {
+            get { return omitSecureCookie; }
+            set { omitSecureCookie = value; }
+        }
+
+        public string SessionStateModule
+        {
+            get { return sessionStateModule; }
+            set { sessionStateModule = value; }
+        }
 
         public void SaveConfigurationsToFile(string webConfigFilePath,bool isInstaller)
         {
@@ -80,7 +100,11 @@ namespace GSBControlPanel
             gcm.ModifyNode("/configuration/appSettings", "frontEnd", FrontEnd);
             gcm.ModifyNode("/configuration/appSettings", "verbose", EnableLogging);
             gcm.ModifyNode("/configuration/appSettings", "GSAStyle", UseGsaStyling);//for custom stylesheet
+            gcm.ModifyNode("/configuration/appSettings", "accesslevel", AccessLevel);//for 'public' or 'public and secure' search with GSBS
+            gcm.ModifyNode("/configuration/appSettings", "omitSecureCookie", OmitSecureCookie);// Included for the BoA secure cookie issue. Will decide whether to process the cookie or discard the same.
 
+            // Code for enabling Session State on SharePoint Web Application
+            gcm.ModifyNodeForHttpModule("//httpModules","//modules", "Session", SessionStateModule);
             
             //this needs to be saved only during installation. should be unchnaged otherwise
             if (isInstaller == true)

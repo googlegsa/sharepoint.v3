@@ -48,12 +48,17 @@ namespace GSBControlPanel
             this.label3 = new System.Windows.Forms.Label();
             this.lblCheckConnectivityStatus = new System.Windows.Forms.Label();
             this.lblCause = new System.Windows.Forms.Label();
+            this.rbPublicAndSecure = new System.Windows.Forms.RadioButton();
+            this.lblServeMethod = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.rbPublic = new System.Windows.Forms.RadioButton();
             this.gbSelectFrontEnd.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(310, 184);
+            this.btnOk.Location = new System.Drawing.Point(311, 242);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(71, 23);
             this.btnOk.TabIndex = 7;
@@ -124,7 +129,7 @@ namespace GSBControlPanel
             // cbEnableLogging
             // 
             this.cbEnableLogging.AutoSize = true;
-            this.cbEnableLogging.Location = new System.Drawing.Point(93, 183);
+            this.cbEnableLogging.Location = new System.Drawing.Point(94, 241);
             this.cbEnableLogging.Name = "cbEnableLogging";
             this.cbEnableLogging.Size = new System.Drawing.Size(65, 17);
             this.cbEnableLogging.TabIndex = 6;
@@ -135,7 +140,7 @@ namespace GSBControlPanel
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(397, 183);
+            this.btnCancel.Location = new System.Drawing.Point(398, 241);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(71, 23);
             this.btnCancel.TabIndex = 8;
@@ -180,7 +185,7 @@ namespace GSBControlPanel
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(9, 183);
+            this.label2.Location = new System.Drawing.Point(10, 241);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(56, 13);
             this.label2.TabIndex = 0;
@@ -227,13 +232,58 @@ namespace GSBControlPanel
             this.lblCause.Size = new System.Drawing.Size(0, 13);
             this.lblCause.TabIndex = 36;
             // 
+            // rbPublicAndSecure
+            // 
+            this.rbPublicAndSecure.AutoSize = true;
+            this.rbPublicAndSecure.Location = new System.Drawing.Point(178, 13);
+            this.rbPublicAndSecure.Name = "rbPublicAndSecure";
+            this.rbPublicAndSecure.Size = new System.Drawing.Size(112, 17);
+            this.rbPublicAndSecure.TabIndex = 65;
+            this.rbPublicAndSecure.Text = "Public and Secure";
+            this.toolTip1.SetToolTip(this.rbPublicAndSecure, "Select to use Appliance\'s Frontend for rendering the search result");
+            this.rbPublicAndSecure.UseVisualStyleBackColor = true;
+            // 
+            // lblServeMethod
+            // 
+            this.lblServeMethod.AutoSize = true;
+            this.lblServeMethod.Location = new System.Drawing.Point(7, 196);
+            this.lblServeMethod.Name = "lblServeMethod";
+            this.lblServeMethod.Size = new System.Drawing.Size(74, 13);
+            this.lblServeMethod.TabIndex = 41;
+            this.lblServeMethod.Text = "Serve Method";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.rbPublicAndSecure);
+            this.groupBox1.Controls.Add(this.rbPublic);
+            this.groupBox1.Location = new System.Drawing.Point(92, 183);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(377, 41);
+            this.groupBox1.TabIndex = 40;
+            this.groupBox1.TabStop = false;
+            // 
+            // rbPublic
+            // 
+            this.rbPublic.AutoSize = true;
+            this.rbPublic.Checked = true;
+            this.rbPublic.Location = new System.Drawing.Point(6, 13);
+            this.rbPublic.Name = "rbPublic";
+            this.rbPublic.Size = new System.Drawing.Size(54, 17);
+            this.rbPublic.TabIndex = 4;
+            this.rbPublic.TabStop = true;
+            this.rbPublic.Text = "Public";
+            this.toolTip1.SetToolTip(this.rbPublic, "Select to use local stylesheet deployed on your machine. ");
+            this.rbPublic.UseVisualStyleBackColor = true;
+            // 
             // frmGSAParams
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(484, 231);
+            this.ClientSize = new System.Drawing.Size(514, 289);
+            this.Controls.Add(this.lblServeMethod);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.lblCause);
             this.Controls.Add(this.lblCheckConnectivityStatus);
             this.Controls.Add(this.label3);
@@ -258,6 +308,8 @@ namespace GSBControlPanel
             this.Text = "Google Search Box for SharePoint- Configuration Wizard";
             this.gbSelectFrontEnd.ResumeLayout(false);
             this.gbSelectFrontEnd.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -283,6 +335,10 @@ namespace GSBControlPanel
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label lblCheckConnectivityStatus;
         private System.Windows.Forms.Label lblCause;
+        private System.Windows.Forms.RadioButton rbPublicAndSecure;
+        private System.Windows.Forms.Label lblServeMethod;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.RadioButton rbPublic;
     }
 }
 

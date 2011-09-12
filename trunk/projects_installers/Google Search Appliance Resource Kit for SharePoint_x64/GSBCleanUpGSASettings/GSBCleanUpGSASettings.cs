@@ -59,12 +59,32 @@ namespace GSBCleanUpGSASettings
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSALocation']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='frontEnd']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='verbose']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='accesslevel']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='omitSecureCookie']");
 
                                 //for custom stylesheet
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslGSA2SP']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslSP2result']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSAStyle']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='logLocation']");
+
+                                // Deleting the HTTPModule corresponding to the session state from web.config file
+                                /*
+                                 * Delete the session module entry for MOSS 2007 installation on 64-bit machine, whenever 
+                                 * the GSARKS installer is run in remove mode i.e. uninstalled. The httpmodules tag 
+                                 * specially is responsible for enabling the session state on the web application. 
+                                 * The httpmodules tag also exists for SP 2010, but inserting the session module entry into it does
+                                 * not enable session state onto the web application. Instead, the entry needs to be made underneath 
+                                 * the modules tag. 
+                                 */
+                                mgr.DeleteNode("//httpModules//add[@name='Session']");
+
+                                /*
+                                 * Delete the session module entry for SP 2010 installation on 64-bit machine, whenever 
+                                 * the GSARKS installer is run in remove mode i.e. uninstalled. The modules tag 
+                                 * specially is responsible for enabling the session state on the web application. 
+                                 */
+                                mgr.DeleteNode("//modules//add[@name='Session']");
 
                                 mgr.SaveXML();
                                 #endregion save results to file
@@ -103,12 +123,18 @@ namespace GSBCleanUpGSASettings
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSALocation']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='frontEnd']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='verbose']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='accesslevel']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='omitSecureCookie']");
 
                                 //for custom stylesheet
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslGSA2SP']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='xslSP2result']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='GSAStyle']");
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='logLocation']");
+
+                                // Deleting the HTTPModule corresponding to the session state from web.config file
+                                mgr.DeleteNode("//httpModules//add[@name='Session']");
+                                mgr.DeleteNode("//modules//add[@name='Session']");
 
                                 mgr.SaveXML();
                                 #endregion delete APP setting nodes

@@ -23,6 +23,10 @@ using System.Runtime.InteropServices;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 
+
+
+
+
 namespace GSBControlPanel
 {
     public partial class frmGSAParams : Form
@@ -109,6 +113,7 @@ namespace GSBControlPanel
             }
         }
 
+
         private static bool customXertificateValidation(object sender, X509Certificate cert, X509Chain chain, System.Net.Security.SslPolicyErrors error)
         {
             return true;
@@ -118,6 +123,7 @@ namespace GSBControlPanel
         {
             GSBApplicationConfigManager gcm = new GSBApplicationConfigManager();
             gcm.LoadXML(webConfigFilePath);
+
             string myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='GSALocation']");
 
             if (null == myVal)
@@ -166,6 +172,21 @@ namespace GSBControlPanel
             else
             {
                 cbEnableLogging.Checked = false;
+            }
+
+            // Get value for accesslevel key from web.config and accordingly populate the radiobuttons
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='accesslevel']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
+            if (myVal.ToLower().Equals("a"))
+            {
+                rbPublicAndSecure.Checked = true;
+            }
+            else if(myVal.ToLower().Equals("p"))
+            {
+                rbPublic.Checked = true;
             }
         }
 
@@ -219,6 +240,15 @@ namespace GSBControlPanel
             else if (rbGSAFrontEnd.Checked == true)
             {
                 gc.UseGsaStyling = "true";
+            }
+
+            if (rbPublic.Checked == true)
+            {
+                gc.AccessLevel = "p";
+            }
+            else if (rbPublicAndSecure.Checked == true)
+            {
+                gc.AccessLevel = "a";
             }
 
             return gc;
