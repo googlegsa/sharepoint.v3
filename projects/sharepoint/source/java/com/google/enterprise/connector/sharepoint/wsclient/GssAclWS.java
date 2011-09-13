@@ -223,14 +223,19 @@ public class GssAclWS {
             continue;
           }
 
-          // Currently, only list and list-items are fed as
-          // documents. In future, if sites and pages are also
-          // sent, more checks will have to be added here
-          ObjectType objectType = ObjectType.ITEM;
-          if (null != document.getParentList()) {
+          // Check to determine whether the object-type of the document is list
+          // list-item or site.
+
+          ObjectType objectType = null;
+
+          if (document.getObjType().equals(SPConstants.SITE)) {
+            objectType = ObjectType.SITE_LANDING_PAGE;
+          } else if (null != document.getParentList()) {
             if (document.getParentList().getPrimaryKey().equals(Util.getOriginalDocId(document.getDocId(), document.getFeedType()))) {
               objectType = ObjectType.LIST;
             }
+          } else {
+            objectType = ObjectType.ITEM;
           }
 
           String[] deniedPermissions = permissions.getDeniedPermission();
