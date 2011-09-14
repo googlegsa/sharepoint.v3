@@ -20,7 +20,7 @@ import junit.framework.TestCase;
 
 public class SharePointConnectorTest extends TestCase {
 
-    public void testInit() throws SharepointException {
-        assertNotNull(TestConfiguration.getConnectorInstance());
-    }
+  public void testInit() throws SharepointException {
+    assertNotNull(TestConfiguration.getConnectorInstance());
+  }
 }

@@ -14,20 +14,18 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-
 import junit.framework.TestCase;
 
 public class SharepointExceptionTest extends TestCase {
 
-    SharepointException gspExcep;
+  SharepointException gspExcep;
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        this.gspExcep = new SharepointException();
-    }
+  protected void setUp() throws Exception {
+    super.setUp();
+    this.gspExcep = new SharepointException();
+  }
 
-    public final void testCase() {
-        System.out.println("Methods are toovague!");
-    }
+  public final void testCase() {
+    System.out.println("Methods are toovague!");
+  }
 }

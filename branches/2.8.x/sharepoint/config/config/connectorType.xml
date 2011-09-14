@@ -14,11 +14,10 @@
         <value>includedURls</value>
         <value>excludedURls</value>
         <value>aliasMap</value>
+        <value>sharepointCrawlingOptions</value>
         <value>authorization</value>
-        <value>useSPSearchVisibility</value>
         <!-- Push ACLs configuration -->
         <value>pushAcls</value>
-        <value>appendNamespaceInSPGroup</value>
         <value>usernameFormatInAce</value>
         <value>groupnameFormatInAce</value>
         <!-- ldap configuration -->

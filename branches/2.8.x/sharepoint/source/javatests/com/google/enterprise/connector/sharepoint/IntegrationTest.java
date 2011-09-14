@@ -32,28 +32,26 @@ import com.google.enterprise.connector.util.SystemClock;
 import junit.framework.TestCase;
 
 public class IntegrationTest extends TestCase {
-    private SharepointConnector connector;
+  private SharepointConnector connector;
 
-    public void setUp() throws Exception {
-        super.setUp();
-        this.connector = TestConfiguration.getConnectorInstance();
-    }
+  public void setUp() throws Exception {
+    super.setUp();
+    this.connector = TestConfiguration.getConnectorInstance();
+  }
 
-    public void testTraversal()
-            throws InterruptedException, RepositoryException {
-        final String connectorName = "sharepoint";
-        final Session session = this.connector.login();
-        GlobalState.forgetState(null);
-        final SharepointTraversalManager traversalManager = (SharepointTraversalManager) session.getTraversalManager();
-        final MockInstantiator instantiator = new MockInstantiator(
-                new ThreadPool(5, new SystemClock()));
-        final Traverser traverser = new QueryTraverser(new MockPusher(
-                System.out), traversalManager,
-                instantiator.getTraversalStateStore(connectorName),
-                connectorName, Context.getInstance().getTraversalContext(),
-                new SystemClock(), null);
-        BatchResult result = traverser.runBatch(new BatchSize(10, 20));
-        int totalDocsProcessed = result.getCountProcessed();
-        assertTrue(totalDocsProcessed > 0);
-    }
+  public void testTraversal() throws InterruptedException, RepositoryException {
+    final String connectorName = "sharepoint";
+    final Session session = this.connector.login();
+    GlobalState.forgetState(null);
+    final SharepointTraversalManager traversalManager = (SharepointTraversalManager) session.getTraversalManager();
+    final MockInstantiator instantiator = new MockInstantiator(new ThreadPool(
+        5, new SystemClock()));
+    final Traverser traverser = new QueryTraverser(new MockPusher(System.out),
+        traversalManager, instantiator.getTraversalStateStore(connectorName),
+        connectorName, Context.getInstance().getTraversalContext(),
+        new SystemClock(), null);
+    BatchResult result = traverser.runBatch(new BatchSize(10, 20));
+    int totalDocsProcessed = result.getCountProcessed();
+    assertTrue(totalDocsProcessed > 0);
+  }
 }

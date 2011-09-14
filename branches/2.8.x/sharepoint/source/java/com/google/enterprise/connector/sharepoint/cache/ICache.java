@@ -14,28 +14,27 @@
 
 package com.google.enterprise.connector.sharepoint.cache;
 
-
 public interface ICache<T> {
 
-    /**
-     * Checks if the element is in cache
-     *
-     * @param t
-     * @return
-     */
-    public boolean contains(T t);
+  /**
+   * Checks if the element is in cache
+   *
+   * @param t
+   * @return
+   */
+  public boolean contains(T t);
 
-    /**
-     * adds an element into the cache
-     *
-     * @param t
-     */
-    public void add(T t);
+  /**
+   * adds an element into the cache
+   *
+   * @param t
+   */
+  public void add(T t);
 
-    /**
-     * Removes the element from cache
-     *
-     * @param t
-     */
-    public void remove(T t);
+  /**
+   * Removes the element from cache
+   *
+   * @param t
+   */
+  public void remove(T t);
 }

@@ -29,239 +29,239 @@ import junit.framework.TestCase;
 
 public class UtilTest extends TestCase {
 
-    protected void setUp() throws Exception {
-        System.out.println("\n--------------");
-        FeedType fd = FeedType.getFeedType("CONTENT");
-        FeedType fd2 = FeedType.getFeedType("content");
-        System.out.println(fd.equals(fd2));
-        System.out.println(fd.toString());
-        System.out.println(fd.valueOf("CONTENT_FEED"));
+  protected void setUp() throws Exception {
+    System.out.println("\n--------------");
+    FeedType fd = FeedType.getFeedType("CONTENT");
+    FeedType fd2 = FeedType.getFeedType("content");
+    System.out.println(fd.equals(fd2));
+    System.out.println(fd.toString());
+    System.out.println(fd.valueOf("CONTENT_FEED"));
+  }
+
+  public final void testListItemsStringToCalendar() {
+    System.out.println("Testing listItemsStringToCalendar()...");
+    final String listItemChangesString = "2008-07-16 5:30:35"; // Date in
+    // UTC
+    // format
+    Calendar cal = null;
+    try {
+      cal = Util.listItemsStringToCalendar(listItemChangesString); // UTC
+      // format
+      // to
+      // Calender
+      System.out.println("Method Returned : " + cal);
+      assertNotNull(cal);
+      final Date dt = cal.getTime();
+      System.out.println("Date : " + dt);
+    } catch (final ParseException pe) {
+      System.out.println(pe);
+      System.out.println("[ listItemsStringToCalendar() ] Test Failed.");
+      return;
     }
+    System.out.println("[ listItemsStringToCalendar() ] Test Passed");
+  }
 
-    public final void testListItemsStringToCalendar() {
-        System.out.println("Testing listItemsStringToCalendar()...");
-        final String listItemChangesString = "2008-07-16 5:30:35"; // Date in
-        // UTC
-        // format
-        Calendar cal = null;
-        try {
-            cal = Util.listItemsStringToCalendar(listItemChangesString); // UTC
-            // format
-            // to
-            // Calender
-            System.out.println("Method Returned : " + cal);
-            assertNotNull(cal);
-            final Date dt = cal.getTime();
-            System.out.println("Date : " + dt);
-        } catch (final ParseException pe) {
-            System.out.println(pe);
-            System.out.println("[ listItemsStringToCalendar() ] Test Failed.");
-            return;
-        }
-        System.out.println("[ listItemsStringToCalendar() ] Test Passed");
+  public final void testListItemChangesStringToCalendar() {
+    System.out.println("Testing listItemChangesStringToCalendar()...");
+    final String listItemChangesString = "2008-07-16T05:30:35Z"; // Date in
+    // UTC
+    // format
+    Calendar cal = null;
+    try {
+      cal = Util.listItemChangesStringToCalendar(listItemChangesString); // UTC
+      // format
+      // to
+      // Calender
+      System.out.println("Method Returned : " + cal);
+      assertNotNull(cal);
+      final Date dt = cal.getTime();
+      System.out.println("Date : " + dt);
+    } catch (final ParseException pe) {
+      System.out.println(pe);
+      System.out.println("[ listItemChangesStringToCalendar() ] Test Failed.");
+      return;
     }
+    System.out.println("[ listItemChangesStringToCalendar() ] Test Passed");
+  }
 
-    public final void testListItemChangesStringToCalendar() {
-        System.out.println("Testing listItemChangesStringToCalendar()...");
-        final String listItemChangesString = "2008-07-16T05:30:35Z"; // Date in
-        // UTC
-        // format
-        Calendar cal = null;
-        try {
-            cal = Util.listItemChangesStringToCalendar(listItemChangesString); // UTC
-            // format
-            // to
-            // Calender
-            System.out.println("Method Returned : " + cal);
-            assertNotNull(cal);
-            final Date dt = cal.getTime();
-            System.out.println("Date : " + dt);
-        } catch (final ParseException pe) {
-            System.out.println(pe);
-            System.out.println("[ listItemChangesStringToCalendar() ] Test Failed.");
-            return;
-        }
-        System.out.println("[ listItemChangesStringToCalendar() ] Test Passed");
+  public final void testSiteDataStringToCalendar() {
+    System.out.println("Testing siteDataStringToCalendar()...");
+    final String listItemChangesString = "2008-07-16 5:30:35Z"; // Date in
+    // UTC
+    // format
+    Calendar cal = null;
+    try {
+      cal = Util.siteDataStringToCalendar(listItemChangesString); // UTC
+      // format
+      // to
+      // Calender
+      System.out.println("Method Returned : " + cal);
+      assertNotNull(cal);
+      final Date dt = cal.getTime();
+      System.out.println("Date : " + dt);
+    } catch (final ParseException pe) {
+      System.out.println(pe);
+      System.out.println("[ siteDataStringToCalendar() ] Test Failed.");
+      return;
     }
+    System.out.println("[ siteDataStringToCalendar() ] Test Passed");
+  }
 
-    public final void testSiteDataStringToCalendar() {
-        System.out.println("Testing siteDataStringToCalendar()...");
-        final String listItemChangesString = "2008-07-16 5:30:35Z"; // Date in
-        // UTC
-        // format
-        Calendar cal = null;
-        try {
-            cal = Util.siteDataStringToCalendar(listItemChangesString); // UTC
-            // format
-            // to
-            // Calender
-            System.out.println("Method Returned : " + cal);
-            assertNotNull(cal);
-            final Date dt = cal.getTime();
-            System.out.println("Date : " + dt);
-        } catch (final ParseException pe) {
-            System.out.println(pe);
-            System.out.println("[ siteDataStringToCalendar() ] Test Failed.");
-            return;
-        }
-        System.out.println("[ siteDataStringToCalendar() ] Test Passed");
+  public final void testJodaToCalendar() {
+    System.out.println("Testing jodaToCalendar()...");
+    Calendar cal = null;
+    cal = Util.jodaToCalendar(new DateTime());
+    System.out.println("Method Returned : " + cal);
+    assertNotNull(cal);
+    final Date dt = cal.getTime();
+    System.out.println("Date : " + dt);
+    System.out.println("[ jodaToCalendar() ] Test Passed");
+  }
+
+  public final void testCalendarToJoda() {
+    System.out.println("Testing calendarToJoda()...");
+    final DateTime dt = Util.calendarToJoda(Calendar.getInstance());
+    System.out.println("Method Returned : " + dt);
+    assertNotNull(dt);
+    System.out.println("[ calendarToJoda() ] Test Passed");
+  }
+
+  public final void testFormatDateDateTime() {
+    System.out.println("Testing formatDate(DateTime)...");
+    final String dt = Util.formatDate(new DateTime());
+    System.out.println("Method Returned : " + dt);
+    assertNotNull(dt);
+    System.out.println("[ formatDate() ] Test Passed");
+  }
+
+  public final void testFormatDateCalendar() {
+    System.out.println("Testing formatDate(Calendar)...");
+    final String dt = Util.formatDate(Calendar.getInstance());
+    System.out.println("Method Returned : " + dt);
+    assertNotNull(dt);
+    System.out.println("[ formatDate() ] Test Passed");
+  }
+
+  public final void testParseDate() {
+    System.out.println("Testing parseDate(Calendar)...");
+    final DateTime dt = Util.parseDate("20090116T205013.000+0530");
+    System.out.println("Method Returned : " + dt);
+    assertNotNull(dt);
+    System.out.println("[ parseDate() ] Test Passed");
+  }
+
+  public final void testRemoveLineTerminators() {
+    System.out.println("Testing removeLineTerminators()...");
+    final CharSequence str = Util.removeLineTerminators("X\\rY\\nZ");
+    System.out.println("Method Returned : " + str);
+    assertNotNull(str);
+    System.out.println("[ removeLineTerminators() ] Test Passed");
+  }
+
+  public final void testGetEscapedSiteName() {
+    System.out.println("Testing getEscapedSiteName()...");
+    try {
+      final String str = Util.getEscapedSiteName("http://host.domain.co.in:20000/default.aspx");
+      System.out.println("Method Returned : " + str);
+      assertNotNull(str);
+      System.out.println("[ getEscapedSiteName() ] Test Passed");
+    } catch (final RepositoryException re) {
+      System.out.println(re);
+      System.out.println("[ getEscapedSiteName() ] Test Failed.");
+      return;
     }
+  }
 
-    public final void testJodaToCalendar() {
-        System.out.println("Testing jodaToCalendar()...");
-        Calendar cal = null;
-        cal = Util.jodaToCalendar(new DateTime());
-        System.out.println("Method Returned : " + cal);
-        assertNotNull(cal);
-        final Date dt = cal.getTime();
-        System.out.println("Date : " + dt);
-        System.out.println("[ jodaToCalendar() ] Test Passed");
+  public final void testMatcher() {
+    System.out.println("Testing matcher()..");
+    final boolean bl = Util.match(new String[] { "sp.intranet.teldta.com/" }, "https://sp.intranet.teldta.com", null);
+    System.out.println(bl);
+    System.out.println("[ matcher() ] Test Completed");
+  }
+
+  public final void testGetFolderPathForWSCall() {
+    System.out.println("Testing getFolderPathForWSCall()..");
+    final String foldPath = Util.getFolderPathForWSCall("http://host.mycomp.com/sanity", "sanity/testLib/fold1");
+    assertNotNull(foldPath);
+    System.out.println("[ getFolderPathForWSCall() ] Test Completed");
+  }
+
+  /**
+   * @Test Tests {@link Util#formatDate(Calendar, String)}
+   */
+  public void testFormatDate() {
+    Calendar calendar = Calendar.getInstance();
+
+    calendar.set(2009, Calendar.JUNE, 12, 11, 30, 30);
+
+    String expectedFormat = "2009-06-12 11:30:30";
+
+    String formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT1);
+
+    assertNotNull(formattedDate);
+    assertEquals(expectedFormat, formattedDate);
+
+    expectedFormat = "2009-06-12 11:30:30 IST";
+
+    formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT_WITH_ZONE);
+
+    assertNotNull(formattedDate);
+    assertEquals(expectedFormat, formattedDate);
+
+  }
+
+  public void testDoAliasMapping() {
+    checkAliasMapping("http://mycomp.com/", "http://mycomp.com:80/");
+    checkAliasMapping("http://mycomp.com:80/", "http://mycomp.com/");
+    checkAliasMapping("http://mycomp.com:80/", "http://mycomp.com:8080/");
+    checkAliasMapping("http://mycomp.com:80/", "http://mycomp.co.in:8080/");
+    checkAliasMapping("http://mycomp.com:80/", "https://mycomp.co.in:8080/");
+  }
+
+  private void checkAliasMapping(final String originalUrl,
+      final String expectedUrl) {
+    Map<String, String> aliasMap = new HashMap<String, String>();
+    aliasMap.put(originalUrl, expectedUrl);
+    String mappedUrl = null;
+    try {
+      mappedUrl = Util.doAliasMapping(originalUrl, aliasMap, false);
+    } catch (Exception e) {
+      fail(e.getMessage());
     }
+    assertEquals(expectedUrl, mappedUrl);
+    aliasMap.clear();
+  }
 
-    public final void testCalendarToJoda() {
-        System.out.println("Testing calendarToJoda()...");
-        final DateTime dt = Util.calendarToJoda(Calendar.getInstance());
-        System.out.println("Method Returned : " + dt);
-        assertNotNull(dt);
-        System.out.println("[ calendarToJoda() ] Test Passed");
-    }
+  /**
+   * @Test Tests {@link Util#getGroupNameWithDomain(groupname, domain)}
+   */
+  public final void testGetGroupNameWithDomain() {
+    String expectedGroupNameFormat = "testdomain\\testgroup";
+    String format1 = Util.getGroupNameWithDomain("testgroup", "testdomain");
+    assertNotNull(format1);
+    assertEquals(expectedGroupNameFormat, format1);
+    String format2 = Util.getGroupNameWithDomain("testgroup@testdomain", "testdomain");
+    assertNotNull(format2);
+    assertEquals(expectedGroupNameFormat, format2);
+    String format3 = Util.getGroupNameWithDomain("testdomain\\testgroup", "testdomain");
+    assertNotNull(format3);
+    assertEquals(expectedGroupNameFormat, format3);
+  }
 
-    public final void testFormatDateDateTime() {
-        System.out.println("Testing formatDate(DateTime)...");
-        final String dt = Util.formatDate(new DateTime());
-        System.out.println("Method Returned : " + dt);
-        assertNotNull(dt);
-        System.out.println("[ formatDate() ] Test Passed");
-    }
-
-    public final void testFormatDateCalendar() {
-        System.out.println("Testing formatDate(Calendar)...");
-        final String dt = Util.formatDate(Calendar.getInstance());
-        System.out.println("Method Returned : " + dt);
-        assertNotNull(dt);
-        System.out.println("[ formatDate() ] Test Passed");
-    }
-
-    public final void testParseDate() {
-        System.out.println("Testing parseDate(Calendar)...");
-        final DateTime dt = Util.parseDate("20090116T205013.000+0530");
-        System.out.println("Method Returned : " + dt);
-        assertNotNull(dt);
-        System.out.println("[ parseDate() ] Test Passed");
-    }
-
-    public final void testRemoveLineTerminators() {
-        System.out.println("Testing removeLineTerminators()...");
-        final CharSequence str = Util.removeLineTerminators("X\\rY\\nZ");
-        System.out.println("Method Returned : " + str);
-        assertNotNull(str);
-        System.out.println("[ removeLineTerminators() ] Test Passed");
-    }
-
-    public final void testGetEscapedSiteName() {
-        System.out.println("Testing getEscapedSiteName()...");
-        try {
-            final String str = Util.getEscapedSiteName("http://host.domain.co.in:20000/default.aspx");
-            System.out.println("Method Returned : " + str);
-            assertNotNull(str);
-            System.out.println("[ getEscapedSiteName() ] Test Passed");
-        } catch (final RepositoryException re) {
-            System.out.println(re);
-            System.out.println("[ getEscapedSiteName() ] Test Failed.");
-            return;
-        }
-    }
-
-    public final void testMatcher() {
-        System.out.println("Testing matcher()..");
-        final boolean bl = Util.match(new String[] { "sp.intranet.teldta.com/" }, "https://sp.intranet.teldta.com", null);
-        System.out.println(bl);
-        System.out.println("[ matcher() ] Test Completed");
-    }
-
-    public final void testGetFolderPathForWSCall() {
-        System.out.println("Testing getFolderPathForWSCall()..");
-        final String foldPath = Util.getFolderPathForWSCall("http://host.mycomp.com/sanity", "sanity/testLib/fold1");
-        assertNotNull(foldPath);
-        System.out.println("[ getFolderPathForWSCall() ] Test Completed");
-    }
-
-    /**
-     * @Test Tests {@link Util#formatDate(Calendar, String)}
-     */
-    public void testFormatDate() {
-        Calendar calendar = Calendar.getInstance();
-
-        calendar.set(2009, Calendar.JUNE, 12, 11, 30, 30);
-
-        String expectedFormat = "2009-06-12 11:30:30";
-
-        String formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT1);
-
-        assertNotNull(formattedDate);
-        assertEquals(expectedFormat, formattedDate);
-
-        expectedFormat = "2009-06-12 11:30:30 IST";
-
-        formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT_WITH_ZONE);
-
-        assertNotNull(formattedDate);
-        assertEquals(expectedFormat, formattedDate);
-
-    }
-
-    public void testDoAliasMapping() {
-        checkAliasMapping("http://mycomp.com/", "http://mycomp.com:80/");
-        checkAliasMapping("http://mycomp.com:80/", "http://mycomp.com/");
-        checkAliasMapping("http://mycomp.com:80/", "http://mycomp.com:8080/");
-        checkAliasMapping("http://mycomp.com:80/", "http://mycomp.co.in:8080/");
-        checkAliasMapping("http://mycomp.com:80/", "https://mycomp.co.in:8080/");
-    }
-
-    private void checkAliasMapping(final String originalUrl,
-            final String expectedUrl) {
-        Map<String, String> aliasMap = new HashMap<String, String>();
-        aliasMap.put(originalUrl, expectedUrl);
-        String mappedUrl = null;
-        try {
-            mappedUrl = Util.doAliasMapping(originalUrl, aliasMap, false);
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-        assertEquals(expectedUrl, mappedUrl);
-        aliasMap.clear();
-    }
-
-	/**
-	 * @Test Tests {@link Util#getGroupNameWithDomain(groupname, domain)}
-	 */
-	public final void testGetGroupNameWithDomain() {
-		String expectedGroupNameFormat = "testdomain\\testgroup";
-		String format1 = Util.getGroupNameWithDomain("testgroup", "testdomain");
-		assertNotNull(format1);
-		assertEquals(expectedGroupNameFormat, format1);
-		String format2 = Util.getGroupNameWithDomain("testgroup@testdomain", "testdomain");
-		assertNotNull(format2);
-		assertEquals(expectedGroupNameFormat, format2);
-		String format3 = Util.getGroupNameWithDomain("testdomain\\testgroup", "testdomain");
-		assertNotNull(format3);
-		assertEquals(expectedGroupNameFormat, format3);
-	}
-
-    /**
-	 * @Test Tests {@link Util#getGroupNameAtDomain(groupname, domain)}
-	 */
-    public final void testGetGroupNameAtDomain() {
-		String expectedGroupNameFormat = "testgroup@testdomain";
-		String format1 = Util.getGroupNameAtDomain("testgroup", "testdomain");
-		assertNotNull(format1);
-		assertEquals(expectedGroupNameFormat, format1);
-		String format2 = Util.getGroupNameAtDomain("testgroup@testdomain", "testdomain");
-		assertNotNull(format2);
-		assertEquals(expectedGroupNameFormat, format2);
-		String format3 = Util.getGroupNameAtDomain("testdomain\\testgroup", "testdomain");
-		assertNotNull(format3);
-		assertEquals(expectedGroupNameFormat, format3);
-    }
+  /**
+   * @Test Tests {@link Util#getGroupNameAtDomain(groupname, domain)}
+   */
+  public final void testGetGroupNameAtDomain() {
+    String expectedGroupNameFormat = "testgroup@testdomain";
+    String format1 = Util.getGroupNameAtDomain("testgroup", "testdomain");
+    assertNotNull(format1);
+    assertEquals(expectedGroupNameFormat, format1);
+    String format2 = Util.getGroupNameAtDomain("testgroup@testdomain", "testdomain");
+    assertNotNull(format2);
+    assertEquals(expectedGroupNameFormat, format2);
+    String format3 = Util.getGroupNameAtDomain("testdomain\\testgroup", "testdomain");
+    assertNotNull(format3);
+    assertEquals(expectedGroupNameFormat, format3);
+  }
 
 }
