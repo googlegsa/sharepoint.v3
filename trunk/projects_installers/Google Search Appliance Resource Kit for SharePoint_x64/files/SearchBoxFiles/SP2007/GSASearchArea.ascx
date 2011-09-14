@@ -11,7 +11,47 @@
 <%@ Import Namespace="System.IO" %>
 
 <%
+    const string PublicAndSecureSearch = "publicAndSecure";
+    const string PublicSearch = "public";
     
+    // Setting the URL for the Search Tips Link 
+    string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString()+ "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
+    
+    if (!IsPostBack)
+    {
+        // Getting the default search type from web.config file.
+        string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
+        if (defaultSearchType == PublicAndSecureSearch)
+        {
+            /*
+             * If default search type is 'public and secure', set the status of the 
+             * controls, namely, public search checkbox the hfPublicSearch hiddenfield
+             * to boolean value false.
+             */
+            setInitialStatusForUIControlsAsPerSearchType(false);
+        }
+        else if (defaultSearchType == PublicSearch)
+        {
+            /*
+             * If default search type is 'public', set the status of the 
+             * controls, namely, public search checkbox the hfPublicSearch hiddenfield
+             * to boolean value true.
+             */
+            setInitialStatusForUIControlsAsPerSearchType(true);
+        }
+    }
+    
+    
+    
+    /*
+     * Call the function for checkbox checked changed event, so that the latest status for the 
+     * public search checkbox is assigned to 'hfPublicSearch' hiddenfield variable.
+     */
+    checkPublicSearch(this, EventArgs.Empty);
+     
+    // Registering the event handler for public search checkboxcheck
+    chkPublicSearch.CheckedChanged += new EventHandler(this.checkPublicSearch);
+
     
    // The forward slash is used to append to the sitesearch parameter. 
     string forwardSlash = "/";
@@ -40,10 +80,8 @@
         {
             // This code will be executed for the first search request sent to GSA.
             publicSearchStatus = Request.QueryString["isPublicSearch"].ToString();
-            
-            // Save value in a session varaible.
-            Session["PublicSearchStatus"] = Request.QueryString["isPublicSearch"].ToString();
-            hfPublicSearch.Value = Session["PublicSearchStatus"].ToString();
+
+            hfPublicSearch.Value = publicSearchStatus;
             if (publicSearchStatus == "true")
             {
                 chkPublicSearch.Checked = true;
@@ -66,24 +104,11 @@
                 string accessStatus = Request.QueryString["access"].ToString();
                 if (accessStatus == "a")
                 {
-                    if (Session["PublicSearchStatus"] != null)
-                    {
-                        publicSearchStatus = Convert.ToString(Session["PublicSearchStatus"]); // Get value from the session variable
-                        hfPublicSearch.Value = publicSearchStatus;
-                        if (publicSearchStatus == "true")
-                        {
-                            chkPublicSearch.Checked = true;
-                        }
-                        else
-                        {
-                            chkPublicSearch.Checked = false;
-                        }
-                    }
+                   chkPublicSearch.Checked = false;
                 }
                 else // Means only public search is performed by the user (i.e. access = p)
                 {
                     chkPublicSearch.Checked = true;
-                    Session["PublicSearchStatus"] = "true";
                 }
             }
         }
@@ -147,6 +172,7 @@
     lstItem.Text = enterprise;
     lstItem.Value = enterprise;
     idSearchScope.Items.Add(lstItem);
+    
 
     ListItem lstItem1 = new ListItem();
     string sitename = strScopeWeb.Replace("'", "");
@@ -173,7 +199,8 @@
     ListItem lstItem5 = new ListItem();
     lstItem5.Text = currentFolderAndAllSubfolders;
     idSearchScope.Items.Add(lstItem5);
-    
+
+   
     idSearchScope.Items.FindByText(currentList).Enabled = false;
     idSearchScope.Items.FindByText(currentFolder).Enabled = false;
     idSearchScope.Items.FindByText(currentFolderAndAllSubfolders).Enabled = false;
@@ -207,7 +234,7 @@
         hfSelectedScope.Value = strScopeList;
         lstItem3.Value = strScopeList;
         idSearchScope.Items.FindByText(currentList).Enabled = true;
-        
+
         if (this.Context.Request.QueryString["RootFolder"] != null)
         {
             strScopeFolder = siteUrl + this.Context.Request.QueryString["RootFolder"].ToString(); // Retrieve the folder path
@@ -216,7 +243,7 @@
             hfSelectedScope.Value = strScopeFolder;
             idSearchScope.Items.FindByText(currentFolder).Enabled = true;
             idSearchScope.Items.FindByText(currentFolderAndAllSubfolders).Enabled = true;
-            
+
         }
     }
     else
@@ -230,7 +257,32 @@
     if (Request.QueryString["k"] != null)
     {
         // If this is the first request for search, populate the search query text with querystring 'k' parameter.
-        txtSearch.Text = Request.QueryString["k"].ToString();
+        string searchQuery = "";
+        searchQuery = Request.QueryString["k"];
+        int strCache = searchQuery.IndexOf("cache:");
+
+        if (strCache > -1)
+        {
+            /*
+             * The search query string contains the term 'cache', means that user has clicked either the
+             * 'Cached' or 'Text Version' link for a search result. Hence, set the text for the 
+             * search box using the value from the Session variable.
+             */
+            if (Session["SearchQuery"] != null)
+            {
+                txtSearch.Text = Convert.ToString(Session["SearchQuery"]);
+            }
+        }
+        else
+        {
+            txtSearch.Text = searchQuery;
+            Session["SearchQuery"] = txtSearch.Text; /* 
+                                                      * Store search query in Session variable, and then retrieve
+                                                      * at the time when user clicks on the 'Cached'/ 'Text Version'
+                                                      * Links
+                                                      */
+
+        }
     }
     else if(Request.QueryString["q"] != null)
     {
@@ -384,15 +436,12 @@
             else if (selectedScopeUrl == "Enterprise" && selectedScopeText == "Enterprise")
             {
                 strUrl = strUrl + "&selectedScope=" + selectedScopeUrl + "&isPublicSearch=" + isPublicSearch;
-                frm.action = strUrl;
-                frm.submit();
+                window.document.location.href = strUrl;
             }
             else
             {
                 strUrl = strUrl + "&selectedScope=" + selectedScopeText + "&scopeUrl=" + selectedScopeUrl + "&isPublicSearch=" + isPublicSearch;
-                frm.action = strUrl;
-                document.forms
-                frm.submit();
+                window.document.location.href = strUrl;
             }
         }
     }
@@ -415,43 +464,64 @@
          f.style.background = '#ffffff';
     }
     
-    // Function that will change the background of the search query textbox to the Google search image whenever the user is done with typing the search query.
+    // Function that will change the background of the search query textbox 
     function SearchTextOnBlur()
     {
          var f = document.getElementById("<%=txtSearch.ClientID%>");
-         f.style.background = 'background-color: transparent'; 
+         if(f.value == "")
+         {
+            // Display the Google Search watermark image in searchbox when the searchbox is empty
+            f.style.background = 'background-color: transparent'; 
+         }
+         else
+         {
+            /*
+             * Do not display the Google Search watermark image in searchbox, when the searchbox contains text.
+             * Instead set background colour to white.
+             */
+            f.style.background = '#ffffff';
+         }
     }
     
 </script>
 
 
-<script runat="server">
+<script runat="server"  type="text/C#">
 
     // Function that will change the value of hiddenfield and session variable whenever checkbox is checked/ unchecked.
-    protected void checkPublicSearch(object sender, EventArgs e)
+    public void checkPublicSearch(object sender, EventArgs e)
     {
         if (chkPublicSearch.Checked == true)
         {
             hfPublicSearch.Value = "true";
-            Session["PublicSearchStatus"] = "true";
         }
         else
         {
             hfPublicSearch.Value = "false";
-            Session["PublicSearchStatus"] = "false";
         }
     }
-    
+
+
+    /// <summary>
+    /// Function that will set the initial status of UI control as per the Search Type
+    /// </summary>
+    /// <param name="publicSearchCheckBoxStatus">Boolean value either true or false</param>
+    void setInitialStatusForUIControlsAsPerSearchType(bool isInitialSearchTypeSetToPublic)
+    {
+        chkPublicSearch.Checked = isInitialSearchTypeSetToPublic;
+        hfPublicSearch.Value = Convert.ToString(isInitialSearchTypeSetToPublic);
+    }
 </script>
 
 
-<table border="0" cellpadding="0" cellspacing="0" class='ms-searchform'>
+
+<table border="0" cellpadding="0" cellspacing="0">
     <tr class='ms-searchbox'>
         <td>
-        <asp:HiddenField ID="hfPublicSearch" runat="server" Value="true"  />
+        <asp:HiddenField ID="hfPublicSearch" runat="server"   />
         <asp:HiddenField ID="hfStrEncodedUrl" runat="server"/>
         <asp:HiddenField id="hfUserSelectedScope" runat="server" />
-        <div  style="color:#003399" id="divPublicSearch" runat="server"><asp:CheckBox ID="chkPublicSearch" runat="server"  Checked="true"   OnCheckedChanged="checkPublicSearch" AutoPostBack="true"  ToolTip="Check this to search public content"   />Public&nbsp;Search</div> 
+        <div  style="color:#003399" id="divPublicSearch" runat="server"><asp:CheckBox ID="chkPublicSearch" runat="server"  OnCheckedChanged="checkPublicSearch" AutoPostBack="true"  ToolTip="Check this to search public content"   />Public&nbsp;Search</div> 
         </td>
         <td>
              
@@ -474,6 +544,9 @@
                 id="onetIDGoSearch">
                 <img border='0' src="/_layouts/images/gosearch.gif" alt="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchImageToolTip),Response.Output);%>"></a>
             </div>
+        </td>
+        <td>
+            <a href="<%=SearchTipsHtmlPageURL %>" style="font-size:xx-small; color:#003399; text-decoration:underline" >Search&nbsp;Tips</a>
         </td>
     </tr>
 </table>

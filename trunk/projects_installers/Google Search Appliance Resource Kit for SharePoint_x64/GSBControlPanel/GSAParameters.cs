@@ -182,6 +182,21 @@ namespace GSBControlPanel
             {
                 rbPublic.Checked = true;
             }
+
+            // Get value for defaultSearchType key from web.config and accordingly populate the radiobuttons
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='defaultSearchType']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
+            if (myVal.ToLower().Equals("publicAndSecure"))
+            {
+                rbPublicAndSecureDefaultSearchType.Checked = true;
+            }
+            else if (myVal.ToLower().Equals("public"))
+            {
+                rbPublicDefaultSearchType.Checked = true;
+            }
         }
 
         /// <summary>
@@ -243,6 +258,15 @@ namespace GSBControlPanel
             else if (rbPublicAndSecure.Checked == true)
             {
                 gc.AccessLevel = "a";
+            }
+
+            if (rbPublicAndSecureDefaultSearchType.Checked == true)
+            {
+                gc.DefaultSearchType = "publicAndSecure";
+            }
+            else if (rbPublicDefaultSearchType.Checked == true)
+            {
+                gc.DefaultSearchType = "public";
             }
 
             return gc;

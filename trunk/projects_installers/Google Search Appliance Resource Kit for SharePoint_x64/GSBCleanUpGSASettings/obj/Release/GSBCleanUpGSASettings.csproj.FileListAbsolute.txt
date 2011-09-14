@@ -53,3 +53,12 @@ C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.dll
 C:\Google Search Appliance Resource Kit for SharePoint_x64\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.xml
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.exe
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\obj\Release\GSBCleanUpGSASettings.pdb
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.pdb
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.exe
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.dll
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\bin\Release\Microsoft.SharePoint.Search.xml
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\bin\Release\Configuration Wizard.pdb
+C:\Priya\GSARKS_x64\RC2\GSBCleanUpGSASettings\obj\Release\ResolveAssemblyReference.cache
