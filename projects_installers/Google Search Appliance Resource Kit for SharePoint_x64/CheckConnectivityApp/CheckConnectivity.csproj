@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
+    <ProductVersion>9.0.21022</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{953D8082-D796-4E96-8AD0-381B4CAB36D5}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -129,10 +129,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://localhost:14874/_vti_bin/GSBulkAuthorization.asmx">
+    <WebReferenceUrl Include="http://localhost:1313/_vti_bin/GSBulkAuthorization.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPBulkWS\</RelPath>
-      <UpdateFromURL>http://localhost:14874/_vti_bin/GSBulkAuthorization.asmx</UpdateFromURL>
+      <UpdateFromURL>http://localhost:1313/_vti_bin/GSBulkAuthorization.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -140,10 +140,10 @@
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>Verify_Installation_GSPBulkWS_BulkAuthorization</CachedSettingsPropName>
     </WebReferenceUrl>
-    <WebReferenceUrl Include="http://localhost:14874/_vti_bin/GssAcl.asmx">
+    <WebReferenceUrl Include="http://localhost:1313/_vti_bin/GssAcl.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPAclWS\</RelPath>
-      <UpdateFromURL>http://localhost:14874/_vti_bin/GssAcl.asmx</UpdateFromURL>
+      <UpdateFromURL>http://localhost:1313/_vti_bin/GssAcl.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -151,10 +151,10 @@
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>Verify_Installation_GSPAclWS_GssAclMonitor</CachedSettingsPropName>
     </WebReferenceUrl>
-    <WebReferenceUrl Include="http://localhost:14874/_vti_bin/GSSiteDiscovery.asmx">
+    <WebReferenceUrl Include="http://localhost:1313/_vti_bin/GSSiteDiscovery.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPSiteDiscoveryWS\</RelPath>
-      <UpdateFromURL>http://localhost:14874/_vti_bin/GSSiteDiscovery.asmx</UpdateFromURL>
+      <UpdateFromURL>http://localhost:1313/_vti_bin/GSSiteDiscovery.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -162,6 +162,31 @@
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>Verify_Installation_GSPSiteDiscoveryWS_SiteDiscovery</CachedSettingsPropName>
     </WebReferenceUrl>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Web References\GSPBulkWS\AuthDataPacket.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\GSPBulkWS\GSBulkAuthorization.disco" />
+    <None Include="Web References\GSPBulkWS\GSBulkAuthorization.wsdl" />
+    <None Include="Web References\GSPBulkWS\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Web References\GSPSiteDiscoveryWS\GSSiteDiscovery.disco" />
+    <None Include="Web References\GSPSiteDiscoveryWS\GSSiteDiscovery.wsdl" />
+    <None Include="Web References\GSPSiteDiscoveryWS\ListCrawlInfo.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\GSPSiteDiscoveryWS\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Web References\GSPSiteDiscoveryWS\WebCrawlInfo.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="Web References\GSPAclWS\GssAcl.disco" />
@@ -181,31 +206,6 @@
     <None Include="Web References\GSPAclWS\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Web References\GSPBulkWS\AuthDataPacket.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </None>
-    <None Include="Web References\GSPBulkWS\GSBulkAuthorization.disco" />
-    <None Include="Web References\GSPBulkWS\GSBulkAuthorization.wsdl" />
-    <None Include="Web References\GSPBulkWS\Reference.map">
-      <Generator>MSDiscoCodeGenerator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Web References\GSPSiteDiscoveryWS\GSSiteDiscovery.wsdl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Web References\GSPSiteDiscoveryWS\GSSiteDiscovery.disco" />
-    <None Include="Web References\GSPSiteDiscoveryWS\ListCrawlInfo.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </None>
-    <None Include="Web References\GSPSiteDiscoveryWS\Reference.map">
-      <Generator>MSDiscoCodeGenerator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-    <None Include="Web References\GSPSiteDiscoveryWS\WebCrawlInfo.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

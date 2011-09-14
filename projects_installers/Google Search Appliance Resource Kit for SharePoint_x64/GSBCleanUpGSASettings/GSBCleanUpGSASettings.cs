@@ -15,7 +15,6 @@
 using System;
 using System.Text;
 using GSBControlPanel;
-using System.IO;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Administration;
 using System.Diagnostics;
@@ -86,6 +85,12 @@ namespace GSBCleanUpGSASettings
                                  */
                                 mgr.DeleteNode("//modules//add[@name='Session']");
 
+                                // Deleting the node corresponding to default search type
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='defaultSearchType']");
+
+                                // Deleting the node corresponding to the HTML help file for Search Tips
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='SearchTipsHTMLFileName']");
+
                                 mgr.SaveXML();
                                 #endregion save results to file
                             }
@@ -135,6 +140,12 @@ namespace GSBCleanUpGSASettings
                                 // Deleting the HTTPModule corresponding to the session state from web.config file
                                 mgr.DeleteNode("//httpModules//add[@name='Session']");
                                 mgr.DeleteNode("//modules//add[@name='Session']");
+
+                                // Deleting the node corresponding to default search type
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='defaultSearchType']");
+
+                                // Deleting the node corresponding to the HTML help file for Search Tips
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='SearchTipsHTMLFileName']");
 
                                 mgr.SaveXML();
                                 #endregion delete APP setting nodes

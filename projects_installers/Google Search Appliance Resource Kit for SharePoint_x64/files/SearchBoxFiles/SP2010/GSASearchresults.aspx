@@ -11,7 +11,7 @@
 <%@ Assembly Name="Microsoft.Office.Server.Search, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c"%> 
 
 <%-- <% Enabled the Session state in the page by setting the attribute 'EnableSessionState' to true  %>--%>
-<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults" EnableViewState="true" EnableViewStateMac="false"  EnableSessionState="True"   %> 
+<%@ Page Language="C#" DynamicMasterPageFile="~masterurl/default.master" Inherits="Microsoft.Office.Server.Search.Internal.UI.OssSearchResults" EnableSessionState="True"   %> 
 <%@ Import Namespace="Microsoft.Office.Server.Search.Internal.UI" %> 
 <%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
 <%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> 
@@ -596,8 +596,13 @@ div.ms-areaseparatorright{
 </script>
 
 <script type="text/javascript">
-	function SetPageTitle()
+    function SetPageTitle()
 	{
+	   /*
+	   * Call the javascript function 'SearchTextOnBlur' already defined in GSASearchArea.ascx page, which will set the 
+	   * background image for the search box accordingly.
+	   */
+	   SearchTextOnBlur();
 	   var Query = "";
 	   if (window.top.location.search != 0) {
 	       Query = window.top.location.search;
@@ -612,8 +617,8 @@ div.ms-areaseparatorright{
 	           }
 	       }
 	   }
-	}
-		
+    }
+
 	function getParameter (queryString, parameterNameWithoutEquals)
 	{
 	   var parameterName = parameterNameWithoutEquals + "=";
@@ -627,13 +632,6 @@ div.ms-areaseparatorright{
 			if (end == -1)
 			{
 			   end = queryString.length;
-			}
-			var x = document.getElementById("idSearchString");
-			var mystring = decodeURIComponent(queryString.substring (begin, end))
-			var myindex = mystring.indexOf('cache:');
-			if(myindex>-1)
-			{
-			    x.value="";//for cached result do not show the search string as it looks wierd
 			}
 			return decodeURIComponent(queryString.substring (begin, end));
 		 }
@@ -808,11 +806,37 @@ else if(document.attachEvent)
                          */
                         if (inquery["isPublicSearch"] != null)
                         {
-                            if (inquery["isPublicSearch"] == "false")
+                            /* 
+                            * Here the value for the access parameter will be decided on the basis of the value of
+                            * isPublicSearch and the saved web.config file settings.
+                            */
+                            if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
                             {
-                                gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                if (inquery["isPublicSearch"] == "false")
+                                {
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else if (inquery["isPublicSearch"] == "true")
+                                {
+                                    gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                                else if(Session["PublicSearchStatus"] != null)
+                                {
+                                    /*
+                                     * If querystring parameter value is null, assign value from the
+                                     * Session to the accesslevel search parameter.
+                                     */
+                                    if (Convert.ToString(Session["PublicSearchStatus"]) == "false")
+                                    {
+                                        gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                    }
+                                    else if (Convert.ToString(Session["PublicSearchStatus"]) == "true")
+                                    {
+                                        gProps.accessLevel = "p";  // Perform 'public search'
+                                    }
+                                }
                             }
-                            else
+                            else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
                             {
                                 gProps.accessLevel = "p";  // Perform 'public search'
                             }
@@ -835,8 +859,10 @@ else if(document.attachEvent)
                                 }
                             }
                         }
-                        
-                    
+                        /*
+                         * Setting the Session variable for PublicSearchStatus to null
+                         */
+                        Session["PublicSearchStatus"] = null;
                        
                         searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;
                         if (gProps.frontEnd.Trim() != "")

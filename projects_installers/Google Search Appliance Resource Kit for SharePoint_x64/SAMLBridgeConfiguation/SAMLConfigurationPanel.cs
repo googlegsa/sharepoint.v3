@@ -31,7 +31,7 @@ namespace SAMLConfiguration
         public String SamlPath = "saml-bridge\\web.config";
         public const String PROVIDER="provider";
         public const String LOG_LEVEL="log_level";
-        public const String ARTIFACT_CONSUMER = "artifact_consumer";
+        public const String ARTIFACT_CONSUMER = "assertion_consumer";
 
         #region API declarations and constants
         private const int MF_BYPOSITION = 0x400;

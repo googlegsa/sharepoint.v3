@@ -34,10 +34,12 @@ namespace GSBControlPanel
         private string xslGSA2SP = "";
         private string xslSP2result = "";
         private string GSAStyle = "true";
-        private string logLocation="";
+        private string logLocation = "";
         private string accesslevel = "a";
         private string omitSecureCookie = "false";
         private string sessionStateModule = "System.Web.SessionState.SessionStateModule";
+        private string defaultSearchType = "publicAndSecure";
+        private string searchTipsHTMLFileName = "user_help.html";
 
         public string LogLocation
         {
@@ -87,6 +89,18 @@ namespace GSBControlPanel
             set { sessionStateModule = value; }
         }
 
+        public string DefaultSearchType
+        {
+            get { return defaultSearchType; }
+            set { defaultSearchType = value; }
+        }
+
+        public string SearchTipsHTMLFileName
+        {
+            get { return searchTipsHTMLFileName; }
+            set { searchTipsHTMLFileName = value; }
+        }
+
         public void SaveConfigurationsToFile(string webConfigFilePath,bool isInstaller)
         {
             GSBApplicationConfigManager gcm = new GSBApplicationConfigManager();
@@ -102,6 +116,15 @@ namespace GSBControlPanel
             gcm.ModifyNode("/configuration/appSettings", "GSAStyle", UseGsaStyling);//for custom stylesheet
             gcm.ModifyNode("/configuration/appSettings", "accesslevel", AccessLevel);//for 'public' or 'public and secure' search with GSBS
             gcm.ModifyNode("/configuration/appSettings", "omitSecureCookie", OmitSecureCookie);// Included for the BoA secure cookie issue. Will decide whether to process the cookie or discard the same.
+
+            /*
+            * Denotes the default search type used. Value "publicAndSecure" denotes the default search type will be 'public and secure',
+            * and value "public" denotes the default search type will be 'public' search.
+            */
+            gcm.ModifyNode("/configuration/appSettings", "defaultSearchType", DefaultSearchType);
+
+            // Denotes the name for the help file for search tips
+            gcm.ModifyNode("/configuration/appSettings", "SearchTipsHTMLFileName", SearchTipsHTMLFileName);
 
             // Code for enabling Session State on SharePoint Web Application
             gcm.ModifyNodeForHttpModule("//httpModules","//modules", "Session", SessionStateModule);
