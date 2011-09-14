@@ -1178,6 +1178,10 @@ public final class Util {
     // PEEKER in CM
     boolean viewFormPages = false;
     boolean open = false;
+    // flags to check all the required permissions for READER access on
+    // SharePoint List or Document Library.
+    boolean viewPages = false;
+    boolean viewListItems = false;
 
     for (String permission : permissions) {
       if (SPBasePermissions.FULLMASK.equals(permission)) {
@@ -1206,13 +1210,19 @@ public final class Util {
           additems = true;
         }
         if (SPBasePermissions.VIEWPAGES.equals(permission)) {
-          roleTypes.add(RoleType.READER);
+          viewPages = true;
+        }
+        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+          viewListItems = true;
         }
       } else if (ObjectType.SITE_LANDING_PAGE.equals(objectType)) {
         if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
           roleTypes.add(RoleType.WRITER);
         }
         if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.READER);
+        }
+        if (ObjectType.LIST.equals(objectType) && viewPages && viewListItems) {
           roleTypes.add(RoleType.READER);
         }
       }
