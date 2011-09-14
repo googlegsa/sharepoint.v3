@@ -25,76 +25,110 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import junit.framework.TestCase;
 
 public class SharepointAuthorizationManagerTest extends TestCase {
-  SharepointClientContext sharepointClientContext;
+	SharepointClientContext sharepointClientContext;
 
-  protected void setUp() throws Exception {
-    System.out.println("\n...Setting Up...");
-    System.out.println("Initializing SharepointClientContext ...");
-    this.sharepointClientContext = new SharepointClientContext(
-        TestConfiguration.sharepointUrl, TestConfiguration.domain,
-        TestConfiguration.kdcserver, TestConfiguration.username,
-        TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
-        TestConfiguration.includedURls, TestConfiguration.excludedURls,
-        TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-        TestConfiguration.feedType, TestConfiguration.useSPSearchVisibility);
-    assertNotNull(this.sharepointClientContext);
-    sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-    sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
-    System.out.println("Initializing SharepointAutho rizationManager ...");
-  }
+	protected void setUp() throws Exception {
+		System.out.println("\n...Setting Up...");
+		System.out.println("Initializing SharepointClientContext ...");
+		this.sharepointClientContext = new SharepointClientContext(
+				TestConfiguration.sharepointUrl, TestConfiguration.domain,
+				TestConfiguration.kdcserver, TestConfiguration.username,
+				TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+				TestConfiguration.includedURls, TestConfiguration.excludedURls,
+				TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+				TestConfiguration.feedType, TestConfiguration.useSPSearchVisibility);
+		assertNotNull(this.sharepointClientContext);
+		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+		sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+		System.out.println("Initializing SharepointAutho rizationManager ...");
+	}
 
-  public void testDocIdGrouping() throws SharepointException {
-    String[] allUrls = "http://mycomp.com/,http://mycomp.com/site1,http://mycomp.com/site2".split(",");
-    List<String> lstAllUrls = Arrays.asList(allUrls);
-    Set<String> siteCollUrls = new TreeSet<String>(lstAllUrls);
-    SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
-        sharepointClientContext, siteCollUrls);
+	public void testDocIdGrouping() throws SharepointException {
+		String[] allUrls = "http://mycomp.com/,http://mycomp.com/site1,http://mycomp.com/site2".split(",");
+		List<String> lstAllUrls = Arrays.asList(allUrls);
+		Set<String> siteCollUrls = new TreeSet<String>(lstAllUrls);
+		SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+				sharepointClientContext, siteCollUrls);
 
-    // Assure that
-    // 1. no URLs got skipped while grouping
-    // 2. the longer the URL, the early it comes in sequence
-    int countForAssert = 0;
-    for (Entry<String, Set<String>> webAppEntry : authMan.getWebappToSiteCollections().entrySet()) {
-      Set<String> sortedUrls = webAppEntry.getValue();
-      countForAssert += sortedUrls.size();
+		// Assure that
+		// 1. no URLs got skipped while grouping
+		// 2. the longer the URL, the early it comes in sequence
+		int countForAssert = 0;
+		for (Entry<String, Set<String>> webAppEntry : authMan.getWebappToSiteCollections().entrySet()) {
+			Set<String> sortedUrls = webAppEntry.getValue();
+			countForAssert += sortedUrls.size();
 
-      assertTrue(sortedUrls instanceof SortedSet<?>);
-      String prevUrl = ((SortedSet<String>) sortedUrls).first();
-      for (String currUrl : sortedUrls) {
-        assertTrue(prevUrl.length() >= currUrl.length());
-        prevUrl = currUrl;
-      }
-    }
-    assertEquals(siteCollUrls.size(), countForAssert);
-  }
+			assertTrue(sortedUrls instanceof SortedSet<?>);
+			String prevUrl = ((SortedSet<String>) sortedUrls).first();
+			for (String currUrl : sortedUrls) {
+				assertTrue(prevUrl.length() >= currUrl.length());
+				prevUrl = currUrl;
+			}
+		}
+		assertEquals(siteCollUrls.size(), countForAssert);
+	}
 
-  public void testAuthorizeDocids() throws Throwable {
-    SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
-        this.sharepointClientContext, new GSSiteDiscoveryWS(
-            sharepointClientContext, null).getMatchingSiteCollections());
-    AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
-        TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
+	public void testAuthorizeDocids() throws Throwable {
+		SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+				this.sharepointClientContext, new GSSiteDiscoveryWS(
+						sharepointClientContext, null).getMatchingSiteCollections());
+		AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
+				TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
 
-    Set<String> docids = new HashSet<String>();
-    // docids.add(TestConfiguration.SearchDocID1);
-    // docids.add(TestConfiguration.SearchDocID2);
-    docids.add(TestConfiguration.SearchDocID3);
-    docids.add(TestConfiguration.SearchDocID4);
-    docids.add(TestConfiguration.SearchDocID113);
-    docids.add(TestConfiguration.SearchDocID114);
+		Set<String> docids = new HashSet<String>();
+		docids.add(TestConfiguration.SearchDocID1);
+		docids.add(TestConfiguration.SearchDocID2);
+		docids.add(TestConfiguration.SearchDocID3);
+		// docids.add(TestConfiguration.SearchDocID4);
+		// docids.add(TestConfiguration.SearchDocID115);
+		// docids.add(TestConfiguration.SearchDocID114);
+		docids.add("[ATTACHMENT][http://gdc04.gdc-psl.net:6666/site888/Lists/list888/Attachments/7/createAuthData.java]http://gdc04.gdc-psl.net:6666/site888/Lists/list888/AllItems.aspx|7");
+		docids.add("[ALERT]http://gdc04.gdc-psl.net:6666/site888/_Alerts|{E3403503-E08E-4DAF-8CC7-4706EA7741C9}");
 
-    final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
-    assertEquals(docids.size(), authZResponses.size());
-    for (AuthorizationResponse authZResponse : authZResponses) {
-      assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
-    }
-  }
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/default.aspx|{12345}");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Team Discussion/AllItems.aspx|{12345}");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Announcements/AllItems.aspx|{12345}");
+
+		final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
+		assertEquals(1, authZResponses.size());
+		for (AuthorizationResponse authZResponse : authZResponses) {
+			assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
+		}
+	}
+
+	public void testAuthorizeDocidsForMandUFeeds() throws Throwable {
+		SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+				this.sharepointClientContext, new GSSiteDiscoveryWS(
+						sharepointClientContext, null).getMatchingSiteCollections());
+		AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
+				TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
+
+		Set<String> docids = new HashSet<String>();
+		docids.add(TestConfiguration.SearchDocID4);
+		docids.add(TestConfiguration.SearchDocID115);
+
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/default.aspx");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Links/AllItems.aspx");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Calendar/calendar.aspx");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Tasks/AllItems.aspx");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Announcements/DispForm.aspx?ID=1");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Announcements/DispForm.aspx|1");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/list888/DispForm.aspx?ID=3");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/list888/DispForm.aspx?ID=4");
+		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/list888/DispForm.aspx?ID=2");
+
+		final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
+		assertEquals(12, authZResponses.size());
+		for (AuthorizationResponse authZResponse : authZResponses) {
+			assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
+		}
+	}
 }
