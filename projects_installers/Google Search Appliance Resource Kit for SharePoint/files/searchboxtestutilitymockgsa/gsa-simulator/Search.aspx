@@ -1,4 +1,4 @@
-<%@ page language="c#" inherits="Search, App_Web_xrigshux" autoeventwireup="false" %>
+<%@ page language="c#" inherits="Search, App_Web_2ibv2jgn" autoeventwireup="false" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" >
 <HTML>
 	<HEAD>

@@ -372,6 +372,9 @@ namespace WindowsApplication1.GSPBulkWS {
         
         /// <remarks/>
         ALERT,
+        
+        /// <remarks/>
+        SITE,
     }
     
     /// <remarks/>

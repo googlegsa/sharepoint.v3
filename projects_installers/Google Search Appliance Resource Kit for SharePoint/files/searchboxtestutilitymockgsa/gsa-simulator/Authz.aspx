@@ -1,4 +1,4 @@
-<%@ page language="c#" autoeventwireup="false" inherits="Authz, App_Web_xrigshux" %>
+<%@ page language="c#" autoeventwireup="false" inherits="Authz, App_Web_2ibv2jgn" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" >
 <HTML>
 	<HEAD>

@@ -24,16 +24,8 @@ public class SiteDiscovery : System.Web.Services.WebService
     /// <returns></returns>
     [WebMethod]
     public string CheckConnectivity() {
-        try
-        {
-            SPWebApplicationCollection wc = SPWebService.AdministrationService.WebApplications;
-      SPWebApplicationCollection wc2 = SPWebService.ContentService.WebApplications;
-        }
-        catch (Exception e)
-        {
-            return e.StackTrace;
-        }
-
+    SPWebApplicationCollection wc1 = SPWebService.AdministrationService.WebApplications;
+        SPWebApplicationCollection wc2 = SPWebService.ContentService.WebApplications;
         return "success";
     }
 

@@ -1,9 +1,12 @@
-Google Resource Kit for SharePoint 2.6.8 (32-bit)
+Google Resource Kit for SharePoint 2.8.0 (32-bit)
 
-The Google Resource Kit for SharePoint 2.6.8 (32-bit) provides the following components:
-1. Google Search Box for SharePoint: It represents Google Search Box for SharePoint. When selected, the Google Search Box for SharePoint is enabled on all SharePoint web applications on a machine, which share the same search control.
-2. Google Services for SharePoint: The Google Services for SharePoint are custom web services used by the Google Search Appliance Connector for Microsoft SharePoint 2007 and Microsoft SharePoint 2010.
-3. GSA Resource Kit for SharePoint: It represents a set of utilities which are useful for testing and extending GSA's search on SharePoint.
+The Google Resource Kit for SharePoint 2.8.0 (32-bit) provides the following components:
+1. Google Search Box for SharePoint 2.6.10: It represents Google Search Box for SharePoint. When selected, the Google Search Box for SharePoint is enabled on all SharePoint web applications on a machine, which share the same search control.
+2. Google Services for SharePoint 2.8.0 : The Google Services for SharePoint are custom web services used by the Google Search Appliance Connector for Microsoft SharePoint 2007 and Microsoft SharePoint 2010.
+3. GSA Resource Kit for SharePoint: It represents a set of utilities which are useful for testing and extending GSA's search on SharePoint. It represents the following utilities:
+			-Google Search Box for SharePoint Test Utility : It is used to verify the Google Search Box for SharePoint parameters, cookies and headers. 
+			-GSA Security SPI Simulator: It is used to test Google SAML Bridge for Windows without involving the complexity of the search appliance. Once you know that the SAML Bridge works, you can reconfigure it to work with the search appliance.
+			-Google SAML Bridge for Windows 2.8.0: It enables Google Search Box for SharePoint to perform search on NTLM contents.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 

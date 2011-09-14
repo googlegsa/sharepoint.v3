@@ -76,6 +76,7 @@
       </s:complexType>
       <s:complexType name="GssPrincipal">
         <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="ID" type="s:int" />
           <s:element minOccurs="0" maxOccurs="1" name="Name" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="Type" type="tns:PrincipalType" />
           <s:element minOccurs="0" maxOccurs="1" name="Members" type="tns:ArrayOfGssPrincipal" />

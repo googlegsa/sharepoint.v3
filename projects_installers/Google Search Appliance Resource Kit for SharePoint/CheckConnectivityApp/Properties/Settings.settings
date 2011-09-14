@@ -3,13 +3,13 @@
   <Profiles />
   <Settings>
     <Setting Name="Verify_Installation_GSPAclWS_GssAclMonitor" Type="(Web Service URL)" Scope="Application">
-      <Value Profile="(Default)">http://10.88.45.94:29951/_vti_bin/GssAcl.asmx?WSDL</Value>
+      <Value Profile="(Default)">http://localhost/_layouts/GssAcl.asmx</Value>
     </Setting>
     <Setting Name="Verify_Installation_GSPBulkWS_BulkAuthorization" Type="(Web Service URL)" Scope="Application">
-      <Value Profile="(Default)">http://gdc04.persistent.co.in:4444/_vti_bin/GSBulkAuthorization.asmx?WSDL</Value>
+      <Value Profile="(Default)">http://localhost/_layouts/GSBulkAuthorization.asmx</Value>
     </Setting>
     <Setting Name="Verify_Installation_GSPSiteDiscoveryWS_SiteDiscovery" Type="(Web Service URL)" Scope="Application">
-      <Value Profile="(Default)">http://gdc05.persistent.co.in:40000/sites/basic/_vti_bin/GSSiteDiscovery.asmx?wsdl</Value>
+      <Value Profile="(Default)">http://localhost/_vti_bin/GSSiteDiscovery.asmx</Value>
     </Setting>
   </Settings>
 </SettingsFile>

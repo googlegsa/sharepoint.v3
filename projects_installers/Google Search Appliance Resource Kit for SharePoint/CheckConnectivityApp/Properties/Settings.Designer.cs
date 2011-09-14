@@ -26,7 +26,7 @@ namespace WindowsApplication1.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://10.88.45.94:29951/_vti_bin/GssAcl.asmx?WSDL")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost/_layouts/GssAcl.asmx")]
         public string Verify_Installation_GSPAclWS_GssAclMonitor {
             get {
                 return ((string)(this["Verify_Installation_GSPAclWS_GssAclMonitor"]));
@@ -36,7 +36,7 @@ namespace WindowsApplication1.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://gdc04.persistent.co.in:4444/_vti_bin/GSBulkAuthorization.asmx?WSDL")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost/_layouts/GSBulkAuthorization.asmx")]
         public string Verify_Installation_GSPBulkWS_BulkAuthorization {
             get {
                 return ((string)(this["Verify_Installation_GSPBulkWS_BulkAuthorization"]));
@@ -46,8 +46,7 @@ namespace WindowsApplication1.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://gdc05.persistent.co.in:40000/sites/basic/_vti_bin/GSSiteDiscovery.asmx?wsd" +
-            "l")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost/_vti_bin/GSSiteDiscovery.asmx")]
         public string Verify_Installation_GSPSiteDiscoveryWS_SiteDiscovery {
             get {
                 return ((string)(this["Verify_Installation_GSPSiteDiscoveryWS_SiteDiscovery"]));
