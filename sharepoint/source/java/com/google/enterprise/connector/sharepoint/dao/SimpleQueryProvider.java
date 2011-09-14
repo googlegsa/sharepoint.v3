@@ -35,132 +35,129 @@ import java.util.ResourceBundle;
  */
 public class SimpleQueryProvider implements QueryProvider {
 
-    private ResourceBundle sqlQueries;
-    private String basename;
+  private ResourceBundle sqlQueries;
+  private String basename;
 
-    // Required for constructing User Data Store queries
-    private String udsTableName;
-    private String udsIndexName;
+  // Required for constructing User Data Store queries
+  private String udsTableName;
+  private String udsIndexName;
 
-    // Queries that can be served
-    private Map<Query, String> sqlQueryMap = new HashMap<Query, String>();
+  // Queries that can be served
+  private Map<Query, String> sqlQueryMap = new HashMap<Query, String>();
 
-    private String database;
+  private String database;
 
-    public SimpleQueryProvider(String basename) {
-        this.basename = basename;
+  public SimpleQueryProvider(String basename) {
+    this.basename = basename;
+  }
+
+  public String getSqlQuery(Query query) {
+    return sqlQueryMap.get(query);
+  }
+
+  /**
+   * {@inheritDoc} Constructs a {@link Locale} for the given vendor/attributes
+   * and loads the corresponding {@literal sqlQueries.properties}. For all the
+   * queries registered in {@link Query}, reads the query string and resolves
+   * all the placeholders. In fact, only entities and attribute names are
+   * resolved here; resolution of the parameter names are delegated to the
+   * queries themselves.
+   *
+   * @see {@code Query#getParameterPlaceholders()}
+   * @param connectorName Connector that will be using this QueryProvider. This
+   *          is appended to all entity/attribute names
+   * @param vendor specifies the vendor for which the queries will be provided
+   * @param attr specifies additional attributes that should be considered along
+   *          with vendor name while loading the queries. At max three
+   *          attributes are allowed. Anything more than that will be ignored
+   * @throws SharepointException
+   */
+  public void init(String vendor, String... attr) throws SharepointException {
+    Locale locale = null;
+    if (attr.length == 0) {
+      locale = new Locale(vendor);
+    } else if (attr.length == 1) {
+      locale = new Locale(vendor, attr[0]);
+    } else if (attr.length == 2) {
+      locale = new Locale(vendor, attr[0], attr[1]);
     }
 
-    public String getSqlQuery(Query query) {
-        return sqlQueryMap.get(query);
+    try {
+      sqlQueries = ResourceBundle.getBundle(basename, locale);
+    } catch (Exception e) {
+      throw new SharepointException(
+          "Could not load sqlQueries.properties for locale [ " + locale + " ] ");
     }
 
-    /**
-     * {@inheritDoc} Constructs a {@link Locale} for the given vendor/attributes
-     * and loads the corresponding {@literal sqlQueries.properties}. For all the
-     * queries registered in {@link Query}, reads the query string and resolves
-     * all the placeholders. In fact, only entities and attribute names are
-     * resolved here; resolution of the parameter names are delegated to the
-     * queries themselves.
-     *
-     * @see {@code Query#getParameterPlaceholders()}
-     * @param connectorName Connector that will be using this QueryProvider.
-     *            This is appended to all entity/attribute names
-     * @param vendor specifies the vendor for which the queries will be provided
-     * @param attr specifies additional attributes that should be considered
-     *            along with vendor name while loading the queries. At max three
-     *            attributes are allowed. Anything more than that will be
-     *            ignored
-     * @throws SharepointException
-     */
-    public void init(String vendor, String... attr)
-            throws SharepointException {
-        Locale locale = null;
-        if (attr.length == 0) {
-            locale = new Locale(vendor);
-        } else if (attr.length == 1) {
-            locale = new Locale(vendor, attr[0]);
-        } else if (attr.length == 2) {
-            locale = new Locale(vendor, attr[0], attr[1]);
-        }
-
-        try {
-            sqlQueries = ResourceBundle.getBundle(basename, locale);
-        } catch (Exception e) {
-            throw new SharepointException(
-                    "Could not load sqlQueries.properties for locale [ "
-                            + locale + " ] ");
-        }
-
-        for (Query query : Query.values()) {
-            registerQuery(query);
-        }
+    for (Query query : Query.values()) {
+      registerQuery(query);
     }
+  }
 
-    /**
-     * Iterate over each {@code Query} that connector needs to support.
-     * Construct the actual SQL query for each of them and register the query in
-     * a local map that will be used for serving the queries.
-     *
-     * @param query
-     */
-    protected void registerQuery(Query query) {
-        String sqlQuery = null;
-        List<String> placeholders = query.getParameterPlaceholders();
-        switch (query) {
-        case UDS_CREATE_TABLE:
-        case UDS_DROP_TABLE:
+  /**
+   * Iterate over each {@code Query} that connector needs to support. Construct
+   * the actual SQL query for each of them and register the query in a local map
+   * that will be used for serving the queries.
+   *
+   * @param query
+   */
+  protected void registerQuery(Query query) {
+    String sqlQuery = null;
+    List<String> placeholders = query.getParameterPlaceholders();
+    switch (query) {
+    case UDS_CREATE_TABLE:
+    case UDS_DROP_TABLE:
 
-        case UDS_INSERT:
-        case UDS_SELECT_FOR_USERNAME:
+    case UDS_INSERT:
+    case UDS_SELECT_FOR_USERNAME:
 
-        case UDS_SELECT_FOR_USERID_NAMESPACE:
-        case UDS_DELETE_FOR_USERID_NAMESPACE:
+    case UDS_SELECT_FOR_USERID_NAMESPACE:
+    case UDS_DELETE_FOR_USERID_NAMESPACE:
 
-        case UDS_SELECT_FOR_GROUPID_NAMESPACE:
-        case UDS_DELETE_FOR_GROUPID_NAMESPACE:
+    case UDS_SELECT_FOR_GROUPID_NAMESPACE:
+    case UDS_DELETE_FOR_GROUPID_NAMESPACE:
 
-        case UDS_SELECT_FOR_NAMESPACE:
-        case UDS_DELETE_FOR_NAMESPACE:
-            placeholders.add(0, udsTableName);
-            break;
-        case UDS_CREATE_INDEX:
-            placeholders.add(0, udsIndexName);
-            placeholders.add(1, udsTableName);
-            break;
-        case UDS_CHECK_TABLES:
-            placeholders.add(0, SPConstants.UDS_TABLE);
-            break;
-        case UDS_SELECT_FOR_ADGROUPS:
-            placeholders.add(0, udsTableName);
-        }
-        sqlQuery = MessageFormat.format(sqlQueries.getString(query.name()), placeholders.toArray());
-        sqlQueryMap.put(query, sqlQuery);
+    case UDS_SELECT_FOR_NAMESPACE:
+    case UDS_DELETE_FOR_NAMESPACE:
+      placeholders.add(0, udsTableName);
+      break;
+    case UDS_CREATE_INDEX:
+      placeholders.add(0, udsIndexName);
+      placeholders.add(1, udsTableName);
+      break;
+    case UDS_CHECK_TABLES:
+      placeholders.add(0, SPConstants.UDS_TABLE);
+      break;
+    case UDS_SELECT_FOR_ADGROUPS:
+      placeholders.add(0, udsTableName);
     }
+    sqlQuery = MessageFormat.format(sqlQueries.getString(query.name()), placeholders.toArray());
+    sqlQueryMap.put(query, sqlQuery);
+  }
 
-    // XXX This is temporary
-    public String getDatabase() {
-        return database;
-    }
+  // XXX This is temporary
+  public String getDatabase() {
+    return database;
+  }
 
-    public void setDatabase(String database) {
-        this.database = database;
-    }
+  public void setDatabase(String database) {
+    this.database = database;
+  }
 
-    public String getUdsTableName() {
-        return udsTableName;
-    }
+  public String getUdsTableName() {
+    return udsTableName;
+  }
 
-    public void setUdsTableName(String udsTableName) {
-        this.udsTableName = udsTableName;
-    }
+  public void setUdsTableName(String udsTableName) {
+    this.udsTableName = udsTableName;
+  }
 
-    public String getUdsIndexName() {
-        return udsIndexName;
-    }
+  public String getUdsIndexName() {
+    return udsIndexName;
+  }
 
-    public void setUdsIndexName(String udsIndexName) {
-        this.udsIndexName = udsIndexName;
-    }
+  public void setUdsIndexName(String udsIndexName) {
+    this.udsIndexName = udsIndexName;
+  }
 
 }

@@ -29,181 +29,181 @@ import junit.framework.TestCase;
 
 public class SharepointAuthenticationManagerTest extends TestCase {
 
-    SharepointClientContext sharepointClientContext;
-    SharepointAuthenticationManager authMan;
-    AuthenticationIdentity authID;
-    AuthenticationResponse authenticationResponse;
-    UserDataStoreDAO userDataStoreDAO;
+	SharepointClientContext sharepointClientContext;
+	SharepointAuthenticationManager authMan;
+	AuthenticationIdentity authID;
+	AuthenticationResponse authenticationResponse;
+	UserDataStoreDAO userDataStoreDAO;
 
-    protected void setUp() throws Exception {
-        System.out.println("\n...Setting Up...");
-        System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = new SharepointClientContext(
-                TestConfiguration.sharepointUrl, TestConfiguration.domain,
-                TestConfiguration.kdcserver, TestConfiguration.username,
-                TestConfiguration.Password,
-                TestConfiguration.googleConnectorWorkDir,
-                TestConfiguration.includedURls, TestConfiguration.excludedURls,
-                TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-                TestConfiguration.feedType,
-                TestConfiguration.useSPSearchVisibility);
-        assertNotNull(this.sharepointClientContext);
-        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
-        sharepointClientContext.setPushAcls(true);
-        sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(true);
-        sharepointClientContext.setCacheRefreshInterval(300);
-        sharepointClientContext.setInitialCacheSize(5);
-        sharepointClientContext.setGroupnameFormatInAce(TestConfiguration.groupNameFormatInACE);
-        sharepointClientContext.setUsernameFormatInAce(TestConfiguration.userNameFormatInACE);
-        System.out.println("Initializing SharepointAuthenticationManager ...");
-        userDataStoreDAO = new UserDataStoreDAO(
-                TestConfiguration.getUserDataSource(),
-                TestConfiguration.getUserDataStoreQueryProvider(),
-                TestConfiguration.getUserGroupMembershipRowMapper());
-        this.sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
-        sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
-        this.authMan = new SharepointAuthenticationManager(
-                this.sharepointClientContext);
-        System.out.println("Initializing SharepointAuthenticationIdentity ...");
-        this.authID = new SimpleAuthenticationIdentity(
-                TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
-    }
+	protected void setUp() throws Exception {
+		System.out.println("\n...Setting Up...");
+		System.out.println("Initializing SharepointClientContext ...");
+		this.sharepointClientContext = new SharepointClientContext(
+				TestConfiguration.sharepointUrl, TestConfiguration.domain,
+				TestConfiguration.kdcserver, TestConfiguration.username,
+				TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+				TestConfiguration.includedURls, TestConfiguration.excludedURls,
+				TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+				TestConfiguration.feedType, TestConfiguration.useSPSearchVisibility);
+		assertNotNull(this.sharepointClientContext);
+		sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+		sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+		sharepointClientContext.setPushAcls(true);
+		sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(true);
+		sharepointClientContext.setCacheRefreshInterval(300);
+		sharepointClientContext.setInitialCacheSize(5);
+		sharepointClientContext.setGroupnameFormatInAce(TestConfiguration.groupNameFormatInACE);
+		sharepointClientContext.setUsernameFormatInAce(TestConfiguration.userNameFormatInACE);
+		System.out.println("Initializing SharepointAuthenticationManager ...");
+		userDataStoreDAO = new UserDataStoreDAO(
+				TestConfiguration.getUserDataSource(),
+				TestConfiguration.getUserDataStoreQueryProvider(),
+				TestConfiguration.getUserGroupMembershipRowMapper());
+		this.sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
+		sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
+		this.authMan = new SharepointAuthenticationManager(
+				this.sharepointClientContext);
+		System.out.println("Initializing SharepointAuthenticationIdentity ...");
+		this.authID = new SimpleAuthenticationIdentity(
+				TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
+	}
 
-    public void testAuthenticate() throws Throwable {
-        System.out.println("Testing authenticate()...");
-        this.authenticationResponse = this.authMan.authenticate(this.authID);
-        assertNotNull(authenticationResponse);
-        Collection<String> groups = this.authenticationResponse.getGroups();
-        assertNotNull(groups);
-        System.out.println("[ authenticate() ] Test Completed.");
-    }
+	public void testAuthenticate() throws Throwable {
+		System.out.println("Testing authenticate()...");
+		this.authenticationResponse = this.authMan.authenticate(this.authID);
+		assertNotNull(authenticationResponse);
+		Collection<String> groups = this.authenticationResponse.getGroups();
+		assertNotNull(groups);
+		System.out.println("[ authenticate() ] Test Completed.");
+	}
 
-    /**
-     * Need to run this test case by changing user name (not existed user) in
-     * TestConfig.properties.
-     * @throws Throwable
-     */
-    public void testAuthenticateWithNullGroups () throws Throwable {
-        System.out.println("Testing Authenticate() with null groups");
-        testAuthenticate();
-        Collection<String> groups = this.authenticationResponse.getGroups();
-        assertNull(groups);
-    }
+	/**
+	 * Need to run this test case by changing user name (not existed user) in
+	 * TestConfig.properties.
+	 * 
+	 * @throws Throwable
+	 */
+	public void testAuthenticateWithNullGroups() throws Throwable {
+		System.out.println("Testing Authenticate() with null groups");
+		this.authID = null;
+		this.authID = new SimpleAuthenticationIdentity("testuser",
+				TestConfiguration.searchUserPwd);
+		this.authenticationResponse = null;
+		this.authenticationResponse = this.authMan.authenticate(this.authID);
+		Collection<String> groups = this.authenticationResponse.getGroups();
+		assertNull(groups);
+	}
 
-    public void testAuthenticateWithGroups () throws Throwable {
-        System.out.println("Testing Authenticate() with groups");
-        testAuthenticate();
-        Collection<String> groups = this.authenticationResponse.getGroups();
-        assertNotNull(groups);
-    }
+	public void testAuthenticateWithGroups() throws Throwable {
+		System.out.println("Testing Authenticate() with groups");
+		testAuthenticate();
+		Collection<String> groups = this.authenticationResponse.getGroups();
+		assertNotNull(groups);
+	}
 
-    /**
-     * Run this with empty or null password by specifying in TestConfig.properties
-     * @throws Throwable
-     */
-    public void testAuthenticateWithEmptyOrNullPassword () throws Throwable {
-        System.out.println("Testing Authenticate() with empty or null password");
-        testAuthenticate();
-        Collection<String> groups = this.authenticationResponse.getGroups();
-        assertNotNull(groups);
-    }
+	/**
+	 * Run this with empty or null password by specifying in TestConfig.properties
+	 * 
+	 * @throws Throwable
+	 */
+	public void testAuthenticateWithEmptyOrNullPassword() throws Throwable {
+		System.out.println("Testing Authenticate() with empty or null password");
+		testAuthenticate();
+		Collection<String> groups = this.authenticationResponse.getGroups();
+		assertNotNull(groups);
+	}
 
-    public void testAuthenticateWithDifferentUserNameFormats()
-            throws Throwable {
-        System.out.println("Testing Authenticate() with domain\\user");
-        this.authID = new SimpleAuthenticationIdentity(
-                TestConfiguration.userNameFormat1,
-                TestConfiguration.searchUserPwd);
-        this.authenticationResponse = this.authMan.authenticate(this.authID);
-        assertTrue(this.authenticationResponse.isValid());
-        assertNotNull(this.authenticationResponse.getGroups());
-        System.out.println("Authentication sucessful for : "
-                + TestConfiguration.userNameFormat1);
-        System.out.println("Testing Authenticate() with user@domain");
-        this.authID = new SimpleAuthenticationIdentity(
-                TestConfiguration.userNameFormat2,
-                TestConfiguration.searchUserPwd);
-        this.authenticationResponse = this.authMan.authenticate(this.authID);
-        assertTrue(this.authenticationResponse.isValid());
-        assertNotNull(this.authenticationResponse.getGroups());
-        System.out.println("Authentication sucessful for : "
-                + TestConfiguration.userNameFormat2);
-        System.out.println("Testing Authenticate() with user");
-        this.authID = new SimpleAuthenticationIdentity(
-                TestConfiguration.userNameFormat3,
-                TestConfiguration.searchUserPwd);
-        this.authenticationResponse = this.authMan.authenticate(this.authID);
-        assertTrue(this.authenticationResponse.isValid());
-        assertNotNull(this.authenticationResponse.getGroups());
-        System.out.println("Authentication sucessful for : "
-                + TestConfiguration.userNameFormat3);
-    }
+	public void testAuthenticateWithDifferentUserNameFormats() throws Throwable {
+		System.out.println("Testing Authenticate() with domain\\user");
+		this.authID = new SimpleAuthenticationIdentity(
+				TestConfiguration.userNameFormat1, TestConfiguration.searchUserPwd);
+		this.authenticationResponse = this.authMan.authenticate(this.authID);
+		assertTrue(this.authenticationResponse.isValid());
+		// assertNotNull(this.authenticationResponse.getGroups());
+		System.out.println("Authentication sucessful for : "
+				+ TestConfiguration.userNameFormat1);
+		System.out.println("Testing Authenticate() with user@domain");
+		this.authID = new SimpleAuthenticationIdentity(
+				TestConfiguration.userNameFormat2, TestConfiguration.searchUserPwd);
+		this.authenticationResponse = this.authMan.authenticate(this.authID);
+		assertTrue(this.authenticationResponse.isValid());
+		// assertNotNull(this.authenticationResponse.getGroups());
+		System.out.println("Authentication sucessful for : "
+				+ TestConfiguration.userNameFormat2);
+		System.out.println("Testing Authenticate() with user");
+		this.authID = new SimpleAuthenticationIdentity(
+				TestConfiguration.userNameFormat3, TestConfiguration.searchUserPwd);
+		this.authenticationResponse = this.authMan.authenticate(this.authID);
+		assertTrue(this.authenticationResponse.isValid());
+		// assertNotNull(this.authenticationResponse.getGroups());
+		System.out.println("Authentication sucessful for : "
+				+ TestConfiguration.userNameFormat3);
+	}
 
-    public void testGetSamAccountNameFromSearchUser() {
-        String expectedUserName = TestConfiguration.username;
+	public void testGetSamAccountNameFromSearchUser() {
+		String expectedUserName = TestConfiguration.username;
 
-        String userName3 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat3);
-        assertNotNull(userName3);
-        assertEquals(expectedUserName, userName3);
+		String userName3 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat3);
+		assertNotNull(userName3);
+		assertEquals("kerbadmin", userName3);
 
-        String userName1 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat1);
-        assertNotNull(userName1);
-        assertEquals(expectedUserName, userName1);
+		String userName1 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat1);
+		assertNotNull(userName1);
+		assertEquals("kerbadmin", userName1);
 
-        String userName2 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat2);
-        assertNotNull(userName2);
-        assertEquals(expectedUserName, userName2);
-    }
+		String userName2 = this.authMan.ldapService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat2);
+		assertNotNull(userName2);
+		assertEquals("kerbadmin", userName2);
+	}
 
-    public void testGetAllGroupsForTheUser() throws SharepointException {
-        this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
+	public void testGetAllGroupsForTheUser() throws SharepointException {
+		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
 
-        assertNotNull(this.authenticationResponse);
-        assertNotNull(this.authenticationResponse.getGroups());
+		assertNotNull(this.authenticationResponse);
+		assertNotNull(this.authenticationResponse.getGroups());
 
-        // this time should get results from cache for the same user.
-        this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
-        assertNotNull(this.authenticationResponse);
-        assertNotNull(this.authenticationResponse.getGroups());
+		// this time should get results from cache for the same user.
+		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
+		assertNotNull(this.authenticationResponse);
+		assertNotNull(this.authenticationResponse.getGroups());
 
-        // should fetch results from service.
-        this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.fakeusername);
-        assertNotNull(this.authenticationResponse);
-        assertTrue((this.authenticationResponse.getGroups().isEmpty()));
-    }
+		// should fetch results from service.
+		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.fakeusername);
+		assertNotNull(this.authenticationResponse);
+		assertNull((this.authenticationResponse.getGroups()));
+	}
 
-    /**
-     * Test Authenticate method of AuthN manager by setting feed ACLs option as
-     * not selected.
-     *
-     * @throws RepositoryLoginException
-     * @throws RepositoryException
-     */
-    public void testAuthencateIfFeedAclsTurnedOff()
-            throws RepositoryLoginException, RepositoryException {
-        System.out.println("Testing authenticate() by setting feed ACLs off onthe configuration page.");
-        this.authenticationResponse = this.authMan.authenticate(this.authID);
-        assertNotNull(authenticationResponse);
-        assertTrue(authenticationResponse.isValid());
-        assertNull(this.authenticationResponse.getGroups());
-        System.out.println("[ authenticate() ] test completed if feed acls set to off.");
-    }
+	/**
+	 * Test Authenticate method of AuthN manager by setting feed ACLs option as
+	 * not selected.
+	 * 
+	 * @throws RepositoryLoginException
+	 * @throws RepositoryException
+	 */
+	public void testAuthenticateIfFeedAclsTurnedOff()
+			throws RepositoryLoginException, RepositoryException {
+		System.out.println("Testing authenticate() by setting feed ACLs off onthe configuration page.");
+		this.authenticationResponse = this.authMan.authenticate(this.authID);
+		assertNotNull(authenticationResponse);
+		assertTrue(authenticationResponse.isValid());
+		assertNotNull(this.authenticationResponse.getGroups());
+		System.out.println("[ authenticate() ] test completed if feed acls set to off.");
+	}
 
-    /**
-     * Test Authenticate method of AuthN manager by setting feed ACLs option as
-     * selected.
-     *
-     * @throws RepositoryLoginException
-     * @throws RepositoryException
-     */
-    public void testAuthencateIfFeedAclsTurnedOn()
-            throws RepositoryLoginException, RepositoryException {
-        System.out.println("Testing authenticate() by setting feed ACLs on on the configuration page.");
-        this.authenticationResponse = this.authMan.authenticate(this.authID);
-        assertNotNull(authenticationResponse);
-        assertTrue(authenticationResponse.isValid());
-        assertNotNull(this.authenticationResponse.getGroups());
-        System.out.println("[ authenticate() ] test completed if feed acls set to on at the connector configuration page.");
-    }
+	/**
+	 * Test Authenticate method of AuthN manager by setting feed ACLs option as
+	 * selected.
+	 * 
+	 * @throws RepositoryLoginException
+	 * @throws RepositoryException
+	 */
+	public void testAuthencateIfFeedAclsTurnedOn()
+			throws RepositoryLoginException, RepositoryException {
+		System.out.println("Testing authenticate() by setting feed ACLs on on the configuration page.");
+		this.authenticationResponse = this.authMan.authenticate(this.authID);
+		assertNotNull(authenticationResponse);
+		assertTrue(authenticationResponse.isValid());
+		assertNotNull(this.authenticationResponse.getGroups());
+		System.out.println("[ authenticate() ] test completed if feed acls set to on at the connector configuration page.");
+	}
 }

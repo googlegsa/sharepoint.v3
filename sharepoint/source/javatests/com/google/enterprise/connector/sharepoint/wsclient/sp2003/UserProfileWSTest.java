@@ -29,32 +29,32 @@ import junit.framework.TestCase;
  * @author amit_kagrawal
  */
 public class UserProfileWSTest extends TestCase {
-    SharepointClientContext sharepointClientContext;
-    UserProfileWS userProfileWS;
+  SharepointClientContext sharepointClientContext;
+  UserProfileWS userProfileWS;
 
-    protected void setUp() throws Exception {
-        System.out.println("\n...Setting Up...");
-        System.out.println("Initializing SharepointClientContext ...");
-        this.sharepointClientContext = TestConfiguration.initContext();
-        assertNotNull(this.sharepointClientContext);
-        sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
-        sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
+  protected void setUp() throws Exception {
+    System.out.println("\n...Setting Up...");
+    System.out.println("Initializing SharepointClientContext ...");
+    this.sharepointClientContext = TestConfiguration.initContext();
+    assertNotNull(this.sharepointClientContext);
+    sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
+    sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-        System.out.println("Initializing UserProfileWS ...");
-        this.userProfileWS = new UserProfileWS(this.sharepointClientContext);
-    }
+    System.out.println("Initializing UserProfileWS ...");
+    this.userProfileWS = new UserProfileWS(this.sharepointClientContext);
+  }
 
-    public void testIsSPS() throws MalformedURLException, RepositoryException {
-        System.out.println("Testing isSPS()...");
-        this.userProfileWS.isSPS();
-        System.out.println("[ isSPS() ] Test Completed.");
-    }
+  public void testIsSPS() throws MalformedURLException, RepositoryException {
+    System.out.println("Testing isSPS()...");
+    this.userProfileWS.isSPS();
+    System.out.println("[ isSPS() ] Test Completed.");
+  }
 
-    public void testGetPersonalSiteList() throws MalformedURLException,
-            RepositoryException {
-        System.out.println("Testing getPersonalSiteList()...");
-        final Set<String> items = this.userProfileWS.getPersonalSiteList();
-        assertNotNull(items);
-        System.out.println("[ getPersonalSiteList() ] Test Passed.");
-    }
+  public void testGetPersonalSiteList() throws MalformedURLException,
+      RepositoryException {
+    System.out.println("Testing getPersonalSiteList()...");
+    final Set<String> items = this.userProfileWS.getPersonalSiteList();
+    assertNotNull(items);
+    System.out.println("[ getPersonalSiteList() ] Test Passed.");
+  }
 }

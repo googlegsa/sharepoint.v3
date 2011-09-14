@@ -1,4 +1,3 @@
-
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="gssAcl.generated.sharepoint.connector.enterprise.google.com" xmlns:s1="http://microsoft.com/wsdl/types/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="gssAcl.generated.sharepoint.connector.enterprise.google.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
   <wsdl:types>
     <s:schema elementFormDefault="qualified" targetNamespace="gssAcl.generated.sharepoint.connector.enterprise.google.com">
@@ -8,6 +7,7 @@
       </s:element>
       <s:element name="CheckConnectivityResponse">
         <s:complexType>
+
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="CheckConnectivityResult" type="s:string" />
           </s:sequence>
@@ -17,6 +17,7 @@
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="urls" type="tns:ArrayOfString" />
+
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -26,6 +27,7 @@
         </s:sequence>
       </s:complexType>
       <s:element name="GetAclForUrlsResponse">
+
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="GetAclForUrlsResult" type="tns:GssGetAclForUrlsResult" />
@@ -35,6 +37,7 @@
       <s:complexType name="GssGetAclForUrlsResult">
         <s:complexContent mixed="false">
           <s:extension base="tns:GssAclBaseResult">
+
             <s:sequence>
               <s:element minOccurs="0" maxOccurs="1" name="AllAcls" type="tns:ArrayOfGssAcl" />
             </s:sequence>
@@ -44,6 +47,7 @@
       <s:complexType name="GssAclBaseResult" abstract="true">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="SiteCollectionUrl" type="s:string" />
+
           <s:element minOccurs="1" maxOccurs="1" name="SiteCollectionGuid" type="s1:guid" />
           <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
@@ -53,6 +57,7 @@
           <s:element minOccurs="0" maxOccurs="unbounded" name="GssAcl" nillable="true" type="tns:GssAcl" />
         </s:sequence>
       </s:complexType>
+
       <s:complexType name="GssAcl">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="EntityUrl" type="s:string" />
@@ -62,6 +67,7 @@
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAce">
+
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="unbounded" name="GssAce" nillable="true" type="tns:GssAce" />
         </s:sequence>
@@ -71,6 +77,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="Principal" type="tns:GssPrincipal" />
           <s:element minOccurs="0" maxOccurs="1" name="Permission" type="tns:GssSharepointPermission" />
         </s:sequence>
+
       </s:complexType>
       <s:complexType name="GssPrincipal">
         <s:sequence>
@@ -80,6 +87,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="Members" type="tns:ArrayOfGssPrincipal" />
           <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
         </s:sequence>
+
       </s:complexType>
       <s:simpleType name="PrincipalType">
         <s:restriction base="s:string">
@@ -89,6 +97,7 @@
           <s:enumeration value="NA" />
         </s:restriction>
       </s:simpleType>
+
       <s:complexType name="ArrayOfGssPrincipal">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="unbounded" name="GssPrincipal" nillable="true" type="tns:GssPrincipal" />
@@ -98,6 +107,7 @@
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="AllowedPermissions" type="tns:ArrayOfString" />
           <s:element minOccurs="0" maxOccurs="1" name="DeniedPermission" type="tns:ArrayOfString" />
+
         </s:sequence>
       </s:complexType>
       <s:element name="GetAclChangesSinceToken">
@@ -107,6 +117,7 @@
             <s:element minOccurs="0" maxOccurs="1" name="toChangeToken" type="s:string" />
           </s:sequence>
         </s:complexType>
+
       </s:element>
       <s:element name="GetAclChangesSinceTokenResponse">
         <s:complexType>
@@ -116,6 +127,7 @@
         </s:complexType>
       </s:element>
       <s:complexType name="GssGetAclChangesSinceTokenResult">
+
         <s:complexContent mixed="false">
           <s:extension base="tns:GssAclBaseResult">
             <s:sequence>
@@ -125,6 +137,7 @@
         </s:complexContent>
       </s:complexType>
       <s:complexType name="GssAclChangeCollection">
+
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="1" name="ChangeToken" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="Changes" type="tns:ArrayOfGssAclChange" />
@@ -134,6 +147,7 @@
       <s:complexType name="ArrayOfGssAclChange">
         <s:sequence>
           <s:element minOccurs="0" maxOccurs="unbounded" name="GssAclChange" nillable="true" type="tns:GssAclChange" />
+
         </s:sequence>
       </s:complexType>
       <s:complexType name="GssAclChange">
@@ -143,6 +157,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="Hint" type="s:string" />
           <s:element minOccurs="1" maxOccurs="1" name="IsEffectiveInCurrentWeb" type="s:boolean" />
         </s:sequence>
+
       </s:complexType>
       <s:simpleType name="ObjectType">
         <s:restriction base="s:string">
@@ -152,14 +167,17 @@
           <s:enumeration value="GROUP" />
           <s:enumeration value="USER" />
           <s:enumeration value="WEB" />
+
           <s:enumeration value="LIST" />
           <s:enumeration value="ITEM" />
+          <s:enumeration value="SITE_LANDING_PAGE" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="SPChangeType">
         <s:restriction base="s:string">
           <s:enumeration value="Add" />
           <s:enumeration value="Update" />
+
           <s:enumeration value="Delete" />
           <s:enumeration value="Rename" />
           <s:enumeration value="MoveAway" />
@@ -169,6 +187,7 @@
           <s:enumeration value="RoleDelete" />
           <s:enumeration value="RoleUpdate" />
           <s:enumeration value="AssignmentAdd" />
+
           <s:enumeration value="AssignmentDelete" />
           <s:enumeration value="MemberAdd" />
           <s:enumeration value="MemberDelete" />
@@ -178,6 +197,7 @@
       </s:simpleType>
       <s:element name="ResolveSPGroup">
         <s:complexType>
+
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="groupId" type="tns:ArrayOfString" />
           </s:sequence>
@@ -187,6 +207,7 @@
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="ResolveSPGroupResult" type="tns:GssResolveSPGroupResult" />
+
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -196,6 +217,7 @@
             <s:sequence>
               <s:element minOccurs="0" maxOccurs="1" name="Prinicpals" type="tns:ArrayOfGssPrincipal" />
             </s:sequence>
+
           </s:extension>
         </s:complexContent>
       </s:complexType>
@@ -205,6 +227,7 @@
       <s:element name="GetListsWithInheritingRoleAssignmentsResponse">
         <s:complexType>
           <s:sequence>
+
             <s:element minOccurs="0" maxOccurs="1" name="GetListsWithInheritingRoleAssignmentsResult" type="tns:ArrayOfString" />
           </s:sequence>
         </s:complexType>
@@ -214,6 +237,7 @@
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="listGuId" type="s:string" />
             <s:element minOccurs="1" maxOccurs="1" name="rowLimit" type="s:int" />
+
             <s:element minOccurs="1" maxOccurs="1" name="lastItemId" type="s:int" />
           </s:sequence>
         </s:complexType>
@@ -223,6 +247,7 @@
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="GetListItemsWithInheritingRoleAssignmentsResult" type="tns:GssGetListItemsWithInheritingRoleAssignments" />
           </s:sequence>
+
         </s:complexType>
       </s:element>
       <s:complexType name="GssGetListItemsWithInheritingRoleAssignments">
@@ -232,6 +257,7 @@
               <s:element minOccurs="0" maxOccurs="1" name="DocXml" type="s:string" />
               <s:element minOccurs="1" maxOccurs="1" name="MoreDocs" type="s:boolean" />
               <s:element minOccurs="1" maxOccurs="1" name="LastIdVisited" type="s:int" />
+
             </s:sequence>
           </s:extension>
         </s:complexContent>
@@ -241,6 +267,7 @@
       <s:simpleType name="guid">
         <s:restriction base="s:string">
           <s:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+
         </s:restriction>
       </s:simpleType>
     </s:schema>
@@ -250,6 +277,7 @@
   </wsdl:message>
   <wsdl:message name="CheckConnectivitySoapOut">
     <wsdl:part name="parameters" element="tns:CheckConnectivityResponse" />
+
   </wsdl:message>
   <wsdl:message name="GetAclForUrlsSoapIn">
     <wsdl:part name="parameters" element="tns:GetAclForUrls" />
@@ -259,6 +287,7 @@
   </wsdl:message>
   <wsdl:message name="GetAclChangesSinceTokenSoapIn">
     <wsdl:part name="parameters" element="tns:GetAclChangesSinceToken" />
+
   </wsdl:message>
   <wsdl:message name="GetAclChangesSinceTokenSoapOut">
     <wsdl:part name="parameters" element="tns:GetAclChangesSinceTokenResponse" />
@@ -268,6 +297,7 @@
   </wsdl:message>
   <wsdl:message name="ResolveSPGroupSoapOut">
     <wsdl:part name="parameters" element="tns:ResolveSPGroupResponse" />
+
   </wsdl:message>
   <wsdl:message name="GetListsWithInheritingRoleAssignmentsSoapIn">
     <wsdl:part name="parameters" element="tns:GetListsWithInheritingRoleAssignments" />
@@ -277,6 +307,7 @@
   </wsdl:message>
   <wsdl:message name="GetListItemsWithInheritingRoleAssignmentsSoapIn">
     <wsdl:part name="parameters" element="tns:GetListItemsWithInheritingRoleAssignments" />
+
   </wsdl:message>
   <wsdl:message name="GetListItemsWithInheritingRoleAssignmentsSoapOut">
     <wsdl:part name="parameters" element="tns:GetListItemsWithInheritingRoleAssignmentsResponse" />
@@ -286,6 +317,7 @@
       <wsdl:input message="tns:CheckConnectivitySoapIn" />
       <wsdl:output message="tns:CheckConnectivitySoapOut" />
     </wsdl:operation>
+
     <wsdl:operation name="GetAclForUrls">
       <wsdl:input message="tns:GetAclForUrlsSoapIn" />
       <wsdl:output message="tns:GetAclForUrlsSoapOut" />
@@ -295,6 +327,7 @@
       <wsdl:output message="tns:GetAclChangesSinceTokenSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="ResolveSPGroup">
+
       <wsdl:input message="tns:ResolveSPGroupSoapIn" />
       <wsdl:output message="tns:ResolveSPGroupSoapOut" />
     </wsdl:operation>
@@ -304,6 +337,7 @@
     </wsdl:operation>
     <wsdl:operation name="GetListItemsWithInheritingRoleAssignments">
       <wsdl:input message="tns:GetListItemsWithInheritingRoleAssignmentsSoapIn" />
+
       <wsdl:output message="tns:GetListItemsWithInheritingRoleAssignmentsSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
@@ -313,6 +347,7 @@
       <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/CheckConnectivity" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
+
       </wsdl:input>
       <wsdl:output>
         <soap:body use="literal" />
@@ -322,6 +357,7 @@
       <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForUrls" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
+
       </wsdl:input>
       <wsdl:output>
         <soap:body use="literal" />
@@ -331,6 +367,7 @@
       <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclChangesSinceToken" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
+
       </wsdl:input>
       <wsdl:output>
         <soap:body use="literal" />
@@ -340,6 +377,7 @@
       <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/ResolveSPGroup" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
+
       </wsdl:input>
       <wsdl:output>
         <soap:body use="literal" />
@@ -349,6 +387,7 @@
       <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListsWithInheritingRoleAssignments" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
+
       </wsdl:input>
       <wsdl:output>
         <soap:body use="literal" />
@@ -358,6 +397,7 @@
       <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListItemsWithInheritingRoleAssignments" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
+
       </wsdl:input>
       <wsdl:output>
         <soap:body use="literal" />
@@ -367,6 +407,7 @@
   <wsdl:binding name="GssAclMonitorSoap12" type="tns:GssAclMonitorSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="CheckConnectivity">
+
       <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/CheckConnectivity" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
@@ -376,6 +417,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetAclForUrls">
+
       <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForUrls" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
@@ -385,6 +427,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetAclChangesSinceToken">
+
       <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclChangesSinceToken" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
@@ -394,6 +437,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="ResolveSPGroup">
+
       <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/ResolveSPGroup" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
@@ -403,6 +447,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetListsWithInheritingRoleAssignments">
+
       <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListsWithInheritingRoleAssignments" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
@@ -412,6 +457,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="GetListItemsWithInheritingRoleAssignments">
+
       <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetListItemsWithInheritingRoleAssignments" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
@@ -421,12 +467,13 @@
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>
+
   <wsdl:service name="GssAclMonitor">
     <wsdl:port name="GssAclMonitorSoap" binding="tns:GssAclMonitorSoap">
-      <soap:address location="http://gdc04.gdc-psl.net:5555/_vti_bin/GssAcl.asmx" />
+      <soap:address location="http://gdc26.gdc-psl.net:6666/_vti_bin/GssAcl.asmx" />
     </wsdl:port>
     <wsdl:port name="GssAclMonitorSoap12" binding="tns:GssAclMonitorSoap12">
-      <soap12:address location="http://gdc04.gdc-psl.net:5555/_vti_bin/GssAcl.asmx" />
+      <soap12:address location="http://gdc26.gdc-psl.net:6666/_vti_bin/GssAcl.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

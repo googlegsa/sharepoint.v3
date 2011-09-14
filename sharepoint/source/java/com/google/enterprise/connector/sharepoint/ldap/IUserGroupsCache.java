@@ -22,38 +22,38 @@ package com.google.enterprise.connector.sharepoint.ldap;
  */
 public interface IUserGroupsCache<K, V> {
 
-    /**
-     * Returns an object from the cache for a given key.
-     *
-     * @param name
-     * @return
-     */
-    V get(K key);
+  /**
+   * Returns an object from the cache for a given key.
+   *
+   * @param name
+   * @return
+   */
+  V get(K key);
 
-    /**
-     * Put an object into the cache and it's value.
-     *
-     * @param name
-     * @param obj
-     */
-    void put(K key, V obj);
+  /**
+   * Put an object into the cache and it's value.
+   *
+   * @param name
+   * @param obj
+   */
+  void put(K key, V obj);
 
-    /**
-     * Returns true if the key found in cache.
-     *
-     * @param t
-     * @return
-     */
-    boolean contains(K t);
+  /**
+   * Returns true if the key found in cache.
+   *
+   * @param t
+   * @return
+   */
+  boolean contains(K t);
 
-    /**
-     * To clear cache store force fully.
-     */
-    void clearCache();
+  /**
+   * To clear cache store force fully.
+   */
+  void clearCache();
 
-    /**
-     * @return size of the cache store.
-     */
-    int getSize();
+  /**
+   * @return size of the cache store.
+   */
+  int getSize();
 
 }

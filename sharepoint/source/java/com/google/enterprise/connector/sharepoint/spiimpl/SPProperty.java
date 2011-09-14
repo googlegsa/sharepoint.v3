@@ -24,36 +24,36 @@ import com.google.enterprise.connector.spi.Value;
  */
 public class SPProperty implements Property {
 
-    private String name;
-    private Value value;
-    private boolean repeating = false;
+  private String name;
+  private Value value;
+  private boolean repeating = false;
 
-    /**
-     * @param strName
-     * @param inValue
-     */
-    public SPProperty(final String strName, final Value inValue) {
-        name = strName;
-        value = inValue;
-    }
+  /**
+   * @param strName
+   * @param inValue
+   */
+  public SPProperty(final String strName, final Value inValue) {
+    name = strName;
+    value = inValue;
+  }
 
-    /**
-     * Returns the next value of the property
-     */
-    public Value nextValue() throws RepositoryException {
-        if (repeating) {
-            return null;
-        } else {
-            repeating = true;
-            return value;
-        }
+  /**
+   * Returns the next value of the property
+   */
+  public Value nextValue() throws RepositoryException {
+    if (repeating) {
+      return null;
+    } else {
+      repeating = true;
+      return value;
     }
+  }
 
-    /**
-     * @return the property name
-     */
-    public String getName() {
-        return name;
-    }
+  /**
+   * @return the property name
+   */
+  public String getName() {
+    return name;
+  }
 
 }
