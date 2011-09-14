@@ -3,7 +3,7 @@
 <%-- <% Here '~' is included in the MasterPageFile attribute. ~ refers to the root directory %>--%>
 <%-- <% Enabled the Session state in the page by setting the attribute 'EnableSessionState' to true  %>--%>
 <%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
-    MasterPageFile="~/_layouts/application.master" EnableViewState="true" EnableViewStateMac="false" EnableSessionState="True"
+    MasterPageFile="~/_layouts/application.master" EnableSessionState="True"
     ValidateRequest="false" %> 
 
 
@@ -604,6 +604,8 @@
   	
 	function SetPageTitle()
 	{
+	   setBackgroundForSearchbox();
+	   
 	   var Query = "";
 	   if (window.top.location.search != 0)
 	   {
@@ -621,6 +623,27 @@
 
       
 	}
+	// Function that will set the background for the Google Search Box
+	function setBackgroundForSearchbox()
+    {
+       /*
+        * Code which will decide when the Google Search watermark image will be displayed.
+        */
+        var txtSearch = document.getElementById("ctl00_PlaceHolderTitleBreadcrumb_ctl00_txtSearch");
+        if (txtSearch.value == "")
+        {
+            // Display the Google Search watermark image in searchbox when the searchbox is empty
+            txtSearch.style.background = 'background-color: transparent';
+        }
+        else
+        {
+            /*
+            * Do not display the Google Search watermark image in searchbox, when the searchbox contains text.
+            * Instead set background colour to white.
+            */
+            txtSearch.style.background = '#ffffff';
+        }
+    } 
 		
 	function getParameter (queryString, parameterNameWithoutEquals)
 	{
@@ -635,15 +658,6 @@
 			if (end == -1)
 			{
 			   end = queryString.length;
-			}
-			var x = document.getElementById("idSearchString");
-			var mystring = decodeURIComponent(queryString.substring (begin, end))
-			
-			
-			var myindex = mystring.indexOf('cache:');
-			if(myindex>-1)
-			{
-			    x.value="";//for cached result do not show the search string as it looks wierd
 			}
 			return decodeURIComponent(queryString.substring (begin, end));
 		 }
@@ -671,25 +685,15 @@ else if(document.attachEvent)
 </asp:Content>
 <asp:Content ID="Content5" ContentPlaceHolderID="PlaceHolderTitleBreadcrumb" runat="server" EnableViewState="true">
     <a name="mainContent"></a>
-    <table width="100%" cellpadding="2" cellspacing="0" border="0">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-            <td style="height: 5px">
-                <img src="/_layouts/images/blank.gif" width="1" height="1" alt="">
-            </td>
-        </tr>
-        <tr>
-            <td style="height: 5px">
-                <img src="/_layouts/images/blank.gif" width="1" height="1" alt="">
-            </td>
-        </tr>
-        <tr>
-            <td colspan="8">
+            <td style="padding-top:0px; padding-bottom:0px">
                 <SharePoint:DelegateControl ID="DelegateControl1" runat="server" ControlId="SmallSearchInputBox" />
             </td>
         </tr>
         <!--
         <tr>
-            <td valign="top" class="ms-descriptiontext" style="padding-bottom: 5px">
+            <td>
                 <b>
                     <label for="<%SPHttpUtility.AddQuote(SPHttpUtility.NoEncode(SearchString.ClientID),Response.Output);%>">
                         <SharePoint:EncodedLiteral ID="EncodedLiteral2" runat="server" Text="<%$Resources:wss,searchresults_searchforitems%>"
@@ -700,7 +704,7 @@ else if(document.attachEvent)
         </tr>
         
         <tr>
-            <td class="ms-vb">
+            <td>
                 <table border="0" cellpadding="0" cellspacing="0">
                     <tr>
                         <td>
@@ -721,11 +725,6 @@ else if(document.attachEvent)
             </td>
         </tr>
         -->
-        <tr>
-            <td colspan="8">
-                <img src="/_layouts/images/blank.gif" width="1" height="1" alt="">
-            </td>
-        </tr>
     </table>
 </asp:Content>
 <asp:Content ID="Content6" ContentPlaceHolderID="PlaceHolderMain" runat="server">
@@ -816,11 +815,22 @@ else if(document.attachEvent)
                              */
                             if (inquery["isPublicSearch"] != null)
                             {
-                                if (inquery["isPublicSearch"] == "false")
+                                /* 
+                                 * Here the value for the access parameter will be decided on the basis of the value of
+                                 * isPublicSearch and the saved web.config file settings.
+                                 */
+                                if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
                                 {
-                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                    if (inquery["isPublicSearch"] == "false")
+                                    {
+                                        gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                    }
+                                    else
+                                    {
+                                        gProps.accessLevel = "p";  // Perform 'public search'
+                                    }
                                 }
-                                else
+                                else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
                                 {
                                     gProps.accessLevel = "p";  // Perform 'public search'
                                 }

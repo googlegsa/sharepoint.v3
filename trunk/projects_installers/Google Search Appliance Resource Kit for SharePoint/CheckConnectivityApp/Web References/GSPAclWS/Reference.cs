@@ -415,6 +415,8 @@ namespace WindowsApplication1.GSPAclWS {
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="gssAcl.generated.sharepoint.connector.enterprise.google.com")]
     public partial class GssPrincipal {
         
+        private int idField;
+        
         private string nameField;
         
         private PrincipalType typeField;
@@ -422,6 +424,16 @@ namespace WindowsApplication1.GSPAclWS {
         private GssPrincipal[] membersField;
         
         private string logMessageField;
+        
+        /// <remarks/>
+        public int ID {
+            get {
+                return this.idField;
+            }
+            set {
+                this.idField = value;
+            }
+        }
         
         /// <remarks/>
         public string Name {
@@ -569,6 +581,9 @@ namespace WindowsApplication1.GSPAclWS {
         
         /// <remarks/>
         ITEM,
+        
+        /// <remarks/>
+        SITE_LANDING_PAGE,
     }
     
     /// <remarks/>

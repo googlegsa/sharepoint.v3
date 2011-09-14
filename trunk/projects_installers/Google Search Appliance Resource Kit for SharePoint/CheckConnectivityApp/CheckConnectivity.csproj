@@ -82,7 +82,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Settings.cs" />
     <Compile Include="Web References\GSPAclWS\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -103,10 +102,27 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://gdc04.persistent.co.in:4444/_vti_bin/GSBulkAuthorization.asmx%3fWSDL">
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <WebReferenceUrl Include="http://localhost/_layouts/GSBulkAuthorization.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPBulkWS\</RelPath>
-      <UpdateFromURL>http://gdc04.persistent.co.in:4444/_vti_bin/GSBulkAuthorization.asmx%3fWSDL</UpdateFromURL>
+      <UpdateFromURL>http://localhost/_layouts/GSBulkAuthorization.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -114,10 +130,10 @@
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>Verify_Installation_GSPBulkWS_BulkAuthorization</CachedSettingsPropName>
     </WebReferenceUrl>
-    <WebReferenceUrl Include="http://10.88.45.94:29951/_vti_bin/GssAcl.asmx%3fWSDL">
+    <WebReferenceUrl Include="http://localhost/_layouts/GssAcl.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPAclWS\</RelPath>
-      <UpdateFromURL>http://10.88.45.94:29951/_vti_bin/GssAcl.asmx%3fWSDL</UpdateFromURL>
+      <UpdateFromURL>http://localhost/_layouts/GssAcl.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -125,10 +141,10 @@
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>Verify_Installation_GSPAclWS_GssAclMonitor</CachedSettingsPropName>
     </WebReferenceUrl>
-    <WebReferenceUrl Include="http://gdc05.persistent.co.in:40000/sites/basic/_vti_bin/GSSiteDiscovery.asmx%3fwsdl">
+    <WebReferenceUrl Include="http://localhost/_vti_bin/GSSiteDiscovery.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPSiteDiscoveryWS\</RelPath>
-      <UpdateFromURL>http://gdc05.persistent.co.in:40000/sites/basic/_vti_bin/GSSiteDiscovery.asmx%3fwsdl</UpdateFromURL>
+      <UpdateFromURL>http://localhost/_vti_bin/GSSiteDiscovery.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -138,10 +154,8 @@
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Web References\GSPAclWS\GssAcl.wsdl" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Web References\GSPAclWS\GssAcl.disco" />
+    <None Include="Web References\GSPAclWS\GssAcl.wsdl" />
     <None Include="Web References\GSPAclWS\GssGetAclChangesSinceTokenResult.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
@@ -183,23 +197,6 @@
     <None Include="Web References\GSPSiteDiscoveryWS\WebCrawlInfo.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

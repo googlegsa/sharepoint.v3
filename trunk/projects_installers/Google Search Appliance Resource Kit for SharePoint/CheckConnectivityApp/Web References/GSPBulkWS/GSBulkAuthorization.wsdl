@@ -68,6 +68,7 @@
           <s:enumeration value="LISTITEM" />
           <s:enumeration value="LIST" />
           <s:enumeration value="ALERT" />
+          <s:enumeration value="SITE" />
         </s:restriction>
       </s:simpleType>
       <s:element name="AuthorizeResponse">
@@ -145,10 +146,10 @@
   </wsdl:binding>
   <wsdl:service name="BulkAuthorization">
     <wsdl:port name="BulkAuthorizationSoap" binding="tns:BulkAuthorizationSoap">
-      <soap:address location="http://localhost/_vti_bin/GSBulkAuthorization.asmx" />
+      <soap:address location="http://localhost/_layouts/GSBulkAuthorization.asmx" />
     </wsdl:port>
     <wsdl:port name="BulkAuthorizationSoap12" binding="tns:BulkAuthorizationSoap12">
-      <soap12:address location="http://localhost/_vti_bin/GSBulkAuthorization.asmx" />
+      <soap12:address location="http://localhost/_layouts/GSBulkAuthorization.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>
