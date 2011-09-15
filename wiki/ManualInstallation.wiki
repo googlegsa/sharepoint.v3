@@ -122,8 +122,8 @@ It is recommended that the version of the Google services for SharePoint should 
   * source_net\Site Discovery\SharePoint 2007\GSSiteDiscoverywsdl.aspx
 
   * source_net\Acl\GssAcl.asmx
-  * source_net\Acl\GssAcl.aspx
-  * source_net\Acl\GssAcl.aspx
+  * source_net\Acl\GssAcldisco.aspx
+  * source_net\Acl\GssAclwsdl.aspx
 
 *Note*: Google Services should be installed on all SharePoint front end servers where sites that connector will crawl are hosted.
 
