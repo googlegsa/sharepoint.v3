@@ -21,6 +21,8 @@ using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
 using System.Collections.Generic;
 
+
+
 /// <summary>
 /// Google Search Appliance Connector for Microsoft SharePoint uses this web service to authorize documents at serve time.
 /// </summary>
@@ -141,22 +143,62 @@ public class BulkAuthorization : System.Web.Services.WebService
                 authData.IsAllowed = true;
             }
         }
-        else if (authData.Type == AuthData.EntityType.SITE) {
+        else if (authData.Type == AuthData.EntityType.SITE)
+        {
             bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
             authData.IsAllowed = isAllowd;
-        } else {
-            SPList list = web.GetListFromUrl(url);
-            if (authData.Type == AuthData.EntityType.LIST)
+        }
+        else
+        {
+            try
             {
-                bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                authData.IsAllowed = isAllowed;
+                SPList list = web.GetListFromUrl(url);
+                if (authData.Type == AuthData.EntityType.LIST)
+                {
+                    bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                    authData.IsAllowed = isAllowed;
+                }
+                else if (authData.Type == AuthData.EntityType.LISTITEM)
+                {
+                    int itemId = int.Parse(authData.ItemId);
+                    SPListItem item = list.GetItemById(itemId);
+                    bool isAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                    authData.IsAllowed = isAllowed;
+                }
             }
-            else if (authData.Type == AuthData.EntityType.LISTITEM)
+            catch (Exception e)
             {
-                int itemId = int.Parse(authData.ItemId);
-                SPListItem item = list.GetItemById(itemId);
-                bool isAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                authData.IsAllowed = isAllowed;
+                // Authorization for documents existing under a document library and folder
+                if (authData.Type == AuthData.EntityType.LISTITEM)
+                {
+                    // Format the string to get the document library name
+                    string documentName = url.Substring(url.LastIndexOf("/") + 1);
+                    
+                    // Get the document library/folder URL
+                    string docLibURL = url.Substring(0, url.LastIndexOf("/"));
+
+                    // Get the document library/folder name
+                    string docLibName = docLibURL.Substring(docLibURL.LastIndexOf("/") + 1);
+
+                    // If the document library/folder exists, then proceed on to get the user permissions
+                    if (web.GetFolder(docLibURL).Exists)
+                    {
+                        SPFolder folder = web.GetFolder(docLibURL);
+                        
+                        // Get the file collection existing under the document library/folder
+                        SPFileCollection fileCollection = folder.Files;
+                        
+                        // Navigate through all the files in the collection, and match the file name against the file name which is to be authorized
+                        foreach (SPFile file in fileCollection)
+                        {
+                            if (file.Name == documentName)
+                            {
+                                bool isAllowed = file.Item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                                authData.IsAllowed = isAllowed;
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -507,6 +549,7 @@ public class WSContext
             siteUrl = siteUrl.Substring(0, siteUrl.LastIndexOf('/'));
             return siteUrl;
         }
+
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
         listUrl = listUrl.Substring(listUrl.IndexOf('/'));
@@ -524,7 +567,7 @@ public class WSContext
                  * For blog site template, picture library list URL (i.e. URL for "Photos" List)
                  * contains both "lists" and "forms" string in the url. Hence removing the "lists"
                  * from the url, so as to get the correct server relative URL for the picture library. 
-                 */ 
+                 */
                 int listPos1 = listUrl.IndexOf("/lists", 0, StringComparison.InvariantCultureIgnoreCase);
                 if (listPos1 >= 0)
                 {
@@ -547,6 +590,27 @@ public class WSContext
             {
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+
+                // Get the folder URL
+                string folderURL = container.Url.Substring(0, container.Url.LastIndexOf("/"));
+                try
+                {
+                    // Get the folder object corresponding to the URL
+                    SPFolder folder = site.OpenWeb().GetFolder(folderURL);
+                    if (folder.Exists) // check if the folder exists
+                    {
+                        listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+                        // While the parent folder exists, format the URL so as to get correct server relative URL
+                        while (folder.ParentFolder.Exists)
+                        {
+                            listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+                            folder = folder.ParentFolder; // Set the folder to point to the parent folder
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                }
             }
         }
         return listUrl;
