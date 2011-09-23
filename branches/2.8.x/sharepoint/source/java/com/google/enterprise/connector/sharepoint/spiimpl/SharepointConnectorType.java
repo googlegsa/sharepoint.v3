@@ -288,19 +288,21 @@ public class SharepointConnectorType implements ConnectorType {
           buf.append(SPConstants.OPEN_ELEMENT);
           buf.append(SPConstants.INPUT);
           appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
+          appendAttribute(buf, SPConstants.CONFIG_NAME, SPConstants.USE_SP_SEARCH_VISIBILITY);
+          appendAttribute(buf, SPConstants.CONFIG_ID, SPConstants.USE_SP_SEARCH_VISIBILITY);
           appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_HELP));
           // The value can be true if its a pre-configured connector
           // being edited and blank if the default connector form is
           // being displayed.
+          value = configMap.get(SPConstants.USE_SP_SEARCH_VISIBILITY);
           if (value.equalsIgnoreCase("true") || value.length() == 0) {
             appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
           }
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
           // It allows to select check box using it's label.
           buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-              + SPConstants.EQUAL_TO + "\"" + key + "\""
+              + SPConstants.EQUAL_TO + "\""
+              + SPConstants.USE_SP_SEARCH_VISIBILITY + "\""
               + SPConstants.CLOSE_ELEMENT);
           buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
           buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
@@ -311,9 +313,10 @@ public class SharepointConnectorType implements ConnectorType {
           buf.append(SPConstants.OPEN_ELEMENT);
           buf.append(SPConstants.INPUT);
           appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
+          appendAttribute(buf, SPConstants.CONFIG_NAME, SPConstants.FEED_UNPUBLISHED_CONTENT);
+          appendAttribute(buf, SPConstants.CONFIG_ID, SPConstants.FEED_UNPUBLISHED_CONTENT);
           appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
+          value = configMap.get(SPConstants.FEED_UNPUBLISHED_CONTENT);
           if (value.equalsIgnoreCase("true") || value.length() == 0) {
             appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
           } else {
@@ -322,7 +325,8 @@ public class SharepointConnectorType implements ConnectorType {
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
           // It allows to select check box using it's label.
           buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-              + SPConstants.EQUAL_TO + "\"" + key + "\""
+              + SPConstants.EQUAL_TO + "\""
+              + SPConstants.FEED_UNPUBLISHED_CONTENT + "\""
               + SPConstants.CLOSE_ELEMENT);
           buf.append(rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
           buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
@@ -1263,7 +1267,6 @@ public class SharepointConnectorType implements ConnectorType {
           + "\r\n document.getElementById(\"searchBase\").disabled=false"
           + "\r\n document.getElementById(\"authenticationType\").disabled=false"
           + "\r\n document.getElementById(\"connectMethod\").disabled=false"
-          + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").disabled=false"
           + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=false"
           + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").checked=true"
           + "\r\n if (document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").checked == true){ "
@@ -1279,7 +1282,6 @@ public class SharepointConnectorType implements ConnectorType {
           + "\r\n document.getElementById(\"searchBase\").disabled=true"
           + "\r\n document.getElementById(\"authenticationType\").disabled=true"
           + "\r\n document.getElementById(\"connectMethod\").disabled=true"
-          + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").disabled=true"
           + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=true"
           + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=true"
           + "\r\n document.getElementById(\"initialCacheSize\").disabled=true"
