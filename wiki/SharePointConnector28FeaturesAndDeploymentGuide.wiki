@@ -23,7 +23,7 @@ SharePoint connector 2.8 now supports LDAP (simple and nested) and SharePoint lo
 
 ===Mandatory Pre-requisites for feeding ACL using the connector===
 
-1. Connector manager version 2.8
+1. Connector manager version 2.8. Download the connector 2.8 installer from http://code.google.com/p/googlesearchapplianceconnectors/downloads/list
 
 
 2. Google services for SharePoint v2.8 should be installed on each SharePoint web front end in the farm. If the GSARKS installer is not available, You can manually deploy the Google Services for SharePoint using the manual deployment steps at 
@@ -189,8 +189,6 @@ A:   At the moment this is the only way to differentiate the group names in conn
 *Q5. User group cache size: is it in-memory? What's the meaning of cache size? Why is refresh needed?
 
 A:   Yes it is in memory and cache size refers to initial size of the cache and by default its size would be 1000. This means that connector will be able to keep 1000 search users ->(resolved AD groups + local SP groups) entries in the cache. For the next incoming search user (1001), cache service will automatically remove the very first old entry from the cache. This is how connector will accommodate the next search user entry (along with resolved AD groups + SP groups) in the cache. Approximately 120 KB would be the size of the cache, if the cache consist of 10 entries.
-
-
 
 
 
