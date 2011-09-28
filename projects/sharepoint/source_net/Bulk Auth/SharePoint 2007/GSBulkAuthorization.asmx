@@ -168,36 +168,16 @@ public class BulkAuthorization : System.Web.Services.WebService
             }
             catch (Exception e)
             {
-                // Authorization for documents existing under a document library and folder
+                /*
+                 * Authorization for documents existing under a document library and folder
+                 * For eg: document url is of the form "http://SharePointWebApp:portNo/site/doclib/myDoc.txt". Hence
+                 * the code below will perform authorization for documents under a document library or folder.
+                 */
                 if (authData.Type == AuthData.EntityType.LISTITEM)
                 {
-                    // Format the string to get the document library name
-                    string documentName = url.Substring(url.LastIndexOf("/") + 1);
-                    
-                    // Get the document library/folder URL
-                    string docLibURL = url.Substring(0, url.LastIndexOf("/"));
-
-                    // Get the document library/folder name
-                    string docLibName = docLibURL.Substring(docLibURL.LastIndexOf("/") + 1);
-
-                    // If the document library/folder exists, then proceed on to get the user permissions
-                    if (web.GetFolder(docLibURL).Exists)
-                    {
-                        SPFolder folder = web.GetFolder(docLibURL);
-                        
-                        // Get the file collection existing under the document library/folder
-                        SPFileCollection fileCollection = folder.Files;
-                        
-                        // Navigate through all the files in the collection, and match the file name against the file name which is to be authorized
-                        foreach (SPFile file in fileCollection)
-                        {
-                            if (file.Name == documentName)
-                            {
-                                bool isAllowed = file.Item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                                authData.IsAllowed = isAllowed;
-                            }
-                        }
-                    }
+                    // Gets the document as a list item, from the URL and for the current website
+                    SPListItem item = web.GetListItem(url);
+                    authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
                 }
             }
         }
@@ -551,7 +531,20 @@ public class WSContext
         }
 
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
-        listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+        /* 
+        * Checking whether the url contains port number. This can be recognized by getting the index of 
+        * the occurrence of colon (i.e. ":" )within the url.
+        */
+        int colonPosListUrl = listUrl.IndexOf(':');
+        if (colonPosListUrl >= 0)// Means URL contains Port No.
+        {
+            listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+        }
+        else              // Means URL does not contain Port No.
+        {
+            listUrl = listUrl.Substring(listUrl.IndexOf('/') + 1);
+            listUrl = listUrl.Substring(listUrl.IndexOf('/') + 1);
+        }
         listUrl = listUrl.Substring(listUrl.IndexOf('/'));
         if (container.Type == Container.ContainerType.LIST)
         {
@@ -597,15 +590,30 @@ public class WSContext
                 {
                     // Get the folder object corresponding to the URL
                     SPFolder folder = site.OpenWeb().GetFolder(folderURL);
-                    if (folder.Exists) // check if the folder exists
+                    
+                    // Get the server relative URL for the folder
+                    string serverRelativeURLFolder = folder.ServerRelativeUrl;
+
+                    /*
+                     * If there is a folder hierarchy, format the string to get the correct server relative 
+                     * url for document existing under subfolders. For eg: if the document url is of the form 
+                     * "http://SharePointWebApp:portNo/site/doclib/folder1/folder2/folder3/myDoc.txt", then for 
+                     * extracting correct server relative url, the corresponding folders existing along the path
+                     * (i.e. folder1,folder2 and folder3 in our case) need to be removed from the document url.
+                     */
+                    while (folder.ParentFolder.Url != "")
                     {
+                        /* 
+                         * Using a while loop facilitates the job of removing the folders, along the path, existing 
+                         * in the document url.
+                         */
                         listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
-                        // While the parent folder exists, format the URL so as to get correct server relative URL
-                        while (folder.ParentFolder.Exists)
-                        {
-                            listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
-                            folder = folder.ParentFolder; // Set the folder to point to the parent folder
-                        }
+                        /*
+                         * Set the parent folder object as the current folder object to be processed. 
+                         * This is due to the fact that the folder hierarchy needs to be traversed upwards, starting
+                         * from the document name, in the document url, and is done to get correct server relative URL.
+                         */
+                        folder = folder.ParentFolder; 
                     }
                 }
                 catch (Exception e)
