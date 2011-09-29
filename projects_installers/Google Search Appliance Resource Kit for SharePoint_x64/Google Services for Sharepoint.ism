@@ -52,7 +52,7 @@
 	<summary>
 		<codepage>1252</codepage>
 		<title>##ID_STRING5##</title>
-		<subject>Google Search Appliance Resource Kit for SharePoint 2.8</subject>
+		<subject>Google Search Appliance Resource Kit for SharePoint 2.8.0</subject>
 		<author>##ID_PRODUCTAUTHOR##</author>
 		<keywords>Installer,MSI,Database</keywords>
 		<comments>##ID_STRING97##</comments>
@@ -1923,16 +1923,13 @@
 		<row><td>app_global.asax.compiled1</td><td>GSASimulatorBin</td><td>APP_GL~1.COM|App_global.asax.compiled</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\bin\App_global.asax.compiled</td><td>1</td><td/></row>
 		<row><td>app_global.asax.dll</td><td>GSASAMLBridgeBin</td><td>APP_GL~1.DLL|App_global.asax.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\bin\App_global.asax.dll</td><td>1</td><td/></row>
 		<row><td>app_global.asax.dll1</td><td>GSASimulatorBin</td><td>APP_GL~1.DLL|App_global.asax.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\bin\App_global.asax.dll</td><td>1</td><td/></row>
-		<row><td>app_web_2ibv2jgn.dll</td><td>GSASimulatorBin</td><td>APP_WE~1.DLL|App_Web_2ibv2jgn.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\bin\App_Web_2ibv2jgn.dll</td><td>1</td><td/></row>
-		<row><td>app_web_2zz7hslf.dll</td><td>GSASAMLBridgeBin</td><td>APP_WE~1.DLL|App_Web_2zz7hslf.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\bin\App_Web_2zz7hslf.dll</td><td>1</td><td/></row>
-		<row><td>app_web__eqjlfs3.dll</td><td>GSASAMLBridgeBin</td><td>APP_WE~1.DLL|App_Web_-eqjlfs3.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\bin\App_Web_-eqjlfs3.dll</td><td>1</td><td/></row>
-		<row><td>app_web_wg_lcnmy.dll</td><td>GSASimulatorBin</td><td>APP_WE~1.DLL|App_Web_wg_lcnmy.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\bin\App_Web_wg_lcnmy.dll</td><td>1</td><td/></row>
-		<row><td>app_web_xrigshux.dll</td><td>GSASimulatorBin</td><td>APP_WE~1.DLL|App_Web_xrigshux.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\bin\App_Web_xrigshux.dll</td><td>1</td><td/></row>
+		<row><td>app_web_smsovkgr.dll</td><td>GSASAMLBridgeBin</td><td>APP_WE~1.DLL|App_Web_smsovkgr.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\bin\App_Web_smsovkgr.dll</td><td>1</td><td/></row>
+		<row><td>app_web_tayoj4om.dll</td><td>GSASimulatorBin</td><td>APP_WE~1.DLL|App_Web_tayoj4om.dll</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\bin\App_Web_tayoj4om.dll</td><td>1</td><td/></row>
 		<row><td>authnresponse.xml</td><td>GSASAMLBridge</td><td>AUTHNR~1.XML|AuthnResponse.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\AuthnResponse.xml</td><td>1</td><td/></row>
-		<row><td>authz.aspx</td><td>GSASimulator</td><td>AUTHZ~1.ASP|Authz.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\Authz.aspx</td><td>1</td><td/></row>
-		<row><td>authz.aspx.resx</td><td>GSASimulator</td><td>AUTHZA~1.RES|Authz.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\Authz.aspx.resx</td><td>1</td><td/></row>
-		<row><td>authz.aspx.resx1</td><td>GSASAMLBridge</td><td>AUTHZA~1.RES|AuthZ.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\AuthZ.aspx.resx</td><td>1</td><td/></row>
-		<row><td>authz.aspx1</td><td>GSASAMLBridge</td><td>AUTHZ~1.ASP|AuthZ.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\AuthZ.aspx</td><td>1</td><td/></row>
+		<row><td>authz.aspx</td><td>GSASAMLBridge</td><td>AUTHZ~1.ASP|AuthZ.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\AuthZ.aspx</td><td>1</td><td/></row>
+		<row><td>authz.aspx.resx</td><td>GSASAMLBridge</td><td>AUTHZA~1.RES|AuthZ.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\AuthZ.aspx.resx</td><td>1</td><td/></row>
+		<row><td>authz.aspx.resx1</td><td>GSASimulator</td><td>AUTHZA~1.RES|Authz.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\Authz.aspx.resx</td><td>1</td><td/></row>
+		<row><td>authz.aspx1</td><td>GSASimulator</td><td>AUTHZ~1.ASP|Authz.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\Authz.aspx</td><td>1</td><td/></row>
 		<row><td>authz.xml</td><td>GSASimulator</td><td>AuthZ.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\AuthZ.xml</td><td>1</td><td/></row>
 		<row><td>authzresponsenode.xml</td><td>GSASAMLBridge</td><td>AUTHZR~1.XML|AuthzResponseNode.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\AuthzResponseNode.xml</td><td>1</td><td/></row>
 		<row><td>authzresponsesoapenvelopeend</td><td>GSASAMLBridge</td><td>AUTHZR~1.XML|AuthzResponseSoapEnvelopeEnd.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\AuthzResponseSoapEnvelopeEnd.xml</td><td>1</td><td/></row>
@@ -1949,10 +1946,10 @@
 		<row><td>dump.aspx.resx</td><td>GSASAMLBridge</td><td>DUMPAS~1.RES|Dump.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\Dump.aspx.resx</td><td>1</td><td/></row>
 		<row><td>elements.xml</td><td>GoogleSearchBoxFeature</td><td>elements.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\gsafeature\elements.xml</td><td>1</td><td/></row>
 		<row><td>feature.xml</td><td>GoogleSearchBoxFeature</td><td>Feature.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\gsafeature\Feature.xml</td><td>1</td><td/></row>
-		<row><td>global.asax.resx</td><td>GSASimulator</td><td>GLOBAL~1.RES|Global.asax.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\Global.asax.resx</td><td>1</td><td/></row>
-		<row><td>global.asax.resx1</td><td>GSASAMLBridge</td><td>GLOBAL~1.RES|Global.asax.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\Global.asax.resx</td><td>1</td><td/></row>
-		<row><td>google.gif</td><td>GSASimulator</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\google.gif</td><td>1</td><td/></row>
-		<row><td>google.gif1</td><td>GSASAMLBridge</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\google.gif</td><td>1</td><td/></row>
+		<row><td>global.asax.resx</td><td>GSASAMLBridge</td><td>GLOBAL~1.RES|Global.asax.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\Global.asax.resx</td><td>1</td><td/></row>
+		<row><td>global.asax.resx1</td><td>GSASimulator</td><td>GLOBAL~1.RES|Global.asax.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\Global.asax.resx</td><td>1</td><td/></row>
+		<row><td>google.gif</td><td>GSASAMLBridge</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\google.gif</td><td>1</td><td/></row>
+		<row><td>google.gif1</td><td>GSASimulator</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\google.gif</td><td>1</td><td/></row>
 		<row><td>google_custom_search_waterma</td><td>GoogleWatermarkImage</td><td>GOOGLE~1.GIF|google_custom_search_watermark.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\google_custom_search_watermark.gif</td><td>1</td><td/></row>
 		<row><td>gsa.log</td><td>GSASimulator</td><td>gsa.log</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\gsa.log</td><td>1</td><td/></row>
 		<row><td>gsa2sp.xsl</td><td>GoogleSearchBoxComponent</td><td>GSA2SP.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\GSA2SP.xsl</td><td>1</td><td/></row>
@@ -1983,7 +1980,7 @@
 		<row><td>resolve.aspx.resx</td><td>GSASAMLBridge</td><td>RESOLV~1.RES|Resolve.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\Resolve.aspx.resx</td><td>1</td><td/></row>
 		<row><td>samlartifactconsumer.aspx</td><td>GSASimulator</td><td>SAMLAR~1.ASP|SamlArtifactConsumer.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\SamlArtifactConsumer.aspx</td><td>1</td><td/></row>
 		<row><td>samlartifactconsumer.aspx.re</td><td>GSASimulator</td><td>SAMLAR~1.RES|SamlArtifactConsumer.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\SamlArtifactConsumer.aspx.resx</td><td>1</td><td/></row>
-		<row><td>samlbridgeconfiguation.exe</td><td>SAMLBridgeCustomApplication</td><td>SAMLBR~1.EXE|SAMLBridgeConfiguation.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;PATH_TO_RELEASE_FILES2&gt;\SAMLBridgeConfiguation.exe</td><td>1</td><td/></row>
+		<row><td>samlbridgeconfiguation.exe</td><td>SAMLBridgeCustomApplication</td><td>SAMLBR~1.EXE|SAMLBridgeConfiguation.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\samlbridgeconfiguation\bin\release\SAMLBridgeConfiguation.exe</td><td>1</td><td/></row>
 		<row><td>samlrequest.xml</td><td>GSASimulator</td><td>SAMLRE~1.XML|SamlRequest.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\SamlRequest.xml</td><td>1</td><td/></row>
 		<row><td>samlresolve.xml</td><td>GSASimulator</td><td>SAMLRE~1.XML|SamlResolve.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\SamlResolve.xml</td><td>1</td><td/></row>
 		<row><td>search.aspx</td><td>GSASimulator</td><td>SEARCH~1.ASP|Search.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\Search.aspx</td><td>1</td><td/></row>
@@ -1991,12 +1988,11 @@
 		<row><td>searchsite.aspx</td><td>GSBTestUtilityFiles</td><td>SEARCH~1.ASP|SearchSite.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\SearchSite.aspx</td><td>1</td><td/></row>
 		<row><td>searchsite.aspx.cs</td><td>GSBTestUtilityFiles</td><td>SEARCH~1.CS|SearchSite.aspx.cs</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\SearchSite.aspx.cs</td><td>1</td><td/></row>
 		<row><td>sp_actual.xsl</td><td>GoogleSearchBoxComponent</td><td>SP_ACT~1.XSL|SP_Actual.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\SP_Actual.xsl</td><td>1</td><td/></row>
-		<row><td>upgradelog.xml</td><td>GSASimulator</td><td>UPGRAD~1.XML|UpgradeLog.XML</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\UpgradeLog.XML</td><td>1</td><td/></row>
 		<row><td>verify_installation.exe</td><td>GoogleServicesLogComponent</td><td>VERIFY~1.EXE|Verify Installation.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\checkconnectivityapp\bin\release\Verify Installation.exe</td><td>1</td><td/></row>
 		<row><td>viewlogs.bat1</td><td>GoogleServicesLogComponent</td><td>ViewLogs.bat</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\ViewLogs.bat</td><td>1</td><td/></row>
 		<row><td>warn4.jpg</td><td>GoogleSearchBoxComponent</td><td>warn4.JPG</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxfiles\warn4.JPG</td><td>1</td><td/></row>
-		<row><td>web.config</td><td>GSASimulator</td><td>WEB~1.CON|Web.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;PATH_TO_GSA-SIMULATOR_FILE1&gt;\Web.config</td><td>1</td><td/></row>
-		<row><td>web.config1</td><td>GSASAMLBridge</td><td>WEB~1.CON|Web.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\Web.config</td><td>1</td><td/></row>
+		<row><td>web.config</td><td>GSASAMLBridge</td><td>WEB~1.CON|Web.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\saml-bridge\Web.config</td><td>1</td><td/></row>
+		<row><td>web.config1</td><td>GSASimulator</td><td>WEB~1.CON|Web.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\Web.config</td><td>1</td><td/></row>
 		<row><td>web.config2</td><td>GSBTestUtilityFiles</td><td>WEB~1.CON|Web.Config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\Web.Config</td><td>1</td><td/></row>
 	</table>
 
@@ -4119,12 +4115,12 @@
 		<row><td>ID_STRING13</td><td>1033</td><td>SEARCH~1|SearchBoxLogs</td><td>0</td><td/><td>345890542</td></row>
 		<row><td>ID_STRING14</td><td>1033</td><td>GOOGLE~2|GoogleSearchBoxforSharePoint</td><td>0</td><td/><td>345849710</td></row>
 		<row><td>ID_STRING15</td><td>1033</td><td>SAML Site</td><td>0</td><td/><td>345894063</td></row>
-		<row><td>ID_STRING16</td><td>1033</td><td>GSARES~1|GSA Resource Kit for SharePoint 2.8</td><td>0</td><td/><td>1151303955</td></row>
+		<row><td>ID_STRING16</td><td>1033</td><td>GSARES~1.0|GSA Resource Kit for SharePoint 2.8.0</td><td>0</td><td/><td>-325110482</td></row>
 		<row><td>ID_STRING17</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-325225679</td></row>
 		<row><td>ID_STRING18</td><td>1033</td><td>CONFIG~1|Configuration Wizard</td><td>0</td><td/><td>-325203119</td></row>
 		<row><td>ID_STRING19</td><td>1033</td><td>GOOGLE~1|Google Search Box for SharePoint 2.6.10</td><td>0</td><td/><td>1151322387</td></row>
 		<row><td>ID_STRING2</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>1436375212</td></row>
-		<row><td>ID_STRING20</td><td>1033</td><td>GOOGLE~1|Google Services for SharePoint 2.8</td><td>0</td><td/><td>1151275315</td></row>
+		<row><td>ID_STRING20</td><td>1033</td><td>GOOGLE~1.0|Google Services for SharePoint 2.8.0</td><td>0</td><td/><td>-325120722</td></row>
 		<row><td>ID_STRING21</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-325243855</td></row>
 		<row><td>ID_STRING22</td><td>1033</td><td>gsa-resource-kit</td><td>0</td><td/><td>-711124502</td></row>
 		<row><td>ID_STRING23</td><td>1033</td><td>Google SAML Bridge</td><td>0</td><td/><td>-451049234</td></row>
@@ -4177,10 +4173,10 @@
 		<row><td>ID_STRING66</td><td>1033</td><td>NewFeature1</td><td>0</td><td/><td>-451041106</td></row>
 		<row><td>ID_STRING67</td><td>1033</td><td>GSA Simulator for SharePoint</td><td>0</td><td/><td>1839030796</td></row>
 		<row><td>ID_STRING68</td><td>1033</td><td>Google Search Box Test Utility</td><td>0</td><td/><td>-451057426</td></row>
-		<row><td>ID_STRING69</td><td>1033</td><td>GSA Resource Kit for SharePoint 2.8</td><td>0</td><td/><td>1285528786</td></row>
+		<row><td>ID_STRING69</td><td>1033</td><td>GSA Resource Kit for SharePoint 2.8.0</td><td>0</td><td/><td>-325092082</td></row>
 		<row><td>ID_STRING7</td><td>1033</td><td>http://www.GoogleInc..com</td><td>0</td><td/><td>1151323442</td></row>
 		<row><td>ID_STRING70</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>-711088305</td></row>
-		<row><td>ID_STRING71</td><td>1033</td><td>GOOGLE~1|Google SAML Bridge for Windows 2.8</td><td>0</td><td/><td>1151285555</td></row>
+		<row><td>ID_STRING71</td><td>1033</td><td>GOOGLE~1.0|Google SAML Bridge for Windows 2.8.0</td><td>0</td><td/><td>-325116626</td></row>
 		<row><td>ID_STRING72</td><td>1033</td><td>SAMLBR~1|SAML Bridge Configuration Wizard</td><td>0</td><td/><td>362630958</td></row>
 		<row><td>ID_STRING73</td><td>1033</td><td>UnInstallationFeature</td><td>0</td><td/><td>631084334</td></row>
 		<row><td>ID_STRING74</td><td>1033</td><td>To have a common uninstallation shortcut</td><td>0</td><td/><td>631098670</td></row>
@@ -4189,7 +4185,7 @@
 		<row><td>ID_STRING77</td><td>1033</td><td>GSA Simulator for SharePoint|GSA Simulator for SharePoint</td><td>0</td><td/><td>1839016621</td></row>
 		<row><td>ID_STRING78</td><td>1033</td><td>SearchSite.aspx</td><td>0</td><td/><td>1839030094</td></row>
 		<row><td>ID_STRING79</td><td>1033</td><td>SearchSite.aspx</td><td>0</td><td/><td>1839028046</td></row>
-		<row><td>ID_STRING8</td><td>1033</td><td>Google Services for SharePoint 2.8</td><td>0</td><td/><td>1285506258</td></row>
+		<row><td>ID_STRING8</td><td>1033</td><td>Google Services for SharePoint 2.8.0</td><td>0</td><td/><td>-325096178</td></row>
 		<row><td>ID_STRING80</td><td>1033</td><td>saml-bridge</td><td>0</td><td/><td>1839044368</td></row>
 		<row><td>ID_STRING81</td><td>1033</td><td>SearchSite.aspx</td><td>0</td><td/><td>1839011600</td></row>
 		<row><td>ID_STRING82</td><td>1033</td><td>gsa-simulator</td><td>0</td><td/><td>1839028048</td></row>
@@ -4200,7 +4196,7 @@
 		<row><td>ID_STRING87</td><td>1033</td><td>SEARCH~1|Search Site</td><td>0</td><td/><td>-1919031502</td></row>
 		<row><td>ID_STRING88</td><td>1033</td><td>GOOGLE~1|Google Search Box Test Utility for SharePoint</td><td>0</td><td/><td>-1784817393</td></row>
 		<row><td>ID_STRING89</td><td>1033</td><td>CONFIG~1|Configuration Wizard</td><td>0</td><td/><td>-1784839921</td></row>
-		<row><td>ID_STRING9</td><td>1033</td><td>Google SAML Bridge for Windows 2.8</td><td>0</td><td/><td>1285518546</td></row>
+		<row><td>ID_STRING9</td><td>1033</td><td>Google SAML Bridge for Windows 2.8.0</td><td>0</td><td/><td>-325090034</td></row>
 		<row><td>ID_STRING90</td><td>1033</td><td>GOOGLE~1|Google Search Box for SharePoint Test Utility</td><td>0</td><td/><td>-1784868592</td></row>
 		<row><td>ID_STRING91</td><td>1033</td><td>GSARES~1|GSA Resource Kit Test Utilities</td><td>0</td><td/><td>-979506348</td></row>
 		<row><td>ID_STRING92</td><td>1033</td><td>GSASEC~1|GSA Security SPI Simulator</td><td>0</td><td/><td>-1784871152</td></row>
@@ -4238,7 +4234,7 @@
 		<row><td>NEW_STRING7</td><td>1033</td><td>By installing the Google Search Box for SharePoint, the SharePoint search will be replaced by Google search for all the local SharePoint web applications</td><td>0</td><td/><td>-711085939</td></row>
 		<row><td>NEW_STRING8</td><td>1033</td><td>&amp;Next &gt;</td><td>0</td><td/><td>765317773</td></row>
 		<row><td>NEW_STRING9</td><td>1033</td><td>Cancel</td><td>0</td><td/><td>765317773</td></row>
-		<row><td>UNINST|Uninstall GSA Resource Kit for SharePoint</td><td>1033</td><td>Uninstall GSA Resource Kit for SharePoint 2.8</td><td>0</td><td/><td>1151307122</td></row>
+		<row><td>UNINST|Uninstall GSA Resource Kit for SharePoint</td><td>1033</td><td>Uninstall GSA Resource Kit for SharePoint 2.8.0</td><td>0</td><td/><td>-325079794</td></row>
 		<row><td>tempsource</td><td>1033</td><td>template:template</td><td>0</td><td>temp source</td><td>891127475</td></row>
 	</table>
 
@@ -4904,8 +4900,8 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>ProductCode</td><td>{7B5845C5-C580-4FC3-9C45-BDD04A213B14}</td><td/></row>
 		<row><td>ProductID</td><td>none</td><td/></row>
 		<row><td>ProductLanguage</td><td>1033</td><td/></row>
-		<row><td>ProductName</td><td>Google Search Appliance Resource Kit for SharePoint 2.8</td><td/></row>
-		<row><td>ProductVersion</td><td>2.8</td><td/></row>
+		<row><td>ProductName</td><td>Google Search Appliance Resource Kit for SharePoint 2.8.0</td><td/></row>
+		<row><td>ProductVersion</td><td>2.8.0</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>

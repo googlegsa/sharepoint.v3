@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<preserve resultType="8" virtualPath="/saml-bridge/global.asax" hash="ffffffffaa214b22" filehash="fffff73f9bab37e4" flags="150000" assembly="App_global.asax" type="ASP.global_asax">
+<preserve resultType="8" virtualPath="/saml-bridge/global.asax" hash="ffffffffaa214b22" filehash="fffff5d36cba2594" flags="150000" assembly="App_global.asax" type="ASP.global_asax">
     <filedeps>
         <filedep name="/saml-bridge/global.asax" />
     </filedeps>

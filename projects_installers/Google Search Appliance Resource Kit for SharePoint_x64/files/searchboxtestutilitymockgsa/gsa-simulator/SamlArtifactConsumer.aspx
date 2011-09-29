@@ -1,1 +1,1 @@
-<%@ page language="c#" inherits="SamlArtifactConsumer, App_Web_2ibv2jgn" autoeventwireup="false" %>
+<%@ page language="c#" inherits="SamlArtifactConsumer, App_Web_tayoj4om" autoeventwireup="false" %>
