@@ -293,18 +293,21 @@ public class SharepointConnectorType implements ConnectorType {
 					appendAttribute(buf, SPConstants.CONFIG_NAME, spSearchVisibilityKey);
 					appendAttribute(buf, SPConstants.CONFIG_ID, spSearchVisibilityKey);
 					appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_HELP));
-					// The value can be true if its a pre-configured connector
-					// being edited and blank if the default connector form is
-					// being displayed.
-					if (configMap != null) {
-						spSearchVisibilityValue = configMap.get(SPConstants.USE_SP_SEARCH_VISIBILITY);
-					} else {
-						spSearchVisibilityValue = "";
-					}
-					if (spSearchVisibilityValue.equalsIgnoreCase("true")
-							|| spSearchVisibilityValue.length() == 0) {
-						appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-					}
+                    // The value can be true if its a pre-configured connector
+                    // being edited and blank if the default connector form is
+                    // being displayed.
+                    if (configMap != null) {
+                      spSearchVisibilityValue = configMap.get
+                          (SPConstants.USE_SP_SEARCH_VISIBILITY);
+                    } 
+                    
+                    if (spSearchVisibilityValue == null) {
+                      spSearchVisibilityValue = "";
+                    }
+                    if (spSearchVisibilityValue.equalsIgnoreCase("true")
+                            || spSearchVisibilityValue.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    }
 					buf.append(" /" + SPConstants.CLOSE_ELEMENT);
 					// It allows to select check box using it's label.
 					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
@@ -325,17 +328,19 @@ public class SharepointConnectorType implements ConnectorType {
 					appendAttribute(buf, SPConstants.CONFIG_NAME, unpublishedContentKey);
 					appendAttribute(buf, SPConstants.CONFIG_ID, unpublishedContentKey);
 					appendAttribute(buf, SPConstants.TITLE, rb.getString(unpublishedContentKey));
-					if (configMap != null) {
-						feedUnpublishedContentValue = configMap.get(SPConstants.FEED_UNPUBLISHED_CONTENT);
-					} else {
-						feedUnpublishedContentValue = "";
-					}
-					if (feedUnpublishedContentValue.equalsIgnoreCase("true")
-							|| feedUnpublishedContentValue.length() == 0) {
-						appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-					} else {
-						appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
-					}
+                    if (configMap != null) {
+                      feedUnpublishedContentValue = configMap.get(
+                          SPConstants.FEED_UNPUBLISHED_CONTENT);
+                    } 
+                    if (feedUnpublishedContentValue == null) {
+                      feedUnpublishedContentValue = "";
+                    }
+                    if (feedUnpublishedContentValue.equalsIgnoreCase("true")
+                            || feedUnpublishedContentValue.length() == 0) {
+                        appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+                    } else {
+                        appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+                    }
 					buf.append(" /" + SPConstants.CLOSE_ELEMENT);
 					// It allows to select check box using it's label.
 					buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
