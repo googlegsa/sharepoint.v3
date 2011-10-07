@@ -30,6 +30,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 
 import java.io.File;
@@ -661,7 +662,15 @@ public class SharepointClientContext implements Cloneable {
             ntlm = false;
         }
         final HttpClient httpClient = new HttpClient();
-
+		HttpClientParams params = httpClient.getParams();
+		// Fix for the Issue[5408782] SharePoint connector fails to traverse a site,
+		// circular redirect exception is observed.
+		params.setBooleanParameter(HttpClientParams.ALLOW_CIRCULAR_REDIRECTS, true);
+		// If ALLOW_CIRCULAR_REDIRECTS is set to true, HttpClient throws an
+		// exception if a series of redirects includes the same resources more than
+		// once. MAX_REDIRECTS allows you to specify a maximum number of redirects
+		// to follow.
+		params.setIntParameter(HttpClientParams.MAX_REDIRECTS, 10);
         httpClient.getState().setCredentials(AuthScope.ANY, credentials);
         if (null == method) {
             method = new HeadMethod(strURL);
