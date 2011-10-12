@@ -602,13 +602,13 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         + count
         + " documents from site collection [ "
         + authDataPacket.getContainer().getUrl()
-        + " ] was not completed becasue web service encountered following error -> "
+        + " ] was not completed because web service encountered following error -> "
         + authDataPacket.getMessage());
 
     for (AuthData authData : authDataPacket.getAuthDataArray()) {
       LOGGER.log(Level.WARNING, "AuthZ status: INDETERMINATE for DocId [ "
           + authData.getComplexDocId()
-          + " ] becasue the current AuthDataPacket packet was discarded due to following WS error -> "
+          + " ] because the current AuthDataPacket packet was discarded due to following WS error -> "
           + authDataPacket.getMessage());
 
       if (authData.getComplexDocId().startsWith(SPConstants.ATTACHMENT_SUFFIX_IN_DOCID)) {

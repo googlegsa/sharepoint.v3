@@ -190,7 +190,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 			}
 			return tmpGroups;
 		} else {
-			LOGGER.info("Recieved zero or null groups to encode.");
+			LOGGER.info("Received zero or null groups to encode.");
 			return null;
 		}
 	}
