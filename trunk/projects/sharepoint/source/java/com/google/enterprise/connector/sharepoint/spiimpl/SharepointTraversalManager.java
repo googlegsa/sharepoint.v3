@@ -61,11 +61,11 @@ public class SharepointTraversalManager implements TraversalManager,
       throws RepositoryException {
     if (inConnector == null) {
       throw new SharepointException(
-          "Can not initialize traversal manager becasue SharePointConnector object is null");
+          "Cannot initialize traversal manager because SharePointConnector object is null.");
     }
     if (inSharepointClientContext == null) {
       throw new SharepointException(
-          "Can not initialize traversal manager becasue SharePointClientContext object is null");
+          "Cannot initialize traversal manager because SharePointClientContext object is null.");
     }
     try {
       LOGGER.config("SharepointTraversalManager: "

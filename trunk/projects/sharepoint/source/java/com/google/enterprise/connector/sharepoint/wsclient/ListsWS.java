@@ -1077,7 +1077,7 @@ public class ListsWS {
       }
       LOGGER.log(Level.WARNING, "Could not parse the web service SOAP response for list [ "
           + list.getListURL()
-          + " ]. This could happen becasue of invalid XML chanracters in the web service response. "
+          + " ]. This could happen because of invalid XML characters in the web service response. "
           + "Check if any of your document's metadata has such characters in it. ");
     }
 
@@ -1198,7 +1198,7 @@ public class ListsWS {
       final Set<String> restoredIDs, final Set<String> renamedIDs)
       throws SharepointException {
     final String lastChangeToken = changeElement.getAttributeValue(SPConstants.LASTCHANGETOKEN);
-    LOGGER.log(Level.FINE, "Change Token Recieved [ " + lastChangeToken
+    LOGGER.log(Level.FINE, "Change Token Received [ " + lastChangeToken
         + " ]. ");
     if (lastChangeToken == null) {
       LOGGER.log(Level.SEVERE, "No Change Token Found in the Web Service Response !!!! "
@@ -1238,7 +1238,7 @@ public class ListsWS {
         continue;
       }
 
-      LOGGER.config("Recieved change type as: " + changeType);
+      LOGGER.config("Received change type as: " + changeType);
 
       if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
         if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
@@ -1324,7 +1324,7 @@ public class ListsWS {
 
     final ArrayList<MessageElement> updatedListItems = new ArrayList<MessageElement>();
     final String receivedNextPage = dataElement.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
-    LOGGER.log(Level.FINE, "Next Page Recieved [ " + receivedNextPage + " ]. ");
+    LOGGER.log(Level.FINE, "Next Page Received [ " + receivedNextPage + " ]. ");
     list.setNextPage(receivedNextPage);
     /*
      * One may think of using nextPage as the backbone of page by page crawling

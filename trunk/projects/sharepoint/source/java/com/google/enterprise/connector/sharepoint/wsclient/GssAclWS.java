@@ -287,7 +287,7 @@ public class GssAclWS {
 						}
 					} else {
 						LOGGER.log(Level.WARNING, "Skipping ACE for principal [ "
-								+ principal.getName() + " ] becasue its type [ "
+								+ principal.getName() + " ] because its type [ "
 								+ principal.getType() + " ]  is unknown");
 						continue;
 					}
@@ -579,7 +579,7 @@ public class GssAclWS {
 
 			if (objType == ObjectType.SECURITY_POLICY) {
 				LOGGER.log(Level.INFO, "Resetting all list states under web [ "
-						+ webstate.getWebUrl() + " ] becasue of security policy change.");
+						+ webstate.getWebUrl() + " ] because of security policy change.");
 				webstate.resetState();
 				isWebReset = true;
 			} else if (objType == ObjectType.WEB && !isWebChanged) {
@@ -593,7 +593,7 @@ public class GssAclWS {
 					// deleted role was of limited access.
 					LOGGER.log(Level.INFO, "Resetting all list states under web [ "
 							+ webstate.getWebUrl()
-							+ " ] becasue some role has been deleted and the deleted role could be Limited Access.");
+							+ " ] because some role has been deleted and the deleted role could be Limited Access.");
 					webstate.resetState();
 					isWebReset = true;
 				} else {
@@ -608,7 +608,7 @@ public class GssAclWS {
 						if (!processedLists.contains(listState)) {
 							LOGGER.log(Level.INFO, "Marking List [ "
 									+ listState
-									+ " ] as a candidate for ACL based crawl becasue the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
+									+ " ] as a candidate for ACL based crawl because the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
 							listState.startAclCrawl();
 							processedLists.add(listState);
 						}
@@ -628,13 +628,13 @@ public class GssAclWS {
 					// deletion
 					LOGGER.log(Level.INFO, "Resetting list state URL [ "
 							+ webstate.getWebUrl()
-							+ " ] becasue some role has been deleted and the deleted role could be Limited Access.");
+							+ " ] because some role has been deleted and the deleted role could be Limited Access.");
 					listState.resetState();
 				} else {
 					if (!processedLists.contains(listState)) {
 						LOGGER.log(Level.INFO, "Marking List [ "
 								+ listState
-								+ " ] as a candidate for ACL based crawl becasue the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
+								+ " ] as a candidate for ACL based crawl because the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
 						listState.startAclCrawl();
 						processedLists.add(listState);
 					}
@@ -662,7 +662,7 @@ public class GssAclWS {
 
 				LOGGER.log(Level.INFO, "Resetting all list states under web [ "
 						+ webstate.getWebUrl()
-						+ " ] becasue a user has been deleted from the SharePoint.");
+						+ " ] because a user has been deleted from the SharePoint.");
 				webstate.resetState();
 				isWebReset = true;
 				// TODO: A re-crawl due to User deletion can be avoided

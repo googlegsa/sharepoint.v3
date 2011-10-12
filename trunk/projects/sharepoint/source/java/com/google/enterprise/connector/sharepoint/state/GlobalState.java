@@ -138,7 +138,7 @@ public class GlobalState {
             LOGGER.log(Level.SEVERE, "Problem while loading ListState node from state file. ");
           }
         } else {
-          LOGGER.log(Level.SEVERE, "Can not parse the current ListState node because the expected WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
+          LOGGER.log(Level.SEVERE, "Cannot parse the current ListState node because the expected WebState parent has not been initialized. This may occur because of the bad sequence / wrong hierarchy of stateful objects.");
         }
       } else if (SPConstants.STATE_LASTDOCCRAWLED.equals(localName)) {
         if (null != list && null != web) {
@@ -197,7 +197,7 @@ public class GlobalState {
           lastCrawledDoc.setRenamedFolder(lastCrawledDocRenamedFolder);
           list.setLastDocProcessed(lastCrawledDoc);
         } else {
-          LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
+          LOGGER.log(Level.SEVERE, "Cannot parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur because of the bad sequence / wrong hierarchy of stateful objects.");
         }
       } else if (SPConstants.STATE_RENAMED_FOLDER_LIST.equals(localName)) {
         // Do nothing. Liststate creates an empty list of changedFolder

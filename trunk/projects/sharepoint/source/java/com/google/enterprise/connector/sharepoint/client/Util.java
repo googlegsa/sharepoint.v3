@@ -999,7 +999,7 @@ public final class Util {
     if (docPath.startsWith(webPath)) {
       docPath = docPath.replaceFirst(webPath, "");
     } else {
-      LOGGER.log(Level.WARNING, "Recieved docPath [" + docPath
+      LOGGER.log(Level.WARNING, "Received docPath [" + docPath
           + "] is not valid as per the given webURL [" + webURL + "] ");
       return null;
     }

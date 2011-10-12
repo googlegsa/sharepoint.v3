@@ -115,8 +115,8 @@ public class SharepointConnector implements Connector,
         new GssAclWS(sharepointClientContext, null).checkConnectivity();
       } catch (Exception e) {
         throw new RepositoryException(
-            "Crawling cannot proceed becasue ACL web service cannot be contacted and hecne, "
-                + "ACLs canot be retreived while crawling. You may still make the connector crawl "
+            "Crawling cannot proceed because ACL web service cannot be contacted and hence, "
+                + "ACLs cannot be retrieved while crawling. You may still make the connector crawl "
                 + "by setting the ACL flag as false in connectorInstance.xml. ",
             e);
       }

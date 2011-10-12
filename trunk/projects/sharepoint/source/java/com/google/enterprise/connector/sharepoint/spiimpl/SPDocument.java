@@ -468,7 +468,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         if (null == content && null == content_type) {
           String status = downloadContents();
           if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-            LOGGER.log(Level.WARNING, "Following response recieved while downloading contents (for getting content type): "
+            LOGGER.log(Level.WARNING, "Following response received while downloading contents (for getting content type): "
                 + status);
           }
         }
