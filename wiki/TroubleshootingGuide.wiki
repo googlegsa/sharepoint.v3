@@ -95,6 +95,15 @@ This message appears when the SharePoint Host is not reachable from the connecto
  _Note: To be able to allocate memory successfully, the system must have at least twice as much physical memory._
 
 
+ * *The SharePoint connector throws exception when parsing extraIDs*
+ The SharePoint connector is showing the following exception in the connector log:
+
+ WARNING: Problem while updating relativeURL `[` ... `]`, listURL `[` ... `]`.
+ com.google.enterprise.connector.sharepoint.spiimpl.SharepointException: extraIDs needs to be updated.
+
+ This can be safely ignored. The issue here is that a path (either for a folder or document) that is in the state file has been changed (either a document or folder was renamed or a list or website was moved). The effect of this exception is that the document will be skipped in this crawl but will be picked up when the crawl starts from the beginning.
+
+
 
 === Metadata-and-URL Feed Mode ===
  * *Crawl Diagnostics Error Message
