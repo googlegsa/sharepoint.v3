@@ -730,14 +730,12 @@ public class ListsWS {
               String folderPath = null;
               if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
                 if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-                  try {
-                    list.updateExtraIDs(relativeURL, docId, true);
-                  } catch (SharepointException se) {
-                    LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
+                  if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                    LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
                         + relativeURL
                         + " ], listURL [ "
                         + list.getListURL()
-                        + " ]. ", se);
+                        + " ]. Perhaps a folder or list was renamed.");
                   }
                 }
                 folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
@@ -1384,26 +1382,23 @@ public class ListsWS {
               list.removeFromDeleteCache(docId);
 
               if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
-                try {
-                  list.updateExtraIDs(relativeURL, docId, true);
-                } catch (SharepointException se1) {
+                if (!list.updateExtraIDs(relativeURL, docId, true)) {
                   // Try again after updating the folders
                   // info.
                   // Because, the folder might have been renamed.
-                  LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
+                  LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
                       + relativeURL
                       + " ], listURL [ "
                       + list.getListURL()
-                      + " ]. Retrying after updating the folders info.. ", se1.getMessage());
+                      + " ]. Retrying after updating the folders info.. ");
                   getSubFoldersRecursively(list, null, null);
-                  try {
-                    list.updateExtraIDs(relativeURL, docId, true);
-                  } catch (SharepointException se2) {
-                    LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
+                  
+                  if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                    LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
                         + relativeURL
                         + " ], listURL [ "
                         + list.getListURL()
-                        + " ]. ", se2);
+                        + " ]. Perhaps a folder or list was renamed.");
                   }
                 }
               }
