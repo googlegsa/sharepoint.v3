@@ -395,14 +395,12 @@ public class SPDocumentList implements DocumentList {
         }
       }
     } else if (null != spDocument.getFileref()) {
-      try {
-        listState.updateExtraIDs(spDocument.getFileref(), currentID, false);
-      } catch (SharepointException se) {
-        LOGGER.log(Level.WARNING, "Problem while updating ExtraIDs.. relativeURL [ "
+      if (!listState.updateExtraIDs(spDocument.getFileref(), currentID, false)) {
+        LOGGER.log(Level.INFO, "Unable to update extraIDs... relativeURL [ "
             + spDocument.getFileref()
             + " ], currentID [ "
             + currentID
-            + " ] listURL [ " + listState.getListURL() + " ]. ", se.getMessage());
+            + " ] listURL [ " + listState.getListURL() + " ]. Perhaps a folder or list was renamed.");
       }
     }
   }
