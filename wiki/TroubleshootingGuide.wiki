@@ -320,9 +320,13 @@ http://code.google.com/apis/searchappliance/documentation/610/xml_reference.html
 
  No. Though, you can always create a new connector instance with the same name and same configuration details as of the deleted connector instance. This will serve the same purpose except the state information is lost. In that case, connector will re-crawl the whole SharePoint site again.
 
-*Q. I have many sites under multiple site collections each organized into multiple web applications. Will single connector instance be able to crawl all these?*
+*Q. I have many sites under multiple site collections each organized into multiple web applications. Will single connector instance be able to crawl all these without installing the Google Services for SharePoint?*
 
-No. One connector instance can crawl only one site collection. For discovering and crawling multiple site collections and web applications (possibly distributed across multiple SharePoint servers in a farm), deploy the Google Services for SharePoint on each of the SharePoint servers. You can then configure only one connector instance for discovering and crawling  all content in the farm.
+No. If you do not install Google Services for SharePoint, one connector instance can crawl only one site collection and links provided under that.
+
+*Q. How can the connector be configured to crawl multiple site collections distributed across multiple SharePoint servers in a farm using a single connector instance?
+
+For discovering and crawling multiple site collections and web applications (possibly distributed across multiple SharePoint servers in a farm), deploy the Google Services for SharePoint on each of the SharePoint servers. You can then configure a single connector instance for discovering and crawling  all content in the farm.
 
 
 *Q. What if I have a Site Directory listing all the site collections? Do I need to still install the Google Services for SharePoint?*
