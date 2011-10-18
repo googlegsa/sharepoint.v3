@@ -1,5 +1,5 @@
-<?xml version="1.0"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 
 <!-- *** Sharepoint GUI Framework Modified styleSheet          ***
      *** Key components are marked in the file with SPSMod     *** -->
@@ -122,6 +122,26 @@
 
 <!-- *** analytics information *** -->
   <xsl:variable name="analytics_account"></xsl:variable>
+  
+<!-- *** Dynamic Navigation *** -->
+<!-- *** show_dynamic_navigation will decide whether dynamic navigation will be displayed to the end user or not. Value 1 means it will be shown and value 0 means it will not be shown. *** -->
+<xsl:variable name="show_dynamic_navigation">1</xsl:variable>
+<xsl:variable name="dyn_nav_max_rows">6</xsl:variable>
+<xsl:variable name="render_dynamic_navigation"><xsl:if
+  test="$show_dynamic_navigation != '0' and count(/GSP/RES/PARM) > 0">1</xsl:if>
+</xsl:variable>
+
+<!-- *** Sidebar for holding elements that can load data asynchronously *** -->
+<xsl:variable name="show_sidebar">
+  <xsl:choose>
+    <xsl:when test="($show_dynamic_navigation != '1' and /GSP/Q != '')">
+      <xsl:value-of select="'1'"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="'0'"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:variable>
 
 <!-- **********************************************************************
  Result elements (can be customized)
@@ -149,7 +169,8 @@
   <xsl:variable name="truncate_result_url_length">100</xsl:variable>
 
 <!-- *** misc elements *** -->
-  <xsl:variable name="show_meta_tags">1</xsl:variable>
+<!-- *** Value for show_meta_tags is set to zero, to reduce scrolling for the users *** -->
+  <xsl:variable name="show_meta_tags">0</xsl:variable>
   <xsl:variable name="show_res_size">1</xsl:variable>
   <xsl:variable name="show_res_date">1</xsl:variable>
   <xsl:variable name="show_res_cache">1</xsl:variable>
@@ -419,6 +440,7 @@
 </xsl:template>
 
 
+
   <!-- **********************************************************************
  "Search Within Results" search input page (can be customized)
      ********************************************************************** -->
@@ -573,6 +595,263 @@
 
       </xsl:comment>
     </style>
+	
+<xsl:if test="$render_dynamic_navigation = '1'">
+<style type="text/css">
+<xsl:comment>
+  /**
+   * CSS for dynamic navigation.
+   */
+  div#main_res {
+    background: #FFF none repeat scroll 0 0;
+    border-left: 1px solid #D3E1F9;
+    margin-left: 209px;
+    overflow: hidden;
+    padding-left: 5px;
+    padding-right: 4px;
+  }
+  div#main_res p {
+    margin-top: 0;
+  }
+  div#dyn_nav {
+    background: #FFF none repeat scroll 0 0;
+    position: absolute;
+    padding-top: 1px;
+    top: 0;
+    width: 205px;
+  }
+  div.dn-hdr {
+    background-color: #3366FF;
+    color: #FFF;
+    font-size: 13px;
+    height: 19px;
+    line-height: 19px;
+    margin: 0;
+    padding: 0;
+  }
+  .dn-img {
+    background: transparent url(/_layouts/images/remove.gif) no-repeat scroll 0 0;
+    border: 0 none;
+    height: 9px;
+    position: relative;
+    width: 11px;
+  }
+  a.dn-r-img {
+    float: right;
+    margin: 3px 4px 0 4px;
+  }
+  #dyn_nav ul, li {
+    list-style-image: none;
+    list-style-position: outside;
+    list-style-type: none;
+    vertical-align: middle;
+  }
+  #dyn_nav li {
+    margin: 0 5px 4px 0;
+    width: 100%;
+  }
+  ul.dn-attr {
+    background: #FFF none repeat scroll 0 0;
+    font-size: 12px;
+    margin: 8px 0 4px 0;
+    padding-left: 6px;
+  }
+  ul.dn-attr-hidden {
+    background: #FFF none repeat scroll 0 0;
+    border-top: 1px solid #DFDFFF;
+    margin: 0;
+    padding: 4px 0 0 0;
+  }
+  .label-input-label {
+    color: GrayText;
+  }
+  li.dn-attr-hdr {
+    background-color: #E5ECF9;
+    font-weight: bold;
+    line-height: 1.1;
+    outline-style: none;
+    padding-bottom: 2px;
+    padding-top: 2px;
+  }
+  .dn-attr-hdr-txt {
+    display: inline-block;
+    overflow: hidden;
+    width: 85%;
+  }
+  li.dn-attr-hdr div {
+    width: 100%;
+  }
+  input.dn-zippy-input {
+    border-style: none;
+    font-size: 95%;
+    margin-bottom: 2px;
+    margin-left: 3px;
+    margin-top: 1px;
+    width: 97%;
+  }
+  div.dn-zippy-hdr {
+    cursor: pointer;
+    outline-style: none;
+    margin-left: 2px;
+  }
+  li.dn-attr-hdr div.dn-zippy-hdr-img {
+    background: url("/_layouts/images/ic_search.png") no-repeat scroll 0 0 transparent;
+    float: right;
+    height: 12px;
+    margin-right: 4px;
+    width: 10px;
+  }
+  ul.dn-attr a, a.dn-bar-link {
+    color: #003399;
+    text-decoration: none;
+  }
+  .dn-hidden {
+    display: none;
+  }
+  .dn-inline-block, .dn-bar-rt, .dn-bar-rt table, .dn-img, span.dn-more-img {
+    display: inline-block;
+  }
+  .dn-block {
+    display: block;
+  }
+  .ac-renderer {
+    background: white;
+    border-bottom: 1px solid #558BE3;
+    border-left: 1px solid #A2BFF0;
+    border-right: 1px solid #558BE3;
+    border-top: 1px solid #A2BFF0;
+    min-width: 200px;
+    max-width: 400px;
+    overflow-x: hidden;
+    position: absolute;
+  }
+  .ac-renderer div {
+    cursor: pointer;
+    font-size: <xsl:value-of select="$res_snippet_size"/>;
+    margin: 3px;
+    padding: 1px 2px;
+    position: relative;
+  }
+  .ac-renderer div b {
+    color: #3366FF;
+  }
+  .ac-renderer div.active {
+    background-color: #D5E2FF;
+    color: #000;
+  }
+  span.dn-attr-c {
+    color: #777;
+  }
+  a.dn-attr-v {
+    display: block;
+    overflow-x: hidden;
+    width: 99%;
+  }
+  a.dn-attr-v:visited, a.dn-bar-link:visited {
+    color: #1111CC;
+  }
+  a.dn-attr-v:hover {
+    text-decoration: underline;
+  }
+  a.dn-link, .dn-img {
+    outline-style: none;
+  }
+  .dn-overflow {
+    overflow-x: hidden;
+  }
+  .dn-bar-v {
+    color: #000;
+  }
+  .dn-bar-rt {
+    border: 0 none;
+    float: right;
+    margin: -2px 5px 0 20px;
+  }
+  .dn-bar-nav {
+    font-size: <xsl:value-of select="$res_snippet_size"/>;
+  }
+  span.dn-more-img {
+    height: 15px;
+    margin-right: 1px;
+    overflow: hidden;
+    position: relative;
+    vertical-align: text-bottom;
+    width: 15px;
+  }
+  span.dn-limg {
+    background: transparent url(/_layouts/images/less.gif) no-repeat scroll 0 0;
+  }
+  span.dn-mimg {
+    background: transparent url(/_layouts/images/more.gif) no-repeat scroll 0 0;
+  }
+  div.dn-bar {
+    background-color: #E5ECF9;
+    clear: both;
+    font-size: 12px;
+    padding: 3px;
+    width: 100%;
+  }
+  div.dn-bar dfn {
+    font-size: 1.2em;
+    padding: 4px;
+  }
+  div.dn-bar a.cancel-url:hover {
+    text-decoration: line-through;
+  }
+  div.main-results {
+    margin-left: 8px;
+    margin-top: 8px;
+  }
+  div.oneboxResults table {
+    width: 100%;
+  }
+</xsl:comment>
+</style>
+</xsl:if>
+
+<xsl:if test="$show_sidebar = '1'">
+<style type="text/css">
+<xsl:comment>
+  /** Common CSS for sidebar elements. */
+  .sb-r {
+    padding: 5px 0 0 5px;
+    width: 45%;
+  }
+  .sb-r-alt {
+    padding-top: 5px;
+    width: 100%;
+  }
+  .sb-r-lbl,
+  .sb-r-lbl-apps {
+    color: #676767;
+    font-size: small;
+    font-weight: normal;
+    margin: 0 0 10px 10px;
+    text-align: left;
+  }
+  .sb-r-lbl-apps {
+    margin: 0;
+  }
+  .sb-r-border {
+    border-left: 1px solid #C9D7F1;
+  }
+  .sb-r-ld-msg-c {
+    margin-bottom: 30px;
+  }
+  .sb-r-ld-msg {
+    background-color: #3366CC;
+    color: #FFF;
+    font-size: 13px;
+    padding: 2px;
+  }
+  .sb-r-res {
+    font-size: 13px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+  }
+</xsl:comment>
+</style>
+</xsl:if>
   </xsl:template>
 
   <!-- **********************************************************************
@@ -645,8 +924,8 @@
   select="/GSP/PARAM[(@name != 'q') and
                      (@name != 'as_q') and
                      (@name != 'swrnum') and
-
-		     (@name != 'ie') and
+                     (@name != 'dnavs') and
+                     (@name != 'ie') and
                      (@name != 'start') and
                      (@name != 'epoch' or $is_test_search != '') and
                      not(starts-with(@name, 'metabased_'))]">
@@ -673,9 +952,59 @@
       </xsl:if>
     </xsl:for-each>
   </xsl:variable>
+  
+  <!-- *** search_url minus any dynamic navigation filters *** -->
+<xsl:variable name="search_url_no_dnavs">
+  <xsl:for-each select="/GSP/PARAM[(@name != 'start') and
+                                   (@name != 'swrnum') and
+                                   (@name != 'dnavs') and
+                     (@name != 'epoch' or $is_test_search != '') and
+                     not(starts-with(@name, 'metabased_'))]">
+    <xsl:choose>
+        <xsl:when test="@name = 'q' and /GSP/PARAM[@name='dnavs']">
+        <xsl:value-of select="@name"/><xsl:text>=</xsl:text>
+        <xsl:value-of select="substring-before(@original_value,
+          concat('+', /GSP/PARAM[@name='dnavs']/@original_value))"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="@name"/><xsl:text>=</xsl:text>
+        <xsl:value-of select="@original_value"/>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:if test="position() != last()">
+      <xsl:text disable-output-escaping="yes">&amp;</xsl:text>
+    </xsl:if>
+  </xsl:for-each>
+</xsl:variable>
+
+<!-- *** url without q and dnavs param *** -->
+<xsl:variable name="no_q_dnavs_params">
+  <xsl:for-each select="/GSP/PARAM[(@name != 'start') and
+                                   (@name != 'swrnum') and
+                                   (@name != 'q') and
+                                   (@name != 'dnavs') and
+                     (@name != 'epoch' or $is_test_search != '') and
+                     not(starts-with(@name, 'metabased_'))]">
+    <xsl:value-of select="@name"/><xsl:text>=</xsl:text>
+    <xsl:value-of select="@original_value"/>
+    <xsl:if test="position() != last()">
+      <xsl:text disable-output-escaping="yes">&amp;</xsl:text>
+    </xsl:if>
+  </xsl:for-each>
+</xsl:variable>
+
+ <!-- *** search_url_escaped: safe for inclusion in javascript *** -->
+<xsl:variable name="search_url_escaped">
+  <xsl:call-template name="replace_string">
+    <xsl:with-param name="find" select='"&apos;"'/>
+    <xsl:with-param name="replace" select='"%27"'/>
+    <xsl:with-param name="string" select="$search_url_no_dnavs"/>
+  </xsl:call-template>
+</xsl:variable>
 
   <!-- *** filter_url: everything except resetting "filter=" *** -->
-  <xsl:variable name="filter_url">GSASearchresults.aspx?<xsl:for-each
+  <!-- The filter URL logic is modified so as to work when dynamic navigation feature is enabled for search box. The url starting with "GSASearchresults.aspx" represents the search box URL and is added elsehere. -->
+  <xsl:variable name="filter_url"><xsl:for-each
   select="/GSP/PARAM[(@name != 'filter') and
                      (@name != 'epoch' or $is_test_search != '') and
                      not(starts-with(@name, 'metabased_'))]">
@@ -692,7 +1021,7 @@
   <!-- *** adv_search_url: GSASearchresults.aspx? + $search_url + as_q=$q *** -->
   <xsl:variable name="adv_search_url">
     GSASearchresults.aspx?<xsl:value-of
-  select="$search_url"/>&amp;proxycustom=&lt;ADVANCED/&gt;
+  select="$search_url_no_dnavs"/>&amp;proxycustom=&lt;ADVANCED/&gt;
   </xsl:variable>
 
   <!-- *** db_url_protocol: googledb:// *** -->
@@ -713,7 +1042,7 @@
   <!-- *** swr_search_url: GSASearchresults.aspx? + $search_url + as_q=$q *** -->
   <xsl:variable name="swr_search_url">
     GSASearchresults.aspx?<xsl:value-of
-  select="$search_url"/>&amp;swrnum=<xsl:value-of select="/GSP/RES/M"/>
+  select="$search_url_no_dnavs"/>&amp;swrnum=<xsl:value-of select="/GSP/RES/M"/>
   </xsl:variable>
 
   <!-- *** analytics_script_url: http://www.google-analytics.com/urchin.js *** -->
@@ -751,6 +1080,7 @@
                   @name != 'access' and
                   @name != 'sitesearch' and
                   @name != 'ip' and
+				  @name != 'dnavs' and
                   (@name != 'epoch' or $is_test_search != '') and
                   not(starts-with(@name ,'metabased_'))]">
       <input type="hidden" name="{@name}" value="{@value}" />
@@ -765,11 +1095,35 @@
       <input type="hidden" name="site" value="{PARAM[@name='site']/@value}"/>
     </xsl:if>
   </xsl:template>
+  
+  <!-- *** original query without any dynamic navigation filters *** -->
+<xsl:variable name="qval">
+  <xsl:choose>
+    <xsl:when test="/GSP/PARAM[@name='dnavs']">
+      <xsl:value-of select="concat(substring-before(/GSP/Q,
+        /GSP/PARAM[@name='dnavs']/@value), ' ', substring-after(/GSP/Q,
+        /GSP/PARAM[@name='dnavs']/@value))"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="/GSP/Q"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:variable>
+
+<xsl:variable name="original_q">
+  <xsl:choose>
+    <xsl:when test="count(/GSP/PARAM[@name='dnavs']) > 0">
+      <xsl:value-of
+        select="substring-before(/GSP/PARAM[@name='q']/@original_value,
+        concat('+', /GSP/PARAM[@name='dnavs']/@original_value))"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="/GSP/PARAM[@name='q']/@original_value"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:variable>
 
   <!-- *** space_normalized_query: q = /GSP/Q *** -->
-  <xsl:variable name="qval">
-    <xsl:value-of select="/GSP/Q"/>
-  </xsl:variable>
 
   <xsl:variable name="space_normalized_query">
     <xsl:value-of select="normalize-space($qval)"
@@ -1027,6 +1381,10 @@
               value="{PARAM[@name='sitesearch']/@value}" />
           </xsl:if>
 
+		  <xsl:if test="PARAM[@name='dnavs']">
+            <input type="hidden" name="dnavs"
+              value="{PARAM[@name='dnavs']/@value}" />
+          </xsl:if>
 
           <!--==== site is carried over in the drop down if the menu is used =====-->
           <xsl:if test="$search_collections_xslt = '' and PARAM[@name='site']">
@@ -1915,35 +2273,61 @@
         <xsl:value-of select="$space_normalized_query"/>
       </title>
       <xsl:call-template name="style"/>
+	  <xsl:if test="$render_dynamic_navigation = '1'">
+      <script type="text/javascript" src="dnav_gsbs_priya.js"></script>
+	  <script type="text/javascript">
+        <xsl:variable name="dnavs_param">
+          <xsl:if test="/GSP/PARAM[@name='dnavs']"><xsl:value-of
+              select="/GSP/PARAM[@name='dnavs']/@original_value"/></xsl:if>
+        </xsl:variable>
+        var dynNavMgr = new gsa.search.DynNavManager(
+          "<xsl:value-of select="$dnavs_param"/>",
+          "<xsl:value-of select="/GSP/PARAM[@name='q']/@original_value"/>",
+          "<xsl:value-of select='$original_q'/>",
+          "<xsl:value-of select='$no_q_dnavs_params'/>",
+          <xsl:value-of select='/GSP/RES/PARM/PC'/>
+        );
+      </script>
+	  </xsl:if>
       <script type="text/javascript">
         <xsl:comment>
+         
           function resetForms() {
           for (var i = 0; i &lt; document.forms.length; i++ ) {
           document.forms[i].reset();
           }
           }
+		  
+		  // Search query
+        var page_query = &quot;<xsl:value-of select="$stripped_search_query"/>&quot;
+        // Starting page offset, usually 0 for 1st page, 10 for 2nd, 20 for 3rd.
+        var page_start = &quot;<xsl:value-of select="/GSP/PARAM[@name='start']/@value"/>&quot;
+        // Front end that served the page.
+        var page_site = &quot;<xsl:value-of select="/GSP/PARAM[@name='site']/@value"/>&quot;
           //
         </xsl:comment>
       </script>
       <xsl:call-template name="langHeadEnd"/>
 
-      <xsl:choose>
-        <xsl:when test="$show_res_clusters = '1'">
-          <script language='javascript' src='common.js'></script>
-          <script language='javascript' src='xmlhttp.js'></script>
-          <script language='javascript' src='uri.js'></script>
-          <script language='javascript' src='cluster.js'></script>
+  <xsl:choose>
+    <xsl:when test="$show_res_clusters != '1'">
+      <script language='javascript' src='common.js'></script>
+      <script language='javascript' src='xmlhttp.js'></script>
+      <script language='javascript' src='uri.js'></script>
+      
 
-          <body onLoad="resetForms(); cs_loadClusters('{$search_url}', cs_drawClusters);" dir="ltr">
-            <xsl:call-template name="search_results_body"/>
-          </body>
-        </xsl:when>
-        <xsl:otherwise>
-          <body onLoad="resetForms()" dir="ltr">
-            <xsl:call-template name="search_results_body"/>
-          </body>
-        </xsl:otherwise>
-      </xsl:choose>
+      <body onLoad="resetForms(); ss_sf();" dir="ltr">
+        <xsl:call-template name="search_results_body"/>
+      </body>
+    </xsl:when>
+    <xsl:otherwise>
+      <body onLoad="resetForms()" dir="ltr">
+        <xsl:call-template name="search_results_body"/>
+      </body>
+    </xsl:otherwise>
+  </xsl:choose>
+
+
 
     </html>
   </xsl:template>
@@ -1996,6 +2380,11 @@
     <!-- *** Customer's own result page footer *** -->
     <xsl:call-template name="my_page_footer"/>
 
+	<xsl:if test="$render_dynamic_navigation = '1'">
+      <script type="text/javascript">
+        dynNavMgr.init();
+      </script>
+    </xsl:if>
 
     <!-- *** HTML footer *** -->
   </xsl:template>
@@ -2270,6 +2659,30 @@
     </table>
   </xsl:template>
 
+  <!-- Generates search results navigation bar to be placed at the bottom. -->
+<xsl:template name="gen_bottom_navigation">
+  <xsl:if test="RES">
+    <xsl:variable name="nav_style">
+      <xsl:choose>
+        <xsl:when test="($access='s') or ($access='a')">simple</xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="$choose_bottom_navigation"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:call-template name="google_navigation">
+      <xsl:with-param name="prev" select="RES/NB/PU"/>
+      <xsl:with-param name="next" select="RES/NB/NU"/>
+      <xsl:with-param name="view_begin" select="RES/@SN"/>
+      <xsl:with-param name="view_end" select="RES/@EN"/>
+      <xsl:with-param name="guess" select="RES/M"/>
+      <xsl:with-param name="navigation_style" select="$nav_style"/>
+    </xsl:call-template>
+  </xsl:if>
+</xsl:template>
+  
+  
   <!-- **********************************************************************
  Output all results
      ********************************************************************** -->
@@ -2277,6 +2690,13 @@
     <xsl:param name="query"/>
     <xsl:param name="time"/>
 
+	<xsl:choose>
+    <xsl:when test="$render_dynamic_navigation = '1'">
+      <xsl:call-template name="dynamic_navigation_results">
+        <xsl:with-param name="query" select="$query"/>
+      </xsl:call-template>
+    </xsl:when>
+    <xsl:otherwise>
     <!-- *** Add top navigation/sort-by bar *** -->
     <xsl:if test="($show_top_navigation != '0') or ($show_sort_by != '0')">
       <xsl:if test="RES">
@@ -2408,14 +2828,7 @@
         <xsl:with-param name="query" select="$query"/>
       </xsl:apply-templates>
 
-      <!-- *** Filter note (if needed) *** -->
-      <xsl:if test="(RES/FI) and (not(RES/NB/NU))">
-        <p>
-          <i>
-            In order to show you the most relevant results,    we have omitted some entries very similar to the <xsl:value-of select="RES/@EN"/> already    displayed.<br/>If you like, you can <a href="{$filter_url}0">    repeat the search with the omitted results included</a>.
-          </i>
-        </p>
-      </xsl:if>
+     
     </div>
 
 
@@ -2451,9 +2864,577 @@
       <xsl:call-template name="bottom_search_box"/>
     </xsl:if>
 
+	</xsl:otherwise>
+	</xsl:choose>
   </xsl:template>
 
 
+  
+<xsl:template name="dynamic_navigation_results">
+  <xsl:param name="query"/>
+
+  <!-- show sort-by -->
+  <xsl:if test="$show_sort_by != '0' or $show_spelling != '0' or $show_synonyms != '0'">
+    <xsl:if test="RES"> <!-- there might be onebox results but no RES  -->
+      <table width="100%">
+      <tr>
+        <xsl:if test="$show_spelling != '0' or $show_synonyms != '0'">
+          <td align="left">
+            <xsl:choose>
+              <!-- *** handle spelling suggestions, if any *** -->
+              <xsl:when test="$show_spelling != '0'">
+                <xsl:call-template name="spelling"/>
+              </xsl:when>
+              <!-- *** handle synonyms, if any *** -->
+              <xsl:otherwise>
+                <xsl:call-template name="synonyms"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </td>
+        </xsl:if>
+
+        <xsl:if test="$show_sort_by != '0'">
+          <td align="right">
+            <xsl:call-template name="sort_by"/>
+          </td>
+        </xsl:if>
+      </tr>
+      </table>
+    </xsl:if>
+  </xsl:if>
+
+  <xsl:if test="$show_spelling != '0' and $show_synonyms != '0'">
+    <xsl:call-template name="synonyms"/>
+  </xsl:if>
+
+  <xsl:variable name="dn_tokens"
+    select="tokenize(/GSP/PARAM[@name='dnavs']/@original_value, '\+')"/>
+  <xsl:variable name="partial_count" select="/GSP/RES/PARM/PC"/>
+
+  <xsl:variable name="div_pos">
+    <xsl:choose>
+      <xsl:when test="$show_sort_by != '0'">
+        <xsl:text>position: relative;</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:text>position: relative; margin-top: 10px;</xsl:text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <div id="main" style="{$div_pos}">
+    <div id="main_res">
+      <xsl:call-template name="main_results">
+        <xsl:with-param name="query" select="$query"/>
+        <xsl:with-param name="dn_tokens" select="$dn_tokens"/>
+      </xsl:call-template>
+    </div>
+    <div id="dyn_nav">
+      <div class="dn-hdr">
+        <span style="padding-left: 6px;">
+          <b>Navigate</b>
+        </span>
+      </div>
+      <div id="dyn_nav_col" style="height: 100%">
+        <xsl:apply-templates select="/GSP/RES/PARM/PMT">
+          <xsl:with-param name="dn_tokens" select="$dn_tokens"/>
+          <xsl:with-param name="partial_count" select="/GSP/RES/PARM/PC"/>
+        </xsl:apply-templates>
+
+        <script type="text/javascript">
+          <xsl:for-each select="$dn_tokens">
+            dynNavMgr.addSelectedAttr("<xsl:value-of select='.'/>");
+          </xsl:for-each>
+
+          <xsl:apply-templates select="/GSP/RES/PARM/PMT[@IR = 0]" mode="hidden"/>
+        </script>
+      </div>
+    </div>
+  </div>
+</xsl:template>
+
+<xsl:template name="escapeQuot">
+  <xsl:param name="text"/>
+  <xsl:choose>
+    <xsl:when test="contains($text, '&quot;')">
+      <xsl:variable name="bufferBefore" select="substring-before($text, '&quot;')"/>
+      <xsl:variable name="newBuffer" select="substring-after($text, '&quot;')"/>
+      <xsl:value-of select="$bufferBefore"/><xsl:text>\"</xsl:text>
+      <xsl:call-template name="escapeQuot">
+        <xsl:with-param name="text" select="$newBuffer"/>
+      </xsl:call-template>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="$text"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+<xsl:template match="PMT" mode="hidden">
+  <xsl:variable name="name"><xsl:value-of select="normalize-space(@NM)"/></xsl:variable>
+  <xsl:variable name="values">
+    [<xsl:for-each select="PV[position() &gt; $dyn_nav_max_rows and @C != '0']">["<xsl:call-template
+        name='escapeQuot'><xsl:with-param name="text" select="@V"/>
+        </xsl:call-template>", <xsl:value-of select='@C'/>],</xsl:for-each>]
+  </xsl:variable>
+
+  dynNavMgr.addAttrValues("<xsl:value-of select='$name'/>", <xsl:value-of select='$values'/>);
+</xsl:template>
+
+<xsl:template match="PMT">
+  <xsl:param name="dn_tokens"/>
+  <xsl:param name="partial_count"/>
+
+  <xsl:variable name="name"><xsl:value-of select="normalize-space(@NM)"/></xsl:variable>
+  <xsl:variable name="pmt_name"><xsl:call-template
+      name="term-escape"><xsl:with-param name="val" select="@NM"/></xsl:call-template>
+  </xsl:variable>
+
+  <xsl:choose>
+    <xsl:when test="@IR = 1">
+      <ul id="{$name}" class="dn-attr">
+        <li class="dn-attr-hdr"><span class="dn-attr-hdr-txt"><xsl:attribute
+            name="title"><xsl:value-of select="@DN" disable-output-escaping="yes"/>
+        </xsl:attribute><xsl:value-of select="@DN"/></span></li>
+        <xsl:apply-templates select="PV">
+          <xsl:with-param name="pmt_name" select="$pmt_name"/>
+          <xsl:with-param name="dn_tokens" select="$dn_tokens"/>
+          <xsl:with-param name="partial_count" select="$partial_count"/>
+        </xsl:apply-templates>
+      </ul>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:variable name="total" select="count(PV[@C != '0'])"/>
+      <xsl:variable name="attr_class">
+        <xsl:choose>
+          <xsl:when test="$total &lt; $dyn_nav_max_rows + 1">
+            <xsl:value-of select="'dn-attr'"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="'dn-attr dn-attr-more'"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:variable>
+      <ul id="{$name}" class="{$attr_class}">
+        <xsl:choose>
+          <xsl:when test="$total &lt; $dyn_nav_max_rows + 1">
+            <li class="dn-attr-hdr"><span class="dn-attr-hdr-txt"><xsl:attribute
+              name="title"><xsl:value-of select="@DN" disable-output-escaping="yes"/>
+            </xsl:attribute><xsl:value-of select="@DN"/></span></li>
+          </xsl:when>
+          <xsl:otherwise>
+            <li class="dn-attr-hdr"><div class="dn-zippy-hdr"><div class="dn-zippy-hdr-img"></div>
+              <span class="dn-attr-hdr-txt"><xsl:attribute
+                name="title"><xsl:value-of select="@DN" disable-output-escaping="yes"/>
+              </xsl:attribute><xsl:value-of select="@DN"/></span></div></li>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:apply-templates select="PV[position() &lt; $dyn_nav_max_rows + 1]">
+          <xsl:with-param name="pmt_name" select="$pmt_name"/>
+          <xsl:with-param name="dn_tokens" select="$dn_tokens"/>
+          <xsl:with-param name="partial_count" select="$partial_count"/>
+        </xsl:apply-templates>
+
+        <xsl:variable name="total_left" select="$total - $dyn_nav_max_rows"/>
+        <xsl:if test="$total &gt; $dyn_nav_max_rows">
+          <li id="{$name}_more_less">
+            <a id="more_{$name}" class="dn-link" style="margin-right: 10px; outline-style: none;"
+              onclick="dynNavMgr.displayMore('{$name}', true); return false;"
+              href="javascript:;">
+              <span class="dn-more-img dn-mimg"></span>
+              <span id="disp_{$name}"><xsl:value-of select="$total_left"/> More</span>
+            </a>
+            <a id="less_{$name}" class="dn-link dn-hidden" style="outline-style: none;"
+              onclick="dynNavMgr.displayMore('{$name}', false, {$total_left}); return false;"
+              href="javascript:;">
+              <span class="dn-more-img dn-limg"></span>
+              <span>Less</span>
+            </a>
+          </li>
+          <label class="dn-hidden dn-name"><xsl:value-of select="$name"/></label>
+          <label id="{$name}_total" class="dn-hidden"><xsl:value-of select="$total"/></label>
+          <label id="{$name}_total_left" class="dn-hidden"><xsl:value-of select="$total_left"/></label>
+        </xsl:if>
+      </ul>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+
+<xsl:template match="PV">
+  <xsl:param name="pmt_name"/>
+  <xsl:param name="dn_tokens"/>
+  <xsl:param name="partial_count"/>
+
+  <xsl:if test="@C != 0">
+    <xsl:apply-templates select="." mode="construct">
+      <xsl:with-param name="dn_tokens" select="$dn_tokens"/>
+      <xsl:with-param name="partial_count" select="$partial_count"/>
+      <xsl:with-param name="current_token">
+        <xsl:choose>
+          <xsl:when test="../@IR = '1'"><xsl:variable
+            name="stripped_l" select="normalize-space(@L)"/><xsl:variable
+            name="stripped_h" select="normalize-space(@H)"/>inmeta:<xsl:value-of
+            select="$pmt_name"/>:<xsl:choose><xsl:when test="../@T = 3"><xsl:if
+            test="$stripped_l != ''">$<xsl:value-of select="$stripped_l"/></xsl:if>..<xsl:if
+            test="$stripped_h != ''">$<xsl:value-of
+            select="$stripped_h"/></xsl:if></xsl:when><xsl:otherwise><xsl:value-of
+            select="$stripped_l"/>..<xsl:value-of select="$stripped_h"/></xsl:otherwise></xsl:choose>
+          </xsl:when>
+          <xsl:otherwise>inmeta:<xsl:value-of select="$pmt_name"/>%3D<xsl:call-template
+              name="term-escape"><xsl:with-param name="val" select="@V"/></xsl:call-template>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:with-param>
+    </xsl:apply-templates>
+  </xsl:if>
+</xsl:template>
+
+<xsl:template match="PV" mode="construct">
+  <xsl:param name="dn_tokens"/>
+  <xsl:param name="current_token"/>
+  <xsl:param name="partial_count"/>
+
+  <xsl:variable name="dispval">
+    <xsl:apply-templates select="." mode="display_value"/>
+  </xsl:variable>
+
+  <xsl:variable name="dispcount">
+    <xsl:text> (</xsl:text><xsl:if
+       test="$partial_count=1"><xsl:text>&gt; </xsl:text></xsl:if>
+      <xsl:value-of select="@C"/><xsl:text>)</xsl:text>
+  </xsl:variable>
+
+  <xsl:variable name="is_selected" select="index-of($dn_tokens, $current_token)"/>
+  <li>
+    <xsl:choose>
+      <xsl:when test="exists($is_selected)">
+        <xsl:variable name="other_tokens">
+          <xsl:value-of select="string-join(remove($dn_tokens, $is_selected[position()=1]), '+')"/>
+        </xsl:variable>
+
+        <xsl:variable name="cancel_url">
+          <xsl:value-of select="$no_q_dnavs_params"/>&amp;q=<xsl:value-of
+            select="$original_q"/><xsl:if test="$other_tokens != ''">+<xsl:value-of
+            select="$other_tokens"/>&amp;dnavs=<xsl:value-of select="$other_tokens"/></xsl:if>
+        </xsl:variable>
+		
+		<a class="dn-img dn-r-img" href="GSASearchresults.aspx?{$cancel_url}"
+            title="Clear"></a>
+        <span class="dn-overflow dn-inline-block" style="width: 86%;">
+          <xsl:if test="../@IR != 1">
+            <xsl:attribute name="title"><xsl:value-of select="$dispval"
+                disable-output-escaping="yes"/></xsl:attribute>
+          </xsl:if>
+          <xsl:value-of select="concat($dispval, $dispcount)"
+              disable-output-escaping="yes"/>
+        </span>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:variable name="pmts_var">dnavs=<xsl:if test="/GSP/PARAM[@name='dnavs']"><xsl:value-of
+            select="/GSP/PARAM[@name='dnavs']/@original_value"/>+</xsl:if><xsl:value-of
+            select="$current_token"/>
+        </xsl:variable>
+        <xsl:variable name="qurl"><xsl:value-of select="$no_q_dnavs_params"/>&amp;q=<xsl:value-of
+            select="/GSP/PARAM[@name='q']/@original_value"/>+<xsl:value-of
+            select="$current_token"/>&amp;<xsl:value-of select="$pmts_var"/>
+        </xsl:variable>
+        <a class="dn-attr-v" href="GSASearchresults.aspx?{encode-for-uri($qurl)}">
+          <xsl:if test="../@IR != 1">
+            <xsl:attribute name="title"><xsl:value-of select="$dispval"
+                disable-output-escaping="no"/></xsl:attribute>
+          </xsl:if>
+          <xsl:value-of select="$dispval" disable-output-escaping="yes"/>
+          <span class="dn-attr-c"><xsl:value-of select="$dispcount"
+              disable-output-escaping="yes"/></span>
+        </a>
+      </xsl:otherwise>
+    </xsl:choose>
+  </li>
+</xsl:template>
+
+<xsl:template match="PV" mode="display_value">
+  <xsl:choose>
+    <xsl:when test="../@IR = 1">
+      <xsl:variable name="disp_l">
+        <xsl:call-template name="pmt_range_display_val">
+          <xsl:with-param name="val" select="@L"/>
+          <xsl:with-param name="type" select="../@T"/>
+        </xsl:call-template>
+      </xsl:variable>
+      <xsl:variable name="disp_h">
+        <xsl:call-template name="pmt_range_display_val">
+          <xsl:with-param name="val" select="@H"/>
+          <xsl:with-param name="type" select="../@T"/>
+        </xsl:call-template>
+      </xsl:variable>
+      <xsl:choose>
+        <xsl:when test="$disp_l = ''">
+          <xsl:value-of select="$disp_h"/><xsl:text> </xsl:text>
+          <xsl:choose>
+            <xsl:when test="../@T = 4">or earlier</xsl:when>
+            <xsl:otherwise>or less</xsl:otherwise>
+          </xsl:choose>
+        </xsl:when>
+        <xsl:when test="$disp_h = ''">
+          <xsl:value-of select="$disp_l"/><xsl:text> </xsl:text>
+          <xsl:choose>
+            <xsl:when test="../@T = 4">or later</xsl:when>
+            <xsl:otherwise>or more</xsl:otherwise>
+          </xsl:choose>
+        </xsl:when>
+        <xsl:otherwise><xsl:value-of
+          select="$disp_l"/><xsl:text> </xsl:text><xsl:call-template
+          name="endash"/><xsl:text> </xsl:text><xsl:value-of select="$disp_h"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="@V"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+<xsl:variable name="hex">0123456789ABCDEF</xsl:variable>
+<xsl:template name="term-escape">
+  <xsl:param name="val"/>
+  <xsl:variable name="first-char" select="substring($val, 1, 1)"/>
+  <xsl:variable name="code"
+    select="string-to-codepoints($first-char)[position()=1]"/>
+  <xsl:choose>
+    <xsl:when test="not(($code >= 48 and $code &lt;= 57) or
+      ($code >= 65 and $code &lt;= 90) or ($code = 95) or
+      ($code >= 97 and $code &lt;= 122))">
+      <xsl:choose>
+        <xsl:when test="$code > 128">
+          <xsl:value-of select="encode-for-uri($first-char)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:variable name="hex-digit1"
+            select="substring($hex, floor($code div 16) + 1, 1)"/>
+          <xsl:variable name="hex-digit2"
+            select="substring($hex, $code mod 16 + 1, 1)"/>
+          <xsl:value-of select="concat('%25', $hex-digit1 ,$hex-digit2)"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="$first-char"/>
+    </xsl:otherwise>
+  </xsl:choose>
+  <xsl:if test="string-length($val) > 1">
+    <xsl:call-template name="term-escape">
+      <xsl:with-param name="val" select="substring($val, 2)"/>
+    </xsl:call-template>
+  </xsl:if>
+</xsl:template>
+
+
+<xsl:template name="pmt_range_display_val">
+  <xsl:param name="val"/>
+  <xsl:param name="type"/>
+  <xsl:choose>
+    <xsl:when test="$val != '' and ($type = 2 or $type = 3)">
+      <xsl:value-of select="format-number($val, '#.##')"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:value-of select="$val"/>
+    </xsl:otherwise>
+  </xsl:choose>
+</xsl:template>
+
+ 
+<xsl:template name="main_results">
+  <xsl:param name="query"/>
+  <xsl:param name="dn_tokens"/>
+
+  <xsl:if test="$render_dynamic_navigation = '1'">
+    <div class="dn-bar">
+      <xsl:variable name="all_results_url"><xsl:value-of
+          select="$no_q_dnavs_params"/>&amp;q=<xsl:value-of select="$original_q"/>
+      </xsl:variable>
+
+      <!-- Add next/prev navigation -->
+      <xsl:if test="$show_top_navigation != '0' and /GSP/RES">
+        <span class="dn-bar-rt">
+          <xsl:call-template name="google_navigation">
+            <xsl:with-param name="prev" select="/GSP/RES/NB/PU"/>
+            <xsl:with-param name="next" select="/GSP/RES/NB/NU"/>
+            <xsl:with-param name="view_begin" select="/GSP/RES/@SN"/>
+            <xsl:with-param name="view_end" select="/GSP/RES/@EN"/>
+            <xsl:with-param name="guess" select="/GSP/RES/M"/>
+            <xsl:with-param name="navigation_style" select="'top'"/>
+            <xsl:with-param name="dynamic_nav_bar" select="'1'"/>
+          </xsl:call-template>
+        </span>
+      </xsl:if>
+
+      <a class="dn-link" style="text-decoration: underline; color: #000;"
+        href="GSASearchresults.aspx?{$all_results_url}">All results</a>
+
+      <xsl:if test="exists($dn_tokens)">
+        <xsl:call-template name="rsaquo"/>
+        <xsl:variable name="root_node" select="/GSP"/>
+        <xsl:for-each select="$dn_tokens">
+          <xsl:variable name="other_pmts_tokens"
+            select="string-join(remove($dn_tokens, position()), '+')"/>
+
+          <xsl:variable name="cancel_url">
+            <xsl:value-of select="$all_results_url"/>
+            <xsl:if test="$other_pmts_tokens != ''">+<xsl:value-of
+                select="$other_pmts_tokens"/>&amp;dnavs=<xsl:value-of select="$other_pmts_tokens"/>
+            </xsl:if>
+          </xsl:variable>
+
+          <a class="dn-link cancel-url dn-bar-link" href="GSASearchresults.aspx?{$cancel_url}"
+              title="Clear">
+            <xsl:variable name="range_val" select="substring-after(., ':')"/>
+            <xsl:choose>
+              <xsl:when test="contains(., '..')">
+                <xsl:for-each select="$root_node/RES/PARM/PMT">
+                  <xsl:variable name="escaped_name"><xsl:call-template name="term-escape">
+                    <xsl:with-param name="val" select="@NM"/>
+                  </xsl:call-template></xsl:variable>
+                  <xsl:if test="$escaped_name=substring-before($range_val, ':')">
+                    <span class="dn-bar-v"><xsl:value-of select="@DN"/>:</span><xsl:call-template
+                      name="nbsp"/><xsl:choose>
+                      <xsl:when test="@T = '3'">
+                        <xsl:for-each select="PV">
+                          <xsl:variable name="check_val"><xsl:if
+                            test="normalize-space(@L) != ''">$<xsl:value-of
+                            select="normalize-space(@L)"/></xsl:if>..<xsl:if
+                            test="normalize-space(@H) != ''">$<xsl:value-of
+                              select="normalize-space(@H)"/></xsl:if>
+                          </xsl:variable>
+                          <xsl:if test="$check_val=substring-after($range_val, ':')">
+                            <xsl:apply-templates select="current()" mode="display_value"/>
+                          </xsl:if>
+                        </xsl:for-each>
+                      </xsl:when>
+                      <xsl:otherwise>
+                        <xsl:apply-templates select="PV[concat(normalize-space(@L), '..',
+                          normalize-space(@H))=substring-after($range_val, ':')]" mode="display_value"/>
+                      </xsl:otherwise>
+                    </xsl:choose>
+                  </xsl:if>
+                </xsl:for-each>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:for-each select="$root_node/RES/PARM/PMT">
+                  <xsl:variable name="escaped_name"><xsl:call-template name="term-escape">
+                    <xsl:with-param name="val" select="@NM"/>
+                  </xsl:call-template></xsl:variable>
+                  <xsl:if test="$escaped_name=substring-before($range_val, '%3D')">
+                    <span class="dn-bar-v"><xsl:value-of select="./@DN"/>:</span><xsl:call-template
+                      name="nbsp"/><xsl:for-each select="./PV"><xsl:variable
+                        name="pv_val"><xsl:call-template name="term-escape">
+                          <xsl:with-param name="val" select="./@V"/>
+                        </xsl:call-template></xsl:variable>
+                        <xsl:if test="$pv_val=substring-after($range_val, '%3D')">
+                          <xsl:apply-templates select="." mode="display_value"/>
+                        </xsl:if>
+                    </xsl:for-each>
+                  </xsl:if>
+                </xsl:for-each>
+              </xsl:otherwise>
+            </xsl:choose>
+          </a>
+
+          <xsl:if test="position() != last()">
+            <xsl:call-template name="rsaquo"/>
+          </xsl:if>
+        </xsl:for-each>
+      </xsl:if>
+    </div>
+
+    <!-- *** Handle OneBox results, if any ***-->
+    <xsl:if test="$show_onebox != '0' and count(/GSP/ENTOBRESULTS) &gt; 0">
+      <xsl:call-template name="onebox"/>
+
+      <script>
+      <xsl:comment>
+        if (populateUarMessages) {
+	  populateUarMessages();
+	}
+      //</xsl:comment>
+      </script>
+    </xsl:if>
+
+    <!-- *** output google desktop results (if enabled and any available) *** -->
+    <xsl:if test="$egds_show_desktop_results != '0'">
+      <xsl:call-template name="desktop_results"/>
+    </xsl:if>
+  </xsl:if>
+
+  <xsl:choose>
+    <xsl:when test="$show_sidebar = '1'">
+      <table cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          
+          <td id="left-side-container" width="55%" valign="top">
+            <xsl:call-template name="render_main_results">
+              <xsl:with-param name="query" select="$query"/>
+            </xsl:call-template>
+          </td>
+
+          
+          <td id="sidebar-container" class="sb-r" valign="top">
+            <div id="sidebar">
+            </div>
+          </td>
+        </tr>
+      </table>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:call-template name="render_main_results">
+        <xsl:with-param name="query" select="$query"/>
+      </xsl:call-template>
+    </xsl:otherwise>
+  </xsl:choose>
+
+  <!-- *** Filter note (if needed) *** -->
+  <xsl:if test="(RES/FI) and (not(RES/NB/NU))">
+    <p>
+      <i>
+      In order to show you the most relevant results, we have omitted some entries very similar to the <xsl:value-of select="RES/@EN"/> already displayed.<br/>If you like, you can <a href="GSASearchresults.aspx?{encode-for-uri($filter_url)}0">repeat the search with the omitted results included</a>.
+      </i>
+    </p>
+  </xsl:if>
+
+  <!-- *** Add bottom navigation *** -->
+  <div id="bottom-navigation">
+    <xsl:call-template name="gen_bottom_navigation" />
+  </div>
+
+  <!-- *** Bottom search box *** -->
+  <div id="bottom-search-box">
+    <xsl:if test="$show_bottom_search_box != '0' and RES">
+      <xsl:call-template name="bottom_search_box"/>
+    </xsl:if>
+  </div>
+
+
+</xsl:template>
+
+
+<xsl:template name="render_main_results">
+  <xsl:param name="query"/>
+  <xsl:variable name="main_results_class">
+    <xsl:if test="$render_dynamic_navigation = '1'">main-results</xsl:if>
+  </xsl:variable>
+
+  <div class="{$main_results_class}">
+    <!-- for keymatch results -->
+    <xsl:if test="$show_keymatch != '0'">
+      <xsl:apply-templates select="/GSP/GM"/>
+    </xsl:if>
+
+    <xsl:apply-templates select="RES/R">
+      <xsl:with-param name="query" select="$query"/>
+    </xsl:apply-templates>
+  </div>
+</xsl:template>
+  
   <!-- **********************************************************************
  Stopwords suggestions in result page (do not customize)
      ********************************************************************** -->
@@ -2873,7 +3854,7 @@
               <br/>
               [
               <a class="f" href="GSASearchresults.aspx?as_sitesearch={$crowded_url}&amp;{
-            $search_url}">
+            encode-for-uri($search_url)}">
                 More results from <xsl:value-of select="$crowded_display_url"/>
               </a>
               ]
@@ -3048,9 +4029,7 @@
     </xsl:if>
 
     <xsl:if test="$show_res_date != '0'">
-      <xsl:if test="($date != '') and
-                  (translate($date, '-', '') &gt; 19500000) and
-                  (translate($date, '-', '') &lt; 21000000)">
+      <xsl:if test="($date != '')"> 
         <font color="{$res_url_color}" size="{$res_url_size}">
           <xsl:text> - </xsl:text>
           <xsl:value-of select="$date"/>
@@ -3095,6 +4074,7 @@
     <xsl:param name="view_end"/>
     <xsl:param name="guess"/>
     <xsl:param name="navigation_style"/>
+	<xsl:param name="dynamic_nav_bar"/>
 
 
     <xsl:variable name="fontclass">
@@ -3130,8 +4110,8 @@
             <xsl:when test="$prev">
               <td nowrap="1">
 
-                <span class="{$fontclass}">
-                  <a href="GSASearchresults.aspx?{$search_url}&amp;start={$view_begin -
+                <span class="b">
+                  <a href="GSASearchresults.aspx?{encode-for-uri($search_url)}&amp;start={$view_begin -
                       $num_results - 1}">
                     <xsl:if test="$navigation_style = 'google'">
 
@@ -3190,8 +4170,8 @@
                 <xsl:if test="$navigation_style != 'google'">
                   <xsl:call-template name="nbsp"/>
                 </xsl:if>
-                <span class="{$fontclass}">
-                  <a   href="GSASearchresults.aspx?{$search_url}&amp;start={$view_begin +
+                <span class="b">
+                  <a   href="GSASearchresults.aspx?{encode-for-uri($search_url)}&amp;start={$view_begin +
                 $num_results - 1}">
                     <xsl:if test="$navigation_style = 'google'">
 
@@ -3272,7 +4252,7 @@
           <xsl:if test="$navigation_style = 'link'">
             <xsl:call-template name="nbsp"/>
           </xsl:if>
-          <a href="GSASearchresults.aspx?{$search_url}&amp;start={$start}">
+          <a href="GSASearchresults.aspx?{encode-for-uri($search_url)}&amp;start={$start}">
             <xsl:if test="$navigation_style = 'google'">
               <img src="/_layouts/images/SEARCH.GIF" width="16" height="26" alt="Navigation"
                    border="0"/>
@@ -3375,7 +4355,7 @@
  Analytics script (do not customize)
      ********************************************************************** -->
   <xsl:template name="analytics">
-    <xsl:if test="string-length($analytics_account) != '0'">
+    <xsl:if test="string-length($analytics_account) != 0">
       <script src="{$analytics_script_url}" type="text/javascript"></script>
       <script type="text/javascript">
         <xsl:comment>
@@ -3421,9 +4401,15 @@
   <xsl:template name="quot">
     <xsl:text disable-output-escaping="yes">&amp;quot;</xsl:text>
   </xsl:template>
+  <xsl:template name="rsaquo">
+  <dfn><xsl:text disable-output-escaping="yes">&amp;#8250;</xsl:text></dfn>
+</xsl:template>
   <xsl:template name="copy">
     <xsl:text disable-output-escaping="yes">&amp;copy;</xsl:text>
   </xsl:template>
+  <xsl:template name="endash">
+  <xsl:text disable-output-escaping="yes">&amp;#8211;</xsl:text>
+</xsl:template>
 
   <!-- **********************************************************************
  Utility functions for generating head elements so that the XSLT processor
