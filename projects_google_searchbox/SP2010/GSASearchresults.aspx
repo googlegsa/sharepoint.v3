@@ -858,10 +858,7 @@ else if(document.attachEvent)
                                 }
                             }
                         }
-                        /*
-                         * Setting the Session variable for PublicSearchStatus to null
-                         */
-                        Session["PublicSearchStatus"] = null;
+                       
 
                         /*
                          * Adding filter parameter to the search request sent to GSA. Value for the filter parameter will be set into the 

@@ -117,6 +117,16 @@
             if (Request.QueryString["access"] != null)
             {
                 accessStatus = Request.QueryString["access"].ToString();
+                if (accessStatus == "a")
+                {
+                    chkPublicSearch.Checked = false;
+                    Session["PublicSearchStatus"] = "false"; // Assign same value to the session variable, so that it it persisted.
+                }
+                else if (accessStatus == "p") // Means only public search is performed by the user (i.e. access = p)
+                {
+                    chkPublicSearch.Checked = true;
+                    Session["PublicSearchStatus"] = "true"; // Assign same value to the session variable, so that it it persisted.
+                }
                 
             }
             else  if (Session["PublicSearchStatus"] != null)/*
@@ -125,16 +135,14 @@
                                                             */
             {
                 accessStatus = Convert.ToString(Session["PublicSearchStatus"]);
-            }
-            if (accessStatus == "a")
-            {
-                chkPublicSearch.Checked = false;
-                Session["PublicSearchStatus"] = "false"; // Assign same value to the session variable, so that it it persisted.
-            }
-            else // Means only public search is performed by the user (i.e. access = p)
-            {
-                chkPublicSearch.Checked = true;
-                Session["PublicSearchStatus"] = "true"; // Assign same value to the session variable, so that it it persisted.
+                if (accessStatus == "false")
+                {
+                    chkPublicSearch.Checked = false;
+                }
+                else if (accessStatus == "true")
+                {
+                    chkPublicSearch.Checked = true;
+                }
             }
         }
     }
@@ -398,7 +406,6 @@
         if (Request.QueryString["sitesearch"] != null) // The sitesearch parameter comes in the GSA search URL.
         {
             scopeValue = System.Web.HttpUtility.UrlDecode(Request.QueryString["sitesearch"].ToString());
-
         }
         else
         /* This code will be executed when the user clicks on any of the dynamic navigation results displayed in 
@@ -423,8 +430,19 @@
                     /*
                      * Get  "?sitesearch=<sitesearchParameterValue>" where "sitesearchParameterValue"
                      * represents the scope value for a site/ list or folder
-                     */ 
-                    searchReq = searchReq.Substring(0, searchReq.IndexOf("&")); 
+                     */
+                    if (!(searchReq.Substring(0, searchReq.IndexOf("&")).Contains("sitesearch")))
+                    {
+                        /*
+                         * If "sitesearch" parameter is not present by doing 'searchReq.Substring(0, searchReq.IndexOf("&")', then
+                         *  employ another way to extract the substring.
+                         */
+                        searchReq = searchReq.Substring(searchReq.IndexOf("&"));
+                    }
+                    else
+                    {
+                        searchReq = searchReq.Substring(0, searchReq.IndexOf("&"));
+                    }                    
 
                     if (searchReq.IndexOf("=") != -1)
                     {
