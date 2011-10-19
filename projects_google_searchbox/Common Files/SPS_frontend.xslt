@@ -2274,7 +2274,7 @@
       </title>
       <xsl:call-template name="style"/>
 	  <xsl:if test="$render_dynamic_navigation = '1'">
-      <script type="text/javascript" src="dnav_gsbs_priya.js"></script>
+      <script type="text/javascript" src="dnav_gsbs.js"></script>
 	  <script type="text/javascript">
         <xsl:variable name="dnavs_param">
           <xsl:if test="/GSP/PARAM[@name='dnavs']"><xsl:value-of
