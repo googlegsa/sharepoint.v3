@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.wsclient;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.PrincipalType;
@@ -35,6 +36,7 @@ public class GssAclTest extends TestCase {
   GlobalState globalState;
   SharepointClientContext sharepointClientContext;
   GssAclWS aclWS;
+  SiteDataWS siteDataWS;
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -43,6 +45,7 @@ public class GssAclTest extends TestCase {
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setPushAcls(true);
     sharepointClientContext.setBatchHint(2);
+    siteDataWS = new SiteDataWS(sharepointClientContext);
     aclWS = new GssAclWS(sharepointClientContext,
         TestConfiguration.sharepointUrl);
     globalState = TestConfiguration.initState(sharepointClientContext);
@@ -55,6 +58,19 @@ public class GssAclTest extends TestCase {
 
     List<SPDocument> testDocs = listState.getCrawlQueue();
     assertNotNull(testDocs);
+
+    // SharePoint document representing list
+    SPDocument spdocument = listState.getDocumentInstance(FeedType.CONTENT_FEED);
+    testDocs.add(spdocument);
+
+    // SharePoint document representing site landing page(site)
+    SPDocument spdocument2;
+    try {
+      spdocument2 = siteDataWS.getSiteData(webState);
+      testDocs.add(spdocument2);
+    } catch (SharepointException e1) {
+      System.out.println("Cannot create sharepoint document fro site landing Page");
+    }
 
     SPDocumentList docList = new SPDocumentList(testDocs, globalState);
     assertNotNull(docList);
