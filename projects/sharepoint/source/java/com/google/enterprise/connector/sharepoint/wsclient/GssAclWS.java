@@ -227,7 +227,7 @@ public class GssAclWS {
           // Check to determine whether the object-type of the document is list
           // list-item or site.
 
-          ObjectType objectType = null;
+          ObjectType objectType = ObjectType.ITEM;
 
           if (document.getObjType().equals(SPConstants.SITE)) {
             objectType = ObjectType.SITE_LANDING_PAGE;
@@ -235,10 +235,7 @@ public class GssAclWS {
             if (document.getParentList().getPrimaryKey().equals(Util.getOriginalDocId(document.getDocId(), document.getFeedType()))) {
               objectType = ObjectType.LIST;
             }
-          } else {
-            objectType = ObjectType.ITEM;
           }
-
           String[] deniedPermissions = permissions.getDeniedPermission();
           if (null != deniedPermissions) {
             Set<RoleType> deniedRoleTypes = Util.getRoleTypesFor(deniedPermissions, objectType);
