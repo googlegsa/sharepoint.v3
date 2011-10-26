@@ -1346,8 +1346,8 @@ public class SharepointConnectorType implements ConnectorType {
 		try {
 			final URL chkURL = new URL(url);
 			/*
-			 * Check for port value greater then allowed range is added beacuse of a
-			 * bug in Axis where a NullPointer Exception was being returned as a vlaue
+			 * Check for port value greater then allowed range is added because of a
+			 * bug in Axis where a NullPointer Exception was being returned as a value
 			 * during Web Service call.
 			 */
 			if (null == chkURL || chkURL.getPort() > SPConstants.MAX_PORT_VALUE) {

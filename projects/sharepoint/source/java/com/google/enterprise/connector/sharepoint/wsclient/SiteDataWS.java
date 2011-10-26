@@ -380,17 +380,17 @@ public class SiteDataWS {
           stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
           return sWebMetadata.value.getTitle();
         } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Unable to get the title for web beacuse call to the WS failed. endpoint [ "
+          LOGGER.log(Level.WARNING, "Unable to get the title for web because call to the WS failed. endpoint [ "
               + endpoint + " ]", e);
           return "";
         }
       } else {
-        LOGGER.log(Level.WARNING, "Unable to get the title for web beacuse call to the WS failed. endpoint [ "
+        LOGGER.log(Level.WARNING, "Unable to get the title for web because call to the WS failed. endpoint [ "
             + endpoint + " ]", af);
         return "";
       }
     } catch (final Throwable e) {
-      LOGGER.log(Level.WARNING, "Unable to get the title for web beacuse call to the WS failed. endpoint [ "
+      LOGGER.log(Level.WARNING, "Unable to get the title for web because call to the WS failed. endpoint [ "
           + endpoint + " ]", e);
       return "";
     }
@@ -443,15 +443,15 @@ public class SiteDataWS {
         try {
           stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
         } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Unable to get site data for web beacuse call to the WS failed. endpoint [ "
+          LOGGER.log(Level.WARNING, "Unable to get site data for web because call to the WS failed. endpoint [ "
               + endpoint + " ]", e);
         }
       } else {
-        LOGGER.log(Level.WARNING, "Unable to get site data for web beacuse call to the WS failed. endpoint [ "
+        LOGGER.log(Level.WARNING, "Unable to get site data for web because call to the WS failed. endpoint [ "
             + endpoint + " ]", af);
       }
     } catch (final Throwable e) {
-      LOGGER.log(Level.WARNING, "Unable to get the data for web beacuse call to the WS failed. endpoint [ "
+      LOGGER.log(Level.WARNING, "Unable to get the data for web because call to the WS failed. endpoint [ "
           + endpoint + " ]", e);
     }
 
