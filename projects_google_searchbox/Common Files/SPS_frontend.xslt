@@ -2309,23 +2309,10 @@
       </script>
       <xsl:call-template name="langHeadEnd"/>
 
-  <xsl:choose>
-    <xsl:when test="$show_res_clusters != '1'">
-      <script language='javascript' src='common.js'></script>
-      <script language='javascript' src='xmlhttp.js'></script>
-      <script language='javascript' src='uri.js'></script>
-      
 
-      <body onLoad="resetForms(); ss_sf();" dir="ltr">
-        <xsl:call-template name="search_results_body"/>
-      </body>
-    </xsl:when>
-    <xsl:otherwise>
       <body onLoad="resetForms()" dir="ltr">
         <xsl:call-template name="search_results_body"/>
       </body>
-    </xsl:otherwise>
-  </xsl:choose>
 
 
 
