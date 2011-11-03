@@ -61,6 +61,7 @@ Should domain name be removed from domain\username?
 <property name="stripDomainFromAces"><value>true</value></property> 
 }}}
 
+In connector version 2.8 and above, this option is exposed on the configuration UI. You just need to select the "Feed ACLs" option and provide LDAP settings if you want the connector to send ACLs and resolve SharePoint and LDAP group at serve time.
 
 ==== Specify the URLs that should be mapped as per the alias mapping rule specified on connector configuration page (Version 2.6.6 onwards) ====
 {{{
