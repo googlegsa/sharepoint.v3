@@ -18,8 +18,13 @@
     
     // Setting the URL for the Search Tips Link 
     string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString()+ "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
-    
-    if (!IsPostBack)
+      
+    /*
+     * Checking if session value is null for setting the initial type of search. Session value null means 
+     * either the user is done with the searching or he/ she has opened the web application for the first time
+     * in the browser.
+     */
+    if (Session["PublicSearchStatus"] == null)
     {
         // Getting the default search type from web.config file.
         string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
@@ -82,9 +87,23 @@
         {
             // This code will be executed for the first search request sent to GSA.
             publicSearchStatus = Request.QueryString["isPublicSearch"].ToString();
+            if (publicSearchStatus != "")
+            {
+                hfPublicSearch.Value = publicSearchStatus;
+                Session["PublicSearchStatus"] = publicSearchStatus;
+            }
+            else if (Session["PublicSearchStatus"] != null) /*
+                                                            * If querystring parameter value is empty string, assign
+                                                            * the value from session variable to the hiddenfield.
+                                                            */
+            {
+                hfPublicSearch.Value = Convert.ToString(Session["PublicSearchStatus"]);
+            }
 
-            hfPublicSearch.Value = publicSearchStatus;
-            if (publicSearchStatus == "true")
+            /*
+             * Set the Public Search checkbox status as per the value of the hiddenfield 'hfPublicSearch'
+             */
+            if (hfPublicSearch.Value == "true")
             {
                 chkPublicSearch.Checked = true;
             }
@@ -106,13 +125,30 @@
                 accessStatus = Request.QueryString["access"].ToString();
                 if (accessStatus == "a")
                 {
-                   chkPublicSearch.Checked = false;
+                    chkPublicSearch.Checked = false;
+                    Session["PublicSearchStatus"] = "false"; // Assign same value to the session variable, so that it it persisted.
                 }
-                else // Means only public search is performed by the user (i.e. access = p)
+                else if (accessStatus == "p") // Means only public search is performed by the user (i.e. access = p)
+                {
+                    chkPublicSearch.Checked = true;
+                    Session["PublicSearchStatus"] = "true"; // Assign same value to the session variable, so that it it persisted.
+                }
+            }
+            else if (Session["PublicSearchStatus"] != null)/*
+                                                            * If querystring parameter value is empty string, assign
+                                                            * the value from session variable to the hiddenfield.
+                                                            */
+            {
+                accessStatus = Convert.ToString(Session["PublicSearchStatus"]);
+                if (accessStatus == "false")
+                {
+                    chkPublicSearch.Checked = false;
+                }
+                else if (accessStatus == "true")
                 {
                     chkPublicSearch.Checked = true;
                 }
-            }
+            }     
         }
     }
 
@@ -132,10 +168,12 @@
     // Display the Public Search checkbox only if the user has selected 'public ans secure' search while installing the search box.
     if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
     {
+        chkPublicSearch.Visible = true;
         divPublicSearch.Visible = true;
     }
     else 
     {
+        chkPublicSearch.Visible = false;
         divPublicSearch.Visible = false;
     }
     
@@ -406,9 +444,20 @@
                     /*
                      * Get  "?sitesearch=<sitesearchParameterValue>" where "sitesearchParameterValue"
                      * represents the scope value for a site/ list or folder
-                     */ 
-                    searchReq = searchReq.Substring(0, searchReq.IndexOf("&")); 
-
+                     */
+                    if (!(searchReq.Substring(0, searchReq.IndexOf("&")).Contains("sitesearch")))
+                    {
+                        /*
+                         * If "sitesearch" parameter is not present by doing 'searchReq.Substring(0, searchReq.IndexOf("&")', then
+                         *  employ another way to extract the substring.
+                         */
+                        searchReq = searchReq.Substring(searchReq.IndexOf("&"));
+                    }
+                    else
+                    {
+                        searchReq = searchReq.Substring(0, searchReq.IndexOf("&"));
+                    }       
+                    
                     if (searchReq.IndexOf("=") > -1)
                     {
                         searchReq = searchReq.Substring(searchReq.IndexOf("=")); // Gets "=<sitesearchParameterValue>"
@@ -573,13 +622,18 @@
     // Function that will change the value of hiddenfield and session variable whenever checkbox is checked/ unchecked.
     public void checkPublicSearch(object sender, EventArgs e)
     {
-        if (chkPublicSearch.Checked == true)
+        if (IsPostBack)
         {
-            hfPublicSearch.Value = "true";
-        }
-        else
-        {
-            hfPublicSearch.Value = "false";
+            if (chkPublicSearch.Checked == true)
+            {
+                hfPublicSearch.Value = "true";
+                Session["PublicSearchStatus"] = "true";
+            }
+            else
+            {
+                hfPublicSearch.Value = "false";
+                Session["PublicSearchStatus"] = "false";
+            }
         }
     }
 
