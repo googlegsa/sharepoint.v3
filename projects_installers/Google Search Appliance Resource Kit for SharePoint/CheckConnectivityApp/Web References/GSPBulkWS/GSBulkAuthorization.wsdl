@@ -146,10 +146,10 @@
   </wsdl:binding>
   <wsdl:service name="BulkAuthorization">
     <wsdl:port name="BulkAuthorizationSoap" binding="tns:BulkAuthorizationSoap">
-      <soap:address location="http://localhost/_layouts/GSBulkAuthorization.asmx" />
+      <soap:address location="http://localhost:6666/_vti_bin/GSBulkAuthorization.asmx" />
     </wsdl:port>
     <wsdl:port name="BulkAuthorizationSoap12" binding="tns:BulkAuthorizationSoap12">
-      <soap12:address location="http://localhost/_layouts/GSBulkAuthorization.asmx" />
+      <soap12:address location="http://localhost:6666/_vti_bin/GSBulkAuthorization.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

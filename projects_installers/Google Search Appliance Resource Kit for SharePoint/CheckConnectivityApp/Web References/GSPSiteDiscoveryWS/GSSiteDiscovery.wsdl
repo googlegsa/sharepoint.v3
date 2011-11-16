@@ -291,10 +291,10 @@
   </wsdl:binding>
   <wsdl:service name="SiteDiscovery">
     <wsdl:port name="SiteDiscoverySoap" binding="tns:SiteDiscoverySoap">
-      <soap:address location="http://localhost/_vti_bin/GSSiteDiscovery.asmx" />
+      <soap:address location="http://localhost:6666/_vti_bin/GSSiteDiscovery.asmx" />
     </wsdl:port>
     <wsdl:port name="SiteDiscoverySoap12" binding="tns:SiteDiscoverySoap12">
-      <soap12:address location="http://localhost/_vti_bin/GSSiteDiscovery.asmx" />
+      <soap12:address location="http://localhost:6666/_vti_bin/GSSiteDiscovery.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

@@ -21,6 +21,8 @@ using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
 using System.Collections.Generic;
 
+
+
 /// <summary>
 /// Google Search Appliance Connector for Microsoft SharePoint uses this web service to authorize documents at serve time.
 /// </summary>
@@ -141,22 +143,42 @@ public class BulkAuthorization : System.Web.Services.WebService
                 authData.IsAllowed = true;
             }
         }
-        else if (authData.Type == AuthData.EntityType.SITE) {
+        else if (authData.Type == AuthData.EntityType.SITE)
+        {
             bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
             authData.IsAllowed = isAllowd;
-        } else {
-            SPList list = web.GetListFromUrl(url);
-            if (authData.Type == AuthData.EntityType.LIST)
+        }
+        else
+        {
+            try
             {
-                bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                authData.IsAllowed = isAllowed;
+                SPList list = web.GetListFromUrl(url);
+                if (authData.Type == AuthData.EntityType.LIST)
+                {
+                    bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                    authData.IsAllowed = isAllowed;
+                }
+                else if (authData.Type == AuthData.EntityType.LISTITEM)
+                {
+                    int itemId = int.Parse(authData.ItemId);
+                    SPListItem item = list.GetItemById(itemId);
+                    bool isAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                    authData.IsAllowed = isAllowed;
+                }
             }
-            else if (authData.Type == AuthData.EntityType.LISTITEM)
+            catch (Exception e)
             {
-                int itemId = int.Parse(authData.ItemId);
-                SPListItem item = list.GetItemById(itemId);
-                bool isAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                authData.IsAllowed = isAllowed;
+                /*
+                 * Authorization for documents existing under a document library and folder
+                 * For eg: document url is of the form "http://SharePointWebApp:portNo/site/doclib/myDoc.txt". Hence
+                 * the code below will perform authorization for documents under a document library or folder.
+                 */
+                if (authData.Type == AuthData.EntityType.LISTITEM)
+                {
+                    // Gets the document as a list item, from the URL and for the current website
+                    SPListItem item = web.GetListItem(url);
+                    authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                }
             }
         }
     }
@@ -509,7 +531,20 @@ public class WSContext
         }
 
         listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
-        listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+        /* 
+        * Checking whether the url contains port number. This can be recognized by getting the index of 
+        * the occurrence of colon (i.e. ":" )within the url.
+        */
+        int colonPosListUrl = listUrl.IndexOf(':');
+        if (colonPosListUrl >= 0)// Means URL contains Port No.
+        {
+            listUrl = listUrl.Substring(listUrl.IndexOf(':') + 1);
+        }
+        else              // Means URL does not contain Port No.
+        {
+            listUrl = listUrl.Substring(listUrl.IndexOf('/') + 1);
+            listUrl = listUrl.Substring(listUrl.IndexOf('/') + 1);
+        }
         listUrl = listUrl.Substring(listUrl.IndexOf('/'));
         if (container.Type == Container.ContainerType.LIST)
         {
@@ -525,7 +560,7 @@ public class WSContext
                  * For blog site template, picture library list URL (i.e. URL for "Photos" List)
                  * contains both "lists" and "forms" string in the url. Hence removing the "lists"
                  * from the url, so as to get the correct server relative URL for the picture library. 
-                 */ 
+                 */
                 int listPos1 = listUrl.IndexOf("/lists", 0, StringComparison.InvariantCultureIgnoreCase);
                 if (listPos1 >= 0)
                 {
@@ -548,6 +583,42 @@ public class WSContext
             {
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
                 listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+
+                // Get the folder URL
+                string folderURL = container.Url.Substring(0, container.Url.LastIndexOf("/"));
+                try
+                {
+                    // Get the folder object corresponding to the URL
+                    SPFolder folder = site.OpenWeb().GetFolder(folderURL);
+                    
+                    // Get the server relative URL for the folder
+                    string serverRelativeURLFolder = folder.ServerRelativeUrl;
+
+                    /*
+                     * If there is a folder hierarchy, format the string to get the correct server relative 
+                     * url for document existing under subfolders. For eg: if the document url is of the form 
+                     * "http://SharePointWebApp:portNo/site/doclib/folder1/folder2/folder3/myDoc.txt", then for 
+                     * extracting correct server relative url, the corresponding folders existing along the path
+                     * (i.e. folder1,folder2 and folder3 in our case) need to be removed from the document url.
+                     */
+                    while (folder.ParentFolder.Url != "")
+                    {
+                        /* 
+                         * Using a while loop facilitates the job of removing the folders, along the path, existing 
+                         * in the document url.
+                         */
+                        listUrl = listUrl.Substring(0, listUrl.LastIndexOf('/'));
+                        /*
+                         * Set the parent folder object as the current folder object to be processed. 
+                         * This is due to the fact that the folder hierarchy needs to be traversed upwards, starting
+                         * from the document name, in the document url, and is done to get correct server relative URL.
+                         */
+                        folder = folder.ParentFolder; 
+                    }
+                }
+                catch (Exception e)
+                {
+                }
             }
         }
         return listUrl;
