@@ -51,8 +51,8 @@
 	
 	<summary>
 		<codepage>1252</codepage>
-		<title>##ID_STRING5##</title>
-		<subject>Google Search Appliance Resource Kit for SharePoint 2.8.0</subject>
+		<title>##ID_STRING6##</title>
+		<subject>Google Search Appliance Resource Kit for SharePoint 2.8.2</subject>
 		<author>##COMPANY_NAME##</author>
 		<keywords>Installer,MSI,Database</keywords>
 		<comments>Contact:  Your local administrator</comments>
@@ -351,22 +351,22 @@
 		<col def="S0">ISDotNetInstallerArgsCommit</col>
 		<col def="S0">ISDotNetInstallerArgsUninstall</col>
 		<col def="S0">ISDotNetInstallerArgsRollback</col>
-		<row><td>GSASAMLBridge</td><td>{384CAE4A-52B2-440A-8803-F2BA187E1DF0}</td><td>SAML_BRIDGE2</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASAMLBridgeBin</td><td>{8383F70C-6490-4718-9220-B78117D3FF5C}</td><td>BIN6</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASearchControl</td><td>{28CD567E-A7A5-47AE-A2AE-9623E4E67766}</td><td>CONTROLTEMPLATES</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASearchResults</td><td>{C2A39959-AE79-45F9-BBA5-6F10FF9F4629}</td><td>LAYOUTS</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASimulator</td><td>{46D19E25-A5C2-4FB9-A32D-EC2A9289C6CA}</td><td>GSA_SIMULATOR2</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASimulatorBin</td><td>{47E74212-269D-49A5-8047-915C8D682D43}</td><td>BIN4</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASimulatorForSharePointAppPoolComponent</td><td>{8C19A56C-1227-4DD7-9F84-AF05FEE06B98}</td><td>GSA_RESOURCE_KIT</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASimulatorForSharePointWebsiteComponent</td><td>{ED47CDD9-1739-49E2-AE69-A17B6D84279E}</td><td>GSA_RESOURCE_KIT</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSBTestUtilityFiles</td><td>{0533621B-67C0-4EB3-8919-569592884F16}</td><td>GSA_RESOURCE_KIT</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GoogleSearchBoxComponent</td><td>{7E22F469-A103-414B-BC69-FD5604157263}</td><td>TEMPLATE</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GoogleSearchBoxFeature</td><td>{721D287D-B248-455C-ADC3-8642B36D1911}</td><td>GSAFEATURE</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GoogleServicesComponent</td><td>{FAB62438-6725-4326-B665-D189616D56A8}</td><td>ISAPI</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GoogleServicesLogComponent</td><td>{24DD97BD-5287-4AB5-A01D-BC764FB3A6F7}</td><td>TEMPLATE</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GoogleWatermarkImage</td><td>{31E8E66C-7F33-4F07-828C-486F960EAEE7}</td><td>IMAGES</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>SAMLBridgeCustomApplication</td><td>{D835E717-E5DC-4B10-A95D-B9AA15562C89}</td><td>SAML_BRIDGE2</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>UnInstallComp</td><td>{1018A07E-4466-454E-B6BF-25BE2F70B382}</td><td>INSTALLDIR</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASAMLBridge</td><td>{D91114A9-1D66-4408-AFE1-E622C706945D}</td><td>SAML_BRIDGE2</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASAMLBridgeBin</td><td>{15B86AAC-8739-4E19-A386-C0E5A85B33C5}</td><td>BIN6</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASearchControl</td><td>{125063F7-BF6D-4E78-850E-BE9DACBB75C1}</td><td>CONTROLTEMPLATES</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASearchResults</td><td>{ADB3DE61-B049-4FCC-89F3-BD49A3F1406C}</td><td>LAYOUTS</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASimulator</td><td>{A5DE4949-97B2-4F18-A2B3-F95F5E338B7F}</td><td>GSA_SIMULATOR2</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASimulatorBin</td><td>{4297D96B-9199-4E9A-824C-D754DC056DC6}</td><td>BIN4</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASimulatorForSharePointAppPoolComponent</td><td>{3AD1CF36-6098-4410-80E4-19D7997A6315}</td><td>GSA_RESOURCE_KIT</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASimulatorForSharePointWebsiteComponent</td><td>{6FD19596-43EB-4BCE-BF1C-4BCDBCB9E357}</td><td>GSA_RESOURCE_KIT</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSBTestUtilityFiles</td><td>{46BD3C88-63C8-4677-975B-F8CBB2B9D5E1}</td><td>GSA_RESOURCE_KIT</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleSearchBoxComponent</td><td>{31C64D88-332D-4FD6-9E81-B8C033A5D6AD}</td><td>TEMPLATE</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleSearchBoxFeature</td><td>{10FD943D-CA6F-446C-B35D-683AC7A0F78D}</td><td>GSAFEATURE</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleServicesComponent</td><td>{58A716F2-A012-4FAA-A1F9-383D3DD11FAE}</td><td>ISAPI</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleServicesLogComponent</td><td>{86207101-D42D-4054-B690-F8EEFF55677E}</td><td>TEMPLATE</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleWatermarkImage</td><td>{3E6EAC28-933F-42C3-A50C-5D71FC6367DF}</td><td>IMAGES</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>SAMLBridgeCustomApplication</td><td>{F43A9918-969D-4705-8326-9F6370DF5388}</td><td>SAML_BRIDGE2</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>UnInstallComp</td><td>{0EB42BF0-6159-4C81-9B06-038F4C8516A2}</td><td>INSTALLDIR</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
 	<table name="Condition">
@@ -4080,12 +4080,12 @@
 		<row><td>ID_STRING13</td><td>1033</td><td>SEARCH~1|SearchBoxLogs</td><td>0</td><td/><td>345890542</td></row>
 		<row><td>ID_STRING14</td><td>1033</td><td>GOOGLE~2|GoogleSearchBoxforSharePoint</td><td>0</td><td/><td>345849710</td></row>
 		<row><td>ID_STRING15</td><td>1033</td><td>SAML Site</td><td>0</td><td/><td>345894063</td></row>
-		<row><td>ID_STRING16</td><td>1033</td><td>GSARES~1.0|GSA Resource Kit for SharePoint 2.8.0</td><td>0</td><td/><td>-325079762</td></row>
+		<row><td>ID_STRING16</td><td>1033</td><td>GSARES~1.2|GSA Resource Kit for SharePoint 2.8.2</td><td>0</td><td/><td>1436513579</td></row>
 		<row><td>ID_STRING17</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-325225679</td></row>
 		<row><td>ID_STRING18</td><td>1033</td><td>CONFIG~1|Configuration Wizard</td><td>0</td><td/><td>-325203119</td></row>
 		<row><td>ID_STRING19</td><td>1033</td><td>GOOGLE~1|Google Search Box for SharePoint 2.6.10</td><td>0</td><td/><td>1017098575</td></row>
 		<row><td>ID_STRING2</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>1436375212</td></row>
-		<row><td>ID_STRING20</td><td>1033</td><td>GOOGLE~1.0|Google Services for SharePoint 2.8.0</td><td>0</td><td/><td>-325122994</td></row>
+		<row><td>ID_STRING20</td><td>1033</td><td>GOOGLE~1.2|Google Services for SharePoint 2.8.2</td><td>0</td><td/><td>1436501291</td></row>
 		<row><td>ID_STRING21</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-325243855</td></row>
 		<row><td>ID_STRING22</td><td>1033</td><td>gsa-resource-kit</td><td>0</td><td/><td>1017080562</td></row>
 		<row><td>ID_STRING23</td><td>1033</td><td>Google SAML Bridge</td><td>0</td><td/><td>-451049234</td></row>
@@ -4138,7 +4138,7 @@
 		<row><td>ID_STRING66</td><td>1033</td><td>NewFeature1</td><td>0</td><td/><td>-451041106</td></row>
 		<row><td>ID_STRING67</td><td>1033</td><td>GSA Simulator for SharePoint</td><td>0</td><td/><td>1839030796</td></row>
 		<row><td>ID_STRING68</td><td>1033</td><td>Google Search Box Test Utility</td><td>0</td><td/><td>-451057426</td></row>
-		<row><td>ID_STRING69</td><td>1033</td><td>GSA Resource Kit for SharePoint 2.8.0</td><td>0</td><td/><td>-325073906</td></row>
+		<row><td>ID_STRING69</td><td>1033</td><td>GSA Resource Kit for SharePoint 2.8.2</td><td>0</td><td/><td>1436531755</td></row>
 		<row><td>ID_STRING7</td><td>1033</td><td>http://www.GoogleInc..com</td><td>0</td><td/><td>882866543</td></row>
 		<row><td>ID_STRING70</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>-711088305</td></row>
 		<row><td>ID_STRING71</td><td>1033</td><td>GOOGLE~1.0|Google SAML Bridge for Windows 2.8.0</td><td>0</td><td/><td>-325118898</td></row>
@@ -4150,7 +4150,7 @@
 		<row><td>ID_STRING77</td><td>1033</td><td>GSA Simulator for SharePoint|GSA Simulator for SharePoint</td><td>0</td><td/><td>1839016621</td></row>
 		<row><td>ID_STRING78</td><td>1033</td><td>SearchSite.aspx</td><td>0</td><td/><td>1839030094</td></row>
 		<row><td>ID_STRING79</td><td>1033</td><td>SearchSite.aspx</td><td>0</td><td/><td>1839028046</td></row>
-		<row><td>ID_STRING8</td><td>1033</td><td>Google Services for SharePoint 2.8.0</td><td>0</td><td/><td>-325080050</td></row>
+		<row><td>ID_STRING8</td><td>1033</td><td>Google Services for SharePoint 2.8.2</td><td>0</td><td/><td>1436525611</td></row>
 		<row><td>ID_STRING80</td><td>1033</td><td>saml-bridge</td><td>0</td><td/><td>1839044368</td></row>
 		<row><td>ID_STRING81</td><td>1033</td><td>SearchSite.aspx</td><td>0</td><td/><td>1839011600</td></row>
 		<row><td>ID_STRING82</td><td>1033</td><td>gsa-simulator</td><td>0</td><td/><td>1839028048</td></row>
@@ -4197,7 +4197,7 @@
 		<row><td>NEW_STRING7</td><td>1033</td><td>By installing the Google Search Box for SharePoint, the SharePoint search will be replaced by Google search for all the local SharePoint web applications</td><td>0</td><td/><td>-711085939</td></row>
 		<row><td>NEW_STRING8</td><td>1033</td><td>&amp;Next &gt;</td><td>0</td><td/><td>765317773</td></row>
 		<row><td>NEW_STRING9</td><td>1033</td><td>Cancel</td><td>0</td><td/><td>765317773</td></row>
-		<row><td>UNINST|Uninstall GSA Resource Kit for SharePoint</td><td>1033</td><td>Uninstall GSA Resource Kit for SharePoint 2.8.0</td><td>0</td><td/><td>-325098450</td></row>
+		<row><td>UNINST|Uninstall GSA Resource Kit for SharePoint</td><td>1033</td><td>Uninstall GSA Resource Kit for SharePoint 2.8.2</td><td>0</td><td/><td>1436539947</td></row>
 		<row><td>tempsource</td><td>1033</td><td>template:template</td><td>0</td><td>temp source</td><td>891127475</td></row>
 	</table>
 
@@ -4850,11 +4850,11 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>PROGMSG_IIS_ROLLBACKVROOTS</td><td>##IDS_PROGMSG_IIS_ROLLBACKVROOTS##</td><td/></row>
 		<row><td>PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS</td><td>##IDS_PROGMSG_IIS_ROLLBACKWEBSERVICEEXTENSIONS##</td><td/></row>
 		<row><td>PROGRAMFILETOLAUNCHATEND</td><td>Launch</td><td/></row>
-		<row><td>ProductCode</td><td>{806EC867-A858-47A6-A89A-C81A48E5B067}</td><td/></row>
+		<row><td>ProductCode</td><td>{E4CC032E-86F9-4B4E-A6D5-C45BE847FBEF}</td><td/></row>
 		<row><td>ProductID</td><td>none</td><td/></row>
 		<row><td>ProductLanguage</td><td>1033</td><td/></row>
-		<row><td>ProductName</td><td>Google Search Appliance Resource Kit for SharePoint 2.8.0</td><td/></row>
-		<row><td>ProductVersion</td><td>2.8.0</td><td/></row>
+		<row><td>ProductName</td><td>Google Search Appliance Resource Kit for SharePoint 2.8.2</td><td/></row>
+		<row><td>ProductVersion</td><td>2.8.2</td><td/></row>
 		<row><td>ProgressType0</td><td>install</td><td/></row>
 		<row><td>ProgressType1</td><td>Installing</td><td/></row>
 		<row><td>ProgressType2</td><td>installed</td><td/></row>
@@ -5039,7 +5039,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>SAMLConfigurationShortcut</td><td>newfolder2</td><td>##ID_STRING72##</td><td>SAMLBridgeCustomApplication</td><td>[SAML_BRIDGE2]SAMLBridgeConfiguation.exe</td><td/><td/><td/><td>SAMLConfigurationS_D8381E9421A34E6DA0655408D4CF75D6.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>SAMLLoginPageShortcut</td><td>newfolder2</td><td>##ID_STRING94##</td><td>SAMLBridgeCustomApplication</td><td>[GSA_RESOURCE_KIT]DetectNCreateLinksFromSiteID.exe</td><td>"SAMLBridge"</td><td/><td/><td>SAMLLoginPageShort_B7AE6BCEE28C46B4A0BF38145DCFD8E7.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>SearchBoxLogs</td><td>GoogleSearchBoxforSharePoint</td><td>##ID_STRING17##</td><td>GoogleSearchBoxComponent</td><td>[INSTALLDIR]LOGS</td><td/><td/><td/><td>SearchBoxLogs_4F982CB8724D49C89FB08CECFB1F0D3A.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
-		<row><td>UNINST_Uninstall_Google_Services_for_SharePoint</td><td>google_1_google_inc.</td><td>##UNINST|Uninstall GSA Resource Kit for SharePoint##</td><td>UnInstallComp</td><td>[SystemFolder]msiexec.exe</td><td>/i {806EC867-A858-47A6-A89A-C81A48E5B067} /qf</td><td/><td/><td>UNINST_Uninstall_G_545E3F23623741ADB851586249BE0FA5.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
+		<row><td>UNINST_Uninstall_Google_Services_for_SharePoint</td><td>google_1_google_inc.</td><td>##UNINST|Uninstall GSA Resource Kit for SharePoint##</td><td>UnInstallComp</td><td>[SystemFolder]msiexec.exe</td><td>/i {E4CC032E-86F9-4B4E-A6D5-C45BE847FBEF} /qf</td><td/><td/><td>UNINST_Uninstall_G_545E3F23623741ADB851586249BE0FA5.exe</td><td>0</td><td>1</td><td/><td/><td/><td/><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="Signature">
