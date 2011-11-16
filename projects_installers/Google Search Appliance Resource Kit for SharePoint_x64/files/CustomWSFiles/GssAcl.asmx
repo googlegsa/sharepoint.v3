@@ -299,7 +299,8 @@ public enum ObjectType
     USER,
     WEB,
     LIST,
-    ITEM
+    ITEM,
+    SITE_LANDING_PAGE
 }
 
 /// <summary>
