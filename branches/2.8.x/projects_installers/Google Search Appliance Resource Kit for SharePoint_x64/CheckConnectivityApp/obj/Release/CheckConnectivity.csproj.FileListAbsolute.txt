@@ -123,3 +123,13 @@ C:\Priya\GSARKS_x64\RC2\CheckConnectivityApp\obj\Release\CheckConnectivity.cspro
 C:\Priya\GSARKS_x64\RC2\CheckConnectivityApp\obj\Release\Verify Installation.exe
 C:\Priya\GSARKS_x64\RC2\CheckConnectivityApp\obj\Release\Verify Installation.pdb
 C:\Priya\GSARKS_x64\RC2\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\bin\Release\Verify Installation.exe.config
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\bin\Release\Verify Installation.exe
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\bin\Release\Verify Installation.XmlSerializers.dll
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\bin\Release\Verify Installation.pdb
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\ResolveAssemblyReference.cache
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\WindowsApplication1.frmVerifyInstallation.resources
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\CheckConnectivity.csproj.GenerateResource.Cache
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\Verify Installation.exe
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\Verify Installation.pdb
+C:\Priya K\Google Search Appliance Resource Kit for SharePoint_x64\CheckConnectivityApp\obj\Release\Verify Installation.XmlSerializers.dll

@@ -154,6 +154,7 @@
           <s:enumeration value="WEB" />
           <s:enumeration value="LIST" />
           <s:enumeration value="ITEM" />
+          <s:enumeration value="SITE_LANDING_PAGE" />
         </s:restriction>
       </s:simpleType>
       <s:simpleType name="SPChangeType">
@@ -423,10 +424,10 @@
   </wsdl:binding>
   <wsdl:service name="GssAclMonitor">
     <wsdl:port name="GssAclMonitorSoap" binding="tns:GssAclMonitorSoap">
-      <soap:address location="http://localhost:1313/_vti_bin/GssAcl.asmx" />
+      <soap:address location="http://localhost:31938/_vti_bin/GssAcl.asmx" />
     </wsdl:port>
     <wsdl:port name="GssAclMonitorSoap12" binding="tns:GssAclMonitorSoap12">
-      <soap12:address location="http://localhost:1313/_vti_bin/GssAcl.asmx" />
+      <soap12:address location="http://localhost:31938/_vti_bin/GssAcl.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

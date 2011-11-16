@@ -119,21 +119,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://localhost/_layouts/GSBulkAuthorization.asmx">
-      <UrlBehavior>Dynamic</UrlBehavior>
-      <RelPath>Web References\GSPBulkWS\</RelPath>
-      <UpdateFromURL>http://localhost/_layouts/GSBulkAuthorization.asmx</UpdateFromURL>
-      <ServiceLocationURL>
-      </ServiceLocationURL>
-      <CachedDynamicPropName>
-      </CachedDynamicPropName>
-      <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
-      <CachedSettingsPropName>Verify_Installation_GSPBulkWS_BulkAuthorization</CachedSettingsPropName>
-    </WebReferenceUrl>
-    <WebReferenceUrl Include="http://localhost/_layouts/GssAcl.asmx">
+    <WebReferenceUrl Include="http://localhost:6666/_vti_bin/GssAcl.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPAclWS\</RelPath>
-      <UpdateFromURL>http://localhost/_layouts/GssAcl.asmx</UpdateFromURL>
+      <UpdateFromURL>http://localhost:6666/_vti_bin/GssAcl.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -141,10 +130,21 @@
       <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
       <CachedSettingsPropName>Verify_Installation_GSPAclWS_GssAclMonitor</CachedSettingsPropName>
     </WebReferenceUrl>
-    <WebReferenceUrl Include="http://localhost/_vti_bin/GSSiteDiscovery.asmx">
+    <WebReferenceUrl Include="http://localhost:6666/_vti_bin/GSBulkAuthorization.asmx">
+      <UrlBehavior>Dynamic</UrlBehavior>
+      <RelPath>Web References\GSPBulkWS\</RelPath>
+      <UpdateFromURL>http://localhost:6666/_vti_bin/GSBulkAuthorization.asmx</UpdateFromURL>
+      <ServiceLocationURL>
+      </ServiceLocationURL>
+      <CachedDynamicPropName>
+      </CachedDynamicPropName>
+      <CachedAppSettingsObjectName>Settings</CachedAppSettingsObjectName>
+      <CachedSettingsPropName>Verify_Installation_GSPBulkWS_BulkAuthorization</CachedSettingsPropName>
+    </WebReferenceUrl>
+    <WebReferenceUrl Include="http://localhost:6666/_vti_bin/GSSiteDiscovery.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\GSPSiteDiscoveryWS\</RelPath>
-      <UpdateFromURL>http://localhost/_vti_bin/GSSiteDiscovery.asmx</UpdateFromURL>
+      <UpdateFromURL>http://localhost:6666/_vti_bin/GSSiteDiscovery.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -154,8 +154,19 @@
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Web References\GSPAclWS\GssAcl.disco" />
     <None Include="Web References\GSPAclWS\GssAcl.wsdl" />
+    <None Include="Web References\GSPBulkWS\AuthDataPacket.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\GSPBulkWS\GSBulkAuthorization.disco" />
+    <None Include="Web References\GSPBulkWS\GSBulkAuthorization.wsdl" />
+    <None Include="Web References\GSPBulkWS\Reference.map">
+      <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Web References\GSPAclWS\GssAcl.disco" />
     <None Include="Web References\GSPAclWS\GssGetAclChangesSinceTokenResult.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
@@ -169,17 +180,6 @@
       <DependentUpon>Reference.map</DependentUpon>
     </None>
     <None Include="Web References\GSPAclWS\Reference.map">
-      <Generator>MSDiscoCodeGenerator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Web References\GSPBulkWS\AuthDataPacket.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </None>
-    <None Include="Web References\GSPBulkWS\GSBulkAuthorization.disco" />
-    <None Include="Web References\GSPBulkWS\GSBulkAuthorization.wsdl" />
-    <None Include="Web References\GSPBulkWS\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>

@@ -26,17 +26,7 @@ namespace WindowsApplication1.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost/_layouts/GssAcl.asmx")]
-        public string Verify_Installation_GSPAclWS_GssAclMonitor {
-            get {
-                return ((string)(this["Verify_Installation_GSPAclWS_GssAclMonitor"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost/_layouts/GSBulkAuthorization.asmx")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:6666/_vti_bin/GSBulkAuthorization.asmx")]
         public string Verify_Installation_GSPBulkWS_BulkAuthorization {
             get {
                 return ((string)(this["Verify_Installation_GSPBulkWS_BulkAuthorization"]));
@@ -46,7 +36,17 @@ namespace WindowsApplication1.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost/_vti_bin/GSSiteDiscovery.asmx")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:6666/_vti_bin/GssAcl.asmx")]
+        public string Verify_Installation_GSPAclWS_GssAclMonitor {
+            get {
+                return ((string)(this["Verify_Installation_GSPAclWS_GssAclMonitor"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.WebServiceUrl)]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:6666/_vti_bin/GSSiteDiscovery.asmx")]
         public string Verify_Installation_GSPSiteDiscoveryWS_SiteDiscovery {
             get {
                 return ((string)(this["Verify_Installation_GSPSiteDiscoveryWS_SiteDiscovery"]));
