@@ -48,7 +48,7 @@ public interface QueryProvider {
   /**
    * Returns the actual SQL query that can be executed
    *
-   * @param key
+   * @param query
    * @return
    */
   String getSqlQuery(Query query);

@@ -126,6 +126,7 @@ public class GlobalState {
     public void endPrefixMapping(String prefix) {
     }
 
+    @SuppressWarnings("deprecation")
     public void startElement(String namespaceURI, final String localName,
         String rawName, Attributes atts) throws SAXException {
 
@@ -162,6 +163,7 @@ public class GlobalState {
                 || null == renamedFolderId || null == renamedFolderPath) {
               // for backward compatibility. Earlier version uses
               // only FolderPath which was called FolderLevel.
+              // This is why we suppress deprecation warnings.
               String folderLevel = atts.getValue(SPConstants.STATE_FOLDER_LEVEL);
               if (null != folderLevel && folderLevel.length() > 0) {
                 // Force a restart of the change detection using
@@ -351,7 +353,7 @@ public class GlobalState {
       // mark all as non-existent
       final Iterator<WebState> it = dateMap.iterator();
       while (it.hasNext()) {
-        final WebState webs = (WebState) it.next();
+        final WebState webs = it.next();
         webs.setExisting(false);
       }
     }
@@ -374,7 +376,7 @@ public class GlobalState {
       final Iterator<WebState> iter = getIterator();
       if (null != iter) {
         while (iter.hasNext()) {
-          final WebState webs = (WebState) iter.next();
+          final WebState webs = iter.next();
           webs.endRecrawl(spContext);
           if (!webs.isExisting()) {
             // Case of web deletion. Delete this web State only if

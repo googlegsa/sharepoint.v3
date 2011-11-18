@@ -771,8 +771,8 @@ public class ListsWS {
    * folder is restored and we need to discover items level by level.
    *
    * @param list : Base List
-   * @param lastItemID : Last Item ID that we have already identified at this
-   *          level.
+   * @param lastItemIDAtFolderLevel : Last Item ID that we have
+   *          already identified at this level.
    * @param folder : The folder from where to discover the items.
    * @return list of documents as {@link SPDocument}
    */
@@ -872,7 +872,6 @@ public class ListsWS {
    * from getting shown, do not trust the change info.
    *
    * @param list : List whose items is to be retrieved
-   * @param lastItemID : serves as a base for incremental crawl
    * @param allWebs : A collection to store any webs, discovered as part of
    *          discovering list items. Foe example link sites are stored as list
    *          items.

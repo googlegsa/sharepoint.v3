@@ -31,6 +31,7 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -264,8 +265,10 @@ public class SharepointClientContext implements Cloneable {
       final String inAliasMapString, final FeedType inFeedType,
       boolean useSPSearchVisibility) throws SharepointException {
 
-    Protocol.registerProtocol("https", new Protocol("https",
-        new EasySSLProtocolSocketFactory(), SPConstants.SSL_DEFAULT_PORT));
+    // Avoid a deprecation warning on an overloaded Protocol constructor.
+    ProtocolSocketFactory factory = new EasySSLProtocolSocketFactory();
+    Protocol.registerProtocol("https",
+        new Protocol("https", factory, SPConstants.SSL_DEFAULT_PORT));
 
     kdcServer = inKdcHost;
     if (sharepointUrl == null) {
@@ -520,7 +523,7 @@ public class SharepointClientContext implements Cloneable {
     if (inExcluded_metadata != null) {
       final int size = inExcluded_metadata.size();
       for (int index = 0; index < size; index++) {
-        final String meta = (String) inExcluded_metadata.get(index);
+        final String meta = inExcluded_metadata.get(index);
         try {
           excluded_metadata.add(Pattern.compile(meta));
         } catch (final Exception e) {
@@ -545,7 +548,7 @@ public class SharepointClientContext implements Cloneable {
     if (inIncluded_metadata != null) {
       final int size = inIncluded_metadata.size();
       for (int index = 0; index < size; index++) {
-        final String meta = (String) inIncluded_metadata.get(index);
+        final String meta = inIncluded_metadata.get(index);
         try {
           included_metadata.add(Pattern.compile(meta));
         } catch (final Exception e) {
@@ -1101,5 +1104,4 @@ public class SharepointClientContext implements Cloneable {
   public void setInitialTraversal(boolean initialTraversal) {
     this.initialTraversal = initialTraversal;
   }
-
 }

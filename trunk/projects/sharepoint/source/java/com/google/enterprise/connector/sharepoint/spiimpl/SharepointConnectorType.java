@@ -15,7 +15,7 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.base.Strings;
-import com.google.enterprise.connector.common.StringUtils;
+import com.google.common.io.ByteStreams;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -173,7 +173,7 @@ public class SharepointConnectorType implements ConnectorType {
 		final StringBuffer buf = new StringBuffer();
 		if (keys != null) {
 			for (String key : keys) {
-				final String configKey = (String) configStrings.get(key);
+				final String configKey = configStrings.get(key);
 
 				if ((ed == null) || !key.equals(ed.error_key)) {
 					appendStartRow(buf, key, configKey, false);
@@ -186,7 +186,7 @@ public class SharepointConnectorType implements ConnectorType {
 					if (configMap == null) {
 						appendRowForAliasMapping(buf, SPConstants.BLANK_STRING, SPConstants.BLANK_STRING, false);
 					} else {
-						final String aliasMapString = (String) configMap.get(key);
+						final String aliasMapString = configMap.get(key);
 						parseAlias(aliasMapString, null);
 						if (aliasMap == null) {
 							appendRowForAliasMapping(buf, SPConstants.BLANK_STRING, SPConstants.BLANK_STRING, false);
@@ -248,7 +248,7 @@ public class SharepointConnectorType implements ConnectorType {
 
 				String value = null;
 				if (configMap != null) {
-					value = (String) configMap.get(key);
+					value = configMap.get(key);
 				}
 				if (value == null) {
 					value = "";
@@ -930,8 +930,8 @@ public class SharepointConnectorType implements ConnectorType {
 		}
 
 		for (final Iterator<String> i = keys.iterator(); i.hasNext();) {
-			final String key = (String) i.next();
-			final String val = (String) configData.get(key);
+			final String key = i.next();
+			final String val = configData.get(key);
 
 			if (isRequired(key)) {
 				if ((val == null) || val.equals(SPConstants.BLANK_STRING)
@@ -1733,7 +1733,7 @@ public class SharepointConnectorType implements ConnectorType {
 								aliasMap = new LinkedHashMap<String, ArrayList<String>>();
 							}
 							if (aliasMap.containsKey(source_url)) {
-								aliases = ((ArrayList<String>) (aliasMap.get(source_url)));
+								aliases = aliasMap.get(source_url);
 								if ((null == message)
 										|| message.equals(SPConstants.DUPLICATE_ALIAS)) {
 									message = SPConstants.DUPLICATE_ALIAS;
@@ -1798,7 +1798,7 @@ public class SharepointConnectorType implements ConnectorType {
 				try {
 					File krb5File = new File(googleConnWorkDir
 							+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
-					String krb5Config = StringUtils.streamToStringAndThrow(krb5In);
+					String krb5Config = new String(ByteStreams.toByteArray(krb5In), SPConstants.UTF_8);
 					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_UPPERCASE, configData.get(SPConstants.DOMAIN).toString().toUpperCase());
 					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_LOWERCASE, configData.get(SPConstants.DOMAIN).toString().toLowerCase());
 					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_KDC_SERVER, configData.get(SPConstants.KDC_SERVER).toString().toUpperCase());
@@ -1815,7 +1815,7 @@ public class SharepointConnectorType implements ConnectorType {
 				try {
 					File loginFile = new File(googleConnWorkDir
 							+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
-					String loginConfig = StringUtils.streamToStringAndThrow(loginIn);
+					String loginConfig = new String(ByteStreams.toByteArray(loginIn), SPConstants.UTF_8);
 					FileOutputStream out = new FileOutputStream(loginFile);
 					out.write(loginConfig.getBytes(SPConstants.UTF_8));
 					out.close();

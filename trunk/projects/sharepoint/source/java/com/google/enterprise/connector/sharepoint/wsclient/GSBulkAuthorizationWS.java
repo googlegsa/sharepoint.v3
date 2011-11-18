@@ -91,7 +91,7 @@ public class GSBulkAuthorizationWS {
    * To call the Authorize() Web Method of GSBulkAuthorization Web Service
    *
    * @param authDataPacketArray Contains the list of documents to be authorized
-   * @param loginId The username to be authorized
+   * @param userId The username to be authorized
    * @return the updated {@link AuthDataPacket} object reflecting the
    *         authorization status for each document
    * @throws RemoteException

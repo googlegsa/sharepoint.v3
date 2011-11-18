@@ -147,10 +147,10 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport implements
   /**
    * Executes a single update query. Used after the fall back from batch mode
    *
+   * @param query query to be executed specified as {@link Query}
    * @param param {@link SqlParameterSource} query parameter to construct the
    *          SQL query
-   * @param query query to be executed specified as {@link Query}
-   * @return status of the query execution (=no. of rows updated)
+     * @return status of the query execution (=no. of rows updated)
    * @throws SharepointException
    */
   public int update(Query query, SqlParameterSource param)

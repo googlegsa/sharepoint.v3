@@ -177,10 +177,10 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   }
 
   /**
-   * removes all the membership info of a list of users belonging from a
-   * specified namespace, from the user data store
+   * Removes all the membership info of a list of users belonging from a
+   * specified namespace, from the user data store.
    *
-   * @param users list of userIds whose memberships are to be remove
+   * @param userIds list of userIds whose memberships are to be removed
    * @param namespace the namespace to which all the users belong
    * @throws SharepointException
    */
@@ -208,13 +208,11 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   }
 
   /**
-   * removes all the membership info of a list of groups belonging from a
-   * specified namespace, from the user data store
+   * Removes all the membership info of a list of groups belonging from a
+   * specified namespace, from the user data store.
    *
-   * @param groups list of groupIds whose memberships are to be remove
+   * @param groupIds list of groupIds whose memberships are to be removed
    * @param namespace the namespace to which all the groups belong
-   * @return status of each membership's deletion from store in the same order
-   *         in which queries were specified
    * @throws SharepointException
    */
   public void removeGroupMembershipsFromNamespace(Set<Integer> groupIds,
@@ -245,8 +243,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * from the user data store
    *
    * @param namespaces list of namespaces whose membeships are to be removed
-   * @return status of each membership's deletion from store in the same order
-   *         in which queries were specified
    * @throws SharepointException
    */
   public void removeAllMembershipsFromNamespace(Set<String> namespaces)
@@ -276,10 +272,10 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * Synchronizes the membership information of all groups identified by the
    * keyset of the passed in map. The groups are picked up as group-namespace
    * view. The synchronization involves deleting all the persisted memberships
-   * and adding the most latest ones </p> This synchronization is performed as
-   * one atomic operation using transaction
+   * and adding the most latest ones. </p> This synchronization is performed as
+   * one atomic operation using transaction.
    *
-   * @param groupToMemberships identifies groups and their corresponding most
+   * @param groupMembershipMap identifies groups and their corresponding most
    *          latest membership information
    * @param namespace
    * @throws SharepointException
@@ -365,7 +361,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * Removes all those elements from the passed-in collection that are found in
    * cache
    *
-   * @param elems
+   * @param memberships
    */
   private void removeAllCached(Collection<UserGroupMembership> memberships) {
     Iterator<UserGroupMembership> itr = memberships.iterator();
@@ -547,5 +543,4 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   public int getUdsCacheSize() {
     return this.udsCache.size();
   }
-
 }

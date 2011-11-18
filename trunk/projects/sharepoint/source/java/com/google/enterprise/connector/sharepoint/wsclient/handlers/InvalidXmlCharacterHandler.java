@@ -275,6 +275,7 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
    * @param msgContext
    * @return true if all preconditions are satisfied; false otherwise
    */
+  @SuppressWarnings("unchecked")
   static boolean checkPreconditions(MessageContext msgContext) {
     if (null == msgContext || null == msgContext.getResponseMessage()
         || null == msgContext.getRequestMessage()) {

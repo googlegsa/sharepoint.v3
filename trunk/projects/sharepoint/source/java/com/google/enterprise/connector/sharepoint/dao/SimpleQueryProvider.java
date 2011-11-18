@@ -64,8 +64,6 @@ public class SimpleQueryProvider implements QueryProvider {
    * queries themselves.
    *
    * @see {@code Query#getParameterPlaceholders()}
-   * @param connectorName Connector that will be using this QueryProvider. This
-   *          is appended to all entity/attribute names
    * @param vendor specifies the vendor for which the queries will be provided
    * @param attr specifies additional attributes that should be considered along
    *          with vendor name while loading the queries. At max three
@@ -159,5 +157,4 @@ public class SimpleQueryProvider implements QueryProvider {
   public void setUdsIndexName(String udsIndexName) {
     this.udsIndexName = udsIndexName;
   }
-
 }
