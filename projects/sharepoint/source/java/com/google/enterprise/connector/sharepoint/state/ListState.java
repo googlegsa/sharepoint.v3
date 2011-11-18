@@ -157,12 +157,13 @@ public class ListState implements StatefulObject {
   private List<Folder> changedFolders = new LinkedList<Folder>();
 
   /**
-   * @param inInternalName
+   * @param inPrimaryKey
    * @param inTitle
    * @param inType
    * @param inLastMod
    * @param inBaseTemplate
    * @param inUrl
+   * @param inParentWeb
    * @throws SharepointException
    */
   public ListState(final String inPrimaryKey, final String inTitle,
@@ -521,7 +522,7 @@ public class ListState implements StatefulObject {
     if ((crawlQueue != null) && (crawlQueue.size() > 0)) {
       LOGGER.config("Crawl queue for " + getListURL());
       for (int iDoc = 0; iDoc < crawlQueue.size(); ++iDoc) {
-        final SPDocument doc = (SPDocument) crawlQueue.get(iDoc);
+        final SPDocument doc = crawlQueue.get(iDoc);
         LOGGER.config(doc.getLastMod().getTime() + ", " + doc.getUrl());
         doc.dumpAllAttrs();
       }
@@ -1162,7 +1163,7 @@ public class ListState implements StatefulObject {
   }
 
   /**
-   * @param lastDocProcessedForWS the lastDocProcessedForWS to set
+   * @param lastDocProcessed the lastDocProcessed to set
    */
   public void setLastDocProcessed(SPDocument lastDocProcessed) {
     this.lastDocProcessed = lastDocProcessed;
@@ -1208,7 +1209,6 @@ public class ListState implements StatefulObject {
         }
         if (!isNextChangeTokenBlank()) {
           atts.addAttribute("", "", SPConstants.STATE_CACHED_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getNextChangeTokenForSubsequectWSCalls());
-
         }
 
         if (FeedType.CONTENT_FEED == feedType) {
@@ -1335,7 +1335,6 @@ public class ListState implements StatefulObject {
 
       handler.endElement("", "", SPConstants.STATE_RENAMED_FOLDER_LIST);
     }
-
   }
 
   /**

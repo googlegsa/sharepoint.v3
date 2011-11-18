@@ -534,14 +534,13 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
     tempUrl += "AllItems.aspx";
     // tempUrl.substring(tempUrl.indexOf("[", 2) + 1);
     return tempUrl;
-
   }
 
   /**
-   * Construct the AuthorizationResponse for each AuthData after authorization
+   * Constructs the AuthorizationResponse for each AuthData after authorization.
    *
-   * @param authDocs List of all the authorized documents as returned by the Web
-   *          Service.
+   * @param authDataPacketArray List of all the authorized documents
+   *          as returned by the Web Service.
    * @return The AuthorizationResponse to be sent to CM
    */
   private List<AuthorizationResponse> getAuthResponse(
@@ -632,7 +631,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
   /**
    * Checks if this document was processed successfully
    *
-   * @param authDataPacket
+   * @param authData
    * @return true if this document has been authorized and the status can be
    *         sent back to GSA
    */

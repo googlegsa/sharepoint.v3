@@ -6,8 +6,12 @@
   <property name="version" value="${BUILD_VERSION}" />
   <property name="product" value="Google Search Appliance Connector for Microsoft SharePoint 2003,2007, 2010" />
   <property name="projects.dir" value=".." />
+
   <property name="COMPILE_DEBUG_FLAG" value="true" />
   <property name="COMPILE_DEBUG_LEVEL" value="source,lines,vars" />
+  <property name="COMPILE_TARGET" value="1.5" />
+  <property name="COMPILE_BOOTCLASSPATH" value="${build.bootclasspath}" />
+
   <property name="build" value="build" />
   <property name="javadoc" value="javadoc" />
   <property name="dist" value="dist" />
@@ -26,7 +30,6 @@
   <property name="jarfile" value="${jar.dir}/connector-sharepoint.jar" />
   <property name="connector-manager.dir" value="${CONNECTOR_MANAGER_DIR}" />
   <property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
-  <property name="connector.jarfile" value="${connector-manager.dir}/${jar.dir}/connector.jar" />
   <property name="lib.jar.dir" value="lib" />
   <property name="lib.dev.jar.dir" value="${lib.jar.dir}/dev" />
   <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
@@ -57,6 +60,7 @@
     <os family="windows" />
   </condition>
   <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${lib.jar.dir}/dev/ant-contrib-1.0b3.jar"/>
+
   <!--Cobertura properties -->
   <property file="${config}/build_code_coverage.properties" />
   <path id="cobertura.classpath">
@@ -64,6 +68,7 @@
       <include name="**/*.jar" />
     </fileset>
   </path>
+
   <!-- =========================== TASKS =============================== -->
   <target name="sharepoint-connector" depends="clean,init, compile, jar,
     download-sharepoint-connector">
@@ -172,32 +177,56 @@
       </classpath>
     </java>
   </target>
-  <target name="compile" depends="init, stubs">
-    <!-- compile java source files -->
-    <copydir dest="${classes.dir}/com/google/enterprise/connector/sharepoint/sql/" src="${sql.properties}">
-    </copydir>
-    <javac srcdir="${src}" destdir="${classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" source="1.5" target="1.5" includeantruntime="true">
 
+  <target name="compile_stubs" depends="init, stubs">
+    <javac srcdir="${src}" destdir="${classes}" 
+           includeantruntime="false"
+           debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" 
+           target="${COMPILE_TARGET}" source="${COMPILE_TARGET}">
+      <!-- Do not bother using -Xlint on the stubs. -->
+      <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
+      <classpath>
+        <fileset dir="${lib.jar.dir}">
+          <include name="**/*.jar" />
+        </fileset>
+      </classpath>
+      <include name="**/generated/**" />
+    </javac>
+  </target>
+
+  <target name="compile" depends="compile_stubs">
+    <!-- compile java source files -->
+    <copy todir="${classes.dir}/com/google/enterprise/connector/sharepoint/sql">
+      <fileset dir="${sql.properties}"/>
+    </copy>
+    <javac srcdir="${src}" destdir="${classes}" 
+           includeantruntime="false"
+           debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" 
+           target="${COMPILE_TARGET}" source="${COMPILE_TARGET}">
+      <!-- Axis JAR Class-Path references are not available. -->
+      <compilerarg line="-Xlint -Xlint:-serial -Xlint:-path"/>
+      <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
       <classpath>
         <pathelement location="${spi.jarfile}" />
-        <pathelement location="${connector.jarfile}" />
-        <pathelement location="${lib.jar.dir}" />
         <pathelement location="${config}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
-        <fileset dir="${connector-manager.dir}/${jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
       </classpath>
+      <exclude name="**/generated/**" />
     </javac>
   </target>
 
   <target name="compile_tests" depends="init, compile">
     <!-- compile java source files for tests -->
-
-    <javac srcdir="${tests.src}" destdir="${tests.classes}" debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" source="1.5" target="1.5">
+    <javac srcdir="${tests.src}" destdir="${tests.classes}" 
+           includeantruntime="false"
+           debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" 
+           target="${COMPILE_TARGET}" source="${COMPILE_TARGET}">
+      <!-- Axis JAR Class-Path references are not available. -->
+      <compilerarg line="-Xlint -Xlint:-serial -Xlint:-path"/>
+      <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
       <classpath>
         <pathelement location="${spi.jar.dir}/connector.jar" />
         <pathelement location="${tests.jarfile}" />
@@ -208,9 +237,6 @@
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
-        <fileset dir="${connector-manager.dir}/${jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
       </classpath>
     </javac>
 
@@ -218,7 +244,8 @@
 
   <target name="run_tests" depends="compile_tests,instrument">
     <property name="test.suite" value="*" />
-    <junit haltonfailure="no" printsummary="yes">
+    <junit printsummary="yes" haltonfailure="no"
+           failureproperty="${ant.project.name}.failure">
       <!-- The instrumented classes reference classes used by the Cobertura runtime, so
             Cobertura and its dependencies must be on your classpath. -->
       <classpath location="${instrumented.dir}" />
@@ -228,7 +255,6 @@
         <pathelement location="${spi.jar.dir}/connector.jar" />
         <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
-        <pathelement location="${spi.jar.dir}/connector-util.jar" />
         <pathelement location="${jarfile}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <pathelement location="${cm-third-paty_jcr.jar}/jcr-1.0.jar" />
@@ -243,10 +269,9 @@
         <pathelement path="${java.class.path}" />
       </classpath>
       <formatter type="xml" />
-      <test name="${testcase}" todir="${reports.xml.dir}" if="testcase" />
       <batchtest fork="yes" todir="${reports.xml.dir}">
         <fileset dir="${tests.src}">
-          <include name="**/*Test.java" />
+          <include name="**/${test.suite}Test.java" />
         </fileset>
       </batchtest>
     </junit>
@@ -256,6 +281,7 @@
       </fileset>
       <report format="frames" todir="${reports.html.dir}" />
     </junitreport>
+    <fail if="${ant.project.name}.failure" message="Test failure"/>
   </target>
 
   <target name="jar" depends="compile" description="sharepoint-connector">
@@ -392,22 +418,8 @@
   </target>
 
 
-  <target name="compile_code_coverage" depends="init_code_coverage">
-    <javac srcdir="${src.dir}" destdir="${classes.dir}" debug="true">
-      <classpath>
-        <fileset dir="${spi.jar.dir}" includes="**/*.jar" />
-        <fileset dir="${lib.jar.dir}" includes="**/*.jar" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
-      </classpath>
-    </javac>
-    <javac srcdir="${test.dir}" destdir="${classes.dir}" debug="true">
-      <classpath>
-        <fileset dir="${spi.jar.dir}" includes="**/*.jar" />
-        <fileset dir="${lib.jar.dir}" includes="**/*.jar" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
-      </classpath>
-    </javac>
-  </target>
+  <target name="compile_code_coverage" 
+          depends="init_code_coverage,compile_stubs,compile,compile_tests" />
 
   <target name="instrument" depends="compile_code_coverage">
     <cobertura-instrument todir="${instrumented.dir}">

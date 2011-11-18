@@ -88,7 +88,6 @@ public class SharepointConnector implements Connector,
   private boolean feedUnPublishedDocuments;
 
   public SharepointConnector() {
-
   }
 
   /**
@@ -662,7 +661,7 @@ public class SharepointConnector implements Connector,
   }
 
   /**
-   * @param ldapConnectiionSettings the ldapConnectiionSettings to set.
+   * @param ldapConnectionSettings the ldapConnectiionSettings to set.
    */
   public void setLdapConnectiionSettings(
       LdapConnectionSettings ldapConnectionSettings) {
@@ -676,5 +675,4 @@ public class SharepointConnector implements Connector,
   public void setFeedUnPublishedDocuments(boolean feedUnPublishedDocuments) {
     this.feedUnPublishedDocuments = feedUnPublishedDocuments;
   }
-
 }

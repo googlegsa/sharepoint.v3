@@ -431,7 +431,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       if (docURL1st != null) {
         comparison = docURL1st.compareTo(docURL2nd);
       }
-
     }
     return comparison;
   }
@@ -547,7 +546,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     // class. All the attribute will be there in a common map.
     else {
       for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
-        final Attribute attr = (Attribute) iter.next();
+        final Attribute attr = iter.next();
         if (collator.equals(strPropertyName, attr.getName())) {
           return new SPProperty(strPropertyName, new StringValue(
               attr.getValue().toString()));
@@ -589,7 +588,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     // get the "extra" metadata fields, including those added by user:
     for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
-      final Attribute attr = (Attribute) iter.next();
+      final Attribute attr = iter.next();
       s.add(attr.getName().toString());
     }
     LOGGER.log(Level.FINEST, "Document properties set: " + s + " for docID [ "
@@ -697,7 +696,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
           }
         }
       }
-
     }
 
     if (responseCode == 200) {
@@ -736,7 +734,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   }
 
   /**
-   * @param folderLevel the folderLevel to set
+   * @param folder the parent folder to set
    */
   public void setParentFolder(final Folder folder) {
     this.parentFolder = folder;

@@ -83,7 +83,6 @@ public class UserGroupsService implements LdapService {
 	 * interval and custom capacity.
 	 * 
 	 * @param ldapConnectionSettings
-	 * @param domain
 	 */
 	public UserGroupsService(LdapConnectionSettings ldapConnectionSettings,
 			int cacheSize, long refreshInterval, boolean enableLUGCache) {
@@ -260,7 +259,7 @@ public class UserGroupsService implements LdapService {
 		 * Note that we specifically require a {@link HashTable} rather than a
 		 * HashMap as the parameter type in the InitialLDAPContext constructor
 		 * 
-		 * @return initialized {@link HashTable} suitable for constructing an
+		 * @return initialized {@link Hashtable} suitable for constructing an
 		 *         InitiaLdaplContext
 		 */
 		private Hashtable<String, String> configureLdapEnvironment() {
@@ -401,7 +400,7 @@ public class UserGroupsService implements LdapService {
 			ldapResults = this.context.search(searchBase, searchFilter, searchCtls);
 			// Loop through the search results
 			while (ldapResults.hasMoreElements()) {
-				SearchResult sr = (SearchResult) ldapResults.next();
+				SearchResult sr = ldapResults.next();
 				Attributes attrs = sr.getAttributes();
 				if (attrs != null) {
 					try {
@@ -491,7 +490,7 @@ public class UserGroupsService implements LdapService {
 		try {
 			ldapResults = this.context.search(searchBase, searchFilter, searchCtls);
 			while (ldapResults.hasMoreElements()) {
-				SearchResult sr = (SearchResult) ldapResults.next();
+				SearchResult sr = ldapResults.next();
 				Attributes attrs = sr.getAttributes();
 				if (attrs != null) {
 					try {
@@ -725,7 +724,7 @@ public class UserGroupsService implements LdapService {
 	 * format specified by the connector administrator during connector
 	 * configuration.
 	 * 
-	 * @param username
+	 * @param userName
 	 */
 	String addUserNameFormatForTheSearchUser(final String userName) {
 		String format = this.sharepointClientContext.getUsernameFormatInAce();

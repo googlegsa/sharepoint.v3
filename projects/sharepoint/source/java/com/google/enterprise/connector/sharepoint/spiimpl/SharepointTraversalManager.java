@@ -282,7 +282,7 @@ public class SharepointTraversalManager implements TraversalManager,
     LOGGER.log(Level.INFO, "Checking crawl queues of all ListStates/WebStates for pending docs.");
     for (final Iterator<WebState> iter = globalState.getCircularIterator(); iter.hasNext()
         && (sizeSoFar < hint);) {
-      final WebState webState = (WebState) iter.next();
+      final WebState webState = iter.next();
       globalState.setCurrentWeb(webState);
       SPDocumentList rs = null;
       try {

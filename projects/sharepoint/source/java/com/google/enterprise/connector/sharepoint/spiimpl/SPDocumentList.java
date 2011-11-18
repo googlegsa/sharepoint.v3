@@ -127,7 +127,7 @@ public class SPDocumentList implements DocumentList {
             + documents.size() + " ] discontinuing loop");
         return null;
       }
-      spDocument = (SPDocument) documents.get(docsFedIndexPosition);
+      spDocument = documents.get(docsFedIndexPosition);
       // this will save the state of the last document returned
       if (spDocument == null) {
         LOGGER.log(Level.SEVERE, "No document found! ");
@@ -148,7 +148,6 @@ public class SPDocumentList implements DocumentList {
         LOGGER.log(Level.WARNING, message);
         throw new SkippedDocumentException("Document skipped. " + message);
       }
-
     } while (!spDocument.isToBeFed());
 
     // for deleted documents, no need to use alias mapping. Only DocID
@@ -165,7 +164,6 @@ public class SPDocumentList implements DocumentList {
       reWriteUrlsUsingAliasMappingRules(spDocument);
       LOGGER.log(Level.INFO, "Sending DocID [ " + spDocument.getDocId()
           + " ], docURL [ " + spDocument.getUrl() + " ] to CM for ADD.");
-
     }
 
     return spDocument;
@@ -233,7 +231,6 @@ public class SPDocumentList implements DocumentList {
     } else {
       return documents.size();
     }
-
   }
 
   /**
