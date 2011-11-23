@@ -50,7 +50,7 @@ The default value is set to false.
 Note: The FQDN resolution will happen using the Connector system's name resolution. Hosts not accessible from the connector machine will not be resolved.
 
 ==== How to feed ACL to GSA using SharePoint connector? (Version 2.6.0 onwards) ====
-following two properties in connectorInstance.xml will dictate the way ACLs will be fed to GSA.
+following two properties in connectorInstance.xml will dictate the way ACLs will be fed to GSA. From the connector version 2.8.0 onwards, the below properties were moved to connector configuration page.
 
 {{{ 
 <property name="pushAcls"><value>false</value></property> 
@@ -67,9 +67,31 @@ In connector version 2.8 and above, this option is exposed on the configuration 
 {{{
 <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property>
 }}}
-          Applicable for both Metadata-and-URL and content feed. If set to true, the document display URL (shown to the search users) will be re-written using alias mapping rule specified on connector configuration page.
+Applicable for both Metadata-and-URL and content feed. If set to true, the document display URL (shown to the search users) will be re-written using alias mapping rule specified on connector configuration page.
 
 {{{
 <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property>
 }}}
-  Applicable only for Metadata-and-URL feed. If set to true, the document record URL will also be re-written using alias mapping rule specified on connector configuration page.
+Applicable only for Metadata-and-URL feed. If set to true, the document record URL will also be re-written using alias mapping rule specified on connector configuration page.
+
+====The following two properties define if the ACLs for documents need to be fetched in batches and what should be the factor to determine an appropriate batch size in case out of memory exception in the connector logs====
+True indicates ACL for documents will be retrieved in batches.The batchSize will be less than the batchHint. This is typically required when the ACL per document is large, implying fetching ACL for
+batchHint number of documents will result in a large WS response and
+result in OutOfMemoryError
+
+{{{
+    <property name="fetchACLInBatches"> <value>true</value> </property>
+}}}
+
+The batchSizeFactor is used to arrive at an appropriate batch size
+value. The formula used is: n/batchSizeFactor where 'n' is the number of documents discovered in each batch traversal. Value should be > 0
+  
+{{{
+  <property name="aclBatchSizeFactor"> <value>2</value> </property>
+}}}
+
+  Web service time out value. Value should be mentioned in milliseconds
+Value should be greater than 1000 milliseconds.By default set to 5 minutes.
+{{{
+  <property name="webServiceTimeOut"><value>300000</value></property>
+}}}
