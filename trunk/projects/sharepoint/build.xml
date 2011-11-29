@@ -69,10 +69,18 @@
     </fileset>
   </path>
 
+  <path id="axis.classpath">
+    <fileset dir="lib">
+      <include name="*.jar" />
+      <include name="dev/*.jar" />
+    </fileset>
+  </path>
+
   <!-- =========================== TASKS =============================== -->
   <target name="sharepoint-connector" depends="clean,init, compile, jar,
     download-sharepoint-connector">
   </target>
+
   <target name="init" >
     <mkdir dir="${build}" />
     <mkdir dir="${dist}" />
@@ -86,96 +94,67 @@
     <mkdir dir="${downloads.dir}" />
     <mkdir dir="${javadoc}" />
   </target>
+
+  <!-- TODO: The following Ant task produces slightly different stubs
+       from the command line tool. Should we figure that out?
+    <taskdef resource="axis-tasks.properties"
+             classpathref="axis.classpath" />
+    <axis-wsdl2java output="${src}" url="${wsdl}/SiteData.wsdl">
+     <mapping
+         namespace="http://schemas.microsoft.com/sharepoint/soap/"
+         package="${generated.package}.sitedata" />
+    </axis-wsdl2java>
+  -->
+
+  <macrodef name="wsdl2java"
+            description="Generates WSDL stubs with simple dependency checking.">
+    <attribute name="url" />
+    <attribute name="package" />
+    <attribute name="generates" default="must-not-exist" />
+    <sequential>
+      <if>
+        <not><uptodate srcfile="@{url}" targetfile="@{generates}"/></not>
+        <then>
+          <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
+            <arg line="@{url} -p @{package} -o ${src}"/>
+            <classpath refid="axis.classpath"/>
+          </java>
+        </then>
+      </if>
+    </sequential>
+  </macrodef>
+
   <target name="stubs" depends="init">
-    <!-- for SiteData.wsdl -->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/SiteData.wsdl -p com.google.enterprise.connector.sharepoint.generated.sitedata -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
+    <property name="generated.package" 
+              value="com.google.enterprise.connector.sharepoint.generated"/>
 
-    <!--for GSBulkAuthorization.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/GSBulkAuthorization.wsdl -p com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
-
-    <!--for Lists.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/Lists.wsdl -p com.google.enterprise.connector.sharepoint.generated.lists -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
-
-    <!--for Webs.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/Webs.wsdl -p com.google.enterprise.connector.sharepoint.generated.webs -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
-
-    <!--for GSSiteDiscovery.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/GSSiteDiscovery.wsdl -p com.google.enterprise.connector.sharepoint.generated.gssitediscovery -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
-
-    <!--for UserProfileService.wsdl (SP2007)-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.userprofileservice -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
-
-    <!--for UserProfileService.wsdl (SP2003)-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/sp2003/UserProfileService.wsdl -p com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
-
-    <!--for Alerts.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/Alerts.wsdl -p com.google.enterprise.connector.sharepoint.generated.alerts -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
-
-    <!--for GssAcl.wsdl-->
-    <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
-      <arg line="${wsdl}/GssAcl.wsdl -p com.google.enterprise.connector.sharepoint.generated.gssacl -o ${src}"/>
-      <classpath>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
-      </classpath>
-    </java>
+    <wsdl2java url="${wsdl}/SiteData.wsdl"
+               package="${generated.package}.sitedata"
+               generates="${src_generated}/sitedata/SiteData.java"/>
+    <wsdl2java url="${wsdl}/GSBulkAuthorization.wsdl"
+               package="${generated.package}.gsbulkauthorization"
+               generates="${src_generated}/gsbulkauthorization/BulkAuthorization.java"/>
+    <wsdl2java url="${wsdl}/Lists.wsdl"
+               package="${generated.package}.lists"
+               generates="${src_generated}/lists/Lists.java"/>
+    <wsdl2java url="${wsdl}/Webs.wsdl"
+               package="${generated.package}.webs"
+               generates="${src_generated}/webs/Webs.java"/>
+    <wsdl2java url="${wsdl}/GSSiteDiscovery.wsdl"
+               package="${generated.package}.gssitediscovery"
+               generates="${src_generated}/gssitediscovery/SiteDiscovery.java"/>
+    <wsdl2java url="${wsdl}/UserProfileService.wsdl"
+               package="${generated.package}.userprofileservice"
+               generates="${src_generated}/userprofileservice/UserProfileService.java"/>
+    <wsdl2java url="${wsdl}/sp2003/UserProfileService.wsdl"
+               package="${generated.package}.sp2003.userprofileservice"
+               generates="${src_generated}/sp2003/userprofileservice/UserProfileService.java"/>
+    <wsdl2java url="${wsdl}/Alerts.wsdl"
+               package="${generated.package}.alerts"
+               generates="${src_generated}/alerts/Alerts.java"/>
+    <wsdl2java url="${wsdl}/GssAcl.wsdl"
+               package="${generated.package}.gssacl"
+               generates="${src_generated}/gssacl/GssAcl.java"/>
   </target>
 
   <target name="compile_stubs" depends="init, stubs">
@@ -368,9 +347,11 @@
     <if>
       <equals arg1="${exists}" arg2="true" />
       <then>
-        <delete dir="${build}" />
+        <delete dir="${javadoc}" />
       </then>
     </if>
+
+    <delete dir="${src_generated}"/>
   </target>
 
   <target name="javadoc" depends="compile" description="Create component Javadoc documentation">
