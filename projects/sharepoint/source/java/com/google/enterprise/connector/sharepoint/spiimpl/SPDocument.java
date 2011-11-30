@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Class to hold data regarding a sharepoint document. Anything that is sent ot
@@ -564,36 +565,61 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    * the feed for this document.
    */
   public Set<String> getPropertyNames() throws RepositoryException {
-    final Set<String> s = new HashSet<String>();
-    s.add(SPConstants.OBJECT_TYPE);
-    s.add(SPConstants.LIST_GUID);
-    s.add(SPConstants.SPAUTHOR);
-    s.add(SPConstants.PARENT_WEB_TITLE);
+    final Set<String> names = new HashSet<String>();
+    ArrayList<String> candidates = new ArrayList<String>();
+    candidates.add(SPConstants.OBJECT_TYPE);
+    candidates.add(SPConstants.LIST_GUID);
+    candidates.add(SPConstants.SPAUTHOR);
+    candidates.add(SPConstants.PARENT_WEB_TITLE);
+
     if (null != usersAclMap) {
-      s.add(SpiConstants.PROPNAME_ACLUSERS);
+      names.add(SpiConstants.PROPNAME_ACLUSERS);
       for (Entry<String, Set<RoleType>> ace : usersAclMap.entrySet()) {
-        s.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX + ace.getKey());
+        names.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX + ace.getKey());
       }
     }
     if (null != groupsAclMap) {
-      s.add(SpiConstants.PROPNAME_ACLGROUPS);
+      names.add(SpiConstants.PROPNAME_ACLGROUPS);
       for (Entry<String, Set<RoleType>> ace : groupsAclMap.entrySet()) {
-        s.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
+        names.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
       }
     }
-
-    if (null != title) {
-      s.add(SpiConstants.PROPNAME_TITLE);
-    }
-
-    // get the "extra" metadata fields, including those added by user:
+    // Add "extra" metadata fields, including those added by user to the
+    // documentMetadata List for matching against patterns
     for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
       final Attribute attr = iter.next();
-      s.add(attr.getName().toString());
+      candidates.add(attr.getName().toString());
     }
-    LOGGER.log(Level.FINEST, "Document properties set: " + s + " for docID [ "
-        + docId + " ], docURL [ " + url + " ]. ");
-    return s;
+    if (null != title) {
+      names.add(SpiConstants.PROPNAME_TITLE);
+    }
+    ArrayList<Pattern> excludedMetadataPatterns = sharepointClientContext.getExcluded_metadata();
+    // Add only those metadata attributes which do not come under excluded
+    // patterns
+    if (sharepointClientContext.getExcluded_metadata().size() != 0) {
+      for (String metadataName : candidates) {
+        if (!matches(metadataName, excludedMetadataPatterns)) {
+          names.add(metadataName);
+        }
+      }
+    } else {
+      names.addAll(candidates);
+    }
+    LOGGER.log(Level.FINEST, "Document properties set: " + names
+        + " for docID [ " + docId + " ], docURL [ " + url + " ]. ");
+    return names;
+  }
+
+  public boolean matches(String metadataName,
+      List<Pattern> excludedMetadataPatterns) {
+    boolean flag = false;
+    for (Pattern pattern : excludedMetadataPatterns) {
+      if (metadataName.matches(pattern.pattern())) {
+        flag = true;
+        break;
+      }
+    }
+    return flag;
   }
 
   /**
