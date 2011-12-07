@@ -1289,6 +1289,12 @@ public class ListsWS {
             + itemId
             + "] has been renamed. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
             + list.getListURL() + " ] ");
+      } else if (SPConstants.SYSTEM_UPDATE.equalsIgnoreCase(changeType)) {
+        renamedIDs.add(itemId);
+        LOGGER.log(Level.INFO, "ItemID ["
+            + itemId
+            + "] has been moved with change type as SystemUpdate. Hence ADD feeds will be sent for this and all the dependednt IDs. listURL ["
+            + list.getListURL() + " ] ");
       }
     }
 
