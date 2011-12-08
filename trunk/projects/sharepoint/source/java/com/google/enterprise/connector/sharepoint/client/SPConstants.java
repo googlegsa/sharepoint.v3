@@ -539,6 +539,9 @@ public class SPConstants {
   public static final String META_URL_FEED_DOC_TOKEN = "?";
   public static final String ATTACHMENTS = "Attachments";
   public static final CharSequence ALERTS_EQUALTO = "Alert=";
+  public static final String CONNECTOR_NAME_COLUMN = "connectorname";
+  public static final String CONNECTOR_NAME_COLUMN_CAPITAL = "CONNECTORNAME";
+  public static final String SYSTEM_UPDATE = "SystemUpdate";
 
   public static class SPBasePermissions {
     public static final String EMPTYMASK = "EmptyMask";

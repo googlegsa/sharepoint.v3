@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -1379,5 +1380,23 @@ public final class Util {
   public static String getGroupNameAtDomain(String groupName,
       final String domain) {
     return getUserNameAtDomain(groupName, domain);
+  }
+
+  /**
+   * Finds the connector name from googleconnectorURL by tokenizing the URL and
+   * getting the leaf directory name.
+   *
+   * @param googleConnectorWorkDir.
+   * @return connector name.
+   */
+  public static String getConnectorNameFromDirectoryUrl(
+      String googleConnectorWorkDir) {
+    String directory = null;
+    StringTokenizer tokenizer = new StringTokenizer(googleConnectorWorkDir,
+        File.separator);
+    while (tokenizer.hasMoreTokens()) {
+      directory = tokenizer.nextToken();
+    }
+    return directory;
   }
 }

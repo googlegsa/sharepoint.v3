@@ -92,6 +92,7 @@
       <constructor-arg value="com.google.enterprise.connector.sharepoint.sql.sqlQueries" />
       <property name="udsTableName" value="User_Group_Memberships" />
       <property name="udsIndexName" value="IDX_SPUserID" />
+      <property name="cnTableName" value="Connector_Names" />
     </bean>
 
     <bean id="userGroupMembershipRowMapper" class="com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper">
