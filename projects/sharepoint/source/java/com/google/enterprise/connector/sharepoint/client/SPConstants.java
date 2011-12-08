@@ -156,11 +156,17 @@ public class SPConstants {
   public static final String QUERY = "Query";
   public static final String ORDERBY = "OrderBy";
   public static final String DISPFORM = "DispForm.aspx?ID=";
+  public static final String VIEWCATEGORY = "ViewCategory.aspx?ID=";
+  public static final String VIEWPOST = "ViewPost.aspx?ID=";
+  public static final String VIEWCOMMENT = "ViewComment.aspx?ID=";
   public static final String ID = "ows_ID";
   public static final String DISCUSSIONLASTUPDATED = "ows_DiscussionLastUpdated";
   public static final String DOCUMENT = "Document";
   public static final String URL = "ows_URL";
   public static final String BT_DISCUSSIONBOARD = "DiscussionBoard";
+  public static final String BT_CATEGORIES = "Categories";
+  public static final String BT_POSTS = "Posts";
+  public static final String BT_COMMENTS = "Comments";
   public static final String CONTENT_TYPE_HEADER = "Content-Type";
   public static final SimpleDateFormat ISO8601_DATE_FORMAT_SECS = new SimpleDateFormat(
       "yyyy-MM-dd'T'HH:mm:ss'Z'");
