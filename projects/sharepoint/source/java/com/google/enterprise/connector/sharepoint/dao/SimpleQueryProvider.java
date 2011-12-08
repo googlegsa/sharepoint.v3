@@ -42,6 +42,9 @@ public class SimpleQueryProvider implements QueryProvider {
   private String udsTableName;
   private String udsIndexName;
 
+  // for connector names table
+  private String cnTableName;
+
   // Queries that can be served
   private Map<Query, String> sqlQueryMap = new HashMap<Query, String>();
 
@@ -128,6 +131,15 @@ public class SimpleQueryProvider implements QueryProvider {
       break;
     case UDS_SELECT_FOR_ADGROUPS:
       placeholders.add(0, udsTableName);
+      break;
+
+    case CN_CREATE_TABLE:
+    case CN_INSERT:
+    case CN_SELECT:
+    case CN_DELETE:
+    case CN_DROP_TABLE:
+      placeholders.add(0, cnTableName);
+      break;
     }
     sqlQuery = MessageFormat.format(sqlQueries.getString(query.name()), placeholders.toArray());
     sqlQueryMap.put(query, sqlQuery);
@@ -157,4 +169,13 @@ public class SimpleQueryProvider implements QueryProvider {
   public void setUdsIndexName(String udsIndexName) {
     this.udsIndexName = udsIndexName;
   }
+
+  public String getCnTableName() {
+    return cnTableName;
+  }
+
+  public void setCnTableName(String cnTableName) {
+    this.cnTableName = cnTableName;
+  }
+
 }
