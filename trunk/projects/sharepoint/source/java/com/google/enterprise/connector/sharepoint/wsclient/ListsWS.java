@@ -732,9 +732,7 @@ public class ListsWS {
                 if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                   if (!list.updateExtraIDs(relativeURL, docId, true)) {
                     LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
-                        + relativeURL
-                        + " ], listURL [ "
-                        + list.getListURL()
+                        + relativeURL + " ], listURL [ " + list.getListURL()
                         + " ]. Perhaps a folder or list was renamed.");
                   }
                 }
@@ -771,8 +769,8 @@ public class ListsWS {
    * folder is restored and we need to discover items level by level.
    *
    * @param list : Base List
-   * @param lastItemIDAtFolderLevel : Last Item ID that we have
-   *          already identified at this level.
+   * @param lastItemIDAtFolderLevel : Last Item ID that we have already
+   *          identified at this level.
    * @param folder : The folder from where to discover the items.
    * @return list of documents as {@link SPDocument}
    */
@@ -1392,17 +1390,13 @@ public class ListsWS {
                   // info.
                   // Because, the folder might have been renamed.
                   LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
-                      + relativeURL
-                      + " ], listURL [ "
-                      + list.getListURL()
+                      + relativeURL + " ], listURL [ " + list.getListURL()
                       + " ]. Retrying after updating the folders info.. ");
                   getSubFoldersRecursively(list, null, null);
-                  
+
                   if (!list.updateExtraIDs(relativeURL, docId, true)) {
                     LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
-                        + relativeURL
-                        + " ], listURL [ "
-                        + list.getListURL()
+                        + relativeURL + " ], listURL [ " + list.getListURL()
                         + " ]. Perhaps a folder or list was renamed.");
                   }
                 }
@@ -1655,7 +1649,23 @@ public class ListsWS {
       url.setLength(0);
       url.append(urlPrefix);
       url.append(SPConstants.SLASH);
-      url.append(list.getListConst() + SPConstants.DISPFORM);
+      // Below checks are required to form appropriate URLs in-Case of blog site
+      // Object types
+      if (list.getBaseTemplate().equals(SPConstants.BT_CATEGORIES)) {
+        // Categories items of blog site the URL should be like:
+        // http://serverName.serverDomain:portNumber/blogsiteName/Lists/Categories/ViewCategory.aspx?ID=1
+        url.append(list.getListConst() + SPConstants.VIEWCATEGORY);
+      } else if (list.getBaseTemplate().equals(SPConstants.BT_POSTS)) {
+        // Posts items of blog site the URL should be like:
+        // http://serverName.serverDomain:portNumber/blogsiteName/Lists/Posts/ViewPost.aspx?ID=1
+        url.append(list.getListConst() + SPConstants.VIEWPOST);
+      } else if (list.getBaseTemplate().equals(SPConstants.BT_COMMENTS)) {
+        // Comments items of blog site the URL should be like:
+        // http://serverName.serverDomain:portNumber/blogsiteName/Lists/Comments/ViewComment.aspx?ID=1
+        url.append(list.getListConst() + SPConstants.VIEWCOMMENT);
+      } else {
+        url.append(list.getListConst() + SPConstants.DISPFORM);
+      }
       url.append(docId);
       displayUrl = url.toString();
       if (list.isInfoPathLibrary()) {

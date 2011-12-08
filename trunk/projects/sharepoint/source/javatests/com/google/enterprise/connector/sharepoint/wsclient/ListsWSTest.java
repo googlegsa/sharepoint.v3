@@ -16,9 +16,10 @@ package com.google.enterprise.connector.sharepoint.wsclient;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -36,7 +37,7 @@ import junit.framework.TestCase;
 public class ListsWSTest extends TestCase {
   SharepointClientContext sharepointClientContext;
   ListsWS listWS;
-  ListState testList;
+  ListState testList, categoriesList, postsList, commentsList;
   Calendar lastModified;
   String lastItemID;
   String lastItemURL;
@@ -71,8 +72,16 @@ public class ListsWSTest extends TestCase {
       if (baseList.getPrimaryKey().equals(TestConfiguration.Site1_List1_GUID)) {
         this.testList = baseList;
       }
+      if (baseList.getBaseTemplate().equals(SPConstants.BT_CATEGORIES)) {
+        this.categoriesList = baseList;
+      } else if (baseList.getBaseTemplate().equals(SPConstants.BT_COMMENTS)) {
+        this.commentsList = baseList;
+      } else if (baseList.getBaseTemplate().equals(SPConstants.BT_POSTS)) {
+        this.postsList = baseList;
+      }
     }
-    System.out.println("Test List being used: " + this.testList.getPrimaryKey());
+    // System.out.println("Test List being used: " +
+    // this.testList.getPrimaryKey());
   }
 
   public final void testListsWS() throws Throwable {
@@ -116,6 +125,57 @@ public class ListsWSTest extends TestCase {
     final List items = this.listWS.getListItems(this.testList, null, null, null);
     assertNotNull(items);
     System.out.println("[ getListItems() ] Test Passed.");
+  }
+
+  /**
+   * Test for categories list items URLs of blog site
+   */
+
+  public void testGetListItemsForCategoriesInBlogSite()
+      throws MalformedURLException, RepositoryException {
+    final List<SPDocument> items = this.listWS.getListItems(this.categoriesList, null, null, null);
+    String baseCategoriesExpectedURL = Util.getWebApp(sharepointClientContext.getSiteURL())
+        + SPConstants.SLASH
+        + this.categoriesList.getListConst()
+        + SPConstants.VIEWCATEGORY;
+
+    for (SPDocument item : items) {
+      assertTrue(item.getDisplayUrl().startsWith(baseCategoriesExpectedURL));
+      assertTrue(item.getUrl().startsWith(baseCategoriesExpectedURL));
+    }
+  }
+
+  /**
+   * Test for comment list items URLs of blog site
+   */
+  public void testGetListItemsForCommentsInBlogSite()
+      throws MalformedURLException, RepositoryException {
+    final List<SPDocument> items = this.listWS.getListItems(this.commentsList, null, null, null);
+    String baseCommentExpectedURL = Util.getWebApp(sharepointClientContext.getSiteURL())
+        + SPConstants.SLASH
+        + this.commentsList.getListConst()
+        + SPConstants.VIEWCOMMENT;
+
+    for (SPDocument item : items) {
+      assertTrue(item.getDisplayUrl().startsWith(baseCommentExpectedURL));
+      assertTrue(item.getUrl().startsWith(baseCommentExpectedURL));
+    }
+  }
+
+  /**
+   * Test for posts list items URLs of blog site
+   */
+  public void testGetListItemsForPostsInBlogSite()
+      throws MalformedURLException, RepositoryException {
+    final List<SPDocument> items = this.listWS.getListItems(this.postsList, null, null, null);
+    String basePostsExpectedURL = Util.getWebApp(sharepointClientContext.getSiteURL())
+        + SPConstants.SLASH
+        + this.postsList.getListConst()
+        + SPConstants.VIEWPOST;
+    for (SPDocument item : items) {
+      assertTrue(item.getDisplayUrl().startsWith(basePostsExpectedURL));
+      assertTrue(item.getUrl().startsWith(basePostsExpectedURL));
+    }
   }
 
   public void testGetListItemChangesSinceToken() throws MalformedURLException,
