@@ -80,8 +80,7 @@ public class ListsWSTest extends TestCase {
         this.postsList = baseList;
       }
     }
-    // System.out.println("Test List being used: " +
-    // this.testList.getPrimaryKey());
+    System.out.println("Test List being used: " + this.testList.getPrimaryKey());
   }
 
   public final void testListsWS() throws Throwable {
