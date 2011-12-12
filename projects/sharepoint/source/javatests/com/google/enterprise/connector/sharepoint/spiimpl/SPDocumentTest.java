@@ -95,6 +95,18 @@ public class SPDocumentTest extends TestCase {
     System.out.println("[ downloadContents(() ] Test passd");
   }
 
+  public final void testDownloadContentsForMsgFile() {
+    this.doc.setContentDwnldURL(TestConfiguration.Site1_List_Item_MSG_File_URL);
+    try {
+      String responseCode = this.doc.downloadContents();
+      assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
+      assertEquals("application/vnd.ms-outlook", this.doc.getContent_type());
+    } catch (RepositoryException e) {
+      fail("Exception while downloading contents");
+    }
+
+  }
+
   public void testGetPropertyNamesWithoutExcludedMetadata() {
     Set<String> documentMetadata;
     try {

@@ -15,15 +15,15 @@
 package com.google.enterprise.connector.sharepoint;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
+import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
-import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
@@ -104,6 +104,7 @@ public class TestConfiguration {
   public static String Site1_List2_URL;
   public static String Site1_List2_Item1_URL;
   public static String Site1_List2_Item2_URL;
+  public static String Site1_List_Item_MSG_File_URL;
 
   public static String Site2_URL;
   public static String Site2_List1_GUID;
@@ -217,6 +218,7 @@ public class TestConfiguration {
     Site1_List2_URL = properties.getProperty("Site1_List2_URL");
     Site1_List2_Item1_URL = properties.getProperty("Site1_List2_Item1_URL");
     Site1_List2_Item2_URL = properties.getProperty("Site1_List2_Item2_URL");
+    Site1_List_Item_MSG_File_URL = properties.getProperty("Site1_List_Item_MSG_File_URL");
 
     Site2_URL = properties.getProperty("Site2_URL");
     Site2_List1_GUID = properties.getProperty("Site2_List1_GUID");
