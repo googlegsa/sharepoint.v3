@@ -92,7 +92,9 @@ This message appears when the SharePoint Host is not reachable from the connecto
   # Search for (must be towards the end of the file) :  --JvmMs 256 --JvmMx 1024
   # Change it to:  --JvmMs 256 --JvmMx 2048
 
- _Note: To be able to allocate memory successfully, the system must have at least twice as much physical memory._
+ For Tomcat Windows services, if you only edited the .bat files to change heap size, that has no effect on the Tomcat service.  You have to edit the service configuration, or edit service.bat and uninstall and reinstall the Tomcat service. You can edit the service configuration with tomcat6w.exe, e.g., "tomcat6w //ES//<service name>" where "<service name>" is the connector installation name (the name of the parent of the Tomcat directory, not a connector instance name).
+
+ _Note: To be able to allocate memory successfully, the system must have at least twice as much physical memory.  To allocate 2GB of java heap size, the system architecture must be 64-bit_
 
 
  * *The SharePoint connector throws exception when parsing extraIDs*
