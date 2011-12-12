@@ -127,6 +127,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   private String displayUrl;
   private String title;
+  private final String MSG_FILE_EXTENSION = ".msg";
+  private final String MSG_FILE_MIMETYPE = "application/vnd.ms-outlook";
 
   /**
    * @return the toBeFed
@@ -686,40 +688,49 @@ public class SPDocument implements Document, Comparable<SPDocument> {
           return SPConstants.CONNECTIVITY_FAIL;
         }
         content = method.getResponseBodyAsStream();
-
       } catch (Throwable t) {
         String msg = new StringBuffer("Unable to fetch contents from URL: ").append(url).toString();
         LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: " + url, t);
         throw new RepositoryDocumentException(msg, t);
       }
-
-      final Header contentType = method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER);
-      if (contentType != null) {
-        content_type = contentType.getValue();
-
-        if (LOGGER.isLoggable(Level.FINEST)) {
-          LOGGER.fine("The content type for doc : " + toString() + " is : "
-              + content_type);
+      // checks if the give URL is for .msg file if true set the mimetype
+      // directly to application/vnd.ms-outlook as mimetype returned by the
+      // header is incorrect for .msg files
+      if (!contentDwnldURL.endsWith(MSG_FILE_EXTENSION)) {
+        final Header contentType = method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER);
+        if (contentType != null) {
+          content_type = contentType.getValue();
+        } else {
+          LOGGER.info("The content type returned for doc : " + toString()
+              + " is : null ");
         }
+      } else {
+        content_type = MSG_FILE_MIMETYPE;
+      }
 
-        if (sharepointClientContext.getTraversalContext() != null) {
-          // TODO : This is to be revisited later where a better
-          // approach to skip documents or only content is
-          // available
-          int mimeTypeSupport = sharepointClientContext.getTraversalContext().mimeTypeSupportLevel(content_type);
-          if (mimeTypeSupport == 0) {
-            content = null;
-            LOGGER.log(Level.WARNING, "Dropping content of document : "
-                + getUrl() + " with docId : " + docId + " as the mimetype : "
-                + content_type + " is not supported");
-          } else if (mimeTypeSupport < 0) {
-            // Since the mimetype is in list of 'ignored' mimetype
-            // list, mark it to be skipped from sending
-            String msg = new StringBuffer("Skipping the document with docId : ").append(getDocId()).append(" doc URL: ").append(getUrl()).append(" as the mimetype is in the 'ignored' mimetypes list ").toString();
-            // Log it to the excluded_url log
-            sharepointClientContext.logExcludedURL(msg);
-            throw new SkippedDocumentException(msg);
-          }
+      if (LOGGER.isLoggable(Level.FINEST)) {
+        LOGGER.fine("The content type for doc : " + toString() + " is : "
+            + content_type);
+      }
+
+      if (sharepointClientContext.getTraversalContext() != null
+          && content_type != null) {
+        // TODO : This is to be revisited later where a better
+        // approach to skip documents or only content is
+        // available
+        int mimeTypeSupport = sharepointClientContext.getTraversalContext().mimeTypeSupportLevel(content_type);
+        if (mimeTypeSupport == 0) {
+          content = null;
+          LOGGER.log(Level.WARNING, "Dropping content of document : "
+              + getUrl() + " with docId : " + docId + " as the mimetype : "
+              + content_type + " is not supported");
+        } else if (mimeTypeSupport < 0) {
+          // Since the mimetype is in list of 'ignored' mimetype
+          // list, mark it to be skipped from sending
+          String msg = new StringBuffer("Skipping the document with docId : ").append(getDocId()).append(" doc URL: ").append(getUrl()).append(" as the mimetype is in the 'ignored' mimetypes list ").toString();
+          // Log it to the excluded_url log
+          sharepointClientContext.logExcludedURL(msg);
+          throw new SkippedDocumentException(msg);
         }
       }
     }
