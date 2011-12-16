@@ -13,7 +13,7 @@
 
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -40,6 +40,8 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 import org.apache.axis.AxisFault;
@@ -63,10 +65,10 @@ import javax.xml.rpc.ServiceException;
  *
  * @author nitendra_thakur
  */
-public class GssAclWS {
+public class GSAclWS implements AclWS{
   private String endpoint;
   private GssAclMonitorSoap_BindingStub stub = null;
-  private final Logger LOGGER = Logger.getLogger(GssAclWS.class.getName());
+  private final Logger LOGGER = Logger.getLogger(GSAclWS.class.getName());
   private SharepointClientContext sharepointClientContext = null;
 
   /**
@@ -78,7 +80,7 @@ public class GssAclWS {
    *          url is taken from SharepointClientContext
    * @throws SharepointException
    */
-  public GssAclWS(final SharepointClientContext inSharepointClientContext,
+  public GSAclWS(final SharepointClientContext inSharepointClientContext,
       String siteurl) throws SharepointException {
     if (null == inSharepointClientContext) {
       throw new SharepointException("SharePointClient context cannot be null ");

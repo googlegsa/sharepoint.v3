@@ -21,7 +21,8 @@ import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.ldap.LdapService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
-import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthenticationResponse;
@@ -47,6 +48,7 @@ import java.util.logging.Logger;
 public class SharepointAuthenticationManager implements AuthenticationManager {
 	Logger LOGGER = Logger.getLogger(SharepointAuthenticationManager.class.getName());
 
+  private final ClientFactory clientFactory;
 	SharepointClientContext sharepointClientContext = null;
 	LdapService ldapService = null;
 
@@ -54,12 +56,13 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 	 * @param inSharepointClientContext Context Information is required to create
 	 *          the instance of this class
 	 */
-	public SharepointAuthenticationManager(
+	public SharepointAuthenticationManager(final ClientFactory clientFactory,
 			final SharepointClientContext inSharepointClientContext)
 			throws SharepointException {
 		if (inSharepointClientContext == null) {
 			throw new SharepointException("SharePointClientContext can not be null");
 		}
+    this.clientFactory = clientFactory;
 		sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
 		if (sharepointClientContext.isPushAcls()) {
 			LdapConnectionSettings ldapConnectionSettings = sharepointClientContext.getLdapConnectionSettings();
@@ -88,7 +91,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 			return null;
 		}
 
-		GSBulkAuthorizationWS bulkAuth = null;
+		BulkAuthorizationWS bulkAuth = null;
 
 		final String user = identity.getUsername();
 		final String password = identity.getPassword();
@@ -111,13 +114,13 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 			LOGGER.log(Level.INFO, "Authenticating User: " + userName);
 			sharepointClientContext.setUsername(userName);
 			sharepointClientContext.setPassword(password);
-			try {
-				bulkAuth = new GSBulkAuthorizationWS(sharepointClientContext);
-			} catch (final Exception e) {
-				LOGGER.log(Level.SEVERE, "Failed to initialize GSBulkAuthorozationWS.", e);
+			bulkAuth = clientFactory.getBulkAuthorizationWS(sharepointClientContext);
+      if (null == bulkAuth) {
+				LOGGER.log(Level.SEVERE, "Failed to initialize BulkAuthorozationWS.");
 				return null;
 			}
-			/*
+
+      /*
 			 * If you can make a call to Web Service with the given credential, the
 			 * user is valid user. This should not be assumed as a valid SharePoint
 			 * user. A valid user is any user who is identified on the SharePoint

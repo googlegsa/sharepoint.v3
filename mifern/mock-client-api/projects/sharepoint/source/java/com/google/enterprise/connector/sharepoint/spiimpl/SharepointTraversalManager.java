@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalContext;
@@ -39,6 +40,7 @@ import java.util.logging.Logger;
 public class SharepointTraversalManager implements TraversalManager,
     TraversalContextAware {
   private final Logger LOGGER = Logger.getLogger(SharepointTraversalManager.class.getName());
+  private final ClientFactory clientFactory;
   private SharepointClientContext sharepointClientContext;
   private SharepointClientContext sharepointClientContextOriginal = null;
   private GlobalState globalState;
@@ -67,13 +69,14 @@ public class SharepointTraversalManager implements TraversalManager,
       throw new SharepointException(
           "Cannot initialize traversal manager because SharePointClientContext object is null.");
     }
+    clientFactory = inConnector.getClientFactory();
     try {
       LOGGER.config("SharepointTraversalManager: "
           + inSharepointClientContext.getSiteURL() + ", "
           + inSharepointClientContext.getGoogleConnectorWorkDir());
       sharepointClientContext = inSharepointClientContext;
       sharepointClientContextOriginal = (SharepointClientContext) inSharepointClientContext.clone();
-      globalState = new GlobalState(
+      globalState = new GlobalState(clientFactory,
           inSharepointClientContext.getGoogleConnectorWorkDir(),
           inSharepointClientContext.getFeedType());
       globalState.loadState();
@@ -134,7 +137,7 @@ public class SharepointTraversalManager implements TraversalManager,
     GlobalState.forgetState(workDir);
     sharepointClientContext.clearExcludedURLLogs();
     sharepointClientContext.setInitialTraversal(true);
-    globalState = new GlobalState(
+    globalState = new GlobalState(clientFactory,
         sharepointClientContext.getGoogleConnectorWorkDir(),
         sharepointClientContext.getFeedType());
     return doTraversal();
@@ -172,7 +175,7 @@ public class SharepointTraversalManager implements TraversalManager,
     sharepointClientContext.setTraversalContext(traversalContext);
 
     final SharepointClient sharepointClient = new SharepointClient(
-        sharepointClientContext);
+        clientFactory, sharepointClientContext);
 
     sharepointClientContext.setBatchHint(hint);
     SPDocumentList rsAll = null;

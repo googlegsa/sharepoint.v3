@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -25,6 +25,7 @@ import com.google.enterprise.connector.sharepoint.generated.userprofileservice.U
 import com.google.enterprise.connector.sharepoint.generated.userprofileservice.UserProfileServiceSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.userprofileservice.ValueData;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 
 import org.apache.axis.AxisFault;
 
@@ -43,8 +44,8 @@ import javax.xml.rpc.ServiceException;
  *
  * @author nitendra_thakur
  */
-public class UserProfileWS {
-  private final Logger LOGGER = Logger.getLogger(UserProfileWS.class.getName());
+public class SPUserProfileWS implements UserProfile2007WS {
+  private final Logger LOGGER = Logger.getLogger(SPUserProfileWS.class.getName());
   private SharepointClientContext sharepointClientContext;
   private UserProfileServiceSoap_BindingStub stub;
   private final String personalSpaceTag = "PersonalSpace";
@@ -58,7 +59,7 @@ public class UserProfileWS {
    * @throws SharepointException
    */
 
-  public UserProfileWS(final SharepointClientContext inSharepointClientContext)
+  public SPUserProfileWS(final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
     if (inSharepointClientContext != null) {
       sharepointClientContext = inSharepointClientContext;
