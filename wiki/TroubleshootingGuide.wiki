@@ -80,6 +80,9 @@ This message appears when the SharePoint Host is not reachable from the connecto
 
  This example below will allocate 2GB (i.e. 2048MB) of memory. You can tweak the memory allocation to fit your needs.
 
+ * *SEVERE: No Change Token Found in the Web Service Response !!!! The current change token might have become invalid; please check the Event Cache table of SharePoint content database.
+
+If you get the above error regularly in the connector logs, then it hints at the problem in the event cache table.This can happen if the "entries in event cache which the getListItemChangesSinceToken service relies on to track changes were getting deleted.  To solve this problem the lifetime and size of the eventcache should be increased. See point "C" at http://blogs.technet.com/stefan_gossner/archive/2008/03/13/moss-common-issue-incremental-deployment-fails-with-the-changetoken-refers-to-a-time-before-the-start-of-the-current-change-log.aspx".To fix the current outdated state file, a full clean re-crawl will be necessary.
  
  LINUX
   # Open the file: <Connector Installation Path>/<Connector Name>/Tomcat/bin/catalina.sh
