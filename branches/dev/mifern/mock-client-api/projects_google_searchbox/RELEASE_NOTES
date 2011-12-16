@@ -1,0 +1,209 @@
+Release Notes
+==============
+
+This document contains the release notes for Google Search Box for SharePoint 2.6.10. The following sections describe the release in detail and provide information that supplements the main documentation.  See the Issues Tab on the Code Site for the current list of known issues and workarounds.
+
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+
+Release 2.6.10, 16 June, 2011
+==========================
+
+Introduction
+-------------
+This is an upgrade release with some enhancements and bug fixes. Users of previous releases are encouraged to upgrade.
+Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
+
+Issues fixed:
+-------------
+1. [Issue 4326112] - Google watermark is present in GSA SearchBox for SharePoint even when it contains text
+2. [Issue 4325126] - Default Search type changed form secure to public in latest GSA SearchBox for SharePoint 2.6.8
+3. [Issue 4343920] - GSA SearchBox for SharePoint front-end style-sheet does not have "Search Tips" link
+4. [Issue 4310682] - Effective space utilization of results displayed by GSA SharePoint SearchBox
+
+	
+For a farm setup, the Google Search Box 2.6.10 must be installed on all the SharePoint Installations (machines).
+   
+Instructions for manual deployment of Google Search Box for SharePoint and the custom master page:
+--------------------------------------------------------------------------------------------------
+
+Pre-requisites:
+
+    * WSS 3.0 or MOSS 2007 or SharePoint 2010 installed: The search Box can be deployed on machine with WSS 3.0 or MOSS 2007 installed (32-bit). The search Box can also be deployed on machine with WSS 4.0 or MOSS 2010 installed (64-bit)
+    * Google Enterprise Connector for Microsoft SharePoint must be installed and configured: The documents should be fed and indexed on appliance and searchable from GSA UI.
+    * SAML Bridge must already be installed and configured: If your are using SAML Bridge for authN and authZ, follow the steps at http://code.google.com/apis/searchappliance/documentation/50/admin/wia.html for setting up SAML bridge. The Search Box supports search for following, only if the SAML bridge is configured with GSA:
+          o NTLM, Basic or Kerberos protected documents, if they are fed to GSA in "content feed" mode
+          o Kerberos protected documents, if they are fed to GSA in "meta-url" mode.
+
+Steps:
+ 1. Place GSASearchresults.aspx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS 
+(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\LAYOUTS directory)
+
+ 2. Place GSASearchArea.ascx in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\CONTROLTEMPLATES
+(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\CONTROLTEMPLATES directory)
+
+ 3. Place file google_custom_search_watermark.gif in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\IMAGES
+(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\IMAGES directory)
+
+ 4. Place Folder "GSAFeature" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\FEATURES
+(For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\FEATURES directory)
+
+ 5. Place the files "GSA2SP.xsl" and "SP_Actual.xsl" in directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE
+ (For Sharepoint 2010, refer C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE directory)
+
+ 6. For installation and activation of the "GSAFeature"
+
+    * Open Windows Command prompt.
+    * Go to directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\BIN
+     (For Sharepoint 2010, goto C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\BIN )
+    * Run following commands 
+        stsadm.exe -o installfeature -name GSAFeature -force
+        stsadm.exe -o activatefeature -name GSAFeature -force
+
+
+ 7.  To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application.
+
+     * In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened
+       (For Sharepoint 2010, in IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened)
+     * In the Windows Explorer, right click on web.config -> Edit
+     * Go to "<appSettings>" section (For MOSS 2007 and SharePoint 2010). In case of WSS 3.0 and 4.0 you need to create a new "<appSettings>" section
+     * For Sharepoint 2007, add following keys under it. (Following are sample values for reference) 
+
+     <!--Beginning of GSA search control section --> 
+
+		<add key="GSALocation" value="http://gsa.mycompany.mydomain.com" />
+		<add key="siteCollection" value="default_collection" />
+		<add key="frontEnd" value="SPS_frontend" />
+		<add key="verbose" value="True" />
+		<add key="GSAStyle" value="false" />
+		<!--Search Type : value "a" means public and secure search and value "p" means public search -->
+		<add key="accesslevel" value="a" />
+		<add key="omitSecureCookie" value="false" />
+		<add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\GSA2SP.xsl" />
+		<add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\SP_Actual.xsl" />
+		<add key="logLocation" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\LOGS\ " />
+		<!--Default Search Type : value "publicAndSecure" means public and secure search is enabled by default, and value "public" means public search is enabled by default-->
+		<add key="defaultSearchType" value="publicAndSecure" />
+		<add key="SearchTipsHTMLFileName" value="user_help.html" />
+	<!--End of GSA search control section -->
+
+
+* For Sharepoint 2010, add following keys under it. (Following are sample values for reference) 
+          
+
+    <!--Beginning of GSA search control section -->
+
+        <add key="GSALocation" value="http://gsa.mycompany.mydomain.com" />
+        <add key="siteCollection" value="default_collection" />
+        <add key="frontEnd" value="SPS_frontend" />
+        <add key="verbose" value="True" />
+        <add key="GSAStyle" value="false" />
+		<!--Search Type : value "a" means public and secure search and value "p" means public search -->
+        <add key="accesslevel" value="a" />
+        <add key="omitSecureCookie" value="false" />
+        <add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\GSA2SP.xsl" />
+        <add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\SP_Actual.xsl" />
+        <add key="logLocation" value="C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\" />
+		<!--Default Search Type : value "publicAndSecure" means public and secure search is enabled by default, and value "public" means public search is enabled by default-->
+        <add key="defaultSearchType" value="publicAndSecure" />
+        <add key="SearchTipsHTMLFileName" value="user_help.html" />
+
+	<!--End of GSA search control section -->  
+
+
+ 8.   The user needs to enable the session state for persisting the search query term and public search checkbox status. To enable session state for performing search with Google search box, the httpmodule for session state needs to be added.
+      In case you have multiple SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites
+      of respective SharePoint web application. Following are the steps to enable session state for a given SharePoint web application.
+
+      * In web.config file, go to "<httpModules>" section (For MOSS 2007only), and add the following module under it -
+                 
+        <add name="Session" type="System.Web.SessionState.SessionStateModule" />
+
+       * (Perform this step only for SharePoint 2010) Go to "<modules runAllManagedModulesForAllRequests="true">" section and add the following module under it at the end, i.e. just before the closing tag for modules -
+
+        <add name="session" type="System.Web.SessionState.SessionStateModule" preCondition="managedHandler" />               
+
+ 9.  To setup SharePoint like frontend:
+
+       *  Open GSA Admin page->Serving->FrontEnd 
+       *  Create a new frontend "SPS_frontend" 
+       *  Copy the contents of file "SPS_frontend.xslt" 
+       *  Save it 
+	   
+	   
+ 10. Save the web.config file. 
+	   
+ 11. GSAapplication.master is a newly added file for reference purpose. This file is used to reduce the whitespace displayed at the top of the search results. (steps below are applicable only for SharePoint 2007)
+     To use this sample master page, copy the file to the Layouts folder (path - C:\Program Files\Common Files\microsoft shared\Web Server Extensions\12\TEMPLATE\LAYOUTS).
+     Modify the Page Directive MasterPageFile attribute like -  MasterPageFile="~/_layouts/GSAapplication.master" in the GSASearchresults.aspx page found on the same path.
+
+
+Instructions for uninstalling the Google Search Box for SharePoint using the stsadm.exe command-line tool:
+----------------------------------------------------------------------------------------------------------
+Steps:
+
+ 1. For uninstallation and deactivation of the "GSAFeature"
+
+    * Open Windows Command prompt.
+    * Go to directory C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\BIN
+     (For Sharepoint 2010, goto C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\BIN )
+    * Run following commands 	
+		stsadm.exe -o deactivatefeature -name GSAFeature -force
+		stsadm.exe -o uninstallfeature -name GSAFeature -force
+
+
+Version Compatibility
+---------------------
+The Google Search Box for SharePoint 2.6.10 is supported on the following SharePoint versions:
+* Microsoft Office SharePoint Server 2007 (MOSS 2007) 
+* Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
+* Microsoft SharePoint 2010
+
+Browser Compatibility
+---------------------
+The Google Search Box for SharePoint 2.6.10 is certified on following browsers:
+* Microsoft Internet Explorer 6.0
+* Microsoft Internet Explorer 7.0
+* Mozilla Firefox 3.0.5
+
+Platform Support
+------------------
+Google Search Box for SharePoint 2.6.10 can be installed on both 32-bit and 64-bit Windows Server Enterprise Operating System.
+
+Certified Against
+-------------------
+32-bit:
+
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel  Xeon  CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Microsoft Windows Server 2008 Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+
+
+64-bit:
+ 
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel  Xeon  CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Microsoft Windows Server 2008
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 4.00 GB of RAM
+
+Microsoft Windows Server 2008 R2
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 4.00 GB of RAM
+
+
+Known Limitations
+-----------------
+1. When a new SharePoint web application is added after Search Box is installed using the GSA Resource Kit for SharePoint installer, it shows destorted search results when search is configured with a local stylesheet.
+2. The context-sensitive search works only if the SharePoint site content is crawled in Metadata-URL feed mode.
+3. The Google Search Box for SharePoint will fail to work on machines with SharePoint Foundation 2010 installation.
