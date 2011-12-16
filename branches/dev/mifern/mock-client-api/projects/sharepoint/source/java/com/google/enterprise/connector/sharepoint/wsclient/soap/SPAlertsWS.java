@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -27,6 +27,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
@@ -50,8 +51,8 @@ import javax.xml.rpc.ServiceException;
  *
  * @author nitendra_thakur
  */
-public class AlertsWS {
-  private final Logger LOGGER = Logger.getLogger(AlertsWS.class.getName());
+public class SPAlertsWS implements AlertsWS {
+  private final Logger LOGGER = Logger.getLogger(SPAlertsWS.class.getName());
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private AlertsSoap_BindingStub stub;
@@ -63,7 +64,7 @@ public class AlertsWS {
    *          in SharePointClientContext.
    * @throws SharepointException
    */
-  public AlertsWS(final SharepointClientContext inSharepointClientContext)
+  public SPAlertsWS(final SharepointClientContext inSharepointClientContext)
       throws RepositoryException {
     if (inSharepointClientContext != null) {
       sharepointClientContext = inSharepointClientContext;

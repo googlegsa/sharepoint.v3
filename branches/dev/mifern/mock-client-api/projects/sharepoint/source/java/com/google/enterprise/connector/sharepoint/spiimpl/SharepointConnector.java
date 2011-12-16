@@ -24,7 +24,9 @@ import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapp
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
-import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
 import com.google.enterprise.connector.spi.ConnectorPersistentStoreAware;
@@ -48,6 +50,8 @@ public class SharepointConnector implements Connector,
     ConnectorPersistentStoreAware {
   private static final Logger LOGGER = Logger.getLogger(SharepointConnector.class.getName());
   private SharepointClientContext sharepointClientContext = null;
+
+  private ClientFactory clientFactory;
 
   private String sharepointUrl;
   private String kdcserver;
@@ -91,6 +95,47 @@ public class SharepointConnector implements Connector,
   }
 
   /**
+   * Constructs a connector instance using the specified client factory class.
+   */
+  SharepointConnector(String clientFactoryClass) {
+    this(newClientFactory(clientFactoryClass));
+  }
+
+  SharepointConnector(ClientFactory clientFactory) {
+    this.clientFactory = clientFactory;
+  }
+
+  private static ClientFactory newClientFactory(String clientFactoryClass) {
+    if (LOGGER.isLoggable(Level.CONFIG))
+      LOGGER.config("NEW INSTANCE: " + clientFactoryClass);
+    try {
+      return (ClientFactory) Class.forName(clientFactoryClass).newInstance();
+    } catch (Exception e) {
+      LOGGER.log(Level.SEVERE, "Unable to create client factory '" +
+        clientFactoryClass + "'. " + e.getMessage(), e);
+      return new SPClientFactory();
+    }
+  }
+
+  /**
+   * Returns the client factory for the web services.
+   *
+   * @return a client factory object
+   */
+  public ClientFactory getClientFactory() {
+    return clientFactory;
+  }
+
+  /**
+   * Sets the client factory for the web services.
+   *
+   * @param clientFactory the client factory to use for the web services
+   */
+  public void setClientFactory(final ClientFactory clientFactory) {
+    this.clientFactory = clientFactory;
+  }
+
+  /**
    * sets the FQDNConversion parameter.
    *
    * @param conversion If true: tries to convert the non-FQDN URLs to FQDN If
@@ -111,7 +156,7 @@ public class SharepointConnector implements Connector,
     LOGGER.info("Connector login()");
     if (sharepointClientContext.isPushAcls()) {
       try {
-        new GssAclWS(sharepointClientContext, null).checkConnectivity();
+        clientFactory.getAclWS(sharepointClientContext, null).checkConnectivity();
       } catch (Exception e) {
         throw new RepositoryException(
             "Crawling cannot proceed because ACL web service cannot be contacted and hence, "

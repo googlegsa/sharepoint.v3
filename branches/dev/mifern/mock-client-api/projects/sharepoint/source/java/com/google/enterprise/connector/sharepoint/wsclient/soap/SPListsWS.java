@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -35,6 +35,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.handlers.InvalidXmlCharacterHandler;
 import com.google.enterprise.connector.sharepoint.wsclient.util.DateUtil;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
@@ -76,8 +77,8 @@ import javax.xml.soap.SOAPHeaderElement;
  *
  * @author nitendra_thakur
  */
-public class ListsWS {
-  private final Logger LOGGER = Logger.getLogger(ListsWS.class.getName());
+public class SPListsWS implements ListsWS {
+  private final Logger LOGGER = Logger.getLogger(SPListsWS.class.getName());
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private ListsSoap_BindingStub stub = null;
@@ -90,7 +91,7 @@ public class ListsWS {
    *          in SharePointClientContext.
    * @throws SharepointException
    */
-  public ListsWS(final SharepointClientContext inSharepointClientContext)
+  public SPListsWS(final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
 
     if (inSharepointClientContext != null) {

@@ -26,8 +26,9 @@ import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnect
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
-import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 import com.google.enterprise.connector.spi.ConnectorFactory;
 import com.google.enterprise.connector.spi.ConnectorType;
@@ -114,7 +115,31 @@ public class SharepointConnectorType implements ConnectorType {
 	private LdapConnectionSettings ldapConnectionSettings;
 	private boolean editMode;
 
-	/**
+  /**
+   * The client factory used to configure and instantiate the
+   * client web service facade.
+   */
+  private ClientFactory clientFactory;
+
+  /**
+   * Returns the client factory for the web services.
+   *
+   * @return a client factory object
+   */
+  public ClientFactory getClientFactory() {
+    return clientFactory;
+  }
+
+  /**
+   * Sets the client factory for the web services.
+   *
+   * @param clientFactory the client factory to use for the web services
+   */
+  public void setClientFactory(final ClientFactory clientFactory) {
+    this.clientFactory = clientFactory;
+  }
+
+/**
 	 * Sets the keys that are required for configuration. These are the actual
 	 * keys used by the class.
 	 * 
@@ -1638,7 +1663,7 @@ public class SharepointConnectorType implements ConnectorType {
 
 		try {
 			sharepointClientContext.setSiteURL(endpoint);
-			final WebsWS websWS = new WebsWS(sharepointClientContext);
+			final WebsWS websWS = clientFactory.getWebsWS(sharepointClientContext);
 			return websWS.checkConnectivity();
 		} catch (final Exception e) {
 			final String logMessage = "Problem while connecting.";
@@ -1663,8 +1688,8 @@ public class SharepointConnectorType implements ConnectorType {
 
 		try {
 			sharepointClientContext.setSiteURL(endpoint);
-			final GSBulkAuthorizationWS testBulkAuth = new GSBulkAuthorizationWS(
-					sharepointClientContext);
+			final BulkAuthorizationWS testBulkAuth =
+          clientFactory.getBulkAuthorizationWS(sharepointClientContext);
 			return testBulkAuth.checkConnectivity();
 		} catch (final Exception e) {
 			final String logMessage = "Problem while connecting.";

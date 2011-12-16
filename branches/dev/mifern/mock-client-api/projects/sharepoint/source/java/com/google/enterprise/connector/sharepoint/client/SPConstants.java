@@ -193,7 +193,7 @@ public class SPConstants {
   // For Alerts
   public static final String ALERTS_TYPE = "Alerts";
 
-  // Constants used by SiteDataWS while processing the list data as returned
+  // Constants used by SPSiteDataWS while processing the list data as returned
   // by the Web Service.
   public static final String NOREDIRECT = "NoRedirect=true";
   public static final String DOC_LIB = "DocumentLibrary";// BaseType=1 (In

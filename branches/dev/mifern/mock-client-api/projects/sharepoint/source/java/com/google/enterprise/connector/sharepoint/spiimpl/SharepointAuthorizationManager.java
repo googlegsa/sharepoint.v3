@@ -24,7 +24,8 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.ContainerType;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.AuthorizationResponse;
@@ -72,6 +73,7 @@ import java.util.regex.Pattern;
  */
 public class SharepointAuthorizationManager implements AuthorizationManager {
   private static Logger LOGGER = Logger.getLogger(SharepointAuthorizationManager.class.getName());
+  private final ClientFactory clientFactory;
   SharepointClientContext sharepointClientContext;
 
   /**
@@ -138,12 +140,13 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
    * @param inSharepointClientContext Context Information is required to create
    *          the instance of this class
    */
-  public SharepointAuthorizationManager(
+  public SharepointAuthorizationManager(final ClientFactory clientFactory,
       final SharepointClientContext inSharepointClientContext,
       final Set<String> siteCollUrls) throws SharepointException {
     if (inSharepointClientContext == null) {
       throw new SharepointException("SharePointClientContext can not be null");
     }
+    this.clientFactory = clientFactory;
     sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
 
     // A comparator that sorts in non-increasing order of length
@@ -311,10 +314,10 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         continue;
       }
 
-      GSBulkAuthorizationWS bulkAuthWS = null;
       try {
         sharepointClientContext.setSiteURL(webapp);
-        bulkAuthWS = new GSBulkAuthorizationWS(sharepointClientContext);
+        BulkAuthorizationWS bulkAuthWS =
+            clientFactory.getBulkAuthorizationWS(sharepointClientContext);
         authDataPacketArray = bulkAuthWS.authorize(authDataPacketArray, userName);
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "WS call failed for GSBulkAuthorization using webapp [ "

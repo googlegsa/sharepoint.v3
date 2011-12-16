@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient.sp2003;
+package com.google.enterprise.connector.sharepoint.wsclient.soap.sp2003;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -23,6 +23,7 @@ import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofilese
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileServiceLocator;
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileServiceSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 
 import org.apache.axis.AxisFault;
 
@@ -41,8 +42,8 @@ import javax.xml.rpc.ServiceException;
  *
  * @author nitendra_thakur
  */
-public class UserProfileWS {
-  private final Logger LOGGER = Logger.getLogger(UserProfileWS.class.getName());
+public class SPUserProfileWS implements UserProfile2003WS {
+  private final Logger LOGGER = Logger.getLogger(SPUserProfileWS.class.getName());
   private SharepointClientContext sharepointClientContext;
   private UserProfileServiceSoap_BindingStub stub;
   String endpoint;
@@ -56,7 +57,7 @@ public class UserProfileWS {
    *          in SharePointClientContext.
    * @throws SharepointException
    */
-  public UserProfileWS(final SharepointClientContext inSharepointClientContext)
+  public SPUserProfileWS(final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
     if (inSharepointClientContext != null) {
       sharepointClientContext = inSharepointClientContext;
