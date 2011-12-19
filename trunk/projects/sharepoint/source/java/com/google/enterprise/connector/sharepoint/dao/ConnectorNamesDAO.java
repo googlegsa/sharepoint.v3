@@ -75,16 +75,15 @@ public class ConnectorNamesDAO extends SimpleSharePointDAO {
             + "already exists in connector names table.", e);
       } catch (Throwable e) {
         throw new SharepointException(
-            "Failed to add the record for parameter [ " + connectorName + " ]",
-            e);
+            "Failed to add the record for parameter [" + connectorName + "]", e);
       }
       if (status == 1) {
-        LOGGER.log(Level.INFO, "Sucessfully inserted the connector name [ "
-            + connectorName + " ] using the query [ " + query + " ]");
+        LOGGER.log(Level.INFO, "Sucessfully inserted the connector name ["
+            + connectorName + "] using the query [ " + query + " ]");
       }
     } else {
-      LOGGER.log(Level.INFO, "Connector name [ " + connectorName
-          + " ] is already existed in the table.");
+      LOGGER.log(Level.INFO, "Connector name [" + connectorName
+          + "] is already existed in the table.");
     }
   }
 
@@ -111,13 +110,13 @@ public class ConnectorNamesDAO extends SimpleSharePointDAO {
           + "is already exists in the table.", e);
     } catch (Throwable e) {
       throw new SharepointException(
-          "Failed to remove the record for parameter [ " + connectorName + " ]",
+          "Failed to remove the record for parameter [" + connectorName + "]",
           e);
     }
     if (status == 1) {
       connectorNames.remove(connectorName);
-      LOGGER.log(Level.INFO, "Sucessfully removed the connector name [ "
-          + connectorName + " ] using the query [ " + query + " ]");
+      LOGGER.log(Level.INFO, "Sucessfully removed the connector name ["
+          + connectorName + "] using the query [" + query + "]");
     } else {
       LOGGER.log(Level.FINE, "Query [ " + query + "executed with status code: "
           + status);
@@ -133,12 +132,12 @@ public class ConnectorNamesDAO extends SimpleSharePointDAO {
       status = getSimpleJdbcTemplate().update(getSqlQuery(Query.CN_DROP_TABLE));
     } catch (Throwable e) {
       throw new SharepointException(
-          "Failed to remove the table with the query [ " + Query.CN_DROP_TABLE
-              + " ]", e);
+          "Failed to remove the table with the query [" + Query.CN_DROP_TABLE
+              + "]", e);
     }
     if (status == 0) {
-      LOGGER.info("Sucessfully removed the Connector_Names table from the data base using the query [ "
-          + Query.CN_DROP_TABLE + " ]");
+      LOGGER.info("Sucessfully removed the Connector_Names table from the data base using the query ["
+          + Query.CN_DROP_TABLE + "]");
     }
     return status;
   }
@@ -154,8 +153,8 @@ public class ConnectorNamesDAO extends SimpleSharePointDAO {
       results = getSimpleJdbcTemplate().queryForList(getSqlQuery(query), new HashMap<String, Object>());
     } catch (Throwable e) {
       throw new SharepointException(
-          "Failed to retrieve all the connector names from the table with the quey [ "
-              + Query.CN_SELECT + " ]", e);
+          "Failed to retrieve all the connector names from the table with the quey ["
+              + Query.CN_SELECT + "]", e);
     }
     for (Iterator<Map<String, Object>> iterator = results.iterator(); iterator.hasNext();) {
       Map<String, Object> map = (Map<String, Object>) iterator.next();
