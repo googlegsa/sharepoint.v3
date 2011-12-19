@@ -466,6 +466,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
           cnTablePattern = cnTableName.toLowerCase();
         } else {
           udsTablePattern = udsTableName;
+          cnTablePattern = cnTableName;
         }
         // specific to user data store table pattern.
         udsTablePattern = udsTablePattern.replace("%", dbm.getSearchStringEscape()
@@ -577,7 +578,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       throws SQLException {
     boolean tableFound = false;
     while (rsTables.next()) {
-      if (tableName.equalsIgnoreCase(rsTables.getString(1))) {
+      if (tableName.equalsIgnoreCase(rsTables.getString(SPConstants.TABLE_NAME))) {
         tableFound = true;
         LOGGER.log(Level.FINE, "Table name [ " + tableName
             + " ]  found in database.");
