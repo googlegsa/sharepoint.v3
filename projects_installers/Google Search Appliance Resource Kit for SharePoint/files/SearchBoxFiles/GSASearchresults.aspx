@@ -785,7 +785,6 @@ else if(document.attachEvent)
 
                                 temp = temp.ToLower();
                                 temp = temp.Replace("http://", "");// Delete http from url
-                                qQuery += "&inurl:\"" + temp + "\"";// Change functionality to use "&sitesearch=" - when GSA Bug 11882 has been closed
 
                                 // The finalURL contains complete URL for the currently selected scope
                                 finalURL = strURL;
@@ -854,7 +853,8 @@ else if(document.attachEvent)
                                 }
                             }
 
-                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&site=" + gProps.siteCollection;                                
+
+                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&exclude_apps=1&site=" + gProps.siteCollection;
                             
 
                             if (gProps.frontEnd.Trim() != "")

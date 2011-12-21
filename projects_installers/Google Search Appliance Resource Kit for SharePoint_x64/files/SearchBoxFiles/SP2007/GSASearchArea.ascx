@@ -13,11 +13,18 @@
 <%
     const string PublicAndSecureSearch = "publicAndSecure";
     const string PublicSearch = "public";
+    string accessStatus = "";
+    string searchQuery = "";
     
     // Setting the URL for the Search Tips Link 
     string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString()+ "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
-    
-    if (!IsPostBack)
+      
+    /*
+     * Checking if session value is null for setting the initial type of search. Session value null means 
+     * either the user is done with the searching or he/ she has opened the web application for the first time
+     * in the browser.
+     */
+    if (Session["PublicSearchStatus"] == null)
     {
         // Getting the default search type from web.config file.
         string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
@@ -80,9 +87,23 @@
         {
             // This code will be executed for the first search request sent to GSA.
             publicSearchStatus = Request.QueryString["isPublicSearch"].ToString();
+            if (publicSearchStatus != "")
+            {
+                hfPublicSearch.Value = publicSearchStatus;
+                Session["PublicSearchStatus"] = publicSearchStatus;
+            }
+            else if (Session["PublicSearchStatus"] != null) /*
+                                                            * If querystring parameter value is empty string, assign
+                                                            * the value from session variable to the hiddenfield.
+                                                            */
+            {
+                hfPublicSearch.Value = Convert.ToString(Session["PublicSearchStatus"]);
+            }
 
-            hfPublicSearch.Value = publicSearchStatus;
-            if (publicSearchStatus == "true")
+            /*
+             * Set the Public Search checkbox status as per the value of the hiddenfield 'hfPublicSearch'
+             */
+            if (hfPublicSearch.Value == "true")
             {
                 chkPublicSearch.Checked = true;
             }
@@ -101,23 +122,40 @@
              */
             if (Request.QueryString["access"] != null)
             {
-                string accessStatus = Request.QueryString["access"].ToString();
+                accessStatus = Request.QueryString["access"].ToString();
                 if (accessStatus == "a")
                 {
-                   chkPublicSearch.Checked = false;
+                    chkPublicSearch.Checked = false;
+                    Session["PublicSearchStatus"] = "false"; // Assign same value to the session variable, so that it it persisted.
                 }
-                else // Means only public search is performed by the user (i.e. access = p)
+                else if (accessStatus == "p") // Means only public search is performed by the user (i.e. access = p)
+                {
+                    chkPublicSearch.Checked = true;
+                    Session["PublicSearchStatus"] = "true"; // Assign same value to the session variable, so that it it persisted.
+                }
+            }
+            else if (Session["PublicSearchStatus"] != null)/*
+                                                            * If querystring parameter value is empty string, assign
+                                                            * the value from session variable to the hiddenfield.
+                                                            */
+            {
+                accessStatus = Convert.ToString(Session["PublicSearchStatus"]);
+                if (accessStatus == "false")
+                {
+                    chkPublicSearch.Checked = false;
+                }
+                else if (accessStatus == "true")
                 {
                     chkPublicSearch.Checked = true;
                 }
-            }
+            }     
         }
     }
-   
-   
-    
-    
-    
+
+
+
+
+    SPSite site = null;
     string strScopeWeb = null;
     string strScopeList = null;
     string strWebSelected = null;
@@ -125,14 +163,17 @@
     string siteUrl = "";
     string listType = "";
     string listUrl = "";
+    string listParentWebUrl = "";
 
     // Display the Public Search checkbox only if the user has selected 'public ans secure' search while installing the search box.
     if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
     {
+        chkPublicSearch.Visible = true;
         divPublicSearch.Visible = true;
     }
     else 
     {
+        chkPublicSearch.Visible = false;
         divPublicSearch.Visible = false;
     }
     
@@ -143,6 +184,9 @@
     string currentList = "Current List";
     string currentFolder = "Current Folder";
     string currentFolderAndAllSubfolders = "Current Folder and all subfolders";
+    
+    string scopeText = "";
+    string scopeValue = "";
 
 	SPWeb web = SPControl.GetContextWeb(Context);
     
@@ -152,7 +196,7 @@
     if (ctx != null)
     {
         // Retrieve the URL of the SharePoint site collection
-        SPSite site = ctx.Site;
+        site = ctx.Site;
         siteUrl = site.Url;
     }
         
@@ -211,6 +255,7 @@
     {
               
         listUrl = list.DefaultViewUrl.ToString();   // Retrieve list url
+        listParentWebUrl = list.ParentWeb.Url.ToString(); // Get the parent website for the list
         listType = list.GetType().ToString();       // Get type for the current list and accordingly construct the url
 
         switch (listType)
@@ -221,23 +266,33 @@
                 listUrl = listUrl.Remove(iStartIndex);
                 int iStartIndex1 = listUrl.LastIndexOf("/");
                 listUrl = listUrl.Remove(iStartIndex1);
+                listUrl = listUrl.Substring(listUrl.LastIndexOf("/"));
+                strScopeList = listParentWebUrl + listUrl; // Construct the url for current list browsed by the user
+                /*
+                 * For example, if the document library url is http://SharePointSiteURL:portnumber/sites/site1/doclib/Forms/AllItems.aspx, then 
+                 * listParentWebUrl will be "http://SharePointSiteURL:portnumber/sites/site1" and listUrl will be "/doclib". 
+                 */
                 break;
 
             case "Microsoft.SharePoint.SPList":
 
-                int iStartIndex2 = listUrl.LastIndexOf("/");
-                listUrl = listUrl.Remove(iStartIndex2);
+                listUrl = list.DefaultView.Url.Substring(0, list.DefaultView.Url.LastIndexOf("/"));// Remove the string "/AllItems.aspx" from the url
+                strScopeList = listParentWebUrl + "/" + listUrl; // Construct the url for current list browsed by the user
                 break;
         } // end switch-case statement
 
-        strScopeList = siteUrl + listUrl;
+        
         hfSelectedScope.Value = strScopeList;
         lstItem3.Value = strScopeList;
         idSearchScope.Items.FindByText(currentList).Enabled = true;
 
         if (this.Context.Request.QueryString["RootFolder"] != null)
         {
-            strScopeFolder = siteUrl + this.Context.Request.QueryString["RootFolder"].ToString(); // Retrieve the folder path
+            web = SPControl.GetContextWeb(Context); // Get the current SPWeb object
+            string rootFolder = this.Context.Request.QueryString["RootFolder"].ToString();
+            SPFolder folder = web.GetFolder(rootFolder); // Get folder located at the url represented by "rootFolder"    
+
+            strScopeFolder = listParentWebUrl + "/" + folder.Url; // Construct the url for current folder browsed by the user
             lstItem4.Value = strScopeFolder + forwardSlash;
             lstItem5.Value = strScopeFolder;
             hfSelectedScope.Value = strScopeFolder;
@@ -257,7 +312,7 @@
     if (Request.QueryString["k"] != null)
     {
         // If this is the first request for search, populate the search query text with querystring 'k' parameter.
-        string searchQuery = "";
+        searchQuery = "";
         searchQuery = Request.QueryString["k"];
         int strCache = searchQuery.IndexOf("cache:");
 
@@ -286,9 +341,40 @@
     }
     else if(Request.QueryString["q"] != null)
     {
-        // If this is not the first request for search, populate search query text with querystring 'q' parameter.
-        txtSearch.Text = Request.QueryString["q"].ToString();
+        /* If this is not the first request for search, populate search query text with querystring 'q' parameter.
+         * This code will also be executed when user clicks on the "All Results" and "Clear" links, which are displayed 
+         * for dynamic navigation search results.
+         */
+        string strInMeta = Convert.ToString(Request.QueryString["q"]); // Search Query exists in querystring "q" parameter
+        /*
+         * The string inmeta:<AttributeName>=<matchingAttributeValue> gets appended to the search query term when user
+         * clicks on any of the dynamic navigation search results. This inserts arbitrary characters into the search box.
+         * Hence, adding the code to get the search query term from the session variable. 
+         */ 
+        if (strInMeta.IndexOf("inmeta:") != -1)
+        {
+            if (Session["SearchQuery"] != null)
+            {
+                txtSearch.Text = Convert.ToString(Session["SearchQuery"]);
+            }
+        }
+        else
+        {
+            txtSearch.Text = Request.QueryString["q"].ToString();
+        }
     }
+    else /*
+          * This code will be executed when the user clicks on any one of the dynamic navigation results displayed 
+          * in the left sidebar. Here, the search query textbox will be populated with the value from the "SearchQuery"
+          * session variable.
+          */
+    {
+        if (Session["SearchQuery"] != null)
+        {
+            txtSearch.Text = Convert.ToString(Session["SearchQuery"]);
+        }
+    }
+    
     /* This code is executed for the very first search performed on the site. This code will also execute when the user performs  
      * the first search, after changing the scope from the scopes dropdown.
      */
@@ -330,11 +416,56 @@
                                             */
     {
         
-        string scopeText = Session["ScopeText"].ToString();
-        string scopeValue = "";
+        scopeText = Session["ScopeText"].ToString();
+        scopeValue = "";
         if(Request.QueryString["sitesearch"] != null) // The sitesearch parameter comes in the GSA search URL.
         {
             scopeValue = System.Web.HttpUtility.UrlDecode(Request.QueryString["sitesearch"].ToString());
+        }
+         else /* This code will be executed when the user clicks on any of the dynamic navigation results displayed in 
+              * left sidebar. Hence, retrieve the values for the scope value and scope text from the current request and 
+              * make the item as selected in the dropdown. With this, the scope value is persisted when user is using 
+              * dynamic navigation.
+              */
+        {
+            string searchReq = HttpContext.Current.Request.Url.Query;
+            searchReq = HttpUtility.UrlDecode(searchReq); // Decoding the URL received from the current request 
+            /*
+             * If sitesearch is present in the current request, execute code for extracting its value and 
+             * assign the same to scopeValue variable.
+             */
+            if (searchReq.IndexOf("sitesearch") > -1) // Means sitesearch is present
+            {
+                // Getting index for question mark (?). Code for extracting the sitesearch parameter's value
+                if (searchReq.IndexOf("?") > -1)
+                {
+                    searchReq = searchReq.Substring(searchReq.IndexOf("?"));
+
+                    /*
+                     * Get  "?sitesearch=<sitesearchParameterValue>" where "sitesearchParameterValue"
+                     * represents the scope value for a site/ list or folder
+                     */
+                    if (!(searchReq.Substring(0, searchReq.IndexOf("&")).Contains("sitesearch")))
+                    {
+                        /*
+                         * If "sitesearch" parameter is not present by doing 'searchReq.Substring(0, searchReq.IndexOf("&")', then
+                         *  employ another way to extract the substring.
+                         */
+                        searchReq = searchReq.Substring(searchReq.IndexOf("&"));
+                    }
+                    else
+                    {
+                        searchReq = searchReq.Substring(0, searchReq.IndexOf("&"));
+                    }       
+                    
+                    if (searchReq.IndexOf("=") > -1)
+                    {
+                        searchReq = searchReq.Substring(searchReq.IndexOf("=")); // Gets "=<sitesearchParameterValue>"
+                        searchReq = searchReq.Replace("=", "");// Gets "<sitesearchParameterValue>"
+                        scopeValue = searchReq;
+                    }
+                }
+            }
         }
         if (scopeValue != "")
         {
@@ -491,13 +622,18 @@
     // Function that will change the value of hiddenfield and session variable whenever checkbox is checked/ unchecked.
     public void checkPublicSearch(object sender, EventArgs e)
     {
-        if (chkPublicSearch.Checked == true)
+        if (IsPostBack)
         {
-            hfPublicSearch.Value = "true";
-        }
-        else
-        {
-            hfPublicSearch.Value = "false";
+            if (chkPublicSearch.Checked == true)
+            {
+                hfPublicSearch.Value = "true";
+                Session["PublicSearchStatus"] = "true";
+            }
+            else
+            {
+                hfPublicSearch.Value = "false";
+                Session["PublicSearchStatus"] = "false";
+            }
         }
     }
 
