@@ -33,13 +33,9 @@ import javax.xml.transform.stream.StreamSource;
 
 /**
  * A message handler that can intercept any web service call (typically,
- * responses) before it reaches to the client. The handler checks if there are
- * any invalid XML characters present in the response and filter out all such
+ * responses) before it reaches the client. The handler checks if there are
+ * any invalid XML characters present in the response and filters out all such
  * characters as per the filter rules
- * <p/>
- * The handler does its job only if the
- * {@link InvalidXmlCharacterHandler#PRECONDITION_HEADER} SOAP header is present
- * in the request
  * <p/>
  * Refer Code Site Issue50
  *
@@ -51,6 +47,8 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
   /**
    * This header must be present in the request for parsing to be done
    */
+  // TODO: remove this header and clean up the code in SPListsWS that 
+  // sets and checks for the header.
   public final static SOAPHeaderElement PRECONDITION_HEADER = new org.apache.axis.message.SOAPHeaderElement(
       "http://sharepoint.connector.enterprise.google.com/handlers_v1",
       "InvalidXmlCharacterFilter");
@@ -270,7 +268,8 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
 
   /**
    * Checks all the pre-conditions before parsing is done. This mainly includes
-   * checking if the required SOAP header is present or not
+   * verifying that the message context, response message and request message
+   * is all valid.
    *
    * @param msgContext
    * @return true if all preconditions are satisfied; false otherwise
@@ -281,27 +280,6 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
         || null == msgContext.getRequestMessage()) {
       return false;
     }
-
-    try {
-      Message message = msgContext.getRequestMessage();
-      if (null == message) {
-        return false;
-      }
-      SOAPHeader soapHeader = message.getSOAPHeader();
-      if (null == soapHeader) {
-        return false;
-      }
-      Iterator<SOAPHeaderElement> allHeaders = soapHeader.examineAllHeaderElements();
-      while (allHeaders.hasNext()) {
-        SOAPHeaderElement headerElement = allHeaders.next();
-        if (PRECONDITION_HEADER.equals(headerElement)) {
-          return true;
-        }
-      }
-    } catch (Throwable e) {
-      LOGGER.log(Level.WARNING, "Failed to read SOAP headers! ", e);
-    }
-
-    return false;
+    return true;
   }
 }
