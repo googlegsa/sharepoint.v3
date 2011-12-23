@@ -705,17 +705,23 @@ public class SharepointConnector implements Connector,
   public void delete() throws RepositoryException {
     if (!ConnectorNamesDAO.connectorNames.isEmpty()
         && connectorNamesDAO.getAllConnectorNames().size() > 0) {
-      LOGGER.info("Removing or deleting the connector with the name ["
+      LOGGER.info("Deleting the connector with the name ["
           + connectorName + "] from the database table.");
       // Removes the connector name from the database table.
       connectorNamesDAO.removeConnectorName(connectorName);
+	  Set<String> nameSpaceForTheConnector = new HashSet<String>();
+			nameSpaceForTheConnector.add(this.sharepointClientContext.getSiteURL());
+			LOGGER.info("Deleting all memberships for the connector"
+					+ connectorName + " using the name space ["
+					+ nameSpaceForTheConnector + "]");
+			userDataStoreDAO.removeAllMembershipsFromNamespace(nameSpaceForTheConnector);
       if (ConnectorNamesDAO.connectorNames.isEmpty()
           && connectorNamesDAO.getAllConnectorNames().size() == 0) {
-        LOGGER.log(Level.INFO, "Removing or dropping the user data store table from the data base.");
+        LOGGER.log(Level.INFO, "Dropping the user data store table from the data base.");
         // Removes the user data store table from the database.
         userDataStoreDAO.dropUserDataStoreTable();
         // Removes the connector names table from the database.
-        LOGGER.log(Level.INFO, "Removing or dropping the connector names table from the data base.");
+        LOGGER.log(Level.INFO, "Dropping the connector names table from the data base.");
         connectorNamesDAO.dropConnectorNamesTable();
       }
     }
