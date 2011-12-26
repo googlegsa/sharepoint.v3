@@ -48,7 +48,7 @@ public interface QueryProvider {
   /**
    * Returns the actual SQL query that can be executed
    *
-   * @param key
+   * @param query
    * @return
    */
   String getSqlQuery(Query query);
@@ -76,6 +76,8 @@ public interface QueryProvider {
    * @return
    */
   String getUdsIndexName();
+
+  String getCnTableName();
 }
 
 /**
@@ -106,7 +108,8 @@ enum Query {
   UDS_SELECT_FOR_GROUPID_NAMESPACE("group_id", "namespace"), UDS_DELETE_FOR_GROUPID_NAMESPACE(
       "group_id", "namespace"),
 
-  UDS_SELECT_FOR_NAMESPACE("namespace"), UDS_DELETE_FOR_NAMESPACE("namespace");
+  UDS_SELECT_FOR_NAMESPACE("namespace"), UDS_DELETE_FOR_NAMESPACE("namespace"), CN_CREATE_TABLE, CN_INSERT(
+      "connectorname"), CN_SELECT, CN_DELETE("connectorname"), CN_DROP_TABLE;
 
   String[] parameters;
 

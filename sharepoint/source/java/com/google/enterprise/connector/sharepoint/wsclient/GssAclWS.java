@@ -904,10 +904,8 @@ public class GssAclWS {
   }
 
   /**
-   * Executes CheckConnectivity() web method of GssAcl web service Used for
+   * Executes CheckConnectivity() web method of GssAcl web service. Used for
    * checking the Web Service connectivity
-   *
-   * @return the Web Service connectivity status
    */
   public void checkConnectivity() throws SharepointException {
     try {
@@ -934,7 +932,6 @@ public class GssAclWS {
     } catch (final Exception e) {
       throw new SharepointException(
           "Call to checkConnectivity failed. endpoint [ " + endpoint + " ].", e);
-
     }
   }
 }

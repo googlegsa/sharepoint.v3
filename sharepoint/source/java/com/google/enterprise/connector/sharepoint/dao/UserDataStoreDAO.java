@@ -177,10 +177,10 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   }
 
   /**
-   * removes all the membership info of a list of users belonging from a
-   * specified namespace, from the user data store
+   * Removes all the membership info of a list of users belonging from a
+   * specified namespace, from the user data store.
    *
-   * @param users list of userIds whose memberships are to be remove
+   * @param userIds list of userIds whose memberships are to be removed
    * @param namespace the namespace to which all the users belong
    * @throws SharepointException
    */
@@ -208,13 +208,11 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   }
 
   /**
-   * removes all the membership info of a list of groups belonging from a
-   * specified namespace, from the user data store
+   * Removes all the membership info of a list of groups belonging from a
+   * specified namespace, from the user data store.
    *
-   * @param groups list of groupIds whose memberships are to be remove
+   * @param groupIds list of groupIds whose memberships are to be removed
    * @param namespace the namespace to which all the groups belong
-   * @return status of each membership's deletion from store in the same order
-   *         in which queries were specified
    * @throws SharepointException
    */
   public void removeGroupMembershipsFromNamespace(Set<Integer> groupIds,
@@ -245,8 +243,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * from the user data store
    *
    * @param namespaces list of namespaces whose membeships are to be removed
-   * @return status of each membership's deletion from store in the same order
-   *         in which queries were specified
    * @throws SharepointException
    */
   public void removeAllMembershipsFromNamespace(Set<String> namespaces)
@@ -276,10 +272,10 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * Synchronizes the membership information of all groups identified by the
    * keyset of the passed in map. The groups are picked up as group-namespace
    * view. The synchronization involves deleting all the persisted memberships
-   * and adding the most latest ones </p> This synchronization is performed as
-   * one atomic operation using transaction
+   * and adding the most latest ones. </p> This synchronization is performed as
+   * one atomic operation using transaction.
    *
-   * @param groupToMemberships identifies groups and their corresponding most
+   * @param groupMembershipMap identifies groups and their corresponding most
    *          latest membership information
    * @param namespace
    * @throws SharepointException
@@ -365,7 +361,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * Removes all those elements from the passed-in collection that are found in
    * cache
    *
-   * @param elems
+   * @param memberships
    */
   private void removeAllCached(Collection<UserGroupMembership> memberships) {
     Iterator<UserGroupMembership> itr = memberships.iterator();
@@ -441,50 +437,54 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    */
   private void confirmEntitiesExistence() throws SharepointException {
     DatabaseMetaData dbm = null;
-    boolean tableFound = false;
-    String tableName;
-    String tablePattern;
+    boolean udsTableFound = false;
+    boolean cnTableFound = false;
+    String udsTableName, cnTableName = null;
+    String udsTablePattern, cnTablePattern = null;
     ResultSet rsTables = null;
     Statement statement = null;
+
     try {
       dbm = getConnection().getMetaData();
-      tableName = getQueryProvider().getUdsTableName();
-      // Specific to oracle data base to check required entities in user
+      udsTableName = getQueryProvider().getUdsTableName();
+      cnTableName = getQueryProvider().getCnTableName();
+
+      // Specific to oracle database to check required entities in user
       // data store data base.
       if (getQueryProvider().getDatabase().equalsIgnoreCase(SPConstants.SELECTED_DATABASE)) {
         statement = getConnection().createStatement();
         String query = getSqlQuery(Query.UDS_CHECK_TABLES);
         rsTables = statement.executeQuery(query);
-        while (rsTables.next()) {
-          if (tableName.equalsIgnoreCase(rsTables.getString(1))) {
-            tableFound = true;
-            LOGGER.config("User data store table found with name : "
-                + tableName);
-            break;
-          }
-        }
+        udsTableFound = isTableNameExists(udsTableName, rsTables);
+        cnTableFound = isTableNameExists(cnTableName, rsTables);
       } else {
         if (dbm.storesUpperCaseIdentifiers()) {
-          tablePattern = tableName.toUpperCase();
+          udsTablePattern = udsTableName.toUpperCase();
+          cnTablePattern = cnTableName.toUpperCase();
         } else if (dbm.storesLowerCaseIdentifiers()) {
-          tablePattern = tableName.toLowerCase();
+          udsTablePattern = udsTableName.toLowerCase();
+          cnTablePattern = cnTableName.toLowerCase();
         } else {
-          tablePattern = tableName;
+          udsTablePattern = udsTableName;
+          cnTablePattern = cnTableName;
         }
-        tablePattern = tablePattern.replace("%", dbm.getSearchStringEscape()
+        // specific to user data store table pattern.
+        udsTablePattern = udsTablePattern.replace("%", dbm.getSearchStringEscape()
             + "%");
-        tablePattern = tablePattern.replace("_", dbm.getSearchStringEscape()
+        udsTablePattern = udsTablePattern.replace("_", dbm.getSearchStringEscape()
             + "_");
-        rsTables = dbm.getTables(null, null, tablePattern, null);
-        while (rsTables.next()) {
-          if (tableName.equalsIgnoreCase(rsTables.getString(SPConstants.TABLE_NAME))) {
-            tableFound = true;
-            LOGGER.config("User data store table found with name : "
-                + rsTables.getString("TABLE_NAME"));
-            break;
-          }
-        }
+        rsTables = dbm.getTables(null, null, udsTablePattern, null);
+        udsTableFound = isTableNameExists(udsTableName, rsTables);
+
+        // specific to connector names table pattern.
+        cnTablePattern = cnTablePattern.replace("%", dbm.getSearchStringEscape()
+            + "%");
+        cnTablePattern = cnTablePattern.replace("_", dbm.getSearchStringEscape()
+            + "_");
+        rsTables = dbm.getTables(null, null, cnTablePattern, null);
+        cnTableFound = isTableNameExists(cnTableName, rsTables);
       }
+
       try {
         rsTables.close();
         if (null != statement) {
@@ -493,13 +493,18 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING, "Exception occurred while closing data base resources.", e);
       }
-      if (!tableFound) {
+      if (!udsTableFound) {
         getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_TABLE));
         LOGGER.config("Created user data store table with name : "
             + Query.UDS_CREATE_TABLE + " sucessfully");
         getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
         LOGGER.config("Created user data store table index with name : "
             + Query.UDS_CREATE_INDEX + " sucessfully");
+      }
+      if (!cnTableFound) {
+        getSimpleJdbcTemplate().update(getSqlQuery(Query.CN_CREATE_TABLE));
+        LOGGER.config("Created connector names table with name : "
+            + Query.UDS_CREATE_TABLE + " sucessfully");
       }
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
@@ -548,4 +553,38 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     return this.udsCache.size();
   }
 
+  /**
+   * Removes the user data store table.
+   *
+   * @throws SharepointException
+   */
+  public void dropUserDataStoreTable() throws SharepointException {
+    int status = getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_DROP_TABLE));
+    if (status == 0) {
+      LOGGER.info("Sucessfully dropped the User_Groups_Memberships table from the database using the query [ "
+          + Query.CN_DROP_TABLE + " ]");
+    }
+  }
+
+  /**
+   * Helper method to find out the given table name in the result set.
+   *
+   * @param tableName name to find out in the result set.
+   * @param rsTables is the result set
+   * @return true if the given table name found in the result set.
+   * @throws SQLException
+   */
+  private boolean isTableNameExists(String tableName, ResultSet rsTables)
+      throws SQLException {
+    boolean tableFound = false;
+    while (rsTables.next()) {
+      if (tableName.equalsIgnoreCase(rsTables.getString(SPConstants.TABLE_NAME))) {
+        tableFound = true;
+        LOGGER.log(Level.FINE, "Table name [ " + tableName
+            + " ]  found in database.");
+        break;
+      }
+    }
+    return tableFound;
+  }
 }

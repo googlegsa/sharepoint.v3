@@ -157,12 +157,13 @@ public class ListState implements StatefulObject {
   private List<Folder> changedFolders = new LinkedList<Folder>();
 
   /**
-   * @param inInternalName
+   * @param inPrimaryKey
    * @param inTitle
    * @param inType
    * @param inLastMod
    * @param inBaseTemplate
    * @param inUrl
+   * @param inParentWeb
    * @throws SharepointException
    */
   public ListState(final String inPrimaryKey, final String inTitle,
@@ -521,7 +522,7 @@ public class ListState implements StatefulObject {
     if ((crawlQueue != null) && (crawlQueue.size() > 0)) {
       LOGGER.config("Crawl queue for " + getListURL());
       for (int iDoc = 0; iDoc < crawlQueue.size(); ++iDoc) {
-        final SPDocument doc = (SPDocument) crawlQueue.get(iDoc);
+        final SPDocument doc = crawlQueue.get(iDoc);
         LOGGER.config(doc.getLastMod().getTime() + ", " + doc.getUrl());
         doc.dumpAllAttrs();
       }
@@ -677,20 +678,23 @@ public class ListState implements StatefulObject {
    *          value of relativeURL field
    * @param docID document ID
    * @param isFolder is the document a folder?
+   * @return true on success; false if there was a problem updating the extrIDs
+   *           such as a parent folder to the document was not found in the
+   *           extraIDs.
    */
-  public void updateExtraIDs(final String docPath, final String docID,
-      final boolean isFolder) throws SharepointException {
+  public boolean updateExtraIDs(final String docPath, final String docID,
+      final boolean isFolder) {
     if (!Util.isNumeric(docID)) {
       // This must be a list itself. And, we do not bother about list
       // here. We only need list items.
-      return;
+      return true;
     }
     if (!canContainFolders()) {
-      return;
+      return true;
     }
     if (docPath == null) {
       LOGGER.log(Level.WARNING, "docPath is null. Returning..");
-      return;
+      return true;
     }
 
     int index = -1;
@@ -699,10 +703,10 @@ public class ListState implements StatefulObject {
 
     index = docPath.indexOf(listConst);
     if (index == -1) {
-      LOGGER.log(Level.WARNING, "The document path [ " + docPath
+      LOGGER.log(Level.INFO, "The document path [ " + docPath
           + " ] does not match its parent list listConst [ " + listConst
           + " ], listURL [ " + listURL + "]. returning...");
-      return;
+      return true;
     }
     index += listConst.length();
     parentPath = docPath.substring(index);
@@ -737,7 +741,7 @@ public class ListState implements StatefulObject {
         extraIDs.replace(startPos, endPos, docTitle);
         LOGGER.log(Level.INFO, "ExtraIDs updated for the folder " + docTitle);
       }
-      return;
+      return true;
     }
 
     parentPath = parentPath.substring(0, index);
@@ -752,7 +756,7 @@ public class ListState implements StatefulObject {
         LOGGER.log(Level.FINE, "A top level document is received with docPath [ "
             + docPath + " ]. ExtraID has not been updated.");
       }
-      return;
+      return true;
     }
 
     // Reach up to the place where the ID is should be inserted. This place
@@ -770,13 +774,12 @@ public class ListState implements StatefulObject {
             LOGGER.log(Level.FINE, "A docID [ "
                 + docID
                 + " ] has been found whose parent folder ID is not known. listURL [ "
-                + listURL + " ]. returning...");
-            throw new SharepointException("extraIDs needs to be updated..");
+                + listURL + " ]. folder [ " + folder + " ]. extraIDs [ " + extraIDs + " ].");
+            return false;
           }
           index += 1 + folder.length();
           chr = extraIDs.charAt(index);
         } while (chr != '#' && chr != '/');
-
       }
     }
 
@@ -787,6 +790,7 @@ public class ListState implements StatefulObject {
     }
     LOGGER.log(Level.FINEST, "ExtraIDs updated for the docID #" + docID
         + " List URL [ " + listURL + " ]. ");
+    return true;
   }
 
   /**
@@ -1159,7 +1163,7 @@ public class ListState implements StatefulObject {
   }
 
   /**
-   * @param lastDocProcessedForWS the lastDocProcessedForWS to set
+   * @param lastDocProcessed the lastDocProcessed to set
    */
   public void setLastDocProcessed(SPDocument lastDocProcessed) {
     this.lastDocProcessed = lastDocProcessed;
@@ -1205,7 +1209,6 @@ public class ListState implements StatefulObject {
         }
         if (!isNextChangeTokenBlank()) {
           atts.addAttribute("", "", SPConstants.STATE_CACHED_CHANGETOKEN, SPConstants.STATE_ATTR_CDATA, getNextChangeTokenForSubsequectWSCalls());
-
         }
 
         if (FeedType.CONTENT_FEED == feedType) {
@@ -1332,7 +1335,6 @@ public class ListState implements StatefulObject {
 
       handler.endElement("", "", SPConstants.STATE_RENAMED_FOLDER_LIST);
     }
-
   }
 
   /**

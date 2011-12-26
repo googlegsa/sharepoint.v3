@@ -16,8 +16,10 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.dao.ConnectorNamesDAO;
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
@@ -28,6 +30,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
 import com.google.enterprise.connector.spi.ConnectorPersistentStoreAware;
+import com.google.enterprise.connector.spi.ConnectorShutdownAware;
 import com.google.enterprise.connector.spi.LocalDatabase;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
@@ -45,7 +48,7 @@ import java.util.logging.Logger;
  * @author nitendra_thakur
  */
 public class SharepointConnector implements Connector,
-    ConnectorPersistentStoreAware {
+    ConnectorPersistentStoreAware, ConnectorShutdownAware {
   private static final Logger LOGGER = Logger.getLogger(SharepointConnector.class.getName());
   private SharepointClientContext sharepointClientContext = null;
 
@@ -86,9 +89,12 @@ public class SharepointConnector implements Connector,
   private String cacheRefreshInterval;
   private LdapConnectionSettings ldapConnectionSettings;
   private boolean feedUnPublishedDocuments;
+  private LocalDatabase localDatabseImpl;
+  private ConnectorNamesDAO connectorNamesDAO;
+  private String connectorName;
+  private UserDataStoreDAO userDataStoreDAO;
 
   public SharepointConnector() {
-
   }
 
   /**
@@ -112,11 +118,16 @@ public class SharepointConnector implements Connector,
     LOGGER.info("Connector login()");
     if (sharepointClientContext.isPushAcls()) {
       try {
+        this.connectorName = Util.getConnectorNameFromDirectoryUrl(googleConnectorWorkDir);
+        connectorNamesDAO = new ConnectorNamesDAO(
+            localDatabseImpl.getDataSource(), queryProvider);
+        // Add current connector instance name to the database table.
+        connectorNamesDAO.addConnectorInstanceName(connectorName);
         new GssAclWS(sharepointClientContext, null).checkConnectivity();
       } catch (Exception e) {
         throw new RepositoryException(
-            "Crawling cannot proceed becasue ACL web service cannot be contacted and hecne, "
-                + "ACLs canot be retreived while crawling. You may still make the connector crawl "
+            "Crawling cannot proceed because ACL web service cannot be contacted and hence, "
+                + "ACLs cannot be retrieved while crawling. You may still make the connector crawl "
                 + "by setting the ACL flag as false in connectorInstance.xml. ",
             e);
       }
@@ -437,8 +448,7 @@ public class SharepointConnector implements Connector,
    * selected data base.
    */
   private void performUserDataStoreInitialization() {
-    UserDataStoreDAO userDataStoreDAO = null;
-    LocalDatabase localDatabseImpl = connectorPersistnetStore.getLocalDatabase();
+    localDatabseImpl = connectorPersistnetStore.getLocalDatabase();
     String locale = localDatabseImpl.getDatabaseType().name();
     LOGGER.config("Data base type : " + locale);
     if (null == locale || locale.length() == 0) {
@@ -662,7 +672,7 @@ public class SharepointConnector implements Connector,
   }
 
   /**
-   * @param ldapConnectiionSettings the ldapConnectiionSettings to set.
+   * @param ldapConnectionSettings the ldapConnectiionSettings to set.
    */
   public void setLdapConnectiionSettings(
       LdapConnectionSettings ldapConnectionSettings) {
@@ -675,6 +685,70 @@ public class SharepointConnector implements Connector,
 
   public void setFeedUnPublishedDocuments(boolean feedUnPublishedDocuments) {
     this.feedUnPublishedDocuments = feedUnPublishedDocuments;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see com.google.enterprise.connector.spi.ConnectorShutdownAware#shutdown()
+   */
+  public void shutdown() throws RepositoryException {
+    LOGGER.info("Shutting down the connector with the name [" + connectorName
+        + "]");
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see com.google.enterprise.connector.spi.ConnectorShutdownAware#delete()
+   */
+  public void delete() throws RepositoryException {
+    if (!ConnectorNamesDAO.connectorNames.isEmpty()
+        && connectorNamesDAO.getAllConnectorNames().size() > 0) {
+      LOGGER.info("Deleting the connector with the name ["
+          + connectorName + "] from the database table.");
+      // Removes the connector name from the database table.
+      connectorNamesDAO.removeConnectorName(connectorName);
+	  Set<String> nameSpaceForTheConnector = new HashSet<String>();
+			nameSpaceForTheConnector.add(this.sharepointClientContext.getSiteURL());
+			LOGGER.info("Deleting all memberships for the connector"
+					+ connectorName + " using the name space ["
+					+ nameSpaceForTheConnector + "]");
+			userDataStoreDAO.removeAllMembershipsFromNamespace(nameSpaceForTheConnector);
+      if (ConnectorNamesDAO.connectorNames.isEmpty()
+          && connectorNamesDAO.getAllConnectorNames().size() == 0) {
+        LOGGER.log(Level.INFO, "Dropping the user data store table from the data base.");
+        // Removes the user data store table from the database.
+        userDataStoreDAO.dropUserDataStoreTable();
+        // Removes the connector names table from the database.
+        LOGGER.log(Level.INFO, "Dropping the connector names table from the data base.");
+        connectorNamesDAO.dropConnectorNamesTable();
+      }
+    }
+  }
+
+  public ConnectorNamesDAO getConnectorNamesDAO() {
+    return connectorNamesDAO;
+  }
+
+  public void setConnectorNamesDAO(ConnectorNamesDAO connectorNamesDAO) {
+    this.connectorNamesDAO = connectorNamesDAO;
+  }
+
+  public String getConnectorName() {
+    return connectorName;
+  }
+
+  public void setConnectorName(String connectorName) {
+    this.connectorName = connectorName;
+  }
+
+  public UserDataStoreDAO getUserDataStoreDAO() {
+    return userDataStoreDAO;
+  }
+
+  public void setUserDataStoreDAO(UserDataStoreDAO userDataStoreDAO) {
+    this.userDataStoreDAO = userDataStoreDAO;
   }
 
 }

@@ -42,6 +42,9 @@ public class SimpleQueryProvider implements QueryProvider {
   private String udsTableName;
   private String udsIndexName;
 
+  // for connector names table
+  private String cnTableName;
+
   // Queries that can be served
   private Map<Query, String> sqlQueryMap = new HashMap<Query, String>();
 
@@ -64,8 +67,6 @@ public class SimpleQueryProvider implements QueryProvider {
    * queries themselves.
    *
    * @see {@code Query#getParameterPlaceholders()}
-   * @param connectorName Connector that will be using this QueryProvider. This
-   *          is appended to all entity/attribute names
    * @param vendor specifies the vendor for which the queries will be provided
    * @param attr specifies additional attributes that should be considered along
    *          with vendor name while loading the queries. At max three
@@ -130,6 +131,15 @@ public class SimpleQueryProvider implements QueryProvider {
       break;
     case UDS_SELECT_FOR_ADGROUPS:
       placeholders.add(0, udsTableName);
+      break;
+
+    case CN_CREATE_TABLE:
+    case CN_INSERT:
+    case CN_SELECT:
+    case CN_DELETE:
+    case CN_DROP_TABLE:
+      placeholders.add(0, cnTableName);
+      break;
     }
     sqlQuery = MessageFormat.format(sqlQueries.getString(query.name()), placeholders.toArray());
     sqlQueryMap.put(query, sqlQuery);
@@ -158,6 +168,14 @@ public class SimpleQueryProvider implements QueryProvider {
 
   public void setUdsIndexName(String udsIndexName) {
     this.udsIndexName = udsIndexName;
+  }
+
+  public String getCnTableName() {
+    return cnTableName;
+  }
+
+  public void setCnTableName(String cnTableName) {
+    this.cnTableName = cnTableName;
   }
 
 }

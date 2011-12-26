@@ -730,14 +730,10 @@ public class ListsWS {
               String folderPath = null;
               if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
                 if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-                  try {
-                    list.updateExtraIDs(relativeURL, docId, true);
-                  } catch (SharepointException se) {
-                    LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
-                        + relativeURL
-                        + " ], listURL [ "
-                        + list.getListURL()
-                        + " ]. ", se);
+                  if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                    LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
+                        + relativeURL + " ], listURL [ " + list.getListURL()
+                        + " ]. Perhaps a folder or list was renamed.");
                   }
                 }
                 folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
@@ -773,8 +769,8 @@ public class ListsWS {
    * folder is restored and we need to discover items level by level.
    *
    * @param list : Base List
-   * @param lastItemID : Last Item ID that we have already identified at this
-   *          level.
+   * @param lastItemIDAtFolderLevel : Last Item ID that we have already
+   *          identified at this level.
    * @param folder : The folder from where to discover the items.
    * @return list of documents as {@link SPDocument}
    */
@@ -874,7 +870,6 @@ public class ListsWS {
    * from getting shown, do not trust the change info.
    *
    * @param list : List whose items is to be retrieved
-   * @param lastItemID : serves as a base for incremental crawl
    * @param allWebs : A collection to store any webs, discovered as part of
    *          discovering list items. Foe example link sites are stored as list
    *          items.
@@ -1077,7 +1072,7 @@ public class ListsWS {
       }
       LOGGER.log(Level.WARNING, "Could not parse the web service SOAP response for list [ "
           + list.getListURL()
-          + " ]. This could happen becasue of invalid XML chanracters in the web service response. "
+          + " ]. This could happen because of invalid XML characters in the web service response. "
           + "Check if any of your document's metadata has such characters in it. ");
     }
 
@@ -1198,7 +1193,7 @@ public class ListsWS {
       final Set<String> restoredIDs, final Set<String> renamedIDs)
       throws SharepointException {
     final String lastChangeToken = changeElement.getAttributeValue(SPConstants.LASTCHANGETOKEN);
-    LOGGER.log(Level.FINE, "Change Token Recieved [ " + lastChangeToken
+    LOGGER.log(Level.FINE, "Change Token Received [ " + lastChangeToken
         + " ]. ");
     if (lastChangeToken == null) {
       LOGGER.log(Level.SEVERE, "No Change Token Found in the Web Service Response !!!! "
@@ -1238,7 +1233,7 @@ public class ListsWS {
         continue;
       }
 
-      LOGGER.config("Recieved change type as: " + changeType);
+      LOGGER.config("Received change type as: " + changeType);
 
       if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
         if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
@@ -1292,6 +1287,12 @@ public class ListsWS {
             + itemId
             + "] has been renamed. ADD feeds will be sent for this and all the dependednt IDs. listURL ["
             + list.getListURL() + " ] ");
+      } else if (SPConstants.SYSTEM_UPDATE.equalsIgnoreCase(changeType)) {
+        renamedIDs.add(itemId);
+        LOGGER.log(Level.INFO, "ItemID ["
+            + itemId
+            + "] has been moved with change type as SystemUpdate. Hence ADD feeds will be sent for this and all the dependednt IDs. listURL ["
+            + list.getListURL() + " ] ");
       }
     }
 
@@ -1324,7 +1325,7 @@ public class ListsWS {
 
     final ArrayList<MessageElement> updatedListItems = new ArrayList<MessageElement>();
     final String receivedNextPage = dataElement.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
-    LOGGER.log(Level.FINE, "Next Page Recieved [ " + receivedNextPage + " ]. ");
+    LOGGER.log(Level.FINE, "Next Page Received [ " + receivedNextPage + " ]. ");
     list.setNextPage(receivedNextPage);
     /*
      * One may think of using nextPage as the backbone of page by page crawling
@@ -1384,26 +1385,19 @@ public class ListsWS {
               list.removeFromDeleteCache(docId);
 
               if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
-                try {
-                  list.updateExtraIDs(relativeURL, docId, true);
-                } catch (SharepointException se1) {
+                if (!list.updateExtraIDs(relativeURL, docId, true)) {
                   // Try again after updating the folders
                   // info.
                   // Because, the folder might have been renamed.
-                  LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
-                      + relativeURL
-                      + " ], listURL [ "
-                      + list.getListURL()
-                      + " ]. Retrying after updating the folders info.. ", se1.getMessage());
+                  LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
+                      + relativeURL + " ], listURL [ " + list.getListURL()
+                      + " ]. Retrying after updating the folders info.. ");
                   getSubFoldersRecursively(list, null, null);
-                  try {
-                    list.updateExtraIDs(relativeURL, docId, true);
-                  } catch (SharepointException se2) {
-                    LOGGER.log(Level.WARNING, "Problem while updating relativeURL [ "
-                        + relativeURL
-                        + " ], listURL [ "
-                        + list.getListURL()
-                        + " ]. ", se2);
+
+                  if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                    LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
+                        + relativeURL + " ], listURL [ " + list.getListURL()
+                        + " ]. Perhaps a folder or list was renamed.");
                   }
                 }
               }
@@ -1655,7 +1649,23 @@ public class ListsWS {
       url.setLength(0);
       url.append(urlPrefix);
       url.append(SPConstants.SLASH);
-      url.append(list.getListConst() + SPConstants.DISPFORM);
+      // Below checks are required to form appropriate URLs in-Case of blog site
+      // Object types
+      if (list.getBaseTemplate().equals(SPConstants.BT_CATEGORIES)) {
+        // Categories items of blog site the URL should be like:
+        // http://serverName.serverDomain:portNumber/blogsiteName/Lists/Categories/ViewCategory.aspx?ID=1
+        url.append(list.getListConst() + SPConstants.VIEWCATEGORY);
+      } else if (list.getBaseTemplate().equals(SPConstants.BT_POSTS)) {
+        // Posts items of blog site the URL should be like:
+        // http://serverName.serverDomain:portNumber/blogsiteName/Lists/Posts/ViewPost.aspx?ID=1
+        url.append(list.getListConst() + SPConstants.VIEWPOST);
+      } else if (list.getBaseTemplate().equals(SPConstants.BT_COMMENTS)) {
+        // Comments items of blog site the URL should be like:
+        // http://serverName.serverDomain:portNumber/blogsiteName/Lists/Comments/ViewComment.aspx?ID=1
+        url.append(list.getListConst() + SPConstants.VIEWCOMMENT);
+      } else {
+        url.append(list.getListConst() + SPConstants.DISPFORM);
+      }
       url.append(docId);
       displayUrl = url.toString();
       if (list.isInfoPathLibrary()) {

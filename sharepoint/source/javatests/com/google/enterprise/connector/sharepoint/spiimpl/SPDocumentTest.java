@@ -20,6 +20,7 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.spi.Property;
+import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants;
 
 import org.apache.commons.httpclient.URI;
@@ -31,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
 
@@ -92,4 +95,35 @@ public class SPDocumentTest extends TestCase {
     System.out.println("[ downloadContents(() ] Test passd");
   }
 
+  public final void testDownloadContentsForMsgFile() {
+    this.doc.setContentDwnldURL(TestConfiguration.Site1_List_Item_MSG_File_URL);
+    try {
+      String responseCode = this.doc.downloadContents();
+      assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
+      assertEquals("application/vnd.ms-outlook", this.doc.getContent_type());
+    } catch (RepositoryException e) {
+      fail("Exception while downloading contents");
+    }
+
+  }
+
+  public void testGetPropertyNamesWithoutExcludedMetadata() {
+    Set<String> documentMetadata;
+    try {
+      documentMetadata = this.doc.getPropertyNames();
+      assertTrue(documentMetadata.contains(SPConstants.PARENT_WEB_TITLE));
+    } catch (RepositoryException e) {
+      fail("Could not get property names for document");
+    }
+  }
+
+  public void testGetPropertyNamesWithExcludedMetadata() {
+    this.doc.getSharepointClientContext().getExcluded_metadata().add(Pattern.compile(".*title$"));
+    try {
+      Set<String> documentMetadata = this.doc.getPropertyNames();
+      assertFalse(documentMetadata.contains(SPConstants.PARENT_WEB_TITLE));
+    } catch (RepositoryException e) {
+      fail("Could not get property names for document");
+    }
+  }
 }

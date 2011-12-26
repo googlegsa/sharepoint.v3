@@ -259,6 +259,8 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
     String userName = identity.getUsername();
     String domain = identity.getDomain();
+      }
+    }
 
     LOGGER.log(Level.INFO, "Received authZ request for " + docIDs.size()
         + " docs. Username [ " + userName + " ], domain [ " + domain + " ]. ");
@@ -461,6 +463,27 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         }
       }
     }
+    final Container container = new Container();
+    StringTokenizer strTok = null;
+    String URL = null;
+    String DocID = null;
+    // In case of meta URL feed, separate list URL from the docID using
+    // "?" as a delimiter.
+    if (complexDocId.indexOf(SPConstants.EQUAL_TO) != -1) {
+      strTok = new StringTokenizer(complexDocId,
+          SPConstants.META_URL_FEED_DOC_TOKEN);
+      URL = strTok.nextToken();
+      String tempDocID = strTok.nextToken();
+      // to remove "ID=" from docID.
+      DocID = tempDocID.substring(3);
+    } else {
+      // This change in case of content feed.
+      strTok = new StringTokenizer(complexDocId, SPConstants.DOC_TOKEN);
+      URL = strTok.nextToken();
+      if (strTok.hasMoreElements()) {
+        DocID = strTok.nextToken();
+      }
+    }
 
     // Fix me: Get the details of Attachments and Alert URLs in case of
     // Meta and URL feed mode and find away to get required information
@@ -511,6 +534,26 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
     authData.setItemId(DocID);
     authData.setComplexDocId(originalComplexDocId);
+        container.setType(ContainerType.SITE);
+        authData.setType(EntityType.ALERT);
+      }
+    } else {
+      Pattern pattern = Pattern.compile(SPConstants.ATTACHMENTS);
+      Matcher match = pattern.matcher(URL);
+      if (match.find()) {
+        isAttachment = true;
+        DocID = getDocIDFromAttachmentURLInMetaUrlFeedMode(URL);
+        URL = getAttachmentUrlInMetaUrlFeedMode(URL);
+        container.setType(ContainerType.LIST);
+        authData.setType(EntityType.LISTITEM);
+      } else if (complexDocId.contains(SPConstants.ALERTS_EQUALTO)) {
+        DocID = DocID.substring(4, DocID.indexOf("}"));
+        URL = URL.substring(0, URL.indexOf("_layouts"));
+        container.setType(ContainerType.SITE);
+        authData.setType(EntityType.ALERT);
+      }
+    }
+    container.setUrl(URL);
 
     return authData;
   }
@@ -534,14 +577,13 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
     tempUrl += "AllItems.aspx";
     // tempUrl.substring(tempUrl.indexOf("[", 2) + 1);
     return tempUrl;
-
   }
 
   /**
-   * Construct the AuthorizationResponse for each AuthData after authorization
+   * Constructs the AuthorizationResponse for each AuthData after authorization.
    *
-   * @param authDocs List of all the authorized documents as returned by the Web
-   *          Service.
+   * @param authDataPacketArray List of all the authorized documents
+   *          as returned by the Web Service.
    * @return The AuthorizationResponse to be sent to CM
    */
   private List<AuthorizationResponse> getAuthResponse(
@@ -602,13 +644,13 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         + count
         + " documents from site collection [ "
         + authDataPacket.getContainer().getUrl()
-        + " ] was not completed becasue web service encountered following error -> "
+        + " ] was not completed because web service encountered following error -> "
         + authDataPacket.getMessage());
 
     for (AuthData authData : authDataPacket.getAuthDataArray()) {
       LOGGER.log(Level.WARNING, "AuthZ status: INDETERMINATE for DocId [ "
           + authData.getComplexDocId()
-          + " ] becasue the current AuthDataPacket packet was discarded due to following WS error -> "
+          + " ] because the current AuthDataPacket packet was discarded due to following WS error -> "
           + authDataPacket.getMessage());
 
       if (authData.getComplexDocId().startsWith(SPConstants.ATTACHMENT_SUFFIX_IN_DOCID)) {
@@ -632,7 +674,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
   /**
    * Checks if this document was processed successfully
    *
-   * @param authDataPacket
+   * @param authData
    * @return true if this document has been authorized and the status can be
    *         sent back to GSA
    */

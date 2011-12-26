@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Class to hold data regarding a sharepoint document. Anything that is sent ot
@@ -126,6 +127,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   private String displayUrl;
   private String title;
+  private final String MSG_FILE_EXTENSION = ".msg";
+  private final String MSG_FILE_MIMETYPE = "application/vnd.ms-outlook";
 
   /**
    * @return the toBeFed
@@ -431,7 +434,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       if (docURL1st != null) {
         comparison = docURL1st.compareTo(docURL2nd);
       }
-
     }
     return comparison;
   }
@@ -468,7 +470,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         if (null == content && null == content_type) {
           String status = downloadContents();
           if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-            LOGGER.log(Level.WARNING, "Following response recieved while downloading contents (for getting content type): "
+            LOGGER.log(Level.WARNING, "Following response received while downloading contents (for getting content type): "
                 + status);
           }
         }
@@ -547,7 +549,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     // class. All the attribute will be there in a common map.
     else {
       for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
-        final Attribute attr = (Attribute) iter.next();
+        final Attribute attr = iter.next();
         if (collator.equals(strPropertyName, attr.getName())) {
           return new SPProperty(strPropertyName, new StringValue(
               attr.getValue().toString()));
@@ -565,36 +567,61 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    * the feed for this document.
    */
   public Set<String> getPropertyNames() throws RepositoryException {
-    final Set<String> s = new HashSet<String>();
-    s.add(SPConstants.OBJECT_TYPE);
-    s.add(SPConstants.LIST_GUID);
-    s.add(SPConstants.SPAUTHOR);
-    s.add(SPConstants.PARENT_WEB_TITLE);
+    final Set<String> names = new HashSet<String>();
+    ArrayList<String> candidates = new ArrayList<String>();
+    candidates.add(SPConstants.OBJECT_TYPE);
+    candidates.add(SPConstants.LIST_GUID);
+    candidates.add(SPConstants.SPAUTHOR);
+    candidates.add(SPConstants.PARENT_WEB_TITLE);
+
     if (null != usersAclMap) {
-      s.add(SpiConstants.PROPNAME_ACLUSERS);
+      names.add(SpiConstants.PROPNAME_ACLUSERS);
       for (Entry<String, Set<RoleType>> ace : usersAclMap.entrySet()) {
-        s.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX + ace.getKey());
+        names.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX + ace.getKey());
       }
     }
     if (null != groupsAclMap) {
-      s.add(SpiConstants.PROPNAME_ACLGROUPS);
+      names.add(SpiConstants.PROPNAME_ACLGROUPS);
       for (Entry<String, Set<RoleType>> ace : groupsAclMap.entrySet()) {
-        s.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
+        names.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
       }
     }
-
-    if (null != title) {
-      s.add(SpiConstants.PROPNAME_TITLE);
-    }
-
-    // get the "extra" metadata fields, including those added by user:
+    // Add "extra" metadata fields, including those added by user to the
+    // documentMetadata List for matching against patterns
     for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
-      final Attribute attr = (Attribute) iter.next();
-      s.add(attr.getName().toString());
+      final Attribute attr = iter.next();
+      candidates.add(attr.getName().toString());
     }
-    LOGGER.log(Level.FINEST, "Document properties set: " + s + " for docID [ "
-        + docId + " ], docURL [ " + url + " ]. ");
-    return s;
+    if (null != title) {
+      names.add(SpiConstants.PROPNAME_TITLE);
+    }
+    ArrayList<Pattern> excludedMetadataPatterns = sharepointClientContext.getExcluded_metadata();
+    // Add only those metadata attributes which do not come under excluded
+    // patterns
+    if (sharepointClientContext.getExcluded_metadata().size() != 0) {
+      for (String metadataName : candidates) {
+        if (!matches(metadataName, excludedMetadataPatterns)) {
+          names.add(metadataName);
+        }
+      }
+    } else {
+      names.addAll(candidates);
+    }
+    LOGGER.log(Level.FINEST, "Document properties set: " + names
+        + " for docID [ " + docId + " ], docURL [ " + url + " ]. ");
+    return names;
+  }
+
+  public boolean matches(String metadataName,
+      List<Pattern> excludedMetadataPatterns) {
+    boolean flag = false;
+    for (Pattern pattern : excludedMetadataPatterns) {
+      if (metadataName.matches(pattern.pattern())) {
+        flag = true;
+        break;
+      }
+    }
+    return flag;
   }
 
   /**
@@ -661,43 +688,51 @@ public class SPDocument implements Document, Comparable<SPDocument> {
           return SPConstants.CONNECTIVITY_FAIL;
         }
         content = method.getResponseBodyAsStream();
-
       } catch (Throwable t) {
         String msg = new StringBuffer("Unable to fetch contents from URL: ").append(url).toString();
         LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: " + url, t);
         throw new RepositoryDocumentException(msg, t);
       }
-
-      final Header contentType = method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER);
-      if (contentType != null) {
-        content_type = contentType.getValue();
-
-        if (LOGGER.isLoggable(Level.FINEST)) {
-          LOGGER.fine("The content type for doc : " + toString() + " is : "
-              + content_type);
+      // checks if the give URL is for .msg file if true set the mimetype
+      // directly to application/vnd.ms-outlook as mimetype returned by the
+      // header is incorrect for .msg files
+      if (!contentDwnldURL.endsWith(MSG_FILE_EXTENSION)) {
+        final Header contentType = method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER);
+        if (contentType != null) {
+          content_type = contentType.getValue();
+        } else {
+          LOGGER.info("The content type returned for doc : " + toString()
+              + " is : null ");
         }
-
-        if (sharepointClientContext.getTraversalContext() != null) {
-          // TODO : This is to be revisited later where a better
-          // approach to skip documents or only content is
-          // available
-          int mimeTypeSupport = sharepointClientContext.getTraversalContext().mimeTypeSupportLevel(content_type);
-          if (mimeTypeSupport == 0) {
-            content = null;
-            LOGGER.log(Level.WARNING, "Dropping content of document : "
-                + getUrl() + " with docId : " + docId + " as the mimetype : "
-                + content_type + " is not supported");
-          } else if (mimeTypeSupport < 0) {
-            // Since the mimetype is in list of 'ignored' mimetype
-            // list, mark it to be skipped from sending
-            String msg = new StringBuffer("Skipping the document with docId : ").append(getDocId()).append(" doc URL: ").append(getUrl()).append(" as the mimetype is in the 'ignored' mimetypes list ").toString();
-            // Log it to the excluded_url log
-            sharepointClientContext.logExcludedURL(msg);
-            throw new SkippedDocumentException(msg);
-          }
-        }
+      } else {
+        content_type = MSG_FILE_MIMETYPE;
       }
 
+      if (LOGGER.isLoggable(Level.FINEST)) {
+        LOGGER.fine("The content type for doc : " + toString() + " is : "
+            + content_type);
+      }
+
+      if (sharepointClientContext.getTraversalContext() != null
+          && content_type != null) {
+        // TODO : This is to be revisited later where a better
+        // approach to skip documents or only content is
+        // available
+        int mimeTypeSupport = sharepointClientContext.getTraversalContext().mimeTypeSupportLevel(content_type);
+        if (mimeTypeSupport == 0) {
+          content = null;
+          LOGGER.log(Level.WARNING, "Dropping content of document : "
+              + getUrl() + " with docId : " + docId + " as the mimetype : "
+              + content_type + " is not supported");
+        } else if (mimeTypeSupport < 0) {
+          // Since the mimetype is in list of 'ignored' mimetype
+          // list, mark it to be skipped from sending
+          String msg = new StringBuffer("Skipping the document with docId : ").append(getDocId()).append(" doc URL: ").append(getUrl()).append(" as the mimetype is in the 'ignored' mimetypes list ").toString();
+          // Log it to the excluded_url log
+          sharepointClientContext.logExcludedURL(msg);
+          throw new SkippedDocumentException(msg);
+        }
+      }
     }
 
     if (responseCode == 200) {
@@ -736,7 +771,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   }
 
   /**
-   * @param folderLevel the folderLevel to set
+   * @param folder the parent folder to set
    */
   public void setParentFolder(final Folder folder) {
     this.parentFolder = folder;
