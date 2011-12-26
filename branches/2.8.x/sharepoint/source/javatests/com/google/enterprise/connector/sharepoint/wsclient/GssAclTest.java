@@ -111,6 +111,7 @@ public class GssAclTest extends TestCase {
     List<SPDocument> docs = aclWS.getListItemsForAclChangeAndUpdateState(listState, listWs);
     assertNotNull(docs);
   }
+  }
 
   public void testResolveSPGroup() throws Exception {
     String[] groupIds = { "1", "[GSSiteCollectionAdministrator]", "5" };

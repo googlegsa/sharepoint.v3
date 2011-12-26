@@ -61,11 +61,11 @@ public class SharepointTraversalManager implements TraversalManager,
       throws RepositoryException {
     if (inConnector == null) {
       throw new SharepointException(
-          "Can not initialize traversal manager becasue SharePointConnector object is null");
+          "Cannot initialize traversal manager because SharePointConnector object is null.");
     }
     if (inSharepointClientContext == null) {
       throw new SharepointException(
-          "Can not initialize traversal manager becasue SharePointClientContext object is null");
+          "Cannot initialize traversal manager because SharePointClientContext object is null.");
     }
     try {
       LOGGER.config("SharepointTraversalManager: "
@@ -282,7 +282,7 @@ public class SharepointTraversalManager implements TraversalManager,
     LOGGER.log(Level.INFO, "Checking crawl queues of all ListStates/WebStates for pending docs.");
     for (final Iterator<WebState> iter = globalState.getCircularIterator(); iter.hasNext()
         && (sizeSoFar < hint);) {
-      final WebState webState = (WebState) iter.next();
+      final WebState webState = iter.next();
       globalState.setCurrentWeb(webState);
       SPDocumentList rs = null;
       try {

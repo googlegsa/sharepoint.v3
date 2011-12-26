@@ -101,7 +101,7 @@ public class SharepointClient {
     }
     final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
     for (final Iterator<SPDocument> iter = list.getCrawlQueue().iterator(); iter.hasNext();) {
-      final SPDocument doc = (SPDocument) iter.next();
+      final SPDocument doc = iter.next();
       doc.setParentList(list);
       doc.setParentWeb(web);
       // Update necessary information required for downloading contents.
@@ -186,7 +186,7 @@ public class SharepointClient {
     noOfVisitedListStates = 0;
     SPDocumentList resultSet = null;
     for (final Iterator<ListState> iter = webState.getCurrentListstateIterator(); iter.hasNext();) {
-      final ListState list = (ListState) iter.next();
+      final ListState list = iter.next();
 
       // Mark this list as current list so that the next traversal
       // request starts from here and already scanned lists are not
@@ -514,7 +514,7 @@ public class SharepointClient {
     }
     final Iterator<String> itAllSites = allSites.iterator();
     while ((itAllSites != null) && (itAllSites.hasNext())) {
-      final String url = (String) itAllSites.next();
+      final String url = itAllSites.next();
       final WebState webState = updateGlobalState(globalState, url);
       if (null != webState) {
         newWebs.add(webState);
@@ -727,7 +727,6 @@ public class SharepointClient {
           }
           doCrawl = false;
         }
-
       }
     } else if (newWebs.size() > 0 && null != webCrawlInfoFetcher) {
       // This is the case when we have reached the batch-hint while
@@ -1166,9 +1165,9 @@ public class SharepointClient {
       ListState nextList, ArrayList<String> lstLookupForWebs)
       throws SharepointException {
     globalState.setCurrentWeb(nextWeb);
-    final Iterator<WebState> itWebs = (Iterator<WebState>) globalState.getCircularIterator();
+    final Iterator<WebState> itWebs = globalState.getCircularIterator();
     while (itWebs.hasNext()) {
-      WebState ws = (WebState) itWebs.next();// Get the first web
+      WebState ws = itWebs.next(); // Get the first web
       if (ws == null) {
         continue;
       }

@@ -63,8 +63,8 @@ public abstract class CacheProvider<T> implements ICache<T> {
 
   /**
    * A subclass of Java's SoftReference whose equality and ordering is decided
-   * by its referral and not by the reference itself. Hence, a new definition
-   * for equals() and hasCode() is given
+   * by its referent and not by the reference itself. Hence, a new definition
+   * for equals() and hashCode() is given
    *
    * @author nitendra_thakur
    */
@@ -82,6 +82,7 @@ public abstract class CacheProvider<T> implements ICache<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(Object obj) {
       if (null == obj || !(obj instanceof Reference)) {
         return false;
@@ -106,8 +107,8 @@ public abstract class CacheProvider<T> implements ICache<T> {
 
   /**
    * A subclass of Java's WeakReference whose equality and ordering is decided
-   * by its referral and not by the reference itself. Hence, a new definition
-   * for equals() and hasCodeTo() is given
+   * by its referent and not by the reference itself. Hence, a new definition
+   * for equals() and hashCode() is given
    *
    * @author nitendra_thakur
    */
@@ -125,6 +126,7 @@ public abstract class CacheProvider<T> implements ICache<T> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public boolean equals(Object obj) {
       if (null == obj || !(obj instanceof Reference)) {
         return false;

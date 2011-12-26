@@ -126,6 +126,7 @@ public class GlobalState {
     public void endPrefixMapping(String prefix) {
     }
 
+    @SuppressWarnings("deprecation")
     public void startElement(String namespaceURI, final String localName,
         String rawName, Attributes atts) throws SAXException {
 
@@ -138,7 +139,7 @@ public class GlobalState {
             LOGGER.log(Level.SEVERE, "Problem while loading ListState node from state file. ");
           }
         } else {
-          LOGGER.log(Level.SEVERE, "Can not parse the current ListState node because the expected WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
+          LOGGER.log(Level.SEVERE, "Cannot parse the current ListState node because the expected WebState parent has not been initialized. This may occur because of the bad sequence / wrong hierarchy of stateful objects.");
         }
       } else if (SPConstants.STATE_LASTDOCCRAWLED.equals(localName)) {
         if (null != list && null != web) {
@@ -162,6 +163,7 @@ public class GlobalState {
                 || null == renamedFolderId || null == renamedFolderPath) {
               // for backward compatibility. Earlier version uses
               // only FolderPath which was called FolderLevel.
+              // This is why we suppress deprecation warnings.
               String folderLevel = atts.getValue(SPConstants.STATE_FOLDER_LEVEL);
               if (null != folderLevel && folderLevel.length() > 0) {
                 // Force a restart of the change detection using
@@ -197,7 +199,7 @@ public class GlobalState {
           lastCrawledDoc.setRenamedFolder(lastCrawledDocRenamedFolder);
           list.setLastDocProcessed(lastCrawledDoc);
         } else {
-          LOGGER.log(Level.SEVERE, "Can not parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur becasue of the bad sequence / wrong hierarchy of stateful objects. ");
+          LOGGER.log(Level.SEVERE, "Cannot parse the current LastDocCrawled node because the expected ListState/WebState parent has not been initialized. This may occur because of the bad sequence / wrong hierarchy of stateful objects.");
         }
       } else if (SPConstants.STATE_RENAMED_FOLDER_LIST.equals(localName)) {
         // Do nothing. Liststate creates an empty list of changedFolder
@@ -351,7 +353,7 @@ public class GlobalState {
       // mark all as non-existent
       final Iterator<WebState> it = dateMap.iterator();
       while (it.hasNext()) {
-        final WebState webs = (WebState) it.next();
+        final WebState webs = it.next();
         webs.setExisting(false);
       }
     }
@@ -374,7 +376,7 @@ public class GlobalState {
       final Iterator<WebState> iter = getIterator();
       if (null != iter) {
         while (iter.hasNext()) {
-          final WebState webs = (WebState) iter.next();
+          final WebState webs = iter.next();
           webs.endRecrawl(spContext);
           if (!webs.isExisting()) {
             // Case of web deletion. Delete this web State only if

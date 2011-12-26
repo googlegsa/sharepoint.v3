@@ -92,7 +92,6 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
         } else {
           return false;
         }
-
       }
     });
 
@@ -146,9 +145,9 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
   }
 
   /**
-   * Put an object into the cache.
+   * Puts an object into the cache.
    *
-   * @param name the object will be referenced with this name in the cache
+   * @param key the object will be referenced with this name in the cache
    * @param obj the object
    */
   public void put(K key, V obj) {
@@ -156,9 +155,9 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
   }
 
   /**
-   * Put an object into the cache with a custom expiration date.
+   * Puts an object into the cache with a custom expiration date.
    *
-   * @param name the object will be referenced with this name in the cache
+   * @param key the object will be referenced with this name in the cache
    * @param obj the object
    * @param expireTime custom expiration time in seconds
    */
@@ -181,9 +180,8 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
    * than current system time and if it's greater will make a call to a thread
    * to remove its entry from cache store.
    *
-   * @param name the name of the object you'd like to get
-   * @param type the type of the object you'd like to get
-   * @return the object for the given name and type
+   * @param key the name of the object you'd like to get
+   * @return the object for the given name
    */
   public V get(K key) {
     final Long expireTime = this.expire.get(key);
@@ -208,7 +206,6 @@ public class UserGroupsCache<K, V> implements IUserGroupsCache<K, V> {
    */
   public void clearCache() {
     this.cacheStore.clear();
-
   }
 
   /*

@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -199,7 +200,6 @@ public final class Util {
       throw new IllegalArgumentException(
           "Invalid value specified for the format : " + format);
     }
-
   }
 
   /**
@@ -347,7 +347,6 @@ public final class Util {
           return true;
         }
         return false;
-
       } catch (final REException e) {
         LOGGER.log(Level.FINE, e.getMessage());
         return false;
@@ -372,7 +371,6 @@ public final class Util {
           return true;
         }
         return false;
-
       } catch (final REException e) {
         LOGGER.log(Level.FINE, e.getMessage());
         return false;
@@ -397,7 +395,6 @@ public final class Util {
           return true;
         }
         return false;
-
       } catch (final REException e) {
         LOGGER.log(Level.FINE, e.getMessage());
         return false;
@@ -423,7 +420,6 @@ public final class Util {
           return true;
         }
         return false;
-
       } catch (final REException e) {
         LOGGER.log(Level.FINE, e.getMessage());
         return false;
@@ -447,7 +443,6 @@ public final class Util {
                 + urlValue.getHost() + SPConstants.COLON + port
                 + urlValue.getFile();
           }
-
         } catch (final MalformedURLException e1) {
           LOGGER.log(Level.FINE, e1.getMessage());
           return false;
@@ -463,7 +458,6 @@ public final class Util {
             tempBuffer.delete(tempBuffer.length() - SPConstants.DOLLAR.length(), tempBuffer.length());
           }
           try {
-
             final URL urlPatt = new URL(tempBuffer.toString());
             final int port = urlPatt.getPort();
 
@@ -482,7 +476,6 @@ public final class Util {
             tempBuffer = new StringBuffer(pattern);
           }
         }
-
       }
 
       RE re;
@@ -519,13 +512,11 @@ public final class Util {
       if (reMatch != null) {
         containProtocol = true; // protocol is present
       }
-
     } catch (final REException e) {
       containProtocol = false;
     }
 
     if (containProtocol) {
-
       // split the test URL into two parts
       String urlValue1stPart = null;
       String urlValue2ndPart = null;
@@ -556,7 +547,6 @@ public final class Util {
       String urlPatt2ndPart = null;
       boolean bPortStar = false;
       try {
-
         final URL urlPatt = new URL(patternDecoded);
         final int port = urlPatt.getPort();
         String strPort = "";
@@ -593,7 +583,6 @@ public final class Util {
             return false;
           }
           urlPatt2ndPart = "^" + patternDecoded.substring(indexOfStar + 1);
-
         }
       }
 
@@ -611,7 +600,6 @@ public final class Util {
             return true;
           }
         }
-
       } catch (final REException e) {
         LOGGER.log(Level.FINE, e.getMessage());
         return false;
@@ -619,9 +607,7 @@ public final class Util {
         LOGGER.log(Level.FINE, e.getMessage());
         return false;
       }
-
     } else {
-
       String pat1 = null;
       String pat2 = null;
       // split the pattern into two parts
@@ -669,7 +655,6 @@ public final class Util {
               return true;
             }
           }
-
         } catch (final REException e) {
           LOGGER.log(Level.FINE, e.getMessage());
           return false;
@@ -678,11 +663,9 @@ public final class Util {
         LOGGER.log(Level.FINE, e.getMessage());
         return false;
       }
-
     }
 
     return false;
-
   }
 
   /**
@@ -999,7 +982,7 @@ public final class Util {
     if (docPath.startsWith(webPath)) {
       docPath = docPath.replaceFirst(webPath, "");
     } else {
-      LOGGER.log(Level.WARNING, "Recieved docPath [" + docPath
+      LOGGER.log(Level.WARNING, "Received docPath [" + docPath
           + "] is not valid as per the given webURL [" + webURL + "] ");
       return null;
     }
@@ -1259,8 +1242,8 @@ public final class Util {
     if ((null != aliasMap) && (null != aliasMap.keySet())) {
       for (final Iterator<String> aliasItr = aliasMap.keySet().iterator(); aliasItr.hasNext();) {
 
-        String aliasPattern = (String) aliasItr.next();
-        String aliasValue = (String) aliasMap.get(aliasPattern);
+        String aliasPattern = aliasItr.next();
+        String aliasValue = aliasMap.get(aliasPattern);
 
         if ((aliasPattern == null) || (aliasValue == null)) {
           continue;
@@ -1397,5 +1380,23 @@ public final class Util {
   public static String getGroupNameAtDomain(String groupName,
       final String domain) {
     return getUserNameAtDomain(groupName, domain);
+  }
+
+  /**
+   * Finds the connector name from googleconnectorURL by tokenizing the URL and
+   * getting the leaf directory name.
+   *
+   * @param googleConnectorWorkDir.
+   * @return connector name.
+   */
+  public static String getConnectorNameFromDirectoryUrl(
+      String googleConnectorWorkDir) {
+    String directory = null;
+    StringTokenizer tokenizer = new StringTokenizer(googleConnectorWorkDir,
+        File.separator);
+    while (tokenizer.hasMoreTokens()) {
+      directory = tokenizer.nextToken();
+    }
+    return directory;
   }
 }

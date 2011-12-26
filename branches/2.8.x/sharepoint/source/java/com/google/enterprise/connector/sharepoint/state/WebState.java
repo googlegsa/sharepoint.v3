@@ -187,7 +187,7 @@ public class WebState implements StatefulObject {
       // existing
       final Iterator<ListState> it = allListStateSet.iterator();
       while (it.hasNext()) {
-        final ListState list = (ListState) it.next();
+        final ListState list = it.next();
         list.setExisting(false);
       }
     }
@@ -304,7 +304,7 @@ public class WebState implements StatefulObject {
     final Iterator<ListState> iter = getIterator();
     if (null != iter) {
       while (iter.hasNext()) {
-        final ListState list = (ListState) iter.next();
+        final ListState list = iter.next();
         if (!list.isExisting()) {
           int responseCode = 0;
           try {
@@ -636,9 +636,7 @@ public class WebState implements StatefulObject {
   /**
    * Construct and returns a WebState object using the attributes.
    *
-   * @param web
    * @param atts
-   * @param feedType
    * @return
    */
   public static WebState loadStateFromXML(Attributes atts)
@@ -750,5 +748,4 @@ public class WebState implements StatefulObject {
   public void setWebCrawlInfo(WebCrawlInfo webCrawlInfo) {
     this.webCrawlInfo = webCrawlInfo;
   }
-
 }
