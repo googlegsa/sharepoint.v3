@@ -36,7 +36,9 @@ import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -709,12 +711,12 @@ public class SharepointConnector implements Connector,
           + connectorName + "] from the database table.");
       // Removes the connector name from the database table.
       connectorNamesDAO.removeConnectorName(connectorName);
-	  Set<String> nameSpaceForTheConnector = new HashSet<String>();
-			nameSpaceForTheConnector.add(this.sharepointClientContext.getSiteURL());
+      Set<String> nameSpaceForTheConnector = new HashSet<String>();
+      nameSpaceForTheConnector.add(this.sharepointClientContext.getSiteURL());
 			LOGGER.info("Deleting all memberships for the connector"
 					+ connectorName + " using the name space ["
 					+ nameSpaceForTheConnector + "]");
-			userDataStoreDAO.removeAllMembershipsFromNamespace(nameSpaceForTheConnector);
+      userDataStoreDAO.removeAllMembershipsFromNamespace(nameSpaceForTheConnector);
       if (ConnectorNamesDAO.connectorNames.isEmpty()
           && connectorNamesDAO.getAllConnectorNames().size() == 0) {
         LOGGER.log(Level.INFO, "Dropping the user data store table from the data base.");
