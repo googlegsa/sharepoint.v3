@@ -784,6 +784,7 @@ public class UserGroupsService implements LdapService {
 			if (null != adGroups && adGroups.size() > 0) {
 				finalADGroups = addGroupNameFormatForTheGroups(searchUser, adGroups);
 			}
+			finalADGroups.add(Util.getGroupNameWithDomain("authenticated users".toLowerCase(), "NT AUTHORITY".toUpperCase()));
 			String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
 			LOGGER.info("Quering User data store with the AD groups :"
 					+ finalADGroups + " and search user [" + finalSearchUserName + "]");
@@ -848,7 +849,8 @@ public class UserGroupsService implements LdapService {
 							groupsSearchFilter.append(SPConstants.END_PARANTHESIS);
 						}
 					} catch (NamingException e) {
-						System.err.println("Problem listing membership: " + e);
+						LOGGER.log(Level.WARNING, "Exception while retrieving groups for the search user ["
+								+ searchUserName + "]", e);
 					}
 				}
 			}
@@ -934,9 +936,10 @@ public class UserGroupsService implements LdapService {
 		// Check for multi domain to specify the base dn in the LDAP query.
 		try {
 			if (sharepointClientContext.isMultiDomainSupported()) {
-				LOGGER.info("using empty dn to query AD.");
-				answer = this.context.search("DC=CONNECT,DC=COM", searchFilter, searchCtls);
+				LOGGER.fine("Using empty dn to query AD to query GCS.");
+				answer = this.context.search("", searchFilter, searchCtls);
 			} else {
+				LOGGER.fine("Using base dn from connector configuration to query AD.");
 				answer = this.context.search(this.ldapConnectionSettings.getBaseDN(), searchFilter, searchCtls);
 			}
 			// Loop through the result.
