@@ -8,7 +8,7 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 2.8.4 , December 12, 2011
+Release 2.8.2-X1 , January 02, 2012
 ====================================
 
 Introduction
@@ -19,17 +19,11 @@ Keep in mind that we are continuing to work on the Google Search Appliance Conne
 Summary of Changes / New Features
 ---------------------------------
 This patch contains fix for the following issues.
-
---Issue 5713953 SharePoint connector sets incorrect displayURL for some of the object types.
---Issue 5579962 Changes not detected when a SharePoint folder is moved within the same site.
---Issue 5529449 SharePoint Connector does not exclude meta tag parentwebtitle.
---Issue 5479101 SharePoint connector fails to add group member ship in the user datastore if groupname has more than 40 characters.
---Issue 4672274 SharePoint connector should support all types of Site/list templates for sending ACLs to GSA.
---Issue 4457286 SharePoint connector does not remove database tables when connector instance is deleted.
---Issue 4081238 SharePoint connector not able to send correct MIME type for MS Outlook .msg files.
---Issue 5408782 SharePoint connector fails to traverse a site,circular redirect exception is observed.
---Issue 4903561 SharePoint connector has no validation for the LDAP search base.
---Issue 4902133 SharePoint Connector authN at serve time fails for Chinese username.
+-- Issue 5595594 SP Connector Group resolution fails for special characters in group name.
+-- Issue 5581246 Group filtering should be configurable in Connector.
+-- Issue 5595837 Domain from group resolution is hard coded to come from connector configuration form.
+-- Issue 79861 Resolving primary groups and Adding NT AUTHORITY/ authenticated users.
+-- Issue Support for multiple domains in Connector.
 
 Version Compatibility
 ---------------------
