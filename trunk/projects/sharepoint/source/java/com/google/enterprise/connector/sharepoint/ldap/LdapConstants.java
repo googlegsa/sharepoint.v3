@@ -24,7 +24,10 @@ public class LdapConstants {
   public static final String COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
   public static final Object PREFIX_FOR_PARENTS_GROUPS_FILTER = "(&(objectClass=group)(CN=";
   public static final Object PREFIX_FOR_DIRECT_GROUPS_FILTER = "(&(objectClass=user)(sAMAccountName=";
-  public static final String RETURN_ATTRIBUTES_DIRECT_GROUPS_LIST = "memberOf";
+  public static final String PREFIX_FOR_PRIMARY_GROUP_FILTER = "(objectSid=";
+  public static final String ATTRIBUTE_MEMBER_OF = "memberOf";
+  public static final String ATTRIBUTE_PRIMARY_GROUP_ID = "primaryGroupID";
+  public static final String ATTRIBUTE_OBJECTSID = "objectSid;binary";
 
   public static final int DEFAULT_PORT = 389;
 
