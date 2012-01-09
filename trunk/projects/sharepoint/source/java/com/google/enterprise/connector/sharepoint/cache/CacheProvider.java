@@ -166,10 +166,10 @@ public abstract class CacheProvider<T> implements ICache<T> {
   private Map<View, Set<SPWeakReference<T>>> viewRefsMap = new WeakHashMap<View, Set<SPWeakReference<T>>>();
 
   /**
-   * Checks if the element is in cache
+   * Checks if the element is in cache.
    *
-   * @param t
-   * @return
+   * @param t the key to lookup in the cache
+   * @return true if the object is found; false otherwise
    */
   public boolean contains(T t) {
     if (null == t) {

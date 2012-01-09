@@ -157,7 +157,7 @@ public class ConnectorNamesDAO extends SimpleSharePointDAO {
               + Query.CN_SELECT + "]", e);
     }
     for (Iterator<Map<String, Object>> iterator = results.iterator(); iterator.hasNext();) {
-      Map<String, Object> map = (Map<String, Object>) iterator.next();
+      Map<String, Object> map = iterator.next();
       connectorNames.add((String) map.get(SPConstants.CONNECTOR_NAME_COLUMN_CAPITAL));
     }
     LOGGER.log(Level.INFO, "Returning all the connector names : "

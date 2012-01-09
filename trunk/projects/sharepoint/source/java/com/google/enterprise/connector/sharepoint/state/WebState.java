@@ -636,8 +636,8 @@ public class WebState implements StatefulObject {
   /**
    * Construct and returns a WebState object using the attributes.
    *
-   * @param atts
-   * @return
+   * @param atts the XML attributes to use for initialzing the WebState
+   * @return a valid non-null WebState
    */
   public static WebState loadStateFromXML(Attributes atts)
       throws SharepointException {
@@ -707,20 +707,17 @@ public class WebState implements StatefulObject {
   }
 
   /**
-   * Looks-Up a ListState for a given GUID value as received by the custom web
-   * service
+   * Looks up a ListState for a given GUID value as received by the custom web
+   * service.
    *
-   * @param listGuid
-   * @return
+   * @param listGuid the guid of the list
+   * @return a valid ListState if the guid is found; null otherwise
    */
   public ListState getListStateForGuid(String listGuid) {
     // It has been observed that the GUID values are always returned in
     // upper case by SP web services. But, the same is not the case with
     // COM API. This is the most probabilistic case.
     ListState listState = lookupList("{" + listGuid.toUpperCase() + "}");
-    if (null == listState) {
-      listState = lookupList("{" + listGuid + "}");
-    }
     if (null == listState) {
       // It has been observed that the GUID values as returned by
       // SP web services are inside {}. But, the same is not the case with

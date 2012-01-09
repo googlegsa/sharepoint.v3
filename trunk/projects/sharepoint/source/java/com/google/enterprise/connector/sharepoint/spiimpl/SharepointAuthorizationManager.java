@@ -193,8 +193,8 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
    * Finds the site collection URL of a SharePoint URL by matching it with the
    * populated list of known site collection URLs.
    *
-   * @param strUrl
-   * @return
+   * @param strUrl the URL of a site to use in populating the container
+   * @return a {@link Container}
    * @throws MalformedURLException
    */
   private Container getSiteCollectionContainer(String strUrl)
