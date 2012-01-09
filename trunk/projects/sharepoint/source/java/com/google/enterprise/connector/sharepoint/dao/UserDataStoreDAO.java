@@ -452,11 +452,13 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       // Specific to oracle database to check required entities in user
       // data store data base.
       if (getQueryProvider().getDatabase().equalsIgnoreCase(SPConstants.SELECTED_DATABASE)) {
-        statement = getConnection().createStatement();
+        statement = getConnection().createStatement(
+            ResultSet.TYPE_SCROLL_INSENSITIVE,
+            ResultSet.CONCUR_READ_ONLY);
         String query = getSqlQuery(Query.UDS_CHECK_TABLES);
         rsTables = statement.executeQuery(query);
-        udsTableFound = isTableNameExists(udsTableName, rsTables);
-        cnTableFound = isTableNameExists(cnTableName, rsTables);
+        udsTableFound = isTableNameExists(udsTableName, rsTables, true);
+        cnTableFound = isTableNameExists(cnTableName, rsTables, true);
       } else {
         if (dbm.storesUpperCaseIdentifiers()) {
           udsTablePattern = udsTableName.toUpperCase();
@@ -474,7 +476,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         udsTablePattern = udsTablePattern.replace("_", dbm.getSearchStringEscape()
             + "_");
         rsTables = dbm.getTables(null, null, udsTablePattern, null);
-        udsTableFound = isTableNameExists(udsTableName, rsTables);
+        udsTableFound = isTableNameExists(udsTableName, rsTables, false);
 
         // specific to connector names table pattern.
         cnTablePattern = cnTablePattern.replace("%", dbm.getSearchStringEscape()
@@ -482,7 +484,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         cnTablePattern = cnTablePattern.replace("_", dbm.getSearchStringEscape()
             + "_");
         rsTables = dbm.getTables(null, null, cnTablePattern, null);
-        cnTableFound = isTableNameExists(cnTableName, rsTables);
+        cnTableFound = isTableNameExists(cnTableName, rsTables, false);
       }
 
       try {
@@ -571,14 +573,27 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    *
    * @param tableName name to find out in the result set.
    * @param rsTables is the result set
+   * @param byIndex a flag indicating where to use index 1 or the table
+   *        name SPConstants.TABLE_NAME
    * @return true if the given table name found in the result set.
    * @throws SQLException
    */
-  private boolean isTableNameExists(String tableName, ResultSet rsTables)
-      throws SQLException {
+  private boolean isTableNameExists(String tableName, ResultSet rsTables,
+      boolean byIndex) throws SQLException {
     boolean tableFound = false;
+    
+    if (!rsTables.isBeforeFirst()) {
+      rsTables.beforeFirst();
+    }
+    
     while (rsTables.next()) {
-      if (tableName.equalsIgnoreCase(rsTables.getString(SPConstants.TABLE_NAME))) {
+      String currName;
+      if (byIndex) {
+        currName = rsTables.getString(1);
+      } else {
+        currName = rsTables.getString(SPConstants.TABLE_NAME);
+      }
+      if (tableName.equalsIgnoreCase(currName)) {
         tableFound = true;
         LOGGER.log(Level.FINE, "Table name [ " + tableName
             + " ]  found in database.");
