@@ -922,8 +922,6 @@ public class SPListsWS implements ListsWS {
       token = null;
     }
 
-    final GetListItemChangesSinceTokenContains contains = null;
-    GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res = null;
     try {
       if (null == token) {
         String lastDocID = "0";
@@ -939,37 +937,15 @@ public class SPListsWS implements ListsWS {
 
       viewFields.set_any(createViewFields());
       queryOptions.set_any(createQueryOptions(true, null, null));
-      LOGGER.log(Level.CONFIG, "Making Web Service call with the following parameters:\n query [ "
-          + query.get_any()[0]
-          + " ], queryoptions [ "
-          + queryOptions.get_any()[0]
-          + " ], viewFields [ "
-          + viewFields.get_any()[0] + "], token [ " + token + " ] ");
-      res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, rowLimit, queryOptions, token, contains);
-    } catch (final AxisFault af) { // Handling of username formats for
-      // different authentication models.
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.INFO, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, rowLimit, queryOptions, token, null);
-        } catch (final Exception e) {
-          handleListException(list, e);
-          return listItems;
-        }
-      } else {
-        boolean retry = handleListException(list, af);
-        if (retry) {
-          LOGGER.log(Level.INFO, "Retrying WS call...");
-          return getListItemChangesSinceToken(list, allWebs);
-        }
-        return listItems;
-      }
     } catch (final Throwable e) {
       handleListException(list, e);
+      return listItems;
+    }
+
+    GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult
+        res = doGetListItemChangesRequest(stub, list, listName, viewName,
+            query, viewFields, queryOptions, token);
+    if (null == res) {
       return listItems;
     }
 
@@ -1046,6 +1022,53 @@ public class SPListsWS implements ListsWS {
     return listItems;
   }
 
+  private GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult
+      doGetListItemChangesRequest(ListsSoap_BindingStub stub,
+      final ListState list, final String listName, final String viewName, 
+      final GetListItemChangesSinceTokenQuery query, 
+      final GetListItemChangesSinceTokenViewFields viewFields, 
+      final GetListItemChangesSinceTokenQueryOptions queryOptions,
+      final String token) {
+    LOGGER.config("Making web service call with the following "
+        + "parameters: query [ " + query.get_any()[0] 
+        + " ], queryoptions [ " + queryOptions.get_any()[0]
+        + " ], viewFields [ " + viewFields.get_any()[0] + "], token [ " 
+        + token + " ].");
+
+    GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult
+        res = null;
+    try {
+      res = stub.getListItemChangesSinceToken(listName, viewName, query,
+          viewFields, rowLimit, queryOptions, token, null);
+    } catch (final AxisFault af) {
+      // On an authentication failure we need to retry the request 
+      // using a different username format.
+      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+          && (sharepointClientContext.getDomain() != null)) {
+        // Retry the request but first change the username format.
+        final String prevUsername = stub.getUsername();
+        final String username = Util.switchUserNameFormat(prevUsername);
+        LOGGER.config("Web service call failed for username [ "
+            + prevUsername + " ], retrying with username [ " + username 
+            + " ].");
+        stub.setUsername(username);
+
+        try {
+          res = stub.getListItemChangesSinceToken(listName, viewName, query,
+              viewFields, rowLimit, queryOptions, token, null);
+        } catch (final Exception e) {
+          handleListException(list, e);
+        }
+      } else {
+        handleListException(list, af);
+      }
+    } catch (final Throwable e) {
+      handleListException(list, e);
+    }
+
+    return res;
+  }
+
   /**
    * Called when the connector is not able proceed after the current state of
    * list (lastDoc+changetoken) because the web service call has failed.
@@ -1054,37 +1077,25 @@ public class SPListsWS implements ListsWS {
    * @return an advice to the caller indicating whether the web service call
    *         should be re-tried
    */
-  private boolean handleListException(final ListState list, Throwable te) {
-    LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
-        + list.getListURL() + " ]. ", te);
+  private void handleListException(final ListState list, Throwable e) {
+    LOGGER.log(Level.WARNING, "Unable to get the items for list [ "
+        + list.getListURL() + " ].", e);
 
-    if (te.getMessage().indexOf(SPConstants.SAXPARSEEXCEPTION) != -1) {
-      boolean isNew = true;
-      for (SOAPHeaderElement headerelem : stub.getHeaders()) {
-        if (InvalidXmlCharacterHandler.PRECONDITION_HEADER.equals(headerelem)) {
-          isNew = false;
-          break;
-        }
-      }
-      if (isNew) {
-        stub.setHeader(InvalidXmlCharacterHandler.PRECONDITION_HEADER);
-        LOGGER.log(Level.WARNING, "Web Service response seems to contain invalid XML characters. Retry with InvalidXmlCharacterHandler");
-        return true;
-      }
-      LOGGER.log(Level.WARNING, "Could not parse the web service SOAP response for list [ "
-          + list.getListURL()
-          + " ]. This could happen because of invalid XML characters in the web service response. "
-          + "Check if any of your document's metadata has such characters in it. ");
+    if (e.getMessage().indexOf(SPConstants.SAXPARSEEXCEPTION) != -1) {
+      LOGGER.log(Level.WARNING, "Could not parse the web service SOAP "
+          + "response for list [ " + list.getListURL() + " ]. "
+          + "This could happen because of invalid XML characters in the "
+          + "web service response. Check if any of your document's "
+          + "metadata has such characters in it.");
     }
 
-    // If nothing can be done to recover from this exception, at least
-    // ensure that the crawl for this list will not proceed so that the user
+    // TODO: What does this mean? The list is not crawled but does that
+    // mean its documents are also not crawled?
+    // Ensure that the crawl for this list will not proceed so that the user
     // would not get any false impression afterwards. Following will ensure
     // that list will not be sent as document and hence can not be assumed
     // completed.
     list.setNewList(false);
-
-    return false;
   }
 
   /**
