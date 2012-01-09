@@ -19,7 +19,6 @@ import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
 import org.apache.axis.SOAPPart;
 import org.apache.axis.handlers.BasicHandler;
-import org.apache.axis.message.SOAPHeaderElement;
 
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
@@ -28,18 +27,13 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.soap.SOAPHeader;
 import javax.xml.transform.stream.StreamSource;
 
 /**
  * A message handler that can intercept any web service call (typically,
- * responses) before it reaches to the client. The handler checks if there are
- * any invalid XML characters present in the response and filter out all such
- * characters as per the filter rules
- * <p/>
- * The handler does its job only if the
- * {@link InvalidXmlCharacterHandler#PRECONDITION_HEADER} SOAP header is present
- * in the request
+ * responses) before it reaches the client. The handler checks if there are
+ * any invalid XML characters present in the response and filters out all such
+ * characters as per the filter rules.
  * <p/>
  * Refer Code Site Issue50
  *
@@ -47,13 +41,6 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class InvalidXmlCharacterHandler extends BasicHandler {
   private static final Logger LOGGER = Logger.getLogger(InvalidXmlCharacterHandler.class.getName());
-
-  /**
-   * This header must be present in the request for parsing to be done
-   */
-  public final static SOAPHeaderElement PRECONDITION_HEADER = new org.apache.axis.message.SOAPHeaderElement(
-      "http://sharepoint.connector.enterprise.google.com/handlers_v1",
-      "InvalidXmlCharacterFilter");
 
   /**
    * All the parameters in Axis's globalconfiguration whose name starts with
@@ -270,38 +257,15 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
 
   /**
    * Checks all the pre-conditions before parsing is done. This mainly includes
-   * checking if the required SOAP header is present or not
+   * verifying that the message context, response message and request message
+   * are all valid.
    *
    * @param msgContext
    * @return true if all preconditions are satisfied; false otherwise
    */
   @SuppressWarnings("unchecked")
   static boolean checkPreconditions(MessageContext msgContext) {
-    if (null == msgContext || null == msgContext.getResponseMessage()
-        || null == msgContext.getRequestMessage()) {
-      return false;
-    }
-
-    try {
-      Message message = msgContext.getRequestMessage();
-      if (null == message) {
-        return false;
-      }
-      SOAPHeader soapHeader = message.getSOAPHeader();
-      if (null == soapHeader) {
-        return false;
-      }
-      Iterator<SOAPHeaderElement> allHeaders = soapHeader.examineAllHeaderElements();
-      while (allHeaders.hasNext()) {
-        SOAPHeaderElement headerElement = allHeaders.next();
-        if (PRECONDITION_HEADER.equals(headerElement)) {
-          return true;
-        }
-      }
-    } catch (Throwable e) {
-      LOGGER.log(Level.WARNING, "Failed to read SOAP headers! ", e);
-    }
-
-    return false;
+    return null != msgContext && null != msgContext.getResponseMessage()
+        && null != msgContext.getRequestMessage();
   }
 }
