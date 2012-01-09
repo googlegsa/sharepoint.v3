@@ -25,24 +25,24 @@ public interface IUserGroupsCache<K, V> {
   /**
    * Returns an object from the cache for a given key.
    *
-   * @param name
-   * @return
+   * @param key the name of the object you'd like to get
+   * @return the object for the given name
    */
   V get(K key);
 
   /**
    * Put an object into the cache and it's value.
    *
-   * @param name
-   * @param obj
+   * @param key the object will be referenced with this name in the cache
+   * @param obj the object
    */
   void put(K key, V obj);
 
   /**
    * Returns true if the key found in cache.
    *
-   * @param t
-   * @return
+   * @param t the name of the object to lookup in the cache
+   * @return true if the object is found; false otherwise
    */
   boolean contains(K t);
 

@@ -247,8 +247,9 @@ public class SharepointTraversalManager implements TraversalManager,
    * {@link SharepointClient#updateGlobalState(GlobalState)})</li>
    * </ul>
    *
-   * @TODO In future, this should always scan a subset of lists which have docs
+   * TODO: In future, this should always scan a subset of lists which have docs
    *       and avoid unnecessary processing of all lists and sites
+   *
    * @param sharepointClient The instance of {@link SharepointClient} that will
    *          process the crawl queue to construct the document list
    * @param checkForPendingDocs If true, scans from the list at which

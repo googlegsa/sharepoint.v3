@@ -1362,9 +1362,9 @@ public final class Util {
   /**
    * Return group name with domain name i.e. domain\\groupname
    *
-   * @param groupName
-   * @param domain
-   * @return
+   * @param groupName the group/user name
+   * @param domain the domain
+   * @return a group/user name with domain
    */
   public static String getGroupNameWithDomain(final String groupName,
       final String domain) {
@@ -1374,8 +1374,9 @@ public final class Util {
   /**
    * Return group name at domain name i.e. groupname@domain
    *
-   * @param groupName
-   * @param domain
+   * @param groupName the group/user name
+   * @param domain the domain
+   * @return a group/user name with domain
    */
   public static String getGroupNameAtDomain(String groupName,
       final String domain) {

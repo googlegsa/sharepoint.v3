@@ -215,7 +215,7 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
             + " is neinther a valid decimal or hexadecimal number! ", e);
         continue;
       }
-      if (isInavlidReference(ref)) {
+      if (isInvalidReference(ref)) {
         LOGGER.info("replacing invalid reference " + matcher.group()
             + " from WS response. replacement value [ " + replacementValue
             + " ] ");
@@ -257,15 +257,17 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
    *
    * @param ref
    * @return
+   * @param ref the number to check
+   * @return true if the number represents an invalid XML character; false otherwise.
    */
-  static boolean isInavlidReference(int ref) {
+  static boolean isInvalidReference(int ref) {
     if (ref <= 8 || (ref >= 11 && ref <= 12) || (ref >= 14 && ref <= 31)
         || (ref >= 55296 && ref <= 57343) || ref >= 65534) {
       return true;
     }
     return false;
   }
-
+  
   /**
    * Checks all the pre-conditions before parsing is done. This mainly includes
    * verifying that the message context, response message and request message
