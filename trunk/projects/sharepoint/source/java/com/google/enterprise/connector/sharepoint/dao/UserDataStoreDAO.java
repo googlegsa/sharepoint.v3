@@ -448,6 +448,27 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       dbm = getConnection().getMetaData();
       udsTableName = getQueryProvider().getUdsTableName();
       cnTableName = getQueryProvider().getCnTableName();
+      
+      if (dbm.storesUpperCaseIdentifiers()) {
+        udsTablePattern = udsTableName.toUpperCase();
+        cnTablePattern = cnTableName.toUpperCase();
+      } else if (dbm.storesLowerCaseIdentifiers()) {
+        udsTablePattern = udsTableName.toLowerCase();
+        cnTablePattern = cnTableName.toLowerCase();
+      } else {
+        udsTablePattern = udsTableName;
+        cnTablePattern = cnTableName;
+      }
+      // specific to user data store table pattern.
+      udsTablePattern = udsTablePattern.replace("%", dbm.getSearchStringEscape()
+          + "%");
+      udsTablePattern = udsTablePattern.replace("_", dbm.getSearchStringEscape()
+          + "_");
+      // specific to connector names table pattern.
+      cnTablePattern = cnTablePattern.replace("%", dbm.getSearchStringEscape()
+          + "%");
+      cnTablePattern = cnTablePattern.replace("_", dbm.getSearchStringEscape()
+          + "_");
 
       // Specific to oracle database to check required entities in user
       // data store data base.
@@ -460,29 +481,8 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         udsTableFound = isTableNameExists(udsTableName, rsTables, true);
         cnTableFound = isTableNameExists(cnTableName, rsTables, true);
       } else {
-        if (dbm.storesUpperCaseIdentifiers()) {
-          udsTablePattern = udsTableName.toUpperCase();
-          cnTablePattern = cnTableName.toUpperCase();
-        } else if (dbm.storesLowerCaseIdentifiers()) {
-          udsTablePattern = udsTableName.toLowerCase();
-          cnTablePattern = cnTableName.toLowerCase();
-        } else {
-          udsTablePattern = udsTableName;
-          cnTablePattern = cnTableName;
-        }
-        // specific to user data store table pattern.
-        udsTablePattern = udsTablePattern.replace("%", dbm.getSearchStringEscape()
-            + "%");
-        udsTablePattern = udsTablePattern.replace("_", dbm.getSearchStringEscape()
-            + "_");
         rsTables = dbm.getTables(null, null, udsTablePattern, null);
         udsTableFound = isTableNameExists(udsTableName, rsTables, false);
-
-        // specific to connector names table pattern.
-        cnTablePattern = cnTablePattern.replace("%", dbm.getSearchStringEscape()
-            + "%");
-        cnTablePattern = cnTablePattern.replace("_", dbm.getSearchStringEscape()
-            + "_");
         rsTables = dbm.getTables(null, null, cnTablePattern, null);
         cnTableFound = isTableNameExists(cnTableName, rsTables, false);
       }
@@ -502,6 +502,8 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         getSimpleJdbcTemplate().update(getSqlQuery(Query.UDS_CREATE_INDEX));
         LOGGER.config("Created user data store table index with name : "
             + Query.UDS_CREATE_INDEX + " sucessfully");
+      } else {
+        updateUDSTable(dbm, udsTablePattern);
       }
       if (!cnTableFound) {
         getSimpleJdbcTemplate().update(getSqlQuery(Query.CN_CREATE_TABLE));
@@ -510,6 +512,86 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       }
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "Exception occurred while getting the table information from the database metadata. ", e);
+    }
+  }
+
+  /**
+   * Updates updates the user data table. 
+   *
+   * @param dbm the DatabaseMetaData for the DB
+   * @param tablePattern the DB table pattern to get information for
+   */
+  private void updateUDSTable(DatabaseMetaData dbm, String tablePattern)
+      throws SQLException {
+    updateColumnIfNeeded(dbm, tablePattern,
+        SPConstants.UDS_COLUMN_USER_NAME,
+        SPConstants.UDS_MAX_GROUP_NAME_LENGTH,
+        Query.UDS_UPGRADE_COL_USERNAME);
+    updateColumnIfNeeded(dbm, tablePattern,
+        SPConstants.UDS_COLUMN_GROUP_NAME,
+        SPConstants.UDS_MAX_GROUP_NAME_LENGTH,
+        Query.UDS_UPGRADE_COL_GROUPNAME);
+  }
+
+  /**
+   * Updates a column if the column length is less that the specified length. 
+   *
+   * @param dbm the DatabaseMetaData for the DB
+   * @param tablePattern the DB table pattern to get information for
+   * @param tableColumn the DB column name
+   * @param minColumnLength the minimum length the column length should be
+   * @param query the query to use to update the table column
+   */
+  private void updateColumnIfNeeded(DatabaseMetaData dbm,
+      String tablePattern, String tableColumn, int minColumnLength,
+      Query query) throws SQLException {
+    int columnLength = getColumnLength(dbm, tablePattern, tableColumn);
+    if (minColumnLength > columnLength) {
+      getSimpleJdbcTemplate().update(getSqlQuery(query));
+      LOGGER.info("Upgraded user data store table column " + tableColumn
+          + " with name " + query + ".");
+    }
+  }
+
+  /**
+   * Gets the length of a table column. 
+   *
+   * @param dbm the DatabaseMetaData for the DB
+   * @param tablePattern the DB table pattern to get information for
+   * @param tableColumn the DB column name
+   * @return the length of the column or 0 on failure
+   */
+  private int getColumnLength(DatabaseMetaData dbm, String tablePattern,
+      String tableColumn) throws SQLException {
+    ResultSet rsColumns = dbm.getColumns(null, null, tablePattern,
+        adjustDBIdentifier(dbm, tableColumn));
+    int columnLength = 0;
+    if (rsColumns.next()) {
+      LOGGER.info("COLUMN_SIZE: " + rsColumns.getInt("COLUMN_SIZE")
+          + ";  COLUMN_NAME: " + rsColumns.getString("COLUMN_NAME") 
+          + ";  NULLABLE: " + rsColumns.getInt("NULLABLE"));
+      columnLength = rsColumns.getInt("COLUMN_SIZE");
+      rsColumns.close();
+    }
+    return columnLength;
+  }
+
+  /**
+   * Adjusts the name of a table indetifier based on the DatabaseMetaData 
+   * capitalization so that indetifier can be used to query the DB.
+   *
+   * @param dbm the DatabaseMetaData for the DB
+   * @param name the indetifier
+   * @return the indetifier with the correct capitalization
+   */
+  private String adjustDBIdentifier(DatabaseMetaData dbm, String name)
+      throws SQLException {
+    if (dbm.storesUpperCaseIdentifiers()) {
+      return name.toUpperCase();
+    } else if (dbm.storesLowerCaseIdentifiers()) {
+      return name.toLowerCase();
+    } else {
+      return name;
     }
   }
 
@@ -573,7 +655,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    *
    * @param tableName name to find out in the result set.
    * @param rsTables is the result set
-   * @param byIndex a flag indicating where to use index 1 or the table
+   * @param byIndex a flag indicating whether to use index 1 or the table
    *        name SPConstants.TABLE_NAME
    * @return true if the given table name found in the result set.
    * @throws SQLException
