@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -34,6 +35,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 	AuthenticationIdentity authID;
 	AuthenticationResponse authenticationResponse;
 	UserDataStoreDAO userDataStoreDAO;
+  private final SPClientFactory clientFactory = new SPClientFactory();
 
 	protected void setUp() throws Exception {
 		System.out.println("\n...Setting Up...");
@@ -61,8 +63,8 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 				TestConfiguration.getUserGroupMembershipRowMapper());
 		this.sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
 		sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
-		this.authMan = new SharepointAuthenticationManager(
-				this.sharepointClientContext);
+    this.authMan = new SharepointAuthenticationManager(clientFactory,
+        this.sharepointClientContext);
 		System.out.println("Initializing SharepointAuthenticationIdentity ...");
 		this.authID = new SimpleAuthenticationIdentity(
 				TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);

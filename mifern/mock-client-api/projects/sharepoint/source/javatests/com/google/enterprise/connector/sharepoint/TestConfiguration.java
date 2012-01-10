@@ -31,6 +31,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
@@ -488,7 +489,7 @@ public class TestConfiguration {
   public static GlobalState initState(
       SharepointClientContext sharepointClientContext)
       throws SharepointException {
-    GlobalState globalState = new GlobalState(
+    GlobalState globalState = new GlobalState(new SPClientFactory(),
         TestConfiguration.googleConnectorWorkDir, TestConfiguration.feedType);
 
     if (null != Site1_URL && Site1_URL.trim().length() > 0) {

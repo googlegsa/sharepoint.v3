@@ -15,6 +15,7 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -312,10 +313,8 @@ public class GSAclWS implements AclWS{
    * @param principal
    * @return
    */
-  /*
-   * marked package-private because of JUnit test case
-   * GssAclTest.testGetPrincipalName
-   */
+  //TODO: Adding VisibleForTesting throws exception when generating javadoc 
+  //@VisibleForTesting
   String getPrincipalName(GssPrincipal principal) {
     String principalname = Util.getUserFromUsername(principal.getName());
     final String domain = Util.getDomainFromUsername(principal.getName());
