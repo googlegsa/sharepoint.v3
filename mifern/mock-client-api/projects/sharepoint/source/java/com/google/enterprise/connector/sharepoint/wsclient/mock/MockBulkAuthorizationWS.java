@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 
@@ -49,9 +50,10 @@ public class MockBulkAuthorizationWS implements BulkAuthorizationWS {
   /**
    * (@inheritDoc)
    *
-   * This is a stub implementation.
+   * This simply returns SPConstants.CONNECTIVITY_SUCCESS. The connector
+   * code checks for this result.
    */
   public String checkConnectivity() {
-    return "";
+    return SPConstants.CONNECTIVITY_SUCCESS;
   }
 }

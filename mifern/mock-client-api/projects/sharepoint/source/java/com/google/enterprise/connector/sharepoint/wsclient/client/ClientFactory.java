@@ -17,6 +17,11 @@ package com.google.enterprise.connector.sharepoint.wsclient.client;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HttpMethodBase;
+
+import java.io.IOException;
+
 /**
  * A factory for the facade interface that encapsulates the SharePoint webservices.
  */
@@ -85,4 +90,24 @@ public interface ClientFactory {
    */
   public SiteDiscoveryWS getSiteDiscoveryWS(SharepointClientContext ctx,
       String webUrl);
+      
+  /**
+   * Check connectivity to the specified URL with the specified credentials.
+   *
+   * @param method contains the URL to check for connectivity
+   * @param credentials the credentials to use
+   * @return the HTTP response code; 200 for success or other code
+   * @throws IOException
+   */
+  public int checkConnectivity(HttpMethodBase method, 
+      Credentials credentials) throws IOException;
+      
+  /**
+   * Gets the header for a previous executed request to checkConnectivity.
+   *
+   * @param method the method used in the previous request
+   * @param headerName the header name to return
+   * @return the value of the header if it exists; null otherwise
+   */
+  public String getResponseHeader(HttpMethodBase method, String headerName);
 }

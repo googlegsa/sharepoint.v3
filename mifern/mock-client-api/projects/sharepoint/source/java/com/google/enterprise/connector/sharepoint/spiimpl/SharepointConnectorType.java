@@ -1040,10 +1040,10 @@ public class SharepointConnectorType implements ConnectorType {
 		}
 
 		try {
-			sharepointClientContext = new SharepointClientContext(sharepointUrl,
-					domain, kdcServer, username, password, "", includeURL, excludeURL,
-					mySiteUrl, "", feedType,
-					new Boolean(useSPSearchVisibility).booleanValue());
+      sharepointClientContext = new SharepointClientContext(clientFactory, 
+        sharepointUrl, domain, kdcServer, username, password, "", 
+        includeURL, excludeURL, mySiteUrl, "", feedType,
+        new Boolean(useSPSearchVisibility).booleanValue());
 		} catch (final Exception e) {
 			LOGGER.log(Level.SEVERE, "Failed to create SharePointClientContext with the received configuration values. ");
 		}

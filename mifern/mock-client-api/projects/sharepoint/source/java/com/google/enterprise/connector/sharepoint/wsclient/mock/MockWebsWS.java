@@ -15,10 +15,13 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
 import java.util.logging.Logger;
+import java.util.Collections;
 import java.util.Set;
 
 public class MockWebsWS implements WebsWS {
@@ -42,7 +45,7 @@ public class MockWebsWS implements WebsWS {
    * This is a stub implementation.
    */
   public String getWebURLFromPageURL(final String pageURL) {
-    return "";
+    return Util.getWebURLForWSCall(pageURL);
   }
 
   /**
@@ -51,7 +54,7 @@ public class MockWebsWS implements WebsWS {
    * This is a stub implementation.
    */
   public Set<String> getDirectChildsites() {
-    return null;
+    return Collections.emptySet();
   }
 
   /**
@@ -66,9 +69,10 @@ public class MockWebsWS implements WebsWS {
   /**
    * (@inheritDoc)
    *
-   * This is a stub implementation.
+   * This simply returns SPConstants.CONNECTIVITY_SUCCESS. The connector
+   * code checks for this result.
    */
   public String checkConnectivity() {
-    return "";
+    return SPConstants.CONNECTIVITY_SUCCESS;
   }
 }

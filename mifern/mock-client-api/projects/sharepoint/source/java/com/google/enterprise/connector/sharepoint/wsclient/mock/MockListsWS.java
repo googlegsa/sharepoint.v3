@@ -23,6 +23,8 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
 
 import java.util.logging.Logger;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -48,7 +50,7 @@ public class MockListsWS implements ListsWS {
    */
   public List<Folder> getSubFoldersRecursively(final ListState list,
       final Folder folder, final String lastID) {
-    return null;
+    return Collections.emptyList();
   }
 
   /**
@@ -58,7 +60,7 @@ public class MockListsWS implements ListsWS {
    */
   public List<SPDocument> getListItemChangesSinceToken(final ListState list,
       final Set<String> allWebs) throws SharepointException {
-    return null;
+    return Collections.emptyList();
   }
 
   /**
@@ -69,7 +71,7 @@ public class MockListsWS implements ListsWS {
   public List<SPDocument> getListItems(final ListState list,
       final Calendar lastModified, final String lastItemID,
       final Set<String> allWebs) {
-    return null;
+    return Collections.emptyList();
   }
 
   /**
@@ -79,7 +81,7 @@ public class MockListsWS implements ListsWS {
    */
   public List<SPDocument> getAttachments(final ListState baseList,
       final SPDocument listItem) {
-    return null;
+    return Collections.emptyList();
   }
 
   /**
@@ -89,6 +91,6 @@ public class MockListsWS implements ListsWS {
    */
   public List<SPDocument> parseCustomWSResponseForListItemNodes(String data,
       ListState list) {
-    return null;
+    return Collections.emptyList();
   }
 }

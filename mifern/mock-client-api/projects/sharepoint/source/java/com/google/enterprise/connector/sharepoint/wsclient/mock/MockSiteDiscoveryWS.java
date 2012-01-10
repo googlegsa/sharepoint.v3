@@ -22,6 +22,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryW
 
 import java.util.logging.Logger;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 public class MockSiteDiscoveryWS implements SiteDiscoveryWS {
@@ -46,7 +47,7 @@ public class MockSiteDiscoveryWS implements SiteDiscoveryWS {
    * This is a stub implementation.
    */
   public Set<String> getMatchingSiteCollections() {
-    return null;
+    return Collections.emptySet();
   }
 
   /**
