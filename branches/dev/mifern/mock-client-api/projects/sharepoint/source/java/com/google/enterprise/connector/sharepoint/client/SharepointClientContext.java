@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.TraversalContext;
 
 import org.apache.commons.httpclient.Credentials;
@@ -103,6 +104,8 @@ public class SharepointClientContext implements Cloneable {
   private LdapConnectionSettings ldapConnectionSettings;
   private boolean feedUnPublishedDocuments;
   private boolean initialTraversal;
+  
+  private final ClientFactory clientFactory;
 
   public boolean isFeedUnPublishedDocuments() {
     return feedUnPublishedDocuments;
@@ -126,7 +129,8 @@ public class SharepointClientContext implements Cloneable {
    */
   public Object clone() {
     try {
-      final SharepointClientContext spCl = new SharepointClientContext();
+      final SharepointClientContext spCl =
+          new SharepointClientContext(clientFactory);
 
       if (null != aliasMap) {
         spCl.setSiteAlias(new LinkedHashMap<String, String>(aliasMap));
@@ -243,7 +247,8 @@ public class SharepointClientContext implements Cloneable {
   /**
    * Default constructor
    */
-  private SharepointClientContext() {
+  private SharepointClientContext(ClientFactory clientFactory) {
+    this.clientFactory = clientFactory;
   }
 
   /**
@@ -259,7 +264,8 @@ public class SharepointClientContext implements Cloneable {
    * @param inFeedType
    * @throws SharepointException
    */
-  public SharepointClientContext(String sharepointUrl, final String inDomain,
+  public SharepointClientContext(ClientFactory clientFactory,
+      String sharepointUrl, final String inDomain,
       final String inKdcHost, final String inUsername, final String inPassword,
       final String inGoogleConnectorWorkDir, final String includedURls,
       final String excludedURls, final String inMySiteBaseURL,
@@ -271,6 +277,7 @@ public class SharepointClientContext implements Cloneable {
     Protocol.registerProtocol("https", new Protocol("https", factory,
         SPConstants.SSL_DEFAULT_PORT));
 
+    this.clientFactory = clientFactory;
     kdcServer = inKdcHost;
     if (sharepointUrl == null) {
       throw new SharepointException("sharepoint URL is null");
@@ -665,27 +672,18 @@ public class SharepointClientContext implements Cloneable {
       credentials = new UsernamePasswordCredentials(username, password);
       ntlm = false;
     }
-    final HttpClient httpClient = new HttpClient();
-    HttpClientParams params = httpClient.getParams();
-    // Fix for the Issue[5408782] SharePoint connector fails to traverse a site,
-    // circular redirect exception is observed.
-    params.setBooleanParameter(HttpClientParams.ALLOW_CIRCULAR_REDIRECTS, true);
-    // If ALLOW_CIRCULAR_REDIRECTS is set to true, HttpClient throws an
-    // exception if a series of redirects includes the same resources more than
-    // once. MAX_REDIRECTS allows you to specify a maximum number of redirects
-    // to follow.
-    params.setIntParameter(HttpClientParams.MAX_REDIRECTS, 10);
-    httpClient.getState().setCredentials(AuthScope.ANY, credentials);
+
     if (null == method) {
       method = new HeadMethod(strURL);
     }
-    responseCode = httpClient.executeMethod(method);
+
+    responseCode = clientFactory.checkConnectivity(method, credentials);
+    
     if (responseCode == 401 && ntlm && !kerberos) {
       LOGGER.log(Level.FINE, "Trying with HTTP Basic.");
       username = Util.getUserNameWithDomain(this.username, domain);
       credentials = new UsernamePasswordCredentials(username, password);
-      httpClient.getState().setCredentials(AuthScope.ANY, credentials);
-      responseCode = httpClient.executeMethod(method);
+      responseCode = clientFactory.checkConnectivity(method, credentials);
     }
     if (responseCode != 200) {
       LOGGER.log(Level.WARNING, "responseCode: " + responseCode);
@@ -718,11 +716,9 @@ public class SharepointClientContext implements Cloneable {
     if (null == method) {
       return null;
     }
-    final Header contentType = method.getResponseHeader("MicrosoftSharePointTeamServices");
-    String version = null;
-    if (contentType != null) {
-      version = contentType.getValue();
-    }
+    
+    String version = clientFactory.getResponseHeader(method,
+        "MicrosoftSharePointTeamServices");
     LOGGER.info("SharePoint Version: " + version);
     if (version == null) {
       LOGGER.warning("Sharepoint version not found for the site [ " + strURL

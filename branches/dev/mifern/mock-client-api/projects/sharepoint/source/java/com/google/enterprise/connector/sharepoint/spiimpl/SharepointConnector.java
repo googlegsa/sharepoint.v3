@@ -353,10 +353,11 @@ public class SharepointConnector implements Connector,
         + searchBase + " ]" + "], feedUnPublishedDocuments = ["
         + feedUnPublishedDocuments + "]");
 
-    sharepointClientContext = new SharepointClientContext(sharepointUrl,
-        domain, kdcserver, username, password, googleConnectorWorkDir,
-        includedURls, excludedURls, mySiteBaseURL, aliasMap,
-        FeedType.getFeedType(authorizationAsfeedType), useSPSearchVisibility);
+    sharepointClientContext = new SharepointClientContext(clientFactory,
+        sharepointUrl, domain, kdcserver, username, password, 
+        googleConnectorWorkDir, includedURls, excludedURls, mySiteBaseURL, 
+        aliasMap, FeedType.getFeedType(authorizationAsfeedType),
+        useSPSearchVisibility);
     sharepointClientContext.setFQDNConversion(FQDNConversion);
     sharepointClientContext.setIncluded_metadata(included_metadata);
     sharepointClientContext.setExcluded_metadata(excluded_metadata);

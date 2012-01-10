@@ -27,6 +27,10 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile200
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HttpMethodBase;
+
+import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -121,5 +125,32 @@ public class MockClientFactory implements ClientFactory {
   public SiteDiscoveryWS getSiteDiscoveryWS(final SharepointClientContext ctx,
     String webUrl) {
     return new MockSiteDiscoveryWS(ctx, webUrl);
+  }
+
+  /**
+   * (@inheritDoc)
+   *
+   * Returns the HTTP result 200 code which indicates that the connector 
+   * can connect to the host.
+   */
+  public int checkConnectivity(HttpMethodBase method, 
+      Credentials credentials) throws IOException {
+    return 200;
+  }
+
+  /**
+   * (@inheritDoc)
+   *
+   * Returns the Sharepoint version "14.0.0" which indicates that it's 
+   * Sharepoint 2007.
+   */
+  public String getResponseHeader(HttpMethodBase method, String headerName) {
+    String headerValue;
+    if ("MicrosoftSharePointTeamServices".equals(headerName)) {
+      headerValue = "14.0.0";
+    } else {
+      headerValue = null;
+    }
+    return headerValue;
   }
 }

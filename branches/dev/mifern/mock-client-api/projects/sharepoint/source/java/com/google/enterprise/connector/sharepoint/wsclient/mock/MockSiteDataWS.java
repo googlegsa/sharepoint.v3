@@ -22,6 +22,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 
 import java.util.logging.Logger;
+import java.util.Collections;
 import java.util.List;
 
 public class MockSiteDataWS implements SiteDataWS {
@@ -46,7 +47,7 @@ public class MockSiteDataWS implements SiteDataWS {
    */
   public List<ListState> getNamedLists(final WebState webstate)
       throws SharepointException {
-    return null;
+    return Collections.emptyList();
   }
 
   /**

@@ -26,6 +26,15 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile200
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
+
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -175,4 +184,32 @@ public class SPClientFactory implements ClientFactory {
       return null;
     }
   }
+
+  public int checkConnectivity(HttpMethodBase method,
+      Credentials credentials) throws IOException {
+    final HttpClient httpClient = new HttpClient();
+
+    HttpClientParams params = httpClient.getParams();
+    // Fix for the Issue[5408782] SharePoint connector fails to traverse a site,
+    // circular redirect exception is observed.
+    params.setBooleanParameter(HttpClientParams.ALLOW_CIRCULAR_REDIRECTS, true);
+    // If ALLOW_CIRCULAR_REDIRECTS is set to true, HttpClient throws an
+    // exception if a series of redirects includes the same resources more than
+    // once. MAX_REDIRECTS allows you to specify a maximum number of redirects
+    // to follow.
+    params.setIntParameter(HttpClientParams.MAX_REDIRECTS, 10);
+
+    httpClient.getState().setCredentials(AuthScope.ANY, credentials);
+    return httpClient.executeMethod(method);
+  }
+
+  public String getResponseHeader(HttpMethodBase method, String headerName) {
+    String headerValue = null;
+    final Header header = method.getResponseHeader(headerName);
+    if (null != header) {
+      headerValue = header.getValue();
+    }
+    return headerValue;
+  }
 }
+
