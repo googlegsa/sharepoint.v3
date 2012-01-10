@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
@@ -34,13 +34,14 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-public class ListsWSTest extends TestCase {
+public class SPListsWSTest extends TestCase {
   SharepointClientContext sharepointClientContext;
-  ListsWS listWS;
+  SPListsWS listWS;
   ListState testList, categoriesList, postsList, commentsList;
   Calendar lastModified;
   String lastItemID;
   String lastItemURL;
+  SPClientFactory clientFactory = new SPClientFactory();
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -54,13 +55,13 @@ public class ListsWSTest extends TestCase {
     sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
     sharepointClientContext.setFeedUnPublishedDocuments(false);
 
-    System.out.println("Initializing ListsWS ...");
-    this.listWS = new ListsWS(this.sharepointClientContext);
+    System.out.println("Initializing SPListsWS ...");
+    this.listWS = new SPListsWS(this.sharepointClientContext);
 
     System.out.println("Creating test List ...");
-    final SiteDataWS siteDataWS = new SiteDataWS(this.sharepointClientContext);
+    final SPSiteDataWS siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
 
-    final GlobalState state = new GlobalState(
+    final GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.sharepointUrl);
 
@@ -84,11 +85,11 @@ public class ListsWSTest extends TestCase {
   }
 
   public final void testListsWS() throws Throwable {
-    System.out.println("Testing ListsWS(SharepointClientContext, siteName)...");
+    System.out.println("Testing SPListsWS(SharepointClientContext, siteName)...");
     sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
-    this.listWS = new ListsWS(this.sharepointClientContext);
+    this.listWS = new SPListsWS(this.sharepointClientContext);
     assertNotNull(this.listWS);
-    System.out.println("[ ListsWS(SharepointClientContext, siteName) ] Test Passed");
+    System.out.println("[ SPListsWS(SharepointClientContext, siteName) ] Test Passed");
   }
 
   public void testGetAttachments() throws MalformedURLException,
@@ -214,7 +215,7 @@ public class ListsWSTest extends TestCase {
     System.out.println("Testing getListItems() by setting FeedUnPublishedDocuments to false.");
     this.listWS = null;
     this.sharepointClientContext.setFeedUnPublishedDocuments(false);
-    this.listWS = new ListsWS(this.sharepointClientContext);
+    this.listWS = new SPListsWS(this.sharepointClientContext);
     final List items = this.listWS.getListItems(this.testList, null, null, null);
     assertNotNull(items);
     assertEquals(3, items.size());
@@ -226,7 +227,7 @@ public class ListsWSTest extends TestCase {
     System.out.println("Testing getListItems() by setting FeedUnPublishedDocuments true");
     this.listWS = null;
     this.sharepointClientContext.setFeedUnPublishedDocuments(true);
-    this.listWS = new ListsWS(this.sharepointClientContext);
+    this.listWS = new SPListsWS(this.sharepointClientContext);
     final List items = this.listWS.getListItems(this.testList, null, null, null);
     assertNotNull(items);
     assertEquals(3, items.size());

@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -355,8 +356,10 @@ public class SPSiteDataWS implements SiteDataWS {
 
   /**
    * Retrieves the title of a Web Site. Should only be used in case of SP2003
-   * Top URL. For all other cases, WebWS.getTitle() is the preffered method.
+   * Top URL. For all other cases, WebWS.getTitle() is the preferred method.
    */
+  //TODO: Adding VisibleForTesting throws exception when generating javadoc 
+  //@VisibleForTesting
   String getTitle() throws RemoteException {
     final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
     final _sWebMetadataHolder sWebMetadata = new _sWebMetadataHolder();

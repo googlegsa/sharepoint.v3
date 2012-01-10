@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -27,9 +27,9 @@ import junit.framework.TestCase;
  *
  * @author amit_kagrawal
  */
-public class WebWSTest extends TestCase {
+public class SPWebWSTest extends TestCase {
   SharepointClientContext sharepointClientContext;
-  WebsWS websWS;
+  SPWebsWS websWS;
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -39,16 +39,16 @@ public class WebWSTest extends TestCase {
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    System.out.println("Initializing WebsWS ...");
-    this.websWS = new WebsWS(this.sharepointClientContext);
+    System.out.println("Initializing SPWebsWS ...");
+    this.websWS = new SPWebsWS(this.sharepointClientContext);
   }
 
   public final void testWebsWS() throws Throwable {
-    System.out.println("Testing WebsWS(SharepointClientContext, siteName)...");
+    System.out.println("Testing SPWebsWS(SharepointClientContext, siteName)...");
     sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
-    this.websWS = new WebsWS(this.sharepointClientContext);
+    this.websWS = new SPWebsWS(this.sharepointClientContext);
     assertNotNull(this.websWS);
-    System.out.println("[ WebsWS(SharepointClientContext, siteName) ] Test Passed");
+    System.out.println("[ SPWebsWS(SharepointClientContext, siteName) ] Test Passed");
   }
 
   public final void testGetDirectChildsites() throws Throwable {

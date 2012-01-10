@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient.sp2003;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -24,24 +24,25 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * Test the functionality of UserProfile web service (SP2007).
+ * Test the functionaltily of UserProfile web service (SP2007).
  *
  * @author amit_kagrawal
  */
-public class UserProfileWSTest extends TestCase {
+public class SPUserProfileWSTest extends TestCase {
   SharepointClientContext sharepointClientContext;
-  UserProfileWS userProfileWS;
+  SPUserProfileWS userProfileWS;
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
     System.out.println("Initializing SharepointClientContext ...");
     this.sharepointClientContext = TestConfiguration.initContext();
+
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    System.out.println("Initializing UserProfileWS ...");
-    this.userProfileWS = new UserProfileWS(this.sharepointClientContext);
+    System.out.println("Initializing SPUserProfileWS ...");
+    this.userProfileWS = new SPUserProfileWS(this.sharepointClientContext);
   }
 
   public void testIsSPS() throws MalformedURLException, RepositoryException {
@@ -53,8 +54,16 @@ public class UserProfileWSTest extends TestCase {
   public void testGetPersonalSiteList() throws MalformedURLException,
       RepositoryException {
     System.out.println("Testing getPersonalSiteList()...");
-    final Set<String> items = this.userProfileWS.getPersonalSiteList();
+    final Set items = this.userProfileWS.getPersonalSiteList();
     assertNotNull(items);
     System.out.println("[ getPersonalSiteList() ] Test Passed.");
+  }
+
+  public void testGetMyLinks() throws MalformedURLException,
+      RepositoryException {
+    System.out.println("Testing getMyLinks()...");
+    final Set items = this.userProfileWS.getMyLinks();
+    assertNotNull(items);
+    System.out.println("[ getMyLinks() ] Test Passed.");
   }
 }
