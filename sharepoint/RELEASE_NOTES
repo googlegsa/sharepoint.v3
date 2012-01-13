@@ -8,7 +8,7 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 2.8.4 , December 12, 2011
+Release 2.8.4, January 13, 2012
 ====================================
 
 Introduction
@@ -27,7 +27,7 @@ This patch contains fix for the following issues.
 --Issue 4672274 SharePoint connector should support all types of Site/list templates for sending ACLs to GSA.
 --Issue 4457286 SharePoint connector does not remove database tables when connector instance is deleted.
 --Issue 4081238 SharePoint connector not able to send correct MIME type for MS Outlook .msg files.
---Issue 5408782 SharePoint connector fails to traverse a site,circular redirect exception is observed.
+--Issue 5408782 SharePoint connector fails to traverse a site, circular redirect exception is observed.
 --Issue 4903561 SharePoint connector has no validation for the LDAP search base.
 --Issue 4902133 SharePoint Connector authN at serve time fails for Chinese username.
 
@@ -150,6 +150,7 @@ Possible workaround:
 9) 5032165: SharePoint connector Alias mapping is not working for default.aspx pages.
 10) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
 11) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
+12) When you remove a connector, it removes only the entries with the namespace URL which it was configured and not for all of it sub sites and so on.
 
 ----------------------------------------------------------------------------------------------------------------------
 

@@ -491,7 +491,7 @@ public class ListState implements StatefulObject {
    * Returns the last document in crawl queue which was sent as ADD feed. This
    * is the most suitable document for incremental crawl
    *
-   * @return
+   * @return a SPDocument if one is found in the crawl queue; null otherwise
    */
   private SPDocument getLastDocInCrawlQueueOfActionTypeADD() {
     if (null == crawlQueue || crawlQueue.size() == 0) {
@@ -1350,12 +1350,12 @@ public class ListState implements StatefulObject {
   }
 
   /**
-   * Construct and returns a ListState object using the attributes.
+   * Constructs and returns a ListState object using the attributes.
    *
-   * @param web
-   * @param atts
-   * @param feedType
-   * @return
+   * @param web the {@link WebState} for the new {@link ListState}
+   * @param atts the XML attributes used to initialize the {@link ListState}
+   * @param feedType the feed type of the {@link ListState}
+   * @return a valid {@link ListState}
    */
   public static ListState loadStateFromXML(WebState web, Attributes atts,
       FeedType feedType) throws SharepointException {

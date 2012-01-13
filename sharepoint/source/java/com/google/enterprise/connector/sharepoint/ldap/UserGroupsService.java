@@ -254,12 +254,12 @@ public class UserGroupsService implements LdapService {
 			return url;
 		}
 
-		/**
-		 * Initialize the {@link HashTable} used to create an initial LDAP Context.
-		 * Note that we specifically require a {@link HashTable} rather than a
+		/*
+		 * Initialize the {@link java.util.HashSet} used to create an initial LDAP Context.
+		 * Note that we specifically require a {@link java.util.HashSet} rather than a
 		 * HashMap as the parameter type in the InitialLDAPContext constructor
 		 * 
-		 * @return initialized {@link Hashtable} suitable for constructing an
+		 * @return initialized {@link java.util.HashSet} suitable for constructing an
 		 *         InitiaLdaplContext
 		 */
 		private Hashtable<String, String> configureLdapEnvironment() {

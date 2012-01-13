@@ -37,7 +37,6 @@ public interface QueryProvider {
    * to ensure that that every connector possess its own schema. XXX Essence of
    * this constraint may be re-thought in future.
    *
-   * @param connectorName Connector that will be using this QueryProvider
    * @param vendor specifies the vendor for which the queries will be provided
    * @param attr specifies additional attributes that should be considered along
    *          with vendor name while loading the queries
@@ -46,26 +45,31 @@ public interface QueryProvider {
   void init(String vendor, String... attr) throws SharepointException;
 
   /**
-   * Returns the actual SQL query that can be executed
+   * Returns the actual SQL query that can be executed.
    *
-   * @param query
-   * @return
+   * @param query the {@link Query}
+   * @return a string form of the SQL query
    */
   String getSqlQuery(Query query);
 
   /**
-   * The database to be used
+   * Returns the database that is being used for queries
    *
-   * @return
+   * @return the string name of the database
    */
   String getDatabase();
 
+  /**
+   * Sets the database name to use for queries.
+   *
+   * @param database the database to use to all queries
+   */
   void setDatabase(String database);
 
   /**
    * Name of the table representing User Group Memberships
    *
-   * @return
+   * @return user data store table name
    */
   String getUdsTableName();
 
@@ -73,10 +77,15 @@ public interface QueryProvider {
    * Name of the index to be created in for user data store. Currently, there is
    * only one such index.
    *
-   * @return
+   * @return the user data store index name
    */
   String getUdsIndexName();
 
+  /**
+   * Returns the connector names table.
+   *
+   * @return the connector names table
+   */
   String getCnTableName();
 }
 
@@ -97,7 +106,7 @@ public interface QueryProvider {
  */
 enum Query {
   UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES, UDS_SELECT_FOR_ADGROUPS(
-      "groups"),
+      "groups"), UDS_UPGRADE_COL_USERNAME, UDS_UPGRADE_COL_GROUPNAME,
 
   UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"), UDS_SELECT_FOR_USERNAME(
       "user_name"),
@@ -118,10 +127,10 @@ enum Query {
   }
 
   /**
-   * Creates a name-value map to that can be used to execute the query
+   * Creates a name-value map that can be used to execute a query.
    *
-   * @param values
-   * @return {@link MapSqlParameterSource}
+   * @param values the values for the parameters
+   * @return a {@link SqlParameterSource}
    */
   public SqlParameterSource createParameter(Object... values) {
     check(values);
