@@ -38,7 +38,7 @@ public class InvalidXmlCharacterHandlerTest extends TestCase {
     InvalidXmlCharacterHandler handler = new InvalidXmlCharacterHandler();
     str = handler.filterInvalidReferences(str);
 
-    if (InvalidXmlCharacterHandler.isInavlidReference(ref1)) {
+    if (InvalidXmlCharacterHandler.isInvalidReference(ref1)) {
       assertFalse(str.contains(charRef1));
       assertFalse(str.contains(hexCharRef1));
     } else {
@@ -46,7 +46,7 @@ public class InvalidXmlCharacterHandlerTest extends TestCase {
       assertTrue(str.contains(hexCharRef1));
     }
 
-    if (InvalidXmlCharacterHandler.isInavlidReference(ref2)) {
+    if (InvalidXmlCharacterHandler.isInvalidReference(ref2)) {
       assertFalse(str.contains(charRef2));
       assertFalse(str.contains(hexCharRef2));
     } else {

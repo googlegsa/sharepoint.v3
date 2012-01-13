@@ -520,10 +520,10 @@ public class ListsWS {
   /**
    * Used to get list items under a list using getListItems() Web Method
    *
-   * @param list : List whose items is to be retrieved
-   * @param lastModified : serves as a base for incremental crawl
-   * @param lastItemID : Serves as a base for incremental crawl
-   * @param allWebs : A collection to store any webs, discovered as part of
+   * @param list List whose items is to be retrieved
+   * @param lastModified serves as a base for incremental crawl
+   * @param lastItemID Serves as a base for incremental crawl
+   * @param allWebs A collection to store any webs, discovered as part of
    *          discovering list items. Foe example link sites are stored as list
    *          items.
    * @return the list of documents as {@link SPDocument}
@@ -644,9 +644,9 @@ public class ListsWS {
    * the ExtraIDs of the list. This operation is independent of the batch hint
    * because the discovered folders are not sent as docs.
    *
-   * @param list : Specify the base list
-   * @param folder : From where to discover the folder hierarchy
-   * @param lastID ; If we have already identified some folders at this
+   * @param list Specify the base list
+   * @param folder From where to discover the folder hierarchy
+   * @param lastID If we have already identified some folders at this
    *          folderLevel, specify the lastItemID to get the next set of
    *          folders.
    * @return the list of folders in this list
@@ -768,10 +768,11 @@ public class ListsWS {
    * Retrieves the list items only the specified level. This required when a
    * folder is restored and we need to discover items level by level.
    *
-   * @param list : Base List
-   * @param lastItemIDAtFolderLevel : Last Item ID that we have already
+   * @param list Base List
+   * @param lastItemIdAtFolderLevel Last Item ID that we have already
    *          identified at this level.
-   * @param folder : The folder from where to discover the items.
+   * @param currentFolder the current folder that we're traversing
+   * @param renamedFolder the folder that was changed/renamed
    * @return list of documents as {@link SPDocument}
    */
   public List<SPDocument> getListItemsAtFolderLevel(final ListState list,
@@ -869,16 +870,10 @@ public class ListsWS {
    * token to get the changes and the CAML query specified may stop some element
    * from getting shown, do not trust the change info.
    *
-   * @param list : List whose items is to be retrieved
-   * @param allWebs : A collection to store any webs, discovered as part of
-   *          discovering list items. Foe example link sites are stored as list
+   * @param list List whose items is to be retrieved
+   * @param allWebs A collection to store any webs discovered as part of
+   *          discovering the list items. For example link sites are stored as list
    *          items.
-   * @param folder : indicates that the last batch traversal stopped at some
-   *          folder. This happens when folder(s) are renamed/restored. In such
-   *          cases, web service response gives information about changed
-   *          folders only and not the documents underneath. Connector manually
-   *          visits each renamed/resored folder to discovers sub-folders and
-   *          documents under it.
    * @return the list of documents as {@link SPDocument}
    */
   // FIXME Why using List and not Set?
@@ -921,7 +916,6 @@ public class ListsWS {
       token = null;
     }
 
-    final GetListItemChangesSinceTokenContains contains = null;
     GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res = null;
     try {
       if (null == token) {
@@ -944,9 +938,10 @@ public class ListsWS {
           + queryOptions.get_any()[0]
           + " ], viewFields [ "
           + viewFields.get_any()[0] + "], token [ " + token + " ] ");
-      res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, rowLimit, queryOptions, token, contains);
-    } catch (final AxisFault af) { // Handling of username formats for
-      // different authentication models.
+      res = stub.getListItemChangesSinceToken(listName, viewName, query,
+          viewFields, rowLimit, queryOptions, token, null);
+    } catch (final AxisFault af) {
+      // Handling of username formats for different authentication models.
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (sharepointClientContext.getDomain() != null)) {
         final String username = Util.switchUserNameFormat(stub.getUsername());
@@ -954,7 +949,8 @@ public class ListsWS {
             + stub.getUsername() + " ]. Trying with " + username);
         stub.setUsername(username);
         try {
-          res = stub.getListItemChangesSinceToken(listName, viewName, query, viewFields, rowLimit, queryOptions, token, null);
+          res = stub.getListItemChangesSinceToken(listName, viewName, query,
+              viewFields, rowLimit, queryOptions, token, null);
         } catch (final Exception e) {
           handleListException(list, e);
           return listItems;
@@ -1174,19 +1170,14 @@ public class ListsWS {
   /**
    * Process the rs:changes element as returned by getListItemChangesSinceToken.
    *
-   * @param changeElement : The root child node that contains all the changes
-   * @param list : Base LIst
-   * @param deletedIDs : Set of deleted IDs. Delete feed will be constructed for
+   * @param changeElement The root child node that contains all the changes
+   * @param list Base List
+   * @param deletedIDs Set of deleted IDs. Delete feed will be constructed for
    *          them.
-   * @param restoredIDs : Set of restored IDs. New feeds are sent for these
+   * @param restoredIDs Set of restored IDs. New feeds are sent for these
    *          items.
-   * @param renamedIDs : If it is a folder. New feeds are sent for all the items
+   * @param renamedIDs If it is a folder. New feeds are sent for all the items
    *          beneath it.
-   * @param lastItemID : Serves as a base for incremental crawl.
-   * @param folder : If some folder level is specified, we will ignore the
-   *          changes. This because in such cases the change info returned by WS
-   *          are not consistent.
-   * @return the change token being received as per the WS call
    */
   private void processListChangesElement(final MessageElement changeElement,
       final ListState list, final Set<String> deletedIDs,
@@ -1302,19 +1293,18 @@ public class ListsWS {
   /**
    * Processing of rs:data element as returned by getListItemChangesSinceToken.
    *
-   * @param dataElement : represents the parent node which contains all the list
+   * @param dataElement represents the parent node which contains all the list
    *          items node.
-   * @param list : Base lIst
-   * @param deletedIDs : Set of deleted IDs. Delete feed will be constructed for
+   * @param list Base list
+   * @param deletedIDs Set of deleted IDs. Delete feed will be constructed for
    *          them.
-   * @param restoredIDs : Set of restored IDs. New feeds are sent for these
+   * @param restoredIDs Set of restored IDs. New feeds are sent for these
    *          items.
-   * @param renamedIDs : If it is a folder. New feeds are sent for all the items
+   * @param renamedIDs If it is a folder. New feeds are sent for all the items
    *          beneath it.
-   * @param lastItemID : Serves as a base for incremental crawl.
-   * @param folder : If some folder level is specified, we will ignore the
-   *          changes. This because in such cases the change info returned by WS
-   *          are not consistent.
+   * @param allWebs A collection to store any webs discovered as part of
+   *          discovering the list items. For example link sites are stored as list
+   *          items.
    * @return the list items which WS returns as rs:rows. These do not include
    *         folders
    */

@@ -107,6 +107,12 @@ public class SimpleQueryProvider implements QueryProvider {
     List<String> placeholders = query.getParameterPlaceholders();
     switch (query) {
     case UDS_CREATE_TABLE:
+    case UDS_UPGRADE_COL_USERNAME:
+    case UDS_UPGRADE_COL_GROUPNAME:
+      placeholders.add(0, udsTableName);
+      placeholders.add(1, Integer.toString(
+        SPConstants.UDS_MAX_GROUP_NAME_LENGTH));
+      break;
     case UDS_DROP_TABLE:
 
     case UDS_INSERT:

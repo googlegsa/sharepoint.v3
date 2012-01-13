@@ -1291,8 +1291,6 @@ public class SharepointClient {
 
     final Calendar cLastMod = Calendar.getInstance();
     cLastMod.setTime(new Date());
-
-    cLastMod.setTime(new Date());
     ListState currentDummySiteDataList = null;
 
     try {
