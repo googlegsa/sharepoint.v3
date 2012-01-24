@@ -104,10 +104,10 @@ public class SharepointClient {
       final SPDocument doc = iter.next();
       doc.setParentList(list);
       doc.setParentWeb(web);
+      doc.setSharepointClientContext(sharepointClientContext);
       // Update necessary information required for downloading contents.
       if (FeedType.CONTENT_FEED == doc.getFeedType()) {
         doc.setContentDwnldURL(doc.getUrl());
-        doc.setSharepointClientContext(sharepointClientContext);
       }
 
       newlist.add(doc);
