@@ -654,3 +654,32 @@ http://www.java-samples.com/showtutorial.php?tutorialid=210
 http://www.nabble.com/ssl-failure-td15753599.html
 
 The connector supports certificate, but in case it is not from a trusted authority it will have to be imported to the JDK keystore as identified above.
+
+== Viewing responses from Sharepoint web services ==
+You can diagnose whether Sharepoint is returning the expected results to a web services call using a utility. Search google.com to [https://www.google.com/search?q=sharepoint+web+services+utility find examples of utilities] that can do this. 
+
+An example of how this may be useful is to make a call to the GetSite() method on the "sitedata" web service.
+
+The expected result is a list of all the webs and sub webs including the metadata and site users. For example:
+{{{
+<SharePoint>
+<SharePointServices.SiteData._sSiteMetadata LastModified="2/24/2008 9:15:09 AM" LastModifiedForceRecrawl="2/12/2008 12:25:27 PM" SmallSite="True" PortalUrl="" UserProfileGUID="" ValidSecurityInfo="True" />
+<Webs>
+<SharePointServices.SiteData._sWebWithTime Url=" http://sp.example.com:2905" LastModified="2/24/2008 9:15:09 AM" />
+<SharePointServices.SiteData._sWebWithTime Url=" http://sp.example.com:2905/ECSCDemo" LastModified="2/24/2008 9:15:09 AM" />
+.....
+</Webs>
+<GroupsPerSite>
+<Groups>
+<Group ID="14" Name="Group1" Description="" OwnerID="10" OwnerIsUser="True" />
+</Groups>
+</GroupsPerSite>
+<UsersOfGroups>
+<Users>
+<User ID="12" Sid="S-1-5-21-2444170630-2081454939-2702159083-1143" Name="PS4312\abc" LoginName="PS4312\abc" Email="" Notes="" IsSiteAdmin="False" IsDomainGroup="False" />
+<User ID="1073741823" Sid="S-1-0-0" Name="System Account" LoginName="SHAREPOINT\system" Email="" Notes="" IsSiteAdmin="False" IsDomainGroup="False" />
+</Users>
+.....
+</UsersOfGroups>
+</SharePoint>
+}}}
