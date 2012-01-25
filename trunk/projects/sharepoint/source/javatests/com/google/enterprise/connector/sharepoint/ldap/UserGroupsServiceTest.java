@@ -172,7 +172,7 @@ public class UserGroupsServiceTest {
 
 	@Test
 	public void testAddUserNameFormatForTheSearchUser() {
-		String userName = TestConfiguration.usernameFormatInAce;
+		String userName = TestConfiguration.userNameFormatInACE;
 		String searchUserName = TestConfiguration.userNameFormat1;
 		String finalUserName = this.userGroupsService.addUserNameFormatForTheSearchUser(searchUserName);
 		if (sharepointClientContext.getUsernameFormatInAce().indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
@@ -194,6 +194,19 @@ public class UserGroupsServiceTest {
 		assertEquals("(objectSid=\\01\\05\\15\\01\\02\\00\\00)", this.userGroupsService.createSearchFilterForPrimaryGroup(usersid, "513"));
 		assertEquals("(objectSid=\\01\\05\\15\\ff\\ff\\00\\00)", this.userGroupsService.createSearchFilterForPrimaryGroup(usersid, "65535"));
 		assertEquals("(objectSid=\\01\\05\\15\\fc\\fd\\fe\\ff)", this.userGroupsService.createSearchFilterForPrimaryGroup(usersid, "4294901244"));
+	}
+	
+	@Test
+	public void testLdapEscape() {
+		assertEquals("\\2a\\28\\29\\5c\\00\\2f", this.userGroupsService.ldapEscape("*()\\\0/"));
+		assertEquals("Group, Name \\28Comment\\29", this.userGroupsService.ldapEscape("Group, Name (Comment)"));
+	}
+	
+	@Test
+	public void testGetGroupDNForTheGroup() {
+		assertEquals("Domain Users", this.userGroupsService.getGroupDNForTheGroup("CN=Domain Users,CN=Users,DC=example,DC=com"));
+		assertEquals("Group, Name (Comment)", this.userGroupsService.getGroupDNForTheGroup("CN=Group\\, Name (Comment),CN=Users,DC=example,DC=com"));
+		assertEquals("no comma", this.userGroupsService.getGroupDNForTheGroup("no comma"));
 	}
 
 	/**

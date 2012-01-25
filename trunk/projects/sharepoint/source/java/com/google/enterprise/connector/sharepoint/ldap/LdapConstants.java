@@ -28,6 +28,7 @@ public class LdapConstants {
   public static final String ATTRIBUTE_MEMBER_OF = "memberOf";
   public static final String ATTRIBUTE_PRIMARY_GROUP_ID = "primaryGroupID";
   public static final String ATTRIBUTE_OBJECTSID = "objectSid;binary";
+  public static final String ESCAPE_CHARACTERS = "\\*()\0/";
 
   public static final int DEFAULT_PORT = 389;
 
