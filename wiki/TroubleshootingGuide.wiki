@@ -643,7 +643,8 @@ http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
 
 Yes. Connector supports crawling SSL based sites which use IIS self-signed certificate. The connector uses Axis and HTTPClient to make web service calls to SharePoint.
 
-If you have a self signed cetificate which is not from a trusted authority, the HTTPClient library (internally uses Java SSL suport) fails to find a valid certificate to be presented to the SharePoint server along with the request.
+If you have a self signed cetificate which is not from a trusted authority, the HTTPClient library (internally uses Java SSL suport) fails to find a valid certificate to be presented to the SharePoint server along with the request. You may see the following error message:
+javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
 
 One of ways is to import the certificate into the JVM default keystore and check if 
 that works. Here are couple of helpful links:
