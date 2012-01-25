@@ -3,7 +3,7 @@
 
 ==Contents==
 
-TroubleshootingGuide#Introduction
+[TroubleshootingGuide#Introduction Introduction]
 
 == Introduction ==
 This document has a list of troubleshooting tips to identify if the !SharePoint connector has been configured correctly and is discovering and traversing !SharePoint content.
