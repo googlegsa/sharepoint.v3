@@ -4,17 +4,18 @@
 
 
 == Introduction ==
-This document has a list of troubleshooting tips and FAQ to quickly identify if connector has been configured correctly and is discovering & crawling SharePoint content as intended.
+This document has a list of troubleshooting tips to identify if the Sharepoint connector has been configured correctly and is discovering and traversing SharePoint content.
 
-All details will be applicable to both modes of authorization set for the connector: 
- * Handling authorization by appliance or SAML provider (metadata-and-URL feed mode)
- * Handling authorization by connector (conent feed mode)
+This document covers both types of authorization that can be used:
+
+ * Authorization by the GSA or a SAML provider (metadata-and-URL feed mode)
+ * Authorization by the connector (conent feed mode)
 
 Each Section may further be divided into sub-sections depending on the feed type to which they are applicable:
+
  # Common to Content and Metadata-and-URL Feed Mode
  # Content Feed Mode
  # Metadata-and-URL Feed Mode
-
 
 
 == Error Messages ==
