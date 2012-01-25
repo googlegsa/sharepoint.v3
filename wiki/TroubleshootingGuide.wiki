@@ -3,7 +3,7 @@
 
 ==Contents==
 
-[TroubleshootingGuide#Introduction Introduction]
+<wiki:toc max_depth="2" />
 
 == Introduction ==
 This document has a list of troubleshooting tips to identify if the !SharePoint connector has been configured correctly and is discovering and traversing !SharePoint content.
