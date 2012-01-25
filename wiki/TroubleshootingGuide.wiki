@@ -4,7 +4,7 @@
 
 
 == Introduction ==
-This document has a list of troubleshooting tips to identify if the Sharepoint connector has been configured correctly and is discovering and traversing SharePoint content.
+This document has a list of troubleshooting tips to identify if the Sharepoint connector has been configured correctly and is discovering and traversing Sharepoint content.
 
 This document covers both types of authorization that can be used:
 
