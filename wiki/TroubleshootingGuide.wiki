@@ -646,11 +646,10 @@ Yes. Connector supports crawling SSL based sites which use IIS self-signed certi
 If you have a self signed cetificate which is not from a trusted authority, the HTTPClient library (internally uses Java SSL suport) fails to find a valid certificate to be presented to the SharePoint server along with the request. You may see the following error message:
 javax.net.ssl.SSLHandshakeException: sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
 
-One of ways is to import the certificate into the JVM default keystore and check if 
+To resolve this issue, import the certificate into the JVM default keystore and check if 
 that works. Here are couple of helpful links:
 
 http://www.java-samples.com/showtutorial.php?tutorialid=210
 http://www.nabble.com/ssl-failure-td15753599.html
-
 
 The connector supports certificate, but in case it is not from a trusted authority it will have to be imported to the JDK keystore as identified above.
