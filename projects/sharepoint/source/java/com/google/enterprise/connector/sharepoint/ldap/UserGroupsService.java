@@ -844,7 +844,7 @@ public class UserGroupsService implements LdapService {
 			String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
 			LOGGER.info("Quering User data store with the AD groups :"
 					+ finalADGroups + " and search user [" + finalSearchUserName + "]");
-			spGroups = getAllSPGroupsForSearchUserAndLdapGroups(searchUser, finalADGroups);
+			spGroups = getAllSPGroupsForSearchUserAndLdapGroups(finalSearchUserName, finalADGroups);
 			userGroupsMap.put(SPConstants.ADGROUPS, finalADGroups);
 			userGroupsMap.put(SPConstants.SPGROUPS, spGroups);
 		} finally {
