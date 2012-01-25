@@ -1,10 +1,10 @@
 #summary Troubleshooting guide and FAQ for SharePoint Connector
-= Troubleshooting guide and FAQ for SharePoint Connector =
+= Troubleshooting guide and FAQ for !SharePoint Connector =
 
 
 
 == Introduction ==
-This document has a list of troubleshooting tips to identify if the Sharepoint connector has been configured correctly and is discovering and traversing Sharepoint content.
+This document has a list of troubleshooting tips to identify if the !SharePoint connector has been configured correctly and is discovering and traversing !SharePoint content.
 
 This document covers both types of authorization that can be used:
 
@@ -655,16 +655,16 @@ http://www.nabble.com/ssl-failure-td15753599.html
 
 The connector supports certificate, but in case it is not from a trusted authority it will have to be imported to the JDK keystore as identified above.
 
-== Viewing responses from Sharepoint web services ==
-You can diagnose whether Sharepoint is returning the expected results to a web services call using a utility. Search google.com to [https://www.google.com/search?q=sharepoint+web+services+utility find examples of utilities] that can do this. 
+== Viewing responses from !SharePoint web services ==
+You can diagnose whether !SharePoint is returning the expected results to a web services call using a utility. Search google.com to [https://www.google.com/search?q=sharepoint+web+services+utility find examples of utilities] that can do this. 
 
-The connector logs show the web service requests sent to Sharepoint. For example:
+The connector logs show the web service requests sent to !SharePoint. For example:
 {{{
 Nov 15, 2010 8:01:49 PM [Traverse issue174spcon] com.google.enterprise.connector.sharepoint.wsclient.ListsWS getListItemChangesSinceToken
 CONFIG: Making Web Service call with the following parameters:
  query [ <Query><Where><Or><Gt><FieldRef Name="ID"/><Value Type="Counter">0</Value></Gt><Eq><FieldRef Name="ContentType"/><Value Type="Text">Folder</Value></Eq></Or></Where><OrderBy><FieldRef Ascending="TRUE" Name="ID"/></OrderBy></Query> ], queryoptions [ <QueryOptions><IncludeMandatoryColumns>true</IncludeMandatoryColumns><DateInUtc>TRUE</DateInUtc><ViewAttributes Scope="Recursive"/><OptimizeFor>ItemIds</OptimizeFor></QueryOptions> ], viewFields [ <ViewFields Properties="TRUE"/>], token [ 1;3;ca894ebb-41ed-44ee-9f09-0e8cb578bab6;634249936372170000;1499 ] 
 }}}
-An example of how this may be useful is to make a call to the GetSite() method on the "sitedata" web service.
+An example of how this may be useful is to make a call to the !GetSite() method on the "sitedata" web service.
 
 The expected result is a list of all the webs and sub webs including the metadata and site users. For example:
 {{{
