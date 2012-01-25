@@ -1,7 +1,9 @@
-#summary Troubleshooting guide and FAQ for SharePoint Connector
-= Troubleshooting guide and FAQ for !SharePoint Connector =
+#summary Troubleshooting Guide for the SharePoint connector
+= Troubleshooting Guide for the !SharePoint connector =
 
+==Contents==
 
+TroubleshootingGuide#Introduction
 
 == Introduction ==
 This document has a list of troubleshooting tips to identify if the !SharePoint connector has been configured correctly and is discovering and traversing !SharePoint content.
