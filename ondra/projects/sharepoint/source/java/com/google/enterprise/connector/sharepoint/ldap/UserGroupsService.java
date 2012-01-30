@@ -30,6 +30,7 @@ import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapCon
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticationManager;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.AuthenticationIdentity;
 
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -748,43 +749,43 @@ public class UserGroupsService implements LdapService {
 	 * SharepointClientContext , java.lang.String)
 	 */
 	public Set<String> getAllGroupsForSearchUser(
-			SharepointClientContext sharepointClientContext, String searchUser)
+			SharepointClientContext sharepointClientContext, AuthenticationIdentity identity)
 			throws SharepointException {
 		ConcurrentHashMap<String, Set<String>> userGroupsMap = new ConcurrentHashMap<String, Set<String>>(
 				20);
 		Set<String> allUserGroups = new HashSet<String>();
-		if (null != searchUser && null != lugCacheStore) {
+		if (null != identity.getUsername() && null != lugCacheStore) {
 			if (lugCacheStore.getSize() > 0
-					&& lugCacheStore.contains(searchUser.toLowerCase())) {
-				userGroupsMap = lugCacheStore.get(searchUser);
+					&& lugCacheStore.contains(identity.getUsername().toLowerCase())) {
+				userGroupsMap = lugCacheStore.get(identity.getUsername().toLowerCase());
 				if (null != userGroupsMap) {
 					allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
 					allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
 				}
-				LOGGER.info("Found valid entry for search user [" + searchUser
+				LOGGER.info("Found valid entry for search user [" + identity.getUsername()
 						+ "] in cache store and he/she is a direct or indirect member of "
 						+ allUserGroups.size() + " groups");
 				return allUserGroups;
 			} else {
 				LOGGER.info("No entry found for the user [ "
-						+ searchUser
+						+ identity.getUsername()
 						+ " ] in cache store. Hence querying LDAP server and User data store to fetch all AD and SP groups, to which the search user belongs to.");
-				userGroupsMap = getAllADGroupsAndSPGroupsForSearchUser(searchUser);
+				userGroupsMap = getAllADGroupsAndSPGroupsForSearchUser(identity.getUsername());
 				if (null != userGroupsMap) {
 					allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
 					allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
 				}
 
-				this.lugCacheStore.put(searchUser.toLowerCase(), userGroupsMap);
+				this.lugCacheStore.put(identity.getUsername().toLowerCase(), userGroupsMap);
 
 				return allUserGroups;
 			}
 		} else {
-			if (Strings.isNullOrEmpty(searchUser)) {
+			if (Strings.isNullOrEmpty(identity.getUsername())) {
 				return null;
 			}
 			LOGGER.info("The LDAP cache is not yet initialized and hence querying LDAP and User Data Store directly.");
-			userGroupsMap = getAllADGroupsAndSPGroupsForSearchUser(searchUser);
+			userGroupsMap = getAllADGroupsAndSPGroupsForSearchUser(identity.getUsername());
 			allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
 			allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
 		}

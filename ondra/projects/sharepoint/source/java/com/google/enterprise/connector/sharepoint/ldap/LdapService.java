@@ -18,6 +18,7 @@ package com.google.enterprise.connector.sharepoint.ldap;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.AuthenticationIdentity;
 
 import java.util.Set;
 
@@ -79,6 +80,6 @@ public interface LdapService {
    * @throws SharepointException
    */
   Set<String> getAllGroupsForSearchUser(
-      SharepointClientContext sharepointClientContext, String searchUser)
+      SharepointClientContext sharepointClientContext, AuthenticationIdentity identity)
       throws SharepointException;
 }

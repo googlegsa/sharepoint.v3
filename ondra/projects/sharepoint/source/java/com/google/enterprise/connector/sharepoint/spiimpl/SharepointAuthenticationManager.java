@@ -132,7 +132,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 				LOGGER.log(Level.INFO, "Authentication succeeded for the user : "
 						+ user + " with identity : " + userName);
 				if (sharepointClientContext.isPushAcls() && null != this.ldapService) {
-					return getAllGroupsForTheUser(user);
+					return getAllGroupsForTheUser(identity);
 				} else {
 					// Handle the cases when connector should just return true
 					// indicating successfull authN
@@ -142,7 +142,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 			}
 		} else {
 			LOGGER.config("AuthN was not attempted as password is empty and groups are being returned.");
-			return getAllGroupsForTheUser(user);
+			return getAllGroupsForTheUser(identity);
 		}
 		LOGGER.log(Level.WARNING, "Authentication failed for " + user);
 		return new AuthenticationResponse(false, "", null);
@@ -158,21 +158,21 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 	 * @return {@link AuthenticationResponse}
 	 * @throws SharepointException
 	 */
-	AuthenticationResponse getAllGroupsForTheUser(String searchUser)
+	AuthenticationResponse getAllGroupsForTheUser(AuthenticationIdentity identity)
 			throws SharepointException {
-		LOGGER.info("Attempting group resolution for user : " + searchUser);
-		Set<String> allSearchUserGroups = this.ldapService.getAllGroupsForSearchUser(sharepointClientContext, searchUser);
+		LOGGER.info("Attempting group resolution for user : " + identity.getUsername());
+		Set<String> allSearchUserGroups = this.ldapService.getAllGroupsForSearchUser(sharepointClientContext, identity);
 		Set<String> finalGroupNames = encodeGroupNames(allSearchUserGroups);
 		if (null != finalGroupNames && finalGroupNames.size() > 0) {
 			// Should return true is there is at least one group returned by
 			// LDAP service.
 			StringBuffer buf = new StringBuffer(
-					"Group resolution service returned following groups for the search user: ").append(searchUser).append(" \n").append(finalGroupNames.toString());
+					"Group resolution service returned following groups for the search user: ").append(identity.getUsername()).append(" \n").append(finalGroupNames.toString());
 			LOGGER.info(buf.toString());
 			return new AuthenticationResponse(true, "", allSearchUserGroups);
 		}
 		LOGGER.info("Group resolution service returned no groups for the search user: "
-				+ searchUser);
+				+ identity.getUsername());
 		// Should returns true with null groups.
 		return new AuthenticationResponse(true, "", null);
 	}
