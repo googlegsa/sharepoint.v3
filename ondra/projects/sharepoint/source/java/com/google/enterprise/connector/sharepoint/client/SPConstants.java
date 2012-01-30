@@ -435,6 +435,9 @@ public class SPConstants {
   public static final String CONNECT_METHOD_STANDARD_HELP = "connectMethodStandard_help";
   public static final String CONNECT_METHOD_SSL_HELP = "connectMethodSSL_help";
   public static final String LDAP_SERVER_HOST_ADDRESS = "ldapServerHostAddress";
+  public static final String LDAP_USERNAME = "ldapUserName";
+  public static final String LDAP_PASSWORD = "ldapPassword";
+  public static final String LDAP_DOMAIN = "ldapDomain";
   public static final String PORT_NUMBER = "portNumber";
   public static final String SEARCH_BASE = "searchBase";
   public static final String USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP = "useCacheToStoreLdapUserGroupsMembership";

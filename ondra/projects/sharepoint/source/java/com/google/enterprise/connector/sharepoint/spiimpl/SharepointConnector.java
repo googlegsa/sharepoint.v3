@@ -82,6 +82,9 @@ public class SharepointConnector implements Connector,
 	private int aclBatchSizeFactor = 2;
 	private int webServiceTimeOut = 300000;
 	private String ldapServerHostAddress;
+	private String ldapUserName;
+	private String ldapPassword;
+	private String ldapDomain;
 	private String portNumber;
 	private String authenticationType;
 	private String connectMethod;
@@ -394,6 +397,30 @@ public class SharepointConnector implements Connector,
 		this.infoPathBaseTemplate = infoPathBaseTemplate;
 	}
 
+	public String getLdapUserName() {
+		return ldapUserName;
+	}
+
+	public void setLdapUserName(String ldapUserName) {
+		this.ldapUserName = ldapUserName;
+	}
+
+	public String getLdapPassword() {
+		return ldapPassword;
+	}
+
+	public void setLdapPassword(String ldapPassword) {
+		this.ldapPassword = ldapPassword;
+	}
+
+	public String getLdapDomain() {
+		return ldapDomain;
+	}
+
+	public void setLdapDomain(String ldapDomain) {
+		this.ldapDomain = ldapDomain;
+	}
+
 	public void setQueryProvider(QueryProvider queryProvider) {
 		this.queryProvider = queryProvider;
 	}
@@ -526,14 +553,14 @@ public class SharepointConnector implements Connector,
 	public String getLdapServerHostAddress() {
 		return ldapServerHostAddress;
 	}
-
+	
 	/**
 	 * @param ldapServerHostAddress the ldapServerHostAddress to set.
 	 */
 	public void setLdapServerHostAddress(String ldapServerHostAddress) {
 		this.ldapServerHostAddress = ldapServerHostAddress;
 	}
-
+	
 	/**
 	 * @return LDAP directory server port number.
 	 */
@@ -548,6 +575,8 @@ public class SharepointConnector implements Connector,
 		if (Strings.isNullOrEmpty(portNumber)) {
 			this.portNumber = SPConstants.LDAP_DEFAULT_PORT_NUMBER;
 		} else {
+
+
 			this.portNumber = portNumber;
 		}
 	}
@@ -668,7 +697,7 @@ public class SharepointConnector implements Connector,
 		}
 		LdapConnectionSettings ldapConnectionSettings = new LdapConnectionSettings(
 				method, this.ldapServerHostAddress, Integer.parseInt(this.portNumber),
-				this.searchBase, authType, this.username, this.password, this.domain);
+				this.searchBase, authType, this.ldapUserName, this.ldapPassword, this.ldapDomain);
 		this.ldapConnectionSettings = ldapConnectionSettings;
 		return ldapConnectionSettings;
 	}
