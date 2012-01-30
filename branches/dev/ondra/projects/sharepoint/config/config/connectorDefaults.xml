@@ -18,6 +18,9 @@
     <property name="usernameFormatInAce" value="${usernameFormatInAce}"/>
     <property name="groupnameFormatInAce" value="${groupnameFormatInAce}"/>
     <property name="ldapServerHostAddress" value="${ldapServerHostAddress}"/>
+    <property name="ldapUserName" value="${ldapUserName}"/>
+    <property name="ldapPassword" value="${ldapPassword}"/>
+    <property name="ldapDomain" value="${ldapDomain}"/>
     <property name="portNumber" value="${portNumber}"/>
     <property name="authenticationType" value="${authenticationType}"/>
     <property name="connectMethod" value="${connectMethod}"/>
@@ -124,6 +127,9 @@
                 <prop key="usernameFormatInAce">username</prop>
                 <prop key="groupnameFormatInAce">domain\\username</prop>
                 <prop key="ldapServerHostAddress"></prop>
+                <prop key="ldapUserName"></prop>
+                <prop key="ldapPassword"></prop>
+                <prop key="ldapDomain"></prop>
                 <prop key="portNumber"></prop>
                 <prop key="authenticationType"></prop>
                 <prop key="connectMethod"></prop>

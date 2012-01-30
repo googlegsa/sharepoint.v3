@@ -104,6 +104,9 @@ public class SharepointConnectorType implements ConnectorType {
 	private String usernameFormatInAce;
 	private String groupnameFormatInAce;
 	private String ldapServerHostAddress;
+	private String ldapUserName;
+	private String ldapPassword;
+	private String ldapDomain;
 	private String portNumber;
 	private String authenticationType;
 	private String connectMethod;
@@ -621,7 +624,8 @@ public class SharepointConnectorType implements ConnectorType {
 				} else {
 					buf.append(SPConstants.OPEN_ELEMENT);
 					buf.append(SPConstants.INPUT);
-					if (collator.equals(key, SPConstants.PASSWORD)) {
+					if (collator.equals(key, SPConstants.PASSWORD) ||
+							collator.equals(key, SPConstants.LDAP_PASSWORD)) {
 						appendAttribute(buf, SPConstants.TYPE, SPConstants.PASSWORD);
 					} else if (collator.equals(key, SPConstants.ALIAS_MAP)) {
 						appendAttribute(buf, SPConstants.TYPE, SPConstants.HIDDEN);
@@ -685,8 +689,11 @@ public class SharepointConnectorType implements ConnectorType {
 					}
 
 					if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)
-							|| collator.equals(key, SPConstants.SEARCH_BASE)) {
-						appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
+							|| collator.equals(key, SPConstants.SEARCH_BASE)
+							|| collator.equals(key, SPConstants.LDAP_USERNAME)
+							|| collator.equals(key, SPConstants.LDAP_DOMAIN)
+							|| collator.equals(key, SPConstants.LDAP_PASSWORD)) {
+							appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
 						if (editMode) {
 							if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
 								buf.append(SPConstants.SPACE + SPConstants.DISABLED
@@ -885,6 +892,12 @@ public class SharepointConnectorType implements ConnectorType {
 			this.groupnameFormatInAce = val.trim();
 		} else if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)) {
 			this.ldapServerHostAddress = val.trim();
+		} else if (collator.equals(key, SPConstants.LDAP_USERNAME)) {
+			this.ldapUserName = val.trim();
+		} else if (collator.equals(key, SPConstants.LDAP_PASSWORD)) {
+			this.ldapPassword = val;
+		} else if (collator.equals(key, SPConstants.LDAP_DOMAIN)) {
+			this.ldapDomain = val.trim();
 		} else if (collator.equals(key, SPConstants.PORT_NUMBER)) {
 			this.portNumber = val.trim();
 		} else if (collator.equals(key, SPConstants.SEARCH_BASE)) {
@@ -1935,8 +1948,8 @@ public class SharepointConnectorType implements ConnectorType {
 					}
 					LdapConnectionSettings settings = new LdapConnectionSettings(method,
 							this.ldapServerHostAddress, Integer.parseInt(this.portNumber),
-							this.searchBase, authType, this.username, this.password,
-							this.domain);
+							this.searchBase, authType, this.ldapUserName, this.ldapPassword,
+							this.ldapDomain);
 					LOGGER.config("Created LDAP connection settings object to obtain LDAP context "
 							+ ldapConnectionSettings);
 					LdapConnection ldapConnection = new LdapConnection(settings);
