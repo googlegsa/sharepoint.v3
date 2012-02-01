@@ -447,7 +447,7 @@ public class UserGroupsService implements LdapService {
 	private String createSearchFilterForDirectGroups(String userName) {
 		StringBuffer filter;
 		filter = new StringBuffer().append(LdapConstants.PREFIX_FOR_DIRECT_GROUPS_FILTER
-				+ userName + SPConstants.DOUBLE_CLOSE_PARENTHESIS);
+				+ ldapEscape(userName) + SPConstants.DOUBLE_CLOSE_PARENTHESIS);
 		LOGGER.config("search filter value for fetching direct groups :" + filter);
 		return filter.toString();
 	}
@@ -520,12 +520,32 @@ public class UserGroupsService implements LdapService {
 		}
 		return parentGroups;
 	}
-
+	
+	/**
+	 * Escapes special characters used in string literals for LDAP search filters
+	 * 
+	 * @param literal to be escaped and used in LDAP filter
+	 * @return escaped literal 
+	 */
+	String ldapEscape(String literal) {
+		StringBuilder buffer = new StringBuilder(literal.length() * 2);
+		for (int i = 0; i < literal.length(); ++i) {
+			char c = literal.charAt(i);
+			if (LdapConstants.ESCAPE_CHARACTERS.indexOf(c) == -1) {
+				buffer.append(c);
+			} else {
+				String escape = (c < 16) ? "\\0" : "\\";
+				buffer.append(escape).append(Integer.toHexString(c));
+			}
+		}
+		return buffer.toString();
+	}
+	
 	private String createSearchFilterForParentGroups(String groupName) {
 		StringBuffer filter;
 		String groupDN = getGroupDNForTheGroup(groupName);
 		filter = new StringBuffer().append(LdapConstants.PREFIX_FOR_PARENTS_GROUPS_FILTER
-				+ groupDN + SPConstants.DOUBLE_CLOSE_PARENTHESIS);
+				+ ldapEscape(groupDN) + SPConstants.DOUBLE_CLOSE_PARENTHESIS);
 		return filter.toString();
 	}
 
@@ -569,10 +589,15 @@ public class UserGroupsService implements LdapService {
 	 * @param groupName
 	 * @return group DN from group name.
 	 */
-	private String getGroupDNForTheGroup(String groupName) {
-		String tmpGroupName;
-		tmpGroupName = groupName.substring(0, groupName.indexOf(SPConstants.COMMA));
+	String getGroupDNForTheGroup(String groupName) {
+		// LDAP queries return escaped commas to avoid ambiguity, find first not escaped comma
+		int comma = groupName.indexOf(SPConstants.COMMA);
+		while (comma > 0 && comma < groupName.length() && (groupName.charAt(comma - 1) == SPConstants.DOUBLEBACKSLASH_CHAR)) {
+			comma = groupName.indexOf(SPConstants.COMMA, comma + 1);
+		}
+		String tmpGroupName = groupName.substring(0, comma > 0 ? comma : groupName.length());
 		tmpGroupName = tmpGroupName.substring(tmpGroupName.indexOf(SPConstants.EQUAL_TO) + 1);
+		tmpGroupName = tmpGroupName.replace(SPConstants.DOUBLEBACKSLASH, SPConstants.BLANK_STRING);
 		return tmpGroupName;
 	}
 
