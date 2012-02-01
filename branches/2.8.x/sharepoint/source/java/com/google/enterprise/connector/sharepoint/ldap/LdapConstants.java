@@ -25,6 +25,7 @@ public class LdapConstants {
   public static final Object PREFIX_FOR_PARENTS_GROUPS_FILTER = "(&(objectClass=group)(CN=";
   public static final Object PREFIX_FOR_DIRECT_GROUPS_FILTER = "(&(objectClass=user)(sAMAccountName=";
   public static final String RETURN_ATTRIBUTES_DIRECT_GROUPS_LIST = "memberOf";
+  public static final String ESCAPE_CHARACTERS = "\\*()\0/";
 
   public static final int DEFAULT_PORT = 389;
 
