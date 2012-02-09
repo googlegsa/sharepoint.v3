@@ -454,7 +454,7 @@ public class SharepointConnector implements Connector,
 		String locale = localDatabseImpl.getDatabaseType().name();
 		LOGGER.config("Data base type : " + locale);
 		if (null == locale || locale.length() == 0) {
-			locale = "mssql";
+			locale = "sqlserver";
 		}
 		queryProvider.setDatabase(locale);
 		try {
