@@ -730,6 +730,7 @@ class HttpMethodDirector {
 	        if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
 	        	claims.originalPath = method.getPath();
                 method.setFollowRedirects(false);
+                method.setRequestHeader(new Header("User-Agent", "Mozilla/4.0"));
 
 	        	String xform = method.getResponseHeader("X-Forms_Based_Auth_Required").getValue().split(", ")[0];
 	        	
