@@ -21,6 +21,7 @@ import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.ldap.LdapService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.multildap.MultiLdapService;
 import com.google.enterprise.connector.sharepoint.wsclient.GSBulkAuthorizationWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
@@ -62,10 +63,14 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 		}
 		sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
 		if (sharepointClientContext.isPushAcls()) {
-			LdapConnectionSettings ldapConnectionSettings = sharepointClientContext.getLdapConnectionSettings();
-			if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())
-					&& !Strings.isNullOrEmpty(ldapConnectionSettings.getBaseDN())) {
-				ldapService = new UserGroupsService(inSharepointClientContext);
+			if (!sharepointClientContext.isMultiDomain()) {
+				LdapConnectionSettings ldapConnectionSettings = sharepointClientContext.getLdapConnectionSettings();
+				if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())
+						&& !Strings.isNullOrEmpty(ldapConnectionSettings.getBaseDN())) {
+					ldapService = new UserGroupsService(inSharepointClientContext);
+				}
+			} else {
+				ldapService = new MultiLdapService(inSharepointClientContext);
 			}
 		}
 	}

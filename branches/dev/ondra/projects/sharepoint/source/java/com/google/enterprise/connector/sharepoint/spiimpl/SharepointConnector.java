@@ -26,6 +26,7 @@ import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapp
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.multildap.MultiCrawl;
 import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
@@ -349,6 +350,11 @@ public class SharepointConnector implements Connector,
 				sharepointClientContext.setInitialCacheSize(Integer.parseInt(this.initialCacheSize));
 			}
 		}
+		
+		LOGGER.info("Starting crawl");
+		
+		sharepointClientContext.multiCrawl = new MultiCrawl(sharepointClientContext);
+		sharepointClientContext.multiCrawl.start();
 	}
 
 	/**
