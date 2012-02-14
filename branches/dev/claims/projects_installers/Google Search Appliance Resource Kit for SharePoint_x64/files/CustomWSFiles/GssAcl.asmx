@@ -693,6 +693,8 @@ public class GssAclMonitor
         {
             throw new Exception("SharePoint site not found");
         }
+	// workaroud for claims based authentication to trigger authentication as soon as possible
+	web.ToString();
     }
 
     /// <summary>
