@@ -120,9 +120,19 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     } else {
       groups.add(searchUser);
       groupsObject.put(SPConstants.GROUPS, groups);
+      
+      LOGGER.info("Querying Datastore: " + getSqlQuery(query));
+      StringBuilder sb = new StringBuilder(groups.size() * 20);
+      
+      for (String s:  groups) {
+        sb.append("[").append(s).append("] ");
+      }
+      
+      LOGGER.fine(sb.toString());
     }
     List<UserGroupMembership> memberships = null;
     try {
+      
       memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
     } catch (Throwable t) {
       throw new SharepointException(

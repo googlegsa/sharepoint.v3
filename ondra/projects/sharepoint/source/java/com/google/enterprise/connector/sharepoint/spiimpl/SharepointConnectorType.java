@@ -1952,30 +1952,35 @@ public class SharepointConnectorType implements ConnectorType {
 							this.ldapDomain);
 					LOGGER.config("Created LDAP connection settings object to obtain LDAP context "
 							+ ldapConnectionSettings);
-					LdapConnection ldapConnection = new LdapConnection(settings);
-					if (ldapConnection.getLdapContext() == null) {
-						Map<LdapConnectionError, String> errors = ldapConnection.getErrors();
-						Iterator<Entry<LdapConnectionError, String>> iterator = errors.entrySet().iterator();
-						StringBuffer errorMessage = new StringBuffer();
-						errorMessage.append(rb.getString(SPConstants.LDAP_CONNECTVITY_ERROR));
-						while (iterator.hasNext()) {
-							Map.Entry<LdapConnectionError, String> entry = iterator.next();
-							errorMessage.append(SPConstants.SPACE + entry.getValue());
+
+					// if multildap do not validate
+					if (!ldapServerHostAddress.contains("|")) {
+						LdapConnection ldapConnection = new LdapConnection(settings);
+						if (ldapConnection.getLdapContext() == null) {
+							Map<LdapConnectionError, String> errors = ldapConnection.getErrors();
+							Iterator<Entry<LdapConnectionError, String>> iterator = errors.entrySet().iterator();
+							StringBuffer errorMessage = new StringBuffer();
+							errorMessage.append(rb.getString(SPConstants.LDAP_CONNECTVITY_ERROR));
+							while (iterator.hasNext()) {
+								Map.Entry<LdapConnectionError, String> entry = iterator.next();
+								errorMessage.append(SPConstants.SPACE + entry.getValue());
+							}
+
+							ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, errorMessage.toString());
+							return false;
 						}
-						ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, errorMessage.toString());
-						return false;
-					}
 
-					if (ldapConnection.getLdapContext() == null) {
-						LOGGER.log(Level.WARNING, "Couldn't obtain context object to query LDAP (AD) directory server.");
-						ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.LDAP_CONNECTVITY_ERROR));
-						return false;
-					}
+						if (ldapConnection.getLdapContext() == null) {
+							LOGGER.log(Level.WARNING, "Couldn't obtain context object to query LDAP (AD) directory server.");
+							ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.LDAP_CONNECTVITY_ERROR));
+							return false;
+						}
 
-					if (!checkForSearchBase(ldapConnection.getLdapContext(), searchBase, ed)) {
-						return false;
+						if (!checkForSearchBase(ldapConnection.getLdapContext(), searchBase, ed)) {
+							return false;
+						}
+						LOGGER.log(Level.CONFIG, "Sucessfully created initial LDAP context to query LDAP directory server.");
 					}
-					LOGGER.log(Level.CONFIG, "Sucessfully created initial LDAP context to query LDAP directory server.");
 				} else {
 					if (Strings.isNullOrEmpty(ldapServerHostAddress)) {
 						ed.set(SPConstants.LDAP_SERVER_HOST_ADDRESS, rb.getString(SPConstants.LDAP_SERVER_HOST_ADDRESS_BLANK));

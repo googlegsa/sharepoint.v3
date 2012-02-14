@@ -18,6 +18,8 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.multildap.MultiCrawl;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticationManager;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
 
@@ -103,6 +105,8 @@ public class SharepointClientContext implements Cloneable {
 	private LdapConnectionSettings ldapConnectionSettings;
 	private boolean feedUnPublishedDocuments;
 	private boolean initialTraversal;
+	
+	public MultiCrawl multiCrawl;
 
 	public boolean isFeedUnPublishedDocuments() {
 		return feedUnPublishedDocuments;
@@ -214,6 +218,7 @@ public class SharepointClientContext implements Cloneable {
 			spCl.setInitialCacheSize(this.initialCacheSize);
 			spCl.setCacheRefreshInterval(this.cacheRefreshInterval);
 			spCl.setFeedUnPublishedDocuments(this.feedUnPublishedDocuments);
+			spCl.multiCrawl = this.multiCrawl;
 
 			return spCl;
 		} catch (final Throwable e) {
@@ -335,7 +340,7 @@ public class SharepointClientContext implements Cloneable {
 		feedType = inFeedType;
 		LOGGER.finest("feedType set to " + feedType);
 		LOGGER.finest("bFQDNConversion set to " + bFQDNConversion);
-
+		
 		this.useSPSearchVisibility = useSPSearchVisibility;
 
 		LOGGER.config(" sharepointUrl = [" + sharepointUrl + "] , domain = ["
@@ -1112,5 +1117,9 @@ public class SharepointClientContext implements Cloneable {
 
 	public void setInitialTraversal(boolean initialTraversal) {
 		this.initialTraversal = initialTraversal;
+	}
+	
+	public boolean isMultiDomain() {
+		 return ldapConnectionSettings.getHostname().contains("|");
 	}
 }
