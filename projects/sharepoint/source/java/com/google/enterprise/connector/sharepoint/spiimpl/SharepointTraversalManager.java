@@ -25,6 +25,8 @@ import com.google.enterprise.connector.spi.TraversalContext;
 import com.google.enterprise.connector.spi.TraversalContextAware;
 import com.google.enterprise.connector.spi.TraversalManager;
 
+import org.apache.axis.utils.XMLUtils;
+
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -166,6 +168,13 @@ public class SharepointTraversalManager implements TraversalManager,
       LOGGER.severe("Aborting Traversal. Invalid Feed Type.");
       return null;
     }
+
+    // Register a SAX client factory with Axis so that we can intercept SAX
+    // parsing failures. This is needed to ignore some SAX parsing failures 
+    // such as duplicate attributes defined in the metadata of a document.
+    XMLUtils.initSAXFactory(
+        "com.google.enterprise.connector.sharepoint.wsclient.handlers.SaxErrorFactory",
+        true, false);
 
     // Set the traversal context on client context so that it can be used by
     // any other classes that will make use of the same.
