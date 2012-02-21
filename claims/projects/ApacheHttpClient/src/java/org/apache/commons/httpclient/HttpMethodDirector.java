@@ -729,24 +729,16 @@ class HttpMethodDirector {
 	        this.state.setCredentials(authscope, creds);
 	        if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
 	        	claims.originalPath = method.getPath();
-                method.setFollowRedirects(false);
                 method.setRequestHeader(new Header("User-Agent", "Mozilla/4.0"));
-
 	        	String xform = method.getResponseHeader("X-Forms_Based_Auth_Required").getValue().split(", ")[0];
-	        	
 	        	method.setPath(new URI(xform).getPathQuery());
-
 	        } else if (method.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY) {
 	        	Header cookie = method.getResponseHeader("Set-Cookie");
-	        	
 	        	if (cookie != null && cookie.getValue().startsWith("FedAuth")) {
 	        		method.setPath(claims.originalPath);
 	        		method.removeRequestHeader("Authorization");
 	        		claims.setComplete();
 	        		authstate.setAuthScheme(null);
-	        		if (method instanceof HeadMethod) {
-	        		  method.setFollowRedirects(true);
-	        		}
 	        	}
 	        	else {
 	        		String location = method.getResponseHeader("Location").getValue(); 
