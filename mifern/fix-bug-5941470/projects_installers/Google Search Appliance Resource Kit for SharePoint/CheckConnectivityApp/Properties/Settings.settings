@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="WindowsApplication1.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Verify_Installation_GSPAclWS_GssAclMonitor" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://localhost/_layouts/GssAcl.asmx</Value>
+    </Setting>
+    <Setting Name="Verify_Installation_GSPBulkWS_BulkAuthorization" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://localhost/_layouts/GSBulkAuthorization.asmx</Value>
+    </Setting>
+    <Setting Name="Verify_Installation_GSPSiteDiscoveryWS_SiteDiscovery" Type="(Web Service URL)" Scope="Application">
+      <Value Profile="(Default)">http://localhost/_vti_bin/GSSiteDiscovery.asmx</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
