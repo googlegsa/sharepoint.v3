@@ -145,7 +145,7 @@ public final class AuthChallengeProcessor {
             throw new IllegalArgumentException("Challenge map may not be null"); 
         }
         
-        AuthScheme authscheme = null;
+        AuthScheme authscheme = state.getAuthScheme();
         ClaimsAuthScheme claims = null;
         if (state.isPreemptive() || state.getAuthScheme() == null) {
             // Authentication not attempted before

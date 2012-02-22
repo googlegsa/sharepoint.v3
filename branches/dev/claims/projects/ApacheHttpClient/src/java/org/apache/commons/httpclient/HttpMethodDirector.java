@@ -669,7 +669,8 @@ class HttpMethodDirector {
 				+ "' to '" + redirectUri.getEscapedURI());
 		}
         //And finally invalidate the actual authentication scheme
-        method.getHostAuthState().invalidate(); 
+		if (!(method.getHostAuthState().getAuthScheme() instanceof ClaimsAuthScheme))
+            method.getHostAuthState().invalidate(); 
 		return true;
 	}
 
@@ -735,16 +736,10 @@ class HttpMethodDirector {
 	        } else if (method.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY) {
 	        	Header cookie = method.getResponseHeader("Set-Cookie");
 	        	if (cookie != null && cookie.getValue().startsWith("FedAuth")) {
+	        	    method.removeRequestHeader("Authorization");
 	        		method.setPath(claims.originalPath);
-	        		method.removeRequestHeader("Authorization");
 	        		claims.setComplete();
 	        		authstate.setAuthScheme(null);
-	        	}
-	        	else {
-	        		String location = method.getResponseHeader("Location").getValue(); 
-	        		if (location.startsWith("/_windows")) {
-	        			method.setPath(location);	
-	        		}
 	        	}
 	        }
  
@@ -891,6 +886,9 @@ class HttpMethodDirector {
 			case HttpStatus.SC_SEE_OTHER:
 			case HttpStatus.SC_TEMPORARY_REDIRECT:
 				LOG.debug("Redirect required");
+				if (method.getHostAuthState() != null && 
+				    method.getHostAuthState().getAuthScheme() instanceof ClaimsAuthScheme)
+				    return true;
                 if (method.getFollowRedirects()) {
                     return true;
                 } else {
