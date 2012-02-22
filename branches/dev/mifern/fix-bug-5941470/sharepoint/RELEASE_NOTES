@@ -20,6 +20,14 @@ Summary of Changes / New Features
 ---------------------------------
 This patch contains fix for the following issues
 
+--Issue 5941470: Sharepoint SOAP response has duplicate attributes
+Description:
+SAX throws an exception when a node in the SOAP response has duplicate attributes. This is caused when a document on the 
+Sharepoint repository has duplicate metadata. When this happens, the documents in the Sharepoint list/library that contains 
+the document with duplicate metadata gets skipped during traversal. All documents in the list/library get skipped not just 
+the document with the duplicate metadata. This has been fixed for this patch. With this fix, the connector will just display
+a warning that a document has duplicate attributes but continue crawling list/library.
+
 --Issue 177/3290338: For ACL indexing, add ability to differentiate identical group names in SharePoint, Active Directory, and the local computer.
 Description:
 There is a discrepancy between the way GSA handles users and groups during ACL based authorization.
