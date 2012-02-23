@@ -100,7 +100,6 @@ public class GssAclWS {
 
     try {
       stub = (GssAclMonitorSoap_BindingStub) service.getGssAclMonitorSoap();
-      stub.setMaintainSession(true);
     } catch (final ServiceException e) {
       LOGGER.log(Level.WARNING, e.getMessage(), e);
       throw new SharepointException("Unable to create GssAcl stub");
@@ -317,15 +316,8 @@ public class GssAclWS {
    * GssAclTest.testGetPrincipalName
    */
   String getPrincipalName(GssPrincipal principal) {
-    
-    String name = principal.getName();
-    
-    if (name.contains("|")) {
-      name = name.substring(name.indexOf('|') + 1);
-    }
-    
-    String principalname = Util.getUserFromUsername(name);
-    final String domain = Util.getDomainFromUsername(name);
+    String principalname = Util.getUserFromUsername(principal.getName());
+    final String domain = Util.getDomainFromUsername(principal.getName());
     String domainStringConst = SPConstants.DOMAIN_CONSTANT_IN_ACL;
 
     if (null != domain) {
