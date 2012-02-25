@@ -4,7 +4,7 @@
   <property file="build.properties" />
   <!-- ========================= PROPERTIES ============================= -->
   <property name="version" value="${BUILD_VERSION}" />
-  <property name="product" value="Google Search Appliance Connector for Microsoft SharePoint 2003,2007, 2010" />
+  <property name="product" value="Google Search Appliance Connector for SharePoint" />
   <property name="projects.dir" value=".." />
 
   <property name="COMPILE_DEBUG_FLAG" value="true" />
@@ -21,7 +21,6 @@
   <property name="config" value="config" />
   <property environment="env" />
   <property name="wsdl" value="wsdl" />
-  <property name="axis2_home" value="${env.AXIS2_HOME}" />
   <property name="tests.src" value="source/javatests" />
   <property name="tests.build" value="build/tests" />
   <property name="tests.classes" value="${tests.build}/classes" />
@@ -113,6 +112,7 @@
     <attribute name="generates" default="must-not-exist" />
     <sequential>
       <if>
+	<!-- TODO: Use dependset to include all stubs in the check. -->
         <not><uptodate srcfile="@{url}" targetfile="@{generates}"/></not>
         <then>
           <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
