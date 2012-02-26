@@ -26,6 +26,12 @@
     <property name="initialCacheSize" value="${initialCacheSize}"/>
     <property name="cacheRefreshInterval" value="${cacheRefreshInterval}"/>
     <property name="feedUnPublishedDocuments" value="${feedUnPublishedDocuments}"/>
+    <property name="socialOption" value="${socialOption}"/>
+    <property name="gsaHostAddress" value="${googleFeedHost}"/>
+    <property name="gsaAdminUser" value="${gsaAdminUser}"/>
+    <property name="gsaAdminPassword" value="${gsaAdminPassword}"/>
+    <property name="connectorName" value="${googleConnectorName}"/>
+    <property name="userProfileCollection" value="${userProfileCollection}"/>
     <property name="included_metadata">
     <list>
       <!-- If you want to index only specific metadata, put them here.
@@ -132,6 +138,10 @@
                 <prop key="initialCacheSize">1000</prop>
                 <prop key="cacheRefreshInterval">7200</prop>
                 <prop key="feedUnPublishedDocuments">true</prop>
+                <prop key="socialOption">no</prop>
+                <prop key="gsaAdminUser"></prop>
+                <prop key="gsaAdminPassword"></prop>
+                <prop key="userProfileCollection"></prop>
             </props>
         </property>
     </bean>

@@ -325,6 +325,7 @@ public class SPConstants {
   public static final String CONNECTOR_PREFIX = "_state.xml";
   public static final String LAST_CRAWLED_WEB_ID = "LastCrawledWebStateID";
   public static final String LAST_CRAWLED_LIST_ID = "LastCrawledListStateID";
+  public static final String CRAWL_STATE = "CrawlState";
   public static final String FULL_RECRAWL_FLAG = "FullRecrawlFlag";
   public static final String CONNECTOR_INSTANCE_XML = "connectorInstance.xml";
   public static final String CONNECTOR_INSTANCE_ROOT = "beans";
@@ -545,6 +546,16 @@ public class SPConstants {
   public static final String META_URL_FEED_DOC_TOKEN = "?";
   public static final String ATTACHMENTS = "Attachments";
   public static final CharSequence ALERTS_EQUALTO = "Alert=";
+  public static final String GSAADMINUSER = "gsaAdminUser";
+  public static final String GSAADMINPASSWORD = "gsaAdminPassword";
+  public static final String PROXY_INVALID_FORMAT = "Proxy_Invalid_Format";
+  public static final String GSAHOSTADDRESS = "gsaHostAddress";
+  public static final String SOCIAL_OPTION = "socialOption";
+  public static final String SOCIAL_OPTION_YES = "yes";
+  public static final String SOCIAL_OPTION_NO = "no";
+  public static final String SOCIAL_OPTION_ONLY = "only";
+  public static final String SOCIAL_OPTION_INVALID = "InvalidSocialOption";
+  
   public static final String CONNECTOR_NAME_COLUMN = "connectorname";
   public static final String CONNECTOR_NAME_COLUMN_CAPITAL = "CONNECTORNAME";
   public static final String SYSTEM_UPDATE = "SystemUpdate";
@@ -553,6 +564,7 @@ public class SPConstants {
   public static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
   public static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
   public static final String UDS_COLUMN_USER_NAME = "SPUserName";
+  public static final String HELP_SOCIAL_OPTION = "SocialOptionHelp";
 
   public static class SPBasePermissions {
     public static final String EMPTYMASK = "EmptyMask";

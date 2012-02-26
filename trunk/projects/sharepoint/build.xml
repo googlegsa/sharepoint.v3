@@ -155,6 +155,9 @@
     <wsdl2java url="${wsdl}/GssAcl.wsdl"
                package="${generated.package}.gssacl"
                generates="${src_generated}/gssacl/GssAcl.java"/>
+    <wsdl2java url="${wsdl}/SP2010UserProfileService.wsdl"
+               package="${generated.package}.sp2010.userprofileservice"
+               generates="${src_generated}/sp2010/userprofileservice/UserProfileService.java"/>
   </target>
 
   <target name="compile_stubs" depends="init, stubs">

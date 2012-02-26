@@ -50,7 +50,7 @@ public class IntegrationTest extends TestCase {
         traversalManager, instantiator.getTraversalStateStore(connectorName),
         connectorName, Context.getInstance().getTraversalContext(),
         new SystemClock(), null);
-    BatchResult result = traverser.runBatch(new BatchSize(10, 20));
+    BatchResult result = traverser.runBatch(new BatchSize(10));
     int totalDocsProcessed = result.getCountProcessed();
     assertTrue(totalDocsProcessed > 0);
   }

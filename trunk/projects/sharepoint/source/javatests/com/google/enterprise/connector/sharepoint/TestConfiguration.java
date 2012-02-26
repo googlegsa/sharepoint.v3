@@ -25,8 +25,10 @@ import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.social.SharepointSocialClientContext;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector.SocialOption;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
@@ -164,6 +166,11 @@ public class TestConfiguration {
   public static String ldapGroup1;
   public static String groupNameFormatInACE;
   public static String userNameFormatInACE;
+  private static String gsaHost;
+  private static int gsaPort;
+  private static String gsaAdmin;
+  private static String gsaAdminPassword;
+  private static String socialOption;
 
   static {
     final Properties properties = new Properties();
@@ -304,6 +311,13 @@ public class TestConfiguration {
     appendNamespaceInSPGroup = properties.getProperty("appendNamespaceInSPGroup");
     userNameFormatInACE = properties.getProperty("usernameFormatInAce");
     groupNameFormatInACE = properties.getProperty("groupnameFormatInAce");
+    
+    gsaHost = properties.getProperty("GsaHost");
+    gsaPort = Integer.parseInt(properties.getProperty("GsaPort"));
+    gsaAdmin = properties.getProperty("GsaAdminUsername");
+    gsaAdminPassword = properties.getProperty("GsaAdminPassword");
+    
+    socialOption = properties.getProperty("SocialOption");
 
   }
 
@@ -333,7 +347,11 @@ public class TestConfiguration {
     configMap.put("initialCacheSize", initialCacheSize);
     configMap.put("cacheRefreshInterval", cacheRefreshInterval);
     configMap.put("useCacheToStoreLdapUserGroupsMembership", Boolean.toString(useCacheToStoreLdapUserGroupsMembership));
-
+    configMap.put(SPConstants.SOCIAL_OPTION, socialOption);
+    configMap.put(SPConstants.GSAHOSTADDRESS, gsaHost);
+    configMap.put(SPConstants.GSAADMINUSER, gsaAdmin);
+    configMap.put(SPConstants.GSAADMINPASSWORD, gsaAdminPassword);
+    
     return configMap;
   }
 
@@ -442,7 +460,25 @@ public class TestConfiguration {
         useCacheToStoreLdapUserGroupsMembership));
     sharepointClientContext.setInitialCacheSize(TestConfiguration.cacheSize);
     sharepointClientContext.setCacheRefreshInterval(TestConfiguration.refreshInterval);
+    String socialOptionLc = TestConfiguration.getSocialOption().toLowerCase();
+    if (socialOptionLc.equals("yes")) {
+      sharepointClientContext.setSocialOption(SocialOption.YES); 
+    } else if (socialOptionLc.equals("no")) {
+       sharepointClientContext.setSocialOption(SocialOption.NO); 
+    } else if (socialOptionLc.equals("only")) {
+       sharepointClientContext.setSocialOption(SocialOption.ONLY); 
+    }
     return sharepointClientContext;
+  }
+  
+  public static SharepointSocialClientContext initSocialContext(SharepointClientContext parent) {
+    final SharepointSocialClientContext ctxt = new SharepointSocialClientContext(parent);
+    ctxt.setDomain(TestConfiguration.domain);
+    ctxt.setUrl(TestConfiguration.sharepointUrl);
+    ctxt.setUserName(TestConfiguration.username);
+    ctxt.setPassword(TestConfiguration.Password);
+    
+    return ctxt;
   }
 
   /**
@@ -648,6 +684,9 @@ public class TestConfiguration {
     connector.setConnectMethod("standard");
     connector.setSearchBase("DC=gdc-psl,DC=net");
     connector.setLdapConnectiionSettings(TestConfiguration.getLdapConnetionSettings());
+    connector.setSocialOption(TestConfiguration.getSocialOption());
+    connector.setGsaAdminUser(TestConfiguration.getGsaAdmin());
+    connector.setGsaAdminPassword(TestConfiguration.getGsaAdminPassword());
     connector.init();
     return connector;
   }
@@ -716,5 +755,21 @@ public class TestConfiguration {
         ldapConnectionSettings, TestConfiguration.cacheSize,
         TestConfiguration.refreshInterval, true);
     return serviceImpl.getLdapContext();
+  }
+  
+  public static String getSocialOption() {
+    return socialOption;
+  }
+  
+  public static String getGsaAdmin() {
+    return gsaAdmin;
+  }
+  
+  public static String getGsaAdminPassword() {
+    return gsaAdminPassword;
+  }
+
+  public static String getGsaHost() {
+    return gsaHost;
   }
 }

@@ -20,6 +20,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.state.GlobalState.CrawlState;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
@@ -84,7 +85,24 @@ public class GlobalState {
 
   private boolean bFullReCrawl = false;
   private String lastFullCrawlDateTime = null;
+  
+  /**
+   * Connector first gives USER_PROFILE_FEED as a separate feed DOC_FEED happens
+   * after that and then sets back to USER_PROFILE_FEED, when DOC_FEED gets no
+   * more from previous crawl
+   * 
+   * @author tapasnay
+   */
+  public enum CrawlState {
+    USER_PROFILE_FEED,
+    DOC_FEED
+  };
 
+  private CrawlState crawlState = CrawlState.USER_PROFILE_FEED;
+  
+  public CrawlState getCrawlState(){
+    return crawlState;
+  }
   // This enum is a list of all such nodes whose values are stored as
   // inner test in the node.
   enum Nodes {
@@ -233,6 +251,8 @@ public class GlobalState {
         lastFullCrawlDateTime = atts.getValue(SPConstants.LAST_FULL_CRAWL_DATETIME);
       } else if (SPConstants.STATE_FEEDTYPE.equals(localName)) {
         feedType = FeedType.getFeedType(atts.getValue(SPConstants.STATE_TYPE));
+      } else if (SPConstants.CRAWL_STATE.equals(localName)) {
+        crawlState = CrawlState.valueOf(atts.getValue(SPConstants.STATE_TYPE));
       }
     }
 
@@ -591,6 +611,8 @@ public class GlobalState {
       LOGGER.warning("No working directory was given; using cwd");
       f = new File(SPConstants.CONNECTOR_NAME + SPConstants.CONNECTOR_PREFIX);
     } else {
+      LOGGER.info("Global state file name: " + SPConstants.CONNECTOR_NAME
+          + SPConstants.CONNECTOR_PREFIX + " in dir: " + workDir);
       f = new File(workDir, SPConstants.CONNECTOR_NAME
           + SPConstants.CONNECTOR_PREFIX);
     }
@@ -715,6 +737,13 @@ public class GlobalState {
       handler.endElement("", "", SPConstants.LAST_CRAWLED_LIST_ID);
     }
 
+    // CRAWL_STATE
+    atts.clear();
+    atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_ID,
+        this.crawlState.toString());
+    handler.startElement("", "", SPConstants.CRAWL_STATE, atts);
+    handler.endElement("", "", SPConstants.CRAWL_STATE);
+
     // now dump the actual WebStates:
     if (null == dateMap) {
       LOGGER.log(Level.WARNING, "No WebStates found in the connector state.");
@@ -725,5 +754,9 @@ public class GlobalState {
     }
     handler.endElement("", "", SPConstants.STATE);
     handler.endDocument();
+  }
+
+  public void setCrawlState(CrawlState cs) {
+    this.crawlState = cs;
   }
 }

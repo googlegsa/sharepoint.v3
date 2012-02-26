@@ -18,21 +18,23 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.social.UserProfileServiceFactory;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector.SocialOption;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.TraversalContext;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
+import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.contrib.ssl.EasySSLProtocolSocketFactory;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,6 +105,8 @@ public class SharepointClientContext implements Cloneable {
 	private LdapConnectionSettings ldapConnectionSettings;
 	private boolean feedUnPublishedDocuments;
 	private boolean initialTraversal;
+  private SocialOption socialOption;
+  private UserProfileServiceFactory userProfileServiceFactory;
 
 	public boolean isFeedUnPublishedDocuments() {
 		return feedUnPublishedDocuments;
@@ -197,7 +201,7 @@ public class SharepointClientContext implements Cloneable {
 				// It's ok if we do a shallow copy here
 				spCl.userDataStoreDAO = this.userDataStoreDAO;
 			}
-
+      
 			spCl.useSPSearchVisibility = useSPSearchVisibility;
 			spCl.infoPathBaseTemplate = infoPathBaseTemplate;
 
@@ -214,6 +218,8 @@ public class SharepointClientContext implements Cloneable {
 			spCl.setInitialCacheSize(this.initialCacheSize);
 			spCl.setCacheRefreshInterval(this.cacheRefreshInterval);
 			spCl.setFeedUnPublishedDocuments(this.feedUnPublishedDocuments);
+      spCl.setSocialOption(this.getSocialOption());
+      spCl.setUserProfileServiceFactory(this.userProfileServiceFactory);
 
 			return spCl;
 		} catch (final Throwable e) {
@@ -266,10 +272,9 @@ public class SharepointClientContext implements Cloneable {
 			final String inAliasMapString, final FeedType inFeedType,
 			boolean useSPSearchVisibility) throws SharepointException {
 
-		// Avoid a deprecation warning on an overloaded Protocol constructor.
-		ProtocolSocketFactory factory = new EasySSLProtocolSocketFactory();
-		Protocol.registerProtocol("https", new Protocol("https", factory,
-				SPConstants.SSL_DEFAULT_PORT));
+    // Avoid a deprecation warning on an overloaded Protocol constructor.
+    Protocol.registerProtocol("https", new Protocol("https",
+        new SSLProtocolSocketFactory(), SPConstants.SSL_DEFAULT_PORT));
 
 		kdcServer = inKdcHost;
 		if (sharepointUrl == null) {
@@ -1113,4 +1118,20 @@ public class SharepointClientContext implements Cloneable {
 	public void setInitialTraversal(boolean initialTraversal) {
 		this.initialTraversal = initialTraversal;
 	}
+
+  public void setSocialOption(SocialOption socialOption) {
+    this.socialOption = socialOption;
+  }
+
+  public SocialOption getSocialOption() {
+    return socialOption;
+  }
+
+  public void setUserProfileServiceFactory(
+      UserProfileServiceFactory userProfileServiceFactory) {
+    this.userProfileServiceFactory = userProfileServiceFactory;
+  }
+  public UserProfileServiceFactory getUserProfileServiceFactory() {
+    return userProfileServiceFactory;
+  }
 }
