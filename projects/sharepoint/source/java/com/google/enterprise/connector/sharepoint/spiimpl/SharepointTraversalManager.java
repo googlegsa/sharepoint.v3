@@ -16,7 +16,11 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.social.SharepointSocialUserProfileDocumentList;
+import com.google.enterprise.connector.sharepoint.social.SharepointSocialTraversalManager;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector.SocialOption;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.GlobalState.CrawlState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.DocumentList;
@@ -34,13 +38,14 @@ import java.util.logging.Logger;
 /**
  * This class is an implementation of the TraversalManager from the spi. All the
  * traversal based logic is invoked through this class.
- *
+ * 
  * @author amit_kagrawal
  */
 
 public class SharepointTraversalManager implements TraversalManager,
     TraversalContextAware {
-  private final Logger LOGGER = Logger.getLogger(SharepointTraversalManager.class.getName());
+  private final Logger LOGGER = Logger
+      .getLogger(SharepointTraversalManager.class.getName());
   private SharepointClientContext sharepointClientContext;
   private SharepointClientContext sharepointClientContextOriginal = null;
   private GlobalState globalState;
@@ -48,19 +53,39 @@ public class SharepointTraversalManager implements TraversalManager,
 
   // The traversal context instance
   private TraversalContext traversalContext;
+  private SharepointSocialTraversalManager socialTraversal;
 
   /**
    * constructor.
-   *
-   * @param inConnector The instance of SharePoint connector for which traversal
-   *          is to be done
-   * @param inSharepointClientContext The context attached with the connector
-   *          instances
+   * 
+   * @param inConnector
+   *          The instance of SharePoint connector for which traversal is to be
+   *          done
+   * @param inSharepointClientContext
+   *          The context attached with the connector instances
    * @throws RepositoryException
    */
   public SharepointTraversalManager(final SharepointConnector inConnector,
       final SharepointClientContext inSharepointClientContext)
       throws RepositoryException {
+    this(inConnector, inSharepointClientContext, null);
+  }
+
+  /**
+   * constructor.
+   * 
+   * @param inConnector
+   *          The instance of SharePoint connector for which traversal is to be
+   *          done
+   * @param inSharepointClientContext
+   *          The context attached with the connector instances
+   * @param inSocialTraversal
+   *          inner social connection traversal manager to encapsulate
+   * @throws RepositoryException
+   */
+  public SharepointTraversalManager(final SharepointConnector inConnector,
+      final SharepointClientContext inSharepointClientContext,
+      SharepointSocialTraversalManager inSocialTraversal) throws RepositoryException {
     if (inConnector == null) {
       throw new SharepointException(
           "Cannot initialize traversal manager because SharePointConnector object is null.");
@@ -70,11 +95,13 @@ public class SharepointTraversalManager implements TraversalManager,
           "Cannot initialize traversal manager because SharePointClientContext object is null.");
     }
     try {
+      socialTraversal = inSocialTraversal;
       LOGGER.config("SharepointTraversalManager: "
           + inSharepointClientContext.getSiteURL() + ", "
           + inSharepointClientContext.getGoogleConnectorWorkDir());
       sharepointClientContext = inSharepointClientContext;
-      sharepointClientContextOriginal = (SharepointClientContext) inSharepointClientContext.clone();
+      sharepointClientContextOriginal = (SharepointClientContext) inSharepointClientContext
+          .clone();
       globalState = new GlobalState(
           inSharepointClientContext.getGoogleConnectorWorkDir(),
           inSharepointClientContext.getFeedType());
@@ -83,38 +110,60 @@ public class SharepointTraversalManager implements TraversalManager,
       LOGGER.log(Level.WARNING, e.getMessage());
       throw new SharepointException(e);
     }
-    LOGGER.info("SharepointTraversalManager(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext)");
+    LOGGER
+        .info("SharepointTraversalManager(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext)");
   }
 
   /**
    * Starts the traversal from a checkpoint specified by CM. The connector has
    * returned this checkpoint information to the CM at the completion of last
-   * vtraversal. Though, SharePoint Connector does not really make use of this
-   * checkpoint information for resuming the travesal. Instead, it uses the
+   * traversal. Though, SharePoint Connector does not really make use of this
+   * checkpoint information for resuming the traversal. Instead, it uses the
    * state file for this purpose. State file implementation is specific to the
    * connector and CM is unaware of this.
-   *
-   * @param checkpoint Not really used by the SharePoint connector
+   * 
+   * @param checkpoint
+   *          Not really used by the SharePoint connector
    */
   public DocumentList resumeTraversal(final String checkpoint)
       throws RepositoryException {
     LOGGER.info("resumeTraversal, checkpoint received: " + checkpoint);
+    DocumentList rsSocial = null;
+    boolean docCheckpoint = true; // is this a user profile checkpoint or a doc checkpoint
+    if (sharepointClientContext.getSocialOption() != SocialOption.NO) {
+      if (checkpoint.startsWith(SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX)) {
+        rsSocial = doUserprofileCrawl(checkpoint);
+        docCheckpoint = false;
+      } 
+    }
+    if (docCheckpoint) { // we are resuming a doc feed
+      return resumeDocTraversal(checkpoint);
+    } else if ((rsSocial == null) && (sharepointClientContext.getSocialOption() 
+        != SocialOption.ONLY)) { // we want doc feed and social feed is complete
+      return startDocTraversal();
+    } else {
+      return rsSocial;
+    }
+  }
+
+  private DocumentList resumeDocTraversal(final String checkpoint) throws RepositoryException {
+    LOGGER.info("resuming document traversal");
     // If feed type has been changed after the last traversal cycle. Let's
     // start a full recrawl
     if ((globalState.getFeedType() == null)
-        || !globalState.getFeedType().equals(sharepointClientContext.getFeedType())) {
+        || !globalState.getFeedType().equals(
+            sharepointClientContext.getFeedType())) {
       LOGGER.log(Level.INFO, "feedType updated. initiating a full recrawl. ");
-      return startTraversal();
+      return startDocTraversal();
     } else {
       sharepointClientContext.setInitialTraversal(false);
       return doTraversal();
     }
   }
-
   /**
    * Sets the batch hint which declares a threashold on the number of documents
    * that should be sent per traversal
-   *
+   * 
    * @see com.google.enterprise.connector.spi.TraversalManager
    *      #setBatchHint(int)
    */
@@ -123,33 +172,67 @@ public class SharepointTraversalManager implements TraversalManager,
     LOGGER.info("BatchHint Set to [ " + hintNew + " ] ");
   }
 
+  private DocumentList doUserprofileCrawl(String checkPoint) {
+    DocumentList rsSocial;
+    if (socialTraversal != null) {
+      try {
+        if ((checkPoint == null) || (checkPoint.equals(""))) {
+          rsSocial = this.socialTraversal.startTraversal();
+        } else {
+          rsSocial = this.socialTraversal.resumeTraversal(checkPoint);
+        }
+      } catch (RepositoryException e) {
+        LOGGER.severe("Failed getting userprofiles, continuing with the site");
+        rsSocial = null;
+      }
+    } else {
+      LOGGER.info("SocialTraversalManger is null");
+      rsSocial = null;
+    }
+    return rsSocial;
+  }
+
   /**
-   * To start a full crawl. ignoring any checkpoint information
+   * To start a full crawl. Ignoring any checkpoint information.
    *
    * @see com.google.enterprise.connector.spi.TraversalManager #startTraversal()
    */
   public DocumentList startTraversal() throws RepositoryException {
     LOGGER.info("startTraversal()");
-    // delete the global state.. to simulate full crawl
+    DocumentList rsSocial = null;
+    if (sharepointClientContext.getSocialOption() != SocialOption.NO) {
+      rsSocial = doUserprofileCrawl("");
+    }
+    if (sharepointClientContext.getSocialOption() == SocialOption.ONLY)
+      return rsSocial;
+
+    // if there is no social traversal to be done or social traversal has
+    // finished then do doc traversal
+    if ((socialTraversal == null) || (rsSocial == null)) {
+      return startDocTraversal();
+    } else {
+      return rsSocial;
+    }
+  }
+  
+  private void initializeGlobalStateForDocTraversal() {
     globalState = null;
     final String workDir = sharepointClientContext.getGoogleConnectorWorkDir();
+    // delete the global state.. to simulate full crawl
     GlobalState.forgetState(workDir);
     sharepointClientContext.clearExcludedURLLogs();
     sharepointClientContext.setInitialTraversal(true);
-    globalState = new GlobalState(
-        sharepointClientContext.getGoogleConnectorWorkDir(),
+    globalState = new GlobalState(sharepointClientContext.getGoogleConnectorWorkDir(),
         sharepointClientContext.getFeedType());
+    globalState.setCrawlState(CrawlState.DOC_FEED);
+  }
+  
+  public DocumentList startDocTraversal() throws RepositoryException {
+    LOGGER.info("startDocTraversal");
+    initializeGlobalStateForDocTraversal();
     return doTraversal();
   }
-
-  /**
-   * Private routine that actually does the traversal. If no docs are found in
-   * the first sharepointClient.traverse() call, we go back to Sharepoint and
-   * fetch a new set of stuff.
-   *
-   * @return PropertyMapList
-   * @throws RepositoryException
-   */
+  
   private DocumentList doTraversal() throws RepositoryException {
     LOGGER.config("doTraversal()");
 
@@ -324,7 +407,7 @@ public class SharepointTraversalManager implements TraversalManager,
 
   /**
    * Sets the traversal context
-   *
+   * 
    * @param traversalContext The {@link TraversalContext} instance
    */
   public void setTraversalContext(TraversalContext traversalContext) {

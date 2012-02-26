@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.social.SharepointSocialTraversalManager;
 import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
@@ -29,7 +30,7 @@ import java.util.logging.Logger;
  * Implements the Session interface from the spi. It implements methods to
  * return AuthenticationManager, AuthorizationManager and the
  * QueryTraversalManager for the Sharepoint connector to the caller.
- *
+ * 
  * @author amit_kagrawal
  */
 public class SharepointSession implements Session {
@@ -37,6 +38,7 @@ public class SharepointSession implements Session {
   private SharepointConnector connector = null;
   private SharepointClientContext sharepointClientContext = null;
   private final Logger LOGGER = Logger.getLogger(SharepointSession.class.getName());
+  private Session socialSession;
 
   /**
    * @param inConnector
@@ -44,17 +46,29 @@ public class SharepointSession implements Session {
    */
   public SharepointSession(final SharepointConnector inConnector,
       final SharepointClientContext inSharepointClientContext) {
+    this(inConnector, inSharepointClientContext, null);
+  }
+
+  /**
+   * @param inConnector
+   * @param inSharepointClientContext
+   * @param inSocialSession social connection session to be encapsulated
+   */
+  public SharepointSession(final SharepointConnector inConnector,
+      final SharepointClientContext inSharepointClientContext,
+      final Session inSocialSession) {
     /*
      * throws RepositoryException
      */
     if (inConnector != null) {
       connector = inConnector;
     }
-
+    socialSession = inSocialSession;
     if (inSharepointClientContext != null) {
       sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
     }
-    LOGGER.info("SharepointSession(SharepointConnector inConnector,SharepointClientContext inSharepointClientContext)");
+    LOGGER.info("SharepointSession(SharepointConnector inConnector," + 
+         " SharepointClientContext inSharepointClientContext)");
   }
 
   /**
@@ -72,9 +86,9 @@ public class SharepointSession implements Session {
   public AuthorizationManager getAuthorizationManager()
       throws RepositoryException {
     LOGGER.info("getAuthorizationManager()");
-    return new SharepointAuthorizationManager(
-        sharepointClientContext,
-        new GSSiteDiscoveryWS(sharepointClientContext, null).getMatchingSiteCollections());
+    return new SharepointAuthorizationManager(sharepointClientContext,
+        new GSSiteDiscoveryWS(sharepointClientContext, null)
+            .getMatchingSiteCollections());
   }
 
   /**
@@ -82,7 +96,12 @@ public class SharepointSession implements Session {
    */
   public TraversalManager getTraversalManager() throws RepositoryException {
     LOGGER.info("getTraversalManager()");
-    return new SharepointTraversalManager(connector, sharepointClientContext);
+    return new SharepointTraversalManager(
+        connector,
+        sharepointClientContext,
+        socialSession != null ? 
+          (SharepointSocialTraversalManager) socialSession.getTraversalManager()
+          : null);
   }
 
 }

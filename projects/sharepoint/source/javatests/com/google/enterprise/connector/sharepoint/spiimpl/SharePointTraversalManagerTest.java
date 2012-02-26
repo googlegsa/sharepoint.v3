@@ -16,8 +16,11 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.social.SharepointSocialClientContext;
+import com.google.enterprise.connector.sharepoint.social.SharepointSocialTraversalManager;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.Session;
 
 import junit.framework.TestCase;
 
@@ -39,8 +42,12 @@ public class SharePointTraversalManagerTest extends TestCase {
     final SharepointConnector connector = TestConfiguration.getConnectorInstance();
     connector.setFQDNConversion(TestConfiguration.FQDNflag);
     System.out.println("Initializing SharepointTraversalManager ...");
+    final SharepointSocialClientContext social = 
+        TestConfiguration.initSocialContext(this.sharepointClientContext);
+    
     this.travMan = new SharepointTraversalManager(connector,
-        this.sharepointClientContext);
+        this.sharepointClientContext, 
+        new SharepointSocialTraversalManager(social));
     this.travMan.setBatchHint(100);
   }
 

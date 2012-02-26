@@ -30,6 +30,11 @@
         <value>useCacheToStoreLdapUserGroupsMembership</value>
         <value>initialCacheSize</value>
         <value>cacheRefreshInterval</value>
+        <!--  gdata connection credential --> 
+        <value>socialOption</value> 
+        <value>userProfileCollection</value>
+        <value>gsaAdminUser</value>
+        <value>gsaAdminPassword</value>
       </list>
     </property>
   </bean>

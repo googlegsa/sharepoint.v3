@@ -63,7 +63,6 @@ public class WebState implements StatefulObject {
    * The "current" object for ListState. The current object may be null.
    */
   private ListState currentList = null;
-  // private String lastCrawledListID = null;
   private ListState lastCrawledList = null;
 
   private SPType spType;
@@ -140,11 +139,11 @@ public class WebState implements StatefulObject {
     if (FeedType.CONTENT_FEED == spContext.getFeedType()
         && SPType.SP2003 == spType) {
       LOGGER.warning("excluding "
-          + spURL
-          + " because it is a SP2003 site and the feedType being used is content. Content feed is not supported on SP2003. ");
+              + spURL
+              + " because it is a SP2003 site and the feedType being used is content. Content feed is not supported on SP2003. ");
       spContext.logExcludedURL("[ "
-          + spURL
-          + " ] it is a SP2003 site and the feedType being used is content. Content feed is not supported on SP2003. ");
+              + spURL
+              + " ] it is a SP2003 site and the feedType being used is content. Content feed is not supported on SP2003. ");
       throw new SharepointException(
           "Unsupported Shrepoint version for content feed being used. ");
     }
@@ -152,7 +151,7 @@ public class WebState implements StatefulObject {
 
   /**
    * Get the primary key.
-   *
+   * 
    * @return primary key
    */
   public String getPrimaryKey() {
@@ -161,7 +160,7 @@ public class WebState implements StatefulObject {
 
   /**
    * Sets the primary key.
-   *
+   * 
    * @param newKey
    */
   public void setPrimaryKey(final String newKey) {
@@ -200,7 +199,7 @@ public class WebState implements StatefulObject {
    * lastModified is identified as the only such attribute. In future, this
    * method can be augmented with more generic informations which drives the
    * ordering, instead of stricting this to just LastModifiedDate
-   *
+   * 
    * @param state
    * @param time lastMod time for the List. If time is later than the existing
    *          lastMod, the List is reindexed in the allListStateSet.
@@ -228,8 +227,9 @@ public class WebState implements StatefulObject {
    * Comparison is first on the insertion date. If that produces a tie, the
    * primary key (the WebID) is used as tie-breaker. The comparison is flipped
    * to achieve descending ordering based on insertionTime
-   *
-   * @param o other WebState. If null, returns 1.
+   * 
+   * @param o
+   *          other WebState. If null, returns 1.
    * @return the usual integer result: -1 if other object is less than current,
    *         1 if other is greater than current, 0 if equal (which should only
    *         happen for the identity comparison).
@@ -297,7 +297,7 @@ public class WebState implements StatefulObject {
   /**
    * Signals that the recrawl cycle is over and any non-existing ListState can
    * be deleted
-   *
+   * 
    * @param spContext
    */
   public void endRecrawl(final SharepointClientContext spContext) {
@@ -315,12 +315,12 @@ public class WebState implements StatefulObject {
           LOGGER.log(Level.CONFIG, "responseCode:" + responseCode);
           if (responseCode == 200) {
             LOGGER.log(Level.CONFIG, "Marking the list as Existing as an HTTP response 200 is received for listURL ["
-                + list.getListURL() + "]");
+                        + list.getListURL() + "]");
             list.setExisting(true);
             continue;
           } else if (responseCode != 404) {
             LOGGER.log(Level.CONFIG, "The list can not be considered as deleted because an HTTP response other then 404 is received for listURL ["
-                + list.getListURL() + "]");
+                        + list.getListURL() + "]");
             continue;
           }
 
@@ -346,10 +346,10 @@ public class WebState implements StatefulObject {
               if (list.isInDeleteCache(new Integer(maxID).toString())) {
                 if (LOGGER.isLoggable(Level.FINER)) {
                   LOGGER.log(Level.FINER, "Skipping sending delete feed for document with ID : "
-                      + maxID
-                      + " under list : "
-                      + list.getListURL()
-                      + ". A delete feed has been sent in some earlier batch traversal.");
+                              + maxID
+                              + " under list : "
+                              + list.getListURL()
+                              + ". A delete feed has been sent in some earlier batch traversal.");
                 }
                 ++maxID;
                 continue;
@@ -358,9 +358,8 @@ public class WebState implements StatefulObject {
                   + Integer.toString(maxID);
               final SPDocument doc = new SPDocument(docID, list.getListURL(),
                   list.getLastModCal(), SPConstants.NO_AUTHOR,
-                  SPConstants.OBJTYPE_LIST_ITEM,
-                  list.getParentWebState().getTitle(), FeedType.CONTENT_FEED,
-                  SPType.SP2007);
+                  SPConstants.OBJTYPE_LIST_ITEM, 
+                  list.getParentWebState().getTitle(), FeedType.CONTENT_FEED, SPType.SP2007);
               doc.setAction(ActionType.DELETE);
               deletedDocs.add(doc);
 
@@ -406,9 +405,8 @@ public class WebState implements StatefulObject {
               }
               final SPDocument doc = new SPDocument(docID, list.getListURL(),
                   list.getLastModCal(), SPConstants.NO_AUTHOR,
-                  SPConstants.OBJTYPE_LIST_ITEM,
-                  list.getParentWebState().getTitle(), FeedType.CONTENT_FEED,
-                  SPType.SP2007);
+                  SPConstants.OBJTYPE_LIST_ITEM, list.getParentWebState()
+                      .getTitle(), FeedType.CONTENT_FEED, SPType.SP2007);
               doc.setAction(ActionType.DELETE);
               if (!list.isSendListAsDocument() || !isCrawlAspxPages()) {
                 // send the listState as a feed only if it was
@@ -423,7 +421,7 @@ public class WebState implements StatefulObject {
                 } else {
                   doc.setToBeFed(false);
                 }
-                LOGGER.log(Level.FINE, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
+                LOGGER.log( Level.FINE, "List Document marked as not to be fed because ASPX pages are not supposed to be crawled as per exclusion patterns OR SharePoint site level indexing options ");
               }
               deletedDocs.add(doc);
             }
@@ -440,7 +438,7 @@ public class WebState implements StatefulObject {
                 + list.getListURL() + " ].");
           } else {
             LOGGER.log(Level.INFO, "Deleting the state information for list/library ["
-                + list.getListURL() + "]. ");
+                    + list.getListURL() + "]. ");
             iter.remove();
             keyMap.remove(list.getPrimaryKey());
           }
@@ -472,8 +470,9 @@ public class WebState implements StatefulObject {
 
   /**
    * Lookup a ListState by its key.
-   *
-   * @param key primary key
+   * 
+   * @param key
+   *          primary key
    * @return object handle, or null if none found
    */
   public ListState lookupList(final String key) {
@@ -581,7 +580,8 @@ public class WebState implements StatefulObject {
   }
 
   /**
-   * @param lastCrawledDateTime the lastCrawledDateTime to set
+   * @param lastCrawledDateTime
+   *          the lastCrawledDateTime to set
    */
   public void setLastCrawledDateTime(String lastCrawledDateTime) {
     this.lastCrawledDateTime = lastCrawledDateTime;
@@ -635,7 +635,7 @@ public class WebState implements StatefulObject {
 
   /**
    * Construct and returns a WebState object using the attributes.
-   *
+   * 
    * @param atts the XML attributes to use for initialzing the WebState
    * @return a valid non-null WebState
    */
@@ -651,10 +651,11 @@ public class WebState implements StatefulObject {
       web.setInsertionTime(Util.parseDate(insertTime));
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "Could not load insertion time for web-state [ "
-          + web.getPrimaryKey() + " ]. ");
+              + web.getPrimaryKey() + " ]. ");
     }
 
-    web.setNextAclChangeToken(atts.getValue(SPConstants.STATE_ACLNEXTCHANGETOKEN));
+    web.setNextAclChangeToken(atts
+        .getValue(SPConstants.STATE_ACLNEXTCHANGETOKEN));
     web.setCurretAclChangeToken(atts.getValue(SPConstants.STATE_ACLCHANGETOKEN));
 
     WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
@@ -709,7 +710,7 @@ public class WebState implements StatefulObject {
   /**
    * Looks up a ListState for a given GUID value as received by the custom web
    * service.
-   *
+   * 
    * @param listGuid the guid of the list
    * @return a valid ListState if the guid is found; null otherwise
    */
