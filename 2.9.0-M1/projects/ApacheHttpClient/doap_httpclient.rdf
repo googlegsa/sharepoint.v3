@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://usefulinc.com/ns/doap#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:asfext="http://projects.apache.org/ns/asfext#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:doap="http://usefulinc.com/ns/doap#" xml:lang="en">
+  <Project rdf:about="http://jakarta.apache.org/commons/httpclient/">
+    <name>Apache Jakarta Commons HttpClient</name>
+    <homepage rdf:resource="http://jakarta.apache.org/commons/httpclient/"/>
+    <programming-language>Java</programming-language>
+    <category rdf:resource="http://projects.apache.org/category/library"/>
+    <license rdf:resource="http://usefulinc.com/doap/licenses/asl20"/>
+    <bug-database rdf:resource="http://issues.apache.org/jira/browse/HTTPCLIENT"/>
+    <download-page rdf:resource="http://jakarta.apache.org/site/downloads/downloads_commons-httpclient.cgi"/>
+    <asfext:pmc rdf:resource="http://jakarta.apache.org/"/>
+    <shortdesc xml:lang="en">Client-side HTTP implementation in Java.</shortdesc>
+    <description xml:lang="en">
+    The HttpClient  component supports the client-side of RFC 1945 (HTTP/1.0)  and RFC 2616 (HTTP/1.1), several related specifications (RFC 2109 (Cookies), RFC 2617 (HTTP Authentication), etc.), and provides a framework by which new request types (methods) or HTTP extensions can be created easily.
+  </description>
+    <repository>
+      <SVNRepository>
+        <browse rdf:resource="http://svn.apache.org/viewvc/jakarta/httpcomponents/oac.hc3x/trunk"/>
+        <location rdf:resource="http://svn.apache.org/repos/asf/jakarta/httpcomponents/oac.hc3x/trunk"/>
+      </SVNRepository>
+    </repository>
+    <release>
+      <revision>
+        <name>commons-httpclient</name>
+        <created>2005-12-19</created>
+        <version>3.0</version>
+      </revision>
+    </release>
+    <mailing-list rdf:resource="http://jakarta.apache.org/httpcomponents/mail-lists.html"/>
+  </Project>
+</rdf:RDF>
