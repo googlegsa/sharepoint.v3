@@ -48,7 +48,6 @@ import org.apache.commons.httpclient.auth.CredentialsProvider;
 import org.apache.commons.httpclient.auth.CredentialsNotAvailableException;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.auth.MalformedChallengeException;
-import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.params.HostParams;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
@@ -692,10 +691,9 @@ class HttpMethodDirector {
                     return processWWWAuthChallenge(method);
                 case HttpStatus.SC_FORBIDDEN:
                 case HttpStatus.SC_MOVED_TEMPORARILY:
-                	return processClaimsAuthChallenge(method);
+                    return processClaimsAuthChallenge(method);
                 case HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED:
                     return processProxyAuthChallenge(method);
-                	
                 default:
                     return false;
             }
@@ -705,46 +703,54 @@ class HttpMethodDirector {
             }
             return false;
         }
-	}
-	
+    }
+
     private boolean processClaimsAuthChallenge(HttpMethod method)
-            throws MalformedChallengeException, AuthenticationException , IOException 
-        {
-	    	AuthState authstate = method.getHostAuthState();
-	    	
-	        if (authstate.getAuthScheme() == null) {
-	        	authstate.setAuthScheme(new ClaimsAuthScheme());
-	        }
-	        ClaimsAuthScheme claims = (ClaimsAuthScheme)authstate.getAuthScheme();
-	        
-	        AuthScope authscope = new AuthScope(
-	                method.getHostConfiguration().getHost(), 
-	                method.getHostConfiguration().getPort(),
-	                claims.getRealm(), 
-	                claims.getSchemeName());
-	        
-	        
-	        CredentialsProvider cp = (CredentialsProvider)method.getParams().getParameter(CredentialsProvider.PROVIDER);
-	        Credentials creds = (cp == null) ? state.getCredentials(AuthScope.ANY) : cp.getCredentials(claims, authscope.getHost(), authscope.getPort(), false);
-	        
-	        this.state.setCredentials(authscope, creds);
-	        if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
-	        	claims.originalPath = method.getPath();
-                method.setRequestHeader(new Header("User-Agent", "Mozilla/4.0"));
-	        	String xform = method.getResponseHeader("X-Forms_Based_Auth_Required").getValue().split(", ")[0];
-	        	method.setPath(new URI(xform).getPathQuery());
-	        } else if (method.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY) {
-	        	Header cookie = method.getResponseHeader("Set-Cookie");
-	        	if (cookie != null && cookie.getValue().startsWith("FedAuth")) {
-	        	    method.removeRequestHeader("Authorization");
-	        		method.setPath(claims.originalPath);
-	        		claims.setComplete();
-	        		authstate.setAuthScheme(null);
-	        	}
-	        }
- 
-	        return true;
+            throws MalformedChallengeException, AuthenticationException, IOException
+    {
+        AuthState authstate = method.getHostAuthState();
+        if (authstate.getAuthScheme() == null) {
+            authstate.setAuthScheme(new ClaimsAuthScheme());
         }
+        ClaimsAuthScheme claims = (ClaimsAuthScheme)authstate.getAuthScheme();
+
+        AuthScope authscope = new AuthScope(
+            method.getHostConfiguration().getHost(),
+            method.getHostConfiguration().getPort(),
+            claims.getRealm(),
+            claims.getSchemeName());
+
+        CredentialsProvider cp = (CredentialsProvider)method.getParams().getParameter(
+             CredentialsProvider.PROVIDER);
+        Credentials creds = (cp == null) ?
+            state.getCredentials(AuthScope.ANY) :
+            cp.getCredentials(claims, authscope.getHost(), authscope.getPort(), false);
+
+        this.state.setCredentials(authscope, creds);
+        if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
+            claims.originalUri = method.getURI();
+            method.setRequestHeader(new Header("User-Agent", "Mozilla/4.0"));
+            Header xforms = method.getResponseHeader("X-Forms_Based_Auth_Required");
+            if (xforms == null) {
+                throw new MalformedChallengeException("Status 403 Forbidden received from" +
+                    "server, but X-Forms_Based_Auth_Required header missing - not claims " +
+                    "based authentication");
+            }
+            URI xform = new URI(xforms.getValue().split(", ")[0]);
+            hostConfiguration.setHost(xform);
+            method.setURI(xform);
+        } else if (method.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY) {
+            Header cookie = method.getResponseHeader("Set-Cookie");
+            if (cookie != null && cookie.getValue().startsWith("FedAuth")) {
+                method.removeRequestHeader("Authorization");
+                method.setURI(claims.originalUri);
+                hostConfiguration.setHost(claims.originalUri);
+                claims.setComplete();
+                authstate.setAuthScheme(null);
+            }
+        }
+        return true;
+    }
 
     private boolean processWWWAuthChallenge(final HttpMethod method)
         throws MalformedChallengeException, AuthenticationException  
@@ -760,7 +766,7 @@ class HttpMethodDirector {
         try {
             authscheme = this.authProcessor.processChallenge(authstate, challenges);
             if (authscheme instanceof ClaimsAuthScheme) {
-            	authscheme = ((ClaimsAuthScheme)authscheme).innerAuthScheme;
+                authscheme = ((ClaimsAuthScheme)authscheme).innerAuthScheme;
             }
         } catch (AuthChallengeException e) {
             if (LOG.isWarnEnabled()) {
@@ -776,10 +782,10 @@ class HttpMethodDirector {
         }
         int port = conn.getPort();
         AuthScope authscope = new AuthScope(
-            host, port, 
-            authscheme.getRealm(), 
+            host, port,
+            authscheme.getRealm(),
             authscheme.getSchemeName());
-        
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Authentication scope: " + authscope);
         }
@@ -910,8 +916,9 @@ class HttpMethodDirector {
         method.getHostAuthState().setAuthRequested(
         		(method.getStatusCode() == HttpStatus.SC_UNAUTHORIZED || 
         		method.getStatusCode() == HttpStatus.SC_FORBIDDEN ||
-        		method.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY ||
-        		(method.getHostAuthState().getAuthScheme() != null && method.getHostAuthState().getAuthScheme().isComplete() == false)));
+        		method.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY &&
+        		(method.getHostAuthState().getAuthScheme() != null && 
+        		method.getHostAuthState().getAuthScheme().isComplete() == false)));
         
         method.getProxyAuthState().setAuthRequested(
                 method.getStatusCode() == HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED);
