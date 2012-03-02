@@ -3,29 +3,30 @@
 xmlns="http://xml.apache.org/axis/wsdd/"
 xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
 
-<transport name="http" pivot="java:org.apache.axis.transport.http.CommonsHTTPSender">
-        <parameter name="http.protocol.expect-continue" >true</parameter>
-        <parameter name="http.authentication.preemptive" >false</parameter>
-</transport>
-<transport name="local" pivot="java:org.apache.axis.transport.local.LocalSender">
-        <parameter name="http.protocol.expect-continue" >true</parameter>
-        <parameter name="http.authentication.preemptive" >false</parameter>
-</transport>
-<transport name="java" pivot="java:org.apache.axis.transport.java.JavaSender">
-        <parameter name="http.protocol.expect-continue" >true</parameter>
-        <parameter name="http.authentication.preemptive" >false</parameter>
-</transport>
+  <transport name="http" pivot="java:org.apache.axis.transport.http.CommonsHTTPSender">
+    <parameter name="http.protocol.expect-continue" >true</parameter>
+    <parameter name="http.authentication.preemptive" >false</parameter>
+  </transport>
+  <transport name="local" pivot="java:org.apache.axis.transport.local.LocalSender">
+    <parameter name="http.protocol.expect-continue" >true</parameter>
+    <parameter name="http.authentication.preemptive" >false</parameter>
+  </transport>
+  <transport name="java" pivot="java:org.apache.axis.transport.java.JavaSender">
+    <parameter name="http.protocol.expect-continue" >true</parameter>
+    <parameter name="http.authentication.preemptive" >false</parameter>
+  </transport>
+  <transport name="FileTransport" pivot="java:com.google.enterprise.connector.sharepoint.wsclient.handlers.FileSender" />
+  
+  <globalConfiguration>
+    <parameter name="ReplacementValue" value="_" />
 
-<globalConfiguration>
-  <parameter name="ReplacementValue" value="_" />
+    <!-- Add custom filter patterns as follows: -->
+    <!--parameter name="FilterPattern_1" value="XXX" /-->
+    <!--parameter name="FilterPattern_2" value="XXX" /-->
 
-  <!-- Add custom filter patterns as follows: -->
-  <!--parameter name="FilterPattern_1" value="XXX" /-->
-  <!--parameter name="FilterPattern_2" value="XXX" /-->
-
-  <responseFlow>
-    <handler type="java:com.google.enterprise.connector.sharepoint.wsclient.handlers.InvalidXmlCharacterHandler" />
-  </responseFlow>
-</globalConfiguration>
+    <responseFlow>
+      <handler type="java:com.google.enterprise.connector.sharepoint.wsclient.handlers.InvalidXmlCharacterHandler" />
+    </responseFlow>
+  </globalConfiguration>
 
 </deployment>
