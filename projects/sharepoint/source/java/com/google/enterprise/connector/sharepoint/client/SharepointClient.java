@@ -31,6 +31,8 @@ import com.google.enterprise.connector.sharepoint.wsclient.UserProfileWS;
 import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
+import org.apache.axis.utils.XMLUtils;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -72,6 +74,13 @@ public class SharepointClient {
       final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
     sharepointClientContext = inSharepointClientContext;
+
+    // Register a SAX client factory with Axis so that we can intercept SAX
+    // parsing failures. This is needed to ignore some SAX parsing failures 
+    // such as duplicate attributes defined in the metadata of a document.
+    XMLUtils.initSAXFactory(
+        "com.google.enterprise.connector.sharepoint.wsclient.handlers.SaxErrorFactory",
+        true, false);
   }
 
   /**
