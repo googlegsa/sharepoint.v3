@@ -756,44 +756,67 @@ public class GssAclMonitor
             result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
         }
 
-        foreach (string url in urls)
+        try
         {
-            GssAcl acl = null;
-            try
-            {
-                Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
-                ISecurableObject secobj = GssAclUtility.IdentifyObject(url, web);
-                GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
-                acl = new GssAcl(url, aceMap.Count);
-                foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
-                {
-                    acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
-                }
-                allAcls.Add(acl);
 
+            foreach (string url in urls)
+            {
+                GssAcl acl = null;
+                ISecurableObject secobj = null;
                 try
                 {
-                    acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
+                    Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
+                    secobj = GssAclUtility.IdentifyObject(url, web);
+                    GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
+                    acl = new GssAcl(url, aceMap.Count);
+                    foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
+                    {
+                        acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+                    }
+                    allAcls.Add(acl);
+
+                    try
+                    {
+                        acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
+                    }
+                    catch (Exception e)
+                    {
+                        acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                    }
                 }
                 catch (Exception e)
                 {
-                    acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                    acl = new GssAcl(url, 0);
+                    acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
                 }
-            }
-            catch (Exception e)
-            {
-                acl = new GssAcl(url, 0);
-                acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
-            }
-            finally
-            {
-                if (web != null)
+                finally
                 {
-                    web.Dispose(); // Dispose the SPWeb Object
+                    if (secobj != null)
+                    {
+                        if (secobj is SPWeb)
+                        {
+                            try
+                            {
+                                SPWeb spWebToDispose = (SPWeb)secobj;
+                                spWebToDispose.Dispose();
+                            }
+                            catch (Exception exDispose)
+                            {
+                                exDispose = null; //Ignoring dispose or type casting error;
+                            }
+                        }
+                    }
                 }
+
             }
         }
-
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
+        }
         result.AllAcls = allAcls;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
@@ -873,6 +896,11 @@ public class GssAclMonitor
             allChanges = new GssAclChangeCollection(site.CurrentChangeToken);
         }
 
+        if (web != null)
+        {
+            web.Dispose();
+        }
+        
         result.AllChanges = allChanges;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
@@ -1028,62 +1056,73 @@ public class GssAclMonitor
             }
         }
 
-        List<string> itemIDs = new List<string>();
-        SPQuery query = new SPQuery();
-        query.RowLimit = GssAclMonitor.ROWLIMIT;
-        // CAML query to do a progressive crawl of items in ascending order of their IDs. The prgression is controlled by lastItemId
-        query.Query = "<Where>"
-                       + "<Gt>"
-                       + "<FieldRef Name=\"ID\"/>"
-                       + "<Value Type=\"Counter\">" + lastItemId + "</Value>"
-                       + "</Gt>"
-                       + "</Where>"
-                       + "<OrderBy>"
-                       + "<FieldRef Name=\"ID\" Ascending=\"TRUE\" />"
-                       + "</OrderBy>";
-        if (changeList.BaseType == SPBaseType.DocumentLibrary
-            || changeList.BaseType == SPBaseType.GenericList
-            || changeList.BaseType == SPBaseType.Issue)
+        try
         {
-            query.ViewAttributes = "Scope = 'Recursive'";
-        }
+            List<string> itemIDs = new List<string>();
+            SPQuery query = new SPQuery();
+            query.RowLimit = GssAclMonitor.ROWLIMIT;
+            // CAML query to do a progressive crawl of items in ascending order of their IDs. The prgression is controlled by lastItemId
+            query.Query = "<Where>"
+                           + "<Gt>"
+                           + "<FieldRef Name=\"ID\"/>"
+                           + "<Value Type=\"Counter\">" + lastItemId + "</Value>"
+                           + "</Gt>"
+                           + "</Where>"
+                           + "<OrderBy>"
+                           + "<FieldRef Name=\"ID\" Ascending=\"TRUE\" />"
+                           + "</OrderBy>";
+            if (changeList.BaseType == SPBaseType.DocumentLibrary
+                || changeList.BaseType == SPBaseType.GenericList
+                || changeList.BaseType == SPBaseType.Issue)
+            {
+                query.ViewAttributes = "Scope = 'Recursive'";
+            }
 
-        SPListItemCollection items = changeList.GetItems(query);
+            SPListItemCollection items = changeList.GetItems(query);
 
-        GssGetListItemsWithInheritingRoleAssignments result = new GssGetListItemsWithInheritingRoleAssignments();
-        XmlDocument xmlDoc = new XmlDocument();
-        XmlNode rootNode = xmlDoc.CreateNode(XmlNodeType.Element, "GssListItems", "");
+            GssGetListItemsWithInheritingRoleAssignments result = new GssGetListItemsWithInheritingRoleAssignments();
+            XmlDocument xmlDoc = new XmlDocument();
+            XmlNode rootNode = xmlDoc.CreateNode(XmlNodeType.Element, "GssListItems", "");
 
-        int i = 0;
-        foreach (SPListItem item in items)
-        {
-            if (i >= rowLimit)
+            int i = 0;
+            foreach (SPListItem item in items)
+            {
+                if (i >= rowLimit)
+                {
+                    result.MoreDocs = true;
+                    break;
+                }
+                if (!item.HasUniqueRoleAssignments && GssAclUtility.isSame(changeList.FirstUniqueAncestor, item.FirstUniqueAncestor))
+                {
+                    XmlNode node = handleOwsMetaInfo(item);
+                    node = xmlDoc.ImportNode(node, true);
+                    rootNode.AppendChild(node);
+                    ++i;
+                }
+                result.LastIdVisited = item.ID;
+            }
+            if (null != items.ListItemCollectionPosition)
             {
                 result.MoreDocs = true;
-                break;
             }
-            if (!item.HasUniqueRoleAssignments && GssAclUtility.isSame(changeList.FirstUniqueAncestor, item.FirstUniqueAncestor))
-            {
-                XmlNode node = handleOwsMetaInfo(item);
-                node = xmlDoc.ImportNode(node, true);
-                rootNode.AppendChild(node);
-                ++i;
-            }
-            result.LastIdVisited = item.ID;
-        }
-        if (null != items.ListItemCollectionPosition)
-        {
-            result.MoreDocs = true;
-        }
-        XmlAttributeCollection allAttrs = rootNode.Attributes;
-        XmlAttribute attr = xmlDoc.CreateAttribute("Count");
-        attr.Value = i.ToString();
-        allAttrs.Append(attr);
+            XmlAttributeCollection allAttrs = rootNode.Attributes;
+            XmlAttribute attr = xmlDoc.CreateAttribute("Count");
+            attr.Value = i.ToString();
+            allAttrs.Append(attr);
 
-        result.DocXml = rootNode.OuterXml;
-        result.SiteCollectionUrl = site.Url;
-        result.SiteCollectionGuid = site.ID;
-        return result;
+            result.DocXml = rootNode.OuterXml;
+            result.SiteCollectionUrl = site.Url;
+            result.SiteCollectionGuid = site.ID;
+            return result;
+        }
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
+        }
+
     }
 
     /// <summary>
