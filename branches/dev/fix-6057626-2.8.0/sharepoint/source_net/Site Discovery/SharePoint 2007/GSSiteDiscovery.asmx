@@ -30,49 +30,59 @@ public class SiteDiscovery : System.Web.Services.WebService
     }
 
     /// <summary>
-    /// Get the top level URL of all site collections form all web applications for a given sharepoint installation.
+    /// Get the top level URL of all site collections form all web applications for a given sharepoint installation.   
     /// </summary>
     /// <returns></returns>
     [WebMethod]
     public ArrayList GetAllSiteCollectionFromAllWebApps()
     {
         ArrayList webSiteList = new ArrayList();
-
-        //get the site collection for the central administration
+        //get the site collection for the central administration       
         foreach (SPWebApplication wa in SPWebService.AdministrationService.WebApplications)
         {
-            foreach (SPSite sc in wa.Sites)
-            {
-                try
-                {
-                    //add the site collection top level url in\to our arraylist
-                    webSiteList.Add(sc.Url);
-                }
-                finally
-                {
-                    sc.Dispose();
-                }
-            }
+            GetAllSiteCollectionsFromWenApplication(wa, webSiteList);       
         }
 
         foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
         {
-            //Console.WriteLine("web Application: " + wa.Name);
-            foreach (SPSite sc in wa.Sites)
-            {
-                try
-                {
-                    webSiteList.Add(sc.Url);
-                }
-                finally
-                {
-                    sc.Dispose();
-                }
-            }
+            GetAllSiteCollectionsFromWenApplication(wa, webSiteList);  
         }
         return webSiteList;//return the list
     }
-
+    /// <summary>
+    /// Populate full URL for all the site collections under given SPWebApplication object
+    /// </summary>
+    /// <param name="wa">SPWebApplication object to fetch all the Site Collections</param>
+    /// <param name="webSiteList">ArrayList object to hold URLs for all the site collections under SPWebApplication</param> 
+    private void GetAllSiteCollectionsFromWenApplication(SPWebApplication wa, ArrayList webSiteList)
+    {
+        if (wa != null)
+        {          
+            if (webSiteList == null)
+            {
+                webSiteList = new ArrayList();
+            }
+            if (wa.Sites != null && wa.Sites.Count > 0)
+            {
+                //TODO: To use SPSiteCollection.Names property along with SPUrlZone to get all possible URLS (Default,Custom,Intranet,Internet etc) for Web Application
+                foreach (SPSite oSite in wa.Sites)
+                {
+                    try
+                    {
+                        webSiteList.Add(oSite.Url);
+                    }
+                    finally
+                    {
+                        if (oSite != null)
+                        {
+                            oSite.Dispose();
+                        }
+                    }
+                }                
+            }   
+        }
+    }
+        
     /// <summary>
     /// Stores the information about the crawl behavior of a web
     /// </summary>
@@ -128,35 +138,28 @@ public class SiteDiscovery : System.Web.Services.WebService
     /// <returns></returns>
     [WebMethod]
     public WebCrawlInfo GetWebCrawlInfo()
-    {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
+    {      
+        if (null == SPContext.Current)
         {
             throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to a valid SharePoitn site. ");
-        }
-        SPWeb web = spContext.Web;
-        if (null == web)
+        }        
+        if (null == SPContext.Current.Web)
         {
             throw new Exception("SharePoint site not found");
         }
-
         try
         {
             WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
-            webCrawlInfo.WebKey = web.Url;
-            webCrawlInfo.CrawlAspxPages = web.AllowAutomaticASPXPageIndexing;
-            webCrawlInfo.NoCrawl = web.NoCrawl;
+            webCrawlInfo.WebKey = SPContext.Current.Web.Url;
+            webCrawlInfo.CrawlAspxPages = SPContext.Current.Web.AllowAutomaticASPXPageIndexing;
+            webCrawlInfo.NoCrawl = SPContext.Current.Web.NoCrawl;
             webCrawlInfo.Status = true;
             return webCrawlInfo;
         }
         catch (Exception e)
         {
             throw new Exception("Could not get the required information for the web ", e);
-        }
-        finally
-        {
-            web.Dispose();
-        }
+        }       
     }
 
     /// <summary>
@@ -261,24 +264,21 @@ public class SiteDiscovery : System.Web.Services.WebService
     }
 
     /// <summary>
-    /// To get the <see cref="ListCrawlInfo"/> of the current web
+    /// To get the <see cref="ListCrawlInfo"/> of the current web  
     /// </summary>
     /// <param name="listGuids"></param>
     /// <returns></returns>
     [WebMethod]
     public List<ListCrawlInfo> GetListCrawlInfo(List<string> listGuids)
-    {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
+    {   
+        if (null == SPContext.Current)
         {
             throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to a valid SharePoitn site. ");
         }
-        SPWeb web = spContext.Web;
-        if (null == web)
+        if (null == SPContext.Current.Web)
         {
             throw new Exception("SharePoint site not found");
         }
-
         List<ListCrawlInfo> listCrawlInfo = new List<ListCrawlInfo>();
         foreach (string guid in listGuids)
         {
@@ -289,7 +289,7 @@ public class SiteDiscovery : System.Web.Services.WebService
                 Guid key = new Guid(guid);
                 try
                 {
-                    SPList list = web.Lists[key];
+                    SPList list = SPContext.Current.Web.Lists[key];
                     info.NoCrawl = list.NoCrawl;
                     info.Status = true;
                 }
@@ -303,27 +303,23 @@ public class SiteDiscovery : System.Web.Services.WebService
                 info.Error = "Invalid List GUID! Exception [ " + e.Message + " ] ";
             }
             listCrawlInfo.Add(info);
-        }
-
-        web.Dispose();
+        }       
         return listCrawlInfo;
     }
-
+    
     /// <summary>
-    /// Checks whether a list is marked for crawling or not
+    /// Checks whether a list is marked for crawling or not 
     /// </summary>
     /// <param name="listGUID"></param>
     /// <returns></returns>
     [WebMethod]
     public bool IsCrawlableList(String listGUID)
-    {
-        SPContext spContext = SPContext.Current;
-        if (null == spContext)
+    {            
+        if (null == SPContext.Current)
         {
             throw new Exception("Unable to get SharePoint context. The web service endpoint might not be referring to a valid SharePoitn site. ");
         }
-        SPWeb web = spContext.Web;
-        if (null == web)
+        if (null == SPContext.Current.Web)
         {
             throw new Exception("SharePoint site not found");
         }
@@ -332,7 +328,7 @@ public class SiteDiscovery : System.Web.Services.WebService
             Guid key = new Guid(listGUID);
             try
             {
-                SPList list = web.Lists[key];
+                SPList list = SPContext.Current.Web.Lists[key];
                 return list.NoCrawl;
             }
             catch (Exception e)
@@ -344,11 +340,6 @@ public class SiteDiscovery : System.Web.Services.WebService
         {
             throw new Exception("Invalid List GUID!", e);
         }
-        finally
-        {
-            web.Dispose();
-        }
-        return false;
-    }
+    }        
 }
 

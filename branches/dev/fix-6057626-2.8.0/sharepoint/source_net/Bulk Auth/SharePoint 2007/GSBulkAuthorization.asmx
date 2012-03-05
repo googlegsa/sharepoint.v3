@@ -95,9 +95,11 @@ public class BulkAuthorization : System.Web.Services.WebService
                 DateTime authDataStartTime = System.DateTime.Now;
                 try
                 {
-                    SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA);
-                    SPUser user = wsContext.User;
-                    Authorize(authData, web, user);
+                    using (SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA))
+                    {
+                        SPUser user = wsContext.User;
+                        Authorize(authData, web, user);
+                    };
                 }
                 catch (Exception e)
                 {
@@ -368,7 +370,10 @@ public class WSContext
 
     ~WSContext()
     {
-        site.Dispose();
+        if (this.site != null)
+        {
+            site.Dispose();
+        }
     }
 
     /// <summary>
