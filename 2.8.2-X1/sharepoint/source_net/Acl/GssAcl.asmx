@@ -757,50 +757,73 @@ public class GssAclMonitor
             result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
         }
 
-        foreach (string url in urls)
+        try
         {
-            GssAcl acl = null;
-            try
-            {
-                Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
-                ISecurableObject secobj = GssAclUtility.IdentifyObject(url, web);
-                GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
-                acl = new GssAcl(url, aceMap.Count);
-                foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
-                {
-                    acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
-                }
-                allAcls.Add(acl);
 
+            foreach (string url in urls)
+            {
+                GssAcl acl = null;
+                ISecurableObject secobj = null;
                 try
                 {
-                    acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
+                    Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
+                    secobj = GssAclUtility.IdentifyObject(url, web);
+                    GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
+                    acl = new GssAcl(url, aceMap.Count);
+                    foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
+                    {
+                        acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+                    }
+                    allAcls.Add(acl);
+
+                    try
+                    {
+                        acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
+                    }
+                    catch (Exception e)
+                    {
+                        acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                    }
                 }
                 catch (Exception e)
                 {
-                    acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                    acl = new GssAcl(url, 0);
+                    acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
                 }
-            }
-            catch (Exception e)
-            {
-                acl = new GssAcl(url, 0);
-                acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
-            }
-            finally
-            {
-                if (web != null)
+                finally
                 {
-                    web.Dispose(); // Dispose the SPWeb Object
+                    if (secobj != null)
+                    {
+                        if (secobj is SPWeb)
+                        {
+                            try
+                            {
+                                SPWeb spWebToDispose = (SPWeb)secobj;
+                                spWebToDispose.Dispose();
+                            }
+                            catch (Exception exDispose)
+                            {
+                                exDispose = null; //Ignoring dispose or type casting error;
+                            }
+                        }
+                    } 
                 }
+               
             }
         }
-
+        finally
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
+        }
         result.AllAcls = allAcls;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
         return result;
     }
-
+    
     /// <summary>
     /// Returns a list of ACL specific changes that have happened over a period of time, determined by the change token.
     /// These changes purely reflects the actions performed on the SharePoint but does not talk about their implications. The caller should not assume that the ACL of any entity has changed just because it receives a set of changes from this API.
@@ -817,7 +840,7 @@ public class GssAclMonitor
         SPWeb web;
         init(out site, out web);
 
-    GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
+        GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
         GssAclChangeCollection allChanges = null;
         SPChangeToken changeTokenEnd = null;
         if (null != fromChangeToken && fromChangeToken.Length != 0)
@@ -874,12 +897,17 @@ public class GssAclMonitor
             allChanges = new GssAclChangeCollection(site.CurrentChangeToken);
         }
 
+        if (web != null)
+        {
+            web.Dispose(); 
+        }
+
         result.AllChanges = allChanges;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
         return result;
     }
-
+    
     /// <summary>
     /// Expands a SharePoint group to find all the member users and domain groups. Creates a <see cref="GssPrincipal"/> object for each of them and returns the same.
     /// The group must exist in the site collection for which the request has been sent.
@@ -1029,62 +1057,73 @@ public class GssAclMonitor
             }
         }
 
-        List<string> itemIDs = new List<string>();
-        SPQuery query = new SPQuery();
-        query.RowLimit = GssAclMonitor.ROWLIMIT;
-        // CAML query to do a progressive crawl of items in ascending order of their IDs. The prgression is controlled by lastItemId
-        query.Query = "<Where>"
-                       + "<Gt>"
-                       + "<FieldRef Name=\"ID\"/>"
-                       + "<Value Type=\"Counter\">" + lastItemId + "</Value>"
-                       + "</Gt>"
-                       + "</Where>"
-                       + "<OrderBy>"
-                       + "<FieldRef Name=\"ID\" Ascending=\"TRUE\" />"
-                       + "</OrderBy>";
-        if (changeList.BaseType == SPBaseType.DocumentLibrary
-            || changeList.BaseType == SPBaseType.GenericList
-            || changeList.BaseType == SPBaseType.Issue)
+        try
         {
-            query.ViewAttributes = "Scope = 'Recursive'";
-        }
+            List<string> itemIDs = new List<string>();
+            SPQuery query = new SPQuery();
+            query.RowLimit = GssAclMonitor.ROWLIMIT;
+            // CAML query to do a progressive crawl of items in ascending order of their IDs. The prgression is controlled by lastItemId
+            query.Query = "<Where>"
+                           + "<Gt>"
+                           + "<FieldRef Name=\"ID\"/>"
+                           + "<Value Type=\"Counter\">" + lastItemId + "</Value>"
+                           + "</Gt>"
+                           + "</Where>"
+                           + "<OrderBy>"
+                           + "<FieldRef Name=\"ID\" Ascending=\"TRUE\" />"
+                           + "</OrderBy>";
+            if (changeList.BaseType == SPBaseType.DocumentLibrary
+                || changeList.BaseType == SPBaseType.GenericList
+                || changeList.BaseType == SPBaseType.Issue)
+            {
+                query.ViewAttributes = "Scope = 'Recursive'";
+            }
 
-        SPListItemCollection items = changeList.GetItems(query);
+            SPListItemCollection items = changeList.GetItems(query);
 
-        GssGetListItemsWithInheritingRoleAssignments result = new GssGetListItemsWithInheritingRoleAssignments();
-        XmlDocument xmlDoc = new XmlDocument();
-        XmlNode rootNode = xmlDoc.CreateNode(XmlNodeType.Element, "GssListItems", "");
+            GssGetListItemsWithInheritingRoleAssignments result = new GssGetListItemsWithInheritingRoleAssignments();
+            XmlDocument xmlDoc = new XmlDocument();
+            XmlNode rootNode = xmlDoc.CreateNode(XmlNodeType.Element, "GssListItems", "");
 
-        int i = 0;
-        foreach (SPListItem item in items)
-        {
-            if (i >= rowLimit)
+            int i = 0;
+            foreach (SPListItem item in items)
+            {
+                if (i >= rowLimit)
+                {
+                    result.MoreDocs = true;
+                    break;
+                }
+                if (!item.HasUniqueRoleAssignments && GssAclUtility.isSame(changeList.FirstUniqueAncestor, item.FirstUniqueAncestor))
+                {
+                    XmlNode node = handleOwsMetaInfo(item);
+                    node = xmlDoc.ImportNode(node, true);
+                    rootNode.AppendChild(node);
+                    ++i;
+                }
+                result.LastIdVisited = item.ID;
+            }
+            if (null != items.ListItemCollectionPosition)
             {
                 result.MoreDocs = true;
-                break;
             }
-            if (!item.HasUniqueRoleAssignments && GssAclUtility.isSame(changeList.FirstUniqueAncestor, item.FirstUniqueAncestor))
-            {
-                XmlNode node = handleOwsMetaInfo(item);
-                node = xmlDoc.ImportNode(node, true);
-                rootNode.AppendChild(node);
-                ++i;
-            }
-            result.LastIdVisited = item.ID;
-        }
-        if (null != items.ListItemCollectionPosition)
-        {
-            result.MoreDocs = true;
-        }
-        XmlAttributeCollection allAttrs = rootNode.Attributes;
-        XmlAttribute attr = xmlDoc.CreateAttribute("Count");
-        attr.Value = i.ToString();
-        allAttrs.Append(attr);
+            XmlAttributeCollection allAttrs = rootNode.Attributes;
+            XmlAttribute attr = xmlDoc.CreateAttribute("Count");
+            attr.Value = i.ToString();
+            allAttrs.Append(attr);
 
-        result.DocXml = rootNode.OuterXml;
-        result.SiteCollectionUrl = site.Url;
-        result.SiteCollectionGuid = site.ID;
-        return result;
+            result.DocXml = rootNode.OuterXml;
+            result.SiteCollectionUrl = site.Url;
+            result.SiteCollectionGuid = site.ID;
+            return result;
+        }
+        finally 
+        {
+            if (web != null)
+            {
+                web.Dispose(); // Dispose the SPWeb Object
+            }
+        }
+        
     }
 
     /// <summary>
@@ -1261,9 +1300,9 @@ public sealed class GssAclUtility
             }
         }
     }
-
+       
     /// <summary>
-    /// Identifies the SharePoint object represented by the incoming URL and returns a corresponding ISecurable object for same
+    /// Identifies the SharePoint object represented by the incoming URL and returns a corresponding ISecurable object for same   
     /// </summary>
     /// <param name="url"> Entity URL</param>
     /// <param name="web"> Parent Web to which the entity URL belongs </param>
@@ -1274,7 +1313,7 @@ public sealed class GssAclUtility
         //check if the url ending with default.aspx, then return IsecureObejct
         // for the site not any of it's List/listItems to fetch Acl's.
         
-        if (!url.EndsWith("default.aspx"))
+        if (!url.EndsWith("default.aspx")) 
         {
             listItem = web.GetListItem(url);
             if (null != listItem)
@@ -1284,7 +1323,8 @@ public sealed class GssAclUtility
         }
         else
         {
-            return web.Site.OpenWeb();
+
+            return web.Site.OpenWeb();   
 
         }
 
@@ -1306,10 +1346,10 @@ public sealed class GssAclUtility
         }
 
         return web.Site.OpenWeb(url);
-    
-            
-    }
 
+
+    }
+    
     /// <summary>
     /// Retrieves the Owner's information about a given ISecurable entity
     /// </summary>
@@ -1469,6 +1509,7 @@ public sealed class GssAclUtility
             return null;
         }
         GssPrincipal gssPrincipal = null;
+        
         SPPrincipalInfo userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, login, SPPrincipalType.All, SPPrincipalSource.All, false);
         if (null == userInfo)
         {

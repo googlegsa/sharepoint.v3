@@ -21,8 +21,6 @@ using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
 using System.Collections.Generic;
 
-
-
 /// <summary>
 /// Google Search Appliance Connector for Microsoft SharePoint uses this web service to authorize documents at serve time.
 /// </summary>
@@ -86,7 +84,6 @@ public class BulkAuthorization : System.Web.Services.WebService
                     continue;
                 }
             }
-
             foreach (AuthData authData in authDataArray)
             {
                 if (null == authData)
@@ -96,10 +93,12 @@ public class BulkAuthorization : System.Web.Services.WebService
 
                 DateTime authDataStartTime = System.DateTime.Now;
                 try
-                {
-                    SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA);
+                {                  
+                    using(SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA))
+                    {
                     SPUser user = wsContext.User;
                     Authorize(authData, web, user);
+                    };
                 }
                 catch (Exception e)
                 {
@@ -121,7 +120,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             }
         }
     }
-
+        
     /// <summary>
     /// Actual Authorization is done here
     /// </summary>
@@ -389,12 +388,15 @@ public class WSContext
     }
 
     ~WSContext()
-    {
-        site.Dispose();
+    {     
+        if (this.site != null)
+        {
+            site.Dispose();
+        }
     }
 
     /// <summary>
-    /// Reinitialize SPSite using the passed in url. All subsequest requests will be served using this SPSite
+    /// Reinitialize SPSite using the passed in url. All subsequest requests will be served using this SPSite 
     /// </summary>
     /// <param name="url"></param>
     internal void Using(string url)
@@ -402,10 +404,10 @@ public class WSContext
         SPSite site = null;
         SPSecurity.RunWithElevatedPrivileges(delegate()
         {
-            // try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.
+            // try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.        
             try
             {
-                site = new SPSite(url);
+                site = new SPSite(url);              
             }
             catch (Exception e)
             {
@@ -653,7 +655,7 @@ internal class UserInfoHolder
     }
 
     /// <summary>
-    /// If the SPuser object is not yet constructed, try to get it using the passed-in SPSite
+    /// If the SPuser object is not yet constructed, try to get it using the passed-in SPSite  
     /// </summary>
     /// <param name="site"></param>
     internal void TryInit(SPSite site)
@@ -691,7 +693,7 @@ internal class UserInfoHolder
         bool web_auth = web.DoesUserHavePermissions(username, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
 
         try
-        {
+        {            
             user = web.AllUsers[username];
         }
         catch (Exception e1)

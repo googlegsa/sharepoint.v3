@@ -7,27 +7,19 @@ This document contains the release notes for Google Search Appliance Connector f
 The following sections describe the release in detail and provide information that supplements the main documentation.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
-Release 2.8.2 , September 23, 2011
+Release 2.8.2-X1 , March 5, 2012
 ====================================
 
 Introduction
 ------------
-This is an upgrade release with some enhancements. Users of previous releases are encouraged to upgrade. Your feedback is important to us.
+This is an experimental release with some enhancements. Users of previous releases are encouraged to upgrade. Your feedback is important to us.
 Keep in mind that we are continuing to work on the Google Search Appliance Connector for SharePoint and things may change in the future.
 
 Summary of Changes / New Features
 ---------------------------------
-This patch contains fix for the following issues.
+This patch contains fix for the following issues
+--Issue  6057626 - Correct disposal of SharePoint Resources in Google services for SharePoint (SPWeb,SPSite etc)
 
---Issue 5028368: Remove URLs which are Unpublished on the SharePoint server from the index.
---Issue 4968850: SharePoint Connector incorrectly feeds 'read' access per-URL ACL to GSA for Users who have been marked with 'Limited Access' to a Page.
---Issue 4903561: LDAP search base validation for SP connector bug.
---Issue 5157008: Remove "Append Name space to SharePoint group in ACL" from SharePoint connector 2.8 UI.
---Issue 5157207: Re-arrange the UI configuration for SharePoint connector 2.8.
---Mapping correct role types for users and groups while processing ACLs for site landing pages.
---Issue 5149999:SP connector should do AuthN even if no LDAP settings are present.
---Issue 5192167: Document the maximum number of TCP Ports for Windows Machine which host external SharePoint connector.
---Supporting Flexible AuthZ in connector in case of Meta & URL feed mode.
 
 
 Version Compatibility
