@@ -96,8 +96,15 @@ public class BulkAuthorization : System.Web.Services.WebService
                 {                  
                     using(SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA))
                     {
-                    SPUser user = wsContext.User;
-                    Authorize(authData, web, user);
+                        if (web != null && web.Exists)
+                        {
+                            SPUser user = wsContext.User;
+                            Authorize(authData, web, user);
+                        }
+                        else
+                        {
+                            throw new Exception("Error creating Web for URL "+ authData.Container.Url);
+                        }
                     };
                 }
                 catch (Exception e)
