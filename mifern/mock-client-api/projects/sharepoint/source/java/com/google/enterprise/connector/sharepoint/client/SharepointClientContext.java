@@ -124,6 +124,10 @@ public class SharepointClientContext implements Cloneable {
     this.ldapConnectionSettings = ldapConnectionSettings;
   }
 
+  public ClientFactory getClientFactory() {
+    return clientFactory;
+  }
+
   /**
    * For cloning
    */

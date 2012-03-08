@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
+import com.google.enterprise.connector.sharepoint.client.ListsUtil;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -35,8 +36,6 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile200
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
-import org.xml.sax.helpers.AttributesImpl;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -46,7 +45,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.UUID;
 
 /**
  * A mock factory for creating a large statefile.
@@ -88,23 +86,30 @@ public class LargeStatefileClientFactory extends MockClientFactory {
   public LargeStatefileClientFactory() {
   }
 
-  @Override
-  public ListsWS getListsWS(final SharepointClientContext ctx) {
+  /* @Override */
+  public ListsWS getListsWS(final SharepointClientContext ctx,
+      final String rowLimit) {
     return new MockListsWS(ctx) {
+      /* @Override */
       public List<Folder> getSubFoldersRecursively(final ListState list,
           final Folder folder, final String lastID) {
         return new ArrayList<Folder>();
       }
 
-      public List<SPDocument> getListItemChangesSinceToken(
-          final ListState list, final Set<String> allWebs)
-          throws SharepointException {
+      /* @Override */
+      public List<SPDocument> getListItemChangesSinceToken(final ListState list, 
+          final String listName, final String viewName,
+          final ListsUtil.SPQueryInfo queryInfo, final String token, 
+          final Set<String> allWebs, final Set<String> deletedIDs, 
+          final Set<String> restoredIDs, final Set<String> renamedIDs) {
         return getDocuments(list);
       }
 
+      /* @Override */
       public List<SPDocument> getListItems(final ListState list,
-          final Calendar lastModified, final String lastItemID,
-          final Set<String> allWebs) {
+          final String listName, final String viewName, 
+          final ListsUtil.SPQueryInfo queryInfo, final String webID,
+          Set<String> allWebs) {
         return getDocuments(list);
       }
 
@@ -132,9 +137,10 @@ public class LargeStatefileClientFactory extends MockClientFactory {
     };
   }
 
-  @Override
+  /* @Override */
   public SiteDataWS getSiteDataWS(final SharepointClientContext ctx) {
     return new MockSiteDataWS(ctx) {
+      /* @Override */
       public List<ListState> getNamedLists(final WebState webstate)
           throws SharepointException {
         String siteUrl = ctx.getSiteURL();
@@ -158,6 +164,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
         return lists;
       }
 
+      /* @Override */
       public SPDocument getSiteData(final WebState webState)
           throws SharepointException {
         // TODO: What do we need to return here?
@@ -166,9 +173,10 @@ public class LargeStatefileClientFactory extends MockClientFactory {
     };
   }
 
-  @Override
+  /* @Override */
   public WebsWS getWebsWS(final SharepointClientContext ctx) {
     return new MockWebsWS(ctx) {
+      /* @Override */
       public Set<String> getDirectChildsites() {
         String siteUrl = ctx.getSiteURL();
         String path = getURLPath(siteUrl);
@@ -186,16 +194,18 @@ public class LargeStatefileClientFactory extends MockClientFactory {
         return sites;
       }
 
+      /* @Override */
       public String getWebTitle(final String webURL, final SPType spType) {
         return getTitleFromURL(webURL);
       }
     };
   }
 
-  @Override
+  /* @Override */
   public SiteDiscoveryWS getSiteDiscoveryWS(
       final SharepointClientContext ctx, String webUrl) {
     return new MockSiteDiscoveryWS(ctx, webUrl) {
+      /* @Override */
       public Set<String> getMatchingSiteCollections() {
         String siteUrl = ctx.getSiteURL();
         String path = getURLPath(siteUrl).toLowerCase();
@@ -284,20 +294,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
       throws SharepointException {
     for (int i = 0; i < count; i++) {
       String listName = "List-" + (lists.size() + 1 + i);
-      String listUrl = webUrl + "/" + listName;
-      String listId = generateId(listUrl, fixedId);
-
-      AttributesImpl attr = new AttributesImpl();
-      attr.addAttribute("", "", SPConstants.STATE_ID, "", listId);
-      attr.addAttribute("", "", SPConstants.STATE_BIGGESTID, "", "0");
-      attr.addAttribute("", "", SPConstants.STATE_TYPE, "",
-          SPConstants.DOC_LIB);
-      attr.addAttribute("", "", SPConstants.STATE_URL, "", listUrl);
-      attr.addAttribute("", "", SPConstants.STATE_LASTMODIFIED, "",
-          Util.formatDate(Calendar.getInstance()));
-      attr.addAttribute("", "", SPConstants.STATE_CHANGETOKEN, "",
-          "mock-change-token");
-      lists.add(ListState.loadStateFromXML(ws, attr, feedType));
+      lists.add(createListState(webUrl, listName, ws, feedType, fixedId));
     }
   }
 
@@ -331,15 +328,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
         final Boolean fixedId) {
     for (int i = 0; i < count; i++) {
       String docName = "Doc-" + (docs.size() + 1 + i);
-      String docUrl = webUrl + "/" + docName;
-      String docId = generateId(docUrl, fixedId);
-
-      // TODO: Using hardcoded SPType.SP2007.
-      final SPDocument doc = new SPDocument(docId, docUrl,
-          Calendar.getInstance(), SPConstants.NO_AUTHOR,
-          SPConstants.NO_OBJTYPE, SPConstants.PARENT_WEB_TITLE,
-          feedType, SPConstants.SPType.SP2007);
-      docs.add(doc);
+      docs.add(createDocument(webUrl, docName, feedType, fixedId));
     }
   }
 
@@ -358,29 +347,5 @@ public class LargeStatefileClientFactory extends MockClientFactory {
       sites.add(siteUrl);
     }
     return sites;
-  }
-
-  /**
-   * Generates a new Sharepoint ID.
-   *
-   * @param url the URL of the object
-   * @param fixedId a flag inidicating whether to use fixed or random ID's
-   * @return a valid string ID
-   */
-  private String generateId(final String url, Boolean fixedId) {
-    String id;
-    if (fixedId) {
-      // This generates an ID from the URL that is passed in so that we get
-      // the same ID for a URL.
-      id = Integer.toHexString(url.hashCode());
-      id = String.format("%1$#32s", id).replace(" ", "0");
-      id = "{" + id.substring(0, 8) + "-" + id.substring(8, 12) + "-" +
-          id.substring(12, 16) + "-" + id.substring(16, 20) + "-" + 
-          id.substring(20) + "}";
-    } else {
-      // This just generates a random ID.
-      id = "{" + UUID.randomUUID().toString() + "}";
-    }
-    return id;
   }
 }

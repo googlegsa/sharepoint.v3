@@ -42,7 +42,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
-import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 import org.apache.axis.AxisFault;
@@ -386,21 +386,21 @@ public class GSAclWS implements AclWS{
 
   /**
    * Works similar to
-   * {@link ListsWS#getListItems(ListState, java.util.Calendar, String, Set)}
+   * {@link ListsHelper#getListItems(ListState, java.util.Calendar, String, Set)}
    * but is designed to be used only to get those list items whose ACLs have
    * changed because of any security change at parent level.
    *
    * @param listState The list from which the items are to be retrieved
-   * @param listsWS delegate for parsing the web service response
+   * @param listsHelper The lists helper for parsing the web service response
    * @return a list of {@link SPDocument}
    */
   public List<SPDocument> getListItemsForAclChangeAndUpdateState(
-      ListState listState, ListsWS listsWS) {
+      ListState listState, ListsHelper listsHelper) {
     List<SPDocument> aclChangedDocs = null;
     if (sharepointClientContext.isPushAcls() && listState.isAclChanged()) {
       GssGetListItemsWithInheritingRoleAssignments wsResult = GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), String.valueOf(listState.getLastDocIdCrawledForAcl()));
       if (null != wsResult) {
-        aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
+        aclChangedDocs = listsHelper.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
         if (null != aclChangedDocs) {
           LOGGER.log(Level.INFO, "Found " + aclChangedDocs.size()
               + " documents from list [ " + listState

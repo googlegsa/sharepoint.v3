@@ -81,9 +81,10 @@ public class SPClientFactory implements ClientFactory {
    *
    * @return a new lists web service instance.
    */
-  public ListsWS getListsWS(final SharepointClientContext ctx) {
+  public ListsWS getListsWS(final SharepointClientContext ctx,
+      final String rowLimit) {
     try {
-      return new SPListsWS(ctx);
+      return new SPListsWS(ctx, rowLimit);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create lists web service instance.", e);

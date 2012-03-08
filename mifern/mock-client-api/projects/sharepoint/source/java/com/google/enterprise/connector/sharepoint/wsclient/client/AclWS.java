@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
@@ -45,11 +46,11 @@ public interface AclWS {
    * changed because of any security change at parent level.
    *
    * @param listState The list from which the items are to be retrieved
-   * @param listsWS delegate for parsing the web service response
+   * @param listsHelper The lists helper for parsing the web service response
    * @return a list of {@link SPDocument}
    */
   public List<SPDocument> getListItemsForAclChangeAndUpdateState(
-      ListState listState, ListsWS listsWS);
+      ListState listState, ListsHelper listsHelper);
 
   /**
    * Executes CheckConnectivity() web method of GssAcl web service. Used for

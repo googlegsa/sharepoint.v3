@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
@@ -21,7 +22,6 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
-import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
 
 import java.util.logging.Logger;
 import java.util.List;
@@ -64,7 +64,7 @@ public class MockAclWS implements AclWS {
    * This is a stub implementation.
    */
   public List<SPDocument> getListItemsForAclChangeAndUpdateState(
-      ListState listState, ListsWS listsWS) {
+      ListState listState, ListsHelper listsHelper) {
     return null;
   }
 
