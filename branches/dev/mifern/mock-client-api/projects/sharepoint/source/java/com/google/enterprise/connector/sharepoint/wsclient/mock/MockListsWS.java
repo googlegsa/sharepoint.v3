@@ -15,16 +15,17 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.ListsUtil;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
 
+import java.rmi.RemoteException;
 import java.util.logging.Logger;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -43,11 +44,29 @@ public class MockListsWS implements ListsWS {
     sharepointClientContext = ctx;
   }
 
+  /* @Override */
+  public String getUsername() {
+    return "";
+  }
+  
+  /* @Override */
+  public void setUsername(String username) {
+  }
+  
+  /* @Override */
+  public void setPassword(final String password) {
+  }
+
+  /* @Override */
+  public void setTimeout(final int timeout) {
+  }
+
   /**
    * (@inheritDoc)
    *
    * This is a stub implementation.
    */
+  /* @Override */
   public List<Folder> getSubFoldersRecursively(final ListState list,
       final Folder folder, final String lastID) {
     return Collections.emptyList();
@@ -58,8 +77,13 @@ public class MockListsWS implements ListsWS {
    *
    * This is a stub implementation.
    */
-  public List<SPDocument> getListItemChangesSinceToken(final ListState list,
-      final Set<String> allWebs) throws SharepointException {
+  /* @Override */
+  public List<SPDocument> getListItemChangesSinceToken(
+      final ListState list, final String listName, final String viewName, 
+      final ListsUtil.SPQueryInfo queryInfo, final String token, 
+      final Set<String> allWebs, final Set<String> deletedIDs, 
+      final Set<String> restoredIDs, final Set<String> renamedIDs) 
+      throws SharepointException, RemoteException {
     return Collections.emptyList();
   }
 
@@ -68,9 +92,10 @@ public class MockListsWS implements ListsWS {
    *
    * This is a stub implementation.
    */
-  public List<SPDocument> getListItems(final ListState list,
-      final Calendar lastModified, final String lastItemID,
-      final Set<String> allWebs) {
+  /* @Override */
+  public List<SPDocument> getListItems(ListState list, final String listName, 
+      final String viewName, final ListsUtil.SPQueryInfo queryInfo,
+      final String webID, Set<String> allWebs) throws RemoteException {
     return Collections.emptyList();
   }
 
@@ -79,18 +104,9 @@ public class MockListsWS implements ListsWS {
    *
    * This is a stub implementation.
    */
+  /* @Override */
   public List<SPDocument> getAttachments(final ListState baseList,
-      final SPDocument listItem) {
-    return Collections.emptyList();
-  }
-
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public List<SPDocument> parseCustomWSResponseForListItemNodes(String data,
-      ListState list) {
+      final SPDocument listItem, List<String> knownAttachments) {
     return Collections.emptyList();
   }
 }

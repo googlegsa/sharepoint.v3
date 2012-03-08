@@ -14,8 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
+import com.google.enterprise.connector.sharepoint.client.ListsUtil;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 
@@ -23,7 +23,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 
-public interface ListsWS {
+// FIXME: Why using List for returns in these methods instead of Set?
+public interface ListsWS extends BaseWS {
   /**
    * Retrieves all the folder hierarchy from a given folder level and updates
    * the ExtraIDs of the list. This operation is independent of the batch hint
@@ -36,8 +37,8 @@ public interface ListsWS {
    *          folders.
    * @return the list of folders in this list
    */
-  public List<Folder> getSubFoldersRecursively(ListState list, Folder folder,
-      String lastID);
+  public List<Folder> getSubFoldersRecursively(ListState list, 
+      Folder folder, String lastID);
 
   /**
    * Used to get list items under a list. If a change token is specified, we
@@ -51,44 +52,65 @@ public interface ListsWS {
    * token to get the changes and the CAML query specified may stop some element
    * from getting shown, do not trust the change info.
    *
-   * @param list List whose items is to be retrieved
-   * @param allWebs A collection to store any webs, discovered as part of
-   *          discovering list items. Foe example link sites are stored as list
-   *          items.
+   * @param list the list whose items are to be retrieved
+   * @param listName the list name used with the SOAP request
+   *          getListItemChangesSinceToken
+   * @param viewName the view name used with the SOAP request 
+   *          getListItemChangesSinceToken
+   * @param queryInfo the query info used with the SOAP request, this data is
+   *          used to initialize Sharepoint SOAP query objects
+   * @param token the token used with the SOAP request
+   *          getListItemChangesSinceToken
+   * @param allWebs a collection to store any webs discovered as part of
+   *          discovering list items. For example, link sites are stored as
+   *          list items.
+   * @param deletedIDs a collection used to store the IDs of deleted items
+   * @param restoredIDs a collection used to store the IDs of restored items
+   * @param renamedIDs a collection used to store the IDs of renamed items
    * @return the list of documents as {@link SPDocument}
+   * @throws Exception on error
    */
-  // FIXME Why using List and not Set?
-  public List<SPDocument> getListItemChangesSinceToken(ListState list,
-      Set<String> allWebs) throws SharepointException;
+  public List<SPDocument> getListItemChangesSinceToken(ListState list, 
+      String listName, String viewName, ListsUtil.SPQueryInfo queryInfo,
+      String token, Set<String> allWebs, Set<String> deletedIDs, 
+      Set<String> restoredIDs, Set<String> renamedIDs) 
+      throws Exception;
 
   /**
    * Used to get list items under a list using getListItems() Web Method
    *
-   * @param list List whose items is to be retrieved
-   * @param lastModified serves as a base for incremental crawl
-   * @param lastItemID Serves as a base for incremental crawl
-   * @param allWebs A collection to store any webs, discovered as part of
-   *          discovering list items. Foe example link sites are stored as list
-   *          items.
+   * @param list the list whose items are to be retrieved
+   * @param listName the list name used with the SOAP request getListItems
+   * @param viewName the view name used with the SOAP request getListItems
+   * @param queryInfo the query info used with the SOAP request, this data is
+   *          used to initialize Sharepoint SOAP query objects
+   * @param webID A string containing the GUID of the parent Web site of the list.
+   *          An empty string means that the URL will be used.
+   * @param allWebs a collection to store any webs discovered as part of
+   *          discovering list items. For example, link sites are stored as
+   *          list items.
    * @return the list of documents as {@link SPDocument}
+   * @throws Exception on error
    */
-  public List<SPDocument> getListItems(ListState list,
-      Calendar lastModified, String lastItemID, Set<String> allWebs);
+  public List<SPDocument> getListItems(ListState list, String listName, 
+      String viewName, ListsUtil.SPQueryInfo queryInfo, String webID, 
+      Set<String> allWebs) throws Exception;
 
   /**
    * Gets all the attachments of a particular list item.
    *
    * @param baseList List to which the item belongs
-   * @param listItem list item for which the attachments need to be retrieved.
-   * @return list of sharepoint SPDocuments corresponding to attachments for the
-   *         given list item. These are ordered by last Modified time.
-   * @throws SharepointException
-   * @throws MalformedURLException
+   * @param listItem List item for which the attachments need to be retrieved
+   * @param knownAttachments A list of the known attachments. This is used 
+   *          to keep track of the attachments that have been found. 
+   *          Newly discovered attachments should be removed from this list
+   *          (i.e. if a document is added to the return list then it's URL 
+   *          must be removed from the knownAttachments list).
+   * @return A list of sharepoint SPDocuments corresponding to attachments
+   *         for the given list item.
+   * @throws Exception on error
    */
   public List<SPDocument> getAttachments(ListState baseList,
-      SPDocument listItem);
-
-  // TODO: java docs needed.
-  public List<SPDocument> parseCustomWSResponseForListItemNodes(String data,
-      ListState list);
+      SPDocument listItem, List<String> knownAttachments)
+      throws Exception;
 }

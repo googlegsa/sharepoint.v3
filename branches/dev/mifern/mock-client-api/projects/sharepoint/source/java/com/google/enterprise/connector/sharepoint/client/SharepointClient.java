@@ -108,10 +108,10 @@ public class SharepointClient {
       final SPDocument doc = iter.next();
       doc.setParentList(list);
       doc.setParentWeb(web);
+      doc.setSharepointClientContext(sharepointClientContext);
       // Update necessary information required for downloading contents.
       if (FeedType.CONTENT_FEED == doc.getFeedType()) {
         doc.setContentDwnldURL(doc.getUrl());
-        doc.setSharepointClientContext(sharepointClientContext);
       }
 
       newlist.add(doc);
@@ -893,7 +893,7 @@ public class SharepointClient {
     }
 
     List<SPDocument> aclChangedItems = null;
-    final ListsWS listsWS = clientFactory.getListsWS(tempCtx);
+    final ListsHelper listsHelper = new ListsHelper(tempCtx);
     for (int i = 0; i < listCollection.size(); i++) {
       final ListState currentList = listCollection.get(i);
       ListState listState = webState.lookupList(currentList.getPrimaryKey());
@@ -942,7 +942,7 @@ public class SharepointClient {
             LOGGER.log(Level.CONFIG, "Discovering all folders under current list/library [ "
                 + listState.getListURL() + " ] ");
             try {
-              listsWS.getSubFoldersRecursively(listState, null, null);
+              listsHelper.getSubFoldersRecursively(listState, null, null);
             } catch (final Exception e) {
               LOGGER.log(Level.WARNING, "Exception occured while getting the folders hierarchy for list [ "
                   + listState.getListURL() + " ]. ", e);
@@ -953,7 +953,7 @@ public class SharepointClient {
           }
 
           try {
-            listItems = listsWS.getListItemChangesSinceToken(listState, allWebs);
+            listItems = listsHelper.getListItemChangesSinceToken(listState, allWebs);
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                 + listState.getListURL() + " ].", e);
@@ -963,7 +963,7 @@ public class SharepointClient {
           }
         } else {
           try {
-            listItems = listsWS.getListItems(listState, null, null, allWebs);
+            listItems = listsHelper.getListItems(listState, null, null, allWebs);
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                 + listState.getListURL() + " ].", e);
@@ -999,7 +999,7 @@ public class SharepointClient {
               LOGGER.log(Level.CONFIG, "Discovering all folders under current list/library [ "
                   + listState.getListURL() + " ] ");
               try {
-                listsWS.getSubFoldersRecursively(listState, null, null);
+                listsHelper.getSubFoldersRecursively(listState, null, null);
               } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Exception occured while getting the folders hierarchy for list [ "
                     + listState.getListURL() + " ]. ", e);
@@ -1021,12 +1021,12 @@ public class SharepointClient {
             webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
             // Any documents to be crawled because of ACl Changes
-            aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS);
+            aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsHelper);
 
             if (null == aclChangedItems
                 || aclChangedItems.size() < sharepointClientContext.getBatchHint()) {
               // Do regular incremental crawl
-              listItems = listsWS.getListItemChangesSinceToken(listState, allWebs);
+              listItems = listsHelper.getListItemChangesSinceToken(listState, allWebs);
             }
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
@@ -1048,7 +1048,7 @@ public class SharepointClient {
               listState.setNewList(true);
             }
 
-            listItems = listsWS.getListItems(listState, dateSince, lastDocID, allWebs);
+            listItems = listsHelper.getListItems(listState, dateSince, lastDocID, allWebs);
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                 + listState.getListURL() + " ].", e);
@@ -1066,7 +1066,7 @@ public class SharepointClient {
         for (int j = 0; j < listItems.size(); j++) {
           final SPDocument doc = listItems.get(j);
           if (ActionType.ADD.equals(doc.getAction())) {
-            final List<SPDocument> attachments = listsWS.getAttachments(listState, doc);
+            final List<SPDocument> attachments = listsHelper.getAttachments(listState, doc);
             attachmentItems.addAll(attachments);
           }
         }

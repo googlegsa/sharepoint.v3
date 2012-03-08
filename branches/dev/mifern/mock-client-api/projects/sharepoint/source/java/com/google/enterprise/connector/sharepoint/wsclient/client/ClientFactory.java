@@ -46,7 +46,7 @@ public interface ClientFactory {
    *
    * @return a new lists web service instance.
    */
-  public ListsWS getListsWS(SharepointClientContext ctx);
+  public ListsWS getListsWS(SharepointClientContext ctx, String rowLimit);
 
   /**
    * Gets the instance of the site data web service.
