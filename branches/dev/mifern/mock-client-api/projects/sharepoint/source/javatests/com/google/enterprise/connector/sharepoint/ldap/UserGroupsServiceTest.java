@@ -23,6 +23,8 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,6 +44,7 @@ public class UserGroupsServiceTest {
 	private LdapConnection ldapConnection;
 	UserGroupsService userGroupsService;
 	SharepointClientContext sharepointClientContext;
+	ClientFactory clientFactory = new SPClientFactory();
 
 	/**
 	 * @throws java.lang.Exception
@@ -51,7 +54,7 @@ public class UserGroupsServiceTest {
 		this.ldapConnectionSettings = TestConfiguration.getLdapConnetionSettings();
 		ldapConnection = new LdapConnection(ldapConnectionSettings);
 		sharepointClientContext = new SharepointClientContext(
-				TestConfiguration.sharepointUrl, TestConfiguration.domain,
+				clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
 				TestConfiguration.kdcserver, TestConfiguration.username,
 				TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
 				TestConfiguration.includedURls, TestConfiguration.excludedURls,

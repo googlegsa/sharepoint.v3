@@ -31,6 +31,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
@@ -165,6 +166,8 @@ public class TestConfiguration {
   public static String ldapGroup1;
   public static String groupNameFormatInACE;
   public static String userNameFormatInACE;
+  
+  public static ClientFactory clientFactory = new SPClientFactory();
 
   static {
     final Properties properties = new Properties();
@@ -425,8 +428,20 @@ public class TestConfiguration {
    */
   public static SharepointClientContext initContext()
       throws SharepointException {
+    return initContext(clientFactory);
+  }
+
+  /**
+   * Returns an instance of the client context with the given parameters
+   *
+   * @param clientFactory The client factory to use with the client context
+   * @return Instance of client context
+   * @throws SharepointException
+   */
+  public static SharepointClientContext initContext(
+      ClientFactory clientFactory) throws SharepointException {
     final SharepointClientContext sharepointClientContext = new SharepointClientContext(
-        TestConfiguration.sharepointUrl, TestConfiguration.domain,
+        clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
         TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
         TestConfiguration.includedURls, TestConfiguration.excludedURls,
@@ -489,7 +504,7 @@ public class TestConfiguration {
   public static GlobalState initState(
       SharepointClientContext sharepointClientContext)
       throws SharepointException {
-    GlobalState globalState = new GlobalState(new SPClientFactory(),
+    GlobalState globalState = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, TestConfiguration.feedType);
 
     if (null != Site1_URL && Site1_URL.trim().length() > 0) {

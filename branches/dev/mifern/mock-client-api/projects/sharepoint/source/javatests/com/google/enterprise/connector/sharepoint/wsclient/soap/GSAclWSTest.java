@@ -15,7 +15,9 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult;
@@ -104,11 +106,11 @@ public class GSAclWSTest extends TestCase {
     ListState listState = globalState.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID);
     assertNotNull(listState);
     listState.startAclCrawl();
-    SPListsWS listWs = new SPListsWS(sharepointClientContext);
-    assertNotNull(listWs);
+    ListsHelper listHelper = new ListsHelper(sharepointClientContext);
+    assertNotNull(listHelper);
     this.aclWS = new GSAclWS(this.sharepointClientContext,
         listState.getParentWebState().getWebUrl());
-    List<SPDocument> docs = aclWS.getListItemsForAclChangeAndUpdateState(listState, listWs);
+    List<SPDocument> docs = aclWS.getListItemsForAclChangeAndUpdateState(listState, listHelper);
     assertNotNull(docs);
   }
 

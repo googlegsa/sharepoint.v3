@@ -15,13 +15,14 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
-import com.google.enterprise.connector.sharepoint.wsclient.soap.SPListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPSiteDataWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
@@ -51,8 +52,8 @@ public class SPDocumentListTest extends TestCase {
     assertNotNull(listCollection);
     for (int i = 0; i < listCollection.size(); i++) {
       final ListState baseList = (ListState) listCollection.get(i);
-      SPListsWS listws = new SPListsWS(this.sharepointClientContext);
-      List<SPDocument> listItems = listws.getListItems(baseList, null, null, null);
+      ListsHelper listHelper = new ListsHelper(this.sharepointClientContext);
+      List<SPDocument> listItems = listHelper.getListItems(baseList, null, null, null);
       if (listItems.size() > 0) {
         for (Iterator itr = listItems.iterator(); itr.hasNext();) {
           SPDocument spdoc = (SPDocument) itr.next();
