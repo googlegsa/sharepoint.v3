@@ -41,7 +41,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 		System.out.println("\n...Setting Up...");
 		System.out.println("Initializing SharepointClientContext ...");
 		this.sharepointClientContext = new SharepointClientContext(
-				TestConfiguration.sharepointUrl, TestConfiguration.domain,
+				clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
 				TestConfiguration.kdcserver, TestConfiguration.username,
 				TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
 				TestConfiguration.includedURls, TestConfiguration.excludedURls,
