@@ -281,8 +281,7 @@ public class SharepointConnectorType implements ConnectorType {
           appendAttribute(buf, SPConstants.CONFIG_ID, key);
           appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_YES);
           appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.SOCIAL_OPTION_YES));
-          if ((value.length() == 0)
-              || value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_YES)) {
+          if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_YES)) {
             appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
           }
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
@@ -296,8 +295,8 @@ public class SharepointConnectorType implements ConnectorType {
           appendAttribute(buf, SPConstants.CONFIG_ID, key);
           appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_NO);
           appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.SOCIAL_OPTION_NO));
-          if ((value.length() == 0)
-              || value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_NO)) {
+        //Checking radio button for No if value is blank or No or any other value other than Yes and Social Only
+          if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_YES) == false && value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_ONLY) == false ) {
             appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
           }
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
@@ -310,8 +309,7 @@ public class SharepointConnectorType implements ConnectorType {
           appendAttribute(buf, SPConstants.CONFIG_ID, key);
           appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_ONLY);
           appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.SOCIAL_OPTION_ONLY));
-          if ((value.length() == 0)
-              || value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_ONLY)) {
+          if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_ONLY)) {
             appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
           }
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
