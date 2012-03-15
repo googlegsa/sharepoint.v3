@@ -151,7 +151,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         }
         else if (authData.Type == AuthData.EntityType.SITE)
         {
-            bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
+            bool isAllowd = web.DoesUserHavePermissions(user.LoginName,SPBasePermissions.ViewPages);
             authData.IsAllowed = isAllowd;
         }
         else
@@ -662,16 +662,11 @@ internal class UserInfoHolder
     }
 
     /// <summary>
-    /// If the SPuser object is not yet constructed, try to get it using the passed-in SPSite  
+    /// Reconstruct SPUser object everytime SPSite for WSContext is reinitialized.
     /// </summary>
     /// <param name="site"></param>
     internal void TryInit(SPSite site)
-    {
-        if (null != user)
-        {
-            return;
-        }
-
+    {   
         SPWeb web = null;
         try
         {
