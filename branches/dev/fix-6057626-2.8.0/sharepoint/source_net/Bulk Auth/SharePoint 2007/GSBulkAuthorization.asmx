@@ -152,7 +152,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             }
         }
         else if (authData.Type == AuthData.EntityType.SITE) {
-            bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
+            bool isAllowd = web.DoesUserHavePermissions(user.LoginName, SPBasePermissions.ViewPages);
             authData.IsAllowed = isAllowd;
         } else {
             SPList list = web.GetListFromUrl(url);
@@ -380,7 +380,16 @@ public class WSContext
     {
         if (this.site != null)
         {
-            site.Dispose();
+            try
+            {
+                site.Dispose();
+            }
+            catch (Exception exDispose)
+            {
+                // Ignoring Dispose Exception. 
+                // This is possible scenario for weak reference exception.
+                exDispose = null;
+            }
         }
     }
 
@@ -595,16 +604,11 @@ internal class UserInfoHolder
     }
 
     /// <summary>
-    /// If the SPuser object is not yet constructed, try to get it using the passed-in SPSite
+    /// Reinitialize SPUser object when WSContext.Site is reinitialized.
     /// </summary>
     /// <param name="site"></param>
     internal void TryInit(SPSite site)
     {
-        if (null != user)
-        {
-            return;
-        }
-
         SPWeb web = null;
         try
         {
