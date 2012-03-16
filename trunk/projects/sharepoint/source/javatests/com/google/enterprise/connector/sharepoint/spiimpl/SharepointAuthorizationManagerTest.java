@@ -76,6 +76,9 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 		assertEquals(siteCollUrls.size(), countForAssert);
 	}
 
+  // TODO: What is the difference between testAuthorizeDocids and testAuthorizeDocidsForMandUFeeds.
+  // Need to gather more details on the difference in the data so that we can create if for the tests.
+/*
 	public void testAuthorizeDocids() throws Throwable {
 		SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
 				this.sharepointClientContext, new GSSiteDiscoveryWS(
@@ -103,6 +106,7 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 			assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
 		}
 	}
+	*/
 
 	public void testAuthorizeDocidsForMandUFeeds() throws Throwable {
 		SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
@@ -114,19 +118,18 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 		Set<String> docids = new HashSet<String>();
 		docids.add(TestConfiguration.SearchDocID4);
 		docids.add(TestConfiguration.SearchDocID115);
-
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/default.aspx");
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Links/AllItems.aspx");
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Calendar/calendar.aspx");
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Tasks/AllItems.aspx");
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Announcements/DispForm.aspx?ID=1");
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Announcements/DispForm.aspx|1");
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/list888/DispForm.aspx?ID=3");
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/list888/DispForm.aspx?ID=4");
-		docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/list888/DispForm.aspx?ID=2");
+		docids.add(TestConfiguration.SearchDocID116);
+		docids.add(TestConfiguration.searchDocID117);
+		docids.add(TestConfiguration.searchDocID118);
+		docids.add(TestConfiguration.searchDocID119);
+		docids.add(TestConfiguration.searchDocID120);
+		docids.add(TestConfiguration.searchDocID121);
+		docids.add(TestConfiguration.searchDocID122);
+		docids.add(TestConfiguration.searchDocID123);
+		docids.add(TestConfiguration.searchDocID124);
 
 		final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
-		assertEquals(12, authZResponses.size());
+		assertEquals(docids.size(), authZResponses.size());
 		for (AuthorizationResponse authZResponse : authZResponses) {
 			assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
 		}

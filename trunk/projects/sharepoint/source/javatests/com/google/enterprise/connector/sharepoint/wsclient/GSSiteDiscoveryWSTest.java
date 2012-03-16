@@ -69,16 +69,21 @@ public class GSSiteDiscoveryWSTest extends TestCase {
   public final void testUpdateListCrawlInfo() throws Exception {
     GlobalState globalState = TestConfiguration.initState(sharepointClientContext);
     WebState ws = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
-    if (null != ws && null != ws.getAllListStateSet()) {
-      for (ListState listState : ws.getAllListStateSet()) {
-        listState.setNoCrawl(true);
-      }
-      WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
-      webCrawlInfo.setNoCrawl(true);
-      siteDisc.updateListCrawlInfo(ws.getAllListStateSet());
-      for (ListState listState : ws.getAllListStateSet()) {
-        assertFalse(listState.isNoCrawl());
-      }
+    assertNotNull(ws);
+    
+    Set<ListState> allListStates = ws.getAllListStateSet();
+    assertNotNull(allListStates);
+    assertTrue(allListStates.size() > 0);
+
+    for (ListState listState : allListStates) {
+      listState.setNoCrawl(true);
+    }
+    
+    WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
+    webCrawlInfo.setNoCrawl(true);
+    siteDisc.updateListCrawlInfo(allListStates);
+    for (ListState listState : allListStates) {
+      assertFalse(listState.isNoCrawl());
     }
   }
 
