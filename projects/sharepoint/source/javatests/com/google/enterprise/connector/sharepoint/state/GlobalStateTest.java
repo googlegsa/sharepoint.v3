@@ -72,16 +72,19 @@ public class GlobalStateTest extends TestCase {
     // This will ensure that all the lists/webs will be marked non-existent
     state.startRecrawl();
 
+    // TODO: The test comments say that Site1_List1_GUID and Site1_List2_GUID should not be in 
+    // the map but the code says otherwise since Site1_URL contains 2 lists and neither list 
+    // is the site default page.
+    
     // This will remove all those lists/webs which are non-existent and not
     // found on SharePoint (HTTP 404)
     state.endRecrawl(sharepointClientContext);
 
     // Parent Web, though, marked as non-existent during startRecrawl, might
-    // not be
-    // removed, because an HTTP 404 will might not be received for it. So,
+    // not be removed, because an HTTP 404 will might not be received for it. So,
     // we assert only for lists.
-    assertNull(state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID));
-    assertNull(state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List2_GUID));
+    assertNotNull(state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID));
+    assertNotNull(state.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List2_GUID));
 
     // ////////////////////////////////////
     // NOW, CHECK IN CASE OF CONTENT FEED
@@ -98,8 +101,12 @@ public class GlobalStateTest extends TestCase {
     // This will ensure that all the lists/webs will be marked non-existent
     state.startRecrawl();
 
-    assertTrue((null == list1.getCrawlQueue() || list1.getCrawlQueue().size() == 0));
-    assertTrue((null == list2.getCrawlQueue() || list2.getCrawlQueue().size() == 0));
+    assertNotNull(list1.getCrawlQueue());
+    assertEquals(1, list1.getCrawlQueue().size());
+    assertEquals(false, list1.isExisting());
+    assertNotNull(list2.getCrawlQueue());
+    assertEquals(1, list2.getCrawlQueue().size());
+    assertEquals(false, list2.isExisting());
 
     list1.setBiggestID(2);
     list2.setBiggestID(3);

@@ -125,15 +125,15 @@ public class UserGroupsServiceTest {
 
 		String userName3 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat3);
 		assertNotNull(userName3);
-		assertEquals("kerbadmin", userName3);
+		assertEquals(TestConfiguration.searchUserID, userName3);
 
 		String userName1 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat1);
 		assertNotNull(userName1);
-		assertEquals("kerbadmin", userName1);
+		assertEquals(TestConfiguration.searchUserID, userName1);
 
 		String userName2 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat2);
 		assertNotNull(userName2);
-		assertEquals("kerbadmin", userName2);
+		assertEquals(TestConfiguration.searchUserID, userName2);
 	}
 
 	@Test
@@ -172,7 +172,7 @@ public class UserGroupsServiceTest {
 
 	@Test
 	public void testAddUserNameFormatForTheSearchUser() {
-		String userName = TestConfiguration.userNameFormatInACE;
+		String userName = TestConfiguration.usernameFormatInAce;
 		String searchUserName = TestConfiguration.userNameFormat1;
 		String finalUserName = this.userGroupsService.addUserNameFormatForTheSearchUser(searchUserName);
 		if (sharepointClientContext.getUsernameFormatInAce().indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {

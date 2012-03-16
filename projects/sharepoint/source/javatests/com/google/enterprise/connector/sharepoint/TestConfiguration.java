@@ -76,7 +76,8 @@ public class TestConfiguration {
   public static String usernameFormatInAce;
   public static String groupnameFormatInAce;
   public static String ldapServerHostAddress;
-  public static String portNumber = "389";
+  public static String ldapDomainName;
+  public static int portNumber;
   public static String authenticationType;
   public static String connectMethod;
   public static String searchBase;
@@ -94,6 +95,14 @@ public class TestConfiguration {
   public static String SearchDocID114;
   public static String SearchDocID115;
   public static String SearchDocID116;
+  public static String searchDocID117;
+  public static String searchDocID118;
+  public static String searchDocID119;
+  public static String searchDocID120;
+  public static String searchDocID121;
+  public static String searchDocID122;
+  public static String searchDocID123;
+  public static String searchDocID124;
   public static String SearchDocID25;
   public static String SearchDocID26;
 
@@ -128,6 +137,9 @@ public class TestConfiguration {
   public static String Site3_List2_Item1_URL;
   public static String Site3_List2_Item2_URL;
 
+  public static String validChangeToken;
+  public static int changesSinceToken;
+
   public static ArrayList<String> blackList = new ArrayList<String>();
   public static ArrayList<String> whiteList = new ArrayList<String>();
   public static boolean FQDNflag;
@@ -141,6 +153,7 @@ public class TestConfiguration {
   public static String connectorName;
   private static String UDS_TABLE_NAME;
   private static String UDS_INDEX_NAME;
+  private static String UDS_CONNECTOR_NAME;
   public static String userNameFormat1;
   public static String userNameFormat2;
   public static String userNameFormat3;
@@ -167,6 +180,9 @@ public class TestConfiguration {
   public static String groupNameFormatInACE;
   public static String userNameFormatInACE;
   private static String gsaHost;
+  //Time zone;
+  public static String timeZone;
+
   private static int gsaPort;
   private static String gsaAdmin;
   private static String gsaAdminPassword;
@@ -195,9 +211,6 @@ public class TestConfiguration {
     useSPSearchVisibility = new Boolean(
         properties.getProperty("useSPSearchVisibility")).booleanValue();
 
-    // authorization = properties.getProperty("authorization");
-    authorization = "metadata-and-URL";
-
     useSPSearchVisibility = new Boolean(
         properties.getProperty("useSPSearchVisibility")).booleanValue();
 
@@ -211,9 +224,16 @@ public class TestConfiguration {
     SearchDocID4 = properties.getProperty("SearchDocID4");
     SearchDocID113 = properties.getProperty("SearchDocID113");
     SearchDocID114 = properties.getProperty("SearchDocID114");
-
     SearchDocID115 = properties.getProperty("SearchDocID115");
     SearchDocID116 = properties.getProperty("SearchDocID116");
+    searchDocID117 = properties.getProperty("searchDocID117");
+    searchDocID118 = properties.getProperty("searchDocID118");
+    searchDocID119 = properties.getProperty("searchDocID119");
+    searchDocID120 = properties.getProperty("searchDocID120");
+    searchDocID121 = properties.getProperty("searchDocID121");
+    searchDocID122 = properties.getProperty("searchDocID122");
+    searchDocID123 = properties.getProperty("searchDocID123");
+    searchDocID124 = properties.getProperty("searchDocID124");
 
     testuser = properties.getProperty("testuser");
     Site1_URL = properties.getProperty("Site1_URL");
@@ -247,6 +267,9 @@ public class TestConfiguration {
     Site3_List2_Item1_URL = properties.getProperty("Site3_List2_Item1_URL");
     Site3_List2_Item2_URL = properties.getProperty("Site3_List2_Item2_URL");
 
+    validChangeToken = properties.getProperty("ValidChangeToken");
+    changesSinceToken = new Integer(properties.getProperty("ChangesSinceToken")).intValue();
+
     blackList.add(".*cachedcustomprops$");
     blackList.add(".*parserversion$");
     blackList.add(".*ContentType$");
@@ -274,6 +297,7 @@ public class TestConfiguration {
     connectorName = properties.getProperty("ConnectorName");
     UDS_TABLE_NAME = properties.getProperty("UDS_TABLE_NAME");
     UDS_INDEX_NAME = properties.getProperty("UDS_INDEX_NAME");
+    UDS_CONNECTOR_NAME = properties.getProperty("UDS_CONNECTOR_NAME");
     userNameFormat1 = properties.getProperty("userNameFormat1");
     userNameFormat2 = properties.getProperty("userNameFormat2");
     userNameFormat3 = properties.getProperty("userNameFormat3");
@@ -301,9 +325,11 @@ public class TestConfiguration {
     searchUser1 = properties.getProperty("searchUser1");
     ldapGroup1 = properties.getProperty("ldapGroup1");
     ldapServerHostAddress = properties.getProperty("ldapServerHostAddress");
-    portNumber = properties.getProperty("portNumber");
+    ldapDomainName = properties.getProperty("ldapDomainName");
+    portNumber = new Integer(properties.getProperty("portNumber", "389")).intValue();
     authenticationType = properties.getProperty("authenticationType");
     connectMethod = properties.getProperty("connectMethod");
+    searchBase = properties.getProperty("searchBase");
     initialCacheSize = properties.getProperty("initialCacheSize");
     pushAcls = new Boolean(properties.getProperty("pushAcls")).booleanValue();
     useCacheToStoreLdapUserGroupsMembership = new Boolean(
@@ -312,13 +338,14 @@ public class TestConfiguration {
     userNameFormatInACE = properties.getProperty("usernameFormatInAce");
     groupNameFormatInACE = properties.getProperty("groupnameFormatInAce");
     
+    timeZone = properties.getProperty("timeZone");
+
     gsaHost = properties.getProperty("GsaHost");
     gsaPort = Integer.parseInt(properties.getProperty("GsaPort"));
     gsaAdmin = properties.getProperty("GsaAdminUsername");
     gsaAdminPassword = properties.getProperty("GsaAdminPassword");
     
     socialOption = properties.getProperty("SocialOption");
-
   }
 
   public static Map<String, String> getConfigMap() {
@@ -339,7 +366,7 @@ public class TestConfiguration {
     configMap.put("usernameFormatInAce", usernameFormatInAce);
     configMap.put("groupnameFormatInAce", groupnameFormatInAce);
     configMap.put("ldapServerHostAddress", ldapServerHostAddress);
-    configMap.put("portNumber", portNumber);
+    configMap.put("portNumber", Integer.toString(portNumber));
     configMap.put("authenticationType", authenticationType);
     configMap.put("connectMethod", connectMethod);
     configMap.put("searchBase", searchBase);
@@ -721,6 +748,7 @@ public class TestConfiguration {
         "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
     queryProvider.setUdsTableName(TestConfiguration.UDS_TABLE_NAME);
     queryProvider.setUdsIndexName(TestConfiguration.UDS_INDEX_NAME);
+    queryProvider.setCnTableName(TestConfiguration.UDS_CONNECTOR_NAME);
     queryProvider.setDatabase(TestConfiguration.dbVendor);
     queryProvider.init(TestConfiguration.dbVendor);
     return queryProvider;
@@ -744,8 +772,8 @@ public class TestConfiguration {
 
   public static LdapConnectionSettings getLdapConnetionSettings() {
     LdapConnectionSettings settings = new LdapConnectionSettings(
-        Method.STANDARD, "xxx.xxx.xxx.xxx", 389, "DC=gdc-psl,DC=net",
-        AuthType.SIMPLE, "googlesp", "xxxx", "gdc-psl.net");
+        Method.STANDARD, ldapServerHostAddress, portNumber, searchBase,
+        AuthType.SIMPLE, username, Password, ldapDomainName);
     return settings;
   }
 

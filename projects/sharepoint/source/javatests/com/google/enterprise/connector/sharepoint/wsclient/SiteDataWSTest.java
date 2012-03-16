@@ -85,9 +85,9 @@ public class SiteDataWSTest extends TestCase {
         + SPConstants.DEFAULT_SITE_LANDING_PAGE);
     final SPDocument document = this.siteDataWS.getSiteData(ws);
     assertNotNull(document);
-    String author = document.getAuthor();
+    String author = document.getAuthor().toLowerCase();
     String objectType = document.getObjType();
-    assertEquals("googlesp", author);
+    assertEquals(TestConfiguration.userNameFormat2, author);
     assertEquals("Site", objectType);
     System.out.println("[ getSiteData() ] Test Passed.");
   }

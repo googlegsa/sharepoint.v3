@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.spi.RepositoryException;
 
@@ -201,7 +202,7 @@ public class UtilTest extends TestCase {
     assertNotNull(formattedDate);
     assertEquals(expectedFormat, formattedDate);
 
-    expectedFormat = "2009-06-12 11:30:30 IST";
+    expectedFormat = "2009-06-12 11:30:30 " + TestConfiguration.timeZone;
 
     formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT_WITH_ZONE);
 

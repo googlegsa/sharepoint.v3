@@ -44,7 +44,9 @@ public class SPDocumentTest extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     SharepointClientContext spContext = TestConfiguration.initContext();
-    List<SPDocument> allDocs = TestConfiguration.initState(spContext).lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID).getCrawlQueue();
+    List<SPDocument> allDocs = TestConfiguration.initState(spContext).lookupList(
+        TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID).getCrawlQueue();
+    assertTrue(allDocs.size() > 0);
     this.doc = allDocs.get(0);
     this.doc.setSharepointClientContext(spContext);
     this.doc.setContentDwnldURL(doc.getUrl());
@@ -73,57 +75,32 @@ public class SPDocumentTest extends TestCase {
     System.out.println(testSet);
   }
 
-  public final void testFindProperty() {
-    System.out.println("Testing findProperty()..");
-    try {
-      final Property prop = this.doc.findProperty(SpiConstants.PROPNAME_DOCID);
-      assertNotNull(prop);
-      System.out.println("[ findProperty(() ] Test passd");
-    } catch (final Exception e) {
-      System.out.println("[ findProperty(() ] Test failed");
-    }
+  public final void testFindProperty() throws Exception {
+    final Property prop = this.doc.findProperty(SpiConstants.PROPNAME_DOCID);
+    assertNotNull(prop);
   }
 
-  public final void testDownloadContents() {
-    System.out.println("Testing downloadContents()..");
-    try {
-      final String responseCode = this.doc.downloadContents();
-      assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
-    } catch (final Exception e) {
-      assertTrue(false);
-    }
-    System.out.println("[ downloadContents(() ] Test passd");
+  public final void testDownloadContents() throws Exception {
+    final String responseCode = this.doc.downloadContents();
+    assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
   }
 
-  public final void testDownloadContentsForMsgFile() {
+  public final void testDownloadContentsForMsgFile() throws Exception {
     this.doc.setContentDwnldURL(TestConfiguration.Site1_List_Item_MSG_File_URL);
-    try {
-      String responseCode = this.doc.downloadContents();
-      assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
-      assertEquals("application/vnd.ms-outlook", this.doc.getContent_type());
-    } catch (RepositoryException e) {
-      fail("Exception while downloading contents");
-    }
-
+    String responseCode = this.doc.downloadContents();
+    assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
+    assertEquals("application/vnd.ms-outlook", this.doc.getContent_type());
   }
 
-  public void testGetPropertyNamesWithoutExcludedMetadata() {
+  public void testGetPropertyNamesWithoutExcludedMetadata() throws Exception {
     Set<String> documentMetadata;
-    try {
-      documentMetadata = this.doc.getPropertyNames();
-      assertTrue(documentMetadata.contains(SPConstants.PARENT_WEB_TITLE));
-    } catch (RepositoryException e) {
-      fail("Could not get property names for document");
-    }
+    documentMetadata = this.doc.getPropertyNames();
+    assertTrue(documentMetadata.contains(SPConstants.PARENT_WEB_TITLE));
   }
 
-  public void testGetPropertyNamesWithExcludedMetadata() {
+  public void testGetPropertyNamesWithExcludedMetadata() throws Exception {
     this.doc.getSharepointClientContext().getExcluded_metadata().add(Pattern.compile(".*title$"));
-    try {
-      Set<String> documentMetadata = this.doc.getPropertyNames();
-      assertFalse(documentMetadata.contains(SPConstants.PARENT_WEB_TITLE));
-    } catch (RepositoryException e) {
-      fail("Could not get property names for document");
-    }
+    Set<String> documentMetadata = this.doc.getPropertyNames();
+    assertFalse(documentMetadata.contains(SPConstants.PARENT_WEB_TITLE));
   }
 }

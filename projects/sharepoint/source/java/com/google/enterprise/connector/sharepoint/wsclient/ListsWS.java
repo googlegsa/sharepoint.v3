@@ -1777,7 +1777,9 @@ public class ListsWS {
       try {
         final MessageElement row = (MessageElement) obj;
         final SPDocument doc = processListItemElement(row, list, null);
-        listItems.add(doc);
+        if (null != doc) {
+          listItems.add(doc);
+        }
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "Problem occured while parsing node", e);
         continue;

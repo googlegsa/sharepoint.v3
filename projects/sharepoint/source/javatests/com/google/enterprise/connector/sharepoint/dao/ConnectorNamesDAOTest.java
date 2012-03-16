@@ -34,6 +34,13 @@ public class ConnectorNamesDAOTest extends TestCase {
   @Before
   public void setUp() throws Exception {
     super.setUp();
+    // UserDataStoreDAO creates the connector names table so we need to 
+    // create an instance of UserDataStoreDAO first to make sure that the
+    // connector names table exists.
+    UserDataStoreDAO userDataStoreDAO = new UserDataStoreDAO(
+        TestConfiguration.getUserDataSource(),
+        TestConfiguration.getUserDataStoreQueryProvider(),
+        TestConfiguration.getUserGroupMembershipRowMapper());
     connectorNamesDAO = new ConnectorNamesDAO(
         TestConfiguration.getUserDataSource(),
         TestConfiguration.getUserDataStoreQueryProvider());
@@ -117,5 +124,4 @@ public class ConnectorNamesDAOTest extends TestCase {
       fail(e.getMessage());
     }
   }
-
 }
