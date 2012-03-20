@@ -57,9 +57,6 @@ public class AdGroupsConnector implements Connector,
 	private UserGroupMembershipRowMapper userGroupMembershipRowMapper;
 	private ConnectorPersistentStore connectorPersistnetStore;
 	private String ldapServerHostAddress;
-	private String ldapUserName;
-	private String ldapPassword;
-	private String ldapDomain;
 	private String portNumber;
 	private String authenticationType;
 	private String connectMethod;
@@ -181,30 +178,6 @@ public class AdGroupsConnector implements Connector,
 		
 		sharepointClientContext.multiCrawl = new MultiCrawl(sharepointClientContext);
 		sharepointClientContext.multiCrawl.start();
-	}
-
-	public String getLdapUserName() {
-		return ldapUserName;
-	}
-
-	public void setLdapUserName(String ldapUserName) {
-		this.ldapUserName = ldapUserName;
-	}
-
-	public String getLdapPassword() {
-		return ldapPassword;
-	}
-
-	public void setLdapPassword(String ldapPassword) {
-		this.ldapPassword = ldapPassword;
-	}
-
-	public String getLdapDomain() {
-		return ldapDomain;
-	}
-
-	public void setLdapDomain(String ldapDomain) {
-		this.ldapDomain = ldapDomain;
 	}
 
 	public void setQueryProvider(QueryProvider queryProvider) {
@@ -411,7 +384,7 @@ public class AdGroupsConnector implements Connector,
 		}
 		LdapConnectionSettings ldapConnectionSettings = new LdapConnectionSettings(
 				method, this.ldapServerHostAddress, Integer.parseInt(this.portNumber),
-				this.searchBase, authType, this.ldapUserName, this.ldapPassword, this.ldapDomain);
+				this.searchBase, authType, this.username, this.password, this.domain);
 		// XXX: What's the point of this field? Should we use
 		// it to construct the settings only once here?
 		this.ldapConnectionSettings = ldapConnectionSettings;

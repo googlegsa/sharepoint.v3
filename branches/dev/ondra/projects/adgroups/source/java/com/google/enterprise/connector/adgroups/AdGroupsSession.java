@@ -14,7 +14,6 @@
 
 package com.google.enterprise.connector.adgroups;
 
-import com.google.enterprise.connector.adgroups.SPConstants.FeedType;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.RepositoryException;
