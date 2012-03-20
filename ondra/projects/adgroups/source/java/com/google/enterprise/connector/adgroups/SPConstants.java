@@ -204,4 +204,4 @@ public class SPConstants {
   public static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
   public static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
   public static final String UDS_COLUMN_USER_NAME = "SPUserName";
-  }
+}

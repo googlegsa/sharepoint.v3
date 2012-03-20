@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
   <bean id="Active_Directory_Groups"
-    class="com.google.enterprise.connector.adgrops.AdGroupsConnector"
+    class="com.google.enterprise.connector.adgroups.AdGroupsConnector"
     parent="Active_Directory_Groups_Defaults" singleton="false" init-method="init">
 
     <!-- THE FOLLOWING COMMENTED-SECTION SHOULD BE USED ONLY FOR ADVANCED CONFIGURATION OF THE SHAREPOINT CONNECTOR.
