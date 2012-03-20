@@ -5,16 +5,12 @@
     class="com.google.enterprise.connector.adgroups.AdGroupsConnectorType">
     <property name="configKeys">
       <list>
+        <value>ldapServerHostAddress</value>
         <value>domain</value>
         <value>username</value>
         <value>password</value>
         <value>usernameFormatInAce</value>
         <value>groupnameFormatInAce</value>
-        <!-- ldap configuration -->
-        <value>ldapServerHostAddress</value>
-        <value>ldapUserName</value>
-        <value>ldapPassword</value>
-        <value>ldapDomain</value>
         <value>portNumber</value>
         <value>searchBase</value>
         <value>authenticationType</value>

@@ -70,9 +70,6 @@ public class AdGroupsConnectorType implements ConnectorType {
 	private String usernameFormatInAce;
 	private String groupnameFormatInAce;
 	private String ldapServerHostAddress;
-	private String ldapUserName;
-	private String ldapPassword;
-	private String ldapDomain;
 	private String portNumber;
 	private String authenticationType;
 	private String connectMethod;
@@ -81,7 +78,6 @@ public class AdGroupsConnectorType implements ConnectorType {
 	private String useCacheToStoreLdapUserGroupsMembership;
 	private String cacheRefreshInterval;
 	private LdapConnectionSettings ldapConnectionSettings;
-	private boolean editMode;
 
 	/**
 	 * Sets the keys that are required for configuration. These are the actual
@@ -238,10 +234,6 @@ public class AdGroupsConnectorType implements ConnectorType {
 					appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
 					if (value.equalsIgnoreCase("false") || value.length() == 0) {
 						appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
-						if (editMode) {
-							buf.append(SPConstants.SPACE + SPConstants.DISABLED
-									+ SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-						}
 					} else {
 						appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
 					}
@@ -354,21 +346,11 @@ public class AdGroupsConnectorType implements ConnectorType {
 							+ SPConstants.CLOSE_ELEMENT);
 					buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
 							+ SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
-					buf.append(SPConstants.TD_END);
-					buf.append(SPConstants.TR_END);
-					buf.append(SPConstants.BREAK_LINE);
-					buf.append(SPConstants.TR_START + SPConstants.TD_START
-							+ SPConstants.START_BOLD);
-					buf.append("LDAP Configuration Settings");
-					buf.append(SPConstants.END_BOLD);
 				} else {
 					buf.append(SPConstants.OPEN_ELEMENT);
 					buf.append(SPConstants.INPUT);
-					if (collator.equals(key, SPConstants.PASSWORD) ||
-							collator.equals(key, SPConstants.LDAP_PASSWORD)) {
+					if (collator.equals(key, SPConstants.PASSWORD)) {
 						appendAttribute(buf, SPConstants.TYPE, SPConstants.PASSWORD);
-					} else if (collator.equals(key, SPConstants.ALIAS_MAP)) {
-						appendAttribute(buf, SPConstants.TYPE, SPConstants.HIDDEN);
 					} else {
 						appendAttribute(buf, SPConstants.TYPE, SPConstants.TEXT);
 					}
@@ -419,10 +401,7 @@ public class AdGroupsConnectorType implements ConnectorType {
 					}
 
 					if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)
-							|| collator.equals(key, SPConstants.SEARCH_BASE)
-							|| collator.equals(key, SPConstants.LDAP_USERNAME)
-							|| collator.equals(key, SPConstants.LDAP_DOMAIN)
-							|| collator.equals(key, SPConstants.LDAP_PASSWORD)) {
+							|| collator.equals(key, SPConstants.SEARCH_BASE)) {
 						appendAttribute(buf, SPConstants.TEXTBOX_SIZE, SPConstants.TEXTBOX_SIZE_VALUE);
 					}
 
@@ -525,12 +504,6 @@ public class AdGroupsConnectorType implements ConnectorType {
 			this.groupnameFormatInAce = val.trim();
 		} else if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)) {
 			this.ldapServerHostAddress = val.trim();
-		} else if (collator.equals(key, SPConstants.LDAP_USERNAME)) {
-			this.ldapUserName = val.trim();
-		} else if (collator.equals(key, SPConstants.LDAP_PASSWORD)) {
-			this.ldapPassword = val;
-		} else if (collator.equals(key, SPConstants.LDAP_DOMAIN)) {
-			this.ldapDomain = val.trim();
 		} else if (collator.equals(key, SPConstants.PORT_NUMBER)) {
 			this.portNumber = val.trim();
 		} else if (collator.equals(key, SPConstants.SEARCH_BASE)) {
@@ -625,7 +598,6 @@ public class AdGroupsConnectorType implements ConnectorType {
 	 */
 	public ConfigureResponse getConfigForm(final Locale locale) {
 		LOGGER.config("Locale " + locale);
-		this.editMode = false;
 
 		collator = Util.getCollator(locale);
 		rb = ResourceBundle.getBundle("AdGroupsConnectorResources", locale);
@@ -642,12 +614,6 @@ public class AdGroupsConnectorType implements ConnectorType {
 	public ConfigureResponse getPopulatedConfigForm(
 			final Map<String, String> configMap, final Locale locale) {
 		LOGGER.config("Locale " + locale);
-		String isSelected = configMap.get(SPConstants.PUSH_ACLS);
-		if (null != isSelected && !isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
-			this.editMode = SPConstants.EDIT_MODE;
-		} else {
-			this.editMode = false;
-		}
 
 		collator = Util.getCollator(locale);
 		rb = ResourceBundle.getBundle("AdGroupsConnectorResources", locale);
@@ -707,7 +673,8 @@ public class AdGroupsConnectorType implements ConnectorType {
 	 * @return is this field is mandatory?
 	 */
 	private boolean isRequired(final String configKey) {
-		if (collator.equals(configKey, SPConstants.USERNAME)
+		if (collator.equals(configKey, SPConstants.LDAP_SERVER_HOST_ADDRESS)
+				|| collator.equals(configKey, SPConstants.USERNAME)
 				|| collator.equals(configKey, SPConstants.PASSWORD)) {
 			return true;
 		} else {
@@ -807,8 +774,8 @@ public class AdGroupsConnectorType implements ConnectorType {
 				}
 				LdapConnectionSettings settings = new LdapConnectionSettings(method,
 						this.ldapServerHostAddress, Integer.parseInt(this.portNumber),
-						this.searchBase, authType, this.ldapUserName, this.ldapPassword,
-						this.ldapDomain);
+						this.searchBase, authType, this.username, this.password,
+						this.domain);
 				LOGGER.config("Created LDAP connection settings object to obtain LDAP context "
 						+ ldapConnectionSettings);
 
