@@ -33,35 +33,23 @@ import java.util.logging.Logger;
 public class AdGroupsSession implements Session {
 
   private AdGroupsConnector connector = null;
-  private ConnectorContext sharepointClientContext = null;
   private final Logger LOGGER = Logger.getLogger(AdGroupsSession.class.getName());
 
   /**
-   * @param inConnector
-   * @param inSharepointClientContext
+   * @param connector
    */
-  public AdGroupsSession(final AdGroupsConnector inConnector,
-      final ConnectorContext inSharepointClientContext) {
-    /*
-     * throws RepositoryException
-     */
-    if (inConnector != null) {
-      connector = inConnector;
-    }
-
-    if (inSharepointClientContext != null) {
-      sharepointClientContext = (ConnectorContext) inSharepointClientContext.clone();
-    }
-    LOGGER.info("AdGroupsSession(AdGroupsConnector inConnector,SharepointClientContext inSharepointClientContext)");
+  public AdGroupsSession(final AdGroupsConnector connector) {
+    LOGGER.info("AdGroupsSession(AdGroupsConnector inConnector)");
+    this.connector = connector;
   }
 
   /**
-   * For getting the Authentication Manager using the current connector context
+   * For getting the Authentication Manager using the current connector
    */
   public AuthenticationManager getAuthenticationManager()
       throws RepositoryException {
     LOGGER.info("getAuthenticationManager()");
-    return new AdGroupsAuthenticationManager(sharepointClientContext);
+    return new AdGroupsAuthenticationManager(connector);
   }
 
   /**
