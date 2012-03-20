@@ -31,8 +31,8 @@ public class AdGroupsMain {
     // From our class, get the jar file URL to this class file, and
     // make our way to the the Manifest located in that jar file.
     final Class thisClass = AdGroupsMain.class;
-    final String resName = SPConstants.SLASH
-        + thisClass.getName().replace('.', SPConstants.SLASH_CHAR) + ".class";
+    final String resName = AdConstants.SLASH
+        + thisClass.getName().replace('.', AdConstants.SLASH_CHAR) + ".class";
 
     // Locate the Jar file containing our class.
     final URL url = thisClass.getResource(resName);
