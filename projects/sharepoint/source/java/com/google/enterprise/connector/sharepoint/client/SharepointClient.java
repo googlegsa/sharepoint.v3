@@ -22,13 +22,15 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.sharepoint.wsclient.AlertsWS;
-import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
-import com.google.enterprise.connector.sharepoint.wsclient.GssAclWS;
-import com.google.enterprise.connector.sharepoint.wsclient.ListsWS;
-import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
-import com.google.enterprise.connector.sharepoint.wsclient.UserProfileWS;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.apache.axis.utils.XMLUtils;
@@ -56,8 +58,9 @@ import java.util.logging.Logger;
  * @author nitendra_thakur
  */
 public class SharepointClient {
-  private final Logger LOGGER = Logger.getLogger(SharepointClient.class.getName());
-  private SharepointClientContext sharepointClientContext;
+  private static final Logger LOGGER = Logger.getLogger(SharepointClient.class.getName());
+  private final SharepointClientContext sharepointClientContext;
+  private final ClientFactory clientFactory;
   private int nDocuments = 0;
 
   // true -> when threshold is not reached and all webs
@@ -70,9 +73,10 @@ public class SharepointClient {
   // checked for any docs pending from previous crawl cycle
   private int noOfVisitedListStates = 0;
 
-  public SharepointClient(
+  public SharepointClient(final ClientFactory clientFactory,
       final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
+    this.clientFactory = clientFactory;
     sharepointClientContext = inSharepointClientContext;
 
     // Register a SAX client factory with Axis so that we can intercept SAX
@@ -332,9 +336,9 @@ public class SharepointClient {
 
     LOGGER.log(Level.INFO, "Fetching ACls for #" + resultSet.size()
         + " documents crawled from web " + webState.getWebUrl());
-    GssAclWS aclWs = null;
     try {
-      aclWs = new GssAclWS(sharepointClientContext, webState.getWebUrl());
+      AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
+          webState.getWebUrl());
       aclWs.fetchAclForDocuments(resultSet, webState);
     } catch (Throwable t) {
       logError(resultSet, webState, t);
@@ -459,11 +463,13 @@ public class SharepointClient {
    */
   private void discoverExtraWebs(final Set<String> allSites, final SPType spType)
       throws SharepointException {
+    // TODO: Move this to the client factory.
     if (SPType.SP2003 == spType) {
-      LOGGER.log(Level.INFO, "Getting the initial list of MySites/Personal sites for SharePoint type SP2003. Context URL [ "
+      LOGGER.log(Level.INFO, "Getting the initial list of MySites/Personal "
+          + "sites for SharePoint type SP2003. Context URL [ "
           + sharepointClientContext.getSiteURL() + " ]");
-      final com.google.enterprise.connector.sharepoint.wsclient.sp2003.UserProfileWS userProfileWS = new com.google.enterprise.connector.sharepoint.wsclient.sp2003.UserProfileWS(
-          sharepointClientContext);
+      final UserProfile2003WS userProfileWS =
+          clientFactory.getUserProfile2003WS(sharepointClientContext);
       if (userProfileWS.isSPS()) {// Check if SPS2003 or WSS 2.0
         try {
           final Set<String> personalSites = userProfileWS.getPersonalSiteList();
@@ -478,8 +484,8 @@ public class SharepointClient {
       if ((strMySiteURL != null) && (!strMySiteURL.trim().equals(""))) {
         LOGGER.log(Level.INFO, "Getting the initial list of MySites for SharePoint type SP2007 from MySiteBaseURL [ "
             + strMySiteURL + " ]");
-        final UserProfileWS userProfileWS = new UserProfileWS(
-            sharepointClientContext);
+        final UserProfile2007WS userProfileWS =
+            clientFactory.getUserProfile2007WS(sharepointClientContext);
         if (userProfileWS.isSPS()) {
           try {
             final Set<String> lstMyLinks = userProfileWS.getMyLinks();
@@ -500,8 +506,8 @@ public class SharepointClient {
       }
 
       // Get all top level sites from the farm. Supported only in SP2007.
-      final GSSiteDiscoveryWS gspSiteDiscoveryWS = new GSSiteDiscoveryWS(
-          sharepointClientContext, null);
+      final SiteDiscoveryWS gspSiteDiscoveryWS =
+          clientFactory.getSiteDiscoveryWS(sharepointClientContext, null);
       final Set<String> sitecollection = gspSiteDiscoveryWS.getMatchingSiteCollections();
       allSites.addAll(sitecollection);
     }
@@ -562,7 +568,7 @@ public class SharepointClient {
       WebsWS websWS = null;
       try {
         sharepointClientContext.setSiteURL(webAppURL);
-        websWS = new WebsWS(sharepointClientContext);
+        websWS = clientFactory.getWebsWS(sharepointClientContext);
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "webWS creation failed for URL [ " + url
             + " ]. ", e);
@@ -613,13 +619,9 @@ public class SharepointClient {
     }
     SharepointClientContext tempCtx = (SharepointClientContext) sharepointClientContext.clone();
 
-    GSSiteDiscoveryWS webCrawlInfoFetcher = null;
+    SiteDiscoveryWS webCrawlInfoFetcher = null;
     if (sharepointClientContext.isUseSPSearchVisibility()) {
-      try {
-        webCrawlInfoFetcher = new GSSiteDiscoveryWS(tempCtx, null);
-      } catch (Exception e) {
-        LOGGER.log(Level.WARNING, "Exception occured while initializing GSSiteDiscoveryWS", e);
-      }
+      webCrawlInfoFetcher = clientFactory.getSiteDiscoveryWS(tempCtx, null);
     }
 
     // At the start of a new traversal cycle, we update the WebCrawlInfo of
@@ -635,7 +637,8 @@ public class SharepointClient {
     WebState nextWeb = globalState.getLastCrawledWeb();
 
     if (null == nextWeb) {
-      nextWeb = globalState.lookupWeb(sharepointClientContext.getSiteURL(), sharepointClientContext);
+      nextWeb = globalState.lookupWeb(sharepointClientContext.getSiteURL(),
+        sharepointClientContext);
     } else {
       sharepointClientContext.setSiteURL(nextWeb.getWebUrl());
     }
@@ -811,7 +814,7 @@ public class SharepointClient {
     List<SPDocument> listCollectionAlerts = null;
 
     try {
-      final AlertsWS alertsWS = new AlertsWS(tempCtx);
+      final AlertsWS alertsWS = clientFactory.getAlertsWS(tempCtx);
       listCollectionAlerts = alertsWS.getAlerts(webState, dummyAlertListState);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Problem while getting alerts. ", e);
@@ -846,7 +849,7 @@ public class SharepointClient {
 
     // get all the lists for the given web // e.g. picture,wiki,document
     // libraries etc.
-    final SiteDataWS siteDataWS = new SiteDataWS(tempCtx);
+    final SiteDataWS siteDataWS = clientFactory.getSiteDataWS(tempCtx);
     List<ListState> listCollection = siteDataWS.getNamedLists(webState);
 
     // Remove duplicate lists, if any.
@@ -857,8 +860,8 @@ public class SharepointClient {
 
     if (tempCtx.isUseSPSearchVisibility()) {
       try {
-        GSSiteDiscoveryWS gssd = new GSSiteDiscoveryWS(tempCtx,
-            webState.getWebUrl());
+        SiteDiscoveryWS gssd = clientFactory.getSiteDiscoveryWS(
+            tempCtx, webState.getWebUrl());
         gssd.updateListCrawlInfo(listCollection);
       } catch (Exception e) {
         LOGGER.log(Level.WARNING, "Exception occurred when trying to to update the ListCrawlInfo for web [ "
@@ -890,9 +893,8 @@ public class SharepointClient {
       Collections.rotate(listCollection, -(listCollection.indexOf(nextList)));
     }
 
-    GssAclWS aclWs = null;
+    AclWS aclWs = clientFactory.getAclWS(tempCtx, webState.getWebUrl());
     try {
-      aclWs = new GssAclWS(tempCtx, webState.getWebUrl());
       aclWs.fetchAclChangesSinceTokenAndUpdateState(webState);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
@@ -900,7 +902,7 @@ public class SharepointClient {
     }
 
     List<SPDocument> aclChangedItems = null;
-    final ListsWS listsWS = new ListsWS(tempCtx);
+    final ListsHelper listsHelper = new ListsHelper(tempCtx);
     for (int i = 0; i < listCollection.size(); i++) {
       final ListState currentList = listCollection.get(i);
       ListState listState = webState.lookupList(currentList.getPrimaryKey());
@@ -949,7 +951,7 @@ public class SharepointClient {
             LOGGER.log(Level.CONFIG, "Discovering all folders under current list/library [ "
                 + listState.getListURL() + " ] ");
             try {
-              listsWS.getSubFoldersRecursively(listState, null, null);
+              listsHelper.getSubFoldersRecursively(listState, null, null);
             } catch (final Exception e) {
               LOGGER.log(Level.WARNING, "Exception occured while getting the folders hierarchy for list [ "
                   + listState.getListURL() + " ]. ", e);
@@ -960,7 +962,7 @@ public class SharepointClient {
           }
 
           try {
-            listItems = listsWS.getListItemChangesSinceToken(listState, allWebs);
+            listItems = listsHelper.getListItemChangesSinceToken(listState, allWebs);
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                 + listState.getListURL() + " ].", e);
@@ -970,7 +972,7 @@ public class SharepointClient {
           }
         } else {
           try {
-            listItems = listsWS.getListItems(listState, null, null, allWebs);
+            listItems = listsHelper.getListItems(listState, null, null, allWebs);
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                 + listState.getListURL() + " ].", e);
@@ -1006,7 +1008,7 @@ public class SharepointClient {
               LOGGER.log(Level.CONFIG, "Discovering all folders under current list/library [ "
                   + listState.getListURL() + " ] ");
               try {
-                listsWS.getSubFoldersRecursively(listState, null, null);
+                listsHelper.getSubFoldersRecursively(listState, null, null);
               } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "Exception occured while getting the folders hierarchy for list [ "
                     + listState.getListURL() + " ]. ", e);
@@ -1028,12 +1030,12 @@ public class SharepointClient {
             webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
             // Any documents to be crawled because of ACl Changes
-            aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsWS);
+            aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsHelper);
 
             if (null == aclChangedItems
                 || aclChangedItems.size() < sharepointClientContext.getBatchHint()) {
               // Do regular incremental crawl
-              listItems = listsWS.getListItemChangesSinceToken(listState, allWebs);
+              listItems = listsHelper.getListItemChangesSinceToken(listState, allWebs);
             }
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
@@ -1055,7 +1057,7 @@ public class SharepointClient {
               listState.setNewList(true);
             }
 
-            listItems = listsWS.getListItems(listState, dateSince, lastDocID, allWebs);
+            listItems = listsHelper.getListItems(listState, dateSince, lastDocID, allWebs);
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Exception thrown while getting the documents under list [ "
                 + listState.getListURL() + " ].", e);
@@ -1073,7 +1075,7 @@ public class SharepointClient {
         for (int j = 0; j < listItems.size(); j++) {
           final SPDocument doc = listItems.get(j);
           if (ActionType.ADD.equals(doc.getAction())) {
-            final List<SPDocument> attachments = listsWS.getAttachments(listState, doc);
+            final List<SPDocument> attachments = listsHelper.getAttachments(listState, doc);
             attachmentItems.addAll(attachments);
           }
         }
@@ -1253,7 +1255,7 @@ public class SharepointClient {
 
       // Get the next web and discover its direct children
       sharepointClientContext.setSiteURL(webURL);
-      WebsWS websWS = new WebsWS(sharepointClientContext);
+      WebsWS websWS = clientFactory.getWebsWS(sharepointClientContext);
       try {
         final Set<String> allWebStateSet = websWS.getDirectChildsites();
         final int size = allWebStateSet.size();
@@ -1323,7 +1325,7 @@ public class SharepointClient {
     SPDocument document = null;
 
     try {
-      final SiteDataWS siteDataWS = new SiteDataWS(tempCtx);
+      final SiteDataWS siteDataWS = clientFactory.getSiteDataWS(tempCtx);
       // need to check whether the site exist or not and is not null
       if (webState.isExisting() && null != webState) {
         document = siteDataWS.getSiteData(webState);

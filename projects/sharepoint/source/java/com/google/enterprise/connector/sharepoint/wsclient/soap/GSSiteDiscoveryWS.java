@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -25,6 +25,7 @@ import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebC
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 
 import org.apache.axis.AxisFault;
 
@@ -52,7 +53,7 @@ import javax.xml.rpc.ServiceException;
  *
  * @author nitendra_thakur
  */
-public class GSSiteDiscoveryWS {
+public class GSSiteDiscoveryWS implements SiteDiscoveryWS {
   private static final Logger LOGGER = Logger.getLogger(GSSiteDiscoveryWS.class.getName());
   private SharepointClientContext sharepointClientContext;
   private String endpoint;

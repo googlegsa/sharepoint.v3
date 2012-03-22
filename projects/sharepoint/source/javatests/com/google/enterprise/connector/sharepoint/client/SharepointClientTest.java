@@ -22,6 +22,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants;
@@ -38,6 +39,7 @@ public class SharepointClientTest extends TestCase {
 
   private SharepointClient sharepointClient;
   private GlobalState globalState;
+  private final SPClientFactory clientFactory = new SPClientFactory();
 
   protected void setUp() throws Exception {
     super.setUp();
@@ -47,8 +49,9 @@ public class SharepointClientTest extends TestCase {
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    this.sharepointClient = new SharepointClient(sharepointClientContext);
-    this.globalState = new GlobalState(
+    this.sharepointClient = new SharepointClient(clientFactory,
+        sharepointClientContext);
+    this.globalState = new GlobalState(clientFactory,
         sharepointClientContext.getGoogleConnectorWorkDir(),
         sharepointClientContext.getFeedType());
   }
@@ -157,7 +160,7 @@ public class SharepointClientTest extends TestCase {
     spContext.setBatchHint(Integer.MAX_VALUE);
     GlobalState gs = TestConfiguration.initState(spContext);
     WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);
-    SharepointClient spclient = new SharepointClient(spContext);
+    SharepointClient spclient = new SharepointClient(clientFactory, spContext);
 
     // Traverse the lists for the given web state
     spclient.traverse(gs, ws, 50, true);
@@ -180,7 +183,7 @@ public class SharepointClientTest extends TestCase {
     spContext.setFetchACLInBatches(true);
     GlobalState gs = TestConfiguration.initState(spContext);
     WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);
-    SharepointClient spclient = new SharepointClient(spContext);
+    SharepointClient spclient = new SharepointClient(clientFactory, spContext);
 
     SPDocument doc = new SPDocument("122", TestConfiguration.Site1_List1_URL,
         Calendar.getInstance(), ActionType.ADD);
@@ -211,7 +214,7 @@ public class SharepointClientTest extends TestCase {
     SharepointClientContext spContext = TestConfiguration.initContext();
     spContext.setPushAcls(false);
 
-    SharepointClient spclient = new SharepointClient(spContext);
+    SharepointClient spclient = new SharepointClient(clientFactory, spContext);
 
     GlobalState gs = TestConfiguration.initState(spContext);
     WebState ws = gs.lookupWeb(TestConfiguration.Site1_URL, spContext);

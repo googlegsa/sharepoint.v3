@@ -17,7 +17,8 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialTraversalManager;
-import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -77,7 +78,8 @@ public class SharepointSession implements Session {
   public AuthenticationManager getAuthenticationManager()
       throws RepositoryException {
     LOGGER.info("getAuthenticationManager()");
-    return new SharepointAuthenticationManager(sharepointClientContext);
+    return new SharepointAuthenticationManager(connector.getClientFactory(),
+        sharepointClientContext);
   }
 
   /**
@@ -86,9 +88,11 @@ public class SharepointSession implements Session {
   public AuthorizationManager getAuthorizationManager()
       throws RepositoryException {
     LOGGER.info("getAuthorizationManager()");
-    return new SharepointAuthorizationManager(sharepointClientContext,
-        new GSSiteDiscoveryWS(sharepointClientContext, null)
-            .getMatchingSiteCollections());
+    ClientFactory clientFactory = connector.getClientFactory();
+    SiteDiscoveryWS siteDiscoveryWS =
+        clientFactory.getSiteDiscoveryWS(sharepointClientContext, null);
+    return new SharepointAuthorizationManager(clientFactory, 
+        sharepointClientContext, siteDiscoveryWS.getMatchingSiteCollections());
   }
 
   /**

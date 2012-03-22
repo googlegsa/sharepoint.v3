@@ -13,8 +13,9 @@
 
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -40,6 +41,8 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 import org.apache.axis.AxisFault;
@@ -63,10 +66,10 @@ import javax.xml.rpc.ServiceException;
  *
  * @author nitendra_thakur
  */
-public class GssAclWS {
+public class GSAclWS implements AclWS{
   private String endpoint;
   private GssAclMonitorSoap_BindingStub stub = null;
-  private final Logger LOGGER = Logger.getLogger(GssAclWS.class.getName());
+  private final Logger LOGGER = Logger.getLogger(GSAclWS.class.getName());
   private SharepointClientContext sharepointClientContext = null;
 
   /**
@@ -78,7 +81,7 @@ public class GssAclWS {
    *          url is taken from SharepointClientContext
    * @throws SharepointException
    */
-  public GssAclWS(final SharepointClientContext inSharepointClientContext,
+  public GSAclWS(final SharepointClientContext inSharepointClientContext,
       String siteurl) throws SharepointException {
     if (null == inSharepointClientContext) {
       throw new SharepointException("SharePointClient context cannot be null ");
@@ -305,16 +308,13 @@ public class GssAclWS {
   }
 
   /**
-   * Returns user/group name in the format as specified in as specified in
-   * the connector configuration page.
+   * Returns user/group name in the format as specified in connectorInstance.xml
    *
-   * @param principal the principal used to get the user/group name from
-   * @return a string that represents the user/group name in the appropriate format
+   * @param principal
+   * @return
    */
-  /*
-   * marked package-private because of JUnit test case
-   * GssAclTest.testGetPrincipalName
-   */
+  //TODO: Adding VisibleForTesting throws exception when generating javadoc 
+  //@VisibleForTesting
   String getPrincipalName(GssPrincipal principal) {
     String principalname = Util.getUserFromUsername(principal.getName());
     final String domain = Util.getDomainFromUsername(principal.getName());
@@ -386,21 +386,21 @@ public class GssAclWS {
 
   /**
    * Works similar to
-   * {@link ListsWS#getListItems(ListState, java.util.Calendar, String, Set)}
+   * {@link ListsHelper#getListItems(ListState, java.util.Calendar, String, Set)}
    * but is designed to be used only to get those list items whose ACLs have
    * changed because of any security change at parent level.
    *
    * @param listState The list from which the items are to be retrieved
-   * @param listsWS delegate for parsing the web service response
+   * @param listsHelper The lists helper for parsing the web service response
    * @return a list of {@link SPDocument}
    */
   public List<SPDocument> getListItemsForAclChangeAndUpdateState(
-      ListState listState, ListsWS listsWS) {
+      ListState listState, ListsHelper listsHelper) {
     List<SPDocument> aclChangedDocs = null;
     if (sharepointClientContext.isPushAcls() && listState.isAclChanged()) {
       GssGetListItemsWithInheritingRoleAssignments wsResult = GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), String.valueOf(listState.getLastDocIdCrawledForAcl()));
       if (null != wsResult) {
-        aclChangedDocs = listsWS.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
+        aclChangedDocs = listsHelper.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
         if (null != aclChangedDocs) {
           LOGGER.log(Level.INFO, "Found " + aclChangedDocs.size()
               + " documents from list [ " + listState
@@ -760,8 +760,7 @@ public class GssAclWS {
    * and its membership is to be re-synced with the user data store.
    *
    * @param changedGroups IDs of the groups that is to be resolved
-   * @return a map of group ID to latest memberships, the map could be 
-   *         empty but not null.
+   * @return
    */
   private Map<Integer, Set<UserGroupMembership>> processChangedGroupsToSync(
       Set<String> changedGroups) {
@@ -838,6 +837,7 @@ public class GssAclWS {
    * Used for getting all the List IDs which are inheriting their role
    * assignments from the parent web site.
    *
+   * @param webGuid GUID or URL of the SharePoint WebSite to be processed
    * @return List IDs which are inheriting their role assignments from their
    *         parent web site whose ID was passed in the argument
    */

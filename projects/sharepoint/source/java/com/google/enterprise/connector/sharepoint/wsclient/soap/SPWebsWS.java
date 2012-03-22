@@ -11,7 +11,7 @@
 //WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //See the License for the specific language governing permissions and
 //limitations under the License.
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -23,6 +23,7 @@ import com.google.enterprise.connector.sharepoint.generated.webs.Webs;
 import com.google.enterprise.connector.sharepoint.generated.webs.WebsLocator;
 import com.google.enterprise.connector.sharepoint.generated.webs.WebsSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.message.MessageElement;
@@ -43,10 +44,10 @@ import javax.xml.rpc.ServiceException;
  *
  * @author nitendra_thakur
  */
-public class WebsWS {
+public class SPWebsWS implements WebsWS {
   private String endpoint;
   private WebsSoap_BindingStub stub = null;
-  private final Logger LOGGER = Logger.getLogger(WebsWS.class.getName());
+  private final Logger LOGGER = Logger.getLogger(SPWebsWS.class.getName());
   private SharepointClientContext sharepointClientContext = null;
 
   /**
@@ -56,7 +57,7 @@ public class WebsWS {
    *          in SharePointClientContext.
    * @throws SharepointException
    */
-  public WebsWS(final SharepointClientContext inSharepointClientContext)
+  public SPWebsWS(final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
 
     if (inSharepointClientContext != null) {
@@ -214,7 +215,8 @@ public class WebsWS {
           + " SharepointConnectorType: " + spType);
 
       if (SPType.SP2003 == spType) {
-        final SiteDataWS siteDataWS = new SiteDataWS(sharepointClientContext);
+        final SPSiteDataWS siteDataWS =
+            new SPSiteDataWS(sharepointClientContext);
         webTitle = siteDataWS.getTitle();
       } else {
         GetWebResponseGetWebResult resWeb = null;

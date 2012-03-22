@@ -16,7 +16,8 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.wsclient.GSSiteDiscoveryWS;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthorizationResponse;
 import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
@@ -34,12 +35,13 @@ import junit.framework.TestCase;
 
 public class SharepointAuthorizationManagerTest extends TestCase {
 	SharepointClientContext sharepointClientContext;
+  private final SPClientFactory clientFactory = new SPClientFactory();
 
 	protected void setUp() throws Exception {
 		System.out.println("\n...Setting Up...");
 		System.out.println("Initializing SharepointClientContext ...");
 		this.sharepointClientContext = new SharepointClientContext(
-				TestConfiguration.sharepointUrl, TestConfiguration.domain,
+				clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
 				TestConfiguration.kdcserver, TestConfiguration.username,
 				TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
 				TestConfiguration.includedURls, TestConfiguration.excludedURls,
@@ -55,8 +57,8 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 		String[] allUrls = "http://mycomp.com/,http://mycomp.com/site1,http://mycomp.com/site2".split(",");
 		List<String> lstAllUrls = Arrays.asList(allUrls);
 		Set<String> siteCollUrls = new TreeSet<String>(lstAllUrls);
-		SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
-				sharepointClientContext, siteCollUrls);
+    SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+        clientFactory, sharepointClientContext, siteCollUrls);
 
 		// Assure that
 		// 1. no URLs got skipped while grouping
@@ -80,9 +82,10 @@ public class SharepointAuthorizationManagerTest extends TestCase {
   // Need to gather more details on the difference in the data so that we can create if for the tests.
 /*
 	public void testAuthorizeDocids() throws Throwable {
-		SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
-				this.sharepointClientContext, new GSSiteDiscoveryWS(
-						sharepointClientContext, null).getMatchingSiteCollections());
+    SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+        clientFactory, this.sharepointClientContext,
+        new GSSiteDiscoveryWS(sharepointClientContext, null)
+        .getMatchingSiteCollections());
 		AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
 				TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
 
@@ -109,9 +112,10 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 	*/
 
 	public void testAuthorizeDocidsForMandUFeeds() throws Throwable {
-		SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
-				this.sharepointClientContext, new GSSiteDiscoveryWS(
-						sharepointClientContext, null).getMatchingSiteCollections());
+    SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
+        clientFactory, this.sharepointClientContext,
+        new GSSiteDiscoveryWS(sharepointClientContext, null)
+        .getMatchingSiteCollections());
 		AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
 				TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
 

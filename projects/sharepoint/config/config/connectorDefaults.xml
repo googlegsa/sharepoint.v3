@@ -92,9 +92,14 @@
     </property>
     <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property>
     <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property>
+    <property name="clientFactory" ref="clientFactory" />
   </bean>
 
-    <bean id="queryProvider" class="com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider">
+  <bean id="clientFactory"
+      class="@client.factory@">
+  </bean>
+
+  <bean id="queryProvider" class="com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider">
       <constructor-arg value="com.google.enterprise.connector.sharepoint.sql.sqlQueries" />
       <property name="udsTableName" value="User_Group_Memberships" />
       <property name="udsIndexName" value="IDX_SPUserID" />

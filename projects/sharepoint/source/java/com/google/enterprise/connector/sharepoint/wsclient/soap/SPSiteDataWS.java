@@ -12,8 +12,9 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -31,6 +32,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.holders.UnsignedIntHolder;
@@ -52,9 +54,9 @@ import javax.xml.rpc.holders.StringHolder;
  *
  * @author amit_kagrawal
  */
-public class SiteDataWS {
+public class SPSiteDataWS implements SiteDataWS {
 
-  private final Logger LOGGER = Logger.getLogger(SiteDataWS.class.getName());
+  private final Logger LOGGER = Logger.getLogger(SPSiteDataWS.class.getName());
   private SharepointClientContext sharepointClientContext;
   private String endpoint;
   private SiteDataSoap_BindingStub stub = null;
@@ -67,7 +69,7 @@ public class SiteDataWS {
    *          in SharePointClientContext.
    * @throws SharepointException
    */
-  public SiteDataWS(final SharepointClientContext inSharepointClientContext)
+  public SPSiteDataWS(final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
     if (inSharepointClientContext != null) {
       sharepointClientContext = inSharepointClientContext;
@@ -354,8 +356,10 @@ public class SiteDataWS {
 
   /**
    * Retrieves the title of a Web Site. Should only be used in case of SP2003
-   * Top URL. For all other cases, WebWS.getTitle() is the preffered method.
+   * Top URL. For all other cases, WebWS.getTitle() is the preferred method.
    */
+  //TODO: Adding VisibleForTesting throws exception when generating javadoc 
+  //@VisibleForTesting
   String getTitle() throws RemoteException {
     final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
     final _sWebMetadataHolder sWebMetadata = new _sWebMetadataHolder();

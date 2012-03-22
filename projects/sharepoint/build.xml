@@ -19,6 +19,7 @@
   <property name="src_generated" value="source/java/com/google/enterprise/connector/sharepoint/generated" />
   <property name="classes" value="${build}/classes" />
   <property name="config" value="config" />
+  <property name="config.tmp.dir" value="${build}/${config}" />
   <property environment="env" />
   <property name="wsdl" value="wsdl" />
   <property name="tests.src" value="source/javatests" />
@@ -58,6 +59,13 @@
   <condition property="family" value="windows">
     <os family="windows" />
   </condition>
+
+  <condition property="client.factory" value="com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory">
+    <not>
+      <isset property="client.factory" />
+    </not>
+  </condition>
+
   <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${lib.jar.dir}/dev/ant-contrib-1.0b3.jar"/>
 
   <!--Cobertura properties -->
@@ -267,13 +275,31 @@
   </target>
 
   <target name="jar" depends="compile" description="sharepoint-connector">
+    <copy todir="${config.tmp.dir}" overwrite="true">
+      <fileset dir="${config}">
+        <include name="**/connectorType.xml" />
+        <include name="**/connectorDefaults.xml" />
+      </fileset>
+      <filterchain>
+        <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
+          <param type="token" name="client.factory" value="${client.factory}" />
+        </filterreader>
+      </filterchain>
+    </copy>
+    
     <jar jarfile="${jarfile}">
       <fileset dir="${classes}" />
       <fileset dir="${config}">
         <exclude name="**/logging.properties" />
+        <exclude name="**/connectorType.xml" />
+        <exclude name="**/connectorDefaults.xml" />
       </fileset>
       <fileset dir="${src}">
         <include name="**/*.properties" />
+      </fileset>
+      <fileset dir="${config.tmp.dir}">
+        <include name="**/connectorType.xml" />
+        <include name="**/connectorDefaults.xml" />
       </fileset>
 
       <fileset dir="source/java/org/apache/axis/client">

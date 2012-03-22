@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -23,6 +23,7 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.holders.ArrayOfAuthDataPacketHolder;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 
 import org.apache.axis.AxisFault;
 
@@ -39,7 +40,7 @@ import javax.xml.rpc.ServiceException;
  *
  * @author nitendra_thakur
  */
-public class GSBulkAuthorizationWS {
+public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
   private final Logger LOGGER = Logger.getLogger(GSBulkAuthorizationWS.class.getName());
   private SharepointClientContext sharepointClientContext;
   private BulkAuthorizationSoap_BindingStub stub = null;
