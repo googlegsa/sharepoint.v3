@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
@@ -32,6 +33,7 @@ public class WebStateTest extends TestCase {
   WebState webState;
   SharepointClientContext sharepointClientContext;
   String spURL;
+  private SPClientFactory clientFactory = new SPClientFactory();
 
   public void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -42,7 +44,8 @@ public class WebStateTest extends TestCase {
     System.out.println("Creating test Web State for testing.");
     this.spURL = sharepointClientContext.getSiteURL();
 
-    GlobalState gs = new GlobalState(TestConfiguration.googleConnectorWorkDir,
+    GlobalState gs = new GlobalState(clientFactory,
+        TestConfiguration.googleConnectorWorkDir,
         TestConfiguration.feedType);
     this.webState = TestConfiguration.createWebState(gs, sharepointClientContext, this.spURL, 1);
     final SPDocument doc1 = new SPDocument("id1", "url1",
@@ -83,7 +86,7 @@ public class WebStateTest extends TestCase {
     System.out.println("Creating temporary web state to compare");
     try {
       final WebState ws1 = this.webState = new WebState(
-          this.sharepointClientContext, this.spURL);
+          clientFactory, this.sharepointClientContext, this.spURL);
       final int i = this.webState.compareTo(ws1);
       assertEquals(i, 0);
       System.out.println("[ compareTo() ] Test completed.");

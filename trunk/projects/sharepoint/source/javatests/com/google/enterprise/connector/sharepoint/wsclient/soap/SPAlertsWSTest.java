@@ -12,7 +12,7 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
@@ -27,9 +27,10 @@ import java.util.Date;
 
 import junit.framework.TestCase;
 
-public class AlertsWSTest extends TestCase {
+public class SPAlertsWSTest extends TestCase {
   SharepointClientContext sharepointClientContext;
-  AlertsWS alertWS;
+  SPAlertsWS alertWS;
+  SPClientFactory clientFactory = new SPClientFactory();
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -37,19 +38,19 @@ public class AlertsWSTest extends TestCase {
     this.sharepointClientContext = TestConfiguration.initContext();
 
     assertNotNull(this.sharepointClientContext);
-    System.out.println("Initializing AlertsWS ...");
+    System.out.println("Initializing SPAlertsWS ...");
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    this.alertWS = new AlertsWS(this.sharepointClientContext);
+    this.alertWS = new SPAlertsWS(this.sharepointClientContext);
   }
 
   public final void testAlertsWS() throws Throwable {
-    System.out.println("Testing AlertsWS(SharepointClientContext, siteName)...");
+    System.out.println("Testing SPAlertsWS(SharepointClientContext, siteName)...");
     sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
-    this.alertWS = new AlertsWS(this.sharepointClientContext);
+    this.alertWS = new SPAlertsWS(this.sharepointClientContext);
     assertNotNull(this.alertWS);
-    System.out.println("[ AlertsWS(SharepointClientContext, siteName) ] Test Passed");
+    System.out.println("[ SPAlertsWS(SharepointClientContext, siteName) ] Test Passed");
   }
 
   public final void testAlerts() throws Throwable {
@@ -57,7 +58,8 @@ public class AlertsWSTest extends TestCase {
     final String internalName = this.sharepointClientContext.getSiteURL();
     final Calendar cLastMod = Calendar.getInstance();
     cLastMod.setTime(new Date());
-    GlobalState gs = new GlobalState(TestConfiguration.googleConnectorWorkDir,
+    GlobalState gs = new GlobalState(clientFactory,
+        TestConfiguration.googleConnectorWorkDir,
         TestConfiguration.feedType);
     WebState ws = gs.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
     final ListState currentDummyAlertList = new ListState(internalName,

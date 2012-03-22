@@ -12,10 +12,12 @@
 //See the License for the specific language governing permissions and
 //limitations under the License.
 
-package com.google.enterprise.connector.sharepoint.wsclient;
+package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssPrincipal;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult;
@@ -31,12 +33,12 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-public class GssAclTest extends TestCase {
+public class GSAclWSTest extends TestCase {
 
   GlobalState globalState;
   SharepointClientContext sharepointClientContext;
-  GssAclWS aclWS;
-  SiteDataWS siteDataWS;
+  GSAclWS aclWS;
+  SPSiteDataWS siteDataWS;
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -45,8 +47,8 @@ public class GssAclTest extends TestCase {
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setPushAcls(true);
     sharepointClientContext.setBatchHint(2);
-    siteDataWS = new SiteDataWS(sharepointClientContext);
-    aclWS = new GssAclWS(sharepointClientContext,
+    siteDataWS = new SPSiteDataWS(sharepointClientContext);
+    aclWS = new GSAclWS(sharepointClientContext,
         TestConfiguration.sharepointUrl);
     globalState = TestConfiguration.initState(sharepointClientContext);
   }
@@ -76,7 +78,7 @@ public class GssAclTest extends TestCase {
     assertNotNull(docList);
 
     try {
-      aclWS = new GssAclWS(sharepointClientContext, webState.getWebUrl());
+      aclWS = new GSAclWS(sharepointClientContext, webState.getWebUrl());
       aclWS.fetchAclForDocuments(docList, webState);
       for (SPDocument document : docList.getDocuments()) {
         assertNotNull(document);
@@ -93,7 +95,7 @@ public class GssAclTest extends TestCase {
     String changeToken = "1;1;1648c1de-0093-4fb8-a888-f032f5a2da4c;634103077352630000;2263";
     webstate.setNextAclChangeToken(changeToken);
     webstate.commitAclChangeToken();
-    this.aclWS = new GssAclWS(this.sharepointClientContext,
+    this.aclWS = new GSAclWS(this.sharepointClientContext,
         webstate.getWebUrl());
     aclWS.fetchAclChangesSinceTokenAndUpdateState(webstate);
     assertNotSame("Change Token is not updated", changeToken, webstate.getNextAclChangeToken());
@@ -104,17 +106,17 @@ public class GssAclTest extends TestCase {
     ListState listState = globalState.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID);
     assertNotNull(listState);
     listState.startAclCrawl();
-    ListsWS listWs = new ListsWS(sharepointClientContext);
-    assertNotNull(listWs);
-    this.aclWS = new GssAclWS(this.sharepointClientContext,
+    ListsHelper listHelper = new ListsHelper(sharepointClientContext);
+    assertNotNull(listHelper);
+    this.aclWS = new GSAclWS(this.sharepointClientContext,
         listState.getParentWebState().getWebUrl());
-    List<SPDocument> docs = aclWS.getListItemsForAclChangeAndUpdateState(listState, listWs);
+    List<SPDocument> docs = aclWS.getListItemsForAclChangeAndUpdateState(listState, listHelper);
     assertNotNull(docs);
   }
 
   public void testResolveSPGroup() throws Exception {
     String[] groupIds = { "1", "[GSSiteCollectionAdministrator]", "5" };
-    this.aclWS = new GssAclWS(this.sharepointClientContext,
+    this.aclWS = new GSAclWS(this.sharepointClientContext,
         TestConfiguration.sharepointUrl);
     GssResolveSPGroupResult result = aclWS.resolveSPGroup(groupIds);
     assertNotNull(result);
@@ -123,7 +125,7 @@ public class GssAclTest extends TestCase {
   }
 
   public void testCheckConnectivity() throws Exception {
-    aclWS = new GssAclWS(sharepointClientContext,
+    aclWS = new GSAclWS(sharepointClientContext,
         TestConfiguration.sharepointUrl);
     try {
       aclWS.checkConnectivity();

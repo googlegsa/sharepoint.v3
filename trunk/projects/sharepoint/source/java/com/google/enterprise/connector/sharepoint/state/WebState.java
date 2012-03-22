@@ -22,7 +22,8 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
@@ -47,6 +48,7 @@ import java.util.logging.Logger;
  * @author nitendra_thakur
  */
 public class WebState implements StatefulObject {
+  private final ClientFactory clientFactory;
   private String webUrl = null;
   private String webId = null;
   private String title = "No Title";
@@ -101,13 +103,15 @@ public class WebState implements StatefulObject {
    * For the sole purpose of loading WebState nodes as WebState objects when
    * state file is loaded in-memory.
    */
-  private WebState(String webId, String webURL, String title,
+  private WebState(final ClientFactory clientFactory,
+      String webId, String webURL, String title,
       String lastCrawledAt, DateTime insertionTime, SPType spType)
       throws SharepointException {
     if (null == webId || null == webURL || null == spType) {
       throw new SharepointException("webID [ " + webId + "] / webUrl [ "
           + webURL + "] / spType [ " + spType + " ] can not be null. ");
     }
+    this.clientFactory = clientFactory;
     this.webId = webId;
     this.webUrl = webURL;
     this.title = title;
@@ -121,9 +125,11 @@ public class WebState implements StatefulObject {
    * @param spURL
    * @throws SharepointException
    */
-  WebState(final SharepointClientContext spContext, final String spURL)
+  WebState(final ClientFactory clientFactory,
+      final SharepointClientContext spContext, final String spURL)
       throws SharepointException {
     LOGGER.config("Creating Web State for [ " + spURL + " ]");
+    this.clientFactory = clientFactory;
     spType = spContext.checkSharePointType(spURL);
     if (null == spType) {
       LOGGER.log(Level.WARNING, "Unknown SharePoint version [ " + spType
@@ -134,7 +140,7 @@ public class WebState implements StatefulObject {
 
     webId = webUrl = spURL;
     spContext.setSiteURL(webUrl);
-    final WebsWS websWS = new WebsWS(spContext);
+    final WebsWS websWS = clientFactory.getWebsWS(spContext);
     title = websWS.getWebTitle(webUrl, spType);
     if (FeedType.CONTENT_FEED == spContext.getFeedType()
         && SPType.SP2003 == spType) {
@@ -639,9 +645,10 @@ public class WebState implements StatefulObject {
    * @param atts the XML attributes to use for initialzing the WebState
    * @return a valid non-null WebState
    */
-  public static WebState loadStateFromXML(Attributes atts)
-      throws SharepointException {
-    WebState web = new WebState(atts.getValue(SPConstants.STATE_ID),
+  public static WebState loadStateFromXML(ClientFactory clientFactory, 
+      Attributes atts) throws SharepointException {
+    WebState web = new WebState(clientFactory,
+        atts.getValue(SPConstants.STATE_ID), 
         atts.getValue(SPConstants.STATE_URL),
         atts.getValue(SPConstants.STATE_WEB_TITLE),
         atts.getValue(SPConstants.LAST_CRAWLED_DATETIME), null,

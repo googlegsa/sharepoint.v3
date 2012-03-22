@@ -7,6 +7,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
@@ -27,6 +28,7 @@ public class GlobalStateTest extends TestCase {
    */
   private static final String TMP_DIR = "c:";
   SharepointClientContext sharepointClientContext;
+  private SPClientFactory clientFactory = new SPClientFactory();
 
   public void setUp() throws Exception {
     sharepointClientContext = TestConfiguration.initContext();
@@ -40,7 +42,7 @@ public class GlobalStateTest extends TestCase {
    * @throws SharepointException
    */
   public void testStateMaintenance() throws SharepointException {
-    GlobalState state = new GlobalState(
+    GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.METADATA_URL_FEED);
     WebState web1 = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
     // Using invalid ListURL so that they could be deleted from state.
@@ -139,7 +141,7 @@ public class GlobalStateTest extends TestCase {
   public final void testStateReload() throws SharepointException {
     System.out.println("Testing the basic functionalities of an stateful object");
 
-    final GlobalState state1 = new GlobalState(
+    final GlobalState state1 = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
 
     WebState ws = state1.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
@@ -168,7 +170,7 @@ public class GlobalStateTest extends TestCase {
     state1.setLastCrawledList(list);
     state1.saveState();
 
-    final GlobalState state2 = new GlobalState(
+    final GlobalState state2 = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     state2.loadState();
 
@@ -233,7 +235,7 @@ public class GlobalStateTest extends TestCase {
     WebState[] webs = new WebState[3];
 
     // create Web State inside Global state
-    final GlobalState state = new GlobalState(
+    final GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, TestConfiguration.feedType);
     webs[0] = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
     Thread.sleep(1000);
@@ -256,20 +258,20 @@ public class GlobalStateTest extends TestCase {
    * @throws SharepointException
    */
   public void testUpdateListState() throws SharepointException {
-    final GlobalState state = new GlobalState(
+    final GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, TestConfiguration.feedType);
 
-    WebState ws1 = new WebState(sharepointClientContext,
+    WebState ws1 = new WebState(clientFactory, sharepointClientContext,
         TestConfiguration.Site1_URL);
     ws1.setInsertionTime(new DateTime(2009, 9, 05, 10, 25, 36, 100));
     state.addOrUpdateWebStateInGlobalState(ws1);
 
-    WebState ws2 = new WebState(sharepointClientContext,
+    WebState ws2 = new WebState(clientFactory, sharepointClientContext,
         TestConfiguration.Site2_URL);
     ws2.setInsertionTime(new DateTime(2009, 9, 07, 10, 25, 36, 100));
     state.addOrUpdateWebStateInGlobalState(ws2);
 
-    WebState ws3 = new WebState(sharepointClientContext,
+    WebState ws3 = new WebState(clientFactory, sharepointClientContext,
         TestConfiguration.Site3_URL);
     ws3.setInsertionTime(new DateTime(2009, 9, 06, 10, 25, 36, 100));
     state.addOrUpdateWebStateInGlobalState(ws3);

@@ -15,13 +15,15 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.sharepoint.wsclient.ListsWS;
-import com.google.enterprise.connector.sharepoint.wsclient.SiteDataWS;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPSiteDataWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 
@@ -33,6 +35,7 @@ import junit.framework.TestCase;
 public class SPDocumentListTest extends TestCase {
   SPDocumentList docs;
   SharepointClientContext sharepointClientContext;
+  private SPClientFactory clientFactory = new SPClientFactory();
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -40,17 +43,17 @@ public class SPDocumentListTest extends TestCase {
 
     sharepointClientContext = TestConfiguration.initContext();
 
-    final GlobalState state = new GlobalState(
+    final GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
 
-    final SiteDataWS siteDataWS = new SiteDataWS(this.sharepointClientContext);
+    final SPSiteDataWS siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
     final List listCollection = siteDataWS.getNamedLists(ws);
     assertNotNull(listCollection);
     for (int i = 0; i < listCollection.size(); i++) {
       final ListState baseList = (ListState) listCollection.get(i);
-      ListsWS listws = new ListsWS(this.sharepointClientContext);
-      List<SPDocument> listItems = listws.getListItems(baseList, null, null, null);
+      ListsHelper listHelper = new ListsHelper(this.sharepointClientContext);
+      List<SPDocument> listItems = listHelper.getListItems(baseList, null, null, null);
       if (listItems.size() > 0) {
         for (Iterator itr = listItems.iterator(); itr.hasNext();) {
           SPDocument spdoc = (SPDocument) itr.next();

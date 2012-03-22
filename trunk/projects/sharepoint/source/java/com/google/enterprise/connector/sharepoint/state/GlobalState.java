@@ -21,7 +21,8 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState.CrawlState;
-import com.google.enterprise.connector.sharepoint.wsclient.WebsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.apache.xerces.parsers.SAXParser;
@@ -61,6 +62,7 @@ import java.util.logging.Logger;
  */
 public class GlobalState {
   private static final Logger LOGGER = Logger.getLogger(GlobalState.class.getName());
+  private final ClientFactory clientFactory;
   private boolean recrawling = false;
   private String workDir = null;
   private FeedType feedType;
@@ -237,7 +239,7 @@ public class GlobalState {
         currentNode = Nodes.ALERTS_EXTRAID;
       } else if (SPConstants.WEB_STATE.equals(localName)) {
         try {
-          web = WebState.loadStateFromXML(atts);
+          web = WebState.loadStateFromXML(clientFactory, atts);
           addOrUpdateWebStateInGlobalState(web);
         } catch (Exception e) {
           LOGGER.log(Level.SEVERE, "Problem while loading WebState node from state file. ");
@@ -330,11 +332,13 @@ public class GlobalState {
    *          preferences, so that environmental changes don't make us lose the
    *          file.)
    */
-  public GlobalState(final String inWorkDir, final FeedType inFeedType) {
+  public GlobalState(final ClientFactory clientFactory,
+      final String inWorkDir, final FeedType inFeedType) {
     if (inWorkDir != null) {
       workDir = inWorkDir;
     }
     feedType = inFeedType;
+    this.clientFactory = clientFactory;
   }
 
   /**
@@ -349,7 +353,7 @@ public class GlobalState {
   public WebState makeWebState(final SharepointClientContext spContext,
       final String key) throws SharepointException {
     if (key != null) {
-      final WebState obj = new WebState(spContext, key);
+      final WebState obj = new WebState(clientFactory, spContext, key);
       final DateTime dt = new DateTime();
       obj.setInsertionTime(dt);
       addOrUpdateWebStateInGlobalState(obj);
@@ -510,7 +514,7 @@ public class GlobalState {
       WebsWS websWS = null;
       try {
         spContext.setSiteURL(webAppURL);
-        websWS = new WebsWS(spContext);
+        websWS = clientFactory.getWebsWS(spContext);
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "webWS creation failed for URL [ " + key
             + " ]. ", e);

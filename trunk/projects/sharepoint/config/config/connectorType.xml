@@ -3,6 +3,7 @@
 <beans>
   <bean id="sharepoint-connector"
     class="com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnectorType">
+    <property name="clientFactory" ref="clientFactory" />
     <property name="configKeys">
       <list>
     <value>sharepointUrl</value>
@@ -37,5 +38,9 @@
         <value>gsaAdminPassword</value>
       </list>
     </property>
+  </bean>
+
+  <bean id="clientFactory"
+      class="@client.factory@">
   </bean>
 </beans>
