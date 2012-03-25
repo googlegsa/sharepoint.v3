@@ -106,6 +106,8 @@ div.ms-areaseparatorright{
             public string xslSP2result;
             public string temp="true";
 			public const String PRODUCTNAME = "GSBS";
+            // Embedded mode related query string arguments, if enabled.
+            public string embeddedModeQueryArg = "";
             public LOG_LEVEL currentLogLevel = LOG_LEVEL.ERROR;
 
             /**
@@ -151,6 +153,25 @@ div.ms-areaseparatorright{
                     log("Site collection value for Google Search Appliance is not specified", LOG_LEVEL.ERROR);//log error
                     HttpContext.Current.Response.Write("Site collection value for Google Search Appliance is not specified");
                     HttpContext.Current.Response.End();
+                }
+
+                // Embedded mode settings. We should enable this by default
+                // if it is not specified.
+                string enableEmbeddedMode =
+                    WebConfigurationManager.AppSettings["EnableEmbeddedMode"];
+                if (enableEmbeddedMode == null ||
+                    enableEmbeddedMode.Trim().Equals("true")) {
+                  embeddedModeQueryArg = "&emsingleres=" +
+                      HttpUtility.UrlEncode("/_layouts/GSAForward.aspx?forward=") +
+                      "&emmain=" +
+                      HttpUtility.UrlEncode("/_layouts/GSASearchresults.aspx");
+                }
+                string useContainerTheme =
+                    WebConfigurationManager.AppSettings["UseContainerTheme"];
+                if (useContainerTheme == null ||
+                    useContainerTheme.Trim().Equals("true")) {
+                  embeddedModeQueryArg = embeddedModeQueryArg +
+                      "&emdstyle=true";
                 }
 
                 //set the log location
@@ -912,7 +933,11 @@ else if(document.attachEvent)
                     else
                     {
                         searchReq = HttpContext.Current.Request.Url.Query;
-                        searchReq = HttpUtility.UrlDecode(searchReq); // Decoding the URL received from the current request 
+                        if (gProps.embeddedModeQueryArg == "") {
+                          // Decoding the URL received from the current request
+                          // if we are NOT running in embedded mode.
+                          searchReq = HttpUtility.UrlDecode(searchReq); 
+                        }
                     }
                     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -925,7 +950,8 @@ else if(document.attachEvent)
                         StreamReader objSR = null;
                         CookieContainer cc = new CookieContainer();
                         int i;
-						String GSASearchUrl= gProps.GSALocation + "/search" + searchReq;
+			String GSASearchUrl= gProps.GSALocation + "/search" +
+                            searchReq + gProps.embeddedModeQueryArg;
                         ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
                         objResp = (HttpWebResponse)gProps.GetResponse(false, GSASearchUrl,null,null);//fire getresponse
                         string contentEncoding = objResp.Headers["Content-Encoding"];

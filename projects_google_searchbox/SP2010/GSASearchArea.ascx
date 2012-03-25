@@ -616,6 +616,14 @@ function SearchTextOnBlur()
         f.style.background = '#ffffff';
     }
 }
+
+// Handles the keypress event and delegates to GSA suggest handler, if available.
+function HandleQuerySuggest(e, inputEle) {
+  if (window['ss_handleKey']) {
+    ss_handleKey(e, inputEle);
+  }
+}
+
 </script>
 
 
@@ -664,12 +672,12 @@ function SearchTextOnBlur()
 <div id="divPublicSearch" runat="server">Public Search &nbsp;&nbsp;</div> 
 </div>
 
-<asp:Panel ID="pnlSearchBoxPanel" runat="server" >   
+<asp:Panel ID="pnlSearchBoxPanel" runat="server" style="position: relative; float: left;">   
 <!--Search Controls--> 
             <asp:DropDownList  ID="idSearchScope" runat="server"  ForeColor="Black" >
             </asp:DropDownList>
             <asp:HiddenField ID="hfSelectedScope" runat="server" />
-            <asp:TextBox ID="txtSearch" runat="server" size='28' style="background-image: url('/_layouts/images/google_custom_search_watermark.gif'); background-repeat: no-repeat; background-position:center;background-color:Transparent" onKeyPress="SendSearchRequesttoGSAOnEnterClick()"  onfocus="javascript:return SearchTextOnFocus()" onblur="javascript:return SearchTextOnBlur();" ></asp:TextBox></asp:Panel>
+            <asp:TextBox ID="txtSearch" runat="server" size='28' style="background-image: url('/_layouts/images/google_custom_search_watermark.gif'); background-repeat: no-repeat; background-position:center;background-color:Transparent" onKeyPress="SendSearchRequesttoGSAOnEnterClick()"  onfocus="javascript:return SearchTextOnFocus()" onblur="javascript:return SearchTextOnBlur();" onKeyUp="HandleQuerySuggest(event, this);" autocomplete="off"></asp:TextBox></asp:Panel>
             
 
 <div  class="ms-searchimage">
