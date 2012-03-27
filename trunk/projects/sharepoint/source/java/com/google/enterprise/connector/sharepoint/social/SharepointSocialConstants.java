@@ -53,9 +53,5 @@ public class SharepointSocialConstants {
    * Default port for GSA admin controller.
    */
   public static final int DEFAULT_GSAADMINPORT = 8000;
-  /**
-   * Prefix used for google connector Url.
-   */
-  public static final String PREFIX_GOOGLECONNECTORPATTERN = 
-      "^googleconnector://";
+  
 }
