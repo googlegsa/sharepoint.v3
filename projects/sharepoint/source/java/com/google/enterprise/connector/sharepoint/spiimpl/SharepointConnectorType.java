@@ -32,7 +32,9 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 import com.google.enterprise.connector.spi.ConnectorFactory;
 import com.google.enterprise.connector.spi.ConnectorType;
+import com.google.enterprise.connector.spi.SocialCollectionHandler;
 import com.google.enterprise.connector.spi.XmlUtils;
+import com.google.gdata.util.common.base.StringUtil;
 
 import org.apache.commons.httpclient.auth.AuthPolicy;
 import org.apache.commons.httpclient.contrib.auth.NegotiateScheme;
@@ -1139,8 +1141,37 @@ public class SharepointConnectorType implements ConnectorType {
               && (!option.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_NO))
               && (!option.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_ONLY))) {
             LOGGER.warning("Invalid social option " + val);
-            ed.set(SPConstants.SOCIAL_OPTION, rb.getString(SPConstants.SOCIAL_OPTION_INVALID));
+            ed.set(SPConstants.SOCIAL_OPTION, 
+                rb.getString(SPConstants.SOCIAL_OPTION_INVALID));
             return false;
+          }
+          if (!option.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_NO)) {
+            // validate collection name is well-formed and 
+            // admin/password not empty
+            boolean valid = true;
+            String collectionName = configData.get(
+                SPConstants.SOCIAL_USER_PROFILE_COLLECTION);
+            if (!(SocialCollectionHandler.validateCollectionName(
+                collectionName))) {
+              ed.set(SPConstants.SOCIAL_USER_PROFILE_COLLECTION, 
+                  rb.getString(SPConstants.SOCIAL_COLLECTION_INVALID));
+              valid = false;
+            }
+            if (StringUtil.isEmptyOrWhitespace(configData.
+                get(SPConstants.GSAADMINUSER))) {
+              ed.set(SPConstants.GSAADMINUSER, rb.getString(
+                  SPConstants.NON_EMPTY_STRING));
+              valid = false;
+            }
+            if (StringUtil.isEmptyOrWhitespace(configData.
+                get(SPConstants.GSAADMINPASSWORD))) {
+              ed.set(SPConstants.GSAADMINPASSWORD, rb.getString(
+                  SPConstants.NON_EMPTY_STRING));
+              valid = false;
+            }
+            if (!valid) {
+              return false;
+            }
           }
         }
       }

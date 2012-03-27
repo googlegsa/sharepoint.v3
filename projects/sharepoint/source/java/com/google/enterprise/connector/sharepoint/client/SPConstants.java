@@ -554,7 +554,12 @@ public class SPConstants {
   public static final String SOCIAL_OPTION_YES = "yes";
   public static final String SOCIAL_OPTION_NO = "no";
   public static final String SOCIAL_OPTION_ONLY = "only";
+  public static final String SOCIAL_USER_PROFILE_COLLECTION 
+     = "userProfileCollection";
   public static final String SOCIAL_OPTION_INVALID = "InvalidSocialOption";
+  public static final String SOCIAL_COLLECTION_INVALID 
+     = "InvalidCollectionName";
+  public static final String NON_EMPTY_STRING = "NonEmptyString";
   
   public static final String CONNECTOR_NAME_COLUMN = "connectorname";
   public static final String CONNECTOR_NAME_COLUMN_CAPITAL = "CONNECTORNAME";
