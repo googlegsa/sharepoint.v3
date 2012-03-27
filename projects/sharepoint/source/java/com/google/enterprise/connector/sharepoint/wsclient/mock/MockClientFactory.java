@@ -217,7 +217,7 @@ public class MockClientFactory implements ClientFactory {
    *          a new random ID is created
    * @return a new {@link SPDocument}
    */
-  protected SPDocument createDocument(final String webUrl, 
+  public static SPDocument createDocument(final String webUrl, 
       final String docName, final FeedType feedType, final Boolean fixedId) {
     String docUrl = webUrl + "/" + docName;
     String docId = generateId(docUrl, fixedId);
@@ -233,15 +233,12 @@ public class MockClientFactory implements ClientFactory {
    *
    * @param webUrl The URL of the parent web
    * @param folderName The name of the new folder
-   * @param fixedId If true created an ID from the list URL; otherwise
-   *          a new random ID is created
    * @return a new {@link Folder}
    */
-  protected Folder createFolder(final String webUrl, 
-      final String folderName, final Boolean fixedId) {
+  public static Folder createFolder(final String webUrl, 
+      final String folderName) {
     String folderUrl = webUrl + "/" + folderName;
     String folderId = "" + (int) System.currentTimeMillis();
-    //generateId(folderUrl, fixedId);
     return new Folder(folderUrl, folderId);
   }
 
@@ -252,7 +249,7 @@ public class MockClientFactory implements ClientFactory {
    * @param fixedId a flag inidicating whether to use fixed or random ID's
    * @return a valid string ID
    */
-  protected String generateId(final String url, Boolean fixedId) {
+  public static String generateId(final String url, Boolean fixedId) {
     String id;
     if (fixedId) {
       // This generates an ID from the URL that is passed in so that we get
@@ -278,7 +275,8 @@ public class MockClientFactory implements ClientFactory {
    * @return a valid string that is the concatenation of the parent URL
    *           and child name
    */
-  protected String makeUrl(final String parentUrl, final String childName) {
+  public static String makeUrl(final String parentUrl,
+      final String childName) {
     String url;
     if (parentUrl.length() > 0)
       url = parentUrl + "/" + childName;

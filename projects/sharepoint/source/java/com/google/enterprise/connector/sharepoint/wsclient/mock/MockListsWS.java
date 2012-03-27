@@ -31,53 +31,46 @@ import java.util.Set;
 
 public class MockListsWS implements ListsWS {
   private static final Logger LOGGER = Logger.getLogger(MockListsWS.class.getName());
-  private final SharepointClientContext sharepointClientContext;
+  protected final SharepointClientContext sharepointClientContext;
+  protected String username;
+  protected String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
    *    information can be used to create the instance of current class
    *    web service endpoint is set to the default SharePoint URL stored
    *    in SharePointClientContext.
-   * @throws SharepointException
    */
   public MockListsWS(final SharepointClientContext ctx) {
     sharepointClientContext = ctx;
   }
 
-  /* @Override */
+  @Override
   public String getUsername() {
-    return "";
+    return username;
   }
   
-  /* @Override */
+  @Override
   public void setUsername(String username) {
+    this.username = username;
   }
   
-  /* @Override */
+  @Override
   public void setPassword(final String password) {
+    this.password = password;
   }
 
-  /* @Override */
+  @Override
   public void setTimeout(final int timeout) {
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  /* @Override */
+  @Override
   public List<Folder> getSubFoldersRecursively(final ListState list,
       final Folder folder, final String lastID) {
     return Collections.emptyList();
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  /* @Override */
+  @Override
   public List<SPDocument> getListItemChangesSinceToken(
       final ListState list, final String listName, final String viewName, 
       final ListsUtil.SPQueryInfo queryInfo, final String token, 
@@ -87,24 +80,14 @@ public class MockListsWS implements ListsWS {
     return Collections.emptyList();
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  /* @Override */
+  @Override
   public List<SPDocument> getListItems(ListState list, final String listName, 
       final String viewName, final ListsUtil.SPQueryInfo queryInfo,
       final String webID, Set<String> allWebs) throws RemoteException {
     return Collections.emptyList();
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  /* @Override */
+  @Override
   public List<SPDocument> getAttachments(final ListState baseList,
       final SPDocument listItem, List<String> knownAttachments) {
     return Collections.emptyList();
