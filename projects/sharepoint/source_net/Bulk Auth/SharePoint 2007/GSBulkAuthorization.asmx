@@ -41,6 +41,14 @@ public class BulkAuthorization : System.Web.Services.WebService
         });
         return "success";
     }
+    /// <summary>
+    /// returns the version of the GSS installed on SharePoint Server.
+    /// </summary>
+    [WebMethod]
+    public string GetGSSVersion()
+    {
+        return "2.8.4";
+    }
 
     /// <summary>
     /// Authorizes a user against a batch of documents. This method gives a high level view of the way authorization progresses.
