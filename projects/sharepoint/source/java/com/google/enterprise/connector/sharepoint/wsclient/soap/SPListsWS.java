@@ -496,8 +496,28 @@ public class SPListsWS implements ListsWS {
             if (!inSequence) {
               LOGGER.log(Level.SEVERE, "Bad Sequence.");
             }
-            updatedListItems = processListDataElement(child, list, deletedIDs, restoredIDs, renamedIDs, allWebs);
+            // FIXME: Is this code correct? Do we only expect this code to be 
+            // executed once? updatedListItems is taking the value of the last
+            // processListDataElement call. We lose some data if 
+            // updatedListItems is not null.
+            if (null != updatedListItems) {
+              LOGGER.warning("Unexpected behavior; updatedListItems is not "
+                  + "null while processing processListDataElement.");
+            }
+            updatedListItems = processListDataElement(child, list,
+                deletedIDs, restoredIDs, renamedIDs, allWebs);
           }
+        }
+      }
+    }
+
+    if (null != updatedListItems) {
+      for (Object element : updatedListItems) {
+        final MessageElement row = (MessageElement) element;
+        final SPDocument doc = ListsUtil.processListItemElement(
+            sharepointClientContext, row, list, allWebs);
+        if (doc != null) {
+          listItems.add(doc);
         }
       }
     }

@@ -479,29 +479,16 @@ public class ListsHelper {
       }
     });
 
-    if (null != requestListItems) {
-      listItems.addAll(requestListItems);
-    }
-
-    List<MessageElement> updatedListItems = null;
-
     // If some folder renames are found in WS response, handle it first.
     if (renamedIDs.size() > 0 || restoredIDs.size() > 0) {
       traverseChangedFolders(list, listItems);
     }
 
     if (listItems.size() < sharepointClientContext.getBatchHint()
-        && null != updatedListItems) {
-      for (Object element : updatedListItems) {
-        final MessageElement row = (MessageElement) element;
-        final SPDocument doc = ListsUtil.processListItemElement(
-            sharepointClientContext, row, list, allWebs);
-        if (doc != null) {
-          listItems.add(doc);
-        }
-      }
-    } else if (null == list.getNextPage() && null != updatedListItems
-        && updatedListItems.size() > 0) {
+        && null != requestListItems) {
+      listItems.addAll(requestListItems);
+    } else if (null == list.getNextPage() && null != requestListItems
+        && requestListItems.size() > 0) {
       list.setNextPage("not null");
     }
 
