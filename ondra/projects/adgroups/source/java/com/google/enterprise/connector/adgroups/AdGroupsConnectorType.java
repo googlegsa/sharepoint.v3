@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class AdGroupsConnectorType implements ConnectorType {
-  
+
   private List<String> keys = null;
 
   @Override
@@ -36,7 +36,7 @@ public class AdGroupsConnectorType implements ConnectorType {
         .append("<tr><td>Domain:</td>")
         .append("<td><input type='text' name='domain_").append(i).append("' value='' /></td></tr>");
     }
-    
+
     return new ConfigureResponse("", sb.toString(), new HashMap<String, String>(){{
       put("ahoj", "bhoj");
     }});
@@ -55,7 +55,7 @@ public class AdGroupsConnectorType implements ConnectorType {
       Map<String, String> arg0, Locale arg1, ConnectorFactory arg2) {
     return null;
   }
-  
+
   public void setConfigKeys(final List<String> inKeys) {
     if (keys != null) {
       throw new IllegalStateException();
@@ -64,10 +64,10 @@ public class AdGroupsConnectorType implements ConnectorType {
       keys = inKeys;
     }
   }
-  
+
   public static void main(String args[]) throws Exception {
     AdGroupsConnectorType type = new AdGroupsConnectorType();
-    
+
     System.out.println(type.getConfigForm(null).getFormSnippet());
   }
 }
