@@ -33,17 +33,18 @@ public class AdServer {
   private SearchControls searchCtls;
   private Control[] resultControls;
 
-  public String hostName;
-  private int port = 389;
-  public String nETBIOSName;
+  private String hostName;
+  private int port;
+  private String nETBIOSName;
   private String userName;
   private String password;
   private Method connectMethod;
   private String dn;
   private String configurationNamingContext;
-  public String dsServiceName;
+  private String dsServiceName;
+  private String sid;
   private int highestCommittedUSN;
-  public String invocationID;
+  private String invocationID;
 
   public AdServer(
       Method connectMethod,
@@ -62,160 +63,187 @@ public class AdServer {
     this.connectMethod = connectMethod;
   }
 
+  /**
+   * Connects to the Active Directory server and retrieves AD configuration
+   * information.
+   */
   public void connect() {
     if (ldapContext == null) {
       Hashtable<String, String> env = new Hashtable<String, String>();
 
       // Use the built-in LDAP support.
-      env.put(Context.INITIAL_CONTEXT_FACTORY, AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
-      env.put(Context.SECURITY_AUTHENTICATION, AdConstants.AUTHN_TYPE_SIMPLE);
-      env.put(Context.SECURITY_PRINCIPAL, nETBIOSName + AdConstants.BACKSLASH + userName);
+      env.put(Context.INITIAL_CONTEXT_FACTORY,
+          AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
+      env.put(Context.SECURITY_AUTHENTICATION,
+          AdConstants.AUTHN_TYPE_SIMPLE);
+      env.put(Context.SECURITY_PRINCIPAL,
+          nETBIOSName + AdConstants.BACKSLASH + userName);
       env.put(Context.SECURITY_CREDENTIALS, password);
 
-      String ldapUrl = (connectMethod == Method.STANDARD) ? "ldap://" : "ldaps://";
-      ldapUrl += hostName + ":" + port;
-      LOGGER.info(ldapUrl);
+      String ldapUrl =
+          connectMethod.toString() + hostName + AdConstants.COLON + port;
+      LOGGER.info("LDAP provider url: " + ldapUrl);
       env.put(Context.PROVIDER_URL, ldapUrl);
 
       try {
         ldapContext = new InitialLdapContext(env, null);
-        dn = ldapContext.getAttributes("").get("defaultNamingContext").get(0).toString();
-        dsServiceName = ldapContext.getAttributes("").get("dsServiceName").get(0).toString();
-        highestCommittedUSN = Integer.parseInt(
-            ldapContext.getAttributes("").get("highestCommittedUSN").get(0).toString());
-        configurationNamingContext =
-            ldapContext.getAttributes("").get("configurationNamingContext").get(0).toString();
+        Attributes attributes = ldapContext.getAttributes(AdConstants.EMPTY);
+        dn = attributes.get(
+            AdConstants.ATTR_DEFAULTNAMINGCONTEXT).get(0).toString();
+        dsServiceName = attributes.get(
+            AdConstants.ATTR_DSSERVICENAME).get(0).toString();
+        highestCommittedUSN = Integer.parseInt(attributes.get(
+            AdConstants.ATTR_HIGHESTCOMMITTEDUSN).get(0).toString());
+        configurationNamingContext = attributes.get(
+            AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
+        sid = AdEntity.getTextSid((byte[])get(
+            AdConstants.ATTR_DISTINGUISHEDNAME + AdConstants.EQUALS + dn,
+            AdConstants.ATTR_OBJECTSID,
+            dn));
+        invocationID = AdEntity.getTextGuid((byte[]) get(
+            AdConstants.ATTR_DISTINGUISHEDNAME
+            + AdConstants.EQUALS + dsServiceName,
+            AdConstants.ATTR_INVOCATIONID,
+            dsServiceName));
         resultControls = new Control[] {new PagedResultsControl(1000, false)};
         ldapContext.setRequestControls(resultControls);
-        byte[] invocationIDBytes = (byte[]) get(
-            "distinguishedName=" + dsServiceName, "invocationID;binary", dsServiceName);
-        StringBuilder sb = new StringBuilder("0x");
-        for (byte b : invocationIDBytes) {
-          sb.append(Integer.toHexString(b & 0xFF));
-        }
-        invocationID = sb.toString();
       } catch (CommunicationException e) {
-        LOGGER.log(Level.WARNING,
-            "Could not obtain an initial context to query LDAP (Active Directory) due to a communication failure.", e);
+        LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
+            + "query LDAP (Active Directory) due to a communication failure.",
+            e);
       } catch (AuthenticationNotSupportedException e) {
-        LOGGER.log(Level.WARNING,
-            "Could not obtain an initial context to query LDAP (Active Directory) due to authentication not supported exception.", e);
+        LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
+            + "query LDAP (Active Directory) due to authentication not"
+            +  "supported exception.",
+            e);
       } catch (AuthenticationException ae) {
-        LOGGER.log(Level.WARNING,
-            "Could not obtain an initial context to query LDAP (Active Directory) due to authentication exception.", ae);
+        LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
+            + "query LDAP (Active Directory) due to authentication exception.",
+            ae);
       } catch (NamingException e) {
-        LOGGER.log(Level.WARNING,
-            "Could not obtain an initial context to query LDAP (Active Directory) due to a naming exception.", e);
+        LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
+            + "query LDAP (Active Directory) due to a naming exception.",
+            e);
       } catch (IOException e) {
-        LOGGER.log(Level.WARNING,
-            "Couldn't initialize LDAP paging control. Will continue without paging - this can cause issue if there are more than 1000 members in one group.");
+        LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. "
+            + "Will continue without paging - this can cause issue if there are"
+            + "more than 1000 members in one group.",
+            e);
       }
       if (ldapContext != null) {
         LOGGER.info("Sucessfully created an Initial LDAP context");
       }
     }
-    nETBIOSName = (String) get("(ncName=" + dn + ")", "nETBIOSName", configurationNamingContext);
-    LOGGER.log(Level.INFO, "Connected to domain (dn = " + dn + ", netbios = " + nETBIOSName
-        + ", hostname = " + hostName + ", dsServiceName = " + dsServiceName
-        + ", highestCommittedUSN = " + highestCommittedUSN + ", invocationID = " + invocationID
-        + ")");
+    nETBIOSName = (String) get(
+        "(ncName=" + dn + ")", "nETBIOSName", configurationNamingContext);
+    LOGGER.log(Level.INFO, "Connected to domain (dn = " + dn + ", netbios = "
+        + nETBIOSName + ", hostname = " + hostName + ", dsServiceName = "
+        + dsServiceName + ", highestCommittedUSN = " + highestCommittedUSN
+        + ", invocationID = " + invocationID + ")");
   }
 
+  /**
+   * Retrieves one attribute from the Active Directory. Used for searching of
+   * configuration details
+   * @param filter LDAP filter to search for
+   * @param attribute name of attribute to retrieve
+   * @param base base name to bind to
+   * @return first attribute object
+   */
   public Object get(String filter, String attribute, String base) {
     searchCtls.setReturningAttributes(new String[] {attribute});
     try {
-      NamingEnumeration<SearchResult> ldapResults = ldapContext.search(base, filter, searchCtls);
+      NamingEnumeration<SearchResult> ldapResults =
+          ldapContext.search(base, filter, searchCtls);
       SearchResult sr = ldapResults.next();
       Attributes attrs = sr.getAttributes();
       Attribute at = attrs.get(attribute);
       if (at != null) {
         return attrs.get(attribute).get(0);
       }
-    } catch (NamingException ex) {
-      System.out.println("oh no");
+    } catch (NamingException e) {
+      LOGGER.log(Level.WARNING,
+          "Failed retrieving " + filter + " from AD server", e);
     }
     return null;
   }
 
+  /**
+   * Searches Active Directory and creates AdEntity on each result found
+   * @param filter LDAP filter to search in the AD for
+   * @param attributes list of attributes to retrieve
+   * @return list of entities found
+   */
   public ArrayList<AdEntity> search(String filter, String[] attributes) {
     ArrayList<AdEntity> results = new ArrayList<AdEntity>();
     searchCtls.setReturningAttributes(attributes);
     try {
       byte[] cookie = null;
       do {
-        NamingEnumeration<SearchResult> ldapResults = ldapContext.search(dn, filter, searchCtls);
+        NamingEnumeration<SearchResult> ldapResults =
+            ldapContext.search(dn, filter, searchCtls);
         while (ldapResults.hasMoreElements()) {
           SearchResult sr = ldapResults.next();
-
-          AdEntity e = new AdEntity(sr.getNameInNamespace());
-          Attributes attrs = sr.getAttributes();
-          e.sAMAccountName = (String) attrs.get("sAMAccountName").get(0);
-          e.setObjectGUID((byte[]) attrs.get("objectGUID;binary").get(0));
-          e.setSid((byte[]) attrs.get("objectSid;binary").get(0));
-          e.uSNChanged = Long.parseLong((String) attrs.get("uSNChanged").get(0));
-          if (attrs.get("primaryGroupId") != null) {
-            e.primaryGroupId = (String) attrs.get("primaryGroupId").get(0);
-          }
-          if (attrs.get("userPrincipalName") != null) {
-            e.userPrincipalName = (String) attrs.get("userPrincipalName").get(0);
-          }
-
-          Attribute member = attrs.get("member");
-          if (member != null) {
-            for (int i = 0; i < member.size(); ++i) {
-              e.members.add(member.get(i).toString());
-            }
-          }
-
-          results.add(e);
+          results.add(new AdEntity(sr));
         }
-
         cookie = null;
-
         Control[] resultResponseControls = ldapContext.getResponseControls();
-
         for (int i = 0; i < resultResponseControls.length; ++i) {
-          if (resultResponseControls[i] instanceof PagedResultsResponseControl) {
-            cookie = ((PagedResultsResponseControl) resultResponseControls[i]).getCookie();
+          if (resultResponseControls[i] instanceof
+              PagedResultsResponseControl) {
+            cookie = ((PagedResultsResponseControl) resultResponseControls[i])
+                .getCookie();
             ldapContext.setRequestControls(new Control[] {
                 new PagedResultsControl(1000, cookie, Control.CRITICAL)});
           }
         }
-
       } while ((cookie != null) && (cookie.length != 0));
 
     } catch (NamingException e) {
       System.out.println("TODO:" + e);
     } catch (IOException e) {
-      LOGGER.log(Level.WARNING,
-          "Couldn't initialize LDAP paging control. Will continue without paging - this can cause issue if there are more than 1000 members in one group. " + e);
+      LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. Will"
+          + " continue without paging - this can cause issue if there are more"
+          + " than 1000 members in one group. ",
+          e);
     }
 
     return results;
   }
 
+  /**
+   * Generate properties to be used for parameter binding in JDBC
+   * @return map of names and properties of current object
+   */
   public Map<String, Object> getSqlParams() {
     HashMap<String, Object> map = new HashMap<String, Object>();
-    map.put("dn", dn);
-    map.put("dsservicename", dsServiceName);
-    map.put("invocationid", invocationID);
-    map.put("highestcommittedusn", highestCommittedUSN);
-    map.put("netbiosname", nETBIOSName);
-
+    map.put(AdConstants.DB_DN, dn);
+    map.put(AdConstants.DB_DSSERVICENAME, dsServiceName);
+    map.put(AdConstants.DB_INVOCATIONID, invocationID);
+    map.put(AdConstants.DB_HIGHESTCOMMITTEDUSN, highestCommittedUSN);
+    map.put(AdConstants.DB_NETBIOSNAME, nETBIOSName);
+    map.put(AdConstants.DB_SID, sid);
     return map;
   }
 
   /**
-   * @return the dn
+   * @return the distinguished Name
    */
   public final String getDn() {
     return dn;
   }
 
   /**
-   * @param dn the dn to set
+   * @return the dsServiceName
    */
-  public void setDn(final String dn) {
-    this.dn = dn;
+  public String getDsServiceName() {
+    return dsServiceName;
+  }
+
+  /**
+   * @return the invocationID
+   */
+  public String getInvocationID() {
+    return invocationID;
   }
 }

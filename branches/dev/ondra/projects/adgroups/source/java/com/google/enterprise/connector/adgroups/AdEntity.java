@@ -2,59 +2,102 @@ package com.google.enterprise.connector.adgroups;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchResult;
 
 public class AdEntity {
-  private static final Logger LOGGER = Logger.getLogger(AdEntity.class.getName());
+  private String dn;
+  private String sAMAccountName;
+  private String userPrincipalName;
+  private String primaryGroupId;
+  private String sid;
+  private String objectGUID;
+  private List<String> members;
+  private long uSNChanged;
 
-  public String dn;
-  public String sAMAccountName;
-  public String userPrincipalName;
-  public String primaryGroupId;
-  public String sid;
-  public String objectGUID;
-  public AdServer server;
-  public ArrayList<String> members;
-  public long uSNChanged;
-
-  public AdEntity(String dn) {
-    this.dn = dn;
+  /**
+   * Standard constructor for AdEntity. The instance is created from LDAP
+   * search result.
+   * @param searchResult searchResult to create the object from
+   * @throws NamingException
+   */
+  public AdEntity(SearchResult searchResult) throws NamingException {
+    dn = searchResult.getNameInNamespace();
+    Attributes attrs = searchResult.getAttributes();
+    sAMAccountName =
+        (String) attrs.get(AdConstants.ATTR_SAMACCOUNTNAME).get(0);
+    objectGUID =
+        getTextGuid((byte[]) attrs.get(AdConstants.ATTR_OBJECTGUID).get(0));
+    sid = getTextSid((byte[]) attrs.get(AdConstants.ATTR_OBJECTSID).get(0));
+    uSNChanged =
+        Long.parseLong((String) attrs.get(AdConstants.ATTR_USNCHANGED).get(0));
+    if (attrs.get(AdConstants.ATTR_PRIMARYGROUPID) != null) {
+      primaryGroupId =
+          (String)attrs.get(AdConstants.ATTR_PRIMARYGROUPID).get(0);
+    }
+    if (attrs.get(AdConstants.ATTR_UPN) != null) {
+      userPrincipalName = (String) attrs.get(AdConstants.ATTR_UPN).get(0);
+    }
     members = new ArrayList<String>();
+
+    Attribute member = attrs.get(AdConstants.ATTR_MEMBER);
+    if (member != null) {
+      for (int i = 0; i < member.size(); ++i) {
+        members.add(member.get(i).toString());
+      }
+    }
   }
 
   /**
-   * Returns commonName for the given user/group while making LDAP search query to get all parents
-   * groups for a given group we need to retrieve the DN name for a group.
-   *
+   * Constructor to be used only for creating well known identities
+   * @param dn distinguished name of the object
+   * @param sid identifier of the object, this will be used as objectGUID as
+   *        well to ensure uniqueness in the database
+   */
+  public AdEntity(String dn, String sid) {
+    this.dn = dn;
+    this.sid = sid;
+    objectGUID = sid;
+    sAMAccountName = getCommonName();
+  }
+
+  /**
+   * Returns commonName for the given user/group while making LDAP search query
+   * to get all parents groups for a given group we need to retrieve the DN
+   * name for a group.
    * @return group DN from group name.
    */
-
   public String getCommonName() {
-    // LDAP queries return escaped commas to avoid ambiguity, find first not escaped comma
+    // LDAP queries return escaped commas to avoid ambiguity, find first not
+    // escaped comma
     int comma = dn.indexOf(AdConstants.COMMA);
     while (comma > 0 && comma < dn.length()
         && (dn.charAt(comma - 1) == AdConstants.BACKSLASH_CHAR)) {
       comma = dn.indexOf(AdConstants.COMMA, comma + 1);
     }
     String tmpGroupName = dn.substring(0, comma > 0 ? comma : dn.length());
-    tmpGroupName = tmpGroupName.substring(tmpGroupName.indexOf(AdConstants.EQUALS_CHAR) + 1);
-    tmpGroupName = tmpGroupName.replace(AdConstants.BACKSLASH, AdConstants.EMPTY);
+    tmpGroupName =
+        tmpGroupName.substring(
+        tmpGroupName.indexOf(AdConstants.EQUALS_CHAR) + 1);
+    tmpGroupName =
+        tmpGroupName.replace(AdConstants.BACKSLASH, AdConstants.EMPTY);
     return tmpGroupName;
   }
 
-  public String getDC() {
-    return dn.substring(dn.indexOf("DC="));
-  }
-
-  public String getPrimaryGroupSid(String primaryGroupId) {
-    return sid.substring(0, sid.lastIndexOf('-') + 1) + primaryGroupId;
-  }
-
-  public void setSid(byte[] objectSid) {
-    StringBuilder strSID = new StringBuilder("S-");
+  /**
+   * Parses the binary SID retrieved from LDAP and converts to textual
+   * representation. Text version is used to avoid dealing with different BLOB
+   * types between databases.
+   * @param objectSid binary array with the SID
+   * @return textual representation of SID
+   */
+  public static String getTextSid(byte[] objectSid) {
+    StringBuilder strSID = new StringBuilder(AdConstants.SID_START);
     long version = objectSid[0];
     strSID.append(Long.toString(version));
     long authority = objectSid[4];
@@ -63,7 +106,7 @@ public class AdEntity {
       authority <<= 8;
       authority += objectSid[4 + i] & 0xFF;
     }
-    strSID.append("-").append(Long.toString(authority));
+    strSID.append(AdConstants.HYPHEN_CHAR).append(Long.toString(authority));
     long count = objectSid[2];
     count <<= 8;
     count += objectSid[1] & 0xFF;
@@ -75,92 +118,49 @@ public class AdEntity {
         rid <<= 8;
         rid += objectSid[11 - k + (j * 4)] & 0xFF;
       }
-      strSID.append("-").append(Long.toString(rid));
+      strSID.append(AdConstants.HYPHEN_CHAR).append(Long.toString(rid));
     }
-    sid = strSID.toString();
+    return strSID.toString();
   }
 
-  public String formatUser(String userNameFormatInAce) {
-
-    if (userNameFormatInAce.equalsIgnoreCase(
-        AdConstants.USERNAME_FORMAT_IN_ACE_NETBIOS_NAME_SLASH_SAMACCOUNTNAME)) {
-      return server.nETBIOSName + AdConstants.BACKSLASH + sAMAccountName;
-    } else if (
-        userNameFormatInAce.equalsIgnoreCase(AdConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME)
-        || userNameFormatInAce.equalsIgnoreCase(
-            AdConstants.USERNAME_FORMAT_IN_ACE_SAMACCOUNTNAME)) {
-      return sAMAccountName;
-    } else if (userNameFormatInAce.equalsIgnoreCase(AdConstants.USERNAME_FORMAT_IN_ACE_DN)) {
-      return dn;
-    } else if (userNameFormatInAce.equalsIgnoreCase(AdConstants.USERNAME_FORMAT_IN_ACE_CN)) {
-      return getCommonName();
-    } else if (userNameFormatInAce.equalsIgnoreCase(
-        AdConstants.USERNAME_FORMAT_IN_ACE_UPPER_NETBIOS_SLASH_LOWER_SAMACCOUNTNAME)
-        || userNameFormatInAce.equalsIgnoreCase(
-            AdConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME)) {
-      return server.nETBIOSName.toUpperCase() + AdConstants.BACKSLASH
-          + sAMAccountName.toLowerCase();
-    } else if (userNameFormatInAce.equalsIgnoreCase(
-        AdConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME) || userNameFormatInAce
-        .equalsIgnoreCase(AdConstants.USERNAME_FORMAT_IN_ACE_USERPRINCIPALNAME)) {
-      return userPrincipalName;
-    } else {
-      return sAMAccountName.toLowerCase();
-    }
-  }
-
-  public String formatGroup(String groupFormatInAce) {
-    if (groupFormatInAce.equalsIgnoreCase(
-        AdConstants.GROUPNAME_FORMAT_IN_ACE_NETBIOS_NAME_SLASH_SAMACCOUNTNAME)) {
-      return server.nETBIOSName + AdConstants.BACKSLASH + sAMAccountName;
-    } else if (
-        groupFormatInAce.equalsIgnoreCase(AdConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME)
-        || groupFormatInAce.equalsIgnoreCase(AdConstants.GROUPNAME_FORMAT_IN_ACE_SAMACCOUNTNAME)) {
-      return sAMAccountName;
-    } else if (groupFormatInAce.equalsIgnoreCase(AdConstants.GROUPNAME_FORMAT_IN_ACE_DN)) {
-      return dn;
-    } else if (groupFormatInAce.equalsIgnoreCase(AdConstants.GROUPNAME_FORMAT_IN_ACE_CN)) {
-      return getCommonName();
-    } else if (groupFormatInAce.equalsIgnoreCase(
-        AdConstants.GROUPNAME_FORMAT_IN_ACE_UPPER_NETBIOS_SLASH_LOWER_SAMACCOUNTNAME)
-        || groupFormatInAce.equalsIgnoreCase(
-            AdConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME)) {
-      return server.nETBIOSName.toUpperCase() + AdConstants.BACKSLASH
-          + sAMAccountName.toLowerCase();
-    } else if (groupFormatInAce.equalsIgnoreCase(
-        AdConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN)) {
-      return sAMAccountName + AdConstants.AT + server.hostName;
-    } else {
-      return sAMAccountName.toLowerCase();
-    }
-  }
-
-  public String format(String userNameFormatInAce, String groupFormatInAce) {
-    if (userPrincipalName != null) {
-      return formatUser(userNameFormatInAce);
-    } else {
-      return formatGroup(groupFormatInAce);
-    }
-  }
-  
+  /**
+   * Generate properties to be used for parameter binding in JDBC
+   * @return map of names and properties of current object
+   */
   public Map<String, Object> getSqlParams() {
     HashMap<String, Object> map = new HashMap<String, Object>();
-    map.put("dn", dn);
-    map.put("samaccountname", sAMAccountName);
-    map.put("userprincipalname", userPrincipalName);
-    map.put("primarygroupid", primaryGroupId);
-    map.put("sid", sid);
-    map.put("objectguid", objectGUID);
-    map.put("usnchanged", uSNChanged);
+    map.put(AdConstants.DB_DN, dn);
+    map.put(AdConstants.DB_SAMACCOUNTNAME, sAMAccountName);
+    map.put(AdConstants.DB_UPN, userPrincipalName);
+    map.put(AdConstants.DB_PRIMARYGROUPID, primaryGroupId);
+    map.put(AdConstants.DB_DOMAINSID,
+        sid.substring(0, sid.lastIndexOf(AdConstants.HYPHEN_CHAR)));
+    map.put(AdConstants.DB_RID,
+        sid.substring(sid.lastIndexOf(AdConstants.HYPHEN_CHAR)+1));
+    map.put(AdConstants.DB_OBJECTGUID, objectGUID);
+    map.put(AdConstants.DB_USNCHANGED, uSNChanged);
     return map;
-    
   }
-  
-  public void setObjectGUID(byte[] binaryGUID) {
-    StringBuilder sb = new StringBuilder("0x");
-    for (byte b: binaryGUID) {
+
+  /**
+   * Parses the binary GUID retrieved from LDAP and converts to textual
+   * representation. Text version is used to avoid dealing with different
+   * BLOB types between databases.
+   * @param binaryGuid
+   * @return string containing the GUID
+   */
+  public static String getTextGuid(byte[] binaryGuid) {
+    StringBuilder sb = new StringBuilder(AdConstants.GUID_START);
+    for (byte b : binaryGuid) {
         sb.append(Integer.toHexString(b & 0xFF));
     }
-    objectGUID = sb.toString();
+    return sb.toString();
+  }
+
+  /**
+   * @return the members
+   */
+  public List<String> getMembers() {
+    return members;
   }
 }
