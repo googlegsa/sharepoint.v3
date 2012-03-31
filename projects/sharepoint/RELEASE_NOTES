@@ -8,7 +8,7 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 2.8.4, Feburary 6, 2012
+Release 2.8.4, March 30, 2012
 ====================================
 
 Introduction
@@ -20,6 +20,7 @@ Summary of Changes / New Features
 ---------------------------------
 This patch contains fix for the following issues.
 
+--Issue 6057626 Google Services for Sharepoint are not correctly disposing of resources.
 --Issue 5595594 Group resolution fails for special characters in group name.
 --Issue 5713953 SharePoint connector sets incorrect display URL for some of the object types.
 --Issue 5579962 Changes not detected when a SharePoint folder is moved within the same site.
