@@ -14,6 +14,16 @@
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="GetGSSVersion">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetGSSVersionResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetGSSVersionResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>      
       <s:element name="Authorize">
         <s:complexType>
           <s:sequence>
@@ -88,6 +98,12 @@
   <wsdl:message name="CheckConnectivitySoapOut">
     <wsdl:part name="parameters" element="tns:CheckConnectivityResponse" />
   </wsdl:message>
+    <wsdl:message name="GetGSSVersionSoapIn">
+    <wsdl:part name="parameters" element="tns:GetGSSVersion" />
+  </wsdl:message>
+  <wsdl:message name="GetGSSVersionSoapOut">
+    <wsdl:part name="parameters" element="tns:GetGSSVersionResponse" />
+  </wsdl:message>  
   <wsdl:message name="AuthorizeSoapIn">
     <wsdl:part name="parameters" element="tns:Authorize" />
   </wsdl:message>
@@ -99,6 +115,10 @@
       <wsdl:input message="tns:CheckConnectivitySoapIn" />
       <wsdl:output message="tns:CheckConnectivitySoapOut" />
     </wsdl:operation>
+        <wsdl:operation name="GetGSSVersion">
+      <wsdl:input message="tns:GetGSSVersionSoapIn" />
+      <wsdl:output message="tns:GetGSSVersionSoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="Authorize">
       <wsdl:input message="tns:AuthorizeSoapIn" />
       <wsdl:output message="tns:AuthorizeSoapOut" />
@@ -108,6 +128,15 @@
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="CheckConnectivity">
       <soap:operation soapAction="gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com/CheckConnectivity" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetGSSVersion">
+      <soap:operation soapAction="gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com/GetGSSVersion" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -129,6 +158,15 @@
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="CheckConnectivity">
       <soap12:operation soapAction="gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com/CheckConnectivity" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+        <wsdl:operation name="GetGSSVersion">
+      <soap12:operation soapAction="gsbulkauthorization.generated.sharepoint.connector.enterprise.google.com/GetGSSVersion" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

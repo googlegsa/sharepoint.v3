@@ -8,7 +8,7 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 2.8.4, January 31, 2012
+Release 2.8.4, March 30, 2012
 ====================================
 
 Introduction
@@ -20,10 +20,12 @@ Summary of Changes / New Features
 ---------------------------------
 This patch contains fix for the following issues.
 
+--Issue 6057626 Google Services for Sharepoint are not correctly disposing of resources.
 --Issue 5595594 Group resolution fails for special characters in group name.
 --Issue 5713953 SharePoint connector sets incorrect display URL for some of the object types.
 --Issue 5579962 Changes not detected when a SharePoint folder is moved within the same site.
 --Issue 5529449 SharePoint Connector does not exclude meta tag parentwebtitle.
+--Issue 5489487 GSS version should be defined explicitly.
 --Issue 5479101 SharePoint connector fails to add group member ship in the user datastore if groupname has more than 40 characters.
 --Issue 4672274 SharePoint connector should support all types of Site/list templates for sending ACLs to GSA.
 --Issue 4457286 SharePoint connector does not remove database tables when connector instance is deleted.
@@ -38,7 +40,7 @@ This version works with Connector Manager Version 2.8.0 and above.
 Versions lower than 2.8.0 of the Connector Manager will not work correctly with this version of the connector.
 SharePoint local group resolution support will work only with HTTP Based NTLM and Connector authentication with GSA 6.10.4.G.22.
 Flex AuthZ support in connector works only with GSA 6.14.
-All the other connector features will continue to work on GSA 6.10.4.G.22, 6.8.0.G.30 and 6.12.0.G.28.
+All the other connector features will continue to work on GSA 6.14.0.G.28, 6.12.0.G.30, 6.10.4.G.22, and 6.8.0.G.30.
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
 
 Steps to manually upgrade the existing connector
@@ -80,7 +82,6 @@ GssAcl.asmx
 GssAcldisco.aspx
 GssAclwsdl.aspx
 
-
 Platform Support
 ------------------
 The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
@@ -109,7 +110,8 @@ Note: This release has been tested against blank form templates and sample form 
 
 GSA Support:
 ---------------------
-This connector version has been certified against GSA 6.8.0.G.30, 6.10.4.G.22 and 6.12.0.G.28.
+This connector version has been certified against GSA 6.8.0.G.30, 6.10.4.G.22, 6.12.0.G.30 and 6.14.0.G.28.
+
 Known Issues/Limitations
 ------------------------
 1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
@@ -148,10 +150,9 @@ Possible workaround:
 
 8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
 -- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
-9) 5032165: SharePoint connector Alias mapping is not working for default.aspx pages.
-10) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
-11) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
-12) When you remove a connector, it removes only the entries with the namespace URL which it was configured and not for all of it sub sites and so on.
+9) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
+10) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
+11) When you remove a connector, it removes only the entries with the namespace URL which it was configured and not for all of it sub sites and so on.
 
 ----------------------------------------------------------------------------------------------------------------------
 
@@ -177,7 +178,6 @@ This patch contains fix for the following issues.
 --Issue 5192167: Document the maximum number of TCP Ports for Windows Machine which host external SharePoint connector.
 --Supporting Flex AuthZ (GSA feature) in connector in case of Meta & URL feed mode.
 
-
 Version Compatibility
 ---------------------
 This version works with Connector Manager Version 2.8.0 and above.
@@ -185,7 +185,7 @@ Versions lower than 2.8.0 of the Connector Manager will not work correctly with 
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
 SharePoint local group resolution support will work only with HTTP Based NTLM and Connector authentication with GSA 6.10.4.G.22.
 Flex AuthZ support in connector works only with GSA 6.14.
-All the old connector features will continue to work on GSA 6.10.4.G.22 and 6.8.0.G.30.
+All the other connector features will continue to work on 6.14.0.G.28, 6.12.0.G.30, GSA 6.10.4.G.22, and 6.8.0.G.30.
 
 Steps to manually upgrade the existing connector
 ------------------------------------------------
@@ -226,7 +226,6 @@ GssAcl.asmx
 GssAcldisco.aspx
 GssAclwsdl.aspx
 
-
 Platform Support
 ------------------
 The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
@@ -255,7 +254,8 @@ Note: This patch has been tested against blank form templates and sample form te
 
 GSA Support:
 ---------------------
-This connector version has been certified against GSA 6.8.0.G.30 and 6.10.4.G.22.
+This connector version has been certified against GSA 6.8.0.G.30, 6.10.4.G.22, 6.12.0.G.30 and 6.14.0.G.28.
+
 Known Issues/Limitations
 ------------------------
 1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
@@ -296,9 +296,8 @@ Possible workaround:
 -- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
 9) 4903561: SharePoint connector has no validation for the LDAP search base.
 10) 4902133: SharePoint Connector authN at serve time fails for Chinese username.
-11) 5032165: SharePoint connector Alias mapping is not working for default.aspx pages.
-12) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
-13) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
+11) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
+12) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
 
 ----------------------------------------------------------------------------------------------------------------------
 
@@ -383,7 +382,7 @@ This version works with Connector Manager Version 2.8.0 and above.
 Versions lower than 2.8.0 of the Connector Manager will not work correctly with this version of the connector.
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
 SharePoint local group resolution support will work only with HTTP Based NTLM and Connector authentication with GSA 6.10.4.G.22.
-All the old connector features will continue to work on GSA 6.10.4.G.22 and 6.8.0.G.30.
+All the other connector features will continue to work on GSA 6.12.0.G.30, 6.10.4.G.22 and 6.8.0.G.30.
 
 Steps to manually upgrade the existing connector
 ------------------------------------------------
@@ -437,7 +436,6 @@ GssAcl.asmx
 GssAcldisco.aspx
 GssAclwsdl.aspx
 
-
 Platform Support
 ------------------
 The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
@@ -466,7 +464,8 @@ Note: This patch has been tested against blank form templates and sample form te
 
 GSA Support:
 ---------------------
-This connector version has been certified against GSA 6.8.0.G.30 and 6.10.4.G.22.
+This connector version has been certified against GSA 6.8.0.G.30, 6.10.4.G.22, and 6.12.0.G.30.
+
 Known Issues/Limitations
 ------------------------
 1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
@@ -507,9 +506,8 @@ Possible workaround:
 -- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
 9) 4903561: SharePoint connector has no validation for the LDAP search base.
 10) 4902133: SharePoint Connector authN at serve time fails for Chinese username.
-11) 5032165: SharePoint connector Alias mapping is not working for default.aspx pages.
-12) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
-13) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
+11) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
+12) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
 
 _______________________________________________________________________
 
@@ -530,7 +528,6 @@ This patch contains fix for the following issues
 The bug was in the comparator used for grouping documents (to be authorized) according to their parent site collections.
 Each site collection is treated as a bucket wherein the documents belonging to that site collection are stored and set for authorization.
 The bug, in certain use cases, causes document URLs being put in wrong bucket which leads to authZ failures.
-
 
 [Issue 3260584] Allow alias mapping to be applied over record URL along with displayURL
 
@@ -582,7 +579,6 @@ To update ACL web service, update the following three files:
 GssAcl.asmx
 GssAcldisco.aspx
 GssAclwsdl.aspx
-
 
 Platform Support
 ------------------
@@ -713,7 +709,6 @@ To update ACL web service, update the following three files:
 GssAcl.asmx
 GssAcldisco.aspx
 GssAclwsdl.aspx
-
 
 Platform Support
 ------------------
@@ -1162,8 +1157,8 @@ Possible workaround:
 -- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like
 Type1Message are not initialized properly and hence connector configuration does not gets saved.
 
-
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 Release 2.4.4 , 11 February, 2010
 =======================================
@@ -1212,11 +1207,8 @@ Enterprise x64 Edition
 Intel(R) Xeon(R) CPU
 E5504 @ 2.00GHz, 2.00 GB of RAM
 
-
-
 Performance Test details:
 Performance Test Results for Metadata & URL Feed mode:
-
 
 Test Environment Details:
 
@@ -1225,7 +1217,6 @@ Heap Size Settings 256M-1024M (Connector Default)
 Nos. of Web State: 9560
 Nos. of List State: 56784
 Feed Mode: metadata-and-URL
-
 
 Test Results:
 
@@ -1248,7 +1239,6 @@ Nos. of Web State: 6610
 Nos. of List State: 14252
 Feed Mode: Content
 
-
 Test Results:
 Memory Usage: 120 (Average)-404 MB (Max)
 CPU Usage 12% (Average)
@@ -1258,7 +1248,6 @@ Observations:
 1. Memory utilization range 200-300 MB with a traversal rate of 200 Documents per Minute
 2. Memory utilization increase in case of content feed mode as Connector is involved in fetching content from documents.
 3. Average CPU usage is 12%, few times CPU usage has also crossed 50 % but dropped immediately to normal CPU usage. There was no constant increase in the CPU Usage.
-
 
 Known Issues/Limitations
 ------------------------
@@ -1368,7 +1357,6 @@ This has been fixed now.
 Issue 124 - ExtraIDs are un-necessarily updated in-memory in case of Metadata and URL feed mode.
 This does not have any visible change for the customers. The extraId is used in content feed only and not not be updated for metadata and URL feed mode
 
-
 Version Compatibility
 ---------------------
 This version works with Connector Manager version 2.4.0 and above.
@@ -1418,7 +1406,6 @@ Workaround: Stop the connector and restart it after some time to avoid this issu
 3) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
 the credentials used are of a local machine user.
 
-
 4) Issue 108: Connector is unable to traverse the repository upon restart if the state file is very large
 -- If the size of the state file is >= 100 MB, then connector fails to load the state file due to insufficient memory. An
 OutOfMemory Error is thrown while parsing the state XML.
@@ -1462,7 +1449,6 @@ Introduction
 This is a maintenance release that improves quality, reliability, and performance without adding any new functionality.
 All users of previous 2.0.0 release should upgrade to this release
 
-
 Summary of Changes
 ------------------
 
@@ -1504,7 +1490,6 @@ Introduction
 ------------
 This is a major release with new features. Users of previous releases should check the "Version Compatibility" section below for instructions on how to use existing data with this new release.
 
-
 Summary of Changes
 ------------------
 New features:
@@ -1534,7 +1519,6 @@ Issue 68: Connector does not detect renamed folders and send feeds for the same
 Issue 69: NullPointerException seen in logs when SharePoint version is selected as 2007 and Crawl URL is of SPS 2003 while configuring the connector instance.
 Issue 71: The connector configuration form should be XHTML compliant.
 
-
 Version Compatibility
 ---------------------
 Connectors created with earlier versions of the connector will not work with this version. This version works with Connector Manager version 2.0.0. Earlier versions of the Connector Manager will not work correctly with this version of the connector.
@@ -1563,12 +1547,10 @@ Version compatibility
 This connector release is compatible with Connector Manager v1.3.2 and above. Earlier versions of the Connector Manager will not work correctly with this version of the connector.
 It is suggested that customers using SharePoint connector versions 1.0.0 through 1.3.0 and considering upgrading 1.3.2 should do a clean install of Connector Manager v1.3.2 and then install the SharePoint connector v1.3.2. This product is designed to function with Microsoft SharePoint 2003, SharePoint 2007, WSS 2.0, and WSS 3.0.
 
-
 ISSUES FIXED IN THIS RELEASE:
 =============================
 - Issue 63: Connector does not support the various strict Windows security templates that come up with NTLM Version 2.
 - Issue 71: The connector configuration form should be XHTML compliant. Because of certain JavaScript dependecies introduced in this fix, this connector version will not support Connector Manager versions prior to 1.3.2.
-
 
 KNOWN ISSUES/LIMITATIONS:
 =========================
@@ -1604,6 +1586,7 @@ STEPS TO DEPLOY THE PATCH RELEASE ON 1.2.1
 5. Start the SharePoint Connector Service.
 -------------------------------------------------------------------------------------------------------------------------
 
+
 Release 1.2.1, JULY 2, 2008
 =============================
 
@@ -1619,7 +1602,6 @@ ISSUES FIXED IN THIS RELEASE:
 -issue#44: Make "Domain" field optional
 -issue#45: Incorrect URL generation when SharePoint web service returns DefaultViewUrl for List as empty
 -issue#46: Incorrect URL formation for list items when the List name is changed after creation
-
 
 KNOWN ISSUES/LIMITATIONS:
 =============================
@@ -1650,6 +1632,7 @@ STEPS TO DEPLOY THE PATCH RELEASE ON 1.1.2/1.1.3
 5. Start the SharePoint Connector Service.
 
 -------------------------------------------------------------------------------------------------------------------------
+
 
 Release 1.1.3, APRIL 17, 2008
 ==========================
@@ -1696,8 +1679,8 @@ ISSUES FIXED IN THIS RELEASE:
 -Connector was unable to process state file and sends same documents in consecutive batches to Connector Manager, when the SharePoint site have had batches of documents with different last modified dates. Fixed this issue.
 -Work around Microsoft SharePoint Web service bug subsite greater than 1000
 
-
 -------------------------------------------------------------------------------------------------------------------------
+
 
 Release 1.1.1, JAN 08, 2008
 ==========================
@@ -1714,6 +1697,8 @@ ISSUES FIXED IN THIS RELEASE:
 -Logging level for file handler is set to ALL. Previously it was INFO
 
 -------------------------------------------------------------------------------------------------------------------------
+
+
 Release 1.1.0, DEC 19, 2007
 ==========================
 
@@ -1751,7 +1736,6 @@ Summary of Changes
 - Form Library - Alerts
 3. Metadata blacklist nand whitelist has been externalized. It is now made available through connectorInstance.xml
 
-
 ISSUES FIXED IN THIS RELEASE:
 =============================
 The MySite base URL requires to be specified without FQDN (Fully Qualified Domain Name). e.g. http://website is valid MySite URL. Where as http://website.domain.com wouldnt be crawled.
@@ -1783,7 +1767,6 @@ Summary of Changes
 8. The connector supports crawling Linked SharePoint sites.
 9. The connector supports aliasing for the SharePoint crawl URL where the SharePoint server may have a different IP/name for the users from external networks and a local IP/name for the internal systems.
 10. The connector has a built-in filtering on the selectively retrieving certain metadata attributes.
-
 
 KNOWN ISSUES/LIMITATIONS IN THIS RELEASE:
 =============================
