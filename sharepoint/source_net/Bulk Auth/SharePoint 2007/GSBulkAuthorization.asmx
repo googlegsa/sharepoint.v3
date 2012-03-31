@@ -21,8 +21,6 @@ using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
 using System.Collections.Generic;
 
-
-
 /// <summary>
 /// Google Search Appliance Connector for Microsoft SharePoint uses this web service to authorize documents at serve time.
 /// </summary>
@@ -42,6 +40,14 @@ public class BulkAuthorization : System.Web.Services.WebService
         {
         });
         return "success";
+    }
+    /// <summary>
+    /// returns the version of the GSS installed on SharePoint Server.
+    /// </summary>
+    [WebMethod]
+    public string GetGSSVersion()
+    {
+        return "2.8.4";
     }
 
     /// <summary>
@@ -86,7 +92,6 @@ public class BulkAuthorization : System.Web.Services.WebService
                     continue;
                 }
             }
-
             foreach (AuthData authData in authDataArray)
             {
                 if (null == authData)
@@ -96,10 +101,19 @@ public class BulkAuthorization : System.Web.Services.WebService
 
                 DateTime authDataStartTime = System.DateTime.Now;
                 try
-                {
-                    SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA);
-                    SPUser user = wsContext.User;
-                    Authorize(authData, web, user);
+                {                  
+                    using(SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA))
+                    {
+                        if (web != null && web.Exists)
+                        {
+                            SPUser user = wsContext.User;
+                            Authorize(authData, web, user);
+                        }
+                        else
+                        {
+                            throw new Exception("Error creating Web for URL "+ authData.Container.Url);
+                        }
+                    };
                 }
                 catch (Exception e)
                 {
@@ -121,7 +135,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             }
         }
     }
-
+        
     /// <summary>
     /// Actual Authorization is done here
     /// </summary>
@@ -145,7 +159,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         }
         else if (authData.Type == AuthData.EntityType.SITE)
         {
-            bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
+            bool isAllowd = web.DoesUserHavePermissions(user.LoginName,SPBasePermissions.ViewPages);
             authData.IsAllowed = isAllowd;
         }
         else
@@ -389,12 +403,15 @@ public class WSContext
     }
 
     ~WSContext()
-    {
-        site.Dispose();
+    {     
+        if (this.site != null)
+        {
+            site.Dispose();
+        }
     }
 
     /// <summary>
-    /// Reinitialize SPSite using the passed in url. All subsequest requests will be served using this SPSite
+    /// Reinitialize SPSite using the passed in url. All subsequest requests will be served using this SPSite 
     /// </summary>
     /// <param name="url"></param>
     internal void Using(string url)
@@ -402,10 +419,10 @@ public class WSContext
         SPSite site = null;
         SPSecurity.RunWithElevatedPrivileges(delegate()
         {
-            // try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.
+            // try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.        
             try
             {
-                site = new SPSite(url);
+                site = new SPSite(url);              
             }
             catch (Exception e)
             {
@@ -653,16 +670,11 @@ internal class UserInfoHolder
     }
 
     /// <summary>
-    /// If the SPuser object is not yet constructed, try to get it using the passed-in SPSite
+    /// Reconstruct SPUser object everytime SPSite for WSContext is reinitialized.
     /// </summary>
     /// <param name="site"></param>
     internal void TryInit(SPSite site)
-    {
-        if (null != user)
-        {
-            return;
-        }
-
+    {   
         SPWeb web = null;
         try
         {
@@ -691,7 +703,7 @@ internal class UserInfoHolder
         bool web_auth = web.DoesUserHavePermissions(username, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
 
         try
-        {
+        {            
             user = web.AllUsers[username];
         }
         catch (Exception e1)
