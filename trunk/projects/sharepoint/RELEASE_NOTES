@@ -25,6 +25,7 @@ This patch contains fix for the following issues.
 --Issue 5713953 SharePoint connector sets incorrect display URL for some of the object types.
 --Issue 5579962 Changes not detected when a SharePoint folder is moved within the same site.
 --Issue 5529449 SharePoint Connector does not exclude meta tag parentwebtitle.
+--Issue 5489487 GSS version should be defined explicitly.
 --Issue 5479101 SharePoint connector fails to add group member ship in the user datastore if groupname has more than 40 characters.
 --Issue 4672274 SharePoint connector should support all types of Site/list templates for sending ACLs to GSA.
 --Issue 4457286 SharePoint connector does not remove database tables when connector instance is deleted.
