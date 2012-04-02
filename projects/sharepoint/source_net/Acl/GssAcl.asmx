@@ -246,6 +246,30 @@ public class GssAcl
 
     private StringBuilder logMessage = new StringBuilder();
 
+    private String parentId;
+
+    public String ParentId
+    {
+        get { return parentId; }
+        set { parentId = value; }
+    }    
+
+    private string parentUrl;
+
+    public string ParentUrl
+    {
+        get { return parentUrl; }
+        set { parentUrl = value; }
+    }
+
+    private Boolean inheritPermissions;
+
+    public Boolean InheritPermissions
+    {
+        get { return inheritPermissions; }
+        set { inheritPermissions = value; }
+    }
+  
     public string EntityUrl
     {
         get { return entityUrl; }
@@ -721,27 +745,19 @@ public class GssAclMonitor
             }
         }
     }
-
     /// <summary>
-    /// Returns ACLs of a set of entities which belongs to a single SharePoint web site. The SharePoint site is identified by the SPContext in which the request is being served.
+    /// Method to get GssAcl corresponding to Webapplication policy and Site Collection Admin; 
     /// </summary>
-    /// <param name="urls"> Entity URLs whose ACLs are to be returned </param>
-    /// <returns> List Of ACLs corresponding to the entity URLs </returns>
-    [WebMethod]
-    public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
+    /// <returns>GssGetAclForUrlsResult object corresponding to Webapplication Policy</returns>
+     [WebMethod]
+    public GssGetAclForUrlsResult GetAclForWebApplicationPolicy()
     {
-        SPSite site;
-        SPWeb web;
-        init(out site, out web);
-
         GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
-
         List<GssAcl> allAcls = new List<GssAcl>();
-
         Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
         try
         {
-            GssAclUtility.FetchSecurityPolicyForAcl(site, commonAceMap);
+            GssAclUtility.FetchSecurityPolicyForAcl(SPContext.Current.Site, commonAceMap);
         }
         catch (Exception e)
         {
@@ -750,16 +766,81 @@ public class GssAclMonitor
 
         try
         {
-            GssAclUtility.FetchSiteAdminsForAcl(web, commonAceMap);
+            GssAclUtility.FetchSiteAdminsForAcl(SPContext.Current.Web, commonAceMap);
         }
         catch (Exception e)
         {
             result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
         }
 
+        // Site Collection Url
+        string strWebappUrl = SPContext.Current.Site.RootWeb.Url;
+        GssAcl acl = new GssAcl(strWebappUrl, commonAceMap.Count);
+        foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in commonAceMap)
+        {
+            acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+        }
+        allAcls.Add(acl);
+        result.AllAcls = allAcls;
+        result.SiteCollectionUrl = strWebappUrl;
+        result.SiteCollectionGuid = SPContext.Current.Site.WebApplication.Id;
+        return result;
+    }      
+    
+    /// <summary>
+    /// Returns ACLs of a set of entities which belongs to a single SharePoint web site. The SharePoint site is identified by the SPContext in which the request is being served.
+    /// </summary>
+    /// <param name="urls"> Entity URLs whose ACLs are to be returned </param>
+    /// <returns> List Of ACLs corresponding to the entity URLs </returns>
+    [WebMethod]
+    public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
+    {
+        return GetAclForUrlsUsingInheritance(urls, false);
+    } 
+    
+    /// <summary>
+    ///  Returns ACLs of a set of entities which belongs to a single SharePoint web site. The SharePoint site is identified by the SPContext in which the request is being served.
+    /// </summary>
+    /// <param name="urls">Entity URLs whose ACLs are to be returned</param>
+    /// <param name="bUseInheritance">flag indicating use of ACL inheritance</param>
+    /// <returns></returns>
+    [WebMethod]
+    public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls,Boolean bUseInheritance)
+    {
+        SPSite site;
+        SPWeb web;
+        init(out site, out web);
+        GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
+        List<GssAcl> allAcls = new List<GssAcl>();
+        Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
+        if (!bUseInheritance)
+        {
+            try
+            {
+                GssAclUtility.FetchSecurityPolicyForAcl(SPContext.Current.Site, commonAceMap);
+            }
+            catch (Exception e)
+            {
+                result.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
+            }
+
+            try
+            {
+                GssAclUtility.FetchSiteAdminsForAcl(SPContext.Current.Web, commonAceMap);
+            }
+            catch (Exception e)
+            {
+                result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
+            }
+        }
         try
         {
-
+            string strWebappUrl = SPContext.Current.Site.WebApplication.GetResponseUri(SPContext.Current.Site.Zone).AbsoluteUri;
+            if (!String.IsNullOrEmpty(strWebappUrl) && strWebappUrl.EndsWith("/"))
+            {
+                //Removing Trailing "/" from web application url;
+                strWebappUrl = strWebappUrl.Remove(strWebappUrl.Length - 1);
+            }
             foreach (string url in urls)
             {
                 GssAcl acl = null;
@@ -768,21 +849,41 @@ public class GssAclMonitor
                 {
                     Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
                     secobj = GssAclUtility.IdentifyObject(url, web);
-                    GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
-                    acl = new GssAcl(url, aceMap.Count);
-                    foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
+                    if (secobj != null)
                     {
-                        acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
-                    }
-                    allAcls.Add(acl);
+                        if (secobj.HasUniqueRoleAssignments || bUseInheritance == false)
+                        {
+                            GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
+                            acl = new GssAcl(url, aceMap.Count);
+                            foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
+                            {
+                                acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+                            }
+                            allAcls.Add(acl);
 
-                    try
-                    {
-                        acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
+                            try
+                            {
+                                acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
+                            }
+                            catch (Exception e)
+                            {
+                                acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                            }                         
+                            acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
+                            acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
+                        }
+                        else
+                        {
+                            acl = new GssAcl(url, 0);
+                            acl.InheritPermissions = true;
+                            GssAclUtility.GetParentUrl(secobj, strWebappUrl, acl);
+                            allAcls.Add(acl);
+                        }
                     }
-                    catch (Exception e)
+                    else
                     {
-                        acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                        acl = new GssAcl(url, 0);
+                        acl.AddLogMessage("Problem Identifying Object with Url [" + url + " ] ");
                     }
                 }
                 catch (Exception e)
@@ -806,9 +907,8 @@ public class GssAclMonitor
                                 exDispose = null; //Ignoring dispose or type casting error;
                             }
                         }
-                    } 
+                    }
                 }
-               
             }
         }
         finally
@@ -896,12 +996,10 @@ public class GssAclMonitor
             // It's the first request. Return the current chage token of the site collection as the next token for synchronization
             allChanges = new GssAclChangeCollection(site.CurrentChangeToken);
         }
-
         if (web != null)
         {
             web.Dispose(); 
         }
-
         result.AllChanges = allChanges;
         result.SiteCollectionUrl = site.Url;
         result.SiteCollectionGuid = site.ID;
@@ -1323,9 +1421,7 @@ public sealed class GssAclUtility
         }
         else
         {
-
-            return web.Site.OpenWeb();   
-
+            return web.Site.OpenWeb();
         }
 
         SPList list = web.GetList(url);
@@ -1336,20 +1432,147 @@ public sealed class GssAclUtility
                 Uri uri = new Uri(url);
                 string query = uri.Query;
                 string id = HttpUtility.ParseQueryString(query).Get("ID");
-                listItem = list.GetItemById(int.Parse(id));
-                return listItem;
+                int idToCheck = 0;
+                if (int.TryParse(id, out idToCheck))
+                {
+                    listItem = list.GetItemById(idToCheck);
+                    if (listItem != null)
+                    {
+                        return listItem;
+                    }
+                }
+
+                //Check for Folder / File                  
+                SPFile oFile = web.GetFile(url);
+                if (oFile != null)
+                {
+                    if (oFile.Item != null)
+                    {
+                        return oFile.Item;
+                    }                    
+                    if (oFile.ParentFolder != null && list.EnableAttachments)
+                    {
+                        //This is check for Attachments. 
+                        //In case of Attachments, security is same as of SPListItem it is associated with
+                        int parentId = 0;
+                        if (int.TryParse(oFile.ParentFolder.Name, out parentId))
+                        {
+                            SPListItem oParent = list.GetItemById(parentId);
+                            if (oParent != null && oParent.Attachments != null)
+                            {
+                                String attachmentUrlPrefix = oParent.Attachments.UrlPrefix;
+                                String attachmentUrlTocheck = attachmentUrlPrefix + oFile.Name;
+                                if (String.Compare(attachmentUrlTocheck, url, true) == 0)
+                                {
+                                    // This is Url for Attachment Item. So we will return Parent Item.
+                                    // For attachment url, inherit from will be same as inherit from for
+                                    // list item it is associated with.
+                                    return oParent;
+                                } 
+                            }
+                        }
+                        
+                    }
+                }
             }
             catch (Exception e)
             {
                 return list;
             }
+            //Returning List as a default Identified Object
+            return list;
         }
-
-        return web.Site.OpenWeb(url);
+        // TODO Need to check this. 
+        return web.Site.OpenWeb();
 
 
     }
-    
+
+    /// <summary>
+    /// Utility method to get Parent Object URL
+    /// </summary>
+    /// <param name="child">ISecurable Object. This can be SPListItem, SPlist or SPWeb</param>
+    /// <returns></returns>
+    public static void GetParentUrl(ISecurableObject child, String strSiteUrl,GssAcl aclToUpdate)
+    {      
+        if (child == null)
+        {
+            aclToUpdate.ParentId = String.Empty;
+            aclToUpdate.ParentUrl = String.Empty;
+        }
+        if (child is SPListItem)
+        {
+            SPListItem oChildItem = (SPListItem)child;
+            using (SPWeb oParentWeb = oChildItem.Web)
+            {
+                SPFile oFile = oChildItem.File;
+                //In case of Folders and generic List items oChildItem.File will be null. 
+                //So need to create SPFile object explicitly.
+                if (oFile == null)
+                {
+                    oFile = oParentWeb.GetFile(oChildItem.Url);
+                }
+                if (oFile != null)
+                {
+                    //To check if Item is available at root level or inside folder
+                    if (String.Compare(oFile.ParentFolder.ServerRelativeUrl, oChildItem.ParentList.RootFolder.ServerRelativeUrl, true) == 0)
+                    {
+                        //If item is available at root level (outside folder) return default view URL for SPList (same URL is being used in ListState by connector)
+                        aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
+                        aclToUpdate.ParentId = String.Format("{{{0}}}",oChildItem.ParentList.ID.ToString());
+                    }
+                    else
+                    {
+                        //If item is available inside folder return folder Url. Other option is to return DefaultView url with rootfolder parameter
+                        aclToUpdate.ParentUrl = strSiteUrl + oFile.ParentFolder.ServerRelativeUrl;
+                        aclToUpdate.ParentId = oFile.ParentFolder.Item.ID.ToString();
+                    }
+                }
+            }
+        }
+        else if (child is SPList)
+        {
+            SPList oChildList = (SPList)child;
+            using (SPWeb oParentWeb = oChildList.ParentWeb)
+            {
+               // Homepage for SPWeb. SPConnector is always using this as default.aspx
+               // TODO Ideally This should be used as String strWelcomePage = oParentWeb.RootFolder.WelcomePage;
+                String strWelcomePage = "default.aspx";
+                aclToUpdate.ParentUrl = oParentWeb.Url + "/" + strWelcomePage;
+                aclToUpdate.ParentId = String.Format("{{{0}}}", oParentWeb.ID.ToString()); 
+            }
+        }
+        else if (child is SPWeb)
+        {
+            using (SPWeb oChildWeb = (SPWeb)child)
+            {
+                using (SPWeb oParentWeb = oChildWeb.ParentWeb)
+                {
+                    if (oParentWeb != null && oParentWeb.Exists)
+                    {
+                        //Homepage for SPWeb
+                        String strWelcomePage = "default.aspx";
+                        aclToUpdate.ParentUrl = oParentWeb.Url + "/" + strWelcomePage;
+                        aclToUpdate.ParentId = String.Format("{{{0}}}", oParentWeb.ID.ToString()); 
+                    }
+                    else
+                    {
+                        using (SPSite oSite = oChildWeb.Site)
+                        {
+                            using (SPWeb oRootWeb = oSite.RootWeb)
+                            {
+                                //Homepage for Root SPWeb
+                                String strWelcomePage = "default.aspx";
+                                aclToUpdate.ParentUrl = oRootWeb.Url + "/" + strWelcomePage;
+                                aclToUpdate.ParentId = String.Format("{{{0}}}", oRootWeb.ID.ToString()); 
+                            }
+                        }
+                    }
+                }
+            }
+        }      
+    }
+        
     /// <summary>
     /// Retrieves the Owner's information about a given ISecurable entity
     /// </summary>

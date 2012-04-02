@@ -34,7 +34,7 @@ public class SPConstants {
   // grows. In future, we may also create another class specifically for these
   // enums.
   public static enum FeedType {
-    METADATA_URL_FEED("metadata-and-URL"), CONTENT_FEED("content");
+    METADATA_URL_FEED("metadata-and-URL"), CONTENT_FEED("content"), ACL_FEED("acl");
     // For backward compatibility. Earlier connectors would be using
     // "metadata-and-URL" & "content" literals
     private String feedType;
@@ -48,6 +48,8 @@ public class SPConstants {
         return METADATA_URL_FEED;
       } else if (CONTENT_FEED.toString().equalsIgnoreCase(feedType)) {
         return CONTENT_FEED;
+      } else if (ACL_FEED.toString().equalsIgnoreCase(feedType)) {
+          return ACL_FEED;
       } else {
         return null;
       }
@@ -140,6 +142,9 @@ public class SPConstants {
   // Constant used by ListsWS for precessing the list item data returned by
   // the Web Service.
   public static final String NAME = "Name";
+  public static final String FSOBJTYPE = "FSObjType";
+  public static final String OWS_FSOBJTYPE = "ows_FSObjType";
+  public static final String DOC_ATTACHMENTS = "Attachments";
   public static final String DISPLAYNAME = "DisplayName";
   public static final String MODIFIED = "ows_Modified";
   public static final String FILEREF = "ows_FileRef";

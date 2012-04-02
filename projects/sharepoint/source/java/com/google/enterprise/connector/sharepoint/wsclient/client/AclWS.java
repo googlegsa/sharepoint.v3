@@ -57,4 +57,11 @@ public interface AclWS {
    * checking the Web Service connectivity
    */
   public void checkConnectivity() throws SharepointException;
+  
+  /**
+   * Construct SPDocument object for representing Web application policy
+   * ACL information
+   */  
+  public SPDocument getWebApplicationPolicy(WebState webState, 
+      String strFeedType);
 }

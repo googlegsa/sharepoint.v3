@@ -113,13 +113,18 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    */
   private boolean toBeFed = true;
 
-  // TODO: use Set instead of list
   // List of users and their permissions to be sent in document's ACL
   private Map<String, Set<RoleType>> usersAclMap;
 
   // List of groups and their permissions to be sent in document's ACL
   private Map<String, Set<RoleType>> groupsAclMap;
 
+  //List of users and their denied permissions to be sent in document's ACL
+  private Map<String, Set<RoleType>> denyUsersAclMap;
+
+  // List of groups and their denied permissions to be sent in document's ACL
+  private Map<String, Set<RoleType>> denyGroupsAclMap;
+  
   // Check if the documents is discovered from ACL based crawling. An ACL
   // based crawling happens when a security change occurs on site/list which
   // affects the ACL of many list items
@@ -129,7 +134,20 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   private String title;
   private final String MSG_FILE_EXTENSION = ".msg";
   private final String MSG_FILE_MIMETYPE = "application/vnd.ms-outlook";
+  
+  // Url for parent object which can be a SPFolder or SPList or SPweb Url.
+  private String parentUrl;
 
+  // Flag indicating if SPDocument is having inherited 
+  // permissions or unique permissions. 
+  private boolean inheritPermissions;
+  
+  // Parent ID. This will be integer if parent is a folder 
+  // else this will be Guid for List or Web.
+  private String parentId;
+  
+  private boolean webAppPolicyDoc = false;  
+  
   /**
    * @return the toBeFed
    */
@@ -438,6 +456,19 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     return comparison;
   }
 
+  /** Returns meta-data property value associated with Attribute for Given
+   *  attribute name.
+   */
+  public String getMetaDataAttributeValue(final String strPropertyName) {
+      final Collator collator = Util.getCollator();
+      for (Attribute attr : getAllAttrs()) {           
+            if (collator.equals(strPropertyName, attr.getName())) {
+              return attr.getValue().toString();
+            }
+          }
+      return null;
+  }
+  
   /**
    * Returns the property object for a given property name. CM calls this to
    * gather all the information about a document. The property names that are
@@ -479,9 +510,40 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       }
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
       if (FeedType.CONTENT_FEED != getFeedType()) {
+          // TODO Handle ACL feed here.
         return new SPProperty(SpiConstants.PROPNAME_SEARCHURL, new StringValue(
             getUrl()));
       }
+    } else if (collator.equals(strPropertyName,
+            SpiConstants.PROPNAME_ACLINHERITANCETYPE)) {        
+         return new SPProperty(SpiConstants.PROPNAME_ACLINHERITANCETYPE,
+             new StringValue(
+                 SpiConstants.AclInheritanceType.PARENT_OVERRIDES.toString()));      
+     } else if (collator.equals(strPropertyName,
+             SpiConstants.PROPNAME_ACLINHERITFROM_DOCID)) {
+        String parentUrlToSend = getParentUrl();
+        if (FeedType.CONTENT_FEED == getFeedType()) { 
+             // TODO Handle ACL feed here.
+            parentUrlToSend = getParentUrl()+"|"+getParentId().toUpperCase();
+        }
+        return new SPProperty(SpiConstants.PROPNAME_ACLINHERITFROM_DOCID,
+            new StringValue(parentUrlToSend));    
+    } else if (collator.equals(strPropertyName,
+        SpiConstants.PROPNAME_ACLINHERITFROM)) {
+        String parentUrlToSend = getParentUrl();
+        if (FeedType.CONTENT_FEED == getFeedType()) { 
+             // TODO Handle ACL feed here.
+            return null;
+        }
+        return new SPProperty(SpiConstants.PROPNAME_ACLINHERITFROM,
+            new StringValue(parentUrlToSend));    
+    }  else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_FEEDTYPE)) {
+      return new SPProperty(SpiConstants.PROPNAME_FEEDTYPE, new StringValue(
+          feedType.toString())); 
+    }  else if (collator.equals(strPropertyName,
+        SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE)) {
+         return new SPProperty(SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE,
+             new StringValue(feedType.toString()));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_DISPLAYURL)) {
       return new SPProperty(SpiConstants.PROPNAME_DISPLAYURL, new StringValue(
           displayUrl));
@@ -510,34 +572,64 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
       return new SPProperty(SpiConstants.PROPNAME_ISPUBLIC, new StringValue(
           getAction().toString()));
+    } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYUSERS)) {
+        if (denyUsersAclMap != null) {
+          List<Value> values = new ArrayList<Value>(getDenyUsersAclMap().size());
+          for (String user : getDenyUsersAclMap().keySet()) {
+            values.add(Value.getStringValue(user));
+          }
+          return new SimpleProperty(values);
+        } else {
+            return null;
+        }
+    } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYGROUPS)) {
+        if (denyGroupsAclMap != null) {
+             List<Value> values = new ArrayList<Value>(getDenyGroupsAclMap().size());
+              for (String group : getDenyGroupsAclMap().keySet()) {
+                values.add(Value.getStringValue(group));
+              }
+              return new SimpleProperty(values);
+        } else {
+            return null;
+        }
+     
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLUSERS)) {
-      List<Value> values = new ArrayList<Value>(usersAclMap.size());
-      for (String user : usersAclMap.keySet()) {
-        values.add(Value.getStringValue(user));
-      }
-      return new SimpleProperty(values);
-    } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLGROUPS)) {
-      List<Value> values = new ArrayList<Value>(groupsAclMap.size());
-      for (String group : groupsAclMap.keySet()) {
-        values.add(Value.getStringValue(group));
-      }
-      return new SimpleProperty(values);
-    } else if (strPropertyName.startsWith(SpiConstants.USER_ROLES_PROPNAME_PREFIX)) {
-      String originalName = strPropertyName.substring(SpiConstants.USER_ROLES_PROPNAME_PREFIX.length());
-      Set<RoleType> roleTypes = usersAclMap.get(originalName);
-      List<Value> values = new ArrayList<Value>(roleTypes.size());
-      for (RoleType roleType : roleTypes) {
-        values.add(Value.getStringValue(roleType.toString()));
-      }
-      return new SimpleProperty(values);
-    } else if (strPropertyName.startsWith(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX)) {
-      String originalName = strPropertyName.substring(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX.length());
-      Set<RoleType> roleTypes = groupsAclMap.get(originalName);
-      List<Value> values = new ArrayList<Value>(roleTypes.size());
-      for (RoleType roleType : roleTypes) {
-        values.add(Value.getStringValue(roleType.toString()));
-      }
-      return new SimpleProperty(values);
+        if (usersAclMap != null) {
+          List<Value> values = new ArrayList<Value>(usersAclMap.size());
+          for (String user : usersAclMap.keySet()) {
+            values.add(Value.getStringValue(user));
+          }
+          return new SimpleProperty(values);
+       } else {
+           return null;
+       }
+   } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLGROUPS)) {
+       if (groupsAclMap != null) {
+            List<Value> values = new ArrayList<Value>(groupsAclMap.size());
+             for (String group : groupsAclMap.keySet()) {
+               values.add(Value.getStringValue(group));
+             }
+             return new SimpleProperty(values);
+       } else {
+           return null;
+       }
+    
+   } else if (strPropertyName.startsWith(SpiConstants.USER_ROLES_PROPNAME_PREFIX)) {
+        String originalName = strPropertyName.substring(SpiConstants.USER_ROLES_PROPNAME_PREFIX.length());
+        Set<RoleType> roleTypes = usersAclMap.get(originalName);
+        List<Value> values = new ArrayList<Value>(roleTypes.size());
+        for (RoleType roleType : roleTypes) {
+          values.add(Value.getStringValue(roleType.toString()));
+        }
+        return new SimpleProperty(values);
+      } else if (strPropertyName.startsWith(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX)) {
+        String originalName = strPropertyName.substring(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX.length());
+        Set<RoleType> roleTypes = groupsAclMap.get(originalName);
+        List<Value> values = new ArrayList<Value>(roleTypes.size());
+        for (RoleType roleType : roleTypes) {
+          values.add(Value.getStringValue(roleType.toString()));
+        }
+        return new SimpleProperty(values);
     } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_TITLE)) {
       return new SPProperty(SpiConstants.PROPNAME_TITLE, new StringValue(title));
     }
@@ -573,7 +665,15 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     candidates.add(SPConstants.LIST_GUID);
     candidates.add(SPConstants.SPAUTHOR);
     candidates.add(SPConstants.PARENT_WEB_TITLE);
-
+    if (!isWebAppPolicyDoc()) {
+      if (feedType == FeedType.CONTENT_FEED) {
+        names.add(SpiConstants.PROPNAME_ACLINHERITFROM_DOCID);  
+        names.add(SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE);
+      } else {
+        names.add(SpiConstants.PROPNAME_ACLINHERITFROM);  
+      }   
+    }
+     names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
     if (null != usersAclMap) {
       names.add(SpiConstants.PROPNAME_ACLUSERS);
       for (Entry<String, Set<RoleType>> ace : usersAclMap.entrySet()) {
@@ -585,7 +685,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       for (Entry<String, Set<RoleType>> ace : groupsAclMap.entrySet()) {
         names.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
       }
+    } 
+    if (null != denyUsersAclMap) {
+      names.add(SpiConstants.PROPNAME_ACLDENYUSERS);
     }
+    if (null != denyGroupsAclMap) {
+      names.add(SpiConstants.PROPNAME_ACLDENYGROUPS);
+    }    
     // Add "extra" metadata fields, including those added by user to the
     // documentMetadata List for matching against patterns
     for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
@@ -893,5 +999,53 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   public void setRenamedFolder(Folder renamedFolder) {
     this.renamedFolder = renamedFolder;
+  }
+
+  public String getParentUrl() {
+    return parentUrl;
+  }
+
+  public void setParentUrl(String parentUrl) {
+    this.parentUrl = parentUrl;
+  }
+
+  public boolean isInheritPermissions() {
+    return inheritPermissions;
+  }
+
+  public void setInheritPermissions(boolean inheritPermissions) {
+    this.inheritPermissions = inheritPermissions;
+  }
+
+  public String getParentId() {
+    return parentId;
+  }
+
+  public void setParentId(String parentId) {
+    this.parentId = parentId;
+  }
+
+  public Map<String, Set<RoleType>> getDenyUsersAclMap() {
+    return denyUsersAclMap;
+  }
+    
+  public void setDenyUsersAclMap(Map<String, Set<RoleType>> deniedUsersAclMap) {
+    this.denyUsersAclMap = deniedUsersAclMap;
+  }
+
+  public Map<String, Set<RoleType>> getDenyGroupsAclMap() {
+    return denyGroupsAclMap;
+  }
+
+  public void setDenyGroupsAclMap(Map<String, Set<RoleType>> deniedGroupsAclMap) {
+    this.denyGroupsAclMap = deniedGroupsAclMap;
+  }
+
+  public boolean isWebAppPolicyDoc() {
+    return webAppPolicyDoc;
+  }
+
+  public void setWebAppPolicyDoc(boolean webAppPolicyDoc) {
+    this.webAppPolicyDoc = webAppPolicyDoc;
   }
 }

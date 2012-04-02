@@ -1228,12 +1228,12 @@ public class SharepointClient {
           // check is added to reduce the frequency with which
           // getAlerts WS call is made.
           LOGGER.fine("Getting alerts under site [ " + webURL + " ]");
-          processAlerts(ws, sharePointClientContext);
-          // get site data for the web and update webState.
-          LOGGER.fine("Geting landing page data for the site [ " + webURL
-              + " ]");
-          processSiteData(ws, sharepointClientContext);
+          processAlerts(ws, sharePointClientContext);       
         }
+        // Get site data for the web and update webState.        
+        LOGGER.fine("Getting landing page data for the site [ " + webURL
+            + " ]"); 
+        processSiteData(ws, sharepointClientContext);
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "Following exception occured while traversing/updating web state URL [ "
             + webURL + " ]. ", e);
@@ -1315,7 +1315,8 @@ public class SharepointClient {
     }
 
     // find the list in the Web state
-    ListState dummySiteListState = webState.lookupList(currentDummySiteDataList.getPrimaryKey());
+    ListState dummySiteListState = 
+            webState.lookupList(currentDummySiteDataList.getPrimaryKey());
     if (dummySiteListState == null) {
       dummySiteListState = currentDummySiteDataList;
     }
@@ -1325,7 +1326,13 @@ public class SharepointClient {
     SPDocument document = null;
 
     try {
-      final SiteDataWS siteDataWS = clientFactory.getSiteDataWS(tempCtx);
+      // SharePoint Client Context used to create SiteDataWS should point to
+      // WebState URL. If not then SharePoint default page will point to
+      // incorrect Web ID for Web State.
+      SharepointClientContext ctxToPass = 
+              (SharepointClientContext) tempCtx.clone();
+      ctxToPass.setSiteURL(webState.getWebUrl());
+      final SiteDataWS siteDataWS = clientFactory.getSiteDataWS(ctxToPass);
       // need to check whether the site exist or not and is not null
       if (webState.isExisting() && null != webState) {
         document = siteDataWS.getSiteData(webState);
@@ -1335,15 +1342,35 @@ public class SharepointClient {
       }
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Problem while getting site data. ", e);
-    }
-
-    if (dummySiteListState.isExisting() && null != document) {
+    }  
+    // Web Application Policy Document processing.
+    // Web Application Policy Document will be associated with each webstate.
+    AclWS aclWs = null;
+    try {
+       SPDocument webApppolicy = null;
+       aclWs = clientFactory.getAclWS(sharepointClientContext, 
+               webState.getWebUrl());
+       webApppolicy = aclWs.getWebApplicationPolicy(webState,
+       sharepointClientContext.getFeedType().toString());
+       if (webApppolicy != null) {
+       documentList.add(webApppolicy);
+       }
+      } catch (final Exception e) {
+            LOGGER.log(Level.WARNING, "Problem while getting web app policy. ", e);
+    } 
+    if ((dummySiteListState.isExisting() || 
+            webState.isWebApplicationPolicyChange())
+      && null != document) {
       // Mark dummy list state to true in order to differentiate this list state
       // with
       // other lists in web state.
       dummySiteListState.setSiteDefaultPage(true);
       webState.AddOrUpdateListStateInWebState(dummySiteListState, currentDummySiteDataList.getLastMod());
       dummySiteListState.setCrawlQueue(documentList);
+      // Resetting web application policy change flag. This will ensure
+      // same webstate will not be processed again 
+      // for web application policy change.
+      webState.setWebApplicationPolicyChange(false);
     }
   }
 }

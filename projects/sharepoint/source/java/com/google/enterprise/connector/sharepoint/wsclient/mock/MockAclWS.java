@@ -75,4 +75,14 @@ public class MockAclWS implements AclWS {
    */
   public void checkConnectivity() throws SharepointException {
   }
+  
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  public SPDocument getWebApplicationPolicy(WebState webState,
+      String strFeedType) {
+    return null;
+  }
 }
