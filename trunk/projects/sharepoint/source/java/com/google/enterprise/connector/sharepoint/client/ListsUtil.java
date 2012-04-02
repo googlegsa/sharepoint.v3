@@ -166,7 +166,7 @@ public abstract class ListsUtil {
   }
 
   /**
-   * For getting only documents and not folders; starting from a given
+   * For getting documents and folders; starting from a given
    * lastItemID
    *
    * @param listItemID The minimal ID, items returned have an ID greater that this ID
@@ -184,13 +184,12 @@ public abstract class ListsUtil {
       // or listItem.
       listItemID = "0";
     }
-    final String strMyString = "" + "<Query>" + "<Where>" + "<And>" + "<Gt>"
-        + "<FieldRef Name=\"ID\"/>" + "<Value Type=\"Counter\">" + listItemID
-        + "</Value>" + "</Gt>" + "<Neq>" + "<FieldRef Name=\"ContentType\"/>"
-        + "<Value Type=\"Text\">Folder</Value>" + "</Neq>" + "</And>"
-        + "</Where>"
-        + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy>"
-        + "</Query>";
+    final String strMyString = "" + "<Query>" + "<Where>" + "<Gt>"
+            + "<FieldRef Name=\"ID\"/>" + "<Value Type=\"Counter\">"
+            + listItemID + "</Value>" + "</Gt>" 
+            + "</Where>"
+            + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy>"
+            + "</Query>";
 
     final MessageElement[] meArray = { getMeFromString(strMyString) };
     return meArray;
@@ -284,7 +283,7 @@ public abstract class ListsUtil {
         // Hence, no need to use "OptimizeFor" in this case.
       } else if (recursion) {
         me.addChildElement(new MessageElement(new QName("ViewAttributes"))).addAttribute(
-            SOAPFactory.newInstance().createName("Scope"), "Recursive");
+            SOAPFactory.newInstance().createName("Scope"), SPConstants.RECURSIVE);
 
         // added for getting folder information when recursion is being
         // used, in case of getListItemChangesSinceToken.
@@ -509,14 +508,7 @@ public abstract class ListsUtil {
           LOGGER.warning("excluding " + linkSiteURL.toString());
         }
       }
-    }
-
-    // STEP2: Create SPDocument for found entity.
-    if (SPConstants.CONTENT_TYPE_FOLDER.equalsIgnoreCase(strObjectType)) {
-      LOGGER.log(Level.WARNING, SPConstants.CONTENTTYPE
-          + " is folder. Returning as we do not send folders as documents. ");
-      return null;
-    }
+    }  
 
     if (docId == null) {
       LOGGER.log(Level.WARNING, SPConstants.ID
@@ -527,15 +519,35 @@ public abstract class ListsUtil {
 
     final StringBuffer url = new StringBuffer();
     String displayUrl = null;
-    if (list.isDocumentLibrary()) {
+    final String urlPrefix = 
+            Util.getWebApp(sharepointClientContext.getSiteURL());
+    String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
+    fsObjType = Util.normalizeMetadataValue(fsObjType);
+    LOGGER.log(Level.INFO, "fsObjType [ " + fsObjType
+             + " ]. ");
+    // fsobjtype = 1 indicates this is a folder.
+    // (Applicable for Default Folder content Type as well as for
+    // Custom folder content type).
+    // Checking content type = folder might not be sufficient 
+    // as there is a possibility of custom folder content type
+    // TODO Check all the CAML queries checking 
+    // for Content Type = folder and change it to FSObjType = 1. 
+    if (fsObjType.equals("1")) {    
+      // This is a Folder Item.
+      // For folder item URL will be calculated as Web Url + filref for folder
+      url.setLength(0);
+      url.append(urlPrefix);
+      url.append(SPConstants.SLASH);
+      url.append(fileref);
+      displayUrl = url.toString();    
+    } else if (list.isDocumentLibrary()) {
       if (fileref == null) {
         return null;
       }
       /*
        * An example of ows_FileRef is 1;#unittest/Shared SPDocuments/sync.doc We
        * need to get rid of 1;# so that the document URL can be constructed.
-       */
-      final String urlPrefix = Util.getWebApp(sharepointClientContext.getSiteURL());
+       */   
       url.setLength(0);
       url.append(urlPrefix);
       url.append(SPConstants.SLASH);
@@ -546,7 +558,14 @@ public abstract class ListsUtil {
         url.append(SPConstants.NOREDIRECT);
       }
     } else {
-      final String urlPrefix = Util.getWebApp(sharepointClientContext.getSiteURL());
+      // TODO this is not a correct implementation. 
+      // This is not considering any customizations done on SharePoint list.
+      // Ideally need to get Default display form URL for 
+      // List and construct URL.
+      // Due to use of OOB SharePoint web service,
+      // this information is not available in ListState.
+      // Custom web service might be the approach.
+      // SPList.DefaultDisplayFormUrl can be used to get this information.
       url.setLength(0);
       url.append(urlPrefix);
       url.append(SPConstants.SLASH);
@@ -611,7 +630,11 @@ public abstract class ListsUtil {
     }
 
     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-      docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;
+      if (fsObjType.equals("1")) {
+        docId = url.toString() + SPConstants.DOC_TOKEN + docId;      
+      } else {
+        docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;
+      }
     }
     doc = new SPDocument(docId, url.toString(), calMod, author, strObjectType,
         list.getParentWebState().getTitle(),

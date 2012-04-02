@@ -174,25 +174,41 @@ public class BulkAuthorization : System.Web.Services.WebService
                 }
                 else if (authData.Type == AuthData.EntityType.LISTITEM)
                 {
-                    int itemId = int.Parse(authData.ItemId);
-                    SPListItem item = list.GetItemById(itemId);
-                    bool isAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                    authData.IsAllowed = isAllowed;
+                    int itemId = 0;
+                    bool bItemFound = false;
+                    SPListItem item = null;
+                    if (int.TryParse(authData.ItemId, out itemId))
+                    {
+                        if (list != null)
+                        {
+                            item = list.GetItemById(itemId);
+                            if (item != null)
+                            {
+                                bool isAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                                authData.IsAllowed = isAllowed;
+                                bItemFound = true;
+                            }
+                        }                       
+                    }
+
+                    /*
+                     * Authorization for documents existing under a document library and folder
+                     * For eg: document url is of the form "http://SharePointWebApp:portNo/site/doclib/myDoc.txt". Hence
+                     * the code below will perform authorization for documents under a document library or folder.
+                     */
+                    if (!bItemFound)
+                    {                        
+                        item = web.GetListItem(url);
+                        if (item != null)
+                        {
+                            authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                        }                       
+                    }
                 }
             }
             catch (Exception e)
             {
-                /*
-                 * Authorization for documents existing under a document library and folder
-                 * For eg: document url is of the form "http://SharePointWebApp:portNo/site/doclib/myDoc.txt". Hence
-                 * the code below will perform authorization for documents under a document library or folder.
-                 */
-                if (authData.Type == AuthData.EntityType.LISTITEM)
-                {
-                    // Gets the document as a list item, from the URL and for the current website
-                    SPListItem item = web.GetListItem(url);
-                    authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                }
+                throw new Exception("Error Authorizing Url :" + url, e);
             }
         }
     }
@@ -406,7 +422,15 @@ public class WSContext
     {     
         if (this.site != null)
         {
-            site.Dispose();
+            try
+            {
+                site.Dispose();
+            }
+            catch (Exception ex)
+            {
+                // TODO Avoid this exception
+                ex = null;
+            }
         }
     }
 
@@ -670,11 +694,11 @@ internal class UserInfoHolder
     }
 
     /// <summary>
-    /// Reconstruct SPUser object everytime SPSite for WSContext is reinitialized.
+    ///  Reconstruct SPUser object everytime SPSite for WSContext is reinitialized.  
     /// </summary>
     /// <param name="site"></param>
     internal void TryInit(SPSite site)
-    {   
+    {  
         SPWeb web = null;
         try
         {

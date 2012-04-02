@@ -158,10 +158,34 @@ public class SPListsWS implements ListsWS {
     final String listName = baseList.getPrimaryKey();
     final String listItemId = Util.getOriginalDocId(listItem.getDocId(),
         listItem.getFeedType());
-
-    GetAttachmentCollectionResponseGetAttachmentCollectionResult res =
-        stub.getAttachmentCollection(listName, listItemId);
-
+    // Check for Attachments metedata property of ListItem. If no attachments
+    // for listitem then value will be 0. So avoid webservice call.
+    // For some reason attachment property is not available with listItem then
+    // make web service call. SharePoint document library don't allow
+    // attachments so that scenario should be covered with
+    // ListState.canContainAttachments(). For Folder Items Attachments property
+    // will not be present but FSObjType = 1. Ignore folders 
+    // for attachment verification.
+    final String strAttachmentValue = 
+        listItem.getMetaDataAttributeValue(SPConstants.DOC_ATTACHMENTS);
+    final String strFSObjType =  
+        listItem.getMetaDataAttributeValue(SPConstants.FSOBJTYPE);
+    LOGGER.info("List ["+baseList.toString()+"] Item ["+listItemId 
+        + "] Attachments ["+strAttachmentValue 
+        +"] FSObjType [" +strFSObjType+"]");    
+    GetAttachmentCollectionResponseGetAttachmentCollectionResult res;
+    if ((strAttachmentValue != null && strAttachmentValue.equals("0"))
+        || (strFSObjType != null && strFSObjType.equals("1"))) {
+      // Attachments not applicable if strFSObjType is 1 or List Item
+      // does not contain any attachments as per strAttachmentsValue.
+      res = null;      
+    } else {
+      LOGGER.info("Calling web service to get Attachment for List ["
+          + baseList.toString() +"] Item ["+listItemId
+          + "] Attachments [" +strAttachmentValue
+          + "] FSObjType [" +strFSObjType+"]");
+      res = stub.getAttachmentCollection(listName, listItemId); 
+    }
     if (res != null) {
       final MessageElement[] me = res.get_any();
       if (me != null) {
@@ -637,7 +661,6 @@ public class SPListsWS implements ListsWS {
                     Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
                     docId));
               }
-              continue; // do not send folders as documents.
             }
           }
         } // End -> if(list.isDocumentLibrary())

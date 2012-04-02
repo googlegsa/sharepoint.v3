@@ -192,6 +192,14 @@ public class SPDocumentList implements DocumentList {
         LOGGER.log(Level.WARNING, "Failed to rewrite document's record Url [ "
             + spDocument.getUrl() + " ] as per alias mapping rule. ", e);
       }
+      try {
+        spDocument.setParentUrl(Util.doAliasMapping(spDocument.getParentUrl(),
+                aliasMap, bFQDNConversion));
+      } catch (Exception e) {
+        LOGGER.log(Level.WARNING, "Failed to rewrite document's parent URL [ "
+                  + spDocument.getParentUrl() 
+                  + " ] as per alias mapping rule. ", e);
+      }      
     }
   }
 

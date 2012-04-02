@@ -27,7 +27,32 @@
           <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string" />
         </s:sequence>
       </s:complexType>
+      <s:element name="GetAclForUrlsUsingInheritance">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="urls" type="tns:ArrayOfString" />
+            <s:element minOccurs="1" maxOccurs="1" name="bUseInheritance" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+       <s:element name="GetAclForWebApplicationPolicy">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetAclForWebApplicationPolicyResponse">
+         <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetAclForUrlsResult" type="tns:GssGetAclForUrlsResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
       <s:element name="GetAclForUrlsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetAclForUrlsResult" type="tns:GssGetAclForUrlsResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetAclForUrlsUsingInheritanceResponse">
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="GetAclForUrlsResult" type="tns:GssGetAclForUrlsResult" />
@@ -61,6 +86,9 @@
           <s:element minOccurs="0" maxOccurs="1" name="Owner" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="AllAce" type="tns:ArrayOfGssAce" />
           <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
+          <s:element minOccurs="1" maxOccurs="1" name="InheritPermissions" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="ParentUrl" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ParentId" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAce">
@@ -260,6 +288,19 @@
   <wsdl:message name="GetAclForUrlsSoapOut">
     <wsdl:part name="parameters" element="tns:GetAclForUrlsResponse" />
   </wsdl:message>
+  <wsdl:message name="GetAclForUrlsUsingInheritanceSoapIn">
+    <wsdl:part name="parameters" element="tns:GetAclForUrlsUsingInheritance" />
+  </wsdl:message>
+  <wsdl:message name="GetAclForUrlsUsingInheritanceSoapOut">
+    <wsdl:part name="parameters" element="tns:GetAclForUrlsUsingInheritanceResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetAclForWebApplicationPolicySoapIn">
+    <wsdl:part name="parameters" element="tns:GetAclForWebApplicationPolicy" />
+  </wsdl:message>
+  <wsdl:message name="GetAclForWebApplicationPolicySoapOut">
+    <wsdl:part name="parameters" element="tns:GetAclForWebApplicationPolicyResponse" />
+  </wsdl:message>
+  
   <wsdl:message name="GetAclChangesSinceTokenSoapIn">
     <wsdl:part name="parameters" element="tns:GetAclChangesSinceToken" />
   </wsdl:message>
@@ -293,6 +334,14 @@
       <wsdl:input message="tns:GetAclForUrlsSoapIn" />
       <wsdl:output message="tns:GetAclForUrlsSoapOut" />
     </wsdl:operation>
+    <wsdl:operation name="GetAclForUrlsUsingInheritance">
+      <wsdl:input message="tns:GetAclForUrlsUsingInheritanceSoapIn" />
+      <wsdl:output message="tns:GetAclForUrlsUsingInheritanceSoapOut" />
+    </wsdl:operation>
+     <wsdl:operation name="GetAclForWebApplicationPolicy">
+      <wsdl:input message="tns:GetAclForWebApplicationPolicySoapIn" />
+      <wsdl:output message="tns:GetAclForWebApplicationPolicySoapOut" />
+    </wsdl:operation>    
     <wsdl:operation name="GetAclChangesSinceToken">
       <wsdl:input message="tns:GetAclChangesSinceTokenSoapIn" />
       <wsdl:output message="tns:GetAclChangesSinceTokenSoapOut" />
@@ -323,6 +372,24 @@
     </wsdl:operation>
     <wsdl:operation name="GetAclForUrls">
       <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForUrls" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAclForUrlsUsingInheritance">
+      <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForUrlsUsingInheritance" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+     <wsdl:operation name="GetAclForWebApplicationPolicy">
+      <soap:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForWebApplicationPolicy" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -387,6 +454,24 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="GetAclForUrlsUsingInheritance">
+      <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForUrlsUsingInheritance" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+     <wsdl:operation name="GetAclForWebApplicationPolicy">
+      <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclForWebApplicationPolicy" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>    
     <wsdl:operation name="GetAclChangesSinceToken">
       <soap12:operation soapAction="gssAcl.generated.sharepoint.connector.enterprise.google.com/GetAclChangesSinceToken" style="document" />
       <wsdl:input>
