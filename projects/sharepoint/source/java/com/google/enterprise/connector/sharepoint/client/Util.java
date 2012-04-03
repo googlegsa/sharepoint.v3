@@ -1208,15 +1208,14 @@ public final class Util {
         if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
           roleTypes.add(RoleType.READER);
         }
-        if (ObjectType.LIST.equals(objectType) && viewPages && viewListItems) {
-          roleTypes.add(RoleType.READER);
-        }
       }
       // Currently, only list and list-items are fed as documents. In
       // future, if sites and pages are also sent, more checks will have
       // to be added here
     }
-
+    if (ObjectType.LIST.equals(objectType) && viewPages && viewListItems) {
+      roleTypes.add(RoleType.READER);
+    }     
     if (ObjectType.LIST.equals(objectType) && managelist && additems) {
       roleTypes.add(RoleType.WRITER);
     }
