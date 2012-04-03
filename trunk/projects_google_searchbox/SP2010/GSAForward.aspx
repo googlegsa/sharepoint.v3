@@ -88,6 +88,6 @@
     }
   }
   Response.Cache.SetCacheability(HttpCacheability.NoCache);
-  HttpContext.Current.Response.StatusCode = (int)response.StatusCode;
+  HttpContext.Current.Response.StatusCode = (int) response.StatusCode;
   HttpContext.Current.Response.End(); 
 %>
