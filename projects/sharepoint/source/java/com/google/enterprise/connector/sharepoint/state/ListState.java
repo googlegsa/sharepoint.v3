@@ -1442,6 +1442,23 @@ public class ListState implements StatefulObject {
   public int getLastDocIdCrawledForAcl() {
     return lastDocIdCrawledForAcl;
   }
+  
+  /**
+   * Marks a list to revisit List Home Page
+   */
+  public void markListToRevisitListHome(FeedType feedType) {
+    SPDocument spDocListHome = getDocumentInstance(feedType);
+    if (spDocListHome != null) {
+      if (crawlQueue == null) {
+        // Initialize crawl queue for List if empty.
+        crawlQueue = new ArrayList<SPDocument>();
+      }
+      crawlQueue.add(spDocListHome);      
+    } else {
+      LOGGER.log(Level.WARNING, "List Home Page Document is null for List [ "
+          + getListURL() + " ].");
+    }
+  }
 
   /**
    * Marks a list for a candidate for ACL based crawling. All such lists are
