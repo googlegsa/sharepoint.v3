@@ -140,7 +140,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   // Flag indicating if SPDocument is having inherited 
   // permissions or unique permissions. 
-  private boolean inheritPermissions;
+  private boolean uniquePermissions;
   
   // Parent ID. This will be integer if parent is a folder 
   // else this will be Guid for List or Web.
@@ -1009,12 +1009,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     this.parentUrl = parentUrl;
   }
 
-  public boolean isInheritPermissions() {
-    return inheritPermissions;
+  public boolean isUniquePermissions() {
+    return uniquePermissions;
   }
 
-  public void setInheritPermissions(boolean inheritPermissions) {
-    this.inheritPermissions = inheritPermissions;
+  public void setUniquePermissions(boolean uniquePermissions) {
+    this.uniquePermissions = uniquePermissions;
   }
 
   public String getParentId() {

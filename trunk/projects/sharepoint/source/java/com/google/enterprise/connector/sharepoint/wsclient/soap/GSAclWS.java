@@ -214,7 +214,7 @@ public class GSAclWS implements AclWS{
         Map<String, Set<RoleType>> deniedGroupPermissionMap =
             new HashMap<String, Set<RoleType>>(); 
         document.setParentUrl(acl.getParentUrl());
-        document.setInheritPermissions(true);
+        document.setUniquePermissions(!acl.getInheritPermissions());
         document.setParentId(acl.getParentId()); 
         for (GssAce ace : allAces) {
           // Handle Principal
@@ -259,10 +259,8 @@ public class GSAclWS implements AclWS{
               LOGGER.fine("Denied Permission list "
                   + Arrays.asList(permissions.getDeniedPermission())
                   + " for the User " + principalName);
-              for(RoleType rt : deniedRoleTypes) {
-                LOGGER.fine("Principal ["+principalName + "]Denied Role Type ["
-                    + rt.toString() + "]");            
-              }
+              LOGGER.fine("Principal [" + principalName
+                  + "] Denied Role Types [ " + deniedRoleTypes + " ]");
               //Pass denied permissions only if Reader role is denied.
               if (deniedRoleTypes.contains(RoleType.READER)) {
                 LOGGER.fine("Processing Deny permissions" 
@@ -279,6 +277,8 @@ public class GSAclWS implements AclWS{
           Set<RoleType> allowedRoleTypes = 
               Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
           if (allowedRoleTypes != null) {
+            LOGGER.fine("Principal [ "+ principalName
+                + " ] Allowed Role Types [ "+ allowedRoleTypes + " ]");
             processPermissions(principal, allowedRoleTypes, userPermissionMap,
             groupPermissionMap, principalName, siteCollUrl, memberships) ;
           }
@@ -667,15 +667,8 @@ public class GSAclWS implements AclWS{
               + " could be Limited Access.");
           listState.resetState();
         } else {
-          if (!processedLists.contains(listState)) {
-            LOGGER.log(Level.INFO, "Marking List [ "
-                + listState
-                + " ] as a candidate for ACL based crawl because the effective"
-                + " ACL at this list have been updated. All the items with"
-                + " inheriting permissions wil be crawled from this list.");
-            listState.startAclCrawl();
-            processedLists.add(listState);
-          }
+          // Revisit List home for ACL changes.
+          listState.markListToRevisitListHome(sharepointClientContext.getFeedType());          
         }
 
       } else if (objType == ObjectType.USER
