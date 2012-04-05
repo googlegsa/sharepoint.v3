@@ -21,6 +21,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 
 import org.joda.time.DateTime;
 import org.xml.sax.Attributes;
@@ -1521,36 +1522,28 @@ public class ListState implements StatefulObject {
     String docId = getPrimaryKey();
     if (FeedType.CONTENT_FEED == feedType) {
       docId = getListURL() + SPConstants.DOC_TOKEN + getPrimaryKey();
-    }    
-    // If SharePoint is not configured to crawl aspx pages
-    // then send List Page as ACL feed.
-    FeedType feedTypeToPass = null;
-    if (getParentWebState().isCrawlAspxPages()) {
-      feedTypeToPass = feedType;
-    } else {
-      feedTypeToPass = FeedType.ACL_FEED;
     }
-    // TODO pass FeedType as feedTypeToPass. This is temp fix and will be
-    // corrected with Use of secure document or CM fix.
     final SPDocument listDoc = new SPDocument(docId, getListURL(),
         getLastModCal(), SPConstants.NO_AUTHOR, getBaseTemplate(),
         getParentWebState().getTitle(), feedType,
         getParentWebState().getSharePointType());
 
     listDoc.setAllAttributes(getAttrs());
+    
+    // If SharePoint is not configured to crawl aspx pages
+    // then set Document Type as ACL
+    if (getParentWebState().isCrawlAspxPages() == false) {
+      listDoc.setDocumentType(DocumentType.ACL);
+    } 
 
     if (!isSendListAsDocument()) {
       // send the listState as a feed only if it was
       // included
-      // (not excluded) in the URL pattern matching
-      // The other case is SharePoint admin has set a
-      // flag at site level to exclude ASPX pages from
-      // being crawled and indexed and hence need to
-      // honor the same
+      // (not excluded) in the URL pattern matching  
       listDoc.setToBeFed(false);
       LOGGER.log(Level.WARNING, "List Document marked as not to be fed "
-          + "because ASPX pages are not supposed to be crawled as per "
-          + "exclusion patterns OR SharePoint site level indexing options.");
+          + "because list ASPX page is not supposed to be crawled as per "
+          + "exclusion patterns");
       // TODO log it in excludedUrl.log
     }
 
