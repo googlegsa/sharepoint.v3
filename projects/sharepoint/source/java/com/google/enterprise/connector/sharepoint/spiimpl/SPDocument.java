@@ -30,6 +30,7 @@ import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
@@ -146,7 +147,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   // else this will be Guid for List or Web.
   private String parentId;
   
-  private boolean webAppPolicyDoc = false;  
+  private boolean webAppPolicyDoc = false;
+
+  // Document Type  for Document.
+  private DocumentType documentType;
   
   /**
    * @return the toBeFed
@@ -632,6 +636,14 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         return new SimpleProperty(values);
     } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_TITLE)) {
       return new SPProperty(SpiConstants.PROPNAME_TITLE, new StringValue(title));
+    } else if (strPropertyName.equals(SpiConstants.PROPNAME_DOCUMENTTYPE)) {
+      if (documentType != null) {
+        return new SPProperty(SpiConstants.PROPNAME_DOCUMENTTYPE,
+            new StringValue(documentType.toString()));
+      } else {
+        return null;
+      }
+      
     }
     // FIXME: We can get rid of this if-else-if ladder here by setting all
     // the relevant properties (in appropriate type) right at the time of
@@ -665,6 +677,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     candidates.add(SPConstants.LIST_GUID);
     candidates.add(SPConstants.SPAUTHOR);
     candidates.add(SPConstants.PARENT_WEB_TITLE);
+    if (null != documentType) {
+      names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
+    }
     if (!isWebAppPolicyDoc()) {
       if (feedType == FeedType.CONTENT_FEED) {
         names.add(SpiConstants.PROPNAME_ACLINHERITFROM_DOCID);  
@@ -1047,5 +1062,19 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   public void setWebAppPolicyDoc(boolean webAppPolicyDoc) {
     this.webAppPolicyDoc = webAppPolicyDoc;
+  }
+
+  /**
+   * @return the documentType
+   */
+  public DocumentType getDocumentType() {
+    return documentType;
+  }
+
+  /**
+   * @param documentType the documentType to set
+   */
+  public void setDocumentType(DocumentType documentType) {
+    this.documentType = documentType;
   }
 }
