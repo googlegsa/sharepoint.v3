@@ -344,13 +344,16 @@ public class GSAclWS implements AclWS{
   }
 
   /**
-   * Returns user/group name in the format as specified in connectorInstance.xml
+   * Returns user/group name in the format as specified in as specified in
+   * the connector configuration page.
    *
-   * @param principal
-   * @return
+   * @param principal the principal used to get the user/group name from
+   * @return a string that represents the user/group name in the appropriate format
    */
-  //TODO: Adding VisibleForTesting throws exception when generating javadoc 
-  //@VisibleForTesting
+  /*
+   * marked package-private because of JUnit test case
+   * GssAclTest.testGetPrincipalName
+   */
   String getPrincipalName(GssPrincipal principal) {
     String principalname = Util.getUserFromUsername(principal.getName());
     final String domain = Util.getDomainFromUsername(principal.getName());
@@ -798,7 +801,8 @@ public class GSAclWS implements AclWS{
    * and its membership is to be re-synced with the user data store.
    *
    * @param changedGroups IDs of the groups that is to be resolved
-   * @return
+   * @return a map of group ID to latest memberships, the map could be 
+   *         empty but not null.
    */
   private Map<Integer, Set<UserGroupMembership>> processChangedGroupsToSync(
       Set<String> changedGroups) {
@@ -875,7 +879,6 @@ public class GSAclWS implements AclWS{
    * Used for getting all the List IDs which are inheriting their role
    * assignments from the parent web site.
    *
-   * @param webGuid GUID or URL of the SharePoint WebSite to be processed
    * @return List IDs which are inheriting their role assignments from their
    *         parent web site whose ID was passed in the argument
    */
