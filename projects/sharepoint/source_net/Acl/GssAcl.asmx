@@ -19,6 +19,7 @@ using System.Text;
 using System.Xml;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Web;
 using System.Web.Services;
 using Microsoft.SharePoint;
@@ -85,7 +86,7 @@ public class GssPrincipal
     public GssPrincipal(string name, int id)
     {
         ID = id;
-        Name = name;
+        Name = GssAclUtility.DecodeIdentity(name);
         Members = new List<GssPrincipal>();
     }
 
@@ -717,6 +718,8 @@ public class GssAclMonitor
         {
             throw new Exception("SharePoint site not found");
         }
+        // workaroud for claims based authentication to trigger authentication as soon as possible
+        web.ToString();
     }
 
     /// <summary>
@@ -863,7 +866,7 @@ public class GssAclMonitor
 
                             try
                             {
-                                acl.Owner = GssAclUtility.GetOwner(secobj).LoginName;
+                                acl.Owner = GssAclUtility.DecodeIdentity(GssAclUtility.GetOwner(secobj).LoginName);
                             }
                             catch (Exception e)
                             {
@@ -1572,7 +1575,34 @@ public sealed class GssAclUtility
             }
         }      
     }
-        
+
+    /// <summary>
+    /// Uses reflection to detect if the Principal is claim and if it is, decodes the real identity
+    /// Reflection must be used, so that we can run in SharePoint 2007
+    /// </summary>
+    /// <param name="user">identity information to have checked for claim and decoded if needed</param>
+    /// <returns>decoded identity</returns>
+    public static String DecodeIdentity(String identity)
+    {
+        Type managerType = Assembly.GetAssembly(typeof(SPUser)).GetType("Microsoft.SharePoint.Administration.Claims.SPClaimProviderManager");
+        if (managerType == null)
+        {
+            return identity;
+        }
+        Object manager = managerType.GetProperty("Local").GetValue(null, null);
+
+        if (manager != null &&
+            (bool)managerType.GetMethod("IsEncodedClaim").Invoke(manager, new object[]{identity}))
+        {
+            Object claim = managerType.GetMethod("DecodeClaim").Invoke(manager, new object[]{identity});
+            return (string)claim.GetType().GetProperty("Value").GetValue(claim, null);
+        }
+        else
+        {
+            return identity;
+        }
+    }
+
     /// <summary>
     /// Retrieves the Owner's information about a given ISecurable entity
     /// </summary>

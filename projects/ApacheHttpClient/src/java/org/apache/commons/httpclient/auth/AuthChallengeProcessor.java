@@ -137,19 +137,28 @@ public final class AuthChallengeProcessor {
      */
     public AuthScheme processChallenge(final AuthState state, final Map challenges)
         throws MalformedChallengeException, AuthenticationException
-    {    
+    {
         if (state == null) {
             throw new IllegalArgumentException("Authentication state may not be null"); 
         }
         if (challenges == null) {
             throw new IllegalArgumentException("Challenge map may not be null"); 
         }
-        
+
+        AuthScheme authscheme = state.getAuthScheme();
+        ClaimsAuthScheme claims = null;
         if (state.isPreemptive() || state.getAuthScheme() == null) {
             // Authentication not attempted before
             state.setAuthScheme(selectAuthScheme(challenges));
+            authscheme = state.getAuthScheme(); 
+        } else if (state.getAuthScheme() instanceof ClaimsAuthScheme) {
+            claims = (ClaimsAuthScheme)state.getAuthScheme();
+            if (claims.innerAuthScheme == null) {
+                claims.innerAuthScheme = selectAuthScheme(challenges);
+            }
+            authscheme = claims.innerAuthScheme;
         }
-        AuthScheme authscheme = state.getAuthScheme();
+
         String id = authscheme.getSchemeName();
         if (LOG.isDebugEnabled()) {
             LOG.debug("Using authentication scheme: " + id);
@@ -161,6 +170,7 @@ public final class AuthChallengeProcessor {
         }
         authscheme.processChallenge(challenge);
         LOG.debug("Authorization challenge processed");
-        return authscheme;
+
+        return claims == null ? authscheme : claims;
     }
 }
