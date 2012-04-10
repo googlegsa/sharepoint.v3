@@ -106,6 +106,7 @@ public class SPConstants {
   public static final String VTI = "vti_";
   public static final String ENCODED_SPACE = "_x0020_";
   public static final Pattern ATTRIBUTE_VALUE_PATTERN = Pattern.compile("^\\d+;\\#");
+  public static final String SP_MULTI_VALUE_DELIMITER = ";#";
 
   public static final String UNAUTHORIZED = "(401)Unauthorized";
   public static final String SAXPARSEEXCEPTION = "org.xml.sax.SAXParseException";

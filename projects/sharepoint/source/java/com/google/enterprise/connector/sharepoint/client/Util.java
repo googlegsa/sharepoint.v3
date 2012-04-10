@@ -14,11 +14,13 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPBasePermissions;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 import org.apache.axis.AxisFault;
@@ -49,11 +51,13 @@ import java.net.UnknownHostException;
 import java.text.Collator;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -1031,14 +1035,60 @@ public final class Util {
   public static String normalizeMetadataValue(String metaValue) {
     String metaValNormalized = metaValue;
     if (null != metaValNormalized) {
-      final Matcher match = SPConstants.ATTRIBUTE_VALUE_PATTERN.matcher(metaValue);
+      final Matcher match = 
+          SPConstants.ATTRIBUTE_VALUE_PATTERN.matcher(metaValue);
       if (match.find()) {
-        metaValNormalized = match.replaceFirst("");
+        String arr[] = 
+            metaValNormalized.split(SPConstants.SP_MULTI_VALUE_DELIMITER);
+        // SharePoint makes us of ;# characters for Lookup Fields as will as
+        // for some of the internal meta fields.
+        // SharePoint Uses <integer ID1>;#value1;#<integer ID2>;#value2 for
+        // multi choice lookup fields values.
+        if (arr.length <= 2) {
+          // Replace first integer with empty string only in case of internal
+          // meta fields or lookup fields with single value. lookup fields with
+          // more than 1 values will be processed in SPDocument.
+          metaValNormalized = match.replaceFirst("");
+        }
       }
     }
     LOGGER.log(Level.FINEST, "metaValue [ " + metaValue
         + " ], metaValNormalized [ " + metaValNormalized + " ]. ");
     return metaValNormalized;
+  }
+  
+  public static List<String> processMultiValueMetadata(String metaValue) {
+    if (null == metaValue) {
+      return null;
+    }
+    List<String> valueToPass = new ArrayList<String>();
+    
+    final Matcher match = 
+        SPConstants.ATTRIBUTE_VALUE_PATTERN.matcher(metaValue);
+    if (match.find()) {
+      // This is a lookup field. We need to take alternate values only. Ignore
+      // integer part.
+      // <integer ID1>;#value1;#<integer ID2>;#value2
+      String[] arr = metaValue.split(SPConstants.SP_MULTI_VALUE_DELIMITER);
+      for (int i = 1; i < arr.length; i =i + 2) {
+        if (!Strings.isNullOrEmpty(arr[i])) {
+          valueToPass.add(arr[i]);
+        }
+      }
+    } else if (metaValue.startsWith(SPConstants.SP_MULTI_VALUE_DELIMITER) 
+        && metaValue.endsWith(SPConstants.SP_MULTI_VALUE_DELIMITER)) {
+      // This is a multi choice field. Values will be in
+      // ;#value1;#value2;# format.
+      String[] arr = metaValue.split(SPConstants.SP_MULTI_VALUE_DELIMITER);
+      for (String value : arr) {
+        if (!value.isEmpty()) {
+          valueToPass.add(value);
+        }
+      }
+    } else {
+      valueToPass.add(metaValue);
+    }
+    return valueToPass;    
   }
 
   /**
