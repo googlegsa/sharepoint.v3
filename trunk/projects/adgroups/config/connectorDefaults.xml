@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <bean id="Active_Directory_Groups_Defaults">
+    <property name="domain" value="${domain}"/>
+    <property name="username" value="${username}"/>
+    <property name="password" value="${password}"/>
+    <property name="googleConnectorWorkDir" value="${googleConnectorWorkDir}"/>
+    <property name="usernameFormatInAce" value="${usernameFormatInAce}"/>
+    <property name="groupnameFormatInAce" value="${groupnameFormatInAce}"/>
+    <property name="ldapServerHostAddress" value="${ldapServerHostAddress}"/>
+    <property name="portNumber" value="${portNumber}"/>
+    <property name="authenticationType" value="${authenticationType}"/>
+    <property name="connectMethod" value="${connectMethod}"/>
+    <property name="searchBase" value="${searchBase}"/>
+    <property name="useCacheToStoreLdapUserGroupsMembership" value="${useCacheToStoreLdapUserGroupsMembership}"/>
+    <property name="initialCacheSize" value="${initialCacheSize}"/>
+    <property name="cacheRefreshInterval" value="${cacheRefreshInterval}"/>
+
+    <property name="queryProvider" ref="queryProvider" />
+    <property name="userGroupMembershipRowMapper" ref="userGroupMembershipRowMapper" />
+  </bean>
+
+    <bean id="queryProvider" class="com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider">
+      <constructor-arg value="com.google.enterprise.connector.sharepoint.sql.sqlQueries" />
+      <property name="udsTableName" value="User_Group_Memberships" />
+      <property name="udsIndexName" value="IDX_SPUserID" />
+      <property name="cnTableName" value="Connector_Names" />
+    </bean>
+
+    <bean id="userGroupMembershipRowMapper" class="com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper">
+      <property name="userID" value="SPUserId" />
+      <property name="userName" value="SPUserName" />
+      <property name="groupID" value="SPGroupId" />
+      <property name="groupName" value="SPGroupName" />
+      <property name="namespace" value="SPSite" />
+    </bean>
+
+  <bean id="propertyPlaceholderConfigurer"
+          class="com.google.enterprise.connector.instantiator.EncryptedPropertyPlaceholderConfigurer">
+        <property name="properties">
+            <props>
+                <prop key="domain"></prop>
+                <prop key="username"></prop>
+                <prop key="password"></prop>
+                <prop key="usernameFormatInAce">username</prop>
+                <prop key="groupnameFormatInAce">domain\\username</prop>
+                <prop key="ldapServerHostAddress"></prop>
+                <prop key="portNumber"></prop>
+                <prop key="authenticationType"></prop>
+                <prop key="connectMethod"></prop>
+                <prop key="searchBase"></prop>
+                <prop key="useCacheToStoreLdapUserGroupsMembership">false</prop>
+                <prop key="initialCacheSize">1000</prop>
+                <prop key="cacheRefreshInterval">7200</prop>
+            </props>
+        </property>
+    </bean>
+</beans>
