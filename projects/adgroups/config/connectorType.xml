@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <bean id="Active_Directory_Groups"
+    class="com.google.enterprise.connector.adgroups.AdGroupsConnectorType">
+    <property name="configKeys">
+      <list>
+        <value>ldapServerHostAddress</value>
+        <value>domain</value>
+        <value>username</value>
+        <value>password</value>
+        <value>usernameFormatInAce</value>
+        <value>groupnameFormatInAce</value>
+        <value>portNumber</value>
+        <value>searchBase</value>
+        <value>authenticationType</value>
+        <value>connectMethod</value>
+        <!--  LDAP user groups membership cache settings -->
+        <value>useCacheToStoreLdapUserGroupsMembership</value>
+        <value>initialCacheSize</value>
+        <value>cacheRefreshInterval</value>
+      </list>
+    </property>
+  </bean>
+</beans>
