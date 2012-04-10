@@ -872,8 +872,11 @@ public class GssAclMonitor
                             {
                                 acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
                             }                         
-                            acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
-                            acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
+                            if (bUseInheritance)
+                            {
+                                acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
+                                acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
+                            }
                         }
                         else
                         {
