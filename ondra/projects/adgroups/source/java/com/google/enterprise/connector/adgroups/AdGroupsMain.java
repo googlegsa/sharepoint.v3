@@ -30,7 +30,7 @@ public class AdGroupsMain {
   public static void main(final String[] args) throws Exception {
     // From our class, get the jar file URL to this class file, and
     // make our way to the the Manifest located in that jar file.
-    final Class thisClass = AdGroupsMain.class;
+    final Class<AdGroupsMain> thisClass = AdGroupsMain.class;
     final String resName = AdConstants.SLASH
         + thisClass.getName().replace('.', AdConstants.SLASH_CHAR) + ".class";
 

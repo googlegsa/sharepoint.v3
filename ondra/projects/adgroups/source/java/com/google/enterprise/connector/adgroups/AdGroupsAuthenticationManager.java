@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.adgroups;
 
 import com.google.common.base.Strings;
+import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
@@ -25,11 +26,14 @@ import com.google.enterprise.connector.spi.RepositoryLoginException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.naming.CommunicationException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
  * This class provides an implementation of AuthenticationManager SPI provided
@@ -41,18 +45,22 @@ import java.util.logging.Logger;
  * @author nitendra_thakur
  */
 public class AdGroupsAuthenticationManager implements AuthenticationManager {
-  Logger LOGGER = Logger.getLogger(AdGroupsAuthenticationManager.class.getName());
+  Logger LOGGER =
+      Logger.getLogger(AdGroupsAuthenticationManager.class.getName());
 
-  AdGroupsConnector connector = null;
+  private DataSource dataSource;
+  private String dbType;
+  private AdDbUtil db;
 
   /**
    * @param inSharepointClientContext Context Information is required to create
    *          the instance of this class
    */
-  public AdGroupsAuthenticationManager(
-      final AdGroupsConnector connector)
+  public AdGroupsAuthenticationManager(AdGroupsConnector connector)
       throws RepositoryException {
-    this.connector = connector;
+    dataSource = connector.dataSource;
+    this.dbType = connector.dbType;
+    db = new AdDbUtil(dataSource, dbType);
   }
 
   /**
@@ -70,8 +78,6 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
     public AuthenticationResponse authenticate(
         final AuthenticationIdentity identity) throws RepositoryLoginException,
         RepositoryException {
-      //TODO: encapsulate this properly
-      AdDbUtil db = connector.crawler.db;
       final String username = identity.getUsername();
       final String password = identity.getPassword();
       final String domain = identity.getDomain();
@@ -88,47 +94,106 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
         sqlIdentity.put(AdConstants.DB_NETBIOSNAME, domain);
         query = Query.SELECT_USER_BY_NETBIOS_SAMACCOUNTNAME;
       }
+
+      HashMap<String, Object> user;
       try {
         List<HashMap<String, Object>> users = db.select(query, sqlIdentity);
         if (users.size() == 0) {
-          LOGGER.log(Level.WARNING, "User not found in the database ["
+          LOGGER.warning("User not found in the database ["
               + username + "] domain [" + domain + "]");
           return new AuthenticationResponse(false, "", null);
         } else if (users.size() > 1) {
-          LOGGER.log(Level.WARNING,
-              "Multiple users found in the database matching [" + username +
-              "] domain [" + domain + "]");
-          //TODO: log out information about all users found
+          StringBuffer sb = new StringBuffer("Multiple users found in the "
+              + "database matching [" + domain + "]\\[" + username + "]: ");
+          for (HashMap<String, Object> u : users) {
+            sb.append("[").append(u.get("dn")).append("] ");
+          }
+          LOGGER.warning(sb.toString());
           return new AuthenticationResponse(false, "", null);
         }
-        HashMap<String, Object> user = users.get(0);
-        List<String> groups = getAllGroupsForTheUser(
-            (Long)user.get(AdConstants.DB_ENTITYID));
-        return new AuthenticationResponse(true, "", groups);
+         user = users.get(0);
+         List<String> groups = getAllGroupsForTheUser((Number) user.get(
+             AdConstants.DB_ENTITYID));
+         if (password != null && !authenticateUser(
+             (String) user.get(AdConstants.DB_DNSROOT),
+             (String) user.get(AdConstants.DB_UPN), password)) {
+           return new AuthenticationResponse(false, "", null);
+         }
+         return new AuthenticationResponse(true, "", groups);
       } catch (SQLException e) {
         LOGGER.log(Level.WARNING,
             "Failed to retrieve information about user from database ["
             + username + "] domain [" + domain + "].", e);
         return new AuthenticationResponse(false, "", null);
       }
+    }
+    /**
+     * Connects to specified AD domain with users principal and password
+     * @param dnsRoot hostname of the domain
+     * @param upn userPrincipalName of the user
+     * @param password password
+     * @return if authentication was successful
+     */
+    boolean authenticateUser(String dnsRoot, String upn, String password) {
+      // Authenticate via SSL
+      try {
+        new AdServer(Method.SSL, dnsRoot, 636, upn, password).connect();
+        // No exception thrown - authentication succeeded
+        LOGGER.info("Successfully authenticated user [" + upn + "]");
+        return true;
+      } catch (CommunicationException e) {
+        // network or SSL related, continue without SSL
+        LOGGER.log(Level.FINE, "SSL Authentication failed", e);
+      } catch (NamingException e) {
+        // NamingException - authentication failed
+        LOGGER.log(Level.INFO,
+            "SSL Authenticated failed for user [" + upn + "]", e);
+        return false;
+      }
 
-      //TODO: connect to LDAP server and check password - requires additional
-      // table in the database with LDAP configuration to enable multiple
-      // connector instances
-
-      //TODO: check what exactly to do if password is empty/null
+      try {
+        new AdServer(Method.STANDARD, dnsRoot, 389, upn, password).connect();
+        // No exception thrown - authentication succeeded
+        LOGGER.info("Successfully authenticated user [" + upn + "]");
+        return true;
+      } catch (CommunicationException e) {
+        // network related exception
+        LOGGER.log(Level.INFO,
+            "Plain Authentication failed for user [" + upn + "]", e);
+        return false;
+      } catch (Exception e) {
+        // any other exception - authentication failed
+        LOGGER.log(Level.FINE,
+            "Authentication failed for user [ " + upn + " ]", e);
+        return false;
+      }
     }
 
-    List<String> getAllGroupsForTheUser(Long entityId) throws SQLException {
-      //TODO: encapsulate this properly
-      AdDbUtil db = connector.crawler.db;
+    String formatGroup(HashMap<String, Object> entity) {
+      String netbiosName = (String) entity.get(AdConstants.DB_NETBIOSNAME);
+      String samAccountName =
+          (String) entity.get(AdConstants.DB_SAMACCOUNTNAME);
 
+      if (netbiosName != null) {
+        return netbiosName + AdConstants.BACKSLASH + samAccountName;
+      } else {
+        return samAccountName;
+      }
+    }
+
+    List<String> getAllGroupsForTheUser(Number entityId) throws SQLException {
       List<String> groups = new ArrayList<String>();
-      List<Long> entities = new ArrayList<Long>();
+      List<Number> entities = new ArrayList<Number>();
       entities.add(entityId);
 
-      HashMap<String, Object> params = new HashMap<String, Object>();
+      // Add current user to all implicit well known entities
+      for (HashMap<String, Object> wellKnown :
+        db.select(Query.SELECT_WELLKNOWN_MEMBERSHIPS, null)) {
+        groups.add(formatGroup(wellKnown));
+        entities.add((Number) wellKnown.get(AdConstants.DB_ENTITYID));
+      }
 
+      HashMap<String, Object> params = new HashMap<String, Object>();
       // The loop goes over the entities list appending newly found groups
       // at the end of the list this way we will resolve each group only once
       for (int i = 0; i < entities.size(); ++i) {
@@ -136,12 +201,9 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
         List<HashMap<String, Object>> results =
             db.select(Query.SELECT_MEMBERSHIPS_BY_ENTITYID, params);
         for (HashMap<String, Object> result : results) {
-          Long groupId = (Long) result.get(AdConstants.DB_ENTITYID);
+          Number groupId = (Number) result.get(AdConstants.DB_ENTITYID);
           if (entities.indexOf(groupId) == -1)
-            //TODO: group formatting if necessary
-            groups.add((String) result.get(AdConstants.DB_NETBIOSNAME)
-                + AdConstants.BACKSLASH
-                + (String) result.get(AdConstants.DB_SAMACCOUNTNAME));
+            groups.add(formatGroup(result));
             entities.add(groupId);
         }
       }

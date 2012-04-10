@@ -16,38 +16,42 @@ public class AdGroupsConnectorType implements ConnectorType {
 
   private List<String> keys = null;
 
+  private String[] configKeys =
+    { "hostname", "port", "method", "principal", "password" };
+  private String config =
+      "<tr><td colspan='2'><strong>Active Directory Server</strong></td></tr>"
+      + "<tr><td>Hostname:</td>"
+      + "<td><input type='text' name='hostname' value='$hostname' /></td></tr>"
+      + "<tr><td>Port:</td>"
+      + "<td><input type='text' name='port' value='$port' /></td></tr>"
+      + "<tr><td>Method:</td>"
+      + "<td><select name='method'><option $standard value='STANDARD'>Standard</option><option $ssl value='SSL'>SSL</option></select></td></tr>"
+      + "<tr><td>Princial (e.g. DOMAIN\\username, userPrincipalName):</td>"
+      + "<td><input type='text' name='principal' value='$principal' /></td></tr>"
+      + "<tr><td>Password:</td>"
+      + "<td><input type='password' name='password' value='$password' /></td></tr>";
+
   @Override
   public ConfigureResponse getConfigForm(Locale locale) {
-    StringBuilder sb = new StringBuilder();
-    //for (int i = 0; i < 3; ++i) 
-    int i = 0;
-    {
-      sb.append("<tr><td colspan='2'><strong>Active Directory Server ").append(i+1).append("</strong></td></tr>")
-        .append("<tr><td>Hostname:</td>")
-        .append("<td><input type='text' name='hostname_").append(i).append("' value='' /></td></tr>")
-        .append("<tr><td>Port:</td>")
-        .append("<td><input type='text' name='port_").append(i).append("' value='' /></td></tr>")
-        .append("<tr><td>Method:</td>")
-        .append("<td><select name='method_").append(i).append("'><option value='STANDARD'>Standard</option><option value='SSL'>SSL</option></select></td></tr>")
-        .append("<tr><td>Username:</td>")
-        .append("<td><input type='text' name='username_").append(i).append("' value='' /></td></tr>")
-        .append("<tr><td>Password:</td>")
-        .append("<td><input type='text' name='password_").append(i).append("' value='' /></td></tr>")
-        .append("<tr><td>Domain:</td>")
-        .append("<td><input type='text' name='domain_").append(i).append("' value='' /></td></tr>");
+    Map<String, String> conf = new HashMap<String, String>();
+    for (String s : configKeys) {
+      conf.put(s, "");
     }
-
-    return new ConfigureResponse("", sb.toString(), new HashMap<String, String>(){{
-      put("ahoj", "bhoj");
-    }});
+    return getPopulatedConfigForm(conf, null);
   }
 
   @Override
   public ConfigureResponse getPopulatedConfigForm(Map<String, String> conf, Locale arg1) {
+    String configuration = new String(config);
     for (String s : conf.keySet()) {
-      System.out.println(s + ": " + conf.get(s));
+      if (s.equals("method")) {
+        configuration = configuration.replace("$ssl", conf.get(s).equals("SSL") ? "selected='selected'" : "");
+        configuration = configuration.replace("$standard", conf.get(s).equals("SSL") ? "" : "selected='selected'");
+      } else {
+        configuration = configuration.replace("$" + s, conf.get(s));
+      }
     }
-    return null;
+    return new ConfigureResponse("", configuration);
   }
 
   @Override

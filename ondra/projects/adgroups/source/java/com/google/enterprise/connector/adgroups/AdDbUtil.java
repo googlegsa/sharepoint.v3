@@ -23,9 +23,15 @@ public class AdDbUtil {
     Logger.getLogger(AdDbUtil.class.getName());
 
   public enum Query {
+    CREATE_SERVERS_SEQUENCE("CREATE_SERVERS_SEQUENCE"),
     CREATE_SERVERS("CREATE_SERVERS"),
+    CREATE_ENTITIES_SEQUENCE("CREATE_ENTITIES_SEQUENCE"),
     CREATE_ENTITIES("CREATE_ENTITIES"),
+    CREATE_MEMBERS_SEQUENCE("CREATE_MEMBERS_SEQUENCE"),
     CREATE_MEMBERS("CREATE_MEMBERS"),
+    CLEAN_MEMBERS("CLEAN_MEMBERS"),
+    CLEAN_FOREIGN_MEMBERS("CLEAN_FOREIGN_MEMBERS"),
+    CLEAN_ENTITIES("CLEAN_ENTITIES"),
     SELECT_SERVER("SELECT_SERVER"),
     UPDATE_SERVER("UPDATE_SERVER"),
     MERGE_ENTITIES("MERGE_ENTITIES"),
@@ -37,6 +43,7 @@ public class AdDbUtil {
     SELECT_USER_BY_SAMACCOUNTNAME("SELECT_USER_BY_SAMACCOUNTNAME"),
     SELECT_USER_BY_NETBIOS_SAMACCOUNTNAME
         ("SELECT_USER_BY_NETBIOS_SAMACCOUNTNAME"),
+    SELECT_WELLKNOWN_MEMBERSHIPS("SELECT_WELLKNOWN_MEMBERSHIPS"),
     SELECT_MEMBERSHIPS_BY_ENTITYID("SELECT_MEMBERSHIPS_BY_ENTITYID");
 
     private String query;
@@ -51,32 +58,37 @@ public class AdDbUtil {
 
   private DataSource dataSource;
   private Connection connection;
+  private int batchHint = 1000;
 
   //TODO: load table names from bean
   private HashMap<String, String> tables = new HashMap<String, String>() {{
     put("servers", "servers");
     put("entities", "entities");
     put("members", "members");
+    put("sequence", "_sequence");
   }};
 
   private ResourceBundle queries;
 
-  public AdDbUtil(DataSource dataSource) {
-    //TODO: load locale for SQL queries from bean
+  public AdDbUtil(DataSource dataSource, String databaseType) {
     queries =
-      ResourceBundle.getBundle(getClass().getPackage().getName() + ".sql");
+        ResourceBundle.getBundle(getClass().getPackage().getName() + ".sql",
+        new Locale(databaseType));
 
     this.dataSource = dataSource;
     try {
-      //TODO: do not execute any DDL if database is not H2
       connection = dataSource.getConnection();
-      connection.setAutoCommit(false);
+      execute(Query.CREATE_SERVERS_SEQUENCE, null);
       execute(Query.CREATE_SERVERS, null);
+      execute(Query.CREATE_ENTITIES_SEQUENCE, null);
       execute(Query.CREATE_ENTITIES, null);
+      execute(Query.CREATE_MEMBERS_SEQUENCE, null);
       execute(Query.CREATE_MEMBERS, null);
+      commit();
+      connection.setAutoCommit(false);
     } catch (SQLException e) {
       LOGGER.log(
-          Level.SEVERE, "Cannot establish connection to the database.", e);
+          Level.SEVERE, "Errors establishing connection to the database.", e);
     }
   }
 
@@ -100,7 +112,7 @@ public class AdDbUtil {
 
         while (i < sql.length()) {
           if (sql.charAt(i) == quote) {
-            if (i < sql.length() + 1 && sql.charAt(i+1) == quote) {
+            if (i + 1 < sql.length() && sql.charAt(i + 1) == quote) {
               ++i;
             } else {
               break;
@@ -109,28 +121,41 @@ public class AdDbUtil {
           ++i;
         }
       } else if (sql.charAt(i) == AdConstants.COLON_CHAR) {
-        if (i < sql.length() + 1 &&
-              Character.isJavaIdentifierStart(sql.charAt(i+1))) {
-          int start = ++i;
-          while (i < sql.length() &&
-              Character.isJavaIdentifierPart(sql.charAt(i))) {
+        if (i < sql.length() + 1
+            && (Character.isJavaIdentifierStart(sql.charAt(i + 1)))
+                || (i < sql.length() + 2
+                    && sql.charAt(i + 1) == AdConstants.COLON_CHAR)
+                    && Character.isJavaIdentifierStart(sql.charAt(i + 2)))
+        {
+          boolean quoted = sql.charAt(i + 1) == AdConstants.COLON_CHAR;
+          int start = i += (quoted ? 2 : 1);
+          while (i < sql.length()
+              && Character.isJavaIdentifierPart(sql.charAt(i))) {
             ++i;
           }
 
           String identifier = sql.substring(start, i);
           // replace current identifier with ? or table name
-          if (tables.containsKey(identifier)) {
+          if (tables.containsKey(identifier) && quoted) {
+            // ::tableName - insert table name in quotes
+            finalSql.append('\'')
+                .append(tables.get(identifier))
+                .append('\'');
+          } else if (tables.containsKey(identifier)) {
+            // :tableName - insert table name
             finalSql.append(tables.get(identifier));
           } else {
+            // :identified - insert placeholder and remember the param name
             finalSql.append("?");
             identifiers.add(identifier);
           }
-          // skip placeholder name
-          current = i;
+          // repeat on last character
+          i--;
+          continue;
         }
       }
       // add to final string whatever we already scanned over
-      finalSql.append(sql.substring(current, i+1));
+      finalSql.append(sql.substring(current, i + 1));
     }
 
     return finalSql.toString();
@@ -145,9 +170,9 @@ public class AdDbUtil {
    */
   private void addParams(PreparedStatement statement, List<String> identifiers,
       Map<String, Object> params) throws SQLException {
-    for (String identifier: identifiers) {
-      statement.setObject(identifiers.indexOf(identifier) + 1,
-        params.get(identifier));
+    for (int i = 0; i < identifiers.size(); ++i) {
+      statement.setObject(i + 1,
+        params.get(identifiers.get(i)));
     }
   }
 
@@ -174,7 +199,7 @@ public class AdDbUtil {
         HashMap<String, Object> result = new HashMap<String, Object>();
         for (int i = 0; i < rsmd.getColumnCount(); ++i) {
           result.put(rsmd.getColumnName(i + 1).toLowerCase(Locale.ENGLISH),
-            rs.getObject(rsmd.getColumnName(i + 1)));
+              rs.getObject(rsmd.getColumnName(i + 1)));
         }
         results.add(result);
       }
@@ -210,9 +235,14 @@ public class AdDbUtil {
     String sql = sortParams(query, identifiers);
     PreparedStatement statement = connection.prepareStatement(sql);
 
+    int batch = 0;
     for (AdEntity e : entities) {
       addParams(statement, identifiers, e.getSqlParams());
       statement.addBatch();
+      if (++batch == batchHint) {
+        statement.executeBatch();
+        batch = 0;
+      }
     }
     statement.executeBatch();
   }
@@ -234,15 +264,19 @@ public class AdDbUtil {
     String insertSql = sortParams(insert, addIdentifiers);
     PreparedStatement addStatement = connection.prepareStatement(insertSql);
 
+    int batch = 0;
     for (AdEntity e: entities) {
       for (String s: e.getMembers()) {
         Map<String, Object> params = e.getSqlParams();
         params.put("memberdn", s);
         addParams(addStatement, addIdentifiers, params);
         addStatement.addBatch();
+        if (++batch == batchHint) {
+          addStatement.executeBatch();
+          batch = 0;
+        }
       }
     }
-
     addStatement.executeBatch();
   }
 
@@ -266,5 +300,9 @@ public class AdDbUtil {
     } catch (SQLException e) {
       LOGGER.warning("Rollback failed "  + e.getMessage() + e.getStackTrace());
     }
+  }
+
+  public void setBatchHint(int batchHint) {
+    this.batchHint = batchHint;
   }
 }

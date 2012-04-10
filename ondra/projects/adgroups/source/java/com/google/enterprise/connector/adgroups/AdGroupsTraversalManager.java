@@ -4,56 +4,56 @@ package com.google.enterprise.connector.adgroups;
 
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
+import com.google.enterprise.connector.spi.DocumentList;
+import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.TraversalManager;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-public class AdCrawler {
+public class AdGroupsTraversalManager implements TraversalManager {
   private static final Logger LOGGER =
-      Logger.getLogger(AdCrawler.class.getName());
+      Logger.getLogger(AdGroupsTraversalManager.class.getName());
 
-  public ArrayList<AdServer> servers;
-  public ArrayList<AdEntity> wellKnownEntities;
+  private ArrayList<AdServer> servers;
+  private ArrayList<AdEntity> wellKnownEntities;
+  private AdDbUtil db;
 
-  public AdDbUtil db;
-
-  public AdCrawler(DataSource dataSource,
-      String method,
-      String hostname,
-      String port,
-      String domain,
-      String username,
-      String password) {
+  public AdGroupsTraversalManager(AdGroupsConnector connector) {
     servers = new ArrayList<AdServer>();
     wellKnownEntities = new ArrayList<AdEntity>();
 
-    db = new AdDbUtil(dataSource);
+    db = new AdDbUtil(connector.dataSource, connector.dbType);
 
-    //TODO: add all possible well known entities
-    // and externalize this to properties file
-    wellKnownEntities.add(
-        new AdEntity("CN=Authenticated Users,DC=NT Authority", "S-1-5-11"));
-    wellKnownEntities.add(
-        new AdEntity("CN=Interactive,DC=NT Authority", "S-1-5-4"));
+    ResourceBundle rb = ResourceBundle.getBundle(
+        getClass().getPackage().getName() + ".wellknowidentifiers");
+    Enumeration<String> keys = rb.getKeys();
+    while (keys.hasMoreElements()) {
+      String key = keys.nextElement();
+      wellKnownEntities.add(new AdEntity(key, rb.getString(key)));
+    }
 
     LOGGER.info("Adding servers");
 
-    //TODO: this doesn't support pipe characters in passwords
-    String[] methods = method.split("\\|");
-    String[] hostnames = hostname.split("\\|");
-    String[] ports = port.split("\\|");
-    String[] domains = domain.split("\\|");
-    String[] usernames = username.split("\\|");
-    String[] passwords = password.split("\\|");
+    // I will leave this as undocumented hack to get crawling of multiple ADs
+    // with one instance of the connector until better solution is created
+    // via the configuration
+    String[] methods = connector.method.split("\\|");
+    String[] hostnames = connector.hostname.split("\\|");
+    String[] ports = connector.port.split("\\|");
+    String[] principals = connector.principal.split("\\|");
+    String[] passwords = connector.password.split("\\|");
 
     for (int i = 0; i < hostnames.length; ++i) {
       if (hostnames[i].trim().length() != 0) {
@@ -61,10 +61,9 @@ public class AdCrawler {
             methods[i].equals("SSL") ? Method.SSL : Method.STANDARD,
             hostnames[i],
             Integer.parseInt(ports[i]),
-            domains[i],
-            usernames[i],
+            principals[i],
             passwords[i]);
-        server.connect();
+        server.initialize();
         servers.add(server);
       }
     }
@@ -89,7 +88,7 @@ public class AdCrawler {
       HashMap<String, Object> dbServer = dbServers.get(0);
       if (dbServer.get("dsservicename").equals(server.getDsServiceName())) {
         if (dbServer.get("invocationid").equals(server.getInvocationID())) {
-          return (Integer) dbServer.get("highestcommittedusn");
+          return ((Number) dbServer.get("highestcommittedusn")).longValue();
         } else {
           LOGGER.warning("Directory Controller [" + server.getDsServiceName()
               + "] has been restored from backup. Performing full recrawl.");
@@ -114,25 +113,24 @@ public class AdCrawler {
   public void run() {
     try {
       db.executeBatch(AdDbUtil.Query.MERGE_ENTITIES, wellKnownEntities);
-      Map<String, Object> ntauthority = new HashMap<String, Object>();
-      ntauthority.put(AdConstants.DB_DN, "DC=NT Authority");
-      ntauthority.put(AdConstants.DB_DSSERVICENAME, "S-1-5");
-      ntauthority.put(AdConstants.DB_INVOCATIONID, "S-1-5");
-      ntauthority.put(AdConstants.DB_HIGHESTCOMMITTEDUSN, "0");
-      ntauthority.put(AdConstants.DB_NETBIOSNAME, "NT AUTHORITY");
-      ntauthority.put(AdConstants.DB_SID, "S-1-5");
-      db.execute(Query.UPDATE_SERVER, ntauthority);
+      Map<String, Object> wellKnownServer = new HashMap<String, Object>();
+      wellKnownServer.put(AdConstants.DB_DN, "DC=NT Authority");
+      wellKnownServer.put(AdConstants.DB_DSSERVICENAME, "S-1-5");
+      wellKnownServer.put(AdConstants.DB_INVOCATIONID, "S-1-5");
+      wellKnownServer.put(AdConstants.DB_HIGHESTCOMMITTEDUSN, "0");
+      wellKnownServer.put(AdConstants.DB_NETBIOSNAME, "NT AUTHORITY");
+      wellKnownServer.put(AdConstants.DB_SID, "S-1-5");
+      wellKnownServer.put(AdConstants.DB_DNSROOT, "");
+      db.execute(Query.UPDATE_SERVER, wellKnownServer);
 
-      //TODO: research how sharepoint stores builtin groups in ACLs
-      ntauthority.put(AdConstants.DB_DN, "DC=BUILTIN");
-      ntauthority.put(AdConstants.DB_DSSERVICENAME, "S-1-5-32");
-      ntauthority.put(AdConstants.DB_INVOCATIONID, "S-1-5-32");
-      ntauthority.put(AdConstants.DB_HIGHESTCOMMITTEDUSN, "0");
-      ntauthority.put(AdConstants.DB_NETBIOSNAME, "BUILTIN");
-      ntauthority.put(AdConstants.DB_SID, "S-1-5-32");
-
-      db.execute(Query.UPDATE_SERVER, ntauthority);
-      db.commit();
+      wellKnownServer.put(AdConstants.DB_DN, "DC=BUILTIN");
+      wellKnownServer.put(AdConstants.DB_DSSERVICENAME, "S-1-5-32");
+      wellKnownServer.put(AdConstants.DB_INVOCATIONID, "S-1-5-32");
+      wellKnownServer.put(AdConstants.DB_HIGHESTCOMMITTEDUSN, "0");
+      wellKnownServer.put(AdConstants.DB_NETBIOSNAME, "BUILTIN");
+      wellKnownServer.put(AdConstants.DB_SID, "S-1-5-32");
+      wellKnownServer.put(AdConstants.DB_DNSROOT, "");
+      db.execute(Query.UPDATE_SERVER, wellKnownServer);
     } catch (SQLException e) {
       LOGGER.log(Level.WARNING, "Merging of well known identifiers failed", e);
     }
@@ -154,6 +152,15 @@ public class AdCrawler {
             continue;
           } else if (last == 0) {
             LOGGER.info("Full recrawl start");
+            // Delete all memberships on this server
+            db.execute(Query.CLEAN_MEMBERS, server.getSqlParams());
+
+            // Remove all foreign memberships - these will be regenerated
+            // by MATCH_ENTITIES later
+            db.execute(Query.CLEAN_FOREIGN_MEMBERS, server.getSqlParams());
+
+            // Remove all entities from this server
+            db.execute(Query.CLEAN_ENTITIES, server.getSqlParams());
             ldapQuery = AdConstants.LDAP_QUERY;
           } else {
             LOGGER.info("Partial recrawl start");
@@ -211,5 +218,23 @@ public class AdCrawler {
         }
       }
     }
+  }
+
+  @Override
+  public DocumentList resumeTraversal(String checkpoint)
+      throws RepositoryException {
+    run();
+    return null;
+  }
+
+  @Override
+  public void setBatchHint(int batchHint) throws RepositoryException {
+    db.setBatchHint(batchHint);
+  }
+
+  @Override
+  public DocumentList startTraversal() throws RepositoryException {
+    run();
+    return null;
   }
 }
