@@ -20,12 +20,12 @@ import com.google.enterprise.connector.spi.RepositoryException;
 
 import org.joda.time.DateTime;
 
+import java.util.List;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import junit.framework.TestCase;
 
 public class UtilTest extends TestCase {
@@ -264,5 +264,72 @@ public class UtilTest extends TestCase {
     assertNotNull(format3);
     assertEquals(expectedGroupNameFormat, format3);
   }
-
+  
+  /**
+   * @Test Tests {@link Util#processMultiValueMetadata(String)}
+   * for multi choice fields
+   */
+  public final void testProcessMultiValueMetadata_multiChoice() {
+    // Multichoice field format
+    String multiChoiceValue = ";#Value1;#Value2;#Value3;#";
+    List<String> choiceValues =  Util.processMultiValueMetadata(multiChoiceValue);
+    assertEquals(3, choiceValues.size());
+    assertEquals("Value1", choiceValues.get(0));
+    assertEquals("Value2", choiceValues.get(0));
+    assertEquals("Value3", choiceValues.get(0));
+  }
+  
+  /**
+   * @Test Tests {@link Util#processMultiValueMetadata(String)}
+   * for multi lookup fields
+   */
+  public final void testProcessMultiValueMetadata_multiLookup() {
+    // MultiLookup field format
+    String multiLookupValue = "1;#Value1;#2;#Value2;#3;#Value3;#4;#Value4";
+    List<String> lookupValues =
+        Util.processMultiValueMetadata(multiLookupValue);
+    assertEquals(4, lookupValues.size());
+    assertEquals("Value1", choiceValues.get(0));
+    assertEquals("Value2", choiceValues.get(0));
+    assertEquals("Value3", choiceValues.get(0));
+    assertEquals("Value4", choiceValues.get(0));
+  }
+  
+  /**
+   * @Test Tests {@link Util#processMultiValueMetadata(String)}
+   * for sharepoint internal fields and single value fields
+   */
+  public final void testProcessMultiValueMetadata_others() {
+    // SharePoint InternalField Format
+    String internalValue = "1;#Value1";
+    List<String> internalValues =
+        Util.processMultiValueMetadata(internalValue);
+    assertEquals(1, lookupValues.size());
+    assertEquals("Value1", choiceValues.get(0));
+    
+    // Normal text with ;# part of it but not multi-value - should not process
+    String normalValue = "normal;#value;#somemore";
+    List<String> normalValues =  Util.processMultiValueMetadata(normalValue);
+    assertEquals(1, lookupValues.size());
+    assertEquals(normalValue, choiceValues.get(0));
+  }
+  
+  /**
+   * @Test Tests {@link Util#normalizeMetadataValue(String)}
+   */
+  public final void testNormalizeMetadataValue() {
+    // SharePoint Internal field - should process
+    String internalValue = "1;#Value1";
+    assertEquals("Value1", Util.normalizeMetadataValue(internalValue));
+    
+    // Multi-choice field - should not process
+    String multiChoiceValue = ";#Value1;#Value2;#Value3;#";
+    assertEquals(multiChoiceValue,
+        Util.normalizeMetadataValue(multiChoiceValue));
+    
+    // Multi-value lookup field - should not process
+    String multiLookupValue = "1;#Value1;#2;#Value2;#3;#Value3;#4;#Value4";
+    assertEquals(multiLookupValue,
+        Util.normalizeMetadataValue(multiLookupValue));
+  }
 }
