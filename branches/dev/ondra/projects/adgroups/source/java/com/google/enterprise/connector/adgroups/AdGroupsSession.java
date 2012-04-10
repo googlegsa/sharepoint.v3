@@ -16,7 +16,6 @@ package com.google.enterprise.connector.adgroups;
 
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
-import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
 import com.google.enterprise.connector.spi.TraversalManager;
@@ -33,7 +32,8 @@ import java.util.logging.Logger;
 public class AdGroupsSession implements Session {
 
   private AdGroupsConnector connector = null;
-  private final Logger LOGGER = Logger.getLogger(AdGroupsSession.class.getName());
+  private final Logger LOGGER =
+      Logger.getLogger(AdGroupsSession.class.getName());
 
   /**
    * @param connector
@@ -64,26 +64,10 @@ public class AdGroupsSession implements Session {
   /**
    * For getting the Traversal manager form the current connector context
    */
-  public TraversalManager getTraversalManager() throws RepositoryException {
+  @Override
+  public TraversalManager getTraversalManager()
+      throws RepositoryException {
     LOGGER.info("getTraversalManager()");
-    return new NullTraversalManager();
-  }
-
-  /**
-   * This stub {@code TraversalManager} does nothing, but is required
-   * for compatibility with pre-3.0 connector managers.
-  */
-  private static class NullTraversalManager implements TraversalManager {
-    public DocumentList startTraversal() throws RepositoryException {
-      return null;
-    }
-
-    public DocumentList resumeTraversal(String checkPoint)
-        throws RepositoryException {
-      return null;
-    }
-
-    public void setBatchHint(int batchHint) throws RepositoryException {
-    }
+    return new AdGroupsTraversalManager(connector);
   }
 }

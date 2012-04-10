@@ -29,15 +29,18 @@ import javax.naming.ldap.PagedResultsResponseControl;
 public class AdServer {
   private static final Logger LOGGER = Logger.getLogger(AdServer.class.getName());
 
-  private LdapContext ldapContext = null;
+  protected LdapContext ldapContext = null;
   private SearchControls searchCtls;
   private Control[] resultControls;
 
+  // properties necessary for connection
   private String hostName;
   private int port;
-  private String nETBIOSName;
-  private String userName;
+  private String principal;
   private String password;
+
+  // retrieved properties of the Active Directory controller
+  private String nETBIOSName;
   private Method connectMethod;
   private String dn;
   private String configurationNamingContext;
@@ -45,18 +48,17 @@ public class AdServer {
   private String sid;
   private int highestCommittedUSN;
   private String invocationID;
+  private String dnsRoot;
 
   public AdServer(
       Method connectMethod,
       String hostName,
       int port,
-      String nETBIOSName,
-      String userName,
+      String principal,
       String password) {
     this.hostName = hostName;
     this.port = port;
-    this.nETBIOSName = nETBIOSName;
-    this.userName = userName;
+    this.principal = principal;
     this.password = password;
     searchCtls = new SearchControls();
     searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
@@ -67,7 +69,7 @@ public class AdServer {
    * Connects to the Active Directory server and retrieves AD configuration
    * information.
    */
-  public void connect() {
+  public void connect() throws CommunicationException, NamingException {
     if (ldapContext == null) {
       Hashtable<String, String> env = new Hashtable<String, String>();
 
@@ -76,8 +78,7 @@ public class AdServer {
           AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
       env.put(Context.SECURITY_AUTHENTICATION,
           AdConstants.AUTHN_TYPE_SIMPLE);
-      env.put(Context.SECURITY_PRINCIPAL,
-          nETBIOSName + AdConstants.BACKSLASH + userName);
+      env.put(Context.SECURITY_PRINCIPAL, principal);
       env.put(Context.SECURITY_CREDENTIALS, password);
 
       String ldapUrl =
@@ -85,76 +86,93 @@ public class AdServer {
       LOGGER.info("LDAP provider url: " + ldapUrl);
       env.put(Context.PROVIDER_URL, ldapUrl);
 
-      try {
-        ldapContext = new InitialLdapContext(env, null);
-        Attributes attributes = ldapContext.getAttributes(AdConstants.EMPTY);
-        dn = attributes.get(
-            AdConstants.ATTR_DEFAULTNAMINGCONTEXT).get(0).toString();
-        dsServiceName = attributes.get(
-            AdConstants.ATTR_DSSERVICENAME).get(0).toString();
-        highestCommittedUSN = Integer.parseInt(attributes.get(
-            AdConstants.ATTR_HIGHESTCOMMITTEDUSN).get(0).toString());
-        configurationNamingContext = attributes.get(
-            AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
-        sid = AdEntity.getTextSid((byte[])get(
-            AdConstants.ATTR_DISTINGUISHEDNAME + AdConstants.EQUALS + dn,
-            AdConstants.ATTR_OBJECTSID,
-            dn));
-        invocationID = AdEntity.getTextGuid((byte[]) get(
-            AdConstants.ATTR_DISTINGUISHEDNAME
-            + AdConstants.EQUALS + dsServiceName,
-            AdConstants.ATTR_INVOCATIONID,
-            dsServiceName));
-        resultControls = new Control[] {new PagedResultsControl(1000, false)};
-        ldapContext.setRequestControls(resultControls);
-      } catch (CommunicationException e) {
-        LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
-            + "query LDAP (Active Directory) due to a communication failure.",
-            e);
-      } catch (AuthenticationNotSupportedException e) {
-        LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
-            + "query LDAP (Active Directory) due to authentication not"
-            +  "supported exception.",
-            e);
-      } catch (AuthenticationException ae) {
-        LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
-            + "query LDAP (Active Directory) due to authentication exception.",
-            ae);
-      } catch (NamingException e) {
-        LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
-            + "query LDAP (Active Directory) due to a naming exception.",
-            e);
-      } catch (IOException e) {
-        LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. "
-            + "Will continue without paging - this can cause issue if there are"
-            + "more than 1000 members in one group.",
-            e);
-      }
-      if (ldapContext != null) {
-        LOGGER.info("Sucessfully created an Initial LDAP context");
-      }
+      ldapContext = new InitialLdapContext(env, null);
+      Attributes attributes = ldapContext.getAttributes(AdConstants.EMPTY);
+      dn = attributes.get(
+          AdConstants.ATTR_DEFAULTNAMINGCONTEXT).get(0).toString();
+      dsServiceName = attributes.get(
+          AdConstants.ATTR_DSSERVICENAME).get(0).toString();
+      highestCommittedUSN = Integer.parseInt(attributes.get(
+          AdConstants.ATTR_HIGHESTCOMMITTEDUSN).get(0).toString());
+      configurationNamingContext = attributes.get(
+          AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
+      sid = AdEntity.getTextSid((byte[])get(
+          AdConstants.ATTR_DISTINGUISHEDNAME + AdConstants.EQUALS + dn,
+          AdConstants.ATTR_OBJECTSID, dn));
+      invocationID = AdEntity.getTextGuid((byte[]) get(
+          AdConstants.ATTR_DISTINGUISHEDNAME
+          + AdConstants.EQUALS + dsServiceName,
+          AdConstants.ATTR_INVOCATIONID,
+          dsServiceName));
     }
-    nETBIOSName = (String) get(
-        "(ncName=" + dn + ")", "nETBIOSName", configurationNamingContext);
+  }
+
+  public void initialize() {
+    try {
+      connect();
+    } catch (CommunicationException e) {
+      LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
+          + "query LDAP (Active Directory) due to a communication failure.",
+          e);
+    } catch (AuthenticationNotSupportedException e) {
+      LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
+          + "query LDAP (Active Directory) due to authentication not"
+          +  "supported exception.",
+          e);
+    } catch (AuthenticationException e) {
+      LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
+          + "query LDAP (Active Directory) due to authentication exception.",
+          e);
+    } catch (NamingException e) {
+      LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
+          + "query LDAP (Active Directory) due to a naming exception.",
+          e);
+    }
+
+    if (ldapContext == null) {
+      return;
+    }
+
+    LOGGER.info("Sucessfully created an Initial LDAP context");
+    try {
+      resultControls = new Control[] {new PagedResultsControl(1000, false)};
+      ldapContext.setRequestControls(resultControls);
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. "
+        + "Will continue without paging - this can cause issue if there"
+        + "are more than 1000 members in one group.", e);
+    } catch (NamingException e) {
+      LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. "
+          + "Will continue without paging - this can cause issue if there"
+          + "are more than 1000 members in one group.", e);
+    }
+
+    nETBIOSName = (String) get("(ncName=" + dn + ")",
+        AdConstants.ATTR_NETBIOSNAME, configurationNamingContext);
+    dnsRoot = (String) get("(ncName=" + dn + ")",
+        AdConstants.ATTR_DNSROOT, configurationNamingContext);
     LOGGER.log(Level.INFO, "Connected to domain (dn = " + dn + ", netbios = "
         + nETBIOSName + ", hostname = " + hostName + ", dsServiceName = "
         + dsServiceName + ", highestCommittedUSN = " + highestCommittedUSN
-        + ", invocationID = " + invocationID + ")");
+        + ", invocationID = " + invocationID + ", dnsRoot = " + dnsRoot + ")");
   }
 
   /**
    * Retrieves one attribute from the Active Directory. Used for searching of
-   * configuration details
+   * configuration details.
    * @param filter LDAP filter to search for
    * @param attribute name of attribute to retrieve
    * @param base base name to bind to
    * @return first attribute object
    */
-  public Object get(String filter, String attribute, String base) {
+  protected Object get(String filter, String attribute, String base) {
     searchCtls.setReturningAttributes(new String[] {attribute});
     try {
       NamingEnumeration<SearchResult> ldapResults =
           ldapContext.search(base, filter, searchCtls);
+      if (!ldapResults.hasMore()) {
+        return null;
+      }
       SearchResult sr = ldapResults.next();
       Attributes attrs = sr.getAttributes();
       Attribute at = attrs.get(attribute);
@@ -223,6 +241,7 @@ public class AdServer {
     map.put(AdConstants.DB_HIGHESTCOMMITTEDUSN, highestCommittedUSN);
     map.put(AdConstants.DB_NETBIOSNAME, nETBIOSName);
     map.put(AdConstants.DB_SID, sid);
+    map.put(AdConstants.DB_DNSROOT, dnsRoot);
     return map;
   }
 

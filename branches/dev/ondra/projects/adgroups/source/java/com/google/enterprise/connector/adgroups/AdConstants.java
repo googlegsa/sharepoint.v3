@@ -12,6 +12,8 @@ public class AdConstants {
   public static final String ATTR_PRIMARYGROUPID = "primaryGroupId";
   public static final String ATTR_UPN = "userPrincipalName";
   public static final String ATTR_MEMBER = "member";
+  public static final String ATTR_NETBIOSNAME = "nETBIOSName";
+  public static final String ATTR_DNSROOT = "dnsRoot";
   public static final String ATTR_DEFAULTNAMINGCONTEXT =
       "defaultNamingContext";
   public static final String ATTR_DSSERVICENAME = "dsServiceName";
@@ -38,8 +40,10 @@ public class AdConstants {
   public static final String DB_RID = "rid";
   public static final String DB_SID = "sid";
   public static final String DB_NETBIOSNAME = "netbiosname";
+  public static final String DB_DNSROOT = "dnsroot";
   public static final String DB_OBJECTGUID = "objectguid";
   public static final String DB_USNCHANGED = "usnchanged";
+  public static final String DB_WELLKNOWN = "wellknown";
   public static final String DB_HIGHESTCOMMITTEDUSN = "highestcommittedusn";
   public static final String DB_INVOCATIONID = "invocationid";
   public static final String DB_DSSERVICENAME = "dsservicename";

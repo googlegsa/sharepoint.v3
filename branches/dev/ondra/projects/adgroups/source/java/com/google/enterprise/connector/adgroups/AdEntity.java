@@ -19,6 +19,7 @@ public class AdEntity {
   private String objectGUID;
   private List<String> members;
   private long uSNChanged;
+  private boolean wellKnown;
 
   /**
    * Standard constructor for AdEntity. The instance is created from LDAP
@@ -28,6 +29,7 @@ public class AdEntity {
    */
   public AdEntity(SearchResult searchResult) throws NamingException {
     dn = searchResult.getNameInNamespace();
+    wellKnown = false;
     Attributes attrs = searchResult.getAttributes();
     sAMAccountName =
         (String) attrs.get(AdConstants.ATTR_SAMACCOUNTNAME).get(0);
@@ -55,15 +57,16 @@ public class AdEntity {
 
   /**
    * Constructor to be used only for creating well known identities
-   * @param dn distinguished name of the object
    * @param sid identifier of the object, this will be used as objectGUID as
    *        well to ensure uniqueness in the database
+   * @param dn distinguished name of the object
    */
-  public AdEntity(String dn, String sid) {
-    this.dn = dn;
+  public AdEntity(String sid, String dn) {
     this.sid = sid;
+    this.dn = dn;
     objectGUID = sid;
     sAMAccountName = getCommonName();
+    wellKnown = true;
   }
 
   /**
@@ -136,9 +139,10 @@ public class AdEntity {
     map.put(AdConstants.DB_DOMAINSID,
         sid.substring(0, sid.lastIndexOf(AdConstants.HYPHEN_CHAR)));
     map.put(AdConstants.DB_RID,
-        sid.substring(sid.lastIndexOf(AdConstants.HYPHEN_CHAR)+1));
+        sid.substring(sid.lastIndexOf(AdConstants.HYPHEN_CHAR) + 1));
     map.put(AdConstants.DB_OBJECTGUID, objectGUID);
     map.put(AdConstants.DB_USNCHANGED, uSNChanged);
+    map.put(AdConstants.DB_WELLKNOWN, wellKnown ? 1 : 0);
     return map;
   }
 
