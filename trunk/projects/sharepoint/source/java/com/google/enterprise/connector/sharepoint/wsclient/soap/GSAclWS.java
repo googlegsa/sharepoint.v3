@@ -73,6 +73,7 @@ public class GSAclWS implements AclWS{
   private GssAclMonitorSoap_BindingStub stub = null;
   private final Logger LOGGER = Logger.getLogger(GSAclWS.class.getName());
   private SharepointClientContext sharepointClientContext = null;
+  private boolean supportsAcls = false;
 
   /**
    * @param inSharepointClientContext The Context is passed so that necessary
@@ -95,7 +96,11 @@ public class GSAclWS implements AclWS{
     if (null == siteurl) {
       siteurl = sharepointClientContext.getSiteURL();
     }
-
+    if (null != sharepointClientContext.getTraversalContext()) {
+      supportsAcls = 
+          sharepointClientContext.getTraversalContext().supportsAcls();     
+    }
+    LOGGER.log(Level.CONFIG, "Supports ACL  " + supportsAcls);
     endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
     LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
@@ -136,7 +141,7 @@ public class GSAclWS implements AclWS{
       return result;
     }
     try {
-      result = stub.getAclForUrlsUsingInheritance(urls, true);
+      result = stub.getAclForUrlsUsingInheritance(urls, supportsAcls);
     } catch (final AxisFault af) {
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (sharepointClientContext.getDomain() != null)) {
@@ -145,7 +150,7 @@ public class GSAclWS implements AclWS{
             + stub.getUsername() + " ]. Trying with " + username);
         stub.setUsername(username);
         try {
-          result = stub.getAclForUrlsUsingInheritance(urls, true);
+          result = stub.getAclForUrlsUsingInheritance(urls, supportsAcls);
         } catch (final Exception e) {
           LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
               + endpoint + " ].", e);
@@ -263,11 +268,21 @@ public class GSAclWS implements AclWS{
                   + "] Denied Role Types [ " + deniedRoleTypes + " ]");
               //Pass denied permissions only if Reader role is denied.
               if (deniedRoleTypes.contains(RoleType.READER)) {
-                LOGGER.fine("Processing Deny permissions" 
-                    + " for Principal ["+ principalName + "]");
-                processPermissions(principal, deniedRoleTypes,
-                    deniedUserPermissionMap, deniedGroupPermissionMap,
-                    principalName, siteCollUrl, memberships);
+                if (supportsAcls) {
+                  LOGGER.fine("Processing Deny permissions" 
+                      + " for Principal ["+ principalName + "]");
+                  processPermissions(principal, deniedRoleTypes,
+                      deniedUserPermissionMap, deniedGroupPermissionMap,
+                      principalName, siteCollUrl, memberships);
+                } else {
+                  // Skipping ACL as denied ACLs are not supported as per
+                  // Traversal Context.
+                  LOGGER.warning("Skipping ACL as Deny permissions are detected" 
+                      + "for Document [" + entityUrl + "] for Principal [" 
+                      + principalName + " ] when Supports ACL [" 
+                      + supportsAcls + "].");
+                  continue ACL;                  
+                }
               }
             }
           }
@@ -627,7 +642,15 @@ public class GSAclWS implements AclWS{
          // Web Application policy is represented by a separate document
          // which will be processed by
          // SharePointClient.java --> processSiteData.
-         webstate.setWebApplicationPolicyChange(true);      
+        if (supportsAcls) {
+          webstate.setWebApplicationPolicyChange(true);
+        } else {
+          LOGGER.log(Level.INFO, "Resetting all list states under web [ "
+              + webstate.getWebUrl()
+              + " ] because web application policy change detected.");
+          webstate.resetState();
+          isWebReset = true;
+        }               
        } else if (objType == ObjectType.WEB && !isWebChanged) {
          if (changeType == SPChangeType.AssignmentDelete) {
           // Typically, deletion of a role affects the ACL of only
@@ -650,7 +673,26 @@ public class GSAclWS implements AclWS{
           // just marking web home page for re-crawl.
           // TODO : Need to change setWebApplicationPolicyChange
           // to something like setRevisitWebHome.
-          webstate.setWebApplicationPolicyChange(true);  
+          if (supportsAcls) {
+            webstate.setWebApplicationPolicyChange(true);
+          } else {
+            isWebChanged = true;
+            // Since, role assignment at web have changed, we need to
+            // re-crawl all the list/items which are inheriting the
+            // changed role assignments.
+            for (ListState listState : webstate.getAllListStateSet()) {
+              if (!listState.isInheritedSecurity()) {
+                continue;
+              }
+              if (!processedLists.contains(listState)) {
+                LOGGER.log(Level.INFO, "Marking List [ "
+                    + listState
+                    + " ] as a candidate for ACL based crawl because the effective ACL at this list have been updated. All the items with inheriting permissions wil be crawled from this list.");
+                listState.startAclCrawl();
+                processedLists.add(listState);
+              }
+            }
+          }
         }
       } else if (objType == ObjectType.LIST && null != changeObjectHint) {
         ListState listState = webstate.getListStateForGuid(changeObjectHint);
@@ -670,10 +712,21 @@ public class GSAclWS implements AclWS{
               + " could be Limited Access.");
           listState.resetState();
         } else {
-          // Revisit List home for ACL changes.
-          listState.markListToRevisitListHome(sharepointClientContext.getFeedType());          
+          if (supportsAcls) {
+            // Revisit List home for ACL changes.
+            listState.markListToRevisitListHome(sharepointClientContext.getFeedType());
+          } else {
+            if (!processedLists.contains(listState)) {
+              LOGGER.log(Level.INFO, "Marking List [ "
+                  + listState
+                  + " ] as a candidate for ACL based crawl because the effective"
+                  + " ACL at this list have been updated. All the items with"
+                  + " inheriting permissions wil be crawled from this list.");
+              listState.startAclCrawl();
+              processedLists.add(listState);
+            }
+          }
         }
-
       } else if (objType == ObjectType.USER
       // For user-related changes, we only consider deletion changes.
       // Rest all are covered as part of web/list/item/group

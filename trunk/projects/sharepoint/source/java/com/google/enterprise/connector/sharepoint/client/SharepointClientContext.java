@@ -209,6 +209,10 @@ public class SharepointClientContext implements Cloneable {
 				// It's ok if we do a shallow copy here
 				spCl.userDataStoreDAO = this.userDataStoreDAO;
 			}
+			
+			if (null != traversalContext) {
+			  spCl.setTraversalContext(traversalContext);
+			}
       
 			spCl.useSPSearchVisibility = useSPSearchVisibility;
 			spCl.infoPathBaseTemplate = infoPathBaseTemplate;
