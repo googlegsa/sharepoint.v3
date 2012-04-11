@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.base.Strings;
+import com.google.enterprise.connector.adgroups.AdGroupsConnector;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -103,6 +104,8 @@ public class SharepointConnector implements Connector,
   private UserDataStoreDAO userDataStoreDAO;
   private SharepointSocialConnector socialConnector;
   private UserProfileServiceFactory userProfileServiceFactory;
+  private AdGroupsConnector adGroupsConnector;
+  private boolean oldLdapBehavior = false;
 
   /**
    * Describes whether user profiles are fetched.
@@ -126,6 +129,9 @@ public class SharepointConnector implements Connector,
 
   public SharepointConnector() {
     socialConnector = new SharepointSocialConnector(this.sharepointClientContext);
+    if (!oldLdapBehavior) {
+      adGroupsConnector = new AdGroupsConnector();
+    }
   }
 
   /**
@@ -206,9 +212,13 @@ public class SharepointConnector implements Connector,
       }
     }
     Session socialSession = null;
+    Session adGroupsSession = null;
     if (sharepointClientContext.getSocialOption() != SocialOption.NO) {
       try {
         socialSession = socialConnector.login();
+        if (!oldLdapBehavior) {
+          adGroupsSession = adGroupsConnector.login();
+        }
       } catch (RepositoryException e) {
         LOGGER
             .warning("Social Connection login failed with exception message: "
@@ -217,7 +227,8 @@ public class SharepointConnector implements Connector,
             .warning("This can be normal if the target Sharepoint server is pre 2010");
       }
     }
-    return new SharepointSession(this, sharepointClientContext, socialSession);
+    return new SharepointSession(
+        this, sharepointClientContext, socialSession, adGroupsSession);
   }
 
   /**
@@ -276,6 +287,10 @@ public class SharepointConnector implements Connector,
   public void setDomain(final String domain) {
     this.domain = domain;
     socialConnector.setDomain(domain);
+    if (!oldLdapBehavior) {
+      adGroupsConnector.setPrincipal(
+          this.domain + SPConstants.DOUBLEBACKSLASH + this.username);
+    }
   }
 
   /**
@@ -291,6 +306,10 @@ public class SharepointConnector implements Connector,
   public void setUsername(final String username) {
     this.username = username;
     socialConnector.setUserName(username);
+    if (!oldLdapBehavior) {
+      adGroupsConnector.setPrincipal(
+          this.domain + SPConstants.DOUBLEBACKSLASH + this.username);
+    }
   }
 
   /**
@@ -306,6 +325,9 @@ public class SharepointConnector implements Connector,
   public void setPassword(final String password) {
     this.password = password;
     socialConnector.setPassword(password);
+    if (!oldLdapBehavior) {
+      adGroupsConnector.setPassword(password);
+    }
   }
 
   /**
@@ -477,7 +499,13 @@ public class SharepointConnector implements Connector,
     sharepointClientContext
         .setUserProfileServiceFactory(this.userProfileServiceFactory);
     socialConnector.init(sharepointClientContext);
-
+    if (!oldLdapBehavior) {
+      try {
+        adGroupsConnector.init();
+      } catch (Exception e) {
+        throw new SharepointException(e);
+      }
+    }
   }
 
   /**
@@ -602,6 +630,20 @@ public class SharepointConnector implements Connector,
   }
 
   /**
+  * @return the oldLdapBehavior
+  */
+  public boolean isOldLdapBehavior() {
+    return oldLdapBehavior;
+  }
+
+  /**
+  * @param oldLdapBehavior the oldLdapBehavior to set
+  */
+  public void setOldLdapBehavior(boolean oldLdapBehavior) {
+    this.oldLdapBehavior = oldLdapBehavior;
+  }
+
+/**
    * @return the fetchACLInBatches
    */
   public boolean isFetchACLInBatches() {
@@ -666,6 +708,9 @@ public class SharepointConnector implements Connector,
    */
   public void setLdapServerHostAddress(String ldapServerHostAddress) {
     this.ldapServerHostAddress = ldapServerHostAddress;
+    if (!oldLdapBehavior) {
+      adGroupsConnector.setHostname(ldapServerHostAddress);
+    }
   }
 
   /**
@@ -683,6 +728,9 @@ public class SharepointConnector implements Connector,
       this.portNumber = SPConstants.LDAP_DEFAULT_PORT_NUMBER;
     } else {
       this.portNumber = portNumber;
+    }
+    if (!oldLdapBehavior) {
+      adGroupsConnector.setPort(this.portNumber);
     }
   }
 
@@ -725,6 +773,9 @@ public class SharepointConnector implements Connector,
    */
   public void setConnectMethod(String connectMethod) {
     this.connectMethod = connectMethod;
+    if (!oldLdapBehavior) {
+      adGroupsConnector.setMethod(connectMethod);
+    }
   }
 
   /**

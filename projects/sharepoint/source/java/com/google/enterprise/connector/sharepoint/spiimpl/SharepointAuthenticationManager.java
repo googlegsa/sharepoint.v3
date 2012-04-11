@@ -15,9 +15,11 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.base.Strings;
+import com.google.enterprise.connector.adgroups.AdGroupsAuthenticationManager;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.ldap.LdapService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
@@ -26,12 +28,15 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthenticationResponse;
+import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
+import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,17 +56,20 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
   private final ClientFactory clientFactory;
 	SharepointClientContext sharepointClientContext = null;
 	LdapService ldapService = null;
+    AdGroupsAuthenticationManager adGroupsAuthenticationManager;
 
 	/**
 	 * @param inSharepointClientContext Context Information is required to create
 	 *          the instance of this class
 	 */
 	public SharepointAuthenticationManager(final ClientFactory clientFactory,
-			final SharepointClientContext inSharepointClientContext)
+			final SharepointClientContext inSharepointClientContext,
+			final AdGroupsAuthenticationManager inAdGroupsAuthenticationManager)
 			throws SharepointException {
 		if (inSharepointClientContext == null) {
 			throw new SharepointException("SharePointClientContext can not be null");
 		}
+    adGroupsAuthenticationManager = inAdGroupsAuthenticationManager;
     this.clientFactory = clientFactory;
 		sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
 		if (sharepointClientContext.isPushAcls()) {
@@ -73,6 +81,40 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 		}
 	}
 
+  public AuthenticationResponse authenticate(
+      final AuthenticationIdentity identity) throws RepositoryLoginException,
+      RepositoryException {
+    if (adGroupsAuthenticationManager != null) {
+      return authenticateAgainstActiveDirectory(identity);
+    } else {
+      return authenticateAgainstSharepoint(identity);
+    }
+  }
+
+  //TODO: make this claims aware - authorizate against Sharepoint and resolve
+  //groups against AD only if necessary
+  public AuthenticationResponse authenticateAgainstActiveDirectory(
+      final AuthenticationIdentity identity) throws RepositoryLoginException,
+      RepositoryException {
+    AuthenticationResponse adAuthResult =
+        adGroupsAuthenticationManager.authenticate(identity);
+    if (!adAuthResult.isValid()) {
+      return adAuthResult;
+    }
+    Set<Principal> groups = (Set<Principal>) adAuthResult.getGroups();
+    List<UserGroupMembership> allGroups = sharepointClientContext
+        .getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(
+            groups, new Principal(identity.getDomain()
+                + SPConstants.DOUBLEBACKSLASH + identity.getUsername()));
+
+    for (UserGroupMembership ugm : allGroups) {
+      groups.add(new Principal(
+          PrincipalType.NETBIOS, ugm.getNamespace(), ugm.getGroupName()));
+    }
+    return new AuthenticationResponse(
+        adAuthResult.isValid(), adAuthResult.getData(), groups);
+  }
+
 	/**
 	 * Authenticates the user against the SharePoint server where Crawl URL
 	 * specified during connector configuration is hosted
@@ -83,7 +125,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 	 * @return AutheicationResponse Contains the authentication status for the
 	 *         incoming identity
 	 */
-	public AuthenticationResponse authenticate(
+	public AuthenticationResponse authenticateAgainstSharepoint(
 			final AuthenticationIdentity identity) throws RepositoryLoginException,
 			RepositoryException {
 		if (sharepointClientContext == null) {

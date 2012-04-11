@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.adgroups.AdGroupsTraversalManager;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialUserProfileDocumentList;
@@ -54,6 +55,7 @@ public class SharepointTraversalManager implements TraversalManager,
   // The traversal context instance
   private TraversalContext traversalContext;
   private SharepointSocialTraversalManager socialTraversal;
+  private AdGroupsTraversalManager adGroupsTraversal;
 
   /**
    * constructor.
@@ -68,7 +70,7 @@ public class SharepointTraversalManager implements TraversalManager,
   public SharepointTraversalManager(final SharepointConnector inConnector,
       final SharepointClientContext inSharepointClientContext)
       throws RepositoryException {
-    this(inConnector, inSharepointClientContext, null);
+    this(inConnector, inSharepointClientContext, null, null);
   }
 
   /**
@@ -85,7 +87,9 @@ public class SharepointTraversalManager implements TraversalManager,
    */
   public SharepointTraversalManager(final SharepointConnector inConnector,
       final SharepointClientContext inSharepointClientContext,
-      SharepointSocialTraversalManager inSocialTraversal) throws RepositoryException {
+      SharepointSocialTraversalManager inSocialTraversal,
+      AdGroupsTraversalManager inAdGroupsTraversal) 
+      throws RepositoryException {
     if (inConnector == null) {
       throw new SharepointException(
           "Cannot initialize traversal manager because SharePointConnector object is null.");
@@ -97,6 +101,7 @@ public class SharepointTraversalManager implements TraversalManager,
     clientFactory = inConnector.getClientFactory();
     try {
       socialTraversal = inSocialTraversal;
+      adGroupsTraversal = inAdGroupsTraversal;
       LOGGER.config("SharepointTraversalManager: "
           + inSharepointClientContext.getSiteURL() + ", "
           + inSharepointClientContext.getGoogleConnectorWorkDir());
@@ -138,6 +143,9 @@ public class SharepointTraversalManager implements TraversalManager,
       } 
     }
     if (docCheckpoint) { // we are resuming a doc feed
+      if (adGroupsTraversal != null) {
+        adGroupsTraversal.resumeTraversal(checkpoint);
+      }
       return resumeDocTraversal(checkpoint);
     } else if ((rsSocial == null) && (sharepointClientContext.getSocialOption() 
         != SocialOption.ONLY)) { // we want doc feed and social feed is complete
@@ -210,6 +218,9 @@ public class SharepointTraversalManager implements TraversalManager,
     // if there is no social traversal to be done or social traversal has
     // finished then do doc traversal
     if ((socialTraversal == null) || (rsSocial == null)) {
+      if (adGroupsTraversal != null) {
+        adGroupsTraversal.startTraversal();
+      }
       return startDocTraversal();
     } else {
       return rsSocial;
