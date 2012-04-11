@@ -20,8 +20,10 @@ import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthenticationResponse;
+import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
+import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -112,7 +114,7 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
           return new AuthenticationResponse(false, "", null);
         }
          user = users.get(0);
-         List<String> groups = getAllGroupsForTheUser((Number) user.get(
+         List<Principal> groups = getAllGroupsForTheUser((Number) user.get(
              AdConstants.DB_ENTITYID));
          if (password != null && !authenticateUser(
              (String) user.get(AdConstants.DB_DNSROOT),
@@ -168,21 +170,22 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
         return false;
       }
     }
-
-    String formatGroup(HashMap<String, Object> entity) {
+    
+    Principal formatGroup(HashMap<String, Object> entity) {
       String netbiosName = (String) entity.get(AdConstants.DB_NETBIOSNAME);
       String samAccountName =
           (String) entity.get(AdConstants.DB_SAMACCOUNTNAME);
 
       if (netbiosName != null) {
-        return netbiosName + AdConstants.BACKSLASH + samAccountName;
+        return new Principal(PrincipalType.NETBIOS, "", 
+            netbiosName + AdConstants.BACKSLASH + samAccountName);
       } else {
-        return samAccountName;
+        return new Principal(PrincipalType.NETBIOS, "", samAccountName);
       }
     }
 
-    List<String> getAllGroupsForTheUser(Number entityId) throws SQLException {
-      List<String> groups = new ArrayList<String>();
+    List<Principal> getAllGroupsForTheUser(Number entityId) throws SQLException {
+      List<Principal> groups = new ArrayList<Principal>();
       List<Number> entities = new ArrayList<Number>();
       entities.add(entityId);
 

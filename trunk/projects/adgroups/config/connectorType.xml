@@ -5,20 +5,11 @@
     class="com.google.enterprise.connector.adgroups.AdGroupsConnectorType">
     <property name="configKeys">
       <list>
-        <value>ldapServerHostAddress</value>
-        <value>domain</value>
-        <value>username</value>
+        <value>method</value>
+        <value>hostname</value>
+        <value>port</value>
+        <value>principal</value>
         <value>password</value>
-        <value>usernameFormatInAce</value>
-        <value>groupnameFormatInAce</value>
-        <value>portNumber</value>
-        <value>searchBase</value>
-        <value>authenticationType</value>
-        <value>connectMethod</value>
-        <!--  LDAP user groups membership cache settings -->
-        <value>useCacheToStoreLdapUserGroupsMembership</value>
-        <value>initialCacheSize</value>
-        <value>cacheRefreshInterval</value>
       </list>
     </property>
   </bean>
