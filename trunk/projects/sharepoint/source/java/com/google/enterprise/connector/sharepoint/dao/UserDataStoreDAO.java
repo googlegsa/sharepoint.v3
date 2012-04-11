@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.dao;
 import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.Principal;
 
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
@@ -98,6 +99,16 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     LOGGER.log(Level.CONFIG, memberships.size()
         + " Memberships identified for user [ " + username + " ]. ");
     return memberships;
+  }
+
+  public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
+      Set<Principal> groups, Principal searchUser) throws SharepointException {
+    Set<String> groupNames = new HashSet<String>();
+    for (Principal group : groups) {
+      groupNames.add(group.getName());
+    }
+    return getAllMembershipsForSearchUserAndLdapGroups(
+        groupNames, searchUser.getName());
   }
 
   /**

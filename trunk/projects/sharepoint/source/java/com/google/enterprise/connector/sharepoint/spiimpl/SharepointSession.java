@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.adgroups.AdGroupsAuthenticationManager;
+import com.google.enterprise.connector.adgroups.AdGroupsTraversalManager;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialTraversalManager;
@@ -40,6 +42,7 @@ public class SharepointSession implements Session {
   private SharepointClientContext sharepointClientContext = null;
   private final Logger LOGGER = Logger.getLogger(SharepointSession.class.getName());
   private Session socialSession;
+  private Session adGroupsSession;
 
   /**
    * @param inConnector
@@ -47,7 +50,7 @@ public class SharepointSession implements Session {
    */
   public SharepointSession(final SharepointConnector inConnector,
       final SharepointClientContext inSharepointClientContext) {
-    this(inConnector, inSharepointClientContext, null);
+    this(inConnector, inSharepointClientContext, null, null);
   }
 
   /**
@@ -57,7 +60,7 @@ public class SharepointSession implements Session {
    */
   public SharepointSession(final SharepointConnector inConnector,
       final SharepointClientContext inSharepointClientContext,
-      final Session inSocialSession) {
+      final Session inSocialSession, final Session inAdGroupsSession) {
     /*
      * throws RepositoryException
      */
@@ -65,6 +68,7 @@ public class SharepointSession implements Session {
       connector = inConnector;
     }
     socialSession = inSocialSession;
+    adGroupsSession = inAdGroupsSession;
     if (inSharepointClientContext != null) {
       sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
     }
@@ -79,7 +83,11 @@ public class SharepointSession implements Session {
       throws RepositoryException {
     LOGGER.info("getAuthenticationManager()");
     return new SharepointAuthenticationManager(connector.getClientFactory(),
-        sharepointClientContext);
+        sharepointClientContext,
+        adGroupsSession != null ?
+            (AdGroupsAuthenticationManager)
+                adGroupsSession.getAuthenticationManager()
+            : null);
   }
 
   /**
@@ -103,9 +111,12 @@ public class SharepointSession implements Session {
     return new SharepointTraversalManager(
         connector,
         sharepointClientContext,
-        socialSession != null ? 
+        socialSession != null ?
           (SharepointSocialTraversalManager) socialSession.getTraversalManager()
-          : null);
+          : null,
+        adGroupsSession != null ?
+            (AdGroupsTraversalManager) adGroupsSession.getTraversalManager()
+            : null);
   }
 
 }

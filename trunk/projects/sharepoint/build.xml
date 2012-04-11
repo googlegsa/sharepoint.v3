@@ -32,6 +32,7 @@
   <property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
   <property name="lib.jar.dir" value="lib" />
   <property name="lib.dev.jar.dir" value="${lib.jar.dir}/dev" />
+  <property name="adgroups.jar" value="../adgroups/dist/jarfile/connector-adgroups.jar" />
   <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
   <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
   <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
@@ -200,6 +201,7 @@
         <pathelement location="${spi.jarfile}" />
         <pathelement location="${config}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+        <pathelement location="${adgroups.jar}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
