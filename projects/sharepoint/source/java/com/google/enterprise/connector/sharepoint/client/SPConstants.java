@@ -328,7 +328,14 @@ public class SPConstants {
   public static final String STATE_RENAMED_FOLDERPATH = "Path";
 
   public static final String CONNECTOR_NAME = "Sharepoint";
-  public static final String CONNECTOR_PREFIX = "_state.xml";
+  public static final String CONNECTOR_SUFFIX = "_state";
+  public static final String CONNECTOR_STATE_EXT = ".xml";
+  public static final String CONNECTOR_TEMP_EXT = ".tmp";
+  public static final String CONNECTOR_STATEFILE_NAME =
+      CONNECTOR_NAME + CONNECTOR_SUFFIX + CONNECTOR_STATE_EXT;
+  public static final String CONNECTOR_TEMPFILE_NAME =
+      CONNECTOR_NAME + CONNECTOR_SUFFIX + CONNECTOR_TEMP_EXT;
+  
   public static final String LAST_CRAWLED_WEB_ID = "LastCrawledWebStateID";
   public static final String LAST_CRAWLED_LIST_ID = "LastCrawledListStateID";
   public static final String CRAWL_STATE = "CrawlState";
