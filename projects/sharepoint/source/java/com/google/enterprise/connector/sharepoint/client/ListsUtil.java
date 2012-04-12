@@ -443,18 +443,14 @@ public abstract class ListsUtil {
     // Get all the required attributes.
     if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
       if (null != listItem.getAttribute(SPConstants.MODERATION_STATUS)) {
-        int docVersion = Integer.parseInt(listItem.getAttribute(SPConstants.MODERATION_STATUS));
-        if (docVersion != 0) {
-          // ModerationStatus="0" for approved/ published list
-          // list item or document status
-          // ModerationStatus="1" for rejected list item or document status
-          // ModerationStatus="2" for pending list item or document status
-          // ModerationStatus="3" for draft list item or document status
-
+        String docVersion =
+            listItem.getAttribute(SPConstants.MODERATION_STATUS);
+        if (docVersion != null && !docVersion.equals(
+            SPConstants.DocVersion.APPROVED.toString())) {
           LOGGER.warning("List Item or Document is not yet published on SharePoint site, "
               + "hence discarding the ID [" + listItem.getAttribute(SPConstants.ID)
               + "] under the List/Document Library URL " + list.getListURL()
-              + " , and it's current version is " + docVersion);
+              + ", and its current version is " + docVersion);
           return null;
         }
       } else {
