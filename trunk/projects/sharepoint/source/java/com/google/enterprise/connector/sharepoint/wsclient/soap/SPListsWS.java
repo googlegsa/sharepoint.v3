@@ -675,7 +675,8 @@ public class SPListsWS implements ListsWS {
         if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
           if (null != row.getAttribute(SPConstants.MODERATION_STATUS)) {
             String docVersion = row.getAttribute(SPConstants.MODERATION_STATUS);
-            if (docVersion != SPConstants.DocVersion.APPROVED.toString()) {
+            if (docVersion != null && !docVersion.equals(
+                SPConstants.DocVersion.APPROVED.toString())) {
               // Added unpublished documents to delete list if
               // FeedUnPublishedDocuments set to false, so
               // that connector send delete feeds for unpublished
@@ -683,8 +684,10 @@ public class SPListsWS implements ListsWS {
               if (!sharepointClientContext.isInitialTraversal()) {
                 LOGGER.warning("Adding the list item or document ["
                     + row.getAttribute(SPConstants.FILEREF)
-                    + "] to the deleted ID's list to send delete feeds for unpublished content in the list URL :"
-                    + list.getListURL());
+                    + "] to the deleted IDs list to send delete feeds "
+                    + "for unpublished content in the list URL: "
+                    + list.getListURL()
+                    + ", and its current version is " + docVersion);
                 deletedIDs.add(docId);
               }
             } else {
