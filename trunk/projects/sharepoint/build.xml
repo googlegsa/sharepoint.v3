@@ -335,6 +335,7 @@
       <zipfileset dir="." includes="README,RELEASE_NOTES,License/**/*,Scripts,lib/**/*" excludes="License/dev,lib/dev,License/dev/**/*,lib/dev/**/*"/>
       <zipfileset dir="." includes="COPYING" prefix="License" />
       <zipfileset dir="config/config/" includes="logging.properties" fullpath="config/logging.properties" />
+      <zipfileset dir="config/config/" includes="ClaimsLogin.aspx" fullpath="config/ClaimsLogin.aspx" />
       <zipfileset dir="${jar.dir}" includes="connector-sharepoint.jar" fullpath="connector-sharepoint.jar" />
       <zipfileset file="${adgroups.jar}" prefix="lib" />
     </zip>
