@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.enterprise.connector.adgroups.AdGroupsTraversalManager;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialClientContext;
@@ -47,7 +48,7 @@ public class SharePointTraversalManagerTest extends TestCase {
     
     this.travMan = new SharepointTraversalManager(connector,
         this.sharepointClientContext, 
-        new SharepointSocialTraversalManager(social));
+        new SharepointSocialTraversalManager(social), null);
     this.travMan.setBatchHint(100);
   }
 

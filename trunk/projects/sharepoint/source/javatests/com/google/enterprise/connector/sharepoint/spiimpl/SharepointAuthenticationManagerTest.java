@@ -64,7 +64,7 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 		this.sharepointClientContext.setUserDataStoreDAO(userDataStoreDAO);
 		sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
     this.authMan = new SharepointAuthenticationManager(clientFactory,
-        this.sharepointClientContext);
+        this.sharepointClientContext, null);
 		System.out.println("Initializing SharepointAuthenticationIdentity ...");
 		this.authID = new SimpleAuthenticationIdentity(
 				TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
@@ -74,7 +74,8 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 		System.out.println("Testing authenticate()...");
 		this.authenticationResponse = this.authMan.authenticate(this.authID);
 		assertNotNull(authenticationResponse);
-		Collection<String> groups = this.authenticationResponse.getGroups();
+		Collection<String> groups = 
+		    (Collection<String>) this.authenticationResponse.getGroups();
 		assertNotNull(groups);
 		System.out.println("[ authenticate() ] Test Completed.");
 	}
@@ -92,14 +93,16 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 				TestConfiguration.searchUserPwd);
 		this.authenticationResponse = null;
 		this.authenticationResponse = this.authMan.authenticate(this.authID);
-		Collection<String> groups = this.authenticationResponse.getGroups();
+		Collection<String> groups = 
+		    (Collection<String>) this.authenticationResponse.getGroups();
 		assertNull(groups);
 	}
 
 	public void testAuthenticateWithGroups() throws Throwable {
 		System.out.println("Testing Authenticate() with groups");
 		testAuthenticate();
-		Collection<String> groups = this.authenticationResponse.getGroups();
+		Collection<String> groups = 
+		    (Collection<String>) this.authenticationResponse.getGroups();
 		assertNotNull(groups);
 	}
 
@@ -111,7 +114,8 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 	public void testAuthenticateWithEmptyOrNullPassword() throws Throwable {
 		System.out.println("Testing Authenticate() with empty or null password");
 		testAuthenticate();
-		Collection<String> groups = this.authenticationResponse.getGroups();
+		Collection<String> groups = 
+		    (Collection<String>) this.authenticationResponse.getGroups();
 		assertNotNull(groups);
 	}
 
