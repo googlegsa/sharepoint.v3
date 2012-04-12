@@ -28,8 +28,19 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
+import com.google.enterprise.connector.spi.SimpleTraversalContext;
+import com.google.enterprise.connector.spi.TraversalContext;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import junit.framework.TestCase;
 
@@ -89,7 +100,162 @@ public class GSAclWSTest extends TestCase {
       fail(e.getMessage());
     }
   }
+  
+  public void testWebApplicationPolicyDocument() throws Exception {
+    WebState webState = globalState.lookupWeb(TestConfiguration.Site4_URL,
+        sharepointClientContext); 
+    SharepointClientContext spContext = (SharepointClientContext)sharepointClientContext.clone();
+    SimpleTraversalContext context = new SimpleTraversalContext();
+    context.setSupportsAcls(true);
+    spContext.setTraversalContext(context);
+    
+    SPClientFactory clientFactory = new SPClientFactory();
+    AclWS aclWs = clientFactory.getAclWS(spContext, 
+        webState.getWebUrl());
+    assertNotNull(aclWs);
+    SPDocument webApppolicy = null;
+    webApppolicy = aclWs.getWebApplicationPolicy(webState,
+        spContext.getFeedType().toString());
+    assertNotNull(webApppolicy);
+    assertEquals("Web app policy URL should be same as root site URL",
+        TestConfiguration.Site4_URL, webApppolicy.getUrl());
+    assertNotNull(webApppolicy.getGroupsAclMap());
+    assertFalse(webApppolicy.getGroupsAclMap().isEmpty());
+    assertNotNull(webApppolicy.getDenyUsersAclMap());
+    assertFalse(webApppolicy.getDenyUsersAclMap().isEmpty());
+    assertNotNull(webApppolicy.getUsersAclMap());
+    assertFalse(webApppolicy.getUsersAclMap().isEmpty());      
+  }
 
+  public void testGetAclForUrlsUsingInheritance() throws Exception {
+    // Get WebState for ACL Test Site 
+    WebState webState = globalState.lookupWeb(TestConfiguration.Site4_URL,
+        sharepointClientContext);
+    SharepointClientContext spContext = (SharepointClientContext)sharepointClientContext.clone();
+    SimpleTraversalContext context = new SimpleTraversalContext();
+    context.setSupportsAcls(true);
+    spContext.setTraversalContext(context);
+    assertNotNull(webState);
+    SPClientFactory clientFactory = new SPClientFactory();
+    List<SPDocument> docsToPass = new ArrayList<SPDocument>(); 
+    //Get Web application policy document.
+    AclWS aclWs = clientFactory.getAclWS(spContext, 
+        webState.getWebUrl());
+    assertNotNull(aclWs);
+
+    // Load Document for Root Web Home Page.
+    SPDocument webDoc = siteDataWS.getSiteData(webState);
+    assertNotNull(webDoc);
+    docsToPass.add(webDoc);
+
+    // Load Documents scenarios for ACLs
+
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID401, "401"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID402, "402"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID403, "403"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID404, "404"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID405, "405"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID406, "406"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID407, "407"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID408, "408"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID409, "409"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID410, "410"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID411, "411"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID412, "412"));
+    docsToPass.add(getDocumentForUrl(TestConfiguration.SearchDocID413, "413"));
+
+    SPDocumentList docList = new SPDocumentList(docsToPass, globalState);
+    assertNotNull(docList);  
+    System.out.println("\n...Processing doclist..." + docList);
+
+    aclWs.fetchAclForDocuments(docList, webState);
+    for (SPDocument document : docList.getDocuments()) {
+      assertNotNull(document);       
+      if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID401)) {
+        // Search Doc ID 401 - List item with Inheriting permissions.
+        checkInheritPermissions(document, TestConfiguration.SearchDocID410);
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID402)) {
+        // Search Doc ID 402 - List item with Unique permissions.
+        checkUniquePermissions(document, TestConfiguration.Site4_URL);
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID403)) {
+        // Search Doc ID 403 - Folder with Inheriting permissions.
+        checkInheritPermissions(document,TestConfiguration.SearchDocID410);
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID404)) {
+        // Search Doc ID 404 - Item Inside Folder with 
+        // Inheriting permissions.
+        checkInheritPermissions(document, TestConfiguration.SearchDocID403);
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID405)) {
+        // Search Doc ID 405 - Attachment for List item with 
+        // inheriting permissions.
+        checkInheritPermissions(document, TestConfiguration.SearchDocID410);
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID406)) {
+        // Search Doc ID 406 - Attachment for List item with 
+        // Unique permissions.
+        checkUniquePermissions(document, TestConfiguration.Site4_URL );
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID407)) {
+        // Search Doc ID 407 - Document with inheriting permissions.
+        checkInheritPermissions(document, TestConfiguration.SearchDocID411);
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID408)) {
+        // Search Doc ID 408 -Document with Unique permissions.
+        checkUniquePermissions(document, TestConfiguration.Site4_URL);
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID409)) {
+        // Search Doc ID 409 - List with Unique Permissions.
+        checkUniquePermissions(document, TestConfiguration.Site4_URL);
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID410)) {
+        // Search Doc ID 410 - List with inheriting Permissions.
+        checkInheritPermissions(document,
+            TestConfiguration.Site4_URL + "/default.aspx");
+      } else if (document.getUrl().
+          equalsIgnoreCase(TestConfiguration.SearchDocID411)) {
+        // Search Doc ID 411 - Doc Lib with inheriting Permissions.
+        checkInheritPermissions(document,
+            TestConfiguration.Site4_URL + "/default.aspx");
+      }
+    }
+  }
+  
+  private SPDocument getDocumentForUrl(String url,String docID) {
+    SPDocument doc = new SPDocument(docID, url,
+        Calendar.getInstance(), ActionType.ADD);
+    return doc;
+  }
+  
+  private void checkInheritPermissions(SPDocument document, String parentUrl) {
+    assertFalse(document.isUniquePermissions());
+    assertNotNull("parent url is null for "
+        + document, document.getParentUrl());
+    assertNotNull("parent id is null for "
+        + document, document.getParentId());
+    assertTrue(document.getParentUrl().equalsIgnoreCase(parentUrl));
+    assertTrue(null == document.getGroupsAclMap() ||
+        document.getGroupsAclMap().isEmpty());
+    assertTrue(null == document.getDenyUsersAclMap()||
+        document.getDenyUsersAclMap().isEmpty());   
+    assertTrue(null == document.getUsersAclMap() ||
+        document.getUsersAclMap().isEmpty() );
+    assertTrue(null == document.getDenyGroupsAclMap() ||
+        document.getDenyGroupsAclMap().isEmpty());
+  }
+  
+  private void checkUniquePermissions (SPDocument document, String parentUrl) {   
+    assertTrue("UniquePermission not true" + document, 
+        document.isUniquePermissions());
+    assertNotNull("getUsersAclMap is empty", 
+        document.getUsersAclMap());          
+    assertNotNull(document.getGroupsAclMap());
+    assertTrue("Parent Url Mismatch", 
+        document.getParentUrl().equalsIgnoreCase(parentUrl));
+  }
   public void testGetAclChangesSinceToken() throws Exception {
     WebState webstate = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
     String changeToken = "1;1;1648c1de-0093-4fb8-a888-f032f5a2da4c;634103077352630000;2263";
