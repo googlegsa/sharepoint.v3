@@ -212,13 +212,9 @@ public class SharepointConnector implements Connector,
       }
     }
     Session socialSession = null;
-    Session adGroupsSession = null;
     if (sharepointClientContext.getSocialOption() != SocialOption.NO) {
       try {
         socialSession = socialConnector.login();
-        if (!oldLdapBehavior) {
-          adGroupsSession = adGroupsConnector.login();
-        }
       } catch (RepositoryException e) {
         LOGGER
             .warning("Social Connection login failed with exception message: "
@@ -227,6 +223,8 @@ public class SharepointConnector implements Connector,
             .warning("This can be normal if the target Sharepoint server is pre 2010");
       }
     }
+    Session adGroupsSession = oldLdapBehavior ? null
+        : adGroupsConnector.login();
     return new SharepointSession(
         this, sharepointClientContext, socialSession, adGroupsSession);
   }
@@ -601,6 +599,9 @@ public class SharepointConnector implements Connector,
     this.connectorPersistnetStore = databaseAccess;
     if (sharepointClientContext.isPushAcls()) {
       performUserDataStoreInitialization();
+    }
+    if (!oldLdapBehavior) {
+      adGroupsConnector.setDatabaseAccess(databaseAccess);
     }
   }
 

@@ -35,6 +35,7 @@ import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -91,7 +92,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     }
   }
 
-  //TODO: make this claims aware - authorizate against Sharepoint and resolve
+  //TODO: make this claims aware - authorize against Sharepoint and resolve
   //groups against AD only if necessary
   public AuthenticationResponse authenticateAgainstActiveDirectory(
       final AuthenticationIdentity identity) throws RepositoryLoginException,
@@ -101,7 +102,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     if (!adAuthResult.isValid()) {
       return adAuthResult;
     }
-    Set<Principal> groups = (Set<Principal>) adAuthResult.getGroups();
+    Collection<Principal> groups = (Collection<Principal>) adAuthResult.getGroups();
     List<UserGroupMembership> allGroups = sharepointClientContext
         .getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(
             groups, new Principal(identity.getDomain()
