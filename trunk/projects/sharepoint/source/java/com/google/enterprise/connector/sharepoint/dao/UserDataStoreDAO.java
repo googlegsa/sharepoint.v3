@@ -102,7 +102,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   }
 
   public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
-      Set<Principal> groups, Principal searchUser) throws SharepointException {
+      Collection<Principal> groups, Principal searchUser) throws SharepointException {
     Set<String> groupNames = new HashSet<String>();
     for (Principal group : groups) {
       groupNames.add(group.getName());
