@@ -336,6 +336,7 @@
       <zipfileset dir="." includes="COPYING" prefix="License" />
       <zipfileset dir="config/config/" includes="logging.properties" fullpath="config/logging.properties" />
       <zipfileset dir="${jar.dir}" includes="connector-sharepoint.jar" fullpath="connector-sharepoint.jar" />
+      <zipfileset file="${adgroups.jar}" prefix="lib" />
     </zip>
     <!--<checksum file="${downloads.dir}/connector-sharepoint-${version}.zip" />-->
 
