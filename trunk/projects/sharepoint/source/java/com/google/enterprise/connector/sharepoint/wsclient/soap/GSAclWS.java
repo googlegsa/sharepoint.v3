@@ -73,7 +73,7 @@ public class GSAclWS implements AclWS{
   private GssAclMonitorSoap_BindingStub stub = null;
   private final Logger LOGGER = Logger.getLogger(GSAclWS.class.getName());
   private SharepointClientContext sharepointClientContext = null;
-  private boolean supportsAcls = false;
+  private boolean supportsInheritedAcls = false;
 
   /**
    * @param inSharepointClientContext The Context is passed so that necessary
@@ -97,10 +97,10 @@ public class GSAclWS implements AclWS{
       siteurl = sharepointClientContext.getSiteURL();
     }
     if (null != sharepointClientContext.getTraversalContext()) {
-      supportsAcls = 
-          sharepointClientContext.getTraversalContext().supportsAcls();     
+      supportsInheritedAcls = 
+          sharepointClientContext.getTraversalContext().supportsInheritedAcls();     
     }
-    LOGGER.log(Level.CONFIG, "Supports ACL  " + supportsAcls);
+    LOGGER.log(Level.CONFIG, "Supports ACL " + supportsInheritedAcls);
     endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
     LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
@@ -141,7 +141,7 @@ public class GSAclWS implements AclWS{
       return result;
     }
     try {
-      result = stub.getAclForUrlsUsingInheritance(urls, supportsAcls);
+      result = stub.getAclForUrlsUsingInheritance(urls, supportsInheritedAcls);
     } catch (final AxisFault af) {
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (sharepointClientContext.getDomain() != null)) {
@@ -150,7 +150,7 @@ public class GSAclWS implements AclWS{
             + stub.getUsername() + " ]. Trying with " + username);
         stub.setUsername(username);
         try {
-          result = stub.getAclForUrlsUsingInheritance(urls, supportsAcls);
+          result = stub.getAclForUrlsUsingInheritance(urls, supportsInheritedAcls);
         } catch (final Exception e) {
           LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
               + endpoint + " ].", e);
@@ -268,7 +268,7 @@ public class GSAclWS implements AclWS{
                   + "] Denied Role Types [ " + deniedRoleTypes + " ]");
               //Pass denied permissions only if Reader role is denied.
               if (deniedRoleTypes.contains(RoleType.READER)) {
-                if (supportsAcls) {
+                if (supportsInheritedAcls) {
                   LOGGER.fine("Processing Deny permissions" 
                       + " for Principal ["+ principalName + "]");
                   processPermissions(principal, deniedRoleTypes,
@@ -280,7 +280,7 @@ public class GSAclWS implements AclWS{
                   LOGGER.warning("Skipping ACL as Deny permissions are detected" 
                       + "for Document [" + entityUrl + "] for Principal [" 
                       + principalName + " ] when Supports ACL [" 
-                      + supportsAcls + "].");
+                      + supportsInheritedAcls + "].");
                   continue ACL;                  
                 }
               }
@@ -642,7 +642,7 @@ public class GSAclWS implements AclWS{
          // Web Application policy is represented by a separate document
          // which will be processed by
          // SharePointClient.java --> processSiteData.
-        if (supportsAcls) {
+        if (supportsInheritedAcls) {
           webstate.setWebApplicationPolicyChange(true);
         } else {
           LOGGER.log(Level.INFO, "Resetting all list states under web [ "
@@ -673,7 +673,7 @@ public class GSAclWS implements AclWS{
           // just marking web home page for re-crawl.
           // TODO : Need to change setWebApplicationPolicyChange
           // to something like setRevisitWebHome.
-          if (supportsAcls) {
+          if (supportsInheritedAcls) {
             webstate.setWebApplicationPolicyChange(true);
           } else {
             isWebChanged = true;
@@ -712,7 +712,7 @@ public class GSAclWS implements AclWS{
               + " could be Limited Access.");
           listState.resetState();
         } else {
-          if (supportsAcls) {
+          if (supportsInheritedAcls) {
             // Revisit List home for ACL changes.
             listState.markListToRevisitListHome(sharepointClientContext.getFeedType());
           } else {
