@@ -226,6 +226,7 @@
         <pathelement location="${config}" />
         <pathelement location="${classes}" />
         <pathelement location="${junit.jarfile}" />
+        <pathelement location="${adgroups.jar}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
