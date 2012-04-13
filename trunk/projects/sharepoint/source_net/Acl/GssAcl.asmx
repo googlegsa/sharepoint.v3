@@ -1598,7 +1598,19 @@ public sealed class GssAclUtility
             (bool)managerType.GetMethod("IsEncodedClaim").Invoke(manager, new object[]{identity}))
         {
             Object claim = managerType.GetMethod("DecodeClaim").Invoke(manager, new object[]{identity});
-            return (string)claim.GetType().GetProperty("Value").GetValue(claim, null);
+            string username = (string)claim.GetType().GetProperty("Value").GetValue(claim, null);
+            if (username == "true")
+            {
+                return "Everyone";
+            }
+            else if (username == "windows")
+            {
+                return "NT AUTHORITY\\Authenticated Users";
+            }
+            else
+            {
+                return username;
+            }
         }
         else
         {
