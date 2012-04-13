@@ -106,7 +106,7 @@ public class GSAclWSTest extends TestCase {
         sharepointClientContext); 
     SharepointClientContext spContext = (SharepointClientContext)sharepointClientContext.clone();
     SimpleTraversalContext context = new SimpleTraversalContext();
-    context.setSupportsAcls(true);
+    context.setSupportsInheritedAcls(true);
     spContext.setTraversalContext(context);
     
     SPClientFactory clientFactory = new SPClientFactory();
@@ -133,7 +133,7 @@ public class GSAclWSTest extends TestCase {
         sharepointClientContext);
     SharepointClientContext spContext = (SharepointClientContext)sharepointClientContext.clone();
     SimpleTraversalContext context = new SimpleTraversalContext();
-    context.setSupportsAcls(true);
+    context.setSupportsInheritedAcls(true);
     spContext.setTraversalContext(context);
     assertNotNull(webState);
     SPClientFactory clientFactory = new SPClientFactory();
