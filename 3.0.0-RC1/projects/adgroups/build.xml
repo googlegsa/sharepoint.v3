@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="adgroups" default="build" basedir=".">
+
+  <!-- ========================= PROPERTIES ============================= -->
+  <property file="version.properties"/>
+  <property file="${user.home}/google-enterprise-connector-adgroups.properties"/>
+
+  <property name="version" value="${BUILD_VERSION}" />
+  <property name="product" value="Google Search Appliance Connector for Active Directory Groups" />
+  <property name="projects.dir" value=".." />
+
+  <property name="COMPILE_DEBUG_FLAG" value="true" />
+  <property name="COMPILE_DEBUG_LEVEL" value="source,lines,vars" />
+  <property name="COMPILE_TARGET" value="1.5" />
+  <property name="COMPILE_BOOTCLASSPATH" value="${build.bootclasspath}" />
+
+  <property name="build" value="build" />
+  <property name="javadoc" value="javadoc" />
+  <property name="dist" value="dist" />
+  <property name="src" value="source/java" />
+  <property name="classes" value="${build}/classes" />
+  <property name="config" value="config" />
+  <property environment="env" />
+  <property name="tests.src" value="source/javatests" />
+  <property name="tests.build" value="build/tests" />
+  <property name="tests.classes" value="${tests.build}/classes" />
+  <property name="tests.todir" value="tests_outdir" />
+  <property name="jar.dir" value="${dist}/jarfile" />
+  <property name="jarfile" value="${jar.dir}/connector-adgroups.jar" />
+  <property name="connector-manager.dir" value="${CONNECTOR_MANAGER_DIR}" />
+  <property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
+  <property name="lib.jar.dir" value="../sharepoint/lib" />
+  <property name="lib.dev.jar.dir" value="${lib.jar.dir}/dev" />
+  <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
+  <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
+  <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
+  <property name="downloads.dir" value="downloads" />
+  <property name="cm-third-paty.jar" value="${connector-manager.dir}/third-party/prod/" />
+  <property name="sql.properties" value="source/java/com/google/enterprise/connector/sharepoint/sql/" />
+  <property name="cm-third-paty_jcr.jar" value="${connector-manager.dir}/third-party/tests/" />
+
+  <condition property="console" value="/bin/sh">
+    <os family="unix" />
+  </condition>
+  <condition property="console" value="cmd">
+    <os family="windows" />
+  </condition>
+
+  <condition property="family" value="unix">
+    <os family="unix" />
+  </condition>
+  <condition property="family" value="windows">
+    <os family="windows" />
+  </condition>
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${lib.jar.dir}/dev/ant-contrib-1.0b3.jar"/>
+
+  <!--Cobertura properties -->
+  <property file="${config}/build_code_coverage.properties" />
+  <path id="cobertura.classpath">
+    <fileset dir="${connector-manager.dir}/third-party/cobertura">
+      <include name="**/*.jar" />
+    </fileset>
+  </path>
+
+  <path id="axis.classpath">
+    <fileset dir="lib">
+      <include name="*.jar" />
+      <include name="dev/*.jar" />
+    </fileset>
+  </path>
+
+  <!-- =========================== TASKS =============================== -->
+  <target name="build" depends="clean,init, compile, jar,
+    download-adgroups-connector">
+  </target>
+
+  <target name="init" >
+    <mkdir dir="${build}" />
+    <mkdir dir="${dist}" />
+    <mkdir dir="${classes}" />
+    <mkdir dir="${tests.build}" />
+    <mkdir dir="${tests.classes}" />
+    <mkdir dir="${tests.todir}" />
+    <mkdir dir="${jar.dir}" />
+    <mkdir dir="${downloads.dir}" />
+    <mkdir dir="${javadoc}" />
+  </target>
+
+  <target name="compile" depends="init">
+    <!-- compile java source files -->
+<!--XXX
+    <copy todir="${classes.dir}/com/google/enterprise/connector/sharepoint/sql">
+      <fileset dir="${sql.properties}"/>
+    </copy>
+-->
+    <javac srcdir="${src}" destdir="${classes}" 
+           includeantruntime="false"
+           debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" 
+           target="${COMPILE_TARGET}" source="${COMPILE_TARGET}">
+      <!-- Axis JAR Class-Path references are not available. -->
+      <compilerarg line="-Xlint -Xlint:-serial -Xlint:-path"/>
+      <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
+      <classpath>
+        <pathelement location="${spi.jarfile}" />
+        <pathelement location="${config}" />
+        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+        <fileset dir="${lib.jar.dir}">
+          <include name="**/*.jar" />
+        </fileset>
+        <pathelement 
+            location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="compile_tests" depends="init, compile">
+    <!-- compile java source files for tests -->
+    <javac srcdir="${tests.src}" destdir="${tests.classes}" 
+           includeantruntime="false"
+           debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" 
+           target="${COMPILE_TARGET}" source="${COMPILE_TARGET}">
+      <!-- Axis JAR Class-Path references are not available. -->
+      <compilerarg line="-Xlint -Xlint:-serial -Xlint:-path"/>
+      <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
+      <classpath>
+        <pathelement location="${spi.jar.dir}/connector.jar" />
+        <pathelement location="${tests.jarfile}" />
+        <pathelement location="${spi.jarfile}" />
+        <pathelement location="${config}" />
+        <pathelement location="${classes}" />
+        <pathelement location="${junit.jarfile}" />
+        <pathelement location="${cm-third-paty.jar}/spring.jar" />
+<!--XXX
+        <fileset dir="${lib.jar.dir}">
+          <include name="**/*.jar" />
+        </fileset>
+-->
+        <pathelement 
+            location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
+      </classpath>
+    </javac>
+
+  </target>
+
+  <target name="run_tests" depends="compile_tests,instrument">
+    <property name="test.suite" value="*" />
+    <junit printsummary="yes" haltonfailure="no"
+           failureproperty="${ant.project.name}.failure">
+      <!-- The instrumented classes reference classes used by the Cobertura runtime, so
+            Cobertura and its dependencies must be on your classpath. -->
+      <classpath location="${instrumented.dir}" />
+      <classpath location="${classes.dir}" />
+      <classpath refid="cobertura.classpath" />
+      <classpath>
+        <pathelement location="${spi.jar.dir}/connector.jar" />
+        <pathelement location="${spi.jar.dir}/connector-spi.jar" />
+        <pathelement location="${tests.jarfile}" />
+        <pathelement location="${jarfile}" />
+        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+        <pathelement location="${cm-third-paty_jcr.jar}/jcr-1.0.jar" />
+        <pathelement location="${junit.jarfile}" />
+        <pathelement location="${sql.properties}/*.properties" />
+        <pathelement location="${config}" />
+        <pathelement 
+            location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
+        <pathelement location="${tests.classes}" />
+        <pathelement location="${tests.src}" />
+        <pathelement path="${java.class.path}" />
+      </classpath>
+      <formatter type="xml" />
+      <batchtest fork="yes" todir="${reports.xml.dir}">
+        <fileset dir="${tests.src}">
+          <include name="**/${test.suite}Test.java" />
+        </fileset>
+      </batchtest>
+    </junit>
+    <junitreport todir="${reports.xml.dir}">
+      <fileset dir="${reports.xml.dir}">
+        <include name="TEST-*.xml" />
+      </fileset>
+      <report format="frames" todir="${reports.html.dir}" />
+    </junitreport>
+    <fail if="${ant.project.name}.failure" message="Test failure"/>
+  </target>
+
+  <target name="jar" depends="compile" description="Create connector-adgroups.jar">
+    <jar jarfile="${jarfile}">
+      <fileset dir="${classes}" />
+      <fileset dir="${config}">
+        <include name="**/*.properties" />
+        <exclude name="**/logging.properties" />
+      </fileset>
+      <zipfileset dir="${config}" includes="*.xml" prefix="config" />
+      <fileset dir="${src}">
+        <include name="**/*.properties" />
+      </fileset>
+
+      <!--creation of manifest file-->
+      <manifest>
+        <attribute name="Implementation-Title" value="${product}" />
+        <attribute name="Implementation-Version" value="${version}"/>
+        <attribute name="Implementation-Vendor" value="Google Inc."/>
+        <attribute name="Specification-Title" value="Connector Manager SPI"/>
+        <attribute name="Specification-Version" value="${CONN_VERSION}"/>
+        <attribute name="Specification-Vendor" value="Google Inc."/>
+        <attribute name="Main-Class" value="com.google.enterprise.connector.adgroups.AdGroupsMain" />
+
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="make-downloads-dir">
+    <mkdir dir="${downloads.dir}" />
+  </target>
+
+  <target name="download-adgroups-connector" depends="jar,javadoc,make-downloads-dir">
+
+    <zip destfile="${downloads.dir}/connector-adgroups-${version}-src.zip" basedir="."
+      includes="javadoc/**/*, config/**/*, License/**/*, source/**/*, build.xml, Build_ReadMe.txt, COPYING, README, RELEASE_NOTES" />
+    <checksum file="${downloads.dir}/connector-adgroups-${version}-src.zip" />
+
+    <zip destfile="${downloads.dir}/connector-adgroups-${version}.zip">
+      <zipfileset dir="." includes="README,RELEASE_NOTES,License/**/*,Scripts,lib/**/*" excludes="License/dev,lib/dev,License/dev/**/*,lib/dev/**/*"/>
+      <zipfileset dir="." includes="COPYING" prefix="License" />
+      <zipfileset dir="config/" includes="logging.properties" fullpath="config/logging.properties" />
+      <zipfileset dir="${jar.dir}" includes="connector-adgroups.jar" fullpath="connector-adgroups.jar" />
+    </zip>
+    <!--<checksum file="${downloads.dir}/connector-adgroups-${version}.zip" />-->
+
+  </target>
+
+  <target name="clean" depends="clean_code_coverage" description="Deletes files produced by compile and test.">
+    <delete dir="${build}" />
+    <delete dir="${dist}" />
+    <delete dir="${downloads.dir}" />
+    <delete dir="${tests.todir}" />
+    <delete dir="${javadoc}" />
+  </target>
+
+  <target name="javadoc" depends="compile" description="Create component Javadoc documentation">
+    <javadoc sourcepath   ="${src}"
+               destdir      ="${javadoc}"
+               packagenames ="com.google.enterprise.connector.adgroups.*"
+               author       ="true"
+               private    ="true"
+               version      ="true"
+               doctitle     ="&lt;h2&gt;${product}&lt;/h2&gt;"
+               windowtitle  ="${product} (Version ${version})"
+               bottom       ="Copyright 2009 Google Inc.">
+      <classpath>
+        <pathelement location="${spi.jar.dir}/connector.jar" />
+        <pathelement location="${spi.jar.dir}/connector-spi.jar" />
+        <pathelement location="${tests.jarfile}" />
+        <pathelement location="${spi.jar.dir}/connector-util.jar" />
+        <pathelement location="${jarfile}" />
+        <pathelement location="${config}" />
+        <fileset dir="${lib.jar.dir}">
+          <include name="*.jar" />
+          <include name="**/*.properties" />
+        </fileset>
+        <pathelement location="${tests.classes}" />
+        <pathelement location="${tests.src}" />
+        <pathelement path="${java.class.path}" />
+      </classpath>
+    </javadoc>
+  </target>
+
+  <target name="everything" description="Do it all!" depends="clean,build,run_tests" />
+
+  <!-- Cobertura Tasks -->
+
+  <taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
+
+  <target name="init_code_coverage">
+    <mkdir dir="${classes.dir}" />
+    <mkdir dir="${instrumented.dir}" />
+    <mkdir dir="${reports.xml.dir}" />
+    <mkdir dir="${reports.html.dir}" />
+    <mkdir dir="${coverage.xml.dir}" />
+    <mkdir dir="${coverage.summaryxml.dir}" />
+    <mkdir dir="${coverage.html.dir}" />
+  </target>
+
+
+  <target name="compile_code_coverage" 
+          depends="init_code_coverage,compile,compile_tests" />
+
+  <target name="instrument" depends="compile_code_coverage">
+    <cobertura-instrument todir="${instrumented.dir}">
+      <!--  The following line causes instrument to ignore any  source line
+            containing a reference to log4j, for the purposes of coverage reporting. -->
+      <ignore regex="org.apache.log4j.*" />
+      <fileset dir="${classes.dir}">
+        <!-- Instrument all the application classes, but don't instrument the test classes. -->
+        <include name="com/google/enterprise/connector/adgroups/*.class" />
+        <exclude name="**/*Test.class" />
+      </fileset>
+<!--XXX
+      <fileset dir="${classes.dir}/org/apache/commons/httpclient/contrib/ssl">
+        <include name="**/*.class"/>
+      </fileset>
+-->
+    </cobertura-instrument>
+  </target>
+
+  <target name="coverage-report">
+    <!-- Generate an XML file containing the coverage data using the "srcdir" attribute. -->
+    <cobertura-report srcdir="${src.dir}" destdir="${coverage.xml.dir}" format="xml" />
+  </target>
+
+  <target name="alternate-coverage-report">
+    <!-- Generate a series of HTML files containing the coverage data in a user-readable form using nested source filesets. -->
+    <cobertura-report destdir="${coverage.html.dir}">
+      <fileset dir="${src.dir}">
+        <include name="**/*.java"/>
+      </fileset>
+    </cobertura-report>
+  </target>
+
+
+  <target name="clean_code_coverage" description="Remove all files created by the build/test process.">
+    <delete dir="${classes.dir}" />
+    <delete dir="${instrumented.dir}" />
+    <delete dir="${reports.dir}" />
+    <delete file="cobertura.log" />
+    <delete file="cobertura.ser" />
+  </target>
+  <target name="run_code_coverage" depends="run_tests,coverage-report,alternate-coverage-report" description="Compile, instrument ourself, run the tests and generate JUnit and coverage reports."/>
+</project>
