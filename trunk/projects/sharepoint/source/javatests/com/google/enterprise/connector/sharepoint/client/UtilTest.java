@@ -289,10 +289,10 @@ public class UtilTest extends TestCase {
     List<String> lookupValues =
         Util.processMultiValueMetadata(multiLookupValue);
     assertEquals(4, lookupValues.size());
-    assertEquals("Value1", choiceValues.get(0));
-    assertEquals("Value2", choiceValues.get(0));
-    assertEquals("Value3", choiceValues.get(0));
-    assertEquals("Value4", choiceValues.get(0));
+    assertEquals("Value1", lookupValues.get(0));
+    assertEquals("Value2", lookupValues.get(0));
+    assertEquals("Value3", lookupValues.get(0));
+    assertEquals("Value4", lookupValues.get(0));
   }
   
   /**
@@ -304,14 +304,14 @@ public class UtilTest extends TestCase {
     String internalValue = "1;#Value1";
     List<String> internalValues =
         Util.processMultiValueMetadata(internalValue);
-    assertEquals(1, lookupValues.size());
-    assertEquals("Value1", choiceValues.get(0));
+    assertEquals(1, internalValues.size());
+    assertEquals("Value1", internalValues.get(0));
     
     // Normal text with ;# part of it but not multi-value - should not process
     String normalValue = "normal;#value;#somemore";
     List<String> normalValues =  Util.processMultiValueMetadata(normalValue);
-    assertEquals(1, lookupValues.size());
-    assertEquals(normalValue, choiceValues.get(0));
+    assertEquals(1, internalValues.size());
+    assertEquals(normalValue, internalValues.get(0));
   }
   
   /**
