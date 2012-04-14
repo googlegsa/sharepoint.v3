@@ -519,24 +519,32 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             getUrl()));
       }
     } else if (collator.equals(strPropertyName,
-            SpiConstants.PROPNAME_ACLINHERITANCETYPE)) {        
+            SpiConstants.PROPNAME_ACLINHERITANCETYPE)) {
+      if (!isWebAppPolicyDoc() && parentUrl == null) {
+        // Returning null as ACL information is not complete.
+        // Every Inherited ACL should have parentUrl other than
+        // web application policy document.
+        return null;
+      }
          return new SimpleProperty(
              new StringValue(
                  SpiConstants.AclInheritanceType.PARENT_OVERRIDES.toString()));      
      } else if (collator.equals(strPropertyName,
              SpiConstants.PROPNAME_ACLINHERITFROM_DOCID)) {
         String parentUrlToSend = getParentUrl();
-        if (FeedType.CONTENT_FEED == getFeedType()) { 
-             // TODO Handle ACL feed here.
-            parentUrlToSend = getParentUrl()+"|"+getParentId().toUpperCase();
+        if (parentUrlToSend == null) {
+          return null;
+        }
+        if (getFeedType() == FeedType.CONTENT_FEED) {        
+          parentUrlToSend = parentUrlToSend + "|" 
+              + getParentId().toUpperCase();
         }
         return new SimpleProperty(
             new StringValue(parentUrlToSend));    
     } else if (collator.equals(strPropertyName,
         SpiConstants.PROPNAME_ACLINHERITFROM)) {
         String parentUrlToSend = getParentUrl();
-        if (FeedType.CONTENT_FEED == getFeedType()) { 
-             // TODO Handle ACL feed here.
+        if (FeedType.CONTENT_FEED == getFeedType()) {           
             return null;
         }
         return new SimpleProperty(
@@ -694,14 +702,25 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
     }
     if (!isWebAppPolicyDoc()) {
-      if (feedType == FeedType.CONTENT_FEED) {
-        names.add(SpiConstants.PROPNAME_ACLINHERITFROM_DOCID);  
-        names.add(SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE);
-      } else {
-        names.add(SpiConstants.PROPNAME_ACLINHERITFROM);  
-      }   
+      // For regular document parent Url should not be null.
+      // empty parentUrl indicates error in ACL processing.
+      // so no ACL related properties will be sent in this case.
+      if (parentUrl != null) {
+        if (feedType == FeedType.CONTENT_FEED) {
+          names.add(SpiConstants.PROPNAME_ACLINHERITFROM_DOCID);
+          names.add(SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE);
+        } else {
+          names.add(SpiConstants.PROPNAME_ACLINHERITFROM);  
+        }
+        names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
+      }      
+    } else {
+      // If document is web application policy document then ACL information
+      // is available, as connector will not create 
+      // partial web application policy document.
+      names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
     }
-     names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
+     
     if (null != usersAclMap) {
       names.add(SpiConstants.PROPNAME_ACLUSERS);
       for (Entry<String, Set<RoleType>> ace : usersAclMap.entrySet()) {

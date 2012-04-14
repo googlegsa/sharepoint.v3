@@ -262,7 +262,6 @@ public class GssAcl
         get { return parentUrl; }
         set { parentUrl = value; }
     }
-
     // This field is typed as String instead of Boolean to ensure
     // SOAP compatiblity with earlier versions of SharePoint Connectors.
     private string inheritPermissions;
@@ -757,39 +756,46 @@ public class GssAclMonitor
      [WebMethod]
     public GssGetAclForUrlsResult GetAclForWebApplicationPolicy()
     {
-        GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
-        List<GssAcl> allAcls = new List<GssAcl>();
-        Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
-        try
+        SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
+        using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
         {
-            GssAclUtility.FetchSecurityPolicyForAcl(SPContext.Current.Site, commonAceMap);
-        }
-        catch (Exception e)
-        {
-            result.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
-        }
+            using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
+            {
+                GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
+                List<GssAcl> allAcls = new List<GssAcl>();
+                Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
+                try
+                {
+                    GssAclUtility.FetchSecurityPolicyForAcl(site, commonAceMap);
+                }
+                catch (Exception e)
+                {
+                    result.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
+                }
 
-        try
-        {
-            GssAclUtility.FetchSiteAdminsForAcl(SPContext.Current.Web, commonAceMap);
-        }
-        catch (Exception e)
-        {
-            result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
-        }
+                try
+                {
+                    GssAclUtility.FetchSiteAdminsForAcl(web, commonAceMap);
+                }
+                catch (Exception e)
+                {
+                    result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
+                }
 
-        // Site Collection Url
-        string strWebappUrl = SPContext.Current.Site.RootWeb.Url;
-        GssAcl acl = new GssAcl(strWebappUrl, commonAceMap.Count);
-        foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in commonAceMap)
-        {
-            acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+                // Site Collection Url
+                string strWebappUrl = SPContext.Current.Site.RootWeb.Url;
+                GssAcl acl = new GssAcl(strWebappUrl, commonAceMap.Count);
+                foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in commonAceMap)
+                {
+                    acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+                }
+                allAcls.Add(acl);
+                result.AllAcls = allAcls;
+                result.SiteCollectionUrl = strWebappUrl;
+                result.SiteCollectionGuid = SPContext.Current.Site.WebApplication.Id;
+                return result;
+            }
         }
-        allAcls.Add(acl);
-        result.AllAcls = allAcls;
-        result.SiteCollectionUrl = strWebappUrl;
-        result.SiteCollectionGuid = SPContext.Current.Site.WebApplication.Id;
-        return result;
     }      
     
     /// <summary>
@@ -812,124 +818,119 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls,Boolean bUseInheritance)
     {
-        SPSite site;
-        SPWeb web;
-        init(out site, out web);
-        GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
-        List<GssAcl> allAcls = new List<GssAcl>();
-        Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
-        if (!bUseInheritance)
+        SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
+        using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
         {
-            try
+            using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
             {
-                GssAclUtility.FetchSecurityPolicyForAcl(SPContext.Current.Site, commonAceMap);
-            }
-            catch (Exception e)
-            {
-                result.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
-            }
-
-            try
-            {
-                GssAclUtility.FetchSiteAdminsForAcl(SPContext.Current.Web, commonAceMap);
-            }
-            catch (Exception e)
-            {
-                result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
-            }
-        }
-        try
-        {
-            string strWebappUrl = SPContext.Current.Site.WebApplication.GetResponseUri(SPContext.Current.Site.Zone).AbsoluteUri;
-            if (!String.IsNullOrEmpty(strWebappUrl) && strWebappUrl.EndsWith("/"))
-            {
-                //Removing Trailing "/" from web application url;
-                strWebappUrl = strWebappUrl.Remove(strWebappUrl.Length - 1);
-            }
-            foreach (string url in urls)
-            {
-                GssAcl acl = null;
-                ISecurableObject secobj = null;
-                try
+                GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
+                List<GssAcl> allAcls = new List<GssAcl>();
+                Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
+                if (!bUseInheritance)
                 {
-                    Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
-                    secobj = GssAclUtility.IdentifyObject(url, web);
-                    if (secobj != null)
+                    try
                     {
-                        if (secobj.HasUniqueRoleAssignments || bUseInheritance == false)
-                        {
-                            GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
-                            acl = new GssAcl(url, aceMap.Count);
-                            foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
-                            {
-                                acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
-                            }
-                            allAcls.Add(acl);
+                        GssAclUtility.FetchSecurityPolicyForAcl(site, commonAceMap);
+                    }
+                    catch (Exception e)
+                    {
+                        result.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
+                    }
 
-                            try
+                    try
+                    {
+                        GssAclUtility.FetchSiteAdminsForAcl(web, commonAceMap);
+                    }
+                    catch (Exception e)
+                    {
+                        result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
+                    }
+                }
+                
+                string strWebappUrl = SPContext.Current.Site.WebApplication.GetResponseUri(SPContext.Current.Site.Zone).AbsoluteUri;
+                if (!String.IsNullOrEmpty(strWebappUrl) && strWebappUrl.EndsWith("/"))
+                {
+                    //Removing Trailing "/" from web application url;
+                    strWebappUrl = strWebappUrl.Remove(strWebappUrl.Length - 1);
+                }
+                foreach (string url in urls)
+                {
+                    GssAcl acl = null;
+                    ISecurableObject secobj = null;
+                    try
+                    {
+                        Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
+                        secobj = GssAclUtility.IdentifyObject(url, web);
+                        if (secobj != null)
+                        {
+                            if (secobj.HasUniqueRoleAssignments || bUseInheritance == false)
                             {
-                                acl.Owner = GssAclUtility.DecodeIdentity(GssAclUtility.GetOwner(secobj).LoginName);
+                                GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
+                                acl = new GssAcl(url, aceMap.Count);
+                                foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
+                                {
+                                    acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+                                }
+                                allAcls.Add(acl);
+
+                                try
+                                {
+                                    acl.Owner = GssAclUtility.DecodeIdentity(GssAclUtility.GetOwner(secobj).LoginName);
+                                }
+                                catch (Exception e)
+                                {
+                                    acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                                }
+                                if (bUseInheritance)
+                                {
+                                    acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
+                                    acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
+                                }
                             }
-                            catch (Exception e)
+                            else
                             {
-                                acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
-                            }                         
-                            if (bUseInheritance)
-                            {
-                                acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
-                                acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
+                                acl = new GssAcl(url, 0);
+                                acl.InheritPermissions = "true";
+                                GssAclUtility.GetParentUrl(secobj, strWebappUrl, acl);
+                                allAcls.Add(acl);
                             }
                         }
                         else
                         {
                             acl = new GssAcl(url, 0);
-                            acl.InheritPermissions = "true";
-                            GssAclUtility.GetParentUrl(secobj, strWebappUrl, acl);
-                            allAcls.Add(acl);
+                            acl.AddLogMessage("Problem Identifying Object with Url [" + url + " ] ");
                         }
                     }
-                    else
+                    catch (Exception e)
                     {
                         acl = new GssAcl(url, 0);
-                        acl.AddLogMessage("Problem Identifying Object with Url [" + url + " ] ");
+                        acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
                     }
-                }
-                catch (Exception e)
-                {
-                    acl = new GssAcl(url, 0);
-                    acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
-                }
-                finally
-                {
-                    if (secobj != null)
+                    finally
                     {
-                        if (secobj is SPWeb)
+                        if (secobj != null)
                         {
-                            try
+                            if (secobj is SPWeb)
                             {
-                                SPWeb spWebToDispose = (SPWeb)secobj;
-                                spWebToDispose.Dispose();
-                            }
-                            catch (Exception exDispose)
-                            {
-                                exDispose = null; //Ignoring dispose or type casting error;
+                                try
+                                {
+                                    SPWeb spWebToDispose = (SPWeb)secobj;
+                                    spWebToDispose.Dispose();
+                                }
+                                catch (Exception exDispose)
+                                {
+                                    exDispose = null; //Ignoring dispose or type casting error;
+                                }
                             }
                         }
                     }
-                }
+                }                
+                result.AllAcls = allAcls;
+                result.SiteCollectionUrl = site.Url;
+                result.SiteCollectionGuid = site.ID;
+                return result;
             }
-        }
-        finally
-        {
-            if (web != null)
-            {
-                web.Dispose(); // Dispose the SPWeb Object
-            }
-        }
-        result.AllAcls = allAcls;
-        result.SiteCollectionUrl = site.Url;
-        result.SiteCollectionGuid = site.ID;
-        return result;
+        }        
     }
     
     /// <summary>
