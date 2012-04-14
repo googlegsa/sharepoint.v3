@@ -263,9 +263,11 @@ public class GssAcl
         set { parentUrl = value; }
     }
 
-    private Boolean inheritPermissions;
+    // This field is typed as String instead of Boolean to ensure
+    // SOAP compatiblity with earlier versions of SharePoint Connectors.
+    private string inheritPermissions;
 
-    public Boolean InheritPermissions
+    public string InheritPermissions
     {
         get { return inheritPermissions; }
         set { inheritPermissions = value; }
@@ -881,7 +883,7 @@ public class GssAclMonitor
                         else
                         {
                             acl = new GssAcl(url, 0);
-                            acl.InheritPermissions = true;
+                            acl.InheritPermissions = "true";
                             GssAclUtility.GetParentUrl(secobj, strWebappUrl, acl);
                             allAcls.Add(acl);
                         }

@@ -86,7 +86,7 @@
           <s:element minOccurs="0" maxOccurs="1" name="Owner" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="AllAce" type="tns:ArrayOfGssAce" />
           <s:element minOccurs="0" maxOccurs="1" name="LogMessage" type="s:string" />
-          <s:element minOccurs="1" maxOccurs="1" name="InheritPermissions" type="s:boolean" />
+          <s:element minOccurs="0" maxOccurs="1" name="InheritPermissions" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="ParentUrl" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="ParentId" type="s:string" />
         </s:sequence>
