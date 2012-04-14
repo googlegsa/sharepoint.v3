@@ -1027,7 +1027,8 @@ public class GSAclWS implements AclWS{
     // TODO Set SPType and Last Modified correctly.
     webAppPolicy = new SPDocument(docID,result.getSiteCollectionUrl(),
         Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-        result.getSiteCollectionUrl(), feedType, SPType.SP2007);   
+        result.getSiteCollectionUrl(), feedType, SPType.SP2007);
+    webAppPolicy.setDocumentType(DocumentType.ACL);
     Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
     urlToDocMap.put(webAppPolicy.getUrl(), webAppPolicy);
     processWsResponse(result, urlToDocMap);
