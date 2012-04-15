@@ -102,6 +102,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     if (!adAuthResult.isValid()) {
       return adAuthResult;
     }
+    @SuppressWarnings("unchecked")
     Collection<Principal> groups = (Collection<Principal>) adAuthResult.getGroups();
     List<UserGroupMembership> allGroups = sharepointClientContext
         .getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(
