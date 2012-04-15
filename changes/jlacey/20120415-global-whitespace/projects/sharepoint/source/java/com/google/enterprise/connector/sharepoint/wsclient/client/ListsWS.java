@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +37,7 @@ public interface ListsWS extends BaseWS {
    *          folders.
    * @return the list of folders in this list
    */
-  public List<Folder> getSubFoldersRecursively(ListState list, 
+  public List<Folder> getSubFoldersRecursively(ListState list,
       Folder folder, String lastID);
 
   /**
@@ -55,7 +55,7 @@ public interface ListsWS extends BaseWS {
    * @param list the list whose items are to be retrieved
    * @param listName the list name used with the SOAP request
    *          getListItemChangesSinceToken
-   * @param viewName the view name used with the SOAP request 
+   * @param viewName the view name used with the SOAP request
    *          getListItemChangesSinceToken
    * @param queryInfo the query info used with the SOAP request, this data is
    *          used to initialize Sharepoint SOAP query objects
@@ -70,10 +70,10 @@ public interface ListsWS extends BaseWS {
    * @return the list of documents as {@link SPDocument}
    * @throws Exception on error
    */
-  public List<SPDocument> getListItemChangesSinceToken(ListState list, 
+  public List<SPDocument> getListItemChangesSinceToken(ListState list,
       String listName, String viewName, ListsUtil.SPQueryInfo queryInfo,
-      String token, Set<String> allWebs, Set<String> deletedIDs, 
-      Set<String> restoredIDs, Set<String> renamedIDs) 
+      String token, Set<String> allWebs, Set<String> deletedIDs,
+      Set<String> restoredIDs, Set<String> renamedIDs)
       throws Exception;
 
   /**
@@ -93,7 +93,7 @@ public interface ListsWS extends BaseWS {
    * @throws Exception on error
    */
   public List<SPDocument> getListItems(ListState list, String listName, 
-      String viewName, ListsUtil.SPQueryInfo queryInfo, String webID, 
+      String viewName, ListsUtil.SPQueryInfo queryInfo, String webID,
       Set<String> allWebs) throws Exception;
 
   /**
@@ -101,10 +101,10 @@ public interface ListsWS extends BaseWS {
    *
    * @param baseList List to which the item belongs
    * @param listItem List item for which the attachments need to be retrieved
-   * @param knownAttachments A list of the known attachments. This is used 
-   *          to keep track of the attachments that have been found. 
+   * @param knownAttachments A list of the known attachments. This is used
+   *          to keep track of the attachments that have been found.
    *          Newly discovered attachments should be removed from this list
-   *          (i.e. if a document is added to the return list then it's URL 
+   *          (i.e. if a document is added to the return list then it's URL
    *          must be removed from the knownAttachments list).
    * @return A list of sharepoint SPDocuments corresponding to attachments
    *         for the given list item.

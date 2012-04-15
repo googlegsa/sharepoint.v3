@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -151,11 +151,11 @@ public class MockClientFactory implements ClientFactory {
   /**
    * (@inheritDoc)
    *
-   * Returns the HTTP result 200 code which indicates that the connector 
+   * Returns the HTTP result 200 code which indicates that the connector
    * can connect to the host.
    */
   /* @Override */
-  public int checkConnectivity(HttpMethodBase method, 
+  public int checkConnectivity(HttpMethodBase method,
       Credentials credentials) throws IOException {
     return 200;
   }
@@ -163,7 +163,7 @@ public class MockClientFactory implements ClientFactory {
   /**
    * (@inheritDoc)
    *
-   * Returns the Sharepoint version "14.0.0" which indicates that it's 
+   * Returns the Sharepoint version "14.0.0" which indicates that it's
    * Sharepoint 2007.
    */
   /* @Override */
@@ -188,7 +188,7 @@ public class MockClientFactory implements ClientFactory {
    *          a new random ID is created
    * @return a new {@link ListState}
    */
-  protected ListState createListState(final String webUrl, 
+  protected ListState createListState(final String webUrl,
       final String listName, final WebState ws, final FeedType feedType,
       final Boolean fixedId) throws SharepointException {
     String listUrl = webUrl + "/" + listName;
@@ -217,14 +217,14 @@ public class MockClientFactory implements ClientFactory {
    *          a new random ID is created
    * @return a new {@link SPDocument}
    */
-  public static SPDocument createDocument(final String webUrl, 
+  public static SPDocument createDocument(final String webUrl,
       final String docName, final FeedType feedType, final Boolean fixedId) {
     String docUrl = webUrl + "/" + docName;
     String docId = generateId(docUrl, fixedId);
 
     // TODO: Using hardcoded SPType.SP2007.
     return new SPDocument(docId, docUrl, Calendar.getInstance(),
-        SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE, 
+        SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
         SPConstants.PARENT_WEB_TITLE, feedType, SPConstants.SPType.SP2007);
   }
 
@@ -235,7 +235,7 @@ public class MockClientFactory implements ClientFactory {
    * @param folderName The name of the new folder
    * @return a new {@link Folder}
    */
-  public static Folder createFolder(final String webUrl, 
+  public static Folder createFolder(final String webUrl,
       final String folderName) {
     String folderUrl = webUrl + "/" + folderName;
     String folderId = "" + (int) System.currentTimeMillis();
@@ -257,7 +257,7 @@ public class MockClientFactory implements ClientFactory {
       id = Integer.toHexString(url.hashCode());
       id = String.format("%1$#32s", id).replace(" ", "0");
       id = "{" + id.substring(0, 8) + "-" + id.substring(8, 12) + "-" +
-          id.substring(12, 16) + "-" + id.substring(16, 20) + "-" + 
+          id.substring(12, 16) + "-" + id.substring(16, 20) + "-" +
           id.substring(20) + "}";
     } else {
       // This just generates a random ID.

@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -58,7 +58,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
 
   private static final int maxListsPerSite = 2000;
   private static final int minListsPerSite = 10;
-  
+
   // This specifies the number of sub sites to create.
   // maxSubSites is the most site creates, minSubSites is the minimum
   // mumber of sub sites to create for a site, avgSubSites is
@@ -67,11 +67,11 @@ public class LargeStatefileClientFactory extends MockClientFactory {
   private static final int avgSubSites = 5;
   private static final int minSubSites = 0;
 
-  // Maximum top level documents supported by Sharepoint is 20000, 
-  // using only 2000 to reduce the time is takes to generate a very 
+  // Maximum top level documents supported by Sharepoint is 20000,
+  // using only 2000 to reduce the time is takes to generate a very
   // large state file.
   private static final int maxDocumentsPerView = 2000;//20000;
-  
+
   // This specifies the minumum number of documents in a list.
   private static final int minDocumentsToCreate = 1;
 
@@ -97,10 +97,10 @@ public class LargeStatefileClientFactory extends MockClientFactory {
       }
 
       /* @Override */
-      public List<SPDocument> getListItemChangesSinceToken(final ListState list, 
+      public List<SPDocument> getListItemChangesSinceToken(final ListState list,
           final String listName, final String viewName,
-          final ListsUtil.SPQueryInfo queryInfo, final String token, 
-          final Set<String> allWebs, final Set<String> deletedIDs, 
+          final ListsUtil.SPQueryInfo queryInfo, final String token,
+          final Set<String> allWebs, final Set<String> deletedIDs,
           final Set<String> restoredIDs, final Set<String> renamedIDs) {
         return getDocuments(list);
       }
@@ -122,7 +122,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
         } else {
           numberOfDocs = minDocumentsToCreate;
         }
-        List<SPDocument> docs = 
+        List<SPDocument> docs =
             createDocuments(listUrl, numberOfDocs, ctx.getFeedType(), true);
         final int variableCount = (int) (numberOfDocs * variablePercent);
         if (variableCount > 0) {
@@ -130,7 +130,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
               false);
         }
 
-        LOGGER.info("Created " + docs.size() + " documents for URL " + 
+        LOGGER.info("Created " + docs.size() + " documents for URL " +
             listUrl + ".");
         return docs;
       }
@@ -307,7 +307,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
    * @param fixedId a flag inidicating whether to use fixed or random ID's
    * @return a valid List of {@link SPDocument}
    */
-  private List<SPDocument> createDocuments(final String webUrl, 
+  private List<SPDocument> createDocuments(final String webUrl,
         final int count, final FeedType feedType, final Boolean fixedId) {
     ArrayList<SPDocument> docs = new ArrayList<SPDocument>();
     appendDocuments(docs, webUrl, count, feedType, fixedId);
@@ -323,7 +323,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
    * @param feedType the feed type for the new {@link SPDocument} objects
    * @param fixedId a flag indicating whether to use fixed or random ID's
    */
-  private void appendDocuments(List<SPDocument> docs, 
+  private void appendDocuments(List<SPDocument> docs,
         final String webUrl, final int count, final FeedType feedType,
         final Boolean fixedId) {
     for (int i = 0; i < count; i++) {

@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -55,7 +55,7 @@ class MockItem {
 
   public void addChild(MockItem item) {
     if (!canAddChild(item)) {
-      LOGGER.warning("Cannot add " + item.getType() + " to " + 
+      LOGGER.warning("Cannot add " + item.getType() + " to " +
         type + ".");
     }
     children.add(item);
@@ -92,11 +92,11 @@ class MockItem {
     }
     return null;
   }
-  
+
   public void addAcl(final String name) {
     acls.add(name.toLowerCase());
   }
-  
+
   public Boolean hasPermission(final String name) {
     String nameLower = name.toLowerCase();
     Boolean hasPermission;
