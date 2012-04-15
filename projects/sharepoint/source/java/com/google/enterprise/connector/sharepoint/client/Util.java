@@ -1081,7 +1081,7 @@ public final class Util {
       // ;#value1;#value2;# format.
       String[] arr = metaValue.split(SPConstants.SP_MULTI_VALUE_DELIMITER);
       for (String value : arr) {
-        if (!value.isEmpty()) {
+        if (value.length() > 0) {
           valueToPass.add(value);
         }
       }

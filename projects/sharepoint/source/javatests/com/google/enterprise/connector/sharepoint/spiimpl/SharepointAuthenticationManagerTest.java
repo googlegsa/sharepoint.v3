@@ -71,13 +71,10 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 	}
 
 	public void testAuthenticate() throws Throwable {
-		System.out.println("Testing authenticate()...");
 		this.authenticationResponse = this.authMan.authenticate(this.authID);
 		assertNotNull(authenticationResponse);
-		Collection<String> groups = 
-		    (Collection<String>) this.authenticationResponse.getGroups();
+		Collection<?> groups = this.authenticationResponse.getGroups();
 		assertNotNull(groups);
-		System.out.println("[ authenticate() ] Test Completed.");
 	}
 
 	/**
@@ -87,22 +84,16 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 	 * @throws Throwable
 	 */
 	public void testAuthenticateWithNullGroups() throws Throwable {
-		System.out.println("Testing Authenticate() with null groups");
-		this.authID = null;
 		this.authID = new SimpleAuthenticationIdentity("testuser",
 				TestConfiguration.searchUserPwd);
-		this.authenticationResponse = null;
 		this.authenticationResponse = this.authMan.authenticate(this.authID);
-		Collection<String> groups = 
-		    (Collection<String>) this.authenticationResponse.getGroups();
+		Collection<?> groups = this.authenticationResponse.getGroups();
 		assertNull(groups);
 	}
 
 	public void testAuthenticateWithGroups() throws Throwable {
-		System.out.println("Testing Authenticate() with groups");
 		testAuthenticate();
-		Collection<String> groups = 
-		    (Collection<String>) this.authenticationResponse.getGroups();
+		Collection<?> groups = this.authenticationResponse.getGroups();
 		assertNotNull(groups);
 	}
 
@@ -112,10 +103,8 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 	 * @throws Throwable
 	 */
 	public void testAuthenticateWithEmptyOrNullPassword() throws Throwable {
-		System.out.println("Testing Authenticate() with empty or null password");
 		testAuthenticate();
-		Collection<String> groups = 
-		    (Collection<String>) this.authenticationResponse.getGroups();
+		Collection<?> groups = this.authenticationResponse.getGroups();
 		assertNotNull(groups);
 	}
 

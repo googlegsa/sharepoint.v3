@@ -126,13 +126,13 @@ public class MockUserProfileGenerator implements UserProfileServiceGenerator {
         new PropertyData(false, false,
             SharepointSocialConstants.SHAREPOINT_USERCONTENTDEFAULT,
             Privacy.Public, makeValue(names[index])),
-        new PropertyData(false, false, (String) "UserName", Privacy.Public,
+        new PropertyData(false, false, "UserName", Privacy.Public,
             makeValue(names[index])),
-        new PropertyData(false, false, (String) "FirstName", Privacy.Public,
+        new PropertyData(false, false, "FirstName", Privacy.Public,
             makeValue(firstNames[index])),
-        new PropertyData(false, false, (String) "LastName", Privacy.Public,
+        new PropertyData(false, false, "LastName", Privacy.Public,
             makeValue(lastNames[index])),
-        new PropertyData(false, false, (String) "Title", Privacy.Public,
+        new PropertyData(false, false, "Title", Privacy.Public,
             makeValue(titles[index])) };
 
     profile.setUserProfile(profileData);
