@@ -67,6 +67,8 @@ public class SharepointConnector implements Connector,
   private String username;
   private String password;
   private String googleConnectorWorkDir = null;
+  private String googleGlobalNamespace;
+  private String googleLocalNamespace;
   private String excludedURls = null;
   private String includedURls = null;
   private String mySiteBaseURL = null;
@@ -342,6 +344,35 @@ public class SharepointConnector implements Connector,
     this.googleConnectorWorkDir = googleConnectorWorkDir;
   }
 
+  /** Gets the global namespace. */
+  public String getGoogleGlobalNamespace() {
+    return googleGlobalNamespace;
+  }
+
+  /**
+   * Sets the global namespace. This property is defined by connector
+   * manager.
+   */
+  public void setGoogleGlobalNamespace(String googleGlobalNamespace) {
+    this.googleGlobalNamespace = googleGlobalNamespace;
+    if (!oldLdapBehavior) {
+      adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
+    }
+  }
+
+  /** Gets the local namespace. */
+  public String getGoogleLocalNamespace() {
+    return googleLocalNamespace;
+  }
+
+  /**
+   * Sets the local namespace. This property is defined by connector
+   * manager.
+   */
+  public void setGoogleLocalNamespace(String googleLocalNamespace) {
+    this.googleLocalNamespace = googleLocalNamespace;
+  }
+
   /**
    * @return the excludedURls
    */
@@ -445,11 +476,13 @@ public class SharepointConnector implements Connector,
     }
   }
 
-  public void init() throws SharepointException {
+  public void init() throws RepositoryException {
     LOGGER.config("sharepointUrl = [" + sharepointUrl + "] , domain = ["
         + domain + "] , username = [" + username + "] , "
         + "googleConnectorWorkDir = [" + googleConnectorWorkDir
-        + "] , includedURls = [" + includedURls + "] , " + "excludedURls = ["
+        + "], googleGlobalNamespace = [" + googleGlobalNamespace
+        + "], googleLocalNamespace = [" + googleLocalNamespace
+        + "], includedURls = [" + includedURls + "] , " + "excludedURls = ["
         + excludedURls + "] , mySiteBaseURL = [" + mySiteBaseURL
         + "] , aliasHostPort = [" + aliasMap + "], pushAcls = [" + pushAcls
         + "], useCacheToStoreLdapUserGroupsMembership = ["
@@ -464,9 +497,9 @@ public class SharepointConnector implements Connector,
 
     sharepointClientContext = new SharepointClientContext(clientFactory,
         sharepointUrl, domain, kdcserver, username, password, 
-        googleConnectorWorkDir, includedURls, excludedURls, mySiteBaseURL, 
-        aliasMap, FeedType.getFeedType(authorizationAsfeedType),
-        useSPSearchVisibility);
+        googleConnectorWorkDir, googleGlobalNamespace, googleLocalNamespace,
+        includedURls, excludedURls, mySiteBaseURL, aliasMap,
+        FeedType.getFeedType(authorizationAsfeedType), useSPSearchVisibility);
     sharepointClientContext.setFQDNConversion(FQDNConversion);
     sharepointClientContext.setIncluded_metadata(included_metadata);
     sharepointClientContext.setExcluded_metadata(excluded_metadata);
@@ -498,11 +531,7 @@ public class SharepointConnector implements Connector,
         .setUserProfileServiceFactory(this.userProfileServiceFactory);
     socialConnector.init(sharepointClientContext);
     if (!oldLdapBehavior) {
-      try {
-        adGroupsConnector.init();
-      } catch (Exception e) {
-        throw new SharepointException(e);
-      }
+      adGroupsConnector.init();
     }
   }
 

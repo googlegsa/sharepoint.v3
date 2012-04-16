@@ -38,11 +38,13 @@ import java.util.logging.Logger;
  */
 public class SharepointSession implements Session {
 
-  private SharepointConnector connector = null;
-  private SharepointClientContext sharepointClientContext = null;
-  private final Logger LOGGER = Logger.getLogger(SharepointSession.class.getName());
-  private Session socialSession;
-  private Session adGroupsSession;
+  private static final Logger LOGGER =
+      Logger.getLogger(SharepointSession.class.getName());
+
+  private final SharepointConnector connector;
+  private final SharepointClientContext sharepointClientContext;
+  private final Session socialSession;
+  private final Session adGroupsSession;
 
   /**
    * @param inConnector
@@ -61,16 +63,13 @@ public class SharepointSession implements Session {
   public SharepointSession(final SharepointConnector inConnector,
       final SharepointClientContext inSharepointClientContext,
       final Session inSocialSession, final Session inAdGroupsSession) {
-    /*
-     * throws RepositoryException
-     */
-    if (inConnector != null) {
-      connector = inConnector;
-    }
+    connector = inConnector;
     socialSession = inSocialSession;
     adGroupsSession = inAdGroupsSession;
     if (inSharepointClientContext != null) {
       sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
+    } else {
+      sharepointClientContext = null;
     }
     LOGGER.info("SharepointSession(SharepointConnector inConnector," + 
          " SharepointClientContext inSharepointClientContext)");

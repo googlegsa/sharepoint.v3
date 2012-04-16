@@ -8,6 +8,8 @@
     <property name="username" value="${username}"/>
     <property name="password" value="${password}"/>
     <property name="googleConnectorWorkDir" value="${googleConnectorWorkDir}"/>
+    <property name="googleGlobalNamespace" value="${googleGlobalNamespace}"/>
+    <property name="googleLocalNamespace" value="${googleLocalNamespace}"/>
     <property name="includedURls" value="${includedURls}"/>
     <property name="excludedURls" value="${excludedURls}"/>
     <property name="mySiteBaseURL" value="${mySiteBaseURL}"/>
@@ -125,6 +127,8 @@
                 <prop key="username"></prop>
                 <prop key="password"></prop>
                 <prop key="googleConnectorWorkDir"></prop>
+                <prop key="googleGlobalNamespace"></prop>
+                <prop key="googleLocalNamespace"></prop>
                 <prop key="includedURls"></prop>
                 <prop key="excludedURls"></prop>
                 <prop key="mySiteBaseURL"></prop>

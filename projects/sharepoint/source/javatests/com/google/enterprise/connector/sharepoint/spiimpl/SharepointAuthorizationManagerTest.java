@@ -44,6 +44,8 @@ public class SharepointAuthorizationManagerTest extends TestCase {
         clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
         TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.googleGlobalNamespace,
+        TestConfiguration.googleLocalNamespace,
         TestConfiguration.includedURls, TestConfiguration.excludedURls,
         TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
         TestConfiguration.feedType, TestConfiguration.useSPSearchVisibility);

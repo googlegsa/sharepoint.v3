@@ -34,7 +34,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
     servers = new ArrayList<AdServer>();
     wellKnownEntities = new ArrayList<AdEntity>();
 
-    db = new AdDbUtil(connector.dataSource, connector.dbType);
+    db = new AdDbUtil(connector.getDataSource(), connector.getDatabaseType());
 
     ResourceBundle rb = ResourceBundle.getBundle(
         getClass().getPackage().getName() + ".wellknowidentifiers");
@@ -49,11 +49,11 @@ public class AdGroupsTraversalManager implements TraversalManager {
     // I will leave this as undocumented hack to get crawling of multiple ADs
     // with one instance of the connector until better solution is created
     // via the configuration
-    String[] methods = connector.method.split("\\|");
-    String[] hostnames = connector.hostname.split("\\|");
-    String[] ports = connector.port.split("\\|");
-    String[] principals = connector.principal.split("\\|");
-    String[] passwords = connector.password.split("\\|");
+    String[] methods = connector.getMethod().split("\\|");
+    String[] hostnames = connector.getHostname().split("\\|");
+    String[] ports = connector.getPort().split("\\|");
+    String[] principals = connector.getPrincipal().split("\\|");
+    String[] passwords = connector.getPassword().split("\\|");
 
     for (int i = 0; i < hostnames.length; ++i) {
       if (hostnames[i].trim().length() != 0) {
