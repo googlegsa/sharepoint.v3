@@ -1,16 +1,16 @@
-//Copyright 2007-2011 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007-2011 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
@@ -237,7 +237,7 @@ public class SPListsWS implements ListsWS {
    * @param viewName the view name used with the SOAP request getListItems
    * @param query the query used with the SOAP request getListItems
    * @param viewFields the view fields used with the SOAP request getListItems
-   * @param queryOptions the query options used with the SOAP request 
+   * @param queryOptions the query options used with the SOAP request
    *          getListItems
    * @param webID
    * @param allWebs a collection to store any webs discovered as part of
@@ -362,7 +362,7 @@ public class SPListsWS implements ListsWS {
             return stub.getListItemChangesSinceToken(listName, viewName, 
                 query, viewFields, rowLimit, queryOptions, token, contains);
           }
-          
+
           public void onError(final Throwable e) {
             LOGGER.log(Level.WARNING, "Unable to get folder hierarchy at folderLevel [ "
                 + folderLevel + " ], list [ " + list.getListURL() + " ].", e);
@@ -440,7 +440,7 @@ public class SPListsWS implements ListsWS {
    * @param list the list whose items are to be retrieved
    * @param listName the list name used with the SOAP request
    *          getListItemChangesSinceToken
-   * @param viewName the view name used with the SOAP request 
+   * @param viewName the view name used with the SOAP request
    *          getListItemChangesSinceToken
    * @param query the query used with the SOAP request
    *          getListItemChangesSinceToken

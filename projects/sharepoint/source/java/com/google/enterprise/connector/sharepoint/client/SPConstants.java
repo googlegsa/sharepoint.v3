@@ -1,16 +1,16 @@
-//Copyright 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.client;
 
@@ -336,7 +336,7 @@ public class SPConstants {
       CONNECTOR_NAME + CONNECTOR_SUFFIX + CONNECTOR_STATE_EXT;
   public static final String CONNECTOR_TEMPFILE_NAME =
       CONNECTOR_NAME + CONNECTOR_SUFFIX + CONNECTOR_TEMP_EXT;
-  
+
   public static final String LAST_CRAWLED_WEB_ID = "LastCrawledWebStateID";
   public static final String LAST_CRAWLED_LIST_ID = "LastCrawledListStateID";
   public static final String CRAWL_STATE = "CrawlState";
@@ -574,7 +574,7 @@ public class SPConstants {
   public static final String SOCIAL_COLLECTION_INVALID 
      = "InvalidCollectionName";
   public static final String NON_EMPTY_STRING = "NonEmptyString";
-  
+
   public static final String CONNECTOR_NAME_COLUMN = "connectorname";
   public static final String CONNECTOR_NAME_COLUMN_CAPITAL = "CONNECTORNAME";
   public static final String SYSTEM_UPDATE = "SystemUpdate";

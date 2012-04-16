@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,9 +34,9 @@ import java.util.Set;
 public class XmlListsWS extends MockListsWS {
   private static final Logger LOGGER =
       Logger.getLogger(XmlListsWS.class.getName());
-      
+
   private final XmlClientFactory clientFactory;
-  
+
   /**
    * @param clientFactory The client factory for webservice calls
    * @param ctx The Sharepoint context is passed so that necessary

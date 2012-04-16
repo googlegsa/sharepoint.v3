@@ -1,16 +1,16 @@
-//Copyright (C) 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
@@ -77,7 +77,7 @@ import javax.naming.ldap.LdapContext;
  * ConnectorType implementation for Sharepoint This class is mainly desinged for
  * controlling the connector configuration which incompasses creation of
  * connector configuration form, validating the configuration values etc.
- * 
+ *
  * @author nitendra_thakur
  */
 public class SharepointConnectorType implements ConnectorType {
@@ -146,7 +146,7 @@ public class SharepointConnectorType implements ConnectorType {
 /**
    * Sets the keys that are required for configuration. These are the actual
    * keys used by the class.
-   * 
+   *
    * @param inKeys
    *          A list of String keys
    */
@@ -181,7 +181,7 @@ public class SharepointConnectorType implements ConnectorType {
 
   /**
    * Gets the initial/blank form.
-   * 
+   *
    * @return HTML form as string
    */
   private String getInitialConfigForm() {
@@ -195,7 +195,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Makes a config form snippet using the keys (in the supplied order) and, if
    * passed a non-null config map, pre-filling values in from that map.
-   * 
+   *
    * @param configMap
    *          The configuration keys and their values
    * @param ed
@@ -313,7 +313,7 @@ public class SharepointConnectorType implements ConnectorType {
           }
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
           buf.append(rb.getString(SPConstants.SOCIAL_OPTION_YES));
-          
+
           buf.append(SPConstants.BREAK_LINE);
           buf.append(SPConstants.OPEN_ELEMENT);
           buf.append(SPConstants.INPUT);
@@ -816,7 +816,6 @@ public class SharepointConnectorType implements ConnectorType {
           }
 
           buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
-
         }
         buf.append(SPConstants.TD_END);
         buf.append(SPConstants.TR_END);
@@ -834,7 +833,7 @@ public class SharepointConnectorType implements ConnectorType {
 
   /**
    * For creating the region Site Alias Mapping field
-   * 
+   *
    * @param buf
    *          Contains the form snippet
    */
@@ -873,7 +872,7 @@ public class SharepointConnectorType implements ConnectorType {
 
   /**
    * Appends a new row for Site Alias Mapping
-   * 
+   *
    * @param buf
    *          Contains form snippet
    * @param sourceValue
@@ -923,7 +922,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Starts a new row in the configuration page. used while designing the
    * configuration form
-   * 
+   *
    * @param buf
    */
   private void appendStartRow(final StringBuffer buf, final String key,
@@ -959,7 +958,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Adds a property to the current HTML element. used while designing the
    * configuration form
-   * 
+   *
    * @param buf
    * @param attrName
    * @param attrValue
@@ -986,7 +985,7 @@ public class SharepointConnectorType implements ConnectorType {
 
   /**
    * initialize the instance variables for furhter processing.
-   * 
+   *
    * @param key
    * @param val
    */
@@ -1384,7 +1383,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Stores any error message corresponding to any field on the connector's
    * configuration page. *
-   * 
+   *
    * @author nitendra_thakur
    */
   class ErrorDignostics {
@@ -1399,7 +1398,7 @@ public class SharepointConnectorType implements ConnectorType {
 
   /**
    * Desc : returns true if the Config Key is a mandatory field.
-   * 
+   *
    * @param configKey
    * @return is this field is mandatory?
    */
@@ -1416,7 +1415,7 @@ public class SharepointConnectorType implements ConnectorType {
 
   /**
    * JavaScript required on the connector configuration page.
-   * 
+   *
    * @param buf
    *          contains the Form snippet
    */
@@ -1596,7 +1595,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Validates all the patterns under included / excluded to check if any of
    * them is not a valid pattern.
-   * 
+   *
    * @param patterns
    *          The pattern to be validated
    * @return the set of wrong patterns, if any. Otherwise returns null
@@ -1839,7 +1838,7 @@ public class SharepointConnectorType implements ConnectorType {
 
     try {
       sharepointClientContext.setSiteURL(endpoint);
-			final WebsWS websWS = clientFactory.getWebsWS(sharepointClientContext);
+      final WebsWS websWS = clientFactory.getWebsWS(sharepointClientContext);
       return websWS.checkConnectivity();
     } catch (final Exception e) {
       final String logMessage = "Problem while connecting.";
@@ -1850,7 +1849,7 @@ public class SharepointConnectorType implements ConnectorType {
 
   /**
    * Check for the connectivtity to the google services for SharePoint
-   * 
+   *
    * @param endpoint
    *          the Web URL to which the Web Service call will be made
    * @return the connectivity status
@@ -1865,7 +1864,7 @@ public class SharepointConnectorType implements ConnectorType {
 
     try {
       sharepointClientContext.setSiteURL(endpoint);
-			final BulkAuthorizationWS testBulkAuth =
+      final BulkAuthorizationWS testBulkAuth =
           clientFactory.getBulkAuthorizationWS(sharepointClientContext);
       return testBulkAuth.checkConnectivity();
     } catch (final Exception e) {
@@ -1878,7 +1877,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Parses the received value of Alias source pattern and values in a string
    * and updates the map.
-   * 
+   *
    * @param aliasMapString
    *          The comples string containg all the entries made on the
    *          configuration form. Entries of two consecutive rows are separated
@@ -1969,7 +1968,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Validates the String to check whether it represents an IP address or not
    * and returns the boolean status.
-   * 
+   *
    * @param ip
    *          IP adress to be validated in the form of string.
    * @return If ip address matches the regular expression then true else false
@@ -2060,7 +2059,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Returns the flag if SharePoint search visibility options are to be fetched
    * and used
-   * 
+   *
    * @return the useSPSearchVisibility The search visibility flag
    */
   public String getUseSPSearchVisibility() {
@@ -2070,7 +2069,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Sets the flag if SharePoint search visibility options are to be fetched and
    * used
-   * 
+   *
    * @param useSPSearchVisibility
    *          The useSPSearchVisibility flag to set
    */
@@ -2080,7 +2079,7 @@ public class SharepointConnectorType implements ConnectorType {
 
   /**
    * Validating feed ACLs related check boxes.
-   * 
+   *
    * @param configData
    */
   private void validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(
@@ -2113,7 +2112,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Validating feed ACLs related HTML controls against blank, specific formats
    * and for valid LDAP context.
-   * 
+   *
    * @return true if feed ACLs is not selected by the connector administrator
    *         during setting of connector configuration at GSA and false in case
    *         if any of its fields are blank, wrong user name format or couldn't
@@ -2254,7 +2253,6 @@ public class SharepointConnectorType implements ConnectorType {
               }
             }
           }
-
         }
       } else {
         if (Strings.isNullOrEmpty(groupnameFormatInAce)) {
@@ -2270,7 +2268,6 @@ public class SharepointConnectorType implements ConnectorType {
           return false;
         }
       }
-
     }
     return true;
   }
@@ -2278,7 +2275,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Parses the string argument as a signed decimal integer. The characters in
    * the string must all be decimal digits.
-   * 
+   *
    * @param number
    * @return true if given string
    */
@@ -2324,7 +2321,7 @@ public class SharepointConnectorType implements ConnectorType {
   /**
    * Checks if the given name consist of special characters or not and returns
    * true if there is no special characters found in the given name.
-   * 
+   *
    * @param nameFormat
    * @return false if given name consist of at least on special character other
    *         than '@' and '\'

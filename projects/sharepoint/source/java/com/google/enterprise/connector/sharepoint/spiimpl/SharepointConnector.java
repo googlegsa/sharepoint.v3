@@ -1,16 +1,16 @@
-//Copyright 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
@@ -51,7 +51,7 @@ import java.util.logging.Logger;
  * Implementation of the Connector interface from the spi for SharePoint This is
  * the primary class which represents a new connector instance. Every time a new
  * connector instance is created, an object of this class is created.
- * 
+ *
  * @author nitendra_thakur
  */
 public class SharepointConnector implements Connector,
@@ -177,7 +177,7 @@ public class SharepointConnector implements Connector,
 
   /**
    * sets the FQDNConversion parameter.
-   * 
+   *
    * @param conversion If true: tries to convert the non-FQDN URLs to FQDN If
    *          false: no conversion takes place
    */
@@ -231,7 +231,7 @@ public class SharepointConnector implements Connector,
 
   /**
    * Sets the metadata to be included
-   * 
+   *
    * @param inExcluded_metadata
    */
   public void setExcluded_metadata(final ArrayList<String> inExcluded_metadata) {
@@ -245,7 +245,7 @@ public class SharepointConnector implements Connector,
 
   /**
    * Sets the excluded metadata
-   * 
+   *
    * @param inIncluded_metadata
    */
   public void setIncluded_metadata(final ArrayList<String> inIncluded_metadata) {
@@ -907,7 +907,7 @@ public class SharepointConnector implements Connector,
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see com.google.enterprise.connector.spi.ConnectorShutdownAware#shutdown()
    */
   public void shutdown() throws RepositoryException {
@@ -917,7 +917,7 @@ public class SharepointConnector implements Connector,
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see com.google.enterprise.connector.spi.ConnectorShutdownAware#delete()
    */
   public void delete() throws RepositoryException {

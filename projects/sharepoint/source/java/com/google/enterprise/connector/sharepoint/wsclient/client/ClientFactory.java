@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -90,7 +90,7 @@ public interface ClientFactory {
    */
   public SiteDiscoveryWS getSiteDiscoveryWS(SharepointClientContext ctx,
       String webUrl);
-      
+
   /**
    * Check connectivity to the specified URL with the specified credentials.
    *
@@ -99,9 +99,9 @@ public interface ClientFactory {
    * @return the HTTP response code; 200 for success or other code
    * @throws IOException
    */
-  public int checkConnectivity(HttpMethodBase method, 
+  public int checkConnectivity(HttpMethodBase method,
       Credentials credentials) throws IOException;
-      
+
   /**
    * Gets the header for a previous executed request to checkConnectivity.
    *

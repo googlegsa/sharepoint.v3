@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +18,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.ArrayList; 
-import java.util.Stack; 
+import java.util.ArrayList;
+import java.util.Stack;
 import java.util.logging.Logger;
 
 /**
@@ -41,7 +41,7 @@ class XmlHandler extends DefaultHandler {
   }
 
   @Override
-  public void startElement(String uri, String localName, String qName, 
+  public void startElement(String uri, String localName, String qName,
       Attributes attributes) throws SAXException {
     MockType type = getTypeFromString(qName);
     if (MockType.ACL == type) {
@@ -53,7 +53,7 @@ class XmlHandler extends DefaultHandler {
       if (null == name) {
         name = type + "-" + System.currentTimeMillis();
       }
-      
+
       MockItem topItem = items.peek();
       MockItem newItem = new MockItem(name, type, topItem);
       items.push(newItem);
