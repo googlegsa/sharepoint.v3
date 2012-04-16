@@ -252,6 +252,7 @@
         <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
         <pathelement location="${spi.jar.dir}/connector-util.jar" />
+        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <pathelement location="${jarfile}" />
         <pathelement location="${config}" />
         <fileset dir="${lib.jar.dir}">

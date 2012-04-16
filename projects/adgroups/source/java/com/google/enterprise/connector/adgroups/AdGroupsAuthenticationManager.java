@@ -55,8 +55,7 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
   private AdDbUtil db;
 
   /**
-   * @param inSharepointClientContext Context Information is required to create
-   *          the instance of this class
+   * @param connector an instance of an {@link AdGroupsConnector}
    */
   public AdGroupsAuthenticationManager(AdGroupsConnector connector)
       throws RepositoryException {
