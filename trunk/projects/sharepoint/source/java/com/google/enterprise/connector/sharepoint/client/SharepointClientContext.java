@@ -68,6 +68,8 @@ public class SharepointClientContext implements Cloneable {
   private String password;
   private String kdcServer;
   private String googleConnectorWorkDir = null;
+  private String googleGlobalNamespace = null;
+  private String googleLocalNamespace = null;
   private String[] excludedURlList = null;
   private String[] includedURlList = null;
   private String mySiteBaseURL = null;
@@ -149,31 +151,41 @@ public class SharepointClientContext implements Cloneable {
       }
 
       if (null != domain) {
-        spCl.setDomain(new String(domain));
+        spCl.setDomain(domain);
       }
+
       if (null != kdcServer) {
-        spCl.setKdcServer((new String(kdcServer)));
+        spCl.setKdcServer(kdcServer);
       }
+
       if (null != googleConnectorWorkDir) {
-        spCl.setGoogleConnectorWorkDir(new String(googleConnectorWorkDir));
+        spCl.googleConnectorWorkDir = googleConnectorWorkDir;
+      }
+
+      if (null != googleGlobalNamespace) {
+        spCl.googleGlobalNamespace = googleGlobalNamespace;
+      }
+
+      if (null != googleLocalNamespace) {
+        spCl.googleLocalNamespace = googleLocalNamespace;
       }
 
       if (null != mySiteBaseURL) {
-        spCl.setMySiteBaseURL(new String(mySiteBaseURL));
+        spCl.setMySiteBaseURL(mySiteBaseURL);
       }
 
       if (null != password) {
-        spCl.setPassword(new String(password));
+        spCl.setPassword(password);
       }
 
       if (null != siteURL) {
-        spCl.setSiteURL(new String(siteURL));
+        spCl.setSiteURL(siteURL);
       }
 
       if (null != excludedURlList) {
         final String[] newExcList = new String[excludedURlList.length];
         for (int i = 0; i < excludedURlList.length; ++i) {
-          newExcList[i] = new String(excludedURlList[i].toString());
+          newExcList[i] = excludedURlList[i];
         }
         spCl.setExcludedURlList(newExcList);
       }
@@ -181,13 +193,13 @@ public class SharepointClientContext implements Cloneable {
       if (null != includedURlList) {
         final String[] newIncList = new String[includedURlList.length];
         for (int i = 0; i < includedURlList.length; ++i) {
-          newIncList[i] = new String(includedURlList[i].toString());
+          newIncList[i] = includedURlList[i];
         }
         spCl.setIncludedURlList(newIncList);
       }
 
       if (null != username) {
-        spCl.setUsername(new String(username));
+        spCl.setUsername(username);
       }
 
       spCl.setFQDNConversion(bFQDNConversion);
@@ -258,30 +270,17 @@ public class SharepointClientContext implements Cloneable {
     }
   }
 
-  /**
-   * Default constructor
-   */
+  /** Constructor used by {@code clone}. */
   private SharepointClientContext(ClientFactory clientFactory) {
     this.clientFactory = clientFactory;
   }
 
-  /**
-   * @param sharepointUrl
-   * @param inDomain
-   * @param inUsername
-   * @param inPassword
-   * @param inGoogleConnectorWorkDir
-   * @param includedURls
-   * @param excludedURls
-   * @param inMySiteBaseURL
-   * @param inAliasMapString
-   * @param inFeedType
-   * @throws SharepointException
-   */
   public SharepointClientContext(ClientFactory clientFactory,
       String sharepointUrl, final String inDomain,
       final String inKdcHost, final String inUsername, final String inPassword,
-      final String inGoogleConnectorWorkDir, final String includedURls,
+      final String inGoogleConnectorWorkDir,
+      final String inGoogleGlobalNamespace,
+      final String inGoogleLocalNamespace, final String includedURls,
       final String excludedURls, final String inMySiteBaseURL,
       final String inAliasMapString, final FeedType inFeedType,
       boolean useSPSearchVisibility) throws SharepointException {
@@ -343,6 +342,8 @@ public class SharepointClientContext implements Cloneable {
     this.setIncludedURlList(includedURls, SPConstants.SEPARATOR);
 
     password = inPassword;
+    googleGlobalNamespace = inGoogleGlobalNamespace;
+    googleLocalNamespace = inGoogleLocalNamespace;
     googleConnectorWorkDir = inGoogleConnectorWorkDir;
     LOGGER.finest("googleConnectorWorkDir set to " + googleConnectorWorkDir);
     excludedURL_ParentDir = googleConnectorWorkDir + SPConstants.SLASH
@@ -360,6 +361,8 @@ public class SharepointClientContext implements Cloneable {
     LOGGER.config(" sharepointUrl = [" + sharepointUrl + "] , domain = ["
         + inDomain + "] , username = [" + inUsername
         + "] , googleConnectorWorkDir = [" + inGoogleConnectorWorkDir
+        + "] , googleGlobalNamespace = [" + inGoogleGlobalNamespace
+        + "] , googleLocalNamespace = [" + inGoogleLocalNamespace
         + "] , includedURls = [" + includedURls + "] , excludedURls = ["
         + excludedURls + "] , mySiteBaseURL = [" + inMySiteBaseURL
         + "], aliasMapString = [" + inAliasMapString + "], FeedType ["
@@ -419,6 +422,16 @@ public class SharepointClientContext implements Cloneable {
     return googleConnectorWorkDir;
   }
 
+  /** Gets the global namespace. */
+  public String getGoogleGlobalNamespace() {
+    return googleGlobalNamespace;
+  }
+
+  /** Gets the local namespace. */
+  public String getGoogleLocalNamespace() {
+    return googleLocalNamespace;
+  }
+
   /**
    * @param indomain
    */
@@ -438,13 +451,6 @@ public class SharepointClientContext implements Cloneable {
    */
   public void setUsername(final String inUsername) {
     username = inUsername;
-  }
-
-  /**
-   * @param workDir
-   */
-  public void setGoogleConnectorWorkDir(final String workDir) {
-    googleConnectorWorkDir = workDir;
   }
 
   /**

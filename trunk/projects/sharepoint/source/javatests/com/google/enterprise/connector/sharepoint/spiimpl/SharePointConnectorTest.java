@@ -15,12 +15,13 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.spi.RepositoryException;
 
 import junit.framework.TestCase;
 
 public class SharePointConnectorTest extends TestCase {
 
-  public void testInit() throws SharepointException {
+  public void testInit() throws RepositoryException {
     assertNotNull(TestConfiguration.getConnectorInstance());
   }
 }

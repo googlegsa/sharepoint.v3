@@ -7,6 +7,7 @@
     <property name="port" value="${port}"/>
     <property name="principal" value="${principal}"/>
     <property name="password" value="${password}"/>
+    <property name="googleGlobalNamespace" value="${googleGlobalNamespace}"/>
   </bean>
 
   <bean id="propertyPlaceholderConfigurer"
@@ -18,6 +19,7 @@
                 <prop key="port"></prop>
                 <prop key="principal"></prop>
                 <prop key="password"></prop>
+                <prop key="googleGlobalNamespace"></prop>
             </props>
         </property>
     </bean>

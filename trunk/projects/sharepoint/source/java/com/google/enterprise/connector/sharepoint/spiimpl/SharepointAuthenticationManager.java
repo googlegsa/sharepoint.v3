@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.adgroups.AdGroupsAuthenticationManager;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
@@ -52,12 +53,14 @@ import java.util.logging.Logger;
  * @author nitendra_thakur
  */
 public class SharepointAuthenticationManager implements AuthenticationManager {
-  Logger LOGGER = Logger.getLogger(SharepointAuthenticationManager.class.getName());
+  private static final Logger LOGGER =
+      Logger.getLogger(SharepointAuthenticationManager.class.getName());
 
   private final ClientFactory clientFactory;
-  SharepointClientContext sharepointClientContext = null;
-  LdapService ldapService = null;
-  AdGroupsAuthenticationManager adGroupsAuthenticationManager;
+  private final SharepointClientContext sharepointClientContext;
+  @VisibleForTesting
+  final LdapService ldapService;
+  private final AdGroupsAuthenticationManager adGroupsAuthenticationManager;
 
   /**
    * @param inSharepointClientContext Context Information is required to create
@@ -78,10 +81,15 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
       if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())
           && !Strings.isNullOrEmpty(ldapConnectionSettings.getBaseDN())) {
         ldapService = new UserGroupsService(inSharepointClientContext);
+      } else {
+        ldapService = null;
       }
+    } else {
+      ldapService = null;
     }
   }
 
+  @Override
   public AuthenticationResponse authenticate(
       final AuthenticationIdentity identity) throws RepositoryLoginException,
       RepositoryException {
@@ -94,7 +102,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 
   //TODO: make this claims aware - authorize against Sharepoint and resolve
   //groups against AD only if necessary
-  public AuthenticationResponse authenticateAgainstActiveDirectory(
+  private AuthenticationResponse authenticateAgainstActiveDirectory(
       final AuthenticationIdentity identity) throws RepositoryLoginException,
       RepositoryException {
     AuthenticationResponse adAuthResult =
@@ -124,10 +132,10 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
    * @param identity AuthenticationIdentity object created by CM while
    *          delegating authentication to the connector. This corresponds to
    *          one specific search user
-   * @return AutheicationResponse Contains the authentication status for the
+   * @return AuthenticationResponse Contains the authentication status for the
    *         incoming identity
    */
-  public AuthenticationResponse authenticateAgainstSharepoint(
+  private AuthenticationResponse authenticateAgainstSharepoint(
       final AuthenticationIdentity identity) throws RepositoryLoginException,
       RepositoryException {
     if (sharepointClientContext == null) {
@@ -160,7 +168,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
       sharepointClientContext.setPassword(password);
       bulkAuth = clientFactory.getBulkAuthorizationWS(sharepointClientContext);
       if (null == bulkAuth) {
-        LOGGER.log(Level.SEVERE, "Failed to initialize BulkAuthorozationWS.");
+        LOGGER.log(Level.SEVERE, "Failed to initialize BulkAuthorizationWS.");
         return null;
       }
 
@@ -205,40 +213,24 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
    * @return {@link AuthenticationResponse}
    * @throws SharepointException
    */
+  @VisibleForTesting
   AuthenticationResponse getAllGroupsForTheUser(String searchUser)
       throws SharepointException {
     LOGGER.info("Attempting group resolution for user : " + searchUser);
-    Set<String> allSearchUserGroups = this.ldapService.getAllGroupsForSearchUser(sharepointClientContext, searchUser);
-    Set<String> finalGroupNames = encodeGroupNames(allSearchUserGroups);
-    if (null != finalGroupNames && finalGroupNames.size() > 0) {
+    Set<String> allSearchUserGroups = ldapService.getAllGroupsForSearchUser(
+        sharepointClientContext, searchUser);
+    if (null != allSearchUserGroups && allSearchUserGroups.size() > 0) {
       // Should return true is there is at least one group returned by
       // LDAP service.
-      StringBuffer buf = new StringBuffer(
-          "Group resolution service returned following groups for the search user: ").append(searchUser).append(" \n").append(finalGroupNames.toString());
-      LOGGER.info(buf.toString());
+      LOGGER.log(Level.INFO, "Group resolution returned following groups "
+          + "for the search user: {0}\n{1}",
+          new Object[] { searchUser, allSearchUserGroups.toString() });
       return new AuthenticationResponse(true, "", allSearchUserGroups);
-    }
-    LOGGER.info("Group resolution service returned no groups for the search user: "
-        + searchUser);
-    // Should returns true with null groups.
-    return new AuthenticationResponse(true, "", null);
-  }
-
-  /**
-   * Returns a set of encoded group names by iterating to all the groups.
-   *
-   * @param allSearchUserGroups set of group names to encode.
-   */
-  private Set<String> encodeGroupNames(Set<String> allSearchUserGroups) {
-    Set<String> tmpGroups = new HashSet<String>();
-    if (null != allSearchUserGroups && allSearchUserGroups.size() > 0) {
-      for (String groupName : allSearchUserGroups) {
-        tmpGroups.add(StringEscapeUtils.escapeXml(groupName));
-      }
-      return tmpGroups;
     } else {
-      LOGGER.info("Received zero or null groups to encode.");
-      return null;
+      LOGGER.info("Group resolution returned no groups for the search user: "
+          + searchUser);
+      // Should return true with null groups.
+      return new AuthenticationResponse(true, "", null);
     }
   }
 }

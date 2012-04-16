@@ -1200,13 +1200,11 @@ public class SharepointConnectorType implements ConnectorType {
 
     try {
       sharepointClientContext = new SharepointClientContext(clientFactory, 
-        sharepointUrl, domain, kdcServer, username, password, "", 
-        includeURL, excludeURL, mySiteUrl, "", feedType,
-        new Boolean(useSPSearchVisibility).booleanValue());
+          sharepointUrl, domain, kdcServer, username, password, "", "", "",
+          includeURL, excludeURL, mySiteUrl, "", feedType,
+          Boolean.parseBoolean(useSPSearchVisibility));
     } catch (final Exception e) {
-      LOGGER
-      .log(
-          Level.SEVERE,
+      LOGGER.log(Level.SEVERE,
           "Failed to create SharePointClientContext with the received configuration values. ");
     }
     String status = checkPattern(sharepointUrl);
@@ -1219,8 +1217,7 @@ public class SharepointConnectorType implements ConnectorType {
     if (FeedType.CONTENT_FEED == feedType) {
       status = checkGSConnectivity(sharepointUrl);
       if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-        ed.set(
-            null,
+        ed.set(null,
             rb.getString(SPConstants.BULKAUTH_ERROR_CRAWL_URL)
             + rb.getString(SPConstants.REASON) + status);
         return false;
@@ -1230,8 +1227,7 @@ public class SharepointConnectorType implements ConnectorType {
 
     status = checkConnectivity(sharepointUrl);
     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-      ed.set(
-          null,
+      ed.set(null,
           rb.getString(SPConstants.CANNOT_CONNECT)
           + rb.getString(SPConstants.REASON) + status);
       return false;

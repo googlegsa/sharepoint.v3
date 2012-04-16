@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.ldap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
@@ -68,12 +69,9 @@ public class UserGroupsService implements LdapService {
 
   private LdapConnectionSettings ldapConnectionSettings;
   private LdapContext context;
-  private UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> lugCacheStore = null;
+  private final UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> lugCacheStore;
   private LdapConnection ldapConnection;
-  private SharepointClientContext sharepointClientContext;
-
-  public UserGroupsService() {
-  }
+  private final SharepointClientContext sharepointClientContext;
 
   /**
    * Initializes LDAP context object for a given {@link LdapConnectionSettings}
@@ -82,22 +80,25 @@ public class UserGroupsService implements LdapService {
    *
    * @param ldapConnectionSettings
    */
+  @VisibleForTesting
   public UserGroupsService(LdapConnectionSettings ldapConnectionSettings,
       int cacheSize, long refreshInterval, boolean enableLUGCache) {
     this.ldapConnectionSettings = ldapConnectionSettings;
     ldapConnection = new LdapConnection(ldapConnectionSettings);
     context = getLdapContext();
+    this.sharepointClientContext = null;
     if (enableLUGCache) {
       this.lugCacheStore = new UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>>(
           refreshInterval, cacheSize);
       LOGGER.log(Level.CONFIG, "Configured user groups cache store with refresh interval [ "
           + refreshInterval + " ] and with capacity [ " + cacheSize + " ]");
     } else {
+      this.lugCacheStore = null;
       LOGGER.log(Level.CONFIG, "No cache has been configured to keep user groups memberships.");
     }
   }
 
-  public UserGroupsService(LdapConnectionSettings ldapConnectionSettings,
+  private UserGroupsService(LdapConnectionSettings ldapConnectionSettings,
       SharepointClientContext inSharepointClientContext) {
     if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())
         || !Strings.isNullOrEmpty(ldapConnectionSettings.getBaseDN())) {
@@ -114,6 +115,7 @@ public class UserGroupsService implements LdapService {
           sharepointClientContext.getCacheRefreshInterval(),
           sharepointClientContext.getInitialCacheSize());
     } else {
+      this.lugCacheStore = null;
       LOGGER.log(Level.INFO, "No cache has been configured to keep user groups memberships.");
     }
   }
@@ -713,37 +715,29 @@ public class UserGroupsService implements LdapService {
    */
   private Set<String> getAllSPGroupsForSearchUserAndLdapGroups(
       String searchUser, Set<String> adGroups) {
-    StringBuffer groupName;
     // Search user and SP groups memberships found in user data store.
-    List<UserGroupMembership> groupMembershipList = null;
     Set<String> spGroups = new HashSet<String>();
     try {
       if (null != this.sharepointClientContext.getUserDataStoreDAO()) {
-        groupMembershipList = this.sharepointClientContext.getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(adGroups, searchUser);
+        List<UserGroupMembership> groupMembershipList =
+            sharepointClientContext.getUserDataStoreDAO()
+            .getAllMembershipsForSearchUserAndLdapGroups(adGroups, searchUser);
         for (UserGroupMembership userGroupMembership : groupMembershipList) {
           // append name space to SP groups.
-          groupName = new StringBuffer().append(SPConstants.LEFT_SQUARE_BRACKET).append(userGroupMembership.getNamespace()).append(SPConstants.RIGHT_SQUARE_BRACKET).append(userGroupMembership.getGroupName());
-          spGroups.add(groupName.toString());
+          spGroups.add(SPConstants.LEFT_SQUARE_BRACKET
+              + userGroupMembership.getNamespace()
+              + SPConstants.RIGHT_SQUARE_BRACKET
+              + userGroupMembership.getGroupName());
         }
       }
     } catch (SharepointException se) {
       LOGGER.warning("Exception occured while fetching user groups memberships for the search user ["
           + searchUser + "] and AD groups [" + adGroups + "]");
-    } finally {
-      if (null != groupMembershipList) {
-        groupMembershipList = null;
-      }
     }
     return spGroups;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.google.enterprise.connector.sharepoint.ldap.LdapService#
-   * getAllSearchUserGroups (com.google.enterprise.connector.sharepoint.client.
-   * SharepointClientContext , java.lang.String)
-   */
+  @Override
   public Set<String> getAllGroupsForSearchUser(
       SharepointClientContext sharepointClientContext, String searchUser)
       throws SharepointException {

@@ -116,7 +116,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * belongs to including the search user.
    *
    * @param groups set of AD groups whose SP groups are to be retrieved
-   * @param searchUser the sear user name
+   * @param searchUser the search user name
    * @throws SharepointException
    */
   public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
@@ -132,19 +132,17 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       groups.add(searchUser);
       groupsObject.put(SPConstants.GROUPS, groups);
     }
-    List<UserGroupMembership> memberships = null;
+    List<UserGroupMembership> memberships;
     try {
       memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
     } catch (Throwable t) {
-      throw new SharepointException(
-          "Query execution failed while getting the membership info of a given user and AD gruops.",
-          t);
+      throw new SharepointException("Query execution failed while getting "
+          + "the membership info of a given user and AD groups.", t);
     }
     LOGGER.log(Level.INFO, memberships.size()
         + " Memberships identified for LDAP directory groups in User Data Store.");
     if (null == groups) {
       ldapGroups.remove(searchUser);
-      ldapGroups = null;
     } else {
       groups.remove(searchUser);
     }
@@ -157,7 +155,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * picked up for the SQL insert. The rest other memberships are removed from
    * the collection.
    * <p/>
-   * Note: Hence, this method may (and often do) modifies the passed in
+   * Note: Hence, this method may (and often does) modify the passed in
    * collection. After the method returns, the caller can ensure that the
    * collection contains only those memberships which the connector really
    * attempted insertion. But, it does not ensure if it was successful or not.
@@ -258,7 +256,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    */
   public void removeAllMembershipsFromNamespace(Set<String> namespaces)
       throws SharepointException {
-
     Set<UserGroupMembership> memberships = new HashSet<UserGroupMembership>();
     for (String namespace : namespaces) {
       UserGroupMembership membership = new UserGroupMembership();
@@ -294,7 +291,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   public void syncGroupMemberships(
       Map<Integer, Set<UserGroupMembership>> groupMembershipMap,
       String namespace) throws SharepointException {
-
     if (null == groupMembershipMap || groupMembershipMap.size() == 0) {
       return;
     }
