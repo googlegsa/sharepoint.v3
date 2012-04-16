@@ -250,10 +250,9 @@ public class AdDbUtil {
   /**
    * Query to execute
    * @param remove query to remove all memberships from the database
-   * @param insert insert query to inse
-   * @param entities list of entities who's memberships we should run the
+   * @param insert insert query to insert memberships into the database
+   * @param entities list of entities whose memberships we should run the
    *        insert query on
-   * @return it membership merging was successful
    */
   public void mergeMemberships(
       final Query remove, final Query insert, final List<AdEntity> entities)
