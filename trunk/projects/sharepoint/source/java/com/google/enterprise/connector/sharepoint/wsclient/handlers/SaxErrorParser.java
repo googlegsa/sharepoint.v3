@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +37,7 @@ import javax.xml.parsers.SAXParser;
 public class SaxErrorParser extends SAXParser {
   private static final Logger LOGGER = Logger.getLogger(SaxErrorParser.class.getName());
   SAXParser parser;
-  
+
   public SaxErrorParser(SAXParser parser) {
     this.parser = parser;
   }
@@ -53,7 +53,7 @@ public class SaxErrorParser extends SAXParser {
   }
 
   @Override
-  public Object getProperty(String name) 
+  public Object getProperty(String name)
       throws SAXNotRecognizedException, SAXNotSupportedException {
     return parser.getProperty(name);
   }
@@ -63,7 +63,7 @@ public class SaxErrorParser extends SAXParser {
       throws SAXNotRecognizedException, SAXNotSupportedException {
     parser.setProperty(name, value);
   }
-  
+
   @Override
   public XMLReader getXMLReader() throws SAXException {
     XMLReader reader = parser.getXMLReader();
@@ -88,7 +88,7 @@ public class SaxErrorParser extends SAXParser {
   public boolean isNamespaceAware() {
     return parser.isNamespaceAware();
   }
-  
+
   @Override
   public boolean isValidating() {
     return parser.isValidating();

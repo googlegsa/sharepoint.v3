@@ -1,16 +1,16 @@
-//Copyright 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
@@ -125,7 +125,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   // List of groups and their denied permissions to be sent in document's ACL
   private Map<String, Set<RoleType>> denyGroupsAclMap;
-  
+
   // Check if the documents is discovered from ACL based crawling. An ACL
   // based crawling happens when a security change occurs on site/list which
   // affects the ACL of many list items
@@ -135,23 +135,23 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   private String title;
   private final String MSG_FILE_EXTENSION = ".msg";
   private final String MSG_FILE_MIMETYPE = "application/vnd.ms-outlook";
-  
+
   // Url for parent object which can be a SPFolder or SPList or SPweb Url.
   private String parentUrl;
 
   // Flag indicating if SPDocument is having inherited 
   // permissions or unique permissions. 
   private boolean uniquePermissions;
-  
+
   // Parent ID. This will be integer if parent is a folder 
   // else this will be Guid for List or Web.
   private String parentId;
-  
+
   private boolean webAppPolicyDoc = false;
 
   // Document Type  for Document.
   private DocumentType documentType;
-  
+
   /**
    * @return the toBeFed
    */
@@ -472,7 +472,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
           }
       return null;
   }
-  
+
   /**
    * Returns the property object for a given property name. CM calls this to
    * gather all the information about a document. The property names that are
@@ -604,7 +604,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         } else {
             return null;
         }
-     
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLUSERS)) {
         if (usersAclMap != null) {
           List<Value> values = new ArrayList<Value>(usersAclMap.size());
@@ -625,7 +624,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
        } else {
            return null;
        }
-    
    } else if (strPropertyName.startsWith(SpiConstants.USER_ROLES_PROPNAME_PREFIX)) {
         String originalName = strPropertyName.substring(SpiConstants.USER_ROLES_PROPNAME_PREFIX.length());
         Set<RoleType> roleTypes = usersAclMap.get(originalName);
@@ -650,7 +648,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       } else {
         return null;
       }
-      
     }
     // FIXME: We can get rid of this if-else-if ladder here by setting all
     // the relevant properties (in appropriate type) right at the time of
@@ -713,14 +710,14 @@ public class SPDocument implements Document, Comparable<SPDocument> {
           names.add(SpiConstants.PROPNAME_ACLINHERITFROM);  
         }
         names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
-      }      
+      }
     } else {
       // If document is web application policy document then ACL information
       // is available, as connector will not create 
       // partial web application policy document.
       names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
     }
-     
+
     if (null != usersAclMap) {
       names.add(SpiConstants.PROPNAME_ACLUSERS);
       for (Entry<String, Set<RoleType>> ace : usersAclMap.entrySet()) {
@@ -732,13 +729,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       for (Entry<String, Set<RoleType>> ace : groupsAclMap.entrySet()) {
         names.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX + ace.getKey());
       }
-    } 
+    }
     if (null != denyUsersAclMap) {
       names.add(SpiConstants.PROPNAME_ACLDENYUSERS);
     }
     if (null != denyGroupsAclMap) {
       names.add(SpiConstants.PROPNAME_ACLDENYGROUPS);
-    }    
+    }
     // Add "extra" metadata fields, including those added by user to the
     // documentMetadata List for matching against patterns
     for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
@@ -1075,7 +1072,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   public Map<String, Set<RoleType>> getDenyUsersAclMap() {
     return denyUsersAclMap;
   }
-    
+
   public void setDenyUsersAclMap(Map<String, Set<RoleType>> deniedUsersAclMap) {
     this.denyUsersAclMap = deniedUsersAclMap;
   }
