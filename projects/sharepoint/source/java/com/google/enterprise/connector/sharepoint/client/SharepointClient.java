@@ -1345,19 +1345,23 @@ public class SharepointClient {
     }  
     // Web Application Policy Document processing.
     // Web Application Policy Document will be associated with each webstate.
-    AclWS aclWs = null;
-    try {
-       SPDocument webApppolicy = null;
-       aclWs = clientFactory.getAclWS(sharepointClientContext, 
-               webState.getWebUrl());
-       webApppolicy = aclWs.getWebApplicationPolicy(webState,
-       sharepointClientContext.getFeedType().toString());
-       if (webApppolicy != null) {
-       documentList.add(webApppolicy);
-       }
+    if (sharepointClientContext.isPushAcls()) {
+      try {
+        AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
+            webState.getWebUrl());
+        if (aclWs != null) {
+          SPDocument webAppPolicy = aclWs.getWebApplicationPolicy(webState,
+              sharepointClientContext.getFeedType().toString());
+          if (webAppPolicy != null) {
+            documentList.add(webAppPolicy);
+          }
+        } else {
+          LOGGER.log(Level.WARNING, "GssAcl Object is null.");
+        }
       } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Problem while getting web app policy. ", e);
-    } 
+        LOGGER.log(Level.WARNING, "Problem while getting web app policy. ", e);
+      }
+    }
     if ((dummySiteListState.isExisting() || 
             webState.isWebApplicationPolicyChange())
       && null != document) {
