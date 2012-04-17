@@ -18,6 +18,7 @@ import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.Principal;
+import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
@@ -101,14 +102,26 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     return memberships;
   }
 
-  public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
-      Collection<Principal> groups, Principal searchUser) throws SharepointException {
+  public Set<Principal> getSharePointGroupsForSearchUserAndLdapGroups(
+      String localNamespace, Collection<Principal> groups, String searchUser)
+      throws SharepointException {
     Set<String> groupNames = new HashSet<String>();
     for (Principal group : groups) {
       groupNames.add(group.getName());
     }
-    return getAllMembershipsForSearchUserAndLdapGroups(
-        groupNames, searchUser.getName());
+    List<UserGroupMembership> spMemberships =
+        getAllMembershipsForSearchUserAndLdapGroups(groupNames, searchUser);
+    Set<Principal> spGroups = new HashSet<Principal>();
+    for (UserGroupMembership membership : spMemberships) {
+      // append name space to SP groups.
+      String groupName = SPConstants.LEFT_SQUARE_BRACKET
+          + membership.getNamespace()
+          + SPConstants.RIGHT_SQUARE_BRACKET
+          + membership.getGroupName();
+      spGroups.add(
+          new Principal(PrincipalType.UNQUALIFIED, localNamespace, groupName));
+    }
+    return spGroups;
   }
 
   /**

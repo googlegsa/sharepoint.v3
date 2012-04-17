@@ -25,6 +25,7 @@ import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapCon
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
+import com.google.enterprise.connector.spi.Principal;
 
 import org.junit.After;
 import org.junit.Before;
@@ -116,7 +117,8 @@ public class UserGroupsServiceTest {
     Set<String> groups3 = userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser4);
     assertNotNull(groups3); // cache for user4
 
-    UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> cacheStore = userGroupsService.getLugCacheStore();
+    UserGroupsCache<Object, ConcurrentHashMap<String, Set<Principal>>>
+        cacheStore = userGroupsService.getLugCacheStore();
   }
 
   /**
