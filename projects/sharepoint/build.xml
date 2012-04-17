@@ -229,6 +229,7 @@
         <pathelement location="${classes}" />
         <pathelement location="${junit.jarfile}" />
         <pathelement location="${adgroups.jar}" />
+        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>

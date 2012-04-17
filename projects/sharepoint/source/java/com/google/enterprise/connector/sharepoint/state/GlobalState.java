@@ -545,15 +545,26 @@ public class GlobalState {
       final boolean wasDeleted = tempFile.delete();
       LOGGER.warning("Temp file delete response: " + wasDeleted);
     }
+    
+    loadState(stateFile);
+  }
+
+  /**
+   * Load persistent state from our XML state.
+   *
+   * @throws SharepointException if the XML file can't be found, or is invalid
+   *           in any way.
+   */
+  void loadState(final File stateFile) throws SharepointException {
     XMLReader parser;
     InputSource inputSource = null;
     try {
       if (!stateFile.exists()) {
-        LOGGER.warning("state file '" + stateFile.getAbsolutePath()
-            + "' does not exist");
+        LOGGER.warning("State file '" + stateFile.getAbsolutePath()
+            + "' does not exist.");
         return;
       }
-      LOGGER.info("loading state from " + stateFile.getCanonicalPath());
+      LOGGER.info("Loading state from " + stateFile.getAbsolutePath() + ".");
       parser = new SAXParser();
       inputSource = new InputSource(new InputStreamReader(new FileInputStream(
           stateFile), "UTF-8"));
@@ -564,7 +575,7 @@ public class GlobalState {
       LOGGER.log(Level.SEVERE, "Unable to load state XML file", e);
       throw new SharepointException(e);
     } catch (final Throwable t) {
-      LOGGER.log(Level.SEVERE, "error/Exception while loading state file. ", t);
+      LOGGER.log(Level.SEVERE, "Error/Exception while loading state file. ", t);
     } finally {
       inputSource = null;
     }
@@ -616,7 +627,7 @@ public class GlobalState {
    *
    * @return File
    */
-  private File getStateFileLocation(String extension) {
+  File getStateFileLocation(String extension) {
     return getStateFileLocation(workDir, extension);
   }
 
