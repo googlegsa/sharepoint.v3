@@ -2,6 +2,7 @@
 
 package com.google.enterprise.connector.adgroups;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.DocumentList;
@@ -20,6 +21,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 public class AdGroupsTraversalManager implements TraversalManager {
@@ -30,7 +32,8 @@ public class AdGroupsTraversalManager implements TraversalManager {
   private ArrayList<AdEntity> wellKnownEntities;
   private AdDbUtil db;
 
-  public AdGroupsTraversalManager(AdGroupsConnector connector) {
+  public AdGroupsTraversalManager(AdGroupsConnector connector) 
+      throws RepositoryException {
     servers = new ArrayList<AdServer>();
     wellKnownEntities = new ArrayList<AdEntity>();
 
