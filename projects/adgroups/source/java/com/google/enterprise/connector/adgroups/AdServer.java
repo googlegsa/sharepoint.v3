@@ -1,6 +1,8 @@
 package com.google.enterprise.connector.adgroups;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
+import com.google.enterprise.connector.spi.RepositoryException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,6 +70,9 @@ public class AdServer {
   /**
    * Connects to the Active Directory server and retrieves AD configuration
    * information.
+   * 
+   * This method is used for crawling as well as authorization of credentials 
+   * against Active Directory.
    */
   public void connect() throws CommunicationException, NamingException {
     if (ldapContext == null) {
@@ -76,17 +81,22 @@ public class AdServer {
       // Use the built-in LDAP support.
       env.put(Context.INITIAL_CONTEXT_FACTORY,
           AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
-      env.put(Context.SECURITY_AUTHENTICATION,
-          AdConstants.AUTHN_TYPE_SIMPLE);
-      env.put(Context.SECURITY_PRINCIPAL, principal);
-      env.put(Context.SECURITY_CREDENTIALS, password);
+      if (Strings.isNullOrEmpty(principal)) {
+        env.put(Context.SECURITY_AUTHENTICATION, 
+            AdConstants.AUTHN_TYPE_ANONYMOUS);
+      } else {
+        env.put(Context.SECURITY_AUTHENTICATION,
+            AdConstants.AUTHN_TYPE_SIMPLE);
+        env.put(Context.SECURITY_PRINCIPAL, principal);
+        env.put(Context.SECURITY_CREDENTIALS, password);
+      }
 
       String ldapUrl =
           connectMethod.toString() + hostName + AdConstants.COLON + port;
       LOGGER.info("LDAP provider url: " + ldapUrl);
       env.put(Context.PROVIDER_URL, ldapUrl);
-
       ldapContext = new InitialLdapContext(env, null);
+      
       Attributes attributes = ldapContext.getAttributes(AdConstants.EMPTY);
       dn = attributes.get(
           AdConstants.ATTR_DEFAULTNAMINGCONTEXT).get(0).toString();
@@ -96,6 +106,12 @@ public class AdServer {
           AdConstants.ATTR_HIGHESTCOMMITTEDUSN).get(0).toString());
       configurationNamingContext = attributes.get(
           AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
+    }
+  }
+
+  public void initialize() throws RepositoryException {
+    try {
+      connect();
       sid = AdEntity.getTextSid((byte[])get(
           AdConstants.ATTR_DISTINGUISHEDNAME + AdConstants.EQUALS + dn,
           AdConstants.ATTR_OBJECTSID, dn));
@@ -104,33 +120,14 @@ public class AdServer {
           + AdConstants.EQUALS + dsServiceName,
           AdConstants.ATTR_INVOCATIONID,
           dsServiceName));
-    }
-  }
-
-  public void initialize() {
-    try {
-      connect();
     } catch (CommunicationException e) {
-      LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
-          + "query LDAP (Active Directory) due to a communication failure.",
-          e);
+      throw new RepositoryException(e);
     } catch (AuthenticationNotSupportedException e) {
-      LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
-          + "query LDAP (Active Directory) due to authentication not"
-          +  "supported exception.",
-          e);
+      throw new RepositoryException(e);
     } catch (AuthenticationException e) {
-      LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
-          + "query LDAP (Active Directory) due to authentication exception.",
-          e);
+      throw new RepositoryException(e);
     } catch (NamingException e) {
-      LOGGER.log(Level.WARNING, "Could not obtain an initial context to"
-          + "query LDAP (Active Directory) due to a naming exception.",
-          e);
-    }
-
-    if (ldapContext == null) {
-      return;
+      throw new RepositoryException(e);
     }
 
     LOGGER.info("Sucessfully created an Initial LDAP context");
@@ -264,5 +261,12 @@ public class AdServer {
    */
   public String getInvocationID() {
     return invocationID;
+  }
+
+  /**
+   * @return the nETBIOSName
+   */
+  public String getnETBIOSName() {
+    return nETBIOSName;
   }
 }
