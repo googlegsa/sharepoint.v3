@@ -377,8 +377,8 @@ public class ListsWS {
     }
     final String strMyString = "" + "<Query>" + "<Where>" + "<And>" + "<Gt>"
         + "<FieldRef Name=\"ID\"/>" + "<Value Type=\"Counter\">" + listItemID
-        + "</Value>" + "</Gt>" + "<Eq>" + "<FieldRef Name=\"ContentType\"/>"
-        + "<Value Type=\"Text\">Folder</Value>" + "</Eq>" + "</And>"
+        + "</Value>" + "</Gt>" + "<Eq>" + "<FieldRef Name=\"FSObjType\"/>"
+        + "<Value Type=\"Lookup\">1</Value>" + "</Eq>" + "</And>"
         + "</Where>"
         + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy>"
         + "</Query>";
@@ -406,8 +406,8 @@ public class ListsWS {
     }
     final String strMyString = "" + "<Query>" + "<Where>" + "<And>" + "<Gt>"
         + "<FieldRef Name=\"ID\"/>" + "<Value Type=\"Counter\">" + listItemID
-        + "</Value>" + "</Gt>" + "<Neq>" + "<FieldRef Name=\"ContentType\"/>"
-        + "<Value Type=\"Text\">Folder</Value>" + "</Neq>" + "</And>"
+        + "</Value>" + "</Gt>" + "<Neq>" + "<FieldRef Name=\"FSObjType\"/>"
+        + "<Value Type=\"Lookup\">1</Value>" + "</Neq>" + "</And>"
         + "</Where>"
         + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy>"
         + "</Query>";
@@ -435,8 +435,8 @@ public class ListsWS {
     }
     final String strMyString = "" + "<Query>" + "<Where>" + "<Or>" + "<Gt>"
         + "<FieldRef Name=\"ID\"/>" + "<Value Type=\"Counter\">" + listItemID
-        + "</Value>" + "</Gt>" + "<Eq>" + "<FieldRef Name=\"ContentType\"/>"
-        + "<Value Type=\"Text\">Folder</Value>" + "</Eq>" + "</Or>"
+        + "</Value>" + "</Gt>" + "<Eq>" + "<FieldRef Name=\"FSObjType\"/>"
+        + "<Value Type=\"Lookup\">1</Value>" + "</Eq>" + "</Or>"
         + "</Where>"
         + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy>"
         + "</Query>";
@@ -718,17 +718,17 @@ public class ListsWS {
             String lastItemID = null;
             for (final Iterator itrchild = child.getChildElements(); itrchild.hasNext();) {
               final MessageElement row = (MessageElement) itrchild.next();
-              final String contentType = row.getAttribute(SPConstants.CONTENTTYPE);
+              final String fsObjType =  row.getAttribute(SPConstants.OWS_FSOBJTYPE);
               String relativeURL = row.getAttribute(SPConstants.FILEREF);
               final String docId = row.getAttribute(SPConstants.ID);
-              if ((contentType == null) || (relativeURL == null)
+              if ((fsObjType == null) || (relativeURL == null)
                   || (docId == null)) {
                 continue;
               }
               lastItemID = docId;
               relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
               String folderPath = null;
-              if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+              if (fsObjType.equals("1")) {
                 if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                   if (!list.updateExtraIDs(relativeURL, docId, true)) {
                     LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
@@ -1341,20 +1341,21 @@ public class ListsWS {
           continue;
         }
         if (list.canContainFolders()) {
-          String contentType = row.getAttribute(SPConstants.CONTENTTYPE);
-          if (contentType == null) {
-            contentType = row.getAttribute(SPConstants.CONTENTTYPE_INMETA);
+         
+          String fsObjType =  row.getAttribute(SPConstants.OWS_FSOBJTYPE);
+          if (fsObjType == null) {
+            fsObjType = row.getAttribute(SPConstants.FSOBJTYPE_INMETA);
           }
           String relativeURL = row.getAttribute(SPConstants.FILEREF);
 
           LOGGER.log(Level.CONFIG, "docID [ " + docId + " ], relativeURL [ "
-              + relativeURL + " ], contentType [ " + contentType + " ]. ");
+              + relativeURL + " ], fsObjType [ " + fsObjType + " ]. ");
 
           if (null == relativeURL) {
             LOGGER.log(Level.WARNING, "No relativeURL (FILEREF) attribute found for the document, docID [ "
                 + docId + " ], listURL [ " + list.getListURL() + " ]. ");
-          } else if (null == contentType) {
-            LOGGER.log(Level.WARNING, "No content type found for the document, relativeURL [ "
+          } else if (null == fsObjType) {
+            LOGGER.log(Level.WARNING, "No fsObjType found for the document, relativeURL [ "
                 + relativeURL + " ], listURL [ " + list.getListURL() + " ]. ");
           } else {
             relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
@@ -1374,7 +1375,7 @@ public class ListsWS {
               deletedIDs.remove(docId);
               list.removeFromDeleteCache(docId);
 
-              if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+              if (fsObjType.equals("1")) {
                 if (!list.updateExtraIDs(relativeURL, docId, true)) {
                   // Try again after updating the folders
                   // info.
@@ -1393,7 +1394,7 @@ public class ListsWS {
               }
             }
 
-            if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+            if (fsObjType.equals("1")) {
               if (restoredIDs.contains(docId) || renamedIDs.contains(docId)) {
                 list.addToChangedFolders(new Folder(
                     Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
@@ -1564,6 +1565,7 @@ public class ListsWS {
 
     final String lastModified = listItem.getAttribute(SPConstants.MODIFIED);
     String strObjectType = listItem.getAttribute(SPConstants.CONTENTTYPE);
+    String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
     String fileSize = listItem.getAttribute(SPConstants.FILE_SIZE_DISPLAY);
 
     if (fileSize == null) {
@@ -1601,9 +1603,10 @@ public class ListsWS {
     }
 
     // STEP2: Create SPDocument for found entity.
-    if (SPConstants.CONTENT_TYPE_FOLDER.equalsIgnoreCase(strObjectType)) {
-      LOGGER.log(Level.WARNING, SPConstants.CONTENTTYPE
-          + " is folder. Returning as we do not send folders as documents. ");
+    if (fsObjType.equals("1")) {
+      LOGGER.log(Level.WARNING, SPConstants.OWS_FSOBJTYPE
+          + " is 1 which is equivalent to SP Folders." 
+          + "Returning as we do not send folders as documents.");
       return null;
     }
 
