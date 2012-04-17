@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
+import com.google.common.io.Files;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -26,9 +27,18 @@ import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
 
+import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -42,8 +52,18 @@ public class GlobalStateTest extends TestCase {
   SharepointClientContext sharepointClientContext;
   private SPClientFactory clientFactory = new SPClientFactory();
 
-  public void setUp() throws Exception {
+	public void setUp() throws Exception {
     sharepointClientContext = TestConfiguration.initContext();
+  }
+
+  /**
+   * Checks if the current platform is Windows.
+   *
+   * @return true if the current platform is Windows; false otherwise.
+   */
+  public static boolean isWindows() {
+    String os = System.getProperty("os.name").toLowerCase();
+    return (os.indexOf("win") >= 0);
   }
 
   /**
@@ -153,6 +173,17 @@ public class GlobalStateTest extends TestCase {
   public final void testStateReload() throws SharepointException {
     System.out.println("Testing the basic functionalities of an stateful object");
 
+    final GlobalState state1 = createGlobalState();
+    state1.saveState();
+
+    final GlobalState state2 = new GlobalState(clientFactory,
+        TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
+    state2.loadState();
+
+    verifyGlobalStatesAreEqual(state1, state2);
+  }
+  
+  private GlobalState createGlobalState() throws SharepointException {
     final GlobalState state1 = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
 
@@ -180,12 +211,11 @@ public class GlobalStateTest extends TestCase {
     state1.setCurrentWeb(ws);
     state1.setLastCrawledWeb(ws);
     state1.setLastCrawledList(list);
-    state1.saveState();
-
-    final GlobalState state2 = new GlobalState(clientFactory,
-        TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
-    state2.loadState();
-
+    return state1;
+  }
+  
+  private void verifyGlobalStatesAreEqual(final GlobalState state1,
+      final GlobalState state2) {
     assertEquals(state1.getFeedType(), state2.getFeedType());
     assertEquals(state1.getLastCrawledList(), state2.getLastCrawledList());
     assertEquals(state1.getLastCrawledWeb(), state2.getLastCrawledWeb());
@@ -290,5 +320,186 @@ public class GlobalStateTest extends TestCase {
 
     assertEquals(3, state.getAllWebStateSet().size());
     assertEquals(ws2, state.dateMap.first());
+  }
+
+  private List<String> getFileListForFolder(String path) {
+    FilenameFilter fileFilter = new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return new File(dir, name).isFile();
+      }
+    };
+    
+    List<String> files = new ArrayList<String>();
+    Collections.addAll(files, new File(path).list(fileFilter));
+    Collections.sort(files);
+    return files;
+  }
+  
+  private void writeStringToFile(String folderPath, String fileName,
+      String fileContents) throws IOException {
+    Files.write(fileContents.getBytes(), new File(folderPath, fileName));
+  }
+  
+  /**
+   * Tests that creating a new statefile works when no existing statefile
+   * is present. It verifies that no additional files are left over and
+   * that the state file can be loaded and matches the statefile that was
+   * saved.
+   *
+   * @throws SharepointException
+   */
+  public void testCreateNewStatefile() throws SharepointException {
+    GlobalState.forgetState(TestConfiguration.googleWorkDir);
+    List<String> beforeFiles = getFileListForFolder(
+        TestConfiguration.googleWorkDir);
+    assertNotNull(beforeFiles);
+    assertFalse(new File(TestConfiguration.googleWorkDir,
+        SPConstants.CONNECTOR_STATEFILE_NAME).exists());
+    
+    final GlobalState state1 = createGlobalState();
+    state1.saveState();
+    assertTrue(new File(TestConfiguration.googleWorkDir,
+        SPConstants.CONNECTOR_STATEFILE_NAME).exists());
+
+    List<String> afterFiles = getFileListForFolder(
+        TestConfiguration.googleWorkDir);
+    afterFiles.remove(SPConstants.CONNECTOR_STATEFILE_NAME);
+    assertEquals(beforeFiles, afterFiles);
+
+    final GlobalState state2 = new GlobalState(clientFactory,
+        TestConfiguration.googleWorkDir, FeedType.CONTENT_FEED);
+    state2.loadState();
+    verifyGlobalStatesAreEqual(state1, state2);
+  }
+
+  /**
+   * Tests that creating a new statefile works when an existing statefile
+   * is already present. It verifies that no additional files are left over
+   * and that the state file can be loaded and matches the statefile that
+   * was saved.
+   *
+   * @throws SharepointException
+   */
+  public void testOverwriteStatefile() throws Exception {
+    GlobalState.forgetState(TestConfiguration.googleWorkDir);
+    List<String> beforeFiles = getFileListForFolder(
+        TestConfiguration.googleWorkDir);
+    assertNotNull(beforeFiles);
+    writeStringToFile(TestConfiguration.googleWorkDir,
+        SPConstants.CONNECTOR_STATEFILE_NAME,
+        "<?xml version='1.0' encoding='UTF-8'?><State></State>");
+    assertTrue(new File(TestConfiguration.googleWorkDir,
+        SPConstants.CONNECTOR_STATEFILE_NAME).exists());
+
+    // Verify that the current statefile is empty.
+    final GlobalState state0 = new GlobalState(clientFactory,
+        TestConfiguration.googleWorkDir, FeedType.CONTENT_FEED);
+    state0.loadState();
+    verifyGlobalStateIsEmptyContentFeed(state0);
+
+    final GlobalState state1 = createGlobalState();
+    verifyGlobalStateIsNotEmpty(state1);
+    state1.saveState();
+    assertTrue(new File(TestConfiguration.googleWorkDir,
+        SPConstants.CONNECTOR_STATEFILE_NAME).exists());
+
+    List<String> afterFiles = getFileListForFolder(
+        TestConfiguration.googleWorkDir);
+    afterFiles.remove(SPConstants.CONNECTOR_STATEFILE_NAME);
+    assertEquals(beforeFiles, afterFiles);
+
+    final GlobalState state2 = new GlobalState(clientFactory,
+        TestConfiguration.googleWorkDir, FeedType.CONTENT_FEED);
+    state2.loadState();
+    verifyGlobalStatesAreEqual(state1, state2);
+  }
+
+  /**
+   * Verifies that a {@link GlobalState} is empy and that it's
+   * using a content feed type.
+   */
+  private void verifyGlobalStateIsEmptyContentFeed(final GlobalState state) {
+    assertEquals(FeedType.CONTENT_FEED, state.getFeedType());
+    assertNull(state.getLastCrawledList());
+    assertNull(state.getLastCrawledWeb());
+    assertEquals(0, state.getAllWebStateSet().size());
+  }
+
+  /**
+   * Verifies that a {@link GlobalState} is not empy.
+   */
+  private void verifyGlobalStateIsNotEmpty(final GlobalState state) {
+    assertNotNull(state.getLastCrawledList());
+    assertNotNull(state.getLastCrawledWeb());
+    assertTrue(0 < state.getAllWebStateSet().size());
+  }
+  
+  /**
+   * Tests that creating a new statefile works when an existing statefile 
+   * is locked so that it cannot be updated.
+   * Note: This test has some specific checks for Windows since it handles 
+   * files a little different than Unix.
+   */
+  public void testOverwriteStatefileWithPrevLocked() throws Exception {
+    GlobalState.forgetState(TestConfiguration.googleWorkDir);
+    List<String> beforeFiles =
+        getFileListForFolder(TestConfiguration.googleWorkDir);
+    assertNotNull(beforeFiles);
+    writeStringToFile(TestConfiguration.googleWorkDir, 
+        SPConstants.CONNECTOR_STATEFILE_NAME,
+        "<?xml version='1.0' encoding='UTF-8'?><State></State>");
+    assertTrue(new File(TestConfiguration.googleWorkDir,
+        SPConstants.CONNECTOR_STATEFILE_NAME).exists());
+
+    // Lock the statefile so that it cannot be updated.
+    FileInputStream in = new FileInputStream(new File(
+        TestConfiguration.googleWorkDir,
+        SPConstants.CONNECTOR_STATEFILE_NAME));
+    assertNotNull(in);
+    
+    // Update the statefile.
+    final GlobalState state1 = createGlobalState();
+    try {
+      state1.saveState();
+      assertFalse("GlobalState.saveState should have failed.", isWindows());
+    } catch (SharepointException e) {
+      assertTrue("Expect GlobalState.saveState to failure in Windows",
+          e.getMessage().startsWith("Save state failed"));
+      assertTrue(isWindows());
+    }
+
+    // Release the lock on the statefile.
+    in.close();
+
+    assertTrue(new File(TestConfiguration.googleWorkDir,
+        SPConstants.CONNECTOR_STATEFILE_NAME).exists());
+    List<String> afterFiles =
+        getFileListForFolder(TestConfiguration.googleWorkDir);
+    afterFiles.remove(SPConstants.CONNECTOR_STATEFILE_NAME);
+
+    final GlobalState tempState = createGlobalState();
+    if (isWindows()) {
+      // Since the state was not updated, we have left a dangling temp
+      // state file.
+      assertTrue(afterFiles.contains(SPConstants.CONNECTOR_TEMPFILE_NAME));
+      afterFiles.remove(SPConstants.CONNECTOR_TEMPFILE_NAME);
+
+      // Load the temp state file here before calling loadState() below 
+      // because loadState will delete the temp file if it exists.
+      tempState.loadState(tempState.getStateFileLocation(
+          SPConstants.CONNECTOR_TEMP_EXT));
+    }
+  
+    assertEquals(beforeFiles, afterFiles);
+  
+    final GlobalState state2 = new GlobalState(clientFactory,
+        TestConfiguration.googleWorkDir, FeedType.CONTENT_FEED);
+    state2.loadState();
+    if (isWindows()) {
+      verifyGlobalStateIsEmptyContentFeed(state2);
+      verifyGlobalStatesAreEqual(state1, tempState);
+    } else {
+      verifyGlobalStatesAreEqual(state1, state2);
+    }
   }
 }
