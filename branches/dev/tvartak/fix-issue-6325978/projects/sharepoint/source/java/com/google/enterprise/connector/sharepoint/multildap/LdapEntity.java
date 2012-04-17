@@ -26,8 +26,10 @@ public class LdapEntity {
 	
 	public void getAllGroups(Set<LdapEntity> groups) {
 		for (LdapEntity e : memberOf) {
-			groups.add(e);
-			e.getAllGroups(groups);
+			if (!groups.contains(e)) {
+				groups.add(e);
+				e.getAllGroups(groups);
+			}
 		}
 	}
 	
