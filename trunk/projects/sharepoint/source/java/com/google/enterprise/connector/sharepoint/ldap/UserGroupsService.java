@@ -30,6 +30,8 @@ import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapCon
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointAuthenticationManager;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.Principal;
+import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -69,7 +71,8 @@ public class UserGroupsService implements LdapService {
 
   private LdapConnectionSettings ldapConnectionSettings;
   private LdapContext context;
-  private final UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> lugCacheStore;
+  private final UserGroupsCache<Object,
+      ConcurrentHashMap<String, Set<Principal>>> lugCacheStore;
   private LdapConnection ldapConnection;
   private final SharepointClientContext sharepointClientContext;
 
@@ -88,8 +91,9 @@ public class UserGroupsService implements LdapService {
     context = getLdapContext();
     this.sharepointClientContext = null;
     if (enableLUGCache) {
-      this.lugCacheStore = new UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>>(
-          refreshInterval, cacheSize);
+      this.lugCacheStore = new UserGroupsCache<Object,
+          ConcurrentHashMap<String, Set<Principal>>>(
+              refreshInterval, cacheSize);
       LOGGER.log(Level.CONFIG, "Configured user groups cache store with refresh interval [ "
           + refreshInterval + " ] and with capacity [ " + cacheSize + " ]");
     } else {
@@ -111,9 +115,10 @@ public class UserGroupsService implements LdapService {
 
     this.sharepointClientContext = inSharepointClientContext;
     if (sharepointClientContext.isUseCacheToStoreLdapUserGroupsMembership()) {
-      this.lugCacheStore = new UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>>(
-          sharepointClientContext.getCacheRefreshInterval(),
-          sharepointClientContext.getInitialCacheSize());
+      this.lugCacheStore = new UserGroupsCache<Object,
+          ConcurrentHashMap<String, Set<Principal>>>(
+              sharepointClientContext.getCacheRefreshInterval(),
+              sharepointClientContext.getInitialCacheSize());
     } else {
       this.lugCacheStore = null;
       LOGGER.log(Level.INFO, "No cache has been configured to keep user groups memberships.");
@@ -138,7 +143,7 @@ public class UserGroupsService implements LdapService {
     ldapConnection = new LdapConnection(ldapConnectionSettings);
   }
 
-  public UserGroupsCache<Object, ConcurrentHashMap<String, Set<String>>> getLugCacheStore() {
+  public UserGroupsCache<Object, ConcurrentHashMap<String, Set<Principal>>> getLugCacheStore() {
     return lugCacheStore;
   }
 
@@ -642,14 +647,13 @@ public class UserGroupsService implements LdapService {
       return null;
     }
     Set<String> ldapGroups = new HashSet<String>();
-    Set<String> directGroups = new HashSet<String>();
     LOGGER.info("Quering LDAP directory server to fetch all direct groups for the search user: "
         + userName);
     // fix me by creating a LDAP connection poll instead of creating context
     // object on demand.
     this.context = new LdapConnection(
         sharepointClientContext.getLdapConnectionSettings()).createContext();
-    directGroups = getDirectGroupsForTheSearchUser(userName);
+    Set<String> directGroups = getDirectGroupsForTheSearchUser(userName);
     for (String groupName : directGroups) {
       getAllParentGroups(groupName, ldapGroups);
     }
@@ -713,22 +717,17 @@ public class UserGroupsService implements LdapService {
    * @param adGroups a set of AD groups to which search user is a direct of
    *          indirect member of.
    */
-  private Set<String> getAllSPGroupsForSearchUserAndLdapGroups(
-      String searchUser, Set<String> adGroups) {
+  private Set<Principal> getAllSPGroupsForSearchUserAndLdapGroups(
+      String searchUser, Set<Principal> adGroups) {
+    String localNamespace = sharepointClientContext.getGoogleLocalNamespace();
+
     // Search user and SP groups memberships found in user data store.
-    Set<String> spGroups = new HashSet<String>();
+    Set<Principal> spGroups = new HashSet<Principal>();
     try {
       if (null != this.sharepointClientContext.getUserDataStoreDAO()) {
-        List<UserGroupMembership> groupMembershipList =
-            sharepointClientContext.getUserDataStoreDAO()
-            .getAllMembershipsForSearchUserAndLdapGroups(adGroups, searchUser);
-        for (UserGroupMembership userGroupMembership : groupMembershipList) {
-          // append name space to SP groups.
-          spGroups.add(SPConstants.LEFT_SQUARE_BRACKET
-              + userGroupMembership.getNamespace()
-              + SPConstants.RIGHT_SQUARE_BRACKET
-              + userGroupMembership.getGroupName());
-        }
+        spGroups = sharepointClientContext.getUserDataStoreDAO()
+            .getSharePointGroupsForSearchUserAndLdapGroups(
+                localNamespace, adGroups, searchUser);
       }
     } catch (SharepointException se) {
       LOGGER.warning("Exception occured while fetching user groups memberships for the search user ["
@@ -738,12 +737,11 @@ public class UserGroupsService implements LdapService {
   }
 
   @Override
-  public Set<String> getAllGroupsForSearchUser(
+  public Set<Principal> getAllGroupsForSearchUser(
       SharepointClientContext sharepointClientContext, String searchUser)
       throws SharepointException {
-    ConcurrentHashMap<String, Set<String>> userGroupsMap = new ConcurrentHashMap<String, Set<String>>(
-        20);
-    Set<String> allUserGroups = new HashSet<String>();
+    ConcurrentHashMap<String, Set<Principal>> userGroupsMap;
+    Set<Principal> allUserGroups = new HashSet<Principal>();
     if (null != searchUser && null != lugCacheStore) {
       if (lugCacheStore.getSize() > 0
           && lugCacheStore.contains(searchUser.toLowerCase())) {
@@ -778,9 +776,6 @@ public class UserGroupsService implements LdapService {
       userGroupsMap = getAllADGroupsAndSPGroupsForSearchUser(searchUser);
       allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
       allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));
-    }
-    if (null != userGroupsMap) {
-      userGroupsMap = null;
     }
     return allUserGroups;
   }
@@ -846,28 +841,27 @@ public class UserGroupsService implements LdapService {
    * @param searchUser the searchUser
    * @throws SharepointException
    */
-  private ConcurrentHashMap<String, Set<String>> getAllADGroupsAndSPGroupsForSearchUser(
-      String searchUser) {
-    ConcurrentHashMap<String, Set<String>> userGroupsMap = new ConcurrentHashMap<String, Set<String>>(
-        2);
-    Set<String> adGroups = null, spGroups = null;
-    Set<String> finalADGroups = new HashSet<String>();
-    try {
-      adGroups = getAllLdapGroups(searchUser);
-      if (null != adGroups && adGroups.size() > 0) {
-        finalADGroups = addGroupNameFormatForTheGroups(adGroups);
-      }
-      String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
-      LOGGER.info("Quering User data store with the AD groups :"
-          + finalADGroups + " and search user [" + finalSearchUserName + "]");
-      spGroups = getAllSPGroupsForSearchUserAndLdapGroups(finalSearchUserName, finalADGroups);
-      userGroupsMap.put(SPConstants.ADGROUPS, finalADGroups);
-      userGroupsMap.put(SPConstants.SPGROUPS, spGroups);
-    } finally {
-      if (null != adGroups) {
-        adGroups = finalADGroups = spGroups = null;
+  private ConcurrentHashMap<String, Set<Principal>>
+      getAllADGroupsAndSPGroupsForSearchUser(String searchUser) {
+    Set<String> adGroups = getAllLdapGroups(searchUser);
+    Set<Principal> finalADGroups = new HashSet<Principal>();
+    if (null != adGroups && adGroups.size() > 0) {
+      String globalNamespace =
+          sharepointClientContext.getGoogleGlobalNamespace();
+      for (String adGroup : addGroupNameFormatForTheGroups(adGroups)) {
+        finalADGroups.add(new Principal(null, globalNamespace, adGroup));
       }
     }
+    String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
+    LOGGER.info("Quering User data store with the AD groups :"
+        + finalADGroups + " and search user [" + finalSearchUserName + "]");
+    Set<Principal> spGroups = getAllSPGroupsForSearchUserAndLdapGroups(
+        finalSearchUserName, finalADGroups);
+
+    ConcurrentHashMap<String, Set<Principal>> userGroupsMap =
+        new ConcurrentHashMap<String, Set<Principal>>(2);
+    userGroupsMap.put(SPConstants.ADGROUPS, finalADGroups);
+    userGroupsMap.put(SPConstants.SPGROUPS, spGroups);
     return userGroupsMap;
   }
 }

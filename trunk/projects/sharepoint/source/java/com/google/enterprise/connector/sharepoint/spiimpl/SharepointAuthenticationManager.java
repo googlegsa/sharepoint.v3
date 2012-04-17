@@ -36,6 +36,7 @@ import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -110,17 +111,20 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     if (!adAuthResult.isValid()) {
       return adAuthResult;
     }
-    @SuppressWarnings("unchecked")
-    Collection<Principal> groups = (Collection<Principal>) adAuthResult.getGroups();
-    List<UserGroupMembership> allGroups = sharepointClientContext
-        .getUserDataStoreDAO().getAllMembershipsForSearchUserAndLdapGroups(
-            groups, new Principal(identity.getDomain()
-                + SPConstants.DOUBLEBACKSLASH + identity.getUsername()));
 
-    for (UserGroupMembership ugm : allGroups) {
-      groups.add(new Principal(
-          PrincipalType.NETBIOS, ugm.getNamespace(), ugm.getGroupName()));
-    }
+    @SuppressWarnings("unchecked")
+    Collection<Principal> adGroups =
+        (Collection<Principal>) adAuthResult.getGroups();
+    Set<Principal> spGroups = sharepointClientContext
+        .getUserDataStoreDAO().getSharePointGroupsForSearchUserAndLdapGroups(
+            sharepointClientContext.getGoogleLocalNamespace(), adGroups,
+            identity.getDomain() + SPConstants.DOUBLEBACKSLASH
+            + identity.getUsername());
+
+    Collection<Principal> groups = new ArrayList<Principal>();
+    groups.addAll(adGroups);
+    groups.addAll(spGroups);
+
     return new AuthenticationResponse(
         adAuthResult.isValid(), adAuthResult.getData(), groups);
   }
@@ -217,10 +221,10 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
   AuthenticationResponse getAllGroupsForTheUser(String searchUser)
       throws SharepointException {
     LOGGER.info("Attempting group resolution for user : " + searchUser);
-    Set<String> allSearchUserGroups = ldapService.getAllGroupsForSearchUser(
+    Set<Principal> allSearchUserGroups = ldapService.getAllGroupsForSearchUser(
         sharepointClientContext, searchUser);
     if (null != allSearchUserGroups && allSearchUserGroups.size() > 0) {
-      // Should return true is there is at least one group returned by
+      // Should return true if there is at least one group returned by
       // LDAP service.
       LOGGER.log(Level.INFO, "Group resolution returned following groups "
           + "for the search user: {0}\n{1}",
