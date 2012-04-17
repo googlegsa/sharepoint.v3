@@ -143,8 +143,10 @@ public class SPConstants {
   public static final String DISPLAYNAME = "DisplayName";
   public static final String MODIFIED = "ows_Modified";
   public static final String FILEREF = "ows_FileRef";
-  public static final String CONTENTTYPE = "ows_ContentType";
+  public static final String CONTENTTYPE = "ows_ContentType";  
   public static final String CONTENTTYPE_INMETA = "ows_MetaInfo_ContentType";
+  public static final String FSOBJTYPE_INMETA = "ows_MetaInfo_FSObjType";
+  public static final String OWS_FSOBJTYPE = "ows_FSObjType";
   public static final String EDITOR = "ows_Editor";
   public static final String AUTHOR = "ows_Author";
   public static final String FILE_SIZE_DISPLAY = "ows_FileSizeDisplay";
