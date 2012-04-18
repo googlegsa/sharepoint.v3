@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 public class SharepointConnector implements Connector,
     ConnectorPersistentStoreAware, ConnectorShutdownAware {
   private static final Logger LOGGER = Logger.getLogger(SharepointConnector.class.getName());
+
   private SharepointClientContext sharepointClientContext = null;
 
   private ClientFactory clientFactory;
@@ -131,9 +132,6 @@ public class SharepointConnector implements Connector,
 
   public SharepointConnector() {
     socialConnector = new SharepointSocialConnector(this.sharepointClientContext);
-    if (!oldLdapBehavior) {
-      adGroupsConnector = new AdGroupsConnector();
-    }
   }
 
   /**
@@ -287,10 +285,6 @@ public class SharepointConnector implements Connector,
   public void setDomain(final String domain) {
     this.domain = domain;
     socialConnector.setDomain(domain);
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setPrincipal(
-          this.domain + SPConstants.DOUBLEBACKSLASH + this.username);
-    }
   }
 
   /**
@@ -306,10 +300,6 @@ public class SharepointConnector implements Connector,
   public void setUsername(final String username) {
     this.username = username;
     socialConnector.setUserName(username);
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setPrincipal(
-          this.domain + SPConstants.DOUBLEBACKSLASH + this.username);
-    }
   }
 
   /**
@@ -325,9 +315,6 @@ public class SharepointConnector implements Connector,
   public void setPassword(final String password) {
     this.password = password;
     socialConnector.setPassword(password);
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setPassword(password);
-    }
   }
 
   /**
@@ -355,9 +342,6 @@ public class SharepointConnector implements Connector,
    */
   public void setGoogleGlobalNamespace(String googleGlobalNamespace) {
     this.googleGlobalNamespace = googleGlobalNamespace;
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
-    }
   }
 
   /** Gets the local namespace. */
@@ -493,7 +477,8 @@ public class SharepointConnector implements Connector,
         + "], authenticationType = [" + authenticationType
         + "], connectMethod = [" + connectMethod + "], searchBase = ["
         + searchBase + " ]" + "], feedUnPublishedDocuments = ["
-        + feedUnPublishedDocuments + "]");
+        + feedUnPublishedDocuments + "], oldLdapBehavior = ["
+        + oldLdapBehavior + "]");
 
     sharepointClientContext = new SharepointClientContext(clientFactory,
         sharepointUrl, domain, kdcserver, username, password, 
@@ -530,7 +515,16 @@ public class SharepointConnector implements Connector,
     sharepointClientContext
         .setUserProfileServiceFactory(this.userProfileServiceFactory);
     socialConnector.init(sharepointClientContext);
+
     if (!oldLdapBehavior) {
+      adGroupsConnector = new AdGroupsConnector();
+      adGroupsConnector.setHostname(ldapServerHostAddress);
+      adGroupsConnector.setPort(portNumber);
+      adGroupsConnector.setMethod(connectMethod);
+      adGroupsConnector.setPrincipal(
+          domain + SPConstants.DOUBLEBACKSLASH + username);
+      adGroupsConnector.setPassword(password);
+      adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
       adGroupsConnector.init();
     }
   }
@@ -629,6 +623,9 @@ public class SharepointConnector implements Connector,
     if (sharepointClientContext.isPushAcls()) {
       performUserDataStoreInitialization();
     }
+
+    // This method is called after Spring calls init, so
+    // oldLdapBehavior is guaranteed to be set here.
     if (!oldLdapBehavior) {
       adGroupsConnector.setDatabaseAccess(databaseAccess);
     }
@@ -738,9 +735,6 @@ public class SharepointConnector implements Connector,
    */
   public void setLdapServerHostAddress(String ldapServerHostAddress) {
     this.ldapServerHostAddress = ldapServerHostAddress;
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setHostname(ldapServerHostAddress);
-    }
   }
 
   /**
@@ -758,9 +752,6 @@ public class SharepointConnector implements Connector,
       this.portNumber = SPConstants.LDAP_DEFAULT_PORT_NUMBER;
     } else {
       this.portNumber = portNumber;
-    }
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setPort(this.portNumber);
     }
   }
 
@@ -803,9 +794,6 @@ public class SharepointConnector implements Connector,
    */
   public void setConnectMethod(String connectMethod) {
     this.connectMethod = connectMethod;
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setMethod(connectMethod);
-    }
   }
 
   /**
