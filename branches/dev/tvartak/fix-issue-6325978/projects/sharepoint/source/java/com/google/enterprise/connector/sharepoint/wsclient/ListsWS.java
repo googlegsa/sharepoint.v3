@@ -718,7 +718,7 @@ public class ListsWS {
             String lastItemID = null;
             for (final Iterator itrchild = child.getChildElements(); itrchild.hasNext();) {
               final MessageElement row = (MessageElement) itrchild.next();
-              final String fsObjType =  row.getAttribute(SPConstants.OWS_FSOBJTYPE);
+              final String fsObjType =  Util.normalizeMetadataValue(row.getAttribute(SPConstants.OWS_FSOBJTYPE));
               String relativeURL = row.getAttribute(SPConstants.FILEREF);
               final String docId = row.getAttribute(SPConstants.ID);
               if ((fsObjType == null) || (relativeURL == null)
@@ -1342,9 +1342,9 @@ public class ListsWS {
         }
         if (list.canContainFolders()) {
          
-          String fsObjType =  row.getAttribute(SPConstants.OWS_FSOBJTYPE);
+          String fsObjType =  Util.normalizeMetadataValue(row.getAttribute(SPConstants.OWS_FSOBJTYPE));
           if (fsObjType == null) {
-            fsObjType = row.getAttribute(SPConstants.FSOBJTYPE_INMETA);
+            fsObjType = Util.normalizeMetadataValue(row.getAttribute(SPConstants.OWS_FSOBJTYPE));
           }
           String relativeURL = row.getAttribute(SPConstants.FILEREF);
 
@@ -1565,7 +1565,8 @@ public class ListsWS {
 
     final String lastModified = listItem.getAttribute(SPConstants.MODIFIED);
     String strObjectType = listItem.getAttribute(SPConstants.CONTENTTYPE);
-    String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
+    String fsObjType = 
+        Util.normalizeMetadataValue(listItem.getAttribute(SPConstants.OWS_FSOBJTYPE));
     String fileSize = listItem.getAttribute(SPConstants.FILE_SIZE_DISPLAY);
 
     if (fileSize == null) {
