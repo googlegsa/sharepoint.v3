@@ -379,7 +379,9 @@ public class SPListsWS implements ListsWS {
             String lastItemID = null;
             for (final Iterator itrchild = child.getChildElements(); itrchild.hasNext();) {
               final MessageElement row = (MessageElement) itrchild.next();            
-              final String fsObjType = row.getAttribute(SPConstants.OWS_FSOBJTYPE);
+              final String fsObjType =
+                  Util.normalizeMetadataValue(
+                      row.getAttribute(SPConstants.OWS_FSOBJTYPE));
               String relativeURL = row.getAttribute(SPConstants.FILEREF);
               final String docId = row.getAttribute(SPConstants.ID);
               if ((fsObjType == null) || (relativeURL == null)
@@ -603,9 +605,13 @@ public class SPListsWS implements ListsWS {
           continue;
         }
         if (list.canContainFolders()) {
-          String fsObjType = row.getAttribute(SPConstants.OWS_FSOBJTYPE);
+          String fsObjType =
+              Util.normalizeMetadataValue(
+                  row.getAttribute(SPConstants.OWS_FSOBJTYPE));
           if (fsObjType == null) {
-            fsObjType = row.getAttribute(SPConstants.OWS_FSOBJTYPE_INMETA);
+            fsObjType =
+                Util.normalizeMetadataValue(
+                    row.getAttribute(SPConstants.OWS_FSOBJTYPE_INMETA));
           }
           String relativeURL = row.getAttribute(SPConstants.FILEREF);
 
