@@ -94,6 +94,7 @@
     </property>
     <property name="reWriteDisplayUrlUsingAliasMappingRules"><value>true</value></property>
     <property name="reWriteRecordUrlUsingAliasMappingRules"><value>false</value></property>
+    <property name="oldLdapBehavior"><value>false</value></property>
     <property name="clientFactory" ref="clientFactory" />
   </bean>
 
