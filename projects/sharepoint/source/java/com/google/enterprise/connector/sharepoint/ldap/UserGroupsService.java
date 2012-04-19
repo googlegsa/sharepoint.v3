@@ -151,13 +151,7 @@ public class UserGroupsService implements LdapService {
     return ldapConnection;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * com.google.enterprise.connector.sharepoint.ldap.LdapService#getLdapContext
-   * ()
-   */
+  @Override
   public LdapContext getLdapContext() {
     return ldapConnection.getLdapContext();
   }
@@ -258,7 +252,7 @@ public class UserGroupsService implements LdapService {
       return url;
     }
 
-    /*
+    /**
      * Initialize the {@link java.util.HashSet} used to create an initial LDAP Context.
      * Note that we specifically require a {@link java.util.HashSet} rather than a
      * HashMap as the parameter type in the InitialLDAPContext constructor
@@ -538,12 +532,7 @@ public class UserGroupsService implements LdapService {
     return filter.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see com.google.enterprise.connector.sharepoint.ldap.LdapService#
-   * getAllUsersInGroup(java.lang.String, java.util.Set)
-   */
+  @Override
   public void getAllParentGroups(String groupName,
       final Set<String> parentGroupsInfo) {
     if (!Strings.isNullOrEmpty(groupName)) {
@@ -635,20 +624,14 @@ public class UserGroupsService implements LdapService {
     return filter.toString();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * com.google.enterprise.connector.sharepoint.ldap.LdapService#getAllLdapGroups
-   * (java.lang.String)
-   */
+  @Override
   public Set<String> getAllLdapGroups(String userName) {
     if (Strings.isNullOrEmpty(userName)) {
       return null;
     }
     Set<String> ldapGroups = new HashSet<String>();
-    LOGGER.info("Quering LDAP directory server to fetch all direct groups for the search user: "
-        + userName);
+    LOGGER.info("Querying LDAP directory server to fetch all direct groups "
+        + "for the search user: " + userName);
     // fix me by creating a LDAP connection poll instead of creating context
     // object on demand.
     this.context = new LdapConnection(
@@ -686,7 +669,7 @@ public class UserGroupsService implements LdapService {
     return tmpGroupName;
   }
 
-  /*
+  /**
    * Retrieves SAM account name for the search user for all the possible primary
    * verification identities sent by GSA and is require to query Directory
    * service to fetch all direct groups he belongs to. This implementation is
@@ -694,6 +677,7 @@ public class UserGroupsService implements LdapService {
    *
    * @param searchUserName search user name.
    */
+  @Override
   public String getSamAccountNameForSearchUser(final String searchUserName) {
     String tmpUserName = null;
     if (null == searchUserName) {
@@ -849,11 +833,12 @@ public class UserGroupsService implements LdapService {
       String globalNamespace =
           sharepointClientContext.getGoogleGlobalNamespace();
       for (String adGroup : addGroupNameFormatForTheGroups(adGroups)) {
-        finalADGroups.add(new Principal(null, globalNamespace, adGroup));
+        finalADGroups.add(
+            new Principal(PrincipalType.UNKNOWN, globalNamespace, adGroup));
       }
     }
     String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
-    LOGGER.info("Quering User data store with the AD groups :"
+    LOGGER.info("Querying user data store with the AD groups: "
         + finalADGroups + " and search user [" + finalSearchUserName + "]");
     Set<Principal> spGroups = getAllSPGroupsForSearchUserAndLdapGroups(
         finalSearchUserName, finalADGroups);
