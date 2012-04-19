@@ -1436,11 +1436,12 @@ public final class Util {
   }
 
   /**
-   * Finds the connector name from googleconnectorURL by tokenizing the URL and
-   * getting the leaf directory name.
+   * Finds the connector name from the provided connector instance
+   * directory path by tokenizing the path and getting the leaf
+   * directory name.
    *
-   * @param googleConnectorWorkDir.
-   * @return connector name.
+   * @param googleConnectorWorkDir the connector instance directory
+   * @return the connector instance name
    */
   public static String getConnectorNameFromDirectoryUrl(
       String googleConnectorWorkDir) {
@@ -1452,7 +1453,7 @@ public final class Util {
     }
     return directory;
   }
-  
+
   /**
    * An interferace used for making SOAP requests.
    */

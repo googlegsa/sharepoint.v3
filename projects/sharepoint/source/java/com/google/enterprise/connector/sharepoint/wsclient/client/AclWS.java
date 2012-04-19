@@ -40,10 +40,9 @@ public interface AclWS {
   public void fetchAclChangesSinceTokenAndUpdateState(WebState webState);
 
   /**
-   * Works similar to
-   * {@link ListsWS#getListItems(ListState, java.util.Calendar, String, Set)}
-   * but is designed to be used only to get those list items whose ACLs have
-   * changed because of any security change at parent level.
+   * Works similar to {@link ListsWS#getListItems} but is designed to
+   * be used only to get those list items whose ACLs have changed
+   * because of any security change at parent level.
    *
    * @param listState The list from which the items are to be retrieved
    * @param listsHelper The lists helper for parsing the web service response

@@ -19,7 +19,6 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 
-import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
 

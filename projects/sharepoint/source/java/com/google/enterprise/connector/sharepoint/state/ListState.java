@@ -540,7 +540,7 @@ public class ListState implements StatefulObject {
   }
 
   /**
-   * @param doc : to be removed from the crawl queue
+   * @param doc to be removed from the crawl queue
    */
   public void removeDocFromCrawlQueue(final SPDocument doc) {
     if (null == doc) {

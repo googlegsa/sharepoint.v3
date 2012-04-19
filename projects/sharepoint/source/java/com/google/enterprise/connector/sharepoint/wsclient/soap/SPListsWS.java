@@ -54,7 +54,6 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -86,7 +85,7 @@ public class SPListsWS implements ListsWS {
   private final String rowLimit;
 
   /**
-   * @param inSharepointClientContext The Context is passed so that necessary
+   * @param sharepointClientContext The Context is passed so that necessary
    *          information can be used to create the instance of current class
    *          Web Service endpoint is set to the default SharePoint URL stored
    *          in SharePointClientContext.
@@ -235,10 +234,8 @@ public class SPListsWS implements ListsWS {
    * @param list the list whose items are to be retrieved
    * @param listName the list name used with the SOAP request getListItems
    * @param viewName the view name used with the SOAP request getListItems
-   * @param query the query used with the SOAP request getListItems
-   * @param viewFields the view fields used with the SOAP request getListItems
-   * @param queryOptions the query options used with the SOAP request
-   *          getListItems
+   * @param queryInfo the query, fields, and options used with the
+   *        SOAP request getListItems
    * @param webID
    * @param allWebs a collection to store any webs discovered as part of
    *          discovering list items. For example, link sites are stored as
@@ -444,13 +441,9 @@ public class SPListsWS implements ListsWS {
    *          getListItemChangesSinceToken
    * @param viewName the view name used with the SOAP request
    *          getListItemChangesSinceToken
-   * @param query the query used with the SOAP request
-   *          getListItemChangesSinceToken
-   * @param viewFields the view fields used with the SOAP request
-   *          getListItemChangesSinceToken
+   * @param queryInfo the query and fields used with the
+   *        SOAP request getListItemChangesSinceToken
    * @param token the token used with the SOAP request
-   *          getListItemChangesSinceToken
-   * @param contains the contains information used with the SOAP request
    *          getListItemChangesSinceToken
    * @param allWebs a collection to store any webs discovered as part of
    *          discovering list items. For example, link sites are stored as

@@ -299,9 +299,9 @@ public class ListsHelper {
    * the ExtraIDs of the list. This operation is independent of the batch hint
    * because the discovered folders are not sent as docs.
    *
-   * @param list : Specify the base list
-   * @param folder : From where to discover the folder hierarchy
-   * @param lastID ; If we have already identified some folders at this
+   * @param list Specify the base list
+   * @param folder From where to discover the folder hierarchy
+   * @param lastID If we have already identified some folders at this
    *          folderLevel, specify the lastItemID to get the next set of
    *          folders.
    * @return the list of folders in this list
@@ -315,10 +315,10 @@ public class ListsHelper {
    * Retrieves the list items only the specified level. This required when a
    * folder is restored and we need to discover items level by level.
    *
-   * @param list : Base List
-   * @param lastItemIDAtFolderLevel : Last Item ID that we have already
+   * @param list Base List
+   * @param lastItemIdAtFolderLevel Last Item ID that we have already
    *          identified at this level.
-   * @param folder : The folder from where to discover the items.
+   * @param currentFolder The folder from where to discover the items
    * @return list of documents as {@link SPDocument}
    */
   public List<SPDocument> getListItemsAtFolderLevel(final ListState list,
@@ -327,14 +327,14 @@ public class ListsHelper {
     if (null == currentFolder) {
       return Collections.emptyList();
     }
-    
+
     LOGGER.fine("DocId for WS call : " + lastItemIdAtFolderLevel
         + " folder path : " + currentFolder + " for renamed folder "
         + renamedFolder);
     final String listName = list.getPrimaryKey();
     final String viewName = "";
     final String webID = "";
-    
+
     final ListsUtil.SPQueryInfo queryInfo = new ListsUtil.SPQueryInfo() {
       public MessageElement[] getQuery() throws Exception {
         return ListsUtil.createQuery2(lastItemIdAtFolderLevel);
@@ -393,16 +393,10 @@ public class ListsHelper {
    * token to get the changes and the CAML query specified may stop some element
    * from getting shown, do not trust the change info.
    *
-   * @param list : List whose items is to be retrieved
-   * @param allWebs : A collection to store any webs, discovered as part of
+   * @param list List whose items is to be retrieved
+   * @param allWebs A collection to store any webs, discovered as part of
    *          discovering list items. Foe example link sites are stored as list
    *          items.
-   * @param folder : indicates that the last batch traversal stopped at some
-   *          folder. This happens when folder(s) are renamed/restored. In such
-   *          cases, web service response gives information about changed
-   *          folders only and not the documents underneath. Connector manually
-   *          visits each renamed/resored folder to discovers sub-folders and
-   *          documents under it.
    * @return the list of documents as {@link SPDocument}
    */
   // FIXME Why using List and not Set?

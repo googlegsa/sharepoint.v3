@@ -244,8 +244,6 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
    * falling in this range are not valid. Refer
    * http://www.w3.org/TR/html4/sgml/entities.html
    *
-   * @param ref
-   * @return
    * @param ref the number to check
    * @return true if the number represents an invalid XML character; false otherwise.
    */
@@ -265,7 +263,6 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
    * @param msgContext
    * @return true if all preconditions are satisfied; false otherwise
    */
-  @SuppressWarnings("unchecked")
   static boolean checkPreconditions(MessageContext msgContext) {
     return null != msgContext && null != msgContext.getResponseMessage()
         && null != msgContext.getRequestMessage();
