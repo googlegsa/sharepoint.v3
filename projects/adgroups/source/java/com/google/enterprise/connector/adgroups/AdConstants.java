@@ -67,6 +67,7 @@ public class AdConstants {
   public static final String GUID_START = "0x";
 
   public static final String AUTHN_TYPE_SIMPLE = "simple";
+  public static final String AUTHN_TYPE_ANONYMOUS = "none";
 
   public enum Method {
     STANDARD, SSL;

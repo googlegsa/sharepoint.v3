@@ -1,4 +1,16 @@
-// Copyright 2012 Google Inc. All Rights Reserved.
+// Copyright 2012 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.adgroups;
 
@@ -61,7 +73,7 @@ public class AdDbUtil {
   private int batchHint = 1000;
 
   //TODO: load table names from bean
-  private HashMap<String, String> tables = new HashMap<String, String>() {{
+  private Map<String, String> tables = new HashMap<String, String>() {{
     put("servers", "servers");
     put("entities", "entities");
     put("members", "members");
@@ -185,13 +197,16 @@ public class AdDbUtil {
    */
   public List<HashMap<String, Object>>
     select(Query query, Map<String, Object> params) throws SQLException {
+    PreparedStatement statement = null;
+    ResultSet rs = null;
+    try {
       List<String> identifiers = new ArrayList<String>();
       // function sortParams fills identifiers variable
       String sql = sortParams(query, identifiers);
-      PreparedStatement statement = connection.prepareStatement(sql);
+      statement = connection.prepareStatement(sql);
       addParams(statement, identifiers, params);
 
-      ResultSet rs = statement.executeQuery();
+      rs = statement.executeQuery();
       ResultSetMetaData rsmd = rs.getMetaData();
       List<HashMap<String, Object>> results =
         new ArrayList<HashMap<String, Object>>();
@@ -203,8 +218,15 @@ public class AdDbUtil {
         }
         results.add(result);
       }
-
       return results;
+    } finally {
+      if (rs != null) {
+        rs.close();
+      }
+      if (statement != null) {
+        statement.close();
+      }
+    }
   }
 
   /**
@@ -216,11 +238,19 @@ public class AdDbUtil {
    */
   public boolean execute(Query query, Map<String, Object> params)
       throws SQLException {
-    List<String> identifiers = new ArrayList<String>();
-    String sql = sortParams(query, identifiers);
-    PreparedStatement statement = connection.prepareStatement(sql);
-    addParams(statement, identifiers, params);
-    return statement.execute();
+    PreparedStatement statement = null;
+    try {
+      List<String> identifiers = new ArrayList<String>();
+      String sql = sortParams(query, identifiers);
+      statement = connection.prepareStatement(sql);
+      addParams(statement, identifiers, params);
+      boolean result = statement.execute();
+      return result;
+    } finally {
+      if (statement != null) {
+        statement.close();
+      }
+    }
   }
 
   /**
@@ -231,53 +261,66 @@ public class AdDbUtil {
    */
   public void executeBatch(Query query, List<AdEntity> entities)
       throws SQLException {
-    List<String> identifiers = new ArrayList<String>();
-    String sql = sortParams(query, identifiers);
-    PreparedStatement statement = connection.prepareStatement(sql);
-
-    int batch = 0;
-    for (AdEntity e : entities) {
-      addParams(statement, identifiers, e.getSqlParams());
-      statement.addBatch();
-      if (++batch == batchHint) {
-        statement.executeBatch();
-        batch = 0;
+    PreparedStatement statement = null;
+    try {
+      List<String> identifiers = new ArrayList<String>();
+      String sql = sortParams(query, identifiers);
+      statement = connection.prepareStatement(sql);
+  
+      int batch = 0;
+      for (AdEntity e : entities) {
+        addParams(statement, identifiers, e.getSqlParams());
+        statement.addBatch();
+        if (++batch == batchHint) {
+          statement.executeBatch();
+          batch = 0;
+        }
+      }
+      statement.executeBatch();
+    } finally {
+      if (statement != null) {
+        statement.close();
       }
     }
-    statement.executeBatch();
   }
 
   /**
    * Query to execute
    * @param remove query to remove all memberships from the database
-   * @param insert insert query to inse
-   * @param entities list of entities who's memberships we should run the
+   * @param insert insert query to insert memberships into the database
+   * @param entities list of entities whose memberships we should run the
    *        insert query on
-   * @return it membership merging was successful
    */
   public void mergeMemberships(
       final Query remove, final Query insert, final List<AdEntity> entities)
       throws SQLException {
     executeBatch(remove, entities);
-
-    List<String> addIdentifiers = new ArrayList<String>();
-    String insertSql = sortParams(insert, addIdentifiers);
-    PreparedStatement addStatement = connection.prepareStatement(insertSql);
-
-    int batch = 0;
-    for (AdEntity e: entities) {
-      for (String s: e.getMembers()) {
-        Map<String, Object> params = e.getSqlParams();
-        params.put("memberdn", s);
-        addParams(addStatement, addIdentifiers, params);
-        addStatement.addBatch();
-        if (++batch == batchHint) {
-          addStatement.executeBatch();
-          batch = 0;
+    
+    PreparedStatement addStatement = null;
+    try {
+      List<String> addIdentifiers = new ArrayList<String>();
+      String insertSql = sortParams(insert, addIdentifiers);
+      addStatement = connection.prepareStatement(insertSql);
+  
+      int batch = 0;
+      for (AdEntity e: entities) {
+        for (String s: e.getMembers()) {
+          Map<String, Object> params = e.getSqlParams();
+          params.put("memberdn", s);
+          addParams(addStatement, addIdentifiers, params);
+          addStatement.addBatch();
+          if (++batch == batchHint) {
+            addStatement.executeBatch();
+            batch = 0;
+          }
         }
       }
+      addStatement.executeBatch();
+    } finally {
+      if (addStatement != null) {
+        addStatement.close();
+      }
     }
-    addStatement.executeBatch();
   }
 
   /**

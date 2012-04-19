@@ -1,16 +1,16 @@
-//Copyright 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 /**
  * This class is an implementation of the TraversalManager from the spi. All the
  * traversal based logic is invoked through this class.
- * 
+ *
  * @author amit_kagrawal
  */
 
@@ -59,7 +59,7 @@ public class SharepointTraversalManager implements TraversalManager,
 
   /**
    * constructor.
-   * 
+   *
    * @param inConnector
    *          The instance of SharePoint connector for which traversal is to be
    *          done
@@ -75,7 +75,7 @@ public class SharepointTraversalManager implements TraversalManager,
 
   /**
    * constructor.
-   * 
+   *
    * @param inConnector
    *          The instance of SharePoint connector for which traversal is to be
    *          done
@@ -127,7 +127,7 @@ public class SharepointTraversalManager implements TraversalManager,
    * checkpoint information for resuming the traversal. Instead, it uses the
    * state file for this purpose. State file implementation is specific to the
    * connector and CM is unaware of this.
-   * 
+   *
    * @param checkpoint
    *          Not really used by the SharePoint connector
    */
@@ -140,7 +140,7 @@ public class SharepointTraversalManager implements TraversalManager,
       if (checkpoint.startsWith(SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX)) {
         rsSocial = doUserprofileCrawl(checkpoint);
         docCheckpoint = false;
-      } 
+      }
     }
     if (docCheckpoint) { // we are resuming a doc feed
       if (adGroupsTraversal != null) {
@@ -172,7 +172,7 @@ public class SharepointTraversalManager implements TraversalManager,
   /**
    * Sets the batch hint which declares a threashold on the number of documents
    * that should be sent per traversal
-   * 
+   *
    * @see com.google.enterprise.connector.spi.TraversalManager
    *      #setBatchHint(int)
    */
@@ -226,7 +226,7 @@ public class SharepointTraversalManager implements TraversalManager,
       return rsSocial;
     }
   }
-  
+
   private void initializeGlobalStateForDocTraversal() {
     globalState = null;
     final String workDir = sharepointClientContext.getGoogleConnectorWorkDir();
@@ -239,13 +239,13 @@ public class SharepointTraversalManager implements TraversalManager,
         sharepointClientContext.getFeedType());
     globalState.setCrawlState(CrawlState.DOC_FEED);
   }
-  
+
   public DocumentList startDocTraversal() throws RepositoryException {
     LOGGER.info("startDocTraversal");
     initializeGlobalStateForDocTraversal();
     return doTraversal();
   }
-  
+
   private DocumentList doTraversal() throws RepositoryException {
     LOGGER.config("doTraversal()");
 
@@ -413,7 +413,7 @@ public class SharepointTraversalManager implements TraversalManager,
 
   /**
    * Sets the traversal context
-   * 
+   *
    * @param traversalContext The {@link TraversalContext} instance
    */
   public void setTraversalContext(TraversalContext traversalContext) {

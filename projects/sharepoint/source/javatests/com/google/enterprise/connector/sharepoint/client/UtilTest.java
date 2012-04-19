@@ -1,16 +1,16 @@
-//Copyright 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.client;
 
@@ -208,7 +208,6 @@ public class UtilTest extends TestCase {
 
     assertNotNull(formattedDate);
     assertEquals(expectedFormat, formattedDate);
-
   }
 
   public void testDoAliasMapping() {
@@ -264,7 +263,7 @@ public class UtilTest extends TestCase {
     assertNotNull(format3);
     assertEquals(expectedGroupNameFormat, format3);
   }
-  
+
   /**
    * @Test Tests {@link Util#processMultiValueMetadata(String)}
    * for multi choice fields
@@ -278,7 +277,7 @@ public class UtilTest extends TestCase {
     assertEquals("Value2", choiceValues.get(0));
     assertEquals("Value3", choiceValues.get(0));
   }
-  
+
   /**
    * @Test Tests {@link Util#processMultiValueMetadata(String)}
    * for multi lookup fields
@@ -294,7 +293,7 @@ public class UtilTest extends TestCase {
     assertEquals("Value3", lookupValues.get(0));
     assertEquals("Value4", lookupValues.get(0));
   }
-  
+
   /**
    * @Test Tests {@link Util#processMultiValueMetadata(String)}
    * for sharepoint internal fields and single value fields
@@ -306,14 +305,14 @@ public class UtilTest extends TestCase {
         Util.processMultiValueMetadata(internalValue);
     assertEquals(1, internalValues.size());
     assertEquals("Value1", internalValues.get(0));
-    
+
     // Normal text with ;# part of it but not multi-value - should not process
     String normalValue = "normal;#value;#somemore";
     List<String> normalValues =  Util.processMultiValueMetadata(normalValue);
     assertEquals(1, internalValues.size());
     assertEquals(normalValue, internalValues.get(0));
   }
-  
+
   /**
    * @Test Tests {@link Util#normalizeMetadataValue(String)}
    */
@@ -321,12 +320,12 @@ public class UtilTest extends TestCase {
     // SharePoint Internal field - should process
     String internalValue = "1;#Value1";
     assertEquals("Value1", Util.normalizeMetadataValue(internalValue));
-    
+
     // Multi-choice field - should not process
     String multiChoiceValue = ";#Value1;#Value2;#Value3;#";
     assertEquals(multiChoiceValue,
         Util.normalizeMetadataValue(multiChoiceValue));
-    
+
     // Multi-value lookup field - should not process
     String multiLookupValue = "1;#Value1;#2;#Value2;#3;#Value3;#4;#Value4";
     assertEquals(multiLookupValue,

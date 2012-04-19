@@ -1,16 +1,16 @@
-//Copyright 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint;
 
@@ -35,6 +35,7 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
+import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
@@ -59,6 +60,8 @@ import javax.sql.DataSource;
 public class TestConfiguration {
   public static String googleConnectorWorkDir;
   public static String googleWorkDir;
+  public static String googleGlobalNamespace;
+  public static String googleLocalNamespace;
 
   public static String sharepointUrl;
   public static String AliasMap;
@@ -138,7 +141,7 @@ public class TestConfiguration {
   public static String Site3_List2_URL;
   public static String Site3_List2_Item1_URL;
   public static String Site3_List2_Item2_URL;
-  
+
   // For GssAcl Test Site 4
   public static String Site4_URL;
   public static String Site4_List1_GUID;
@@ -149,7 +152,7 @@ public class TestConfiguration {
   public static String Site4_List2_URL;
   public static String Site4_List2_Item1_URL;
   public static String Site4_List2_Item2_URL; 
-  
+
   public static String SearchDocID401;
   public static String SearchDocID402;
   public static String SearchDocID403;
@@ -163,7 +166,6 @@ public class TestConfiguration {
   public static String SearchDocID411;
   public static String SearchDocID412;
   public static String SearchDocID413;
-  
 
   public static String validChangeToken;
   public static int changesSinceToken;
@@ -215,7 +217,7 @@ public class TestConfiguration {
   private static String gsaAdmin;
   private static String gsaAdminPassword;
   private static String socialOption;
-  
+
   public static ClientFactory clientFactory = new SPClientFactory();
 
   static {
@@ -228,6 +230,8 @@ public class TestConfiguration {
     }
     googleConnectorWorkDir = properties.getProperty("googleConnectorWorkDir");
     googleWorkDir = properties.getProperty("googleWorkDir");
+    googleGlobalNamespace = properties.getProperty("googleGlobalNamespace");
+    googleLocalNamespace = properties.getProperty("googleLocalNamespace");
     sharepointUrl = properties.getProperty("sharepointUrl");
     AliasMap = properties.getProperty("AliasMap");
     domain = properties.getProperty("domain");
@@ -238,11 +242,8 @@ public class TestConfiguration {
     includedURls = properties.getProperty("includedURls");
     excludedURls = properties.getProperty("excludedURls");
     authorization = properties.getProperty("authorization");
-    useSPSearchVisibility = new Boolean(
-        properties.getProperty("useSPSearchVisibility")).booleanValue();
-
-    useSPSearchVisibility = new Boolean(
-        properties.getProperty("useSPSearchVisibility")).booleanValue();
+    useSPSearchVisibility = Boolean.parseBoolean(
+        properties.getProperty("useSPSearchVisibility"));
 
     searchUserID = properties.getProperty("SearchUserID");
     searchUserPwd = properties.getProperty("SearchUserPwd");
@@ -296,7 +297,7 @@ public class TestConfiguration {
     Site3_List2_URL = properties.getProperty("Site3_List2_URL");
     Site3_List2_Item1_URL = properties.getProperty("Site3_List2_Item1_URL");
     Site3_List2_Item2_URL = properties.getProperty("Site3_List2_Item2_URL");
-    
+
     Site4_URL = properties.getProperty("Site4_URL");
     Site4_List1_GUID = properties.getProperty("Site4_List1_GUID");
     Site4_List1_URL = properties.getProperty("Site4_List1_URL");
@@ -306,7 +307,7 @@ public class TestConfiguration {
     Site4_List2_URL = properties.getProperty("Site4_List2_URL");
     Site4_List2_Item1_URL = properties.getProperty("Site4_List2_Item1_URL");
     Site4_List2_Item2_URL = properties.getProperty("Site4_List2_Item2_URL");  
-    
+
     SearchDocID401 = properties.getProperty("SearchDocID401");
     SearchDocID402 = properties.getProperty("SearchDocID402");
     SearchDocID403 = properties.getProperty("SearchDocID403");
@@ -385,20 +386,20 @@ public class TestConfiguration {
     connectMethod = properties.getProperty("connectMethod");
     searchBase = properties.getProperty("searchBase");
     initialCacheSize = properties.getProperty("initialCacheSize");
-    pushAcls = new Boolean(properties.getProperty("pushAcls")).booleanValue();
-    useCacheToStoreLdapUserGroupsMembership = new Boolean(
-        properties.getProperty("useCacheToStoreLdapUserGroupsMembership")).booleanValue();
+    pushAcls = Boolean.parseBoolean(properties.getProperty("pushAcls"));
+    useCacheToStoreLdapUserGroupsMembership = Boolean.parseBoolean(
+        properties.getProperty("useCacheToStoreLdapUserGroupsMembership"));
     appendNamespaceInSPGroup = properties.getProperty("appendNamespaceInSPGroup");
     userNameFormatInACE = properties.getProperty("usernameFormatInAce");
     groupNameFormatInACE = properties.getProperty("groupnameFormatInAce");
-    
+
     timeZone = properties.getProperty("timeZone");
 
     gsaHost = properties.getProperty("GsaHost");
     gsaPort = Integer.parseInt(properties.getProperty("GsaPort"));
     gsaAdmin = properties.getProperty("GsaAdminUsername");
     gsaAdminPassword = properties.getProperty("GsaAdminPassword");
-    
+
     socialOption = properties.getProperty("SocialOption");
   }
 
@@ -432,7 +433,7 @@ public class TestConfiguration {
     configMap.put(SPConstants.GSAHOSTADDRESS, gsaHost);
     configMap.put(SPConstants.GSAADMINUSER, gsaAdmin);
     configMap.put(SPConstants.GSAADMINPASSWORD, gsaAdminPassword);
-    
+
     return configMap;
   }
 
@@ -539,18 +540,19 @@ public class TestConfiguration {
         clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
         TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.googleGlobalNamespace,
+        TestConfiguration.googleLocalNamespace,
         TestConfiguration.includedURls, TestConfiguration.excludedURls,
         TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
-        TestConfiguration.feedType,
-        new Boolean(useSPSearchVisibility).booleanValue());
+        TestConfiguration.feedType, useSPSearchVisibility);
 
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
     sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
     sharepointClientContext.setPushAcls(TestConfiguration.pushAcls);
     sharepointClientContext.setLdapConnectionSettings(TestConfiguration.getLdapConnetionSettings());
-    sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(new Boolean(
-        useCacheToStoreLdapUserGroupsMembership));
+    sharepointClientContext.setUseCacheToStoreLdapUserGroupsMembership(
+        useCacheToStoreLdapUserGroupsMembership);
     sharepointClientContext.setInitialCacheSize(TestConfiguration.cacheSize);
     sharepointClientContext.setCacheRefreshInterval(TestConfiguration.refreshInterval);
     String socialOptionLc = TestConfiguration.getSocialOption().toLowerCase();
@@ -563,14 +565,14 @@ public class TestConfiguration {
     }
     return sharepointClientContext;
   }
-  
+
   public static SharepointSocialClientContext initSocialContext(SharepointClientContext parent) {
     final SharepointSocialClientContext ctxt = new SharepointSocialClientContext(parent);
     ctxt.setDomain(TestConfiguration.domain);
     ctxt.setUrl(TestConfiguration.sharepointUrl);
     ctxt.setUserName(TestConfiguration.username);
     ctxt.setPassword(TestConfiguration.Password);
-    
+
     return ctxt;
   }
 
@@ -791,13 +793,15 @@ public class TestConfiguration {
    * @return Instance of {@link SharepointConnector}
    */
   public static SharepointConnector getConnectorInstance()
-      throws SharepointException {
+      throws RepositoryException {
     SharepointConnector connector = new SharepointConnector();
     connector.setSharepointUrl(TestConfiguration.sharepointUrl);
     connector.setDomain(TestConfiguration.domain);
     connector.setUsername(TestConfiguration.username);
     connector.setPassword(TestConfiguration.Password);
     connector.setGoogleConnectorWorkDir(TestConfiguration.googleConnectorWorkDir);
+    connector.setGoogleGlobalNamespace(TestConfiguration.googleGlobalNamespace);
+    connector.setGoogleLocalNamespace(TestConfiguration.googleLocalNamespace);
     connector.setIncludedURls(TestConfiguration.includedURls);
     connector.setExcludedURls(TestConfiguration.excludedURls);
     connector.setMySiteBaseURL(TestConfiguration.mySiteBaseURL);
@@ -889,15 +893,15 @@ public class TestConfiguration {
         TestConfiguration.refreshInterval, true);
     return serviceImpl.getLdapContext();
   }
-  
+
   public static String getSocialOption() {
     return socialOption;
   }
-  
+
   public static String getGsaAdmin() {
     return gsaAdmin;
   }
-  
+
   public static String getGsaAdminPassword() {
     return gsaAdminPassword;
   }

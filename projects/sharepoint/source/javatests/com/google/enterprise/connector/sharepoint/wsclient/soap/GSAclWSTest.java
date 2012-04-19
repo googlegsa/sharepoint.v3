@@ -1,16 +1,16 @@
-//Copyright 2009 Google Inc.
+// Copyright 2009 Google Inc.
 //
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//http://www.apache.org/licenses/LICENSE-2.0
+// http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
@@ -100,7 +100,7 @@ public class GSAclWSTest extends TestCase {
       fail(e.getMessage());
     }
   }
-  
+
   public void testWebApplicationPolicyDocument() throws Exception {
     WebState webState = globalState.lookupWeb(TestConfiguration.Site4_URL,
         sharepointClientContext); 
@@ -108,7 +108,7 @@ public class GSAclWSTest extends TestCase {
     SimpleTraversalContext context = new SimpleTraversalContext();
     context.setSupportsInheritedAcls(true);
     spContext.setTraversalContext(context);
-    
+
     SPClientFactory clientFactory = new SPClientFactory();
     AclWS aclWs = clientFactory.getAclWS(spContext, 
         webState.getWebUrl());
@@ -223,13 +223,13 @@ public class GSAclWSTest extends TestCase {
       }
     }
   }
-  
+
   private SPDocument getDocumentForUrl(String url,String docID) {
     SPDocument doc = new SPDocument(docID, url,
         Calendar.getInstance(), ActionType.ADD);
     return doc;
   }
-  
+
   private void checkInheritPermissions(SPDocument document, String parentUrl) {
     assertFalse(document.isUniquePermissions());
     assertNotNull("parent url is null for "
@@ -246,7 +246,7 @@ public class GSAclWSTest extends TestCase {
     assertTrue(null == document.getDenyGroupsAclMap() ||
         document.getDenyGroupsAclMap().isEmpty());
   }
-  
+
   private void checkUniquePermissions (SPDocument document, String parentUrl) {   
     assertTrue("UniquePermission not true" + document, 
         document.isUniquePermissions());

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="sharepoint-connector" default="sharepoint-connector" basedir=".">
-  <!-- Set the reference to build.properties -->
-  <property file="build.properties" />
+
   <!-- ========================= PROPERTIES ============================= -->
+  <property file="version.properties"/>
+  <property file="${user.home}/google-enterprise-connector-sharepoint.properties"/>
+
   <property name="version" value="${BUILD_VERSION}" />
   <property name="product" value="Google Search Appliance Connector for SharePoint" />
   <property name="projects.dir" value=".." />
@@ -227,6 +229,7 @@
         <pathelement location="${classes}" />
         <pathelement location="${junit.jarfile}" />
         <pathelement location="${adgroups.jar}" />
+        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>

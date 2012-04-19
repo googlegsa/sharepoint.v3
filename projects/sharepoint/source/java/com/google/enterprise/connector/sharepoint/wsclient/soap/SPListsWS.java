@@ -1,16 +1,16 @@
-//Copyright 2007-2011 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007-2011 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
@@ -237,7 +237,7 @@ public class SPListsWS implements ListsWS {
    * @param viewName the view name used with the SOAP request getListItems
    * @param query the query used with the SOAP request getListItems
    * @param viewFields the view fields used with the SOAP request getListItems
-   * @param queryOptions the query options used with the SOAP request 
+   * @param queryOptions the query options used with the SOAP request
    *          getListItems
    * @param webID
    * @param allWebs a collection to store any webs discovered as part of
@@ -362,7 +362,7 @@ public class SPListsWS implements ListsWS {
             return stub.getListItemChangesSinceToken(listName, viewName, 
                 query, viewFields, rowLimit, queryOptions, token, contains);
           }
-          
+
           public void onError(final Throwable e) {
             LOGGER.log(Level.WARNING, "Unable to get folder hierarchy at folderLevel [ "
                 + folderLevel + " ], list [ " + list.getListURL() + " ].", e);
@@ -378,18 +378,20 @@ public class SPListsWS implements ListsWS {
             final String tmpNextPage = child.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
             String lastItemID = null;
             for (final Iterator itrchild = child.getChildElements(); itrchild.hasNext();) {
-              final MessageElement row = (MessageElement) itrchild.next();
-              final String contentType = row.getAttribute(SPConstants.CONTENTTYPE);
+              final MessageElement row = (MessageElement) itrchild.next();            
+              final String fsObjType =
+                  Util.normalizeMetadataValue(
+                      row.getAttribute(SPConstants.OWS_FSOBJTYPE));
               String relativeURL = row.getAttribute(SPConstants.FILEREF);
               final String docId = row.getAttribute(SPConstants.ID);
-              if ((contentType == null) || (relativeURL == null)
+              if ((fsObjType == null) || (relativeURL == null)
                   || (docId == null)) {
                 continue;
               }
               lastItemID = docId;
               relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
               String folderPath = null;
-              if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+              if (fsObjType.equals("1")) {
                 if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                   if (!list.updateExtraIDs(relativeURL, docId, true)) {
                     LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
@@ -440,7 +442,7 @@ public class SPListsWS implements ListsWS {
    * @param list the list whose items are to be retrieved
    * @param listName the list name used with the SOAP request
    *          getListItemChangesSinceToken
-   * @param viewName the view name used with the SOAP request 
+   * @param viewName the view name used with the SOAP request
    *          getListItemChangesSinceToken
    * @param query the query used with the SOAP request
    *          getListItemChangesSinceToken
@@ -603,22 +605,26 @@ public class SPListsWS implements ListsWS {
           continue;
         }
         if (list.canContainFolders()) {
-          String contentType = row.getAttribute(SPConstants.CONTENTTYPE);
-          if (contentType == null) {
-            contentType = row.getAttribute(SPConstants.CONTENTTYPE_INMETA);
+          String fsObjType =
+              Util.normalizeMetadataValue(
+                  row.getAttribute(SPConstants.OWS_FSOBJTYPE));
+          if (fsObjType == null) {
+            fsObjType =
+                Util.normalizeMetadataValue(
+                    row.getAttribute(SPConstants.OWS_FSOBJTYPE_INMETA));
           }
           String relativeURL = row.getAttribute(SPConstants.FILEREF);
 
           LOGGER.log(Level.CONFIG, "docID [ " + docId + " ], relativeURL [ "
-              + relativeURL + " ], contentType [ " + contentType + " ]. ");
+              + relativeURL + " ], fsObjType [ " + fsObjType + " ]. ");
 
           if (null == relativeURL) {
             LOGGER.log(Level.WARNING, "No relativeURL (FILEREF) attribute found for the document, docID [ "
                 + docId + " ], listURL [ " + list.getListURL() + " ]. ");
-          } else if (null == contentType) {
-            LOGGER.log(Level.WARNING, "No content type found for the document, relativeURL [ "
+          } else if (null == fsObjType) {
+            LOGGER.log(Level.WARNING, "No fsObjType found for the document, relativeURL [ "
                 + relativeURL + " ], listURL [ " + list.getListURL() + " ]. ");
-          } else {
+          } else {           
             relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
             if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
               /*
@@ -636,7 +642,7 @@ public class SPListsWS implements ListsWS {
               deletedIDs.remove(docId);
               list.removeFromDeleteCache(docId);
 
-              if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+              if (fsObjType.equals("1")) {
                 if (!list.updateExtraIDs(relativeURL, docId, true)) {
                   // Try again after updating the folders
                   // info.
@@ -655,7 +661,7 @@ public class SPListsWS implements ListsWS {
               }
             }
 
-            if (contentType.equalsIgnoreCase(SPConstants.CONTENT_TYPE_FOLDER)) {
+            if (fsObjType.equals("1")) {
               if (restoredIDs.contains(docId) || renamedIDs.contains(docId)) {
                 list.addToChangedFolders(new Folder(
                     Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
