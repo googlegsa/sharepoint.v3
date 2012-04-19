@@ -52,7 +52,7 @@ public class MockListsWSTest extends TestCase {
     sharepointClientContext.setBatchHint(10);
     sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
     sharepointClientContext.setFeedUnPublishedDocuments(false);
-  
+
     listsHelper = new ListsHelper(sharepointClientContext);
 
     final SiteDataWS siteDataWS =
@@ -69,7 +69,7 @@ public class MockListsWSTest extends TestCase {
     testListUrl = "http://example.com/Web1/List1";
     testListUsernameAtUrl = "http://example.com/WebAuth/ListAt";
     testListUsernameSlashUrl = "http://example.com/WebAuth/ListSlash";
-    
+
     for (int i = 0; i < listCollection.size(); i++) {
       final ListState baseList = (ListState) listCollection.get(i);
       if (testListUrl.equals(baseList.getListURL())) {
@@ -92,7 +92,7 @@ public class MockListsWSTest extends TestCase {
     final List items = listsHelper.getListItems(testList, null, null, null);
     assertNotNull(items);
     assertTrue(1 == items.size());
-    
+
     SPDocument doc = (SPDocument) items.get(0);
     assertTrue((testListUrl + "/Doc1").equals(doc.getUrl()));
   }
@@ -149,7 +149,7 @@ public class MockListsWSTest extends TestCase {
     final List items = listsHelper.getListItems(list, null, null, null);
     assertNotNull(items);
     assertEquals(1, items.size());
-    
+
     SPDocument doc = (SPDocument) items.get(0);
     assertEquals(expectedUrl, doc.getUrl());
   }

@@ -1,16 +1,16 @@
-//Copyright 2010 Google Inc.
+// Copyright 2010 Google Inc.
 //
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//http://www.apache.org/licenses/LICENSE-2.0
+// http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.dao;
 
@@ -18,6 +18,7 @@ import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.Principal;
+import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
@@ -101,14 +102,26 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     return memberships;
   }
 
-  public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
-      Collection<Principal> groups, Principal searchUser) throws SharepointException {
+  public Set<Principal> getSharePointGroupsForSearchUserAndLdapGroups(
+      String localNamespace, Collection<Principal> groups, String searchUser)
+      throws SharepointException {
     Set<String> groupNames = new HashSet<String>();
     for (Principal group : groups) {
       groupNames.add(group.getName());
     }
-    return getAllMembershipsForSearchUserAndLdapGroups(
-        groupNames, searchUser.getName());
+    List<UserGroupMembership> spMemberships =
+        getAllMembershipsForSearchUserAndLdapGroups(groupNames, searchUser);
+    Set<Principal> spGroups = new HashSet<Principal>();
+    for (UserGroupMembership membership : spMemberships) {
+      // append name space to SP groups.
+      String groupName = SPConstants.LEFT_SQUARE_BRACKET
+          + membership.getNamespace()
+          + SPConstants.RIGHT_SQUARE_BRACKET
+          + membership.getGroupName();
+      spGroups.add(
+          new Principal(PrincipalType.UNQUALIFIED, localNamespace, groupName));
+    }
+    return spGroups;
   }
 
   /**
@@ -116,7 +129,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * belongs to including the search user.
    *
    * @param groups set of AD groups whose SP groups are to be retrieved
-   * @param searchUser the sear user name
+   * @param searchUser the search user name
    * @throws SharepointException
    */
   public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
@@ -132,19 +145,17 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       groups.add(searchUser);
       groupsObject.put(SPConstants.GROUPS, groups);
     }
-    List<UserGroupMembership> memberships = null;
+    List<UserGroupMembership> memberships;
     try {
       memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
     } catch (Throwable t) {
-      throw new SharepointException(
-          "Query execution failed while getting the membership info of a given user and AD gruops.",
-          t);
+      throw new SharepointException("Query execution failed while getting "
+          + "the membership info of a given user and AD groups.", t);
     }
     LOGGER.log(Level.INFO, memberships.size()
         + " Memberships identified for LDAP directory groups in User Data Store.");
     if (null == groups) {
       ldapGroups.remove(searchUser);
-      ldapGroups = null;
     } else {
       groups.remove(searchUser);
     }
@@ -157,7 +168,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * picked up for the SQL insert. The rest other memberships are removed from
    * the collection.
    * <p/>
-   * Note: Hence, this method may (and often do) modifies the passed in
+   * Note: Hence, this method may (and often does) modify the passed in
    * collection. After the method returns, the caller can ensure that the
    * collection contains only those memberships which the connector really
    * attempted insertion. But, it does not ensure if it was successful or not.
@@ -258,7 +269,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    */
   public void removeAllMembershipsFromNamespace(Set<String> namespaces)
       throws SharepointException {
-
     Set<UserGroupMembership> memberships = new HashSet<UserGroupMembership>();
     for (String namespace : namespaces) {
       UserGroupMembership membership = new UserGroupMembership();
@@ -294,7 +304,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   public void syncGroupMemberships(
       Map<Integer, Set<UserGroupMembership>> groupMembershipMap,
       String namespace) throws SharepointException {
-
     if (null == groupMembershipMap || groupMembershipMap.size() == 0) {
       return;
     }
@@ -459,7 +468,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       dbm = getConnection().getMetaData();
       udsTableName = getQueryProvider().getUdsTableName();
       cnTableName = getQueryProvider().getCnTableName();
-      
+
       if (dbm.storesUpperCaseIdentifiers()) {
         udsTablePattern = udsTableName.toUpperCase();
         cnTablePattern = cnTableName.toUpperCase();
@@ -674,11 +683,11 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   private boolean isTableNameExists(String tableName, ResultSet rsTables,
       boolean byIndex) throws SQLException {
     boolean tableFound = false;
-    
+
     if (!rsTables.isBeforeFirst()) {
       rsTables.beforeFirst();
     }
-    
+
     while (rsTables.next()) {
       String currName;
       if (byIndex) {

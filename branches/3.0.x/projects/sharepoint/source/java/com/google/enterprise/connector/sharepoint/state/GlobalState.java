@@ -1,15 +1,15 @@
-//Copyright 2007 Google Inc.
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.state;
 
@@ -87,12 +87,12 @@ public class GlobalState {
 
   private boolean bFullReCrawl = false;
   private String lastFullCrawlDateTime = null;
-  
+
   /**
    * Connector first gives USER_PROFILE_FEED as a separate feed DOC_FEED happens
    * after that and then sets back to USER_PROFILE_FEED, when DOC_FEED gets no
    * more from previous crawl
-   * 
+   *
    * @author tapasnay
    */
   public enum CrawlState {
@@ -101,7 +101,7 @@ public class GlobalState {
   };
 
   private CrawlState crawlState = CrawlState.USER_PROFILE_FEED;
-  
+
   public CrawlState getCrawlState(){
     return crawlState;
   }
@@ -545,15 +545,26 @@ public class GlobalState {
       final boolean wasDeleted = tempFile.delete();
       LOGGER.warning("Temp file delete response: " + wasDeleted);
     }
+    
+    loadState(stateFile);
+  }
+
+  /**
+   * Load persistent state from our XML state.
+   *
+   * @throws SharepointException if the XML file can't be found, or is invalid
+   *           in any way.
+   */
+  void loadState(final File stateFile) throws SharepointException {
     XMLReader parser;
     InputSource inputSource = null;
     try {
       if (!stateFile.exists()) {
-        LOGGER.warning("state file '" + stateFile.getAbsolutePath()
-            + "' does not exist");
+        LOGGER.warning("State file '" + stateFile.getAbsolutePath()
+            + "' does not exist.");
         return;
       }
-      LOGGER.info("loading state from " + stateFile.getCanonicalPath());
+      LOGGER.info("Loading state from " + stateFile.getAbsolutePath() + ".");
       parser = new SAXParser();
       inputSource = new InputSource(new InputStreamReader(new FileInputStream(
           stateFile), "UTF-8"));
@@ -564,7 +575,7 @@ public class GlobalState {
       LOGGER.log(Level.SEVERE, "Unable to load state XML file", e);
       throw new SharepointException(e);
     } catch (final Throwable t) {
-      LOGGER.log(Level.SEVERE, "error/Exception while loading state file. ", t);
+      LOGGER.log(Level.SEVERE, "Error/Exception while loading state file. ", t);
     } finally {
       inputSource = null;
     }
@@ -616,7 +627,7 @@ public class GlobalState {
    *
    * @return File
    */
-  private File getStateFileLocation(String extension) {
+  File getStateFileLocation(String extension) {
     return getStateFileLocation(workDir, extension);
   }
 
@@ -729,7 +740,7 @@ public class GlobalState {
       }
       throw new SharepointException("Save state failed", e);
     }
-    
+
     if (stateFile.exists()) {
       if (!stateFile.delete()) {
         LOGGER.log(Level.WARNING, "Error deleting old state file "
@@ -737,7 +748,7 @@ public class GlobalState {
         throw new SharepointException("Save state failed");
       }
     }
-    
+
     if (!tempFile.renameTo(stateFile)) {
       LOGGER.log(Level.WARNING, "Error renaming "
           + tempFile.getAbsolutePath() + " to "

@@ -116,16 +116,14 @@ public class SharepointUserProfileConnection {
     for (PropertyData propertyData : props) {
 
       if (propertyData.getName().equals(config.getSpPropertyUserKey())) {
-        String userKey = (String) ((ValueData) propertyData.getValues()[0])
-            .getValue();
+        String userKey = (String) propertyData.getValues()[0].getValue();
         LOGGER.fine("User Key Property: " + propertyData.getName());
         LOGGER.fine("User Key Value: " + userKey);
         userProfile.setUserKey(userKey);
       } else if (propertyData.getName().equals(
           config.getSpPropertyUserContent())
           && !(propertyData.getValues().length == 0)) {
-        String userContent = (String) ((ValueData) propertyData.getValues()[0])
-            .getValue();
+        String userContent = (String) propertyData.getValues()[0].getValue();
         LOGGER.fine("User Content Property: " + propertyData.getName());
         LOGGER.fine("User Content Value: " + userContent);
         userProfile.setUserContent(userContent);

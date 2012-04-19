@@ -1,21 +1,22 @@
-//Copyright 2010 Google Inc.
+// Copyright 2010 Google Inc.
 //
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-//http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
 
-//limitations under the License.
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -43,6 +44,7 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
+import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -219,7 +221,7 @@ public class GSAclWS implements AclWS{
         Map<String, Set<RoleType>> deniedGroupPermissionMap =
             new HashMap<String, Set<RoleType>>(); 
         document.setParentUrl(acl.getParentUrl());
-        document.setUniquePermissions(!acl.getInheritPermissions());
+        document.setUniquePermissions(!Boolean.parseBoolean(acl.getInheritPermissions()));
         document.setParentId(acl.getParentId()); 
         for (GssAce ace : allAces) {
           // Handle Principal
@@ -314,7 +316,7 @@ public class GSAclWS implements AclWS{
       }
     }
   }
-   
+
   /**
    * Method to process GssAcl permissions.
    * @param principal GsssPrincipal Object to process.
@@ -650,7 +652,7 @@ public class GSAclWS implements AclWS{
               + " ] because web application policy change detected.");
           webstate.resetState();
           isWebReset = true;
-        }               
+        }
        } else if (objType == ObjectType.WEB && !isWebChanged) {
          if (changeType == SPChangeType.AssignmentDelete) {
           // Typically, deletion of a role affects the ACL of only
@@ -997,12 +999,12 @@ public class GSAclWS implements AclWS{
     }
     return result;
   }
-  
+
   /**
    * Construct SPDocument object for representing Web application policy
    * ACL information
    */
-  
+
   public SPDocument getWebApplicationPolicy(WebState webState,
       String strFeedType) {
     GssGetAclForUrlsResult result = null;
@@ -1026,6 +1028,7 @@ public class GSAclWS implements AclWS{
     webAppPolicy = new SPDocument(docID,result.getSiteCollectionUrl(),
         Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
         result.getSiteCollectionUrl(), feedType, SPType.SP2007);
+    webAppPolicy.setDocumentType(DocumentType.ACL);
     Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
     urlToDocMap.put(webAppPolicy.getUrl(), webAppPolicy);
     processWsResponse(result, urlToDocMap);

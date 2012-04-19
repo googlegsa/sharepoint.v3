@@ -1,16 +1,16 @@
-//Copyright 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
@@ -51,12 +51,13 @@ import java.util.logging.Logger;
  * Implementation of the Connector interface from the spi for SharePoint This is
  * the primary class which represents a new connector instance. Every time a new
  * connector instance is created, an object of this class is created.
- * 
+ *
  * @author nitendra_thakur
  */
 public class SharepointConnector implements Connector,
     ConnectorPersistentStoreAware, ConnectorShutdownAware {
   private static final Logger LOGGER = Logger.getLogger(SharepointConnector.class.getName());
+
   private SharepointClientContext sharepointClientContext = null;
 
   private ClientFactory clientFactory;
@@ -67,6 +68,8 @@ public class SharepointConnector implements Connector,
   private String username;
   private String password;
   private String googleConnectorWorkDir = null;
+  private String googleGlobalNamespace;
+  private String googleLocalNamespace;
   private String excludedURls = null;
   private String includedURls = null;
   private String mySiteBaseURL = null;
@@ -129,9 +132,6 @@ public class SharepointConnector implements Connector,
 
   public SharepointConnector() {
     socialConnector = new SharepointSocialConnector(this.sharepointClientContext);
-    if (!oldLdapBehavior) {
-      adGroupsConnector = new AdGroupsConnector();
-    }
   }
 
   /**
@@ -177,7 +177,7 @@ public class SharepointConnector implements Connector,
 
   /**
    * sets the FQDNConversion parameter.
-   * 
+   *
    * @param conversion If true: tries to convert the non-FQDN URLs to FQDN If
    *          false: no conversion takes place
    */
@@ -231,7 +231,7 @@ public class SharepointConnector implements Connector,
 
   /**
    * Sets the metadata to be included
-   * 
+   *
    * @param inExcluded_metadata
    */
   public void setExcluded_metadata(final ArrayList<String> inExcluded_metadata) {
@@ -245,7 +245,7 @@ public class SharepointConnector implements Connector,
 
   /**
    * Sets the excluded metadata
-   * 
+   *
    * @param inIncluded_metadata
    */
   public void setIncluded_metadata(final ArrayList<String> inIncluded_metadata) {
@@ -285,10 +285,6 @@ public class SharepointConnector implements Connector,
   public void setDomain(final String domain) {
     this.domain = domain;
     socialConnector.setDomain(domain);
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setPrincipal(
-          this.domain + SPConstants.DOUBLEBACKSLASH + this.username);
-    }
   }
 
   /**
@@ -304,10 +300,6 @@ public class SharepointConnector implements Connector,
   public void setUsername(final String username) {
     this.username = username;
     socialConnector.setUserName(username);
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setPrincipal(
-          this.domain + SPConstants.DOUBLEBACKSLASH + this.username);
-    }
   }
 
   /**
@@ -323,9 +315,6 @@ public class SharepointConnector implements Connector,
   public void setPassword(final String password) {
     this.password = password;
     socialConnector.setPassword(password);
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setPassword(password);
-    }
   }
 
   /**
@@ -340,6 +329,32 @@ public class SharepointConnector implements Connector,
    */
   public void setGoogleConnectorWorkDir(final String googleConnectorWorkDir) {
     this.googleConnectorWorkDir = googleConnectorWorkDir;
+  }
+
+  /** Gets the global namespace. */
+  public String getGoogleGlobalNamespace() {
+    return googleGlobalNamespace;
+  }
+
+  /**
+   * Sets the global namespace. This property is defined by connector
+   * manager.
+   */
+  public void setGoogleGlobalNamespace(String googleGlobalNamespace) {
+    this.googleGlobalNamespace = googleGlobalNamespace;
+  }
+
+  /** Gets the local namespace. */
+  public String getGoogleLocalNamespace() {
+    return googleLocalNamespace;
+  }
+
+  /**
+   * Sets the local namespace. This property is defined by connector
+   * manager.
+   */
+  public void setGoogleLocalNamespace(String googleLocalNamespace) {
+    this.googleLocalNamespace = googleLocalNamespace;
   }
 
   /**
@@ -445,11 +460,13 @@ public class SharepointConnector implements Connector,
     }
   }
 
-  public void init() throws SharepointException {
+  public void init() throws RepositoryException {
     LOGGER.config("sharepointUrl = [" + sharepointUrl + "] , domain = ["
         + domain + "] , username = [" + username + "] , "
         + "googleConnectorWorkDir = [" + googleConnectorWorkDir
-        + "] , includedURls = [" + includedURls + "] , " + "excludedURls = ["
+        + "], googleGlobalNamespace = [" + googleGlobalNamespace
+        + "], googleLocalNamespace = [" + googleLocalNamespace
+        + "], includedURls = [" + includedURls + "] , " + "excludedURls = ["
         + excludedURls + "] , mySiteBaseURL = [" + mySiteBaseURL
         + "] , aliasHostPort = [" + aliasMap + "], pushAcls = [" + pushAcls
         + "], useCacheToStoreLdapUserGroupsMembership = ["
@@ -460,13 +477,14 @@ public class SharepointConnector implements Connector,
         + "], authenticationType = [" + authenticationType
         + "], connectMethod = [" + connectMethod + "], searchBase = ["
         + searchBase + " ]" + "], feedUnPublishedDocuments = ["
-        + feedUnPublishedDocuments + "]");
+        + feedUnPublishedDocuments + "], oldLdapBehavior = ["
+        + oldLdapBehavior + "]");
 
     sharepointClientContext = new SharepointClientContext(clientFactory,
         sharepointUrl, domain, kdcserver, username, password, 
-        googleConnectorWorkDir, includedURls, excludedURls, mySiteBaseURL, 
-        aliasMap, FeedType.getFeedType(authorizationAsfeedType),
-        useSPSearchVisibility);
+        googleConnectorWorkDir, googleGlobalNamespace, googleLocalNamespace,
+        includedURls, excludedURls, mySiteBaseURL, aliasMap,
+        FeedType.getFeedType(authorizationAsfeedType), useSPSearchVisibility);
     sharepointClientContext.setFQDNConversion(FQDNConversion);
     sharepointClientContext.setIncluded_metadata(included_metadata);
     sharepointClientContext.setExcluded_metadata(excluded_metadata);
@@ -497,12 +515,17 @@ public class SharepointConnector implements Connector,
     sharepointClientContext
         .setUserProfileServiceFactory(this.userProfileServiceFactory);
     socialConnector.init(sharepointClientContext);
+
     if (!oldLdapBehavior) {
-      try {
-        adGroupsConnector.init();
-      } catch (Exception e) {
-        throw new SharepointException(e);
-      }
+      adGroupsConnector = new AdGroupsConnector();
+      adGroupsConnector.setHostname(ldapServerHostAddress);
+      adGroupsConnector.setPort(portNumber);
+      adGroupsConnector.setMethod(connectMethod);
+      adGroupsConnector.setPrincipal(
+          domain + SPConstants.DOUBLEBACKSLASH + username);
+      adGroupsConnector.setPassword(password);
+      adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
+      adGroupsConnector.init();
     }
   }
 
@@ -600,6 +623,9 @@ public class SharepointConnector implements Connector,
     if (sharepointClientContext.isPushAcls()) {
       performUserDataStoreInitialization();
     }
+
+    // This method is called after Spring calls init, so
+    // oldLdapBehavior is guaranteed to be set here.
     if (!oldLdapBehavior) {
       adGroupsConnector.setDatabaseAccess(databaseAccess);
     }
@@ -709,9 +735,6 @@ public class SharepointConnector implements Connector,
    */
   public void setLdapServerHostAddress(String ldapServerHostAddress) {
     this.ldapServerHostAddress = ldapServerHostAddress;
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setHostname(ldapServerHostAddress);
-    }
   }
 
   /**
@@ -729,9 +752,6 @@ public class SharepointConnector implements Connector,
       this.portNumber = SPConstants.LDAP_DEFAULT_PORT_NUMBER;
     } else {
       this.portNumber = portNumber;
-    }
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setPort(this.portNumber);
     }
   }
 
@@ -774,9 +794,6 @@ public class SharepointConnector implements Connector,
    */
   public void setConnectMethod(String connectMethod) {
     this.connectMethod = connectMethod;
-    if (!oldLdapBehavior) {
-      adGroupsConnector.setMethod(connectMethod);
-    }
   }
 
   /**
@@ -907,7 +924,7 @@ public class SharepointConnector implements Connector,
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see com.google.enterprise.connector.spi.ConnectorShutdownAware#shutdown()
    */
   public void shutdown() throws RepositoryException {
@@ -917,7 +934,7 @@ public class SharepointConnector implements Connector,
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see com.google.enterprise.connector.spi.ConnectorShutdownAware#delete()
    */
   public void delete() throws RepositoryException {

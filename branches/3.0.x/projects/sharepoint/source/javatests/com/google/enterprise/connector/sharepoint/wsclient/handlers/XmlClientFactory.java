@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -53,7 +53,7 @@ import java.util.logging.Logger;
 
 /**
  * A mock factory for creating a Sharepoint repository from an XML file.
- *  
+ *
  * The mock XML has the following format:
  *
  *  <!-- The document root node must be a Mock node. -->
@@ -95,7 +95,7 @@ import java.util.logging.Logger;
 public class XmlClientFactory extends MockClientFactory {
   private static final Logger LOGGER =
       Logger.getLogger(XmlClientFactory.class.getName());
-  
+
   private final MockItem root;
 
   public XmlClientFactory(String xmlFilePath) {
@@ -108,14 +108,14 @@ public class XmlClientFactory extends MockClientFactory {
       handler = null;
       LOGGER.log(Level.WARNING, "Unable to load mock xml.", e);
     }
-    
+
     if (null != handler) {
       root = handler.getRoot();
     } else {
       root = null;
     }
   }
-  
+
   public MockItem getRoot() {
     return root;
   }
@@ -200,7 +200,7 @@ public class XmlClientFactory extends MockClientFactory {
     if (!root.hasPermission(username)) {
       throw new AxisFault(SPConstants.UNAUTHORIZED);
     }
-    
+
     String path;
     try {
       final URL url = new URL(itemUrl);
@@ -208,7 +208,7 @@ public class XmlClientFactory extends MockClientFactory {
     } catch (MalformedURLException e) {
       path = "";
     }
-    
+
     MockItem item = root;
     for (String part : path.split("/")) {
       item = item.getChildByName(part);
@@ -219,7 +219,7 @@ public class XmlClientFactory extends MockClientFactory {
         throw new AxisFault(SPConstants.UNAUTHORIZED);
       }
     }
-    
+
     return item;
   }
 }

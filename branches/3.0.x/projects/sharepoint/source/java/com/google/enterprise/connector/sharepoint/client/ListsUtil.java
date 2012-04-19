@@ -156,8 +156,8 @@ public abstract class ListsUtil {
     }
     final String strMyString = "<Query><Where><And><Gt>"
         + "<FieldRef Name=\"ID\"/><Value Type=\"Counter\">" + listItemID
-        + "</Value></Gt><Eq><FieldRef Name=\"ContentType\"/>"
-        + "<Value Type=\"Text\">Folder</Value></Eq></And></Where>"
+        + "</Value></Gt><Eq><FieldRef Name=\"FSObjType\"/>"
+        + "<Value Type=\"Lookup\">1</Value></Eq></And></Where>"
         + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy>"
         + "</Query>";
 
@@ -215,8 +215,8 @@ public abstract class ListsUtil {
 
     final String strMyString = "<Query><Where><Or><Gt>"
         + "<FieldRef Name=\"ID\"/><Value Type=\"Counter\">" + listItemID
-        + "</Value></Gt><Eq><FieldRef Name=\"ContentType\"/>"
-        + "<Value Type=\"Text\">Folder</Value></Eq></Or>"
+        + "</Value></Gt><Eq><FieldRef Name=\"FSObjType\"/>"
+        + "<Value Type=\"Lookup\">1</Value></Eq></Or>"
         + "</Where>"
         + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy>"
         + "</Query>";

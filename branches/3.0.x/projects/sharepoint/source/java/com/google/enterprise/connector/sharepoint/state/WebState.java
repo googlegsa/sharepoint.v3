@@ -1,16 +1,16 @@
-//Copyright 2007 Google Inc.
-
-//Licensed under the Apache License, Version 2.0 (the "License");
-//you may not use this file except in compliance with the License.
-//You may obtain a copy of the License at
-
-//http://www.apache.org/licenses/LICENSE-2.0
-
-//Unless required by applicable law or agreed to in writing, software
-//distributed under the License is distributed on an "AS IS" BASIS,
-//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//See the License for the specific language governing permissions and
-//limitations under the License.
+// Copyright 2007 Google Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.state;
 
@@ -159,7 +159,7 @@ public class WebState implements StatefulObject {
 
   /**
    * Get the primary key.
-   * 
+   *
    * @return primary key
    */
   public String getPrimaryKey() {
@@ -168,7 +168,7 @@ public class WebState implements StatefulObject {
 
   /**
    * Sets the primary key.
-   * 
+   *
    * @param newKey
    */
   public void setPrimaryKey(final String newKey) {
@@ -207,7 +207,7 @@ public class WebState implements StatefulObject {
    * lastModified is identified as the only such attribute. In future, this
    * method can be augmented with more generic informations which drives the
    * ordering, instead of stricting this to just LastModifiedDate
-   * 
+   *
    * @param state
    * @param time lastMod time for the List. If time is later than the existing
    *          lastMod, the List is reindexed in the allListStateSet.
@@ -235,7 +235,7 @@ public class WebState implements StatefulObject {
    * Comparison is first on the insertion date. If that produces a tie, the
    * primary key (the WebID) is used as tie-breaker. The comparison is flipped
    * to achieve descending ordering based on insertionTime
-   * 
+   *
    * @param o
    *          other WebState. If null, returns 1.
    * @return the usual integer result: -1 if other object is less than current,
@@ -305,7 +305,7 @@ public class WebState implements StatefulObject {
   /**
    * Signals that the recrawl cycle is over and any non-existing ListState can
    * be deleted
-   * 
+   *
    * @param spContext
    */
   public void endRecrawl(final SharepointClientContext spContext) {
@@ -478,7 +478,7 @@ public class WebState implements StatefulObject {
 
   /**
    * Lookup a ListState by its key.
-   * 
+   *
    * @param key
    *          primary key
    * @return object handle, or null if none found
@@ -643,7 +643,7 @@ public class WebState implements StatefulObject {
 
   /**
    * Construct and returns a WebState object using the attributes.
-   * 
+   *
    * @param atts the XML attributes to use for initialzing the WebState
    * @return a valid non-null WebState
    */
@@ -719,7 +719,7 @@ public class WebState implements StatefulObject {
   /**
    * Looks up a ListState for a given GUID value as received by the custom web
    * service.
-   * 
+   *
    * @param listGuid the guid of the list
    * @return a valid ListState if the guid is found; null otherwise
    */
@@ -755,11 +755,11 @@ public class WebState implements StatefulObject {
   public void setWebCrawlInfo(WebCrawlInfo webCrawlInfo) {
     this.webCrawlInfo = webCrawlInfo;
   }
-  
+
   public boolean isWebApplicationPolicyChange() {
     return webApplicationPolicyChange;
   }
-  
+
   public void setWebApplicationPolicyChange(boolean webApplicationPolicyChange) {
     this.webApplicationPolicyChange = webApplicationPolicyChange;
   }
