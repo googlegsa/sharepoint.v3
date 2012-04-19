@@ -223,7 +223,7 @@ public abstract class ListsUtil {
 
     return new MessageElement[] { getMeFromString(strMyString) };
   }
-  
+
   /**
    * Returns a MessageElement element object for a given string in xml format
    *
@@ -242,7 +242,7 @@ public abstract class ListsUtil {
     final Element ele = doc.getDocumentElement();
     return new MessageElement(ele);
   }
-  
+
   /**
    * View Fields required for making web service call
    *
@@ -257,7 +257,7 @@ public abstract class ListsUtil {
   }
 
   /**
-   * Generates teh query options required for making Sharepoint lists 
+   * Generates the query options required for making Sharepoint lists
    * web service requests.
    *
    * @param recursion
@@ -300,7 +300,7 @@ public abstract class ListsUtil {
     final MessageElement[] meArray = { me };
     return meArray;
   }
-  
+
   /**
    * Process the rs:changes element as returned by getListItemChangesSinceToken.
    *
@@ -312,11 +312,6 @@ public abstract class ListsUtil {
    *          items.
    * @param renamedIDs If it is a folder. New feeds are sent for all the items
    *          beneath it.
-   * @param lastItemID : Serves as a base for incremental crawl.
-   * @param folder : If some folder level is specified, we will ignore the
-   *          changes. This because in such cases the change info returned by WS
-   *          are not consistent.
-   * @return the change token being received as per the WS call
    * @throws SharepointException
    */
   public static void processListChangesElement(
@@ -714,7 +709,7 @@ public abstract class ListsUtil {
      * @return a MessageElement array, with usually a single entry
      */
     MessageElement[] getViewFields() throws Exception;
-    
+
     /**
      * Returns the {@link org.apache.axis.message.MessageElement} array that is used
      * in the query options with GetListItemsQueryOptions and 

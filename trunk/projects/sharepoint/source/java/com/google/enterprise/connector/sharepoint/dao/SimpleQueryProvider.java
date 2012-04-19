@@ -66,7 +66,7 @@ public class SimpleQueryProvider implements QueryProvider {
    * resolved here; resolution of the parameter names are delegated to the
    * queries themselves.
    *
-   * @see {@code Query#getParameterPlaceholders()}
+   * @see Query#getParameterPlaceholders()
    * @param vendor specifies the vendor for which the queries will be provided
    * @param attr specifies additional attributes that should be considered along
    *          with vendor name while loading the queries. At max three

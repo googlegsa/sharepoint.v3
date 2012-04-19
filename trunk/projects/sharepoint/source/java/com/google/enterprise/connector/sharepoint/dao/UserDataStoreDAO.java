@@ -173,7 +173,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * collection contains only those memberships which the connector really
    * attempted insertion. But, it does not ensure if it was successful or not.
    *
-   * @param memberships
    * @throws SharepointException
    */
   public void addMemberships(Set<UserGroupMembership> memberships)
@@ -261,10 +260,10 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   }
 
   /**
-   * removes all the membership info belonging to a given list of namespaces,
-   * from the user data store
+   * Removes all the membership info belonging to a given list of namespaces,
+   * from the user data store.
    *
-   * @param namespaces list of namespaces whose membeships are to be removed
+   * @param namespaces list of namespaces whose memberships are to be removed
    * @throws SharepointException
    */
   public void removeAllMembershipsFromNamespace(Set<String> namespaces)
@@ -298,7 +297,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    *
    * @param groupMembershipMap identifies groups and their corresponding most
    *          latest membership information
-   * @param namespace
+   * @param namespace the namespace to which all the users belong
    * @throws SharepointException
    */
   public void syncGroupMemberships(
@@ -356,7 +355,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   }
 
   /**
-   * To cleanup the cache
+   * To cleanup the cache.
    */
   public void cleanupCache() {
     LOGGER.log(Level.INFO, "Current cache size , before cleanup "
@@ -367,7 +366,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   }
 
   /**
-   * cache can be disabled using this. By default, it's enabled.
+   * Cache can be disabled using this. By default, it's enabled.
    *
    * @param useCache
    */
@@ -379,9 +378,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
 
   /**
    * Removes all those elements from the passed-in collection that are found in
-   * cache
-   *
-   * @param memberships
+   * cache.
    */
   private void removeAllCached(Collection<UserGroupMembership> memberships) {
     Iterator<UserGroupMembership> itr = memberships.iterator();
@@ -399,11 +396,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
 
   /**
    * A helper method to create parameters values for the execution of queries.
-   *
-   * @param query
-   * @param memberships
-   * @return
-   * @throws SharepointException
    */
   private static SqlParameterSource[] createParameter(Query query,
       Collection<UserGroupMembership> memberships) throws SharepointException {
