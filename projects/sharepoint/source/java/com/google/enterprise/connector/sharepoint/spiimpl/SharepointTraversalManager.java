@@ -144,7 +144,7 @@ public class SharepointTraversalManager implements TraversalManager,
     }
     if (docCheckpoint) { // we are resuming a doc feed
       if (adGroupsTraversal != null) {
-        // adGroupsTraversal.resumeTraversal(checkpoint);
+        adGroupsTraversal.resumeTraversal(checkpoint);
       }
       return resumeDocTraversal(checkpoint);
     } else if ((rsSocial == null) && (sharepointClientContext.getSocialOption() 
@@ -219,7 +219,7 @@ public class SharepointTraversalManager implements TraversalManager,
     // finished then do doc traversal
     if ((socialTraversal == null) || (rsSocial == null)) {
       if (adGroupsTraversal != null) {
-        // adGroupsTraversal.startTraversal();
+        adGroupsTraversal.startTraversal();
       }
       return startDocTraversal();
     } else {
