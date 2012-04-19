@@ -179,7 +179,7 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
     } else {
       principalName = samAccountName;
     }
-    return new Principal(PrincipalType.NETBIOS, globalNamespace, principalName);
+    return new Principal(PrincipalType.UNKNOWN, globalNamespace, principalName);
   }
 
   List<Principal> getAllGroupsForTheUser(Number entityId) throws SQLException {
