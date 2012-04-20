@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -50,6 +51,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import org.apache.axis.AxisFault;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -135,15 +137,21 @@ public class GSAclWS implements AclWS{
    * ACL of a set of entities.
    *
    * @param urls Set of entity URLs whose ACLs are to be fetched
+   * @param useInheritance flag indicating use of ACL inheritance
+   * @param includePolicyAcls flag indicating if policy ACLs needs
+   *  to be part of document ACLs. With Inheritance support this value should
+   *  be false.
    * @return web service response {@link GssGetAclForUrlsResult} as it is
    */
-  private GssGetAclForUrlsResult getAclForUrls(String[] urls) {
+  private GssGetAclForUrlsResult getAclForUrls(String[] urls,
+      boolean useInheritance, boolean includePolicyAcls) {
     GssGetAclForUrlsResult result = null;
     if (null == urls || urls.length == 0) {
       return result;
     }
     try {
-      result = stub.getAclForUrlsUsingInheritance(urls, supportsInheritedAcls);
+      result = stub.getAclForUrlsUsingInheritance(urls, useInheritance,
+          includePolicyAcls);
     } catch (final AxisFault af) {
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (sharepointClientContext.getDomain() != null)) {
@@ -152,7 +160,8 @@ public class GSAclWS implements AclWS{
             + stub.getUsername() + " ]. Trying with " + username);
         stub.setUsername(username);
         try {
-          result = stub.getAclForUrlsUsingInheritance(urls, supportsInheritedAcls);
+          result = stub.getAclForUrlsUsingInheritance(urls, useInheritance,
+              includePolicyAcls);
         } catch (final Exception e) {
           LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
               + endpoint + " ].", e);
@@ -166,6 +175,20 @@ public class GSAclWS implements AclWS{
           + endpoint + " ].", e);
     }
     return result;
+  }
+  
+  /**
+   * This method will attach inherited ACLs to the document since parent
+   *  can not be crawled as per includedUrls
+   * @param urls Urls to crawl
+   * @param urlToDocMap Document map to update
+   */
+  private void fetchAclForDocumentsWithExcludedParents(String[] urls,
+      Map<String, SPDocument> urlToDocMap) {
+    GssGetAclForUrlsResult wsResult = getAclForUrls(urls, false, false);
+    if (wsResult != null) {
+      processWsResponse(wsResult, urlToDocMap);
+    }    
   }
 
   /**
@@ -196,6 +219,9 @@ public class GSAclWS implements AclWS{
     GssAcl[] allAcls = wsResult.getAllAcls();
     if (null != allAcls && allAcls.length != 0) {
       Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
+      Map<String, SPDocument> excludedParentUrlToDocMap =
+          new HashMap<String, SPDocument>();
+      List<String> docUrlsToReprocess = Lists.newArrayList();
       ACL: for (GssAcl acl : allAcls) {
         String entityUrl = acl.getEntityUrl();
         GssAce[] allAces = acl.getAllAce();
@@ -220,9 +246,25 @@ public class GSAclWS implements AclWS{
             new HashMap<String, Set<RoleType>>();
         Map<String, Set<RoleType>> deniedGroupPermissionMap =
             new HashMap<String, Set<RoleType>>(); 
-        document.setParentUrl(acl.getParentUrl());
         document.setUniquePermissions(!Boolean.parseBoolean(acl.getInheritPermissions()));
-        document.setParentId(acl.getParentId()); 
+        if (!Strings.isNullOrEmpty(acl.getParentUrl())) {
+          if (sharepointClientContext.isIncludedUrl(acl.getParentUrl())) {
+            document.setParentUrl(acl.getParentUrl());
+            document.setParentId(acl.getParentId());
+          } else {
+            if (document.isUniquePermissions()) {              
+              document.setParentUrl(sharepointClientContext.getSiteURL());
+              document.setParentId(acl.getParentId());
+            } else {
+              LOGGER.log(Level.INFO, "Document [ " +document.getUrl() 
+                  + " ] needs to be reprocessed as Parent Url [" 
+                  + acl.getParentUrl() + "] is not inluded for Traversal");
+              docUrlsToReprocess.add(document.getUrl());
+              excludedParentUrlToDocMap.put(document.getUrl(), document);
+              continue ACL;
+            }
+          }
+        }
         for (GssAce ace : allAces) {
           // Handle Principal
           GssPrincipal principal = ace.getPrincipal();
@@ -293,17 +335,24 @@ public class GSAclWS implements AclWS{
               + " for the User " + principalName);
           Set<RoleType> allowedRoleTypes = 
               Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
-          if (allowedRoleTypes != null) {
+          if (allowedRoleTypes != null && !allowedRoleTypes.isEmpty()) {
             LOGGER.fine("Principal [ "+ principalName
                 + " ] Allowed Role Types [ "+ allowedRoleTypes + " ]");
             processPermissions(principal, allowedRoleTypes, userPermissionMap,
-            groupPermissionMap, principalName, siteCollUrl, memberships) ;
+                groupPermissionMap, principalName, siteCollUrl, memberships);
           }
         }
         document.setUsersAclMap(userPermissionMap);
         document.setGroupsAclMap(groupPermissionMap);
         document.setDenyUsersAclMap(deniedUserPermissionMap);
         document.setDenyGroupsAclMap(deniedGroupPermissionMap);
+      }
+
+      if (!docUrlsToReprocess.isEmpty()) {
+        String[] arrToPass = new String[docUrlsToReprocess.size()];
+        docUrlsToReprocess.toArray(arrToPass);
+        fetchAclForDocumentsWithExcludedParents(arrToPass,
+            excludedParentUrlToDocMap);
       }
 
       if (null != sharepointClientContext.getUserDataStoreDAO()) {
@@ -437,7 +486,8 @@ public class GSAclWS implements AclWS{
         LOGGER.log(Level.CONFIG, "Getting ACL for #" + urlToDocMap.size()
             + " entities crawled from site [ " + webState.getWebUrl()
             + " ]. Document list : " + resultSet.toString());
-        GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl);
+        GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl,
+            supportsInheritedAcls, !supportsInheritedAcls);
         processWsResponse(wsResult, urlToDocMap);
       } catch (Exception e) {
         LOGGER.log(Level.WARNING, "Problem while getting ACL from site [ "
@@ -445,8 +495,7 @@ public class GSAclWS implements AclWS{
       }
     }
   }
-
-  /**
+   /**
    * Works similar to
    * {@link ListsHelper#getListItems(ListState, java.util.Calendar, String, Set)}
    * but is designed to be used only to get those list items whose ACLs have
@@ -1012,25 +1061,54 @@ public class GSAclWS implements AclWS{
     SPDocument webAppPolicy = null;
     try {
       result = stub.getAclForWebApplicationPolicy();
+    } catch (final AxisFault af) {
+      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+          && (sharepointClientContext.getDomain() != null)) {
+        final String username = Util.switchUserNameFormat(stub.getUsername());
+        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+            + stub.getUsername() + " ]. Trying with " + username);
+        stub.setUsername(username);
+        try {
+          result = stub.getAclForWebApplicationPolicy();
+        } catch (final Exception e) {
+          LOGGER.log(Level.WARNING,
+              "Call to getAclForWebApplicationPolicy failed. endpoint [ "
+              + endpoint + " ].", e);
+        }
+      } else {
+        LOGGER.log(Level.WARNING,
+            "Call to getAclForWebApplicationPolicy failed. endpoint [ "
+            + endpoint + " ].", af);
+      }
     } catch (Exception e) {
-      LOGGER.log(Level.WARNING, 
-          "Problem while getting Web application policy ACL from site [ "
-          + webState.getWebUrl() + " ]", e);
+      LOGGER.log(Level.WARNING,
+          "Call to getAclForWebApplicationPolicy failed. endpoint [ "
+          + endpoint + " ].", e);
     }
     if (result == null) {
       return webAppPolicy;
     }
-    String docID =result.getSiteCollectionUrl();
+    String siteCollectionUrlToUse;
+    if (sharepointClientContext.isIncludedUrl(result.getSiteCollectionUrl())) {
+      siteCollectionUrlToUse = result.getSiteCollectionUrl();
+    } else {
+      LOGGER.log(Level.INFO,
+          "Changing web app policy URL to connector URL ["
+          + sharepointClientContext.getSiteURL() + "] as policy URL [ "
+          + result.getSiteCollectionUrl() + " ] is not included.");
+      siteCollectionUrlToUse = sharepointClientContext.getSiteURL();
+    }    
+    String docID = siteCollectionUrlToUse;
     if (feedType == FeedType.CONTENT_FEED) {
       docID = docID + "|{" + result.getSiteCollectionGuid().toUpperCase() +"}";
     }
     // TODO Set SPType and Last Modified correctly.
-    webAppPolicy = new SPDocument(docID,result.getSiteCollectionUrl(),
+    webAppPolicy = new SPDocument(docID, siteCollectionUrlToUse,
         Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
-        result.getSiteCollectionUrl(), feedType, SPType.SP2007);
+        siteCollectionUrlToUse, feedType, SPType.SP2007);
     webAppPolicy.setDocumentType(DocumentType.ACL);
     Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
-    urlToDocMap.put(webAppPolicy.getUrl(), webAppPolicy);
+    urlToDocMap.put(result.getSiteCollectionUrl(), webAppPolicy);
     processWsResponse(result, urlToDocMap);
     webAppPolicy.setWebAppPolicyDoc(true);
     return webAppPolicy;
