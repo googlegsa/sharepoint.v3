@@ -806,7 +806,7 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
     {
-        return GetAclForUrlsUsingInheritance(urls, false);
+        return GetAclForUrlsUsingInheritance(urls, false, true);
     } 
     
     /// <summary>
@@ -814,9 +814,10 @@ public class GssAclMonitor
     /// </summary>
     /// <param name="urls">Entity URLs whose ACLs are to be returned</param>
     /// <param name="bUseInheritance">flag indicating use of ACL inheritance</param>
+    /// <param name="bIncludePolicyAcls">flag indicating to include Web Application Policy ACLs</param>
     /// <returns></returns>
     [WebMethod]
-    public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls,Boolean bUseInheritance)
+    public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls,Boolean bUseInheritance, Boolean bIncludePolicyAcls)
     {
         SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
         using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
@@ -826,7 +827,7 @@ public class GssAclMonitor
                 GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
                 List<GssAcl> allAcls = new List<GssAcl>();
                 Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
-                if (!bUseInheritance)
+                if (bIncludePolicyAcls)
                 {
                     try
                     {
@@ -881,7 +882,7 @@ public class GssAclMonitor
                                 {
                                     acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
                                 }
-                                if (bUseInheritance)
+                                if (!bIncludePolicyAcls)
                                 {
                                     acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
                                     acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
@@ -1430,7 +1431,7 @@ public sealed class GssAclUtility
         }
         else
         {
-            return web.Site.OpenWeb();
+            return web.Site.OpenWeb(web.ID);
         }
 
         SPList list = web.GetList(url);
@@ -1492,7 +1493,7 @@ public sealed class GssAclUtility
             return list;
         }
         // TODO Need to check this. 
-        return web.Site.OpenWeb();
+        return web.Site.OpenWeb(web.ID);
 
 
     }
