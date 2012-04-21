@@ -1,0 +1,6 @@
+The code base for Google Search Box for SharePoint is arranged as follows:
+============================================================================
+1. The directory "Common Files" contains all the files and components which are common to both SharePoint 2007 and SharePoint 2010
+2. The directory "GoogleSearchBoxTestUtility" contains all the files and components related to Google Search Box Test Utility
+3. The directory "SP2007" contains all the files and components specific to SharePoint 2007.
+4. The directory "SP2010" contains all the files and components specific to SharePoint 2010.

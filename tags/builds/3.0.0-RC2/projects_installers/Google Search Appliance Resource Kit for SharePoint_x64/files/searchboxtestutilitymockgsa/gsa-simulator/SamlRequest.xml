@@ -1,0 +1,4 @@
+﻿<?xml version="1.0"?>
+<samlp:AuthnRequest AssertionConsumerServiceURL="/gsa-simulator/SamlArtifactConsumer.aspx" Destination="/saml-bridge/Login.aspx" ID="%ID" IsPassive="false" IssueInstant="%INSTANT" ProviderName="GSA Simulator" Version="2.0" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+  <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">http://google.com/enterprise/gsa-simulator/%ISSUER</saml:Issuer>
+</samlp:AuthnRequest>
