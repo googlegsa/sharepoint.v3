@@ -1,0 +1,43 @@
+﻿<SOAP-ENV:Envelope
+  xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Body>
+    <samlp:ArtifactResponse
+      xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+      xmlns="urn:oasis:names:tc:SAML:2.0:assertion"
+      ID="%MESSAGE_ID" Version="2.0"
+      InResponseTo="%REQID"
+      IssueInstant="%INSTANT">
+      <Issuer>%ISSUER</Issuer>
+      <samlp:Status>
+        <samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:%STATUS"/>
+      </samlp:Status>
+      <samlp:Response
+        ID="%RESPONSE_ID"
+        Version="2.0"
+        IssueInstant="%INSTANT">
+        <samlp:Status>
+          <samlp:StatusCode
+            Value="urn:oasis:names:tc:SAML:2.0:status:%STATUS"/>
+        </samlp:Status>
+        <Assertion
+          Version="2.0"
+          ID="%ASSERTION_ID"
+          IssueInstant="%INSTANT">
+          <Issuer>"%ISSUER"</Issuer>
+          <Subject>
+            <NameID>%SUBJECT</NameID>
+          </Subject>
+          <AuthnStatement
+            AuthnInstant="%INSTANT">
+            <AuthnContext>
+              <AuthnContextClassRef>
+                urn:oasis:names:tc:SAML:2.0:ac:classes:%CLASS
+              </AuthnContextClassRef>
+            </AuthnContext>
+          </AuthnStatement>
+        </Assertion>
+      </samlp:Response>
+    </samlp:ArtifactResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+

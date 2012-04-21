@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" ?>
+<soap11:Envelope xmlns:soap11="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap11:Body>
+    <samlp:ArtifactResolve 
+      ID="%ID" 
+      IssueInstant="%INSTANT" 
+      Version="2.0" 
+      xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+      <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">http://google.com/enterprise/gsa-simulator/%ISSUER</saml:Issuer>
+      <samlp:Artifact>%ARTIFACT</samlp:Artifact>
+    </samlp:ArtifactResolve>
+  </soap11:Body>
+</soap11:Envelope>
+
