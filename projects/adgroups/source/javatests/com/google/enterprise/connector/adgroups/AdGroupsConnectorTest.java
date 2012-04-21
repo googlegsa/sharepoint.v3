@@ -166,7 +166,9 @@ public class AdGroupsConnectorTest extends TestCase {
         Set<AdTestEntity> groupsCorrect = user.getAllGroups();
 
         Set<String> groups = new HashSet<String>();
-        for (Principal p : (Collection<Principal>) response.getGroups()) {
+        @SuppressWarnings("unchecked") Collection<Principal> principals =
+            (Collection<Principal>) response.getGroups();
+        for (Principal p : principals) {
           groups.add(p.getName());
         }
 
