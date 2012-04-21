@@ -1524,17 +1524,16 @@ public sealed class GssAclUtility
                 }
                 if (oFile != null)
                 {
+                    aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
                     //To check if Item is available at root level or inside folder
                     if (String.Compare(oFile.ParentFolder.ServerRelativeUrl, oChildItem.ParentList.RootFolder.ServerRelativeUrl, true) == 0)
                     {
-                        //If item is available at root level (outside folder) return default view URL for SPList (same URL is being used in ListState by connector)
-                        aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
+                        //If item is available at root level (outside folder)                    
                         aclToUpdate.ParentId = String.Format("{{{0}}}",oChildItem.ParentList.ID.ToString());
                     }
                     else
                     {
-                        //If item is available inside folder return folder Url. Other option is to return DefaultView url with rootfolder parameter
-                        aclToUpdate.ParentUrl = strSiteUrl + oFile.ParentFolder.ServerRelativeUrl;
+                        //If item is available inside folder                     
                         aclToUpdate.ParentId = oFile.ParentFolder.Item.ID.ToString();
                     }
                 }

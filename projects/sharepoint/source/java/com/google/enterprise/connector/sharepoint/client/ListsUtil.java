@@ -511,27 +511,8 @@ public abstract class ListsUtil {
     final StringBuffer url = new StringBuffer();
     String displayUrl = null;
     final String urlPrefix = 
-            Util.getWebApp(sharepointClientContext.getSiteURL());
-    String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
-    fsObjType = Util.normalizeMetadataValue(fsObjType);
-    LOGGER.log(Level.INFO, "fsObjType [ " + fsObjType
-             + " ]. ");
-    // fsobjtype = 1 indicates this is a folder.
-    // (Applicable for Default Folder content Type as well as for
-    // Custom folder content type).
-    // Checking content type = folder might not be sufficient 
-    // as there is a possibility of custom folder content type
-    // TODO Check all the CAML queries checking 
-    // for Content Type = folder and change it to FSObjType = 1. 
-    if (fsObjType.equals("1")) {    
-      // This is a Folder Item.
-      // For folder item URL will be calculated as Web Url + filref for folder
-      url.setLength(0);
-      url.append(urlPrefix);
-      url.append(SPConstants.SLASH);
-      url.append(fileref);
-      displayUrl = url.toString();    
-    } else if (list.isDocumentLibrary()) {
+        Util.getWebApp(sharepointClientContext.getSiteURL()); 
+    if (list.isDocumentLibrary()) {
       if (fileref == null) {
         return null;
       }
@@ -620,12 +601,8 @@ public abstract class ListsUtil {
       calMod = list.getLastModCal();
     }
 
-    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-      if (fsObjType.equals("1")) {
-        docId = url.toString() + SPConstants.DOC_TOKEN + docId;      
-      } else {
-        docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;
-      }
+    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {      
+      docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;      
     }
     doc = new SPDocument(docId, url.toString(), calMod, author, strObjectType,
         list.getParentWebState().getTitle(),
