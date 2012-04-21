@@ -223,7 +223,7 @@ public abstract class ListsUtil {
 
     return new MessageElement[] { getMeFromString(strMyString) };
   }
-  
+
   /**
    * Returns a MessageElement element object for a given string in xml format
    *
@@ -242,7 +242,7 @@ public abstract class ListsUtil {
     final Element ele = doc.getDocumentElement();
     return new MessageElement(ele);
   }
-  
+
   /**
    * View Fields required for making web service call
    *
@@ -257,7 +257,7 @@ public abstract class ListsUtil {
   }
 
   /**
-   * Generates teh query options required for making Sharepoint lists 
+   * Generates the query options required for making Sharepoint lists
    * web service requests.
    *
    * @param recursion
@@ -300,7 +300,7 @@ public abstract class ListsUtil {
     final MessageElement[] meArray = { me };
     return meArray;
   }
-  
+
   /**
    * Process the rs:changes element as returned by getListItemChangesSinceToken.
    *
@@ -312,11 +312,6 @@ public abstract class ListsUtil {
    *          items.
    * @param renamedIDs If it is a folder. New feeds are sent for all the items
    *          beneath it.
-   * @param lastItemID : Serves as a base for incremental crawl.
-   * @param folder : If some folder level is specified, we will ignore the
-   *          changes. This because in such cases the change info returned by WS
-   *          are not consistent.
-   * @return the change token being received as per the WS call
    * @throws SharepointException
    */
   public static void processListChangesElement(
@@ -516,27 +511,8 @@ public abstract class ListsUtil {
     final StringBuffer url = new StringBuffer();
     String displayUrl = null;
     final String urlPrefix = 
-            Util.getWebApp(sharepointClientContext.getSiteURL());
-    String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
-    fsObjType = Util.normalizeMetadataValue(fsObjType);
-    LOGGER.log(Level.INFO, "fsObjType [ " + fsObjType
-             + " ]. ");
-    // fsobjtype = 1 indicates this is a folder.
-    // (Applicable for Default Folder content Type as well as for
-    // Custom folder content type).
-    // Checking content type = folder might not be sufficient 
-    // as there is a possibility of custom folder content type
-    // TODO Check all the CAML queries checking 
-    // for Content Type = folder and change it to FSObjType = 1. 
-    if (fsObjType.equals("1")) {    
-      // This is a Folder Item.
-      // For folder item URL will be calculated as Web Url + filref for folder
-      url.setLength(0);
-      url.append(urlPrefix);
-      url.append(SPConstants.SLASH);
-      url.append(fileref);
-      displayUrl = url.toString();    
-    } else if (list.isDocumentLibrary()) {
+        Util.getWebApp(sharepointClientContext.getSiteURL()); 
+    if (list.isDocumentLibrary()) {
       if (fileref == null) {
         return null;
       }
@@ -625,12 +601,8 @@ public abstract class ListsUtil {
       calMod = list.getLastModCal();
     }
 
-    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-      if (fsObjType.equals("1")) {
-        docId = url.toString() + SPConstants.DOC_TOKEN + docId;      
-      } else {
-        docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;
-      }
+    if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {      
+      docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;      
     }
     doc = new SPDocument(docId, url.toString(), calMod, author, strObjectType,
         list.getParentWebState().getTitle(),
@@ -714,7 +686,7 @@ public abstract class ListsUtil {
      * @return a MessageElement array, with usually a single entry
      */
     MessageElement[] getViewFields() throws Exception;
-    
+
     /**
      * Returns the {@link org.apache.axis.message.MessageElement} array that is used
      * in the query options with GetListItemsQueryOptions and 

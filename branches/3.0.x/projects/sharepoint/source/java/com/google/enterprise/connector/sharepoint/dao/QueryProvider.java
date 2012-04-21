@@ -100,8 +100,7 @@ public interface QueryProvider {
  * parameter values which will be passes during batch execution. Entities and
  * Attributes required ion the query must not be mentioned as placeholders.
  *
- * @see {@code SimpleQueryProvider#registerQuery(Query)}
- *      <p/>
+ * @see SimpleQueryProvider#registerQuery(Query)
  * @author nitendra_thakur
  */
 enum Query {
@@ -158,10 +157,8 @@ enum Query {
   }
 
   /**
-   * Creates placeholder names that should be used while construction of the
-   * actual SQL query
-   *
-   * @return
+   * Creates placeholder names that should be used while constructing the
+   * actual SQL query.
    */
   public List<String> getParameterPlaceholders() {
     List<String> placeholders = new LinkedList<String>();

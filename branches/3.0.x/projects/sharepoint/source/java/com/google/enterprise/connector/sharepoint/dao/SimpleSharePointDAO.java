@@ -172,10 +172,7 @@ public class SimpleSharePointDAO extends SimpleJdbcDaoSupport implements
   }
 
   /**
-   * Shorthand for getting queries through {@link QueryProvider}
-   *
-   * @param query
-   * @return
+   * Shorthand for getting queries through {@link QueryProvider}.
    */
   protected String getSqlQuery(Query query) {
     return queryProvider.getSqlQuery(query);
