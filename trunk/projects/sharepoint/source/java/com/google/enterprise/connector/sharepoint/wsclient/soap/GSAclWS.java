@@ -10,7 +10,6 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-
 // limitations under the License.
 
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
@@ -18,6 +17,10 @@ package com.google.enterprise.connector.sharepoint.wsclient.soap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.enterprise.connector.sharepoint.client.ListsHelper;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -44,11 +47,10 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
-import com.google.enterprise.connector.sharepoint.client.ListsHelper;
+import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+
 import org.apache.axis.AxisFault;
 
 import java.util.ArrayList;
@@ -176,7 +178,7 @@ public class GSAclWS implements AclWS{
     }
     return result;
   }
-  
+
   /**
    * This method will attach inherited ACLs to the document since parent
    *  can not be crawled as per includedUrls
@@ -188,22 +190,16 @@ public class GSAclWS implements AclWS{
     GssGetAclForUrlsResult wsResult = getAclForUrls(urls, false, false);
     if (wsResult != null) {
       processWsResponse(wsResult, urlToDocMap);
-    }    
+    }
   }
 
   /**
    * Used to parse the response of {@link GSAclWS#getAclForUrls(String[])} and
    * update the ACLs into the {@link SPDocument} The set of document objects
-   * must be passed in form of a map with their URLs as keys. If a user have
+   * must be passed in form of a map with their URLs as keys. If a user has
    * more than one permission assigned on SHarePoint, connector will include
    * each of them in the ACE. Hence, the {@link RoleType} that is sent to CM may
    * include a list of role types.
-   * <p/>
-   * Also, due to the current GSA limitation, deny permissions are not handled.
-   * We may include some logics to decide when to ignore a DENY when to skip.
-   * But, that would be an overkill as this limitation is going to be fixed in
-   * future GSA releases
-   * <p/>
    *
    * @param wsResult Web Service response to be parsed
    * @param urlToDocMap Documents whose ACLs are to be set. The keys in the map
@@ -211,163 +207,166 @@ public class GSAclWS implements AclWS{
    */
   private void processWsResponse(GssGetAclForUrlsResult wsResult,
       Map<String, SPDocument> urlToDocMap) {
-    if (null == wsResult || null == urlToDocMap) {
+    if (wsResult == null || urlToDocMap == null) {
       return;
     }
     LOGGER.log(Level.CONFIG, "Building ACLs from the WS response. WSLog [ "
         + wsResult.getLogMessage() + " ]");
     GssAcl[] allAcls = wsResult.getAllAcls();
-    if (null != allAcls && allAcls.length != 0) {
-      Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
-      Map<String, SPDocument> excludedParentUrlToDocMap =
-          new HashMap<String, SPDocument>();
-      List<String> docUrlsToReprocess = Lists.newArrayList();
-      ACL: for (GssAcl acl : allAcls) {
-        String entityUrl = acl.getEntityUrl();
-        GssAce[] allAces = acl.getAllAce();
-        if (null == entityUrl || null == allAces) {
-          LOGGER.log(Level.WARNING, "Either entityUrl [ " + entityUrl
-              + " ] is unavailable or No ACE found in the ACL. WSLog [ "
-              + acl.getLogMessage() + " ] ");
-          continue;
-        }
-        SPDocument document = urlToDocMap.get(entityUrl);
-        if (null == document) {
-          LOGGER.log(Level.WARNING, "No document found in urlToDocMap map for the entityUrl [ "
-              + entityUrl + " ], WSLog [ " + acl.getLogMessage() + " ] ");
-          continue;
-        }
-        LOGGER.log(Level.CONFIG, "WsLog [ " + acl.getLogMessage() + " ] ");
-        Map<String, Set<RoleType>> userPermissionMap =
-            new HashMap<String, Set<RoleType>>();
-        Map<String, Set<RoleType>> groupPermissionMap =
-            new HashMap<String, Set<RoleType>>();
-        Map<String, Set<RoleType>> deniedUserPermissionMap =
-            new HashMap<String, Set<RoleType>>();
-        Map<String, Set<RoleType>> deniedGroupPermissionMap =
-            new HashMap<String, Set<RoleType>>(); 
-        document.setUniquePermissions(!Boolean.parseBoolean(acl.getInheritPermissions()));
-        if (!Strings.isNullOrEmpty(acl.getParentUrl())) {
-          if (sharepointClientContext.isIncludedUrl(acl.getParentUrl())) {
-            document.setParentUrl(acl.getParentUrl());
+    if (allAcls == null || allAcls.length == 0) {
+      return;
+    }
+
+    Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
+    Map<String, SPDocument> excludedParentUrlToDocMap = Maps.newHashMap();
+    List<String> docUrlsToReprocess = Lists.newArrayList();
+ ACL: for (GssAcl acl : allAcls) {
+      String entityUrl = acl.getEntityUrl();
+      GssAce[] allAces = acl.getAllAce();
+      if (null == entityUrl || null == allAces) {
+        LOGGER.log(Level.WARNING, "Either entityUrl [ " + entityUrl
+            + " ] is unavailable or No ACE found in the ACL. WSLog [ "
+            + acl.getLogMessage() + " ] ");
+        continue;
+      }
+      SPDocument document = urlToDocMap.get(entityUrl);
+      if (document == null) {
+        LOGGER.warning(
+            "No document found in urlToDocMap map for the entityUrl [ "
+            + entityUrl + " ], WSLog [ " + acl.getLogMessage() + " ] ");
+        continue;
+      }
+      LOGGER.log(Level.CONFIG, "WsLog [ " + acl.getLogMessage() + " ] ");
+      Map<String, Set<RoleType>> userPermissionMap = Maps.newHashMap();
+      Map<String, Set<RoleType>> groupPermissionMap = Maps.newHashMap();
+      Map<String, Set<RoleType>> deniedUserPermissionMap = Maps.newHashMap();
+      Map<String, Set<RoleType>> deniedGroupPermissionMap = Maps.newHashMap();
+      document.setUniquePermissions(
+          !Boolean.parseBoolean(acl.getInheritPermissions()));
+      if (!Strings.isNullOrEmpty(acl.getParentUrl())) {
+        if (sharepointClientContext.isIncludedUrl(acl.getParentUrl())) {
+          document.setParentUrl(acl.getParentUrl());
+          document.setParentId(acl.getParentId());
+        } else {
+          if (document.isUniquePermissions()) {
+            document.setParentUrl(sharepointClientContext.getSiteURL());
             document.setParentId(acl.getParentId());
           } else {
-            if (document.isUniquePermissions()) {              
-              document.setParentUrl(sharepointClientContext.getSiteURL());
-              document.setParentId(acl.getParentId());
-            } else {
-              LOGGER.log(Level.INFO, "Document [ " +document.getUrl() 
-                  + " ] needs to be reprocessed as Parent Url [" 
-                  + acl.getParentUrl() + "] is not inluded for Traversal");
-              docUrlsToReprocess.add(document.getUrl());
-              excludedParentUrlToDocMap.put(document.getUrl(), document);
-              continue ACL;
-            }
+            LOGGER.log(Level.INFO, "Document [ " +document.getUrl()
+                + " ] needs to be reprocessed as Parent Url ["
+                + acl.getParentUrl() + "] is not inluded for Traversal");
+            docUrlsToReprocess.add(document.getUrl());
+            excludedParentUrlToDocMap.put(document.getUrl(), document);
+            continue ACL;
           }
         }
-        for (GssAce ace : allAces) {
-          // Handle Principal
-          GssPrincipal principal = ace.getPrincipal();
-          if (null == principal) {
-            LOGGER.log(Level.WARNING, "No Principal found in ace.");
-            continue;
-          }
-          if (null == principal.getType() || null == principal.getName()) {
-            LOGGER.log(Level.WARNING, "Either Principal Name [ "
-                + principal.getName() + " ] or Principal Type [ "
-                + principal.getType() + " ]  is unavailable");
-            continue;
-          }
+      }
+      for (GssAce ace : allAces) {
+        // Handle Principal
+        GssPrincipal principal = ace.getPrincipal();
+        if (null == principal) {
+          LOGGER.log(Level.WARNING, "No Principal found in ace.");
+          continue;
+        }
+        if (null == principal.getType() || null == principal.getName()) {
+          LOGGER.log(Level.WARNING, "Either Principal Name [ "
+              + principal.getName() + " ] or Principal Type [ "
+              + principal.getType() + " ]  is unavailable");
+          continue;
+        }
 
-          // Handle Permissions
-          GssSharepointPermission permissions = ace.getPermission();
-          if (null == permissions) {
-            LOGGER.log(Level.WARNING, "No permissions found for Principal [ "
-                + principal.getName() + " ] ");
-            continue;
-          }
-          // Check to determine whether the object-type of the document is list
-          // list-item or site.
+        // Handle Permissions
+        GssSharepointPermission permissions = ace.getPermission();
+        if (null == permissions) {
+          LOGGER.log(Level.WARNING, "No permissions found for Principal [ "
+              + principal.getName() + " ] ");
+          continue;
+        }
+        // Check to determine whether the object-type of the document is list
+        // list-item or site.
 
-          ObjectType objectType = ObjectType.ITEM;
+        ObjectType objectType = ObjectType.ITEM;
 
-          if (document.getObjType().equals(SPConstants.SITE)) {
-            objectType = ObjectType.SITE_LANDING_PAGE;
-          } else if (null != document.getParentList()) {
-            if (document.getParentList().getPrimaryKey().equals(Util.getOriginalDocId(document.getDocId(), document.getFeedType()))) {
-              objectType = ObjectType.LIST;
-            }
+        if (document.getObjType().equals(SPConstants.SITE)) {
+          objectType = ObjectType.SITE_LANDING_PAGE;
+        } else if (null != document.getParentList()) {
+          if (document.getParentList().getPrimaryKey().equals(
+                  Util.getOriginalDocId(document.getDocId(),
+                      document.getFeedType()))) {
+            objectType = ObjectType.LIST;
           }
-          final String principalName = getPrincipalName(principal);
-          String siteCollUrl = wsResult.getSiteCollectionUrl();
-          String[] deniedPermissions = permissions.getDeniedPermission();
-          if (null != deniedPermissions) {
-            Set<RoleType> deniedRoleTypes =
-                Util.getRoleTypesFor(deniedPermissions, objectType);
-            if (null != deniedRoleTypes && deniedRoleTypes.size() > 0) {        
-              LOGGER.fine("Denied Permission list "
-                  + Arrays.asList(permissions.getDeniedPermission())
-                  + " for the User " + principalName);
-              LOGGER.fine("Principal [" + principalName
-                  + "] Denied Role Types [ " + deniedRoleTypes + " ]");
-              //Pass denied permissions only if Reader role is denied.
-              if (deniedRoleTypes.contains(RoleType.READER)) {
-                if (supportsInheritedAcls) {
-                  LOGGER.fine("Processing Deny permissions" 
-                      + " for Principal ["+ principalName + "]");
-                  processPermissions(principal, deniedRoleTypes,
-                      deniedUserPermissionMap, deniedGroupPermissionMap,
-                      principalName, siteCollUrl, memberships);
-                } else {
-                  // Skipping ACL as denied ACLs are not supported as per
-                  // Traversal Context.
-                  LOGGER.warning("Skipping ACL as Deny permissions are detected" 
-                      + "for Document [" + entityUrl + "] for Principal [" 
-                      + principalName + " ] when Supports ACL [" 
-                      + supportsInheritedAcls + "].");
-                  continue ACL;                  
-                }
+        }
+        final String principalName = getPrincipalName(principal);
+        String siteCollUrl = wsResult.getSiteCollectionUrl();
+        String[] deniedPermissions = permissions.getDeniedPermission();
+        if (null != deniedPermissions) {
+          Set<RoleType> deniedRoleTypes =
+              Util.getRoleTypesFor(deniedPermissions, objectType);
+          if (null != deniedRoleTypes && deniedRoleTypes.size() > 0) {
+            LOGGER.fine("Denied Permission list "
+                + Arrays.asList(permissions.getDeniedPermission())
+                + " for the User " + principalName);
+            LOGGER.fine("Principal [" + principalName
+                + "] Denied Role Types [ " + deniedRoleTypes + " ]");
+            //Pass denied permissions only if Reader role is denied.
+            if (deniedRoleTypes.contains(RoleType.READER)) {
+              if (supportsInheritedAcls) {
+                LOGGER.fine("Processing Deny permissions"
+                    + " for Principal ["+ principalName + "]");
+                processPermissions(principal, deniedRoleTypes,
+                    deniedUserPermissionMap, deniedGroupPermissionMap,
+                    principalName, siteCollUrl, memberships);
+              } else {
+                // Skipping ACL as denied ACLs are not supported as per
+                // Traversal Context.
+                LOGGER.warning("Skipping ACL as Deny permissions are detected"
+                    + "for Document [" + entityUrl + "] for Principal ["
+                    + principalName + " ] when Supports ACL ["
+                    + supportsInheritedAcls + "].");
+                continue ACL;
               }
             }
           }
-          LOGGER.fine("Permission list "
-              + Arrays.asList(permissions.getAllowedPermissions())
-              + " for the User " + principalName);
-          Set<RoleType> allowedRoleTypes = 
-              Util.getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
-          if (allowedRoleTypes != null && !allowedRoleTypes.isEmpty()) {
-            LOGGER.fine("Principal [ "+ principalName
-                + " ] Allowed Role Types [ "+ allowedRoleTypes + " ]");
-            processPermissions(principal, allowedRoleTypes, userPermissionMap,
-                groupPermissionMap, principalName, siteCollUrl, memberships);
-          }
         }
-        document.setUsersAclMap(userPermissionMap);
-        document.setGroupsAclMap(groupPermissionMap);
-        document.setDenyUsersAclMap(deniedUserPermissionMap);
-        document.setDenyGroupsAclMap(deniedGroupPermissionMap);
-      }
-
-      if (!docUrlsToReprocess.isEmpty()) {
-        String[] arrToPass = new String[docUrlsToReprocess.size()];
-        docUrlsToReprocess.toArray(arrToPass);
-        fetchAclForDocumentsWithExcludedParents(arrToPass,
-            excludedParentUrlToDocMap);
-      }
-
-      if (null != sharepointClientContext.getUserDataStoreDAO()) {
-        try {
-          sharepointClientContext.getUserDataStoreDAO().addMemberships(memberships);
-        } catch (Exception e) {
-          LOGGER.log(Level.WARNING, "Failed to add #" + memberships.size()
-              + " memberships in user data store. ", e);
+        LOGGER.fine("Permission list "
+            + Arrays.asList(permissions.getAllowedPermissions())
+            + " for the User " + principalName);
+        Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(
+            permissions.getAllowedPermissions(), objectType);
+        if (allowedRoleTypes != null && !allowedRoleTypes.isEmpty()) {
+          LOGGER.fine("Principal [ "+ principalName
+              + " ] Allowed Role Types [ "+ allowedRoleTypes + " ]");
+          processPermissions(principal, allowedRoleTypes, userPermissionMap,
+              groupPermissionMap, principalName, siteCollUrl, memberships);
         }
+      }
+      document.setUsersAclMap(userPermissionMap);
+      document.setGroupsAclMap(groupPermissionMap);
+      document.setDenyUsersAclMap(deniedUserPermissionMap);
+      document.setDenyGroupsAclMap(deniedGroupPermissionMap);
+    }
+
+    if (!docUrlsToReprocess.isEmpty()) {
+      String[] arrToPass = new String[docUrlsToReprocess.size()];
+      docUrlsToReprocess.toArray(arrToPass);
+      fetchAclForDocumentsWithExcludedParents(arrToPass,
+          excludedParentUrlToDocMap);
+    }
+
+    if (null != sharepointClientContext.getUserDataStoreDAO()) {
+      try {
+        sharepointClientContext.getUserDataStoreDAO().addMemberships(
+            memberships);
+      } catch (Exception e) {
+        LOGGER.log(Level.WARNING, "Failed to add #" + memberships.size()
+            + " memberships in user data store. ", e);
       }
     }
   }
 
   /**
    * Method to process GssAcl permissions.
+   *
    * @param principal GsssPrincipal Object to process.
    * @param roleTypes  Allowed / denied RoleTypes.
    * @param userPermissionMap Permissions Map to add user permissions.
@@ -382,8 +381,12 @@ public class GSAclWS implements AclWS{
       String webStateUrl, Set<UserGroupMembership> memberships) {
     if (PrincipalType.USER.equals(principal.getType())) {
       userPermissionMap.put(principalName, roleTypes);
-    } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())
-          || PrincipalType.SPGROUP.equals(principal.getType())) {
+    } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())) {
+      groupPermissionMap.put(principalName, roleTypes);
+    } else if (PrincipalType.SPGROUP.equals(principal.getType())) {
+      groupPermissionMap.put("[" + webStateUrl + "]" + principalName,
+          roleTypes);
+
       // If it's a SharePoint group, add the membership info
       // into the User Data Store
       if (PrincipalType.SPGROUP.equals(principal.getType())
@@ -395,17 +398,10 @@ public class GSAclWS implements AclWS{
               webStateUrl));
         }
       }
-      if (PrincipalType.SPGROUP.equals(principal.getType())) {
-        // FIXME This is temporary
-        groupPermissionMap.put(new StringBuffer().append("[").append(webStateUrl).append("]").
-            append(principalName).toString(), roleTypes);
-      } else {
-          groupPermissionMap.put(principalName, roleTypes);
-      }
     } else {
       LOGGER.log(Level.WARNING, "Skipping ACE for principal [ "
           + principal.getName() + " ] because its type [ "
-          + principal.getType() + " ]  is unknown");
+          + principal.getType() + " ] is unknown");
     }
   }
 
@@ -469,7 +465,7 @@ public class GSAclWS implements AclWS{
     }
     List<SPDocument> documents = resultSet.getDocuments();
     if (null != documents) {
-      Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
+      Map<String, SPDocument> urlToDocMap = Maps.newHashMap();
       String[] allUrlsForAcl = new String[resultSet.size()];
       try {
         int i = 0;
@@ -910,7 +906,8 @@ public class GSAclWS implements AclWS{
    */
   private Map<Integer, Set<UserGroupMembership>> processChangedGroupsToSync(
       Set<String> changedGroups) {
-    Map<Integer, Set<UserGroupMembership>> groupsToMemberships = new HashMap<Integer, Set<UserGroupMembership>>();
+    Map<Integer, Set<UserGroupMembership>> groupsToMemberships =
+        Maps.newHashMap();
     if (null != changedGroups && changedGroups.size() > 0) {
       String[] groupIds = new String[changedGroups.size()];
       changedGroups.toArray(groupIds);
@@ -1097,7 +1094,7 @@ public class GSAclWS implements AclWS{
           + sharepointClientContext.getSiteURL() + "] as policy URL [ "
           + result.getSiteCollectionUrl() + " ] is not included.");
       siteCollectionUrlToUse = sharepointClientContext.getSiteURL();
-    }    
+    }
     String docID = siteCollectionUrlToUse;
     if (feedType == FeedType.CONTENT_FEED) {
       docID = docID + "|{" + result.getSiteCollectionGuid().toUpperCase() +"}";
@@ -1107,7 +1104,7 @@ public class GSAclWS implements AclWS{
         Calendar.getInstance(), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
         siteCollectionUrlToUse, feedType, SPType.SP2007);
     webAppPolicy.setDocumentType(DocumentType.ACL);
-    Map<String, SPDocument> urlToDocMap = new HashMap<String, SPDocument>();
+    Map<String, SPDocument> urlToDocMap = Maps.newHashMap();
     urlToDocMap.put(result.getSiteCollectionUrl(), webAppPolicy);
     processWsResponse(result, urlToDocMap);
     webAppPolicy.setWebAppPolicyDoc(true);
