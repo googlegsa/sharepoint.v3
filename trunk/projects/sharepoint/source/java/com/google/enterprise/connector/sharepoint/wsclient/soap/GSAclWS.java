@@ -47,6 +47,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
+import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
@@ -237,10 +238,11 @@ public class GSAclWS implements AclWS{
         continue;
       }
       LOGGER.log(Level.CONFIG, "WsLog [ " + acl.getLogMessage() + " ] ");
-      Map<String, Set<RoleType>> userPermissionMap = Maps.newHashMap();
-      Map<String, Set<RoleType>> groupPermissionMap = Maps.newHashMap();
-      Map<String, Set<RoleType>> deniedUserPermissionMap = Maps.newHashMap();
-      Map<String, Set<RoleType>> deniedGroupPermissionMap = Maps.newHashMap();
+      Map<Principal, Set<RoleType>> userPermissionMap = Maps.newHashMap();
+      Map<Principal, Set<RoleType>> groupPermissionMap = Maps.newHashMap();
+      Map<Principal, Set<RoleType>> deniedUserPermissionMap = Maps.newHashMap();
+      Map<Principal, Set<RoleType>> deniedGroupPermissionMap =
+          Maps.newHashMap();
       document.setUniquePermissions(
           !Boolean.parseBoolean(acl.getInheritPermissions()));
       if (!Strings.isNullOrEmpty(acl.getParentUrl())) {
@@ -376,15 +378,21 @@ public class GSAclWS implements AclWS{
    * @param memberships UserGroup Membership object
    */
   private void processPermissions(GssPrincipal principal,
-      Set<RoleType> roleTypes, Map<String, Set<RoleType>> userPermissionMap,
-      Map<String, Set<RoleType>> groupPermissionMap, String principalName,
+      Set<RoleType> roleTypes, Map<Principal, Set<RoleType>> userPermissionMap,
+      Map<Principal, Set<RoleType>> groupPermissionMap, String principalName,
       String webStateUrl, Set<UserGroupMembership> memberships) {
+    String globalNamespace = sharepointClientContext.getGoogleGlobalNamespace();
+    String localNamespace = sharepointClientContext.getGoogleLocalNamespace();
     if (PrincipalType.USER.equals(principal.getType())) {
-      userPermissionMap.put(principalName, roleTypes);
+      userPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+              globalNamespace, principalName), roleTypes);
     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())) {
-      groupPermissionMap.put(principalName, roleTypes);
+      groupPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+              globalNamespace, principalName), roleTypes);
     } else if (PrincipalType.SPGROUP.equals(principal.getType())) {
-      groupPermissionMap.put("[" + webStateUrl + "]" + principalName,
+      groupPermissionMap.put(
+          new Principal(SpiConstants.PrincipalType.UNQUALIFIED, localNamespace,
+              "[" + webStateUrl + "]" + principalName),
           roleTypes);
 
       // If it's a SharePoint group, add the membership info
