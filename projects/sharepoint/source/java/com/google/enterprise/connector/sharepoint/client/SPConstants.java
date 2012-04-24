@@ -49,7 +49,7 @@ public class SPConstants {
       } else if (CONTENT_FEED.toString().equalsIgnoreCase(feedType)) {
         return CONTENT_FEED;
       } else if (ACL_FEED.toString().equalsIgnoreCase(feedType)) {
-          return ACL_FEED;
+        return ACL_FEED;
       } else {
         return null;
       }
