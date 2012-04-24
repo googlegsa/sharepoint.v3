@@ -214,7 +214,10 @@ public class MultiCrawl extends Thread {
       crawlEntities = new HashMap<String, LdapEntity>();
       for (LdapServer server : servers) {
 
-        server.search("(objectClass=group)", new String[]{"uSNChanged", "sAMAccountName", "canonicalName", "member", "objectSid;binary"});
+	// Restrict to security groups, where
+	// LDAP_MATCHING_RULE_BIT_AND = 1.2.840.113556.1.4.803
+	// and ADS_GROUP_TYPE_SECURITY_ENABLED = 2147483648.
+        server.search("(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))", new String[]{"uSNChanged", "sAMAccountName", "canonicalName", "member", "objectSid;binary"});
         server.search("(objectClass=user)", new String[]{"uSNChanged", "userPrincipalName", "sAMAccountName", "canonicalName", "objectSid;binary", "primaryGroupId"});
         
         LOGGER.info("Entities: " + crawlEntities.size());
