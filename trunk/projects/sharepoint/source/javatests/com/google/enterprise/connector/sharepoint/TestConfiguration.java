@@ -557,11 +557,11 @@ public class TestConfiguration {
     sharepointClientContext.setCacheRefreshInterval(TestConfiguration.refreshInterval);
     String socialOptionLc = TestConfiguration.getSocialOption().toLowerCase();
     if (socialOptionLc.equals("yes")) {
-      sharepointClientContext.setSocialOption(SocialOption.YES); 
+      sharepointClientContext.setSocialOption(SocialOption.YES);
     } else if (socialOptionLc.equals("no")) {
-       sharepointClientContext.setSocialOption(SocialOption.NO); 
+      sharepointClientContext.setSocialOption(SocialOption.NO);
     } else if (socialOptionLc.equals("only")) {
-       sharepointClientContext.setSocialOption(SocialOption.ONLY); 
+      sharepointClientContext.setSocialOption(SocialOption.ONLY);
     }
     return sharepointClientContext;
   }

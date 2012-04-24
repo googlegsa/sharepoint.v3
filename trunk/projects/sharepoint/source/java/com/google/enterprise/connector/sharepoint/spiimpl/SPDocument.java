@@ -321,18 +321,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     return objType;
   }
 
-  /**
-   * @param inAuthor
-   */
   public void setAuthor(final String inAuthor) {
     if (inAuthor != null) {
       author = inAuthor;
     }
   }
 
-  /**
-   * @param inObjType
-   */
   public void setObjType(final String inObjType) {
     if (inObjType != null) {
       objType = inObjType;
@@ -340,7 +334,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   }
 
   /**
-   * For SPDocument equality comparison
+   * For SPDocument equality comparison.
    */
   public boolean equals(final Object obj) {
     if (obj instanceof SPDocument) {
@@ -367,7 +361,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    * @param doc
    */
   public int compareTo(final SPDocument doc) {
-
     if (doc == null) {
       return -1;
     }
@@ -466,13 +459,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    *  attribute name.
    */
   public String getMetaDataAttributeValue(final String strPropertyName) {
-      final Collator collator = Util.getCollator();
-      for (Attribute attr : getAllAttrs()) {           
-            if (collator.equals(strPropertyName, attr.getName())) {
-              return attr.getValue().toString();
-            }
-          }
-      return null;
+    final Collator collator = Util.getCollator();
+    for (Attribute attr : getAllAttrs()) {
+      if (collator.equals(strPropertyName, attr.getName())) {
+        return attr.getValue().toString();
+      }
+    }
+    return null;
   }
 
   /**
@@ -486,8 +479,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       throws RepositoryException {
     final Collator collator = Util.getCollator();
     if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENTURL)) {
-      return new SimpleProperty(new StringValue(
-          getUrl()));
+      return new SimpleProperty(new StringValue(getUrl()));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
       if (FeedType.CONTENT_FEED == getFeedType()
           && ActionType.ADD.equals(getAction())) {
@@ -516,9 +508,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       }
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
       if (FeedType.CONTENT_FEED != getFeedType()) {
-          // TODO Handle ACL feed here.
-        return new SimpleProperty(new StringValue(
-            getUrl()));
+        // TODO Handle ACL feed here.
+        return new SimpleProperty(new StringValue(getUrl()));
       }
     } else if (collator.equals(strPropertyName,
             SpiConstants.PROPNAME_ACLINHERITANCETYPE)) {
@@ -528,48 +519,38 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         // web application policy document.
         return null;
       }
-         return new SimpleProperty(
-             new StringValue(
-                 SpiConstants.AclInheritanceType.PARENT_OVERRIDES.toString()));      
-     } else if (collator.equals(strPropertyName,
-             SpiConstants.PROPNAME_ACLINHERITFROM_DOCID)) {
-        String parentUrlToSend = getParentUrl();
-        if (parentUrlToSend == null) {
-          return null;
-        }
-        if (getFeedType() == FeedType.CONTENT_FEED) {        
-          parentUrlToSend = parentUrlToSend + "|" 
-              + getParentId().toUpperCase();
-        }
-        return new SimpleProperty(
-            new StringValue(parentUrlToSend));    
+      return new SimpleProperty(new StringValue(
+              SpiConstants.AclInheritanceType.PARENT_OVERRIDES.toString()));
+    } else if (collator.equals(strPropertyName,
+            SpiConstants.PROPNAME_ACLINHERITFROM_DOCID)) {
+      String parentUrlToSend = getParentUrl();
+      if (parentUrlToSend == null) {
+        return null;
+      }
+      if (getFeedType() == FeedType.CONTENT_FEED) {
+        parentUrlToSend = parentUrlToSend + "|" + getParentId().toUpperCase();
+      }
+      return new SimpleProperty(new StringValue(parentUrlToSend));
     } else if (collator.equals(strPropertyName,
         SpiConstants.PROPNAME_ACLINHERITFROM)) {
-        String parentUrlToSend = getParentUrl();
-        if (FeedType.CONTENT_FEED == getFeedType()) {           
-            return null;
-        }
-        return new SimpleProperty(
-            new StringValue(parentUrlToSend));    
-    }  else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_FEEDTYPE)) {
-      return new SimpleProperty(new StringValue(
-          feedType.toString())); 
-    }  else if (collator.equals(strPropertyName,
+      String parentUrlToSend = getParentUrl();
+      if (FeedType.CONTENT_FEED == getFeedType()) {
+        return null;
+      }
+      return new SimpleProperty(new StringValue(parentUrlToSend));
+    } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_FEEDTYPE)) {
+      return new SimpleProperty(new StringValue(feedType.toString()));
+    } else if (collator.equals(strPropertyName,
         SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE)) {
-         return new SimpleProperty(
-             new StringValue(feedType.toString()));
+      return new SimpleProperty(new StringValue(feedType.toString()));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_DISPLAYURL)) {
-      return new SimpleProperty(new StringValue(
-          displayUrl));
+      return new SimpleProperty(new StringValue(displayUrl));
     } else if (collator.equals(strPropertyName, SPConstants.PARENT_WEB_TITLE)) {
-      return new SimpleProperty(new StringValue(
-          getParentWebTitle()));
+      return new SimpleProperty(new StringValue(getParentWebTitle()));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_DOCID)) {
-      return new SimpleProperty(new StringValue(
-          getDocId()));
+      return new SimpleProperty(new StringValue(getDocId()));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_LASTMODIFIED)) {
-      return new SimpleProperty(new DateValue(
-          getLastMod()));
+      return new SimpleProperty(new DateValue(getLastMod()));
     } else if (collator.equals(strPropertyName, SPConstants.LIST_GUID)) {
       if (null != getParentList()) {
         return new SimpleProperty(new StringValue(
@@ -578,86 +559,85 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (collator.equals(strPropertyName, SPConstants.SPAUTHOR)) {
       return new SimpleProperty(new StringValue(getAuthor()));
     } else if (strPropertyName.equals(SPConstants.OBJECT_TYPE)) {
-      return new SimpleProperty(new StringValue(
-          getObjType()));
+      return new SimpleProperty(new StringValue(getObjType()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ISPUBLIC)) {
-      return new SimpleProperty(
-          BooleanValue.makeBooleanValue(false));
+      return new SimpleProperty(BooleanValue.makeBooleanValue(false));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
-      return new SimpleProperty(new StringValue(
-          getAction().toString()));
+      return new SimpleProperty(new StringValue(getAction().toString()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYUSERS)) {
-        if (denyUsersAclMap != null) {
-          List<Value> values = new ArrayList<Value>(getDenyUsersAclMap().size());
-          for (Principal user : getDenyUsersAclMap().keySet()) {
-            values.add(Value.getPrincipalValue(user));
-          }
-          return new SimpleProperty(values);
-        } else {
-            return null;
+      if (denyUsersAclMap != null) {
+        List<Value> values = new ArrayList<Value>(getDenyUsersAclMap().size());
+        for (Principal user : getDenyUsersAclMap().keySet()) {
+          values.add(Value.getPrincipalValue(user));
         }
+        return new SimpleProperty(values);
+      } else {
+        return null;
+      }
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYGROUPS)) {
-        if (denyGroupsAclMap != null) {
-             List<Value> values = new ArrayList<Value>(getDenyGroupsAclMap().size());
-              for (Principal group : getDenyGroupsAclMap().keySet()) {
-                values.add(Value.getPrincipalValue(group));
-              }
-              return new SimpleProperty(values);
-        } else {
-            return null;
+      if (denyGroupsAclMap != null) {
+        List<Value> values = new ArrayList<Value>(getDenyGroupsAclMap().size());
+        for (Principal group : getDenyGroupsAclMap().keySet()) {
+          values.add(Value.getPrincipalValue(group));
         }
+        return new SimpleProperty(values);
+      } else {
+        return null;
+      }
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLUSERS)) {
-        if (usersAclMap != null) {
-          List<Value> values = new ArrayList<Value>(usersAclMap.size());
-          for (Principal user : usersAclMap.keySet()) {
-            values.add(Value.getPrincipalValue(user));
+      if (usersAclMap != null) {
+        List<Value> values = new ArrayList<Value>(usersAclMap.size());
+        for (Principal user : usersAclMap.keySet()) {
+          values.add(Value.getPrincipalValue(user));
+        }
+        return new SimpleProperty(values);
+      } else {
+        return null;
+      }
+    } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLGROUPS)) {
+      if (groupsAclMap != null) {
+        List<Value> values = new ArrayList<Value>(groupsAclMap.size());
+        for (Principal group : groupsAclMap.keySet()) {
+          values.add(Value.getPrincipalValue(group));
+        }
+        return new SimpleProperty(values);
+      } else {
+        return null;
+      }
+    } else if (strPropertyName.startsWith(SpiConstants.USER_ROLES_PROPNAME_PREFIX)) {
+      // TODO: This is a hack to lookup a Principal in a set by string name.
+      // We should just remove roles entirely.
+      String originalName = strPropertyName.substring(
+          SpiConstants.USER_ROLES_PROPNAME_PREFIX.length());
+      for (Entry<Principal, Set<RoleType>> entry : usersAclMap.entrySet()) {
+        if (entry.getKey().getName().equals(originalName)) {
+          Set<RoleType> roleTypes = entry.getValue();
+          List<Value> values = new ArrayList<Value>(roleTypes.size());
+          for (RoleType roleType : roleTypes) {
+            values.add(Value.getStringValue(roleType.toString()));
           }
           return new SimpleProperty(values);
-       } else {
-           return null;
-       }
-   } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLGROUPS)) {
-       if (groupsAclMap != null) {
-            List<Value> values = new ArrayList<Value>(groupsAclMap.size());
-             for (Principal group : groupsAclMap.keySet()) {
-               values.add(Value.getPrincipalValue(group));
-             }
-             return new SimpleProperty(values);
-       } else {
-           return null;
-       }
-   } else if (strPropertyName.startsWith(SpiConstants.USER_ROLES_PROPNAME_PREFIX)) {
-        // TODO: This is a hack to lookup a Principal in a set by string name.
-        // We should just remove roles entirely.
-        String originalName = strPropertyName.substring(SpiConstants.USER_ROLES_PROPNAME_PREFIX.length());
-        for (Entry<Principal, Set<RoleType>> entry : usersAclMap.entrySet()) {
-          if (entry.getKey().getName().equals(originalName)) {
-            Set<RoleType> roleTypes = entry.getValue();
-            List<Value> values = new ArrayList<Value>(roleTypes.size());
-            for (RoleType roleType : roleTypes) {
-              values.add(Value.getStringValue(roleType.toString()));
-            }
-            return new SimpleProperty(values);
-          }
         }
-        LOGGER.warning("Unable to find role for " + originalName);
-        return null;
-      } else if (strPropertyName.startsWith(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX)) {
-        // TODO: This is a hack to lookup a Principal in a set by string name.
-        // We should just remove roles entirely.
-        String originalName = strPropertyName.substring(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX.length());
-        for (Entry<Principal, Set<RoleType>> entry : groupsAclMap.entrySet()) {
-          if (entry.getKey().getName().equals(originalName)) {
-            Set<RoleType> roleTypes = entry.getValue();
-            List<Value> values = new ArrayList<Value>(roleTypes.size());
-            for (RoleType roleType : roleTypes) {
-              values.add(Value.getStringValue(roleType.toString()));
-            }
-            return new SimpleProperty(values);
+      }
+      LOGGER.warning("Unable to find role for " + originalName);
+      return null;
+    } else if (strPropertyName.startsWith(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX)) {
+      // TODO: This is a hack to lookup a Principal in a set by string name.
+      // We should just remove roles entirely.
+      String originalName = strPropertyName.substring(
+          SpiConstants.GROUP_ROLES_PROPNAME_PREFIX.length());
+      for (Entry<Principal, Set<RoleType>> entry : groupsAclMap.entrySet()) {
+        if (entry.getKey().getName().equals(originalName)) {
+          Set<RoleType> roleTypes = entry.getValue();
+          List<Value> values = new ArrayList<Value>(roleTypes.size());
+          for (RoleType roleType : roleTypes) {
+            values.add(Value.getStringValue(roleType.toString()));
           }
+          return new SimpleProperty(values);
         }
-        LOGGER.warning("Unable to find role for " + originalName);
-        return null;
+      }
+      LOGGER.warning("Unable to find role for " + originalName);
+      return null;
     } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_TITLE)) {
       return new SimpleProperty(new StringValue(title));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_DOCUMENTTYPE)) {
@@ -666,14 +646,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       } else {
         return null;
       }
-    }
-    // FIXME: We can get rid of this if-else-if ladder here by setting all
-    // the relevant properties (in appropriate type) right at the time of
-    // document creation. After doing that, all that will be required is to
-    // maintain a map of all the properties with key as the prop name. This
-    // will also eliminate maintaining multiple member attributes in this
-    // class. All the attribute will be there in a common map.
-    else {
+    } else {
+      // FIXME: We can get rid of this if-else-if ladder here by setting all
+      // the relevant properties (in appropriate type) right at the time of
+      // document creation. After doing that, all that will be required is to
+      // maintain a map of all the properties with key as the prop name. This
+      // will also eliminate maintaining multiple member attributes in this
+      // class. All the attribute will be there in a common map.
       for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
         final Attribute attr = iter.next();
         if (collator.equals(strPropertyName, attr.getName())) {
