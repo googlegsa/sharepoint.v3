@@ -55,6 +55,7 @@ public class AdGroupsSession implements Session {
   /**
    * For getting the Authorization manager form the current connector context
    */
+  @Override
   public AuthorizationManager getAuthorizationManager()
       throws RepositoryException {
     LOGGER.info("getAuthorizationManager()");
