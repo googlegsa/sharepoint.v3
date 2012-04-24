@@ -14,7 +14,6 @@
 
 package com.google.enterprise.connector.adgroups;
 
-import com.google.common.base.Strings;
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.DocumentList;
@@ -32,9 +31,6 @@ import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 public class AdGroupsTraversalManager implements TraversalManager {
   private static final Logger LOGGER =
