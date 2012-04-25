@@ -97,13 +97,26 @@ public class AdTestEntity {
     }
   }
 
-  public Set<AdTestEntity> getAllGroups() {
-    Set<AdTestEntity> result = new HashSet<AdTestEntity>();
-    result.addAll(children);
+  public void getAllGroups(Set<AdTestEntity> resolved) {
     for (AdTestEntity e : memberOf) {
-      result.addAll(e.getAllGroups());
+      if (!resolved.contains(e)) {
+        resolved.add(e);
+        e.getAllGroups(resolved);
+      }
     }
-    return result;
+  }
+  
+  public void printGroups(Set<AdTestEntity> printed) {
+    if (!printed.contains(this)) {
+      for (AdTestEntity e : memberOf) { 
+        System.out.println(
+            "\"" + sAMAccountName + "\" -> \"" + e.sAMAccountName + "\";");
+      }
+      printed.add(this);
+      for (AdTestEntity e : memberOf) {
+        e.printGroups(printed);
+      }
+    }
   }
 
   public String getDn() {

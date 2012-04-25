@@ -114,7 +114,10 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
           getAllGroupsForTheUser((Number) user.get(AdConstants.DB_ENTITYID));
       if (password != null && !authenticateUser(
               (String) user.get(AdConstants.DB_DNSROOT),
-              (String) user.get(AdConstants.DB_UPN), password)) {
+              (String) user.get(AdConstants.DB_NETBIOSNAME)
+                  + AdConstants.BACKSLASH
+                  + (String) user.get(AdConstants.DB_SAMACCOUNTNAME),
+              password)) {
         return new AuthenticationResponse(false, "", null);
       }
       return new AuthenticationResponse(true, "", groups);
@@ -130,16 +133,16 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
    * Connects to specified AD domain with users principal and password.
    *
    * @param dnsRoot hostname of the domain
-   * @param upn userPrincipalName of the user
+   * @param principal userPrincipalName of the user
    * @param password password
    * @return if authentication was successful
    */
-  boolean authenticateUser(String dnsRoot, String upn, String password) {
+  boolean authenticateUser(String dnsRoot, String principal, String password) {
     // Authenticate via SSL
     try {
-      new AdServer(Method.SSL, dnsRoot, 636, upn, password).connect();
+      new AdServer(Method.SSL, dnsRoot, 636, principal, password).connect();
       // No exception thrown - authentication succeeded
-      LOGGER.info("Successfully authenticated user [" + upn + "]");
+      LOGGER.info("Successfully authenticated user [" + principal + "]");
       return true;
     } catch (CommunicationException e) {
       // network or SSL related, continue without SSL
@@ -147,24 +150,24 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
     } catch (NamingException e) {
       // NamingException - authentication failed
       LOGGER.log(Level.INFO,
-          "SSL Authenticated failed for user [" + upn + "]", e);
+          "SSL Authenticated failed for user [" + principal + "]", e);
       return false;
     }
 
     try {
-      new AdServer(Method.STANDARD, dnsRoot, 389, upn, password).connect();
+      new AdServer(Method.STANDARD, dnsRoot, 389, principal, password).connect();
       // No exception thrown - authentication succeeded
-      LOGGER.info("Successfully authenticated user [" + upn + "]");
+      LOGGER.info("Successfully authenticated user [" + principal + "]");
       return true;
     } catch (CommunicationException e) {
       // network related exception
       LOGGER.log(Level.INFO,
-          "Plain Authentication failed for user [" + upn + "]", e);
+          "Plain Authentication failed for user [" + principal + "]", e);
       return false;
     } catch (Exception e) {
       // any other exception - authentication failed
       LOGGER.log(Level.FINE,
-          "Authentication failed for user [ " + upn + " ]", e);
+          "Authentication failed for user [ " + principal + " ]", e);
       return false;
     }
   }

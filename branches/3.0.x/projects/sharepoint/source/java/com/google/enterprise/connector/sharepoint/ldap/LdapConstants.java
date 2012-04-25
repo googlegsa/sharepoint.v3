@@ -22,7 +22,12 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 public class LdapConstants {
 
   public static final String COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
-  public static final Object PREFIX_FOR_PARENTS_GROUPS_FILTER = "(&(objectClass=group)(CN=";
+
+  // Restrict to security groups, where
+  // LDAP_MATCHING_RULE_BIT_AND = 1.2.840.113556.1.4.803
+  // and ADS_GROUP_TYPE_SECURITY_ENABLED = 2147483648.
+  public static final Object PREFIX_FOR_PARENTS_GROUPS_FILTER = 
+      "(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648)(CN=";
   public static final Object PREFIX_FOR_DIRECT_GROUPS_FILTER = "(&(objectClass=user)(sAMAccountName=";
   public static final String PREFIX_FOR_PRIMARY_GROUP_FILTER = "(objectSid=";
   public static final String ATTRIBUTE_MEMBER_OF = "memberOf";
