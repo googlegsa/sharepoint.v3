@@ -38,42 +38,42 @@ public class AdGroupsConnectorTest extends TestCase {
       String username, String domain, String password) 
       throws Exception {
     AuthenticationResponse response;
-    
+
     response = am.authenticate(
         new SimpleAuthenticationIdentity(username));
     assertTrue(comment + ": Username, no domain, no password",
         response.isValid());
-    
+
     response = am.authenticate(new SimpleAuthenticationIdentity(
         username, null));
     assertTrue(comment + ": Username, no domain, null password",
         response.isValid());
-    
+
     response = am.authenticate(new SimpleAuthenticationIdentity(
         username, ""));
     assertFalse(comment + ": Username, no domain, empty password",
         response.isValid());
-    
+
     response = am.authenticate(
         new SimpleAuthenticationIdentity(username, null, domain));
     assertTrue(comment + ": Username, domain, null password",
         response.isValid());
-    
+
     response = am.authenticate(new SimpleAuthenticationIdentity(
             username, "", domain));
     assertFalse(comment + ": Username, domain, empty password",
         response.isValid());
-    
+
     response = am.authenticate(new SimpleAuthenticationIdentity(
         username, password, domain));
     assertTrue(comment + ": Username, domain, password",
         response.isValid());
-    
+
     response = am.authenticate(new SimpleAuthenticationIdentity(
         username, password + "makeinvalid"));
     assertFalse(comment + ": Username, no domain, incorrect password",
         response.isValid());
-    
+
     response = am.authenticate(new SimpleAuthenticationIdentity(
         username, password + "makeinvalid", domain));
     assertFalse(comment + ": Username, domain, incorrect password",
@@ -84,42 +84,42 @@ public class AdGroupsConnectorTest extends TestCase {
     for (String dbType : TestConfiguration.dbs.keySet()) {
       AdGroupsConnector con = new AdGroupsConnector();
       LOGGER.info("Testing database: " + dbType);
-      
+
       con.setMethod("SSL");
       con.setHostname(TestConfiguration.d1hostname);
       con.setPort(Integer.toString(TestConfiguration.d1port));
       con.setPrincipal(TestConfiguration.d1principal);
       con.setPassword(TestConfiguration.d1password);
-      
+
       con.setDataSource(dbType, TestConfiguration.dbs.get(dbType));
       Session s = con.login();
       s.getTraversalManager().startTraversal();
       AuthenticationManager am = s.getAuthenticationManager();
-      
+
       AuthenticationResponse response = am.authenticate(
           new SimpleAuthenticationIdentity(
               "non-existing user", "wrong password", "wrong domain"));
       assertFalse("Non existing user fails authn", response.isValid());
       assertNull("No groups resolved for non-existing user", 
           response.getGroups());
-      
+
       String[] principal =
           TestConfiguration.d1principal.split("\\\\"); 
       String domain = principal[0];
       String username = principal[1];
-      
+
       runUsernameTest("Normal case",
           am, username, domain, TestConfiguration.d1password);
-      
+
       runUsernameTest("Uppercase username",
           am, username.toUpperCase(), domain, TestConfiguration.d1password);
-      
+
       runUsernameTest("Lowercase username",
           am, username.toLowerCase(), domain, TestConfiguration.d1password);
-      
+
       runUsernameTest("Uppercase domain",
           am, username.toUpperCase(), domain, TestConfiguration.d1password);
-      
+
       runUsernameTest("Lowercase domain",
           am, username.toLowerCase(), domain, TestConfiguration.d1password);
     }
@@ -163,7 +163,8 @@ public class AdGroupsConnectorTest extends TestCase {
         AuthenticationResponse response = am.authenticate(
             new SimpleAuthenticationIdentity(user.sAMAccountName));
 
-        Set<AdTestEntity> groupsCorrect = user.getAllGroups();
+        Set<AdTestEntity> groupsCorrect = new HashSet<AdTestEntity>();
+        user.getAllGroups(groupsCorrect);
 
         Set<String> groups = new HashSet<String>();
         @SuppressWarnings("unchecked") Collection<Principal> principals =
