@@ -157,18 +157,21 @@ public class SharepointAuthenticationManagerTest extends TestCase {
 	}
 
 	public void testGetAllGroupsForTheUser() throws SharepointException {
-		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
+		AuthenticationIdentity identity =
+			new SimpleAuthenticationIdentity(
+				TestConfiguration.username);
+		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(identity);
 
 		assertNotNull(this.authenticationResponse);
 		assertNotNull(this.authenticationResponse.getGroups());
 
 		// this time should get results from cache for the same user.
-		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.username);
+		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(identity);
 		assertNotNull(this.authenticationResponse);
 		assertNotNull(this.authenticationResponse.getGroups());
 
 		// should fetch results from service.
-		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(TestConfiguration.fakeusername);
+		this.authenticationResponse = this.authMan.getAllGroupsForTheUser(identity);
 		assertNotNull(this.authenticationResponse);
 		assertNull((this.authenticationResponse.getGroups()));
 	}
