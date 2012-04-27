@@ -511,8 +511,18 @@ public abstract class ListsUtil {
     final StringBuffer url = new StringBuffer();
     String displayUrl = null;
     final String urlPrefix = 
-        Util.getWebApp(sharepointClientContext.getSiteURL()); 
-    if (list.isDocumentLibrary()) {
+        Util.getWebApp(sharepointClientContext.getSiteURL());
+    String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
+    fsObjType = Util.normalizeMetadataValue(fsObjType);
+    if (fsObjType.equals("1")) {    
+      // This is a Folder Item.
+      // For folder item URL will be calculated as Web Url + filref for folder
+      url.setLength(0);
+      url.append(urlPrefix);
+      url.append(SPConstants.SLASH);
+      url.append(fileref);
+      displayUrl = url.toString();    
+    } else if (list.isDocumentLibrary()) {
       if (fileref == null) {
         return null;
       }
