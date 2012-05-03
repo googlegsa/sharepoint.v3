@@ -28,6 +28,7 @@ import org.joda.time.DateTime;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -95,71 +96,54 @@ public class ListStateTest extends TestCase {
     state.setIDs(new StringBuffer(str1));
 
     // Expected -> #1~Forms1#2#33~Forms2#4#5~Forms3#3/#5/#33/#1
-    assertEquals(3, state.getExtraIDs("1").size());
-    assertTrue(state.getExtraIDs("1").contains("2"));
-    assertTrue(state.getExtraIDs("1").contains("4"));
-    assertTrue(state.getExtraIDs("1").contains("3"));
-    assertEquals(2, state.getExtraIDs("33").size());
-    assertTrue(state.getExtraIDs("33").contains("4"));
-    assertTrue(state.getExtraIDs("33").contains("3"));
-    assertEquals(1, state.getExtraIDs("5").size());
-    assertTrue(state.getExtraIDs("5").contains("3"));
-    assertEquals(1, state.getExtraIDs("2").size());
-    assertTrue(state.getExtraIDs("2").contains("2"));
-    assertEquals(1, state.getExtraIDs("4").size());
-    assertTrue(state.getExtraIDs("4").contains("4"));
-    assertEquals(1, state.getExtraIDs("3").size());
-    assertTrue(state.getExtraIDs("3").contains("3"));
+    assertExtraIds(state.getExtraIDs("1"), "3", "2", "1", "5", "4", "33");
+    assertExtraIds(state.getExtraIDs("33"), "3", "4", "5", "33");
+    assertExtraIds(state.getExtraIDs("5"), "3", "5");
+    assertExtraIds(state.getExtraIDs("2"), "2");
+    assertExtraIds(state.getExtraIDs("4"), "4");
+    assertExtraIds(state.getExtraIDs("3"), "3");
 
     final String docURL = "http://host.mycom.co.in:25000/sanity/Test Library/Forms1/Forms2/Forms3/AllItems.aspx";
     state.updateExtraIDs(docURL, "30", false);
     // Expected -> #1~Forms1#2#33~Forms2#4#5~Forms3#30#3/#5/#33/#1
-    assertEquals(4, state.getExtraIDs("1").size());
-    assertTrue(state.getExtraIDs("1").contains("2"));
-    assertTrue(state.getExtraIDs("1").contains("4"));
-    assertTrue(state.getExtraIDs("1").contains("3"));
-    assertTrue(state.getExtraIDs("1").contains("30"));
-    assertEquals(3, state.getExtraIDs("33").size());
-    assertTrue(state.getExtraIDs("33").contains("4"));
-    assertTrue(state.getExtraIDs("33").contains("3"));
-    assertTrue(state.getExtraIDs("33").contains("30"));
-    assertEquals(2, state.getExtraIDs("5").size());
-    assertTrue(state.getExtraIDs("5").contains("3"));
-    assertTrue(state.getExtraIDs("5").contains("30"));
-    assertEquals(1, state.getExtraIDs("2").size());
-    assertTrue(state.getExtraIDs("2").contains("2"));
-    assertEquals(1, state.getExtraIDs("4").size());
-    assertTrue(state.getExtraIDs("4").contains("4"));
-    assertEquals(1, state.getExtraIDs("3").size());
-    assertTrue(state.getExtraIDs("3").contains("3"));
-    assertEquals(1, state.getExtraIDs("30").size());
-    assertTrue(state.getExtraIDs("30").contains("30"));
+    assertExtraIds(state.getExtraIDs("1"), "3", "2", "1", "5", "4", "33", "30");
+    assertExtraIds(state.getExtraIDs("33"), "3", "4", "5", "33", "30");
+    assertExtraIds(state.getExtraIDs("5"), "3", "5", "30");
+    assertExtraIds(state.getExtraIDs("2"), "2");
+    assertExtraIds(state.getExtraIDs("4"), "4");
+    assertExtraIds(state.getExtraIDs("3"), "3");
+    assertExtraIds(state.getExtraIDs("30"), "30");
 
     state.removeExtraID("3");
     // Expected -> #1~Forms1#2#33~Forms2#4#5~Forms3#30/#5/#33/#1
-    assertEquals(3, state.getExtraIDs("1").size());
-    assertTrue(state.getExtraIDs("1").contains("2"));
-    assertTrue(state.getExtraIDs("1").contains("4"));
-    assertTrue(state.getExtraIDs("1").contains("30"));
-    assertEquals(2, state.getExtraIDs("33").size());
-    assertTrue(state.getExtraIDs("33").contains("4"));
-    assertTrue(state.getExtraIDs("33").contains("30"));
-    assertEquals(1, state.getExtraIDs("5").size());
-    assertTrue(state.getExtraIDs("5").contains("30"));
-    assertEquals(1, state.getExtraIDs("2").size());
-    assertTrue(state.getExtraIDs("2").contains("2"));
-    assertEquals(1, state.getExtraIDs("4").size());
-    assertTrue(state.getExtraIDs("4").contains("4"));
-    assertEquals(1, state.getExtraIDs("30").size());
-    assertTrue(state.getExtraIDs("30").contains("30"));
+    assertExtraIds(state.getExtraIDs("1"), "2", "1", "5", "4", "33", "30");
+    assertExtraIds(state.getExtraIDs("33"), "4", "5", "33", "30");
+    assertExtraIds(state.getExtraIDs("5"), "5", "30");
+    assertExtraIds(state.getExtraIDs("2"), "2");
+    assertExtraIds(state.getExtraIDs("4"), "4");
+    assertExtraIds(state.getExtraIDs("3"), "3");
+    assertExtraIds(state.getExtraIDs("30"), "30");
 
     state.removeExtraID("30");
     state.removeExtraID("4");
     // Expected -> #1~Forms1#2#33~Forms2#5~Forms3/#5/#33/#1
-    assertEquals(1, state.getExtraIDs("1").size());
-    assertTrue(state.getExtraIDs("1").contains("2"));
-    assertEquals(0, state.getExtraIDs("33").size());
-    assertEquals(0, state.getExtraIDs("5").size());
+    assertExtraIds(state.getExtraIDs("1"), "2", "1", "5", "33");
+    assertExtraIds(state.getExtraIDs("33"), "5", "33");
+    assertExtraIds(state.getExtraIDs("5"), "5");
+    assertExtraIds(state.getExtraIDs("2"), "2");
+    assertExtraIds(state.getExtraIDs("4"), "4");
+    assertExtraIds(state.getExtraIDs("3"), "3");
+    assertExtraIds(state.getExtraIDs("30"), "30");
+  }
+  
+  /**
+   * Asserts that the set of extraIds contains the expected values.
+   */
+  private void assertExtraIds(Set<String> actualIds, String... expectedIds) {
+    assertEquals(expectedIds.length, actualIds.size());
+    for (String id : expectedIds) {
+      assertTrue(id + " not in " + actualIds, actualIds.contains(id));
+    }
   }
 
   public void testUpdateExtraIDAsAttachment() throws SharepointException {
