@@ -198,6 +198,21 @@ public class MultiCrawl extends Thread {
       e.server = serverindex.get(e.getDC());
     }
   }
+  
+  private void assignPrimaryGroups() {
+    for (LdapEntity user : crawlEntities.values()) {
+      if (user.primaryGroupId != null) {
+        String primaryGroupSid = user.getPrimaryGroupSid(user.primaryGroupId);
+
+        for (LdapEntity group: crawlEntities.values()) {
+          if (group.sid != null && group.sid.equals(primaryGroupSid)) {
+            user.memberOf.add(group);
+            break;
+          }
+        }
+      }
+    }
+  }
 
   @Override
   public void run() {
@@ -228,6 +243,7 @@ public class MultiCrawl extends Thread {
       
       collapseForeignSecurityPrincipals();
       assignToServers();
+      assignPrimaryGroups();
       
       XmlPersist xs = new XmlPersist();
       xs.entities = crawlEntities;

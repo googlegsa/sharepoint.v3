@@ -162,7 +162,7 @@ public class LdapServer {
                 e.setSid((byte[])attrs.get("objectSid;binary").get(0));
                 
                 if (attrs.get("primaryGroupId") != null) {
-                  multiCrawl.addPrimaryGroupToUser(e, (String)attrs.get("primaryGroupId").get(0));
+                  e.primaryGroupId = (String)attrs.get("primaryGroupId").get(0);
                 }
                 
                 Attribute member = attrs.get("member");
