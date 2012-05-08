@@ -86,19 +86,6 @@ public class MultiCrawl extends Thread {
       return e;
     }
   }
-  
-  public void addPrimaryGroupToUser(LdapEntity user, String primaryGroupId) {
-    
-    String primaryGroupSid = user.getPrimaryGroupSid(primaryGroupId); 
-    
-    for (LdapEntity group: crawlNewEntities.values()) {
-      if (group.sid != null && group.sid.equals(primaryGroupSid))
-      {
-        user.memberOf.add(group);
-        break;
-      }
-    }
-  }
 
   public LdapEntity findUser(AuthenticationIdentity identity) {
     LOGGER.info("Authenticating identity: user:" + identity.getUsername() + " domain: " + identity.getDomain());
