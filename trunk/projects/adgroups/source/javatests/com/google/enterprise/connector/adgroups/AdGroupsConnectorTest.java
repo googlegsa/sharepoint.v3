@@ -118,10 +118,10 @@ public class AdGroupsConnectorTest extends TestCase {
           am, username.toLowerCase(), domain, TestConfiguration.d1password);
 
       runUsernameTest("Uppercase domain",
-          am, username.toUpperCase(), domain, TestConfiguration.d1password);
+          am, username, domain.toUpperCase(), TestConfiguration.d1password);
 
       runUsernameTest("Lowercase domain",
-          am, username.toLowerCase(), domain, TestConfiguration.d1password);
+          am, username, domain.toLowerCase(), TestConfiguration.d1password);
     }
   }
 
