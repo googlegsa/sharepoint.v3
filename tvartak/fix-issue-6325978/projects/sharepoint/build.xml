@@ -4,7 +4,7 @@
   <property file="build.properties" />
   <!-- ========================= PROPERTIES ============================= -->
   <property name="version" value="${BUILD_VERSION}" />
-  <property name="product" value="Google Search Appliance Connector for Microsoft SharePoint 2003,2007, 2010" />
+  <property name="product" value="Google Search Appliance Connector for SharePoint" />
   <property name="projects.dir" value=".." />
 
   <property name="COMPILE_DEBUG_FLAG" value="true" />
