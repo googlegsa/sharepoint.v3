@@ -1606,11 +1606,14 @@ public class ListsWS {
 
         final String lastModified = listItem.getAttribute(SPConstants.MODIFIED);
         String strObjectType = listItem.getAttribute(SPConstants.CONTENTTYPE);
+        LOGGER.finest("SPConstants.CONTENTTYPE; strObjectType: " + strObjectType);
         String fileSize = listItem.getAttribute(SPConstants.FILE_SIZE_DISPLAY);
+        LOGGER.finest("SPConstants.FILE_SIZE_DISPLAY; fileSize: " + fileSize);
 
         if (fileSize == null) {
             // Check with the other file size attribute as back-up
             fileSize = listItem.getAttribute(SPConstants.FILE_SIZE);
+            LOGGER.finest("SPConstants.FILE_SIZE; fileSize: " + fileSize);
         }
 
         String author = listItem.getAttribute(SPConstants.EDITOR);
@@ -1619,6 +1622,7 @@ public class ListsWS {
         }
         String docId = listItem.getAttribute(SPConstants.ID);
         final Iterator itAttrs = listItem.getAllAttributes();
+        LOGGER.finest("itAttrs: " + itAttrs);
 
         // Start processing based on the above read attributes.
 
@@ -1706,6 +1710,7 @@ public class ListsWS {
             } else {
                 strObjectType = SPConstants.OBJTYPE_LIST_ITEM;
             }
+            LOGGER.finest("strObjectType was null; strObjectType: " + strObjectType);
         }
 
         if (author == null) {
@@ -1755,15 +1760,20 @@ public class ListsWS {
         if (itAttrs != null) {
             while (itAttrs.hasNext()) {
                 final Object oneAttr = itAttrs.next();
+                LOGGER.finest("oneAttr: " + oneAttr);
                 if (oneAttr != null) {
                     String strAttrName = oneAttr.toString();
+                    LOGGER.finest("strAttrName: " + strAttrName);
                     if ((strAttrName != null)
                             && (!strAttrName.trim().equals(""))) {
                         String strAttrValue = listItem.getAttribute(strAttrName);
+                        LOGGER.finest("strAttrValue: " + strAttrValue);
                         // Apply the well known rules of name resolution and
                         // normalizing the values
                         strAttrName = Util.normalizeMetadataName(strAttrName);
                         strAttrValue = Util.normalizeMetadataValue(strAttrValue);
+                        LOGGER.finest("strAttrName: " + strAttrName);
+                        LOGGER.finest("strAttrValue: " + strAttrValue);
                         if (sharepointClientContext.isIncludeMetadata(strAttrName)) {
                             doc.setAttribute(strAttrName, strAttrValue);
                         } else {
