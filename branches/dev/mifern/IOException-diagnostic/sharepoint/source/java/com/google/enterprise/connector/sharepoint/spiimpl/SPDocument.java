@@ -43,6 +43,8 @@ import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.GetMethod;
 
 import java.io.InputStream;
+import java.io.IOException;
+import java.io.PushbackInputStream;
 import java.net.URLDecoder;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -457,15 +459,35 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             return new SPProperty(SpiConstants.PROPNAME_CONTENTURL,
                     new StringValue(getUrl()));
         } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
+            LOGGER.finest("SpiConstants.PROPNAME_CONTENT");
+            LOGGER.finest("getFeedType(): " + getFeedType());
+            LOGGER.finest("getAction(): " + getAction());
             if (FeedType.CONTENT_FEED == getFeedType()
                     && ActionType.ADD.equals(getAction())) {
+                LOGGER.finest("content: " + content);
+                LOGGER.finest("content_type: " + content_type);
+                
+                if (content != null) {
+                  try {
+                    LOGGER.finest("Peeking content...");
+                    int b = content.read();
+                    LOGGER.finest("Peek content; b: " + b);
+                    if (-1 != b)
+                        ((PushbackInputStream)content).unread(b);
+                  } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Unable to peek content", e);
+                  }
+                }
+
                 if (null == content && null == content_type) {
                     String status = downloadContents();
+                    LOGGER.finest("downloadContents: status: " + status);
                     if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
                         LOGGER.log(Level.WARNING, "Following response received while downloading contents (for getting contents): "
                                 + status);
                     }
                 }
+                LOGGER.finest("return findProperty; content: " + content);
                 return (null == content) ? null
                         : new SPProperty(SpiConstants.PROPNAME_CONTENT,
                                 new BinaryValue(content));
@@ -642,14 +664,20 @@ public class SPDocument implements Document, Comparable<SPDocument> {
      * public for testing purpose
      */
     public String downloadContents() throws RepositoryException {
+        LOGGER.finest("downloadContents; on enter; sharepointClientContext: "
+            + sharepointClientContext);
         if (null == sharepointClientContext) {
             LOGGER.log(Level.SEVERE, "Failed to download document content because the connector context is not found!");
             return SPConstants.CONNECTIVITY_FAIL;
         }
         LOGGER.config("Document URL [ " + contentDwnldURL
                 + " is getting processed for contents");
+        LOGGER.finest("content: " + content);
         int responseCode = 0;
         boolean downloadContent = true;
+        LOGGER.finest("getFileSize(): " + getFileSize());
+        LOGGER.finest("sharepointClientContext.getTraversalContext(): " +
+            sharepointClientContext.getTraversalContext());
         if (getFileSize() > 0
                 && sharepointClientContext.getTraversalContext() != null) {
             if (getFileSize() > sharepointClientContext.getTraversalContext().maxDocumentSize()) {
@@ -666,16 +694,29 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                         + sharepointClientContext.getTraversalContext().maxDocumentSize());
             }
         }
+        LOGGER.finest("downloadContent: " + downloadContent);
+        LOGGER.finest("contentDwnldURL: " + contentDwnldURL);
         if (downloadContent) {
             final String docURL = Util.encodeURL(contentDwnldURL);
+            LOGGER.finest("docURL: " + docURL);
             HttpMethodBase method = null;
             try {
                 method = new GetMethod(docURL);
                 responseCode = sharepointClientContext.checkConnectivity(docURL, method);
+                LOGGER.finest("responseCode: " + responseCode);
                 if (null == method) {
                     return SPConstants.CONNECTIVITY_FAIL;
                 }
+                LOGGER.finest("Calling getResponseBodyAsStream.");
                 content = method.getResponseBodyAsStream();
+                LOGGER.finest("content: " + content);
+                content = new PushbackInputStream(content);
+                LOGGER.finest("content: " + content);
+                LOGGER.finest("Peeking content...");
+                int b = content.read();
+                LOGGER.finest("Peek content; b: " + b);
+                if (-1 != b)
+                    ((PushbackInputStream)content).unread(b);
 
             } catch (Throwable t) {
                 String msg = new StringBuffer(
@@ -685,7 +726,21 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                 throw new RepositoryDocumentException(msg, t);
             }
 
+            LOGGER.finest("content: " + content);
+            try {
+              LOGGER.finest("content.available(): " + content.available());
+            } catch (IOException e) {
+              LOGGER.log(Level.WARNING, "Unable to get available content size.", e);
+            }
+
+            LOGGER.finest("Calling getResponseHeader.");
             final Header contentType = method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER);
+            LOGGER.finest("contentType: " + contentType);
+            try {
+              LOGGER.finest("content.available(): " + content.available());
+            } catch (IOException e) {
+              LOGGER.log(Level.WARNING, "Unable to get available content size.", e);
+            }
             if (contentType != null) {
                 content_type = contentType.getValue();
 
@@ -694,11 +749,19 @@ public class SPDocument implements Document, Comparable<SPDocument> {
                             + " is : " + content_type);
                 }
 
+                LOGGER.finest("sharepointClientContext.getTraversalContext(): " +
+                    sharepointClientContext.getTraversalContext());
                 if (sharepointClientContext.getTraversalContext() != null) {
                     // TODO : This is to be revisited later where a better
                     // approach to skip documents or only content is
                     // available
                     int mimeTypeSupport = sharepointClientContext.getTraversalContext().mimeTypeSupportLevel(content_type);
+                    LOGGER.finest("mimeTypeSupport: " + mimeTypeSupport);
+                    try {
+                      LOGGER.finest("content.available(): " + content.available());
+                    } catch (IOException e) {
+                      LOGGER.log(Level.WARNING, "Unable to get available content size.", e);
+                    }
                     if (mimeTypeSupport == 0) {
                         content = null;
                         LOGGER.log(Level.WARNING, "Dropping content of document : "
