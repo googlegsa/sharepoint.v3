@@ -854,6 +854,12 @@ public class GssAclMonitor
                     //Removing Trailing "/" from web application url;
                     strWebappUrl = strWebappUrl.Remove(strWebappUrl.Length - 1);
                 }
+                Uri uriWebApp = new Uri(strWebappUrl);
+                if (uriWebApp.IsDefaultPort && !strWebappUrl.EndsWith(uriWebApp.Port.ToString()))
+                {
+                    // Adding default port to web app URL
+                    strWebappUrl = String.Format("{0}:{1}", strWebappUrl, uriWebApp.Port);
+                }
                 foreach (string url in urls)
                 {
                     GssAcl acl = null;
