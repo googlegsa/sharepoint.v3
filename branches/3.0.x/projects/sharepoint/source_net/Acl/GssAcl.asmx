@@ -854,6 +854,12 @@ public class GssAclMonitor
                     //Removing Trailing "/" from web application url;
                     strWebappUrl = strWebappUrl.Remove(strWebappUrl.Length - 1);
                 }
+                Uri uriWebApp = new Uri(strWebappUrl);
+                if (uriWebApp.IsDefaultPort && !strWebappUrl.EndsWith(uriWebApp.Port.ToString()))
+                {
+                    // Adding default port to web app URL
+                    strWebappUrl = String.Format("{0}:{1}", strWebappUrl, uriWebApp.Port);
+                }
                 foreach (string url in urls)
                 {
                     GssAcl acl = null;
@@ -1524,16 +1530,17 @@ public sealed class GssAclUtility
                 }
                 if (oFile != null)
                 {
-                    aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
                     //To check if Item is available at root level or inside folder
                     if (String.Compare(oFile.ParentFolder.ServerRelativeUrl, oChildItem.ParentList.RootFolder.ServerRelativeUrl, true) == 0)
                     {
-                        //If item is available at root level (outside folder)                    
+                        //If item is available at root level (outside folder) return default view URL for SPList (same URL is being used in ListState by connector)
+                        aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
                         aclToUpdate.ParentId = String.Format("{{{0}}}",oChildItem.ParentList.ID.ToString());
                     }
                     else
                     {
-                        //If item is available inside folder                     
+                        //If item is available inside folder return folder Url. Other option is to return DefaultView url with rootfolder parameter
+                        aclToUpdate.ParentUrl = strSiteUrl + oFile.ParentFolder.ServerRelativeUrl;
                         aclToUpdate.ParentId = oFile.ParentFolder.Item.ID.ToString();
                     }
                 }

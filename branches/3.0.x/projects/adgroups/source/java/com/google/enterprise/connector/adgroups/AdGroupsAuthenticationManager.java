@@ -206,10 +206,10 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
           db.select(Query.SELECT_MEMBERSHIPS_BY_ENTITYID, params);
       for (HashMap<String, Object> result : results) {
         Number groupId = (Number) result.get(AdConstants.DB_ENTITYID);
-        if (entities.indexOf(groupId) == -1) {
+        if (!entities.contains(groupId)) {
           groups.add(formatGroup(result));
+          entities.add(groupId);
         }
-        entities.add(groupId);
       }
     }
 

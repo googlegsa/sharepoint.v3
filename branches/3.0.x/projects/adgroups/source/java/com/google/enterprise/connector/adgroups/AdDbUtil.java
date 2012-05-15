@@ -78,6 +78,7 @@ public class AdDbUtil {
     put("entities", "entities");
     put("members", "members");
     put("sequence", "_sequence");
+    put("index", "_index");
   }};
 
   private ResourceBundle queries;
