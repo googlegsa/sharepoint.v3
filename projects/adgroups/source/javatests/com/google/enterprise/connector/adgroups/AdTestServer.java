@@ -168,13 +168,17 @@ public class AdTestServer extends AdServer {
     
     oui = 0;
     ou = "ou=groups_" + oui + "," + rootOu;
-    createOu(ou);
+    if (!prepared) {
+      createOu(ou);
+    }
     
     for (int i = 0; i < groups.size(); ++i) {
       if (i % 2000 == 0) {
         oui++;
         ou = "ou=groups_" + oui + "," + rootOu;
-        createOu(ou);
+        if (!prepared) {
+          createOu(ou);
+        }
       }
       createGroup(prepared, groups.get(i), ou);
     }

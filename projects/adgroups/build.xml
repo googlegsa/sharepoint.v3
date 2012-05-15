@@ -5,7 +5,6 @@
   <property file="version.properties"/>
   <property file="${user.home}/google-enterprise-connector-adgroups.properties"/>
 
-  <property name="version" value="${BUILD_VERSION}" />
   <property name="product" value="Google Search Appliance Connector for Active Directory Groups" />
   <property name="projects.dir" value=".." />
 
@@ -70,6 +69,8 @@
   </path>
 
   <!-- =========================== TASKS =============================== -->
+  <include file="${connector-manager.dir}/../svnbuild.xml" as="svn"/>
+
   <target name="build" depends="clean,init, compile, jar,
     download-adgroups-connector">
   </target>
@@ -183,7 +184,9 @@
     <fail if="${ant.project.name}.failure" message="Test failure"/>
   </target>
 
-  <target name="jar" depends="compile" description="Create connector-adgroups.jar">
+  <target name="jar" depends="compile,svn.svn-branch-version"
+          description="Create connector-adgroups.jar">
+    <tstamp />
     <jar jarfile="${jarfile}">
       <fileset dir="${classes}" />
       <fileset dir="${config}">
@@ -198,13 +201,13 @@
       <!--creation of manifest file-->
       <manifest>
         <attribute name="Implementation-Title" value="${product}" />
-        <attribute name="Implementation-Version" value="${version}"/>
+        <attribute name="Implementation-Version"
+                   value="${version} (build ${svn.branch.version} ${TODAY})"/>
         <attribute name="Implementation-Vendor" value="Google Inc."/>
         <attribute name="Specification-Title" value="Connector Manager SPI"/>
-        <attribute name="Specification-Version" value="${CONN_VERSION}"/>
+        <attribute name="Specification-Version" value="${version.spi}"/>
         <attribute name="Specification-Vendor" value="Google Inc."/>
         <attribute name="Main-Class" value="com.google.enterprise.connector.adgroups.AdGroupsMain" />
-
       </manifest>
     </jar>
   </target>
@@ -215,17 +218,20 @@
 
   <target name="download-adgroups-connector" depends="jar,javadoc,make-downloads-dir">
 
-    <zip destfile="${downloads.dir}/connector-adgroups-${version}-src.zip" basedir="."
-      includes="javadoc/**/*, config/**/*, License/**/*, source/**/*, build.xml, Build_ReadMe.txt, COPYING, README, RELEASE_NOTES" />
-    <checksum file="${downloads.dir}/connector-adgroups-${version}-src.zip" />
+    <property name="downloads.prefix"
+              value="${downloads.dir}/connector-adgroups-${svn.branch}" />
 
-    <zip destfile="${downloads.dir}/connector-adgroups-${version}.zip">
+    <zip destfile="${downloads.prefix}-src.zip" basedir="."
+      includes="javadoc/**/*, config/**/*, License/**/*, source/**/*, build.xml, Build_ReadMe.txt, COPYING, README, RELEASE_NOTES" />
+    <checksum algorithm="SHA-1" file="${downloads.prefix}-src.zip" />
+
+    <zip destfile="${downloads.prefix}.zip">
       <zipfileset dir="." includes="README,RELEASE_NOTES,License/**/*,Scripts,lib/**/*" excludes="License/dev,lib/dev,License/dev/**/*,lib/dev/**/*"/>
       <zipfileset dir="." includes="COPYING" prefix="License" />
       <zipfileset dir="config/" includes="logging.properties" fullpath="config/logging.properties" />
       <zipfileset dir="${jar.dir}" includes="connector-adgroups.jar" fullpath="connector-adgroups.jar" />
     </zip>
-    <!--<checksum file="${downloads.dir}/connector-adgroups-${version}.zip" />-->
+    <checksum algorithm="SHA-1" file="${downloads.prefix}.zip" />
 
   </target>
 

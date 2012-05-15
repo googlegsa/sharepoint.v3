@@ -49,6 +49,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
@@ -385,15 +386,17 @@ public class GSAclWS implements AclWS{
     String localNamespace = sharepointClientContext.getGoogleLocalNamespace();
     if (PrincipalType.USER.equals(principal.getType())) {
       userPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
-              globalNamespace, principalName), roleTypes);
+              globalNamespace, principalName,
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())) {
       groupPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
-              globalNamespace, principalName), roleTypes);
+              globalNamespace, principalName,
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
     } else if (PrincipalType.SPGROUP.equals(principal.getType())) {
       groupPermissionMap.put(
           new Principal(SpiConstants.PrincipalType.UNQUALIFIED, localNamespace,
-              "[" + webStateUrl + "]" + principalName),
-          roleTypes);
+              "[" + webStateUrl + "]" + principalName,
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
 
       // If it's a SharePoint group, add the membership info
       // into the User Data Store
