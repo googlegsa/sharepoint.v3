@@ -196,7 +196,7 @@ public class GSAclWS implements AclWS{
   }
 
   /**
-   * Used to parse the response of {@link GSAclWS#getAclForUrls(String[])} and
+   * Used to parse the response of {@link #getAclForUrls getAclForUrls} and
    * update the ACLs into the {@link SPDocument} The set of document objects
    * must be passed in form of a map with their URLs as keys. If a user has
    * more than one permission assigned on SHarePoint, connector will include
