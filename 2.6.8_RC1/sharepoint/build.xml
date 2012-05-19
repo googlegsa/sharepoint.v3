@@ -55,7 +55,7 @@
   </condition>
 
 
-  <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${lib.jar.dir}/dev/ant-contrib-1.0b3.jar"/>
   <!-- =========================== TASKS =============================== -->
   <target name="sharepoint-connector" depends="clean,init, compile, jar,
     download-sharepoint-connector">
