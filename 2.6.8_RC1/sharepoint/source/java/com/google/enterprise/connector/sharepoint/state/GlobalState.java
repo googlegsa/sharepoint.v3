@@ -285,21 +285,11 @@ public class GlobalState {
      * @param workDir the googleConnectorWorkDir argument to the constructor
      */
     public static void forgetState(final String workDir) {
-        File f1;
-        if (workDir == null) {
-            LOGGER.info("No working directory was given; using cwd");
-            f1 = new File(SPConstants.CONNECTOR_NAME
-                    + SPConstants.CONNECTOR_PREFIX);
-        } else {
-            LOGGER.info("Work Dir: " + workDir);
-            f1 = new File(workDir, SPConstants.CONNECTOR_NAME
-                    + SPConstants.CONNECTOR_PREFIX);
-        }
-        LOGGER.info("deleting state file from location...."
-                + f1.getAbsolutePath());
+    final File f1 = getStateFileLocation(workDir, SPConstants.CONNECTOR_STATE_EXT);
+    LOGGER.info("deleting state file from location: " + f1.getAbsolutePath());
         if (f1.exists()) {
             final boolean isDeleted = f1.delete();
-            LOGGER.info("deleted status :" + isDeleted);
+            LOGGER.info("deleted status: " + isDeleted);
         }
     }
 
@@ -515,12 +505,27 @@ public class GlobalState {
      *             in any way.
      */
     public void loadState() throws SharepointException {
-        final File stateFile = getStateFileLocation();
+    final File tempFile = getStateFileLocation(SPConstants.CONNECTOR_TEMP_EXT);
+    final File stateFile = getStateFileLocation(
+        SPConstants.CONNECTOR_STATE_EXT);
+    if (tempFile.exists() && !stateFile.exists()) {
+      LOGGER.warning("State file [" + stateFile.getAbsolutePath()
+          + "] missing but temp file exists [" + tempFile.getAbsolutePath()
+          + "]. Using temp file.");
+      final boolean wasRenamed = tempFile.renameTo(stateFile);
+      LOGGER.warning("Temp file renameTo response: " + wasRenamed);
+    } else if (tempFile.exists() && stateFile.exists()) {
+      LOGGER.info("Both state file [" + stateFile.getAbsolutePath() 
+          + "] as well as temp file exist [" + tempFile.getAbsolutePath()
+          + "]. Deleting temp file.");
+      final boolean wasDeleted = tempFile.delete();
+      LOGGER.warning("Temp file delete response: " + wasDeleted);
+    }
         XMLReader parser;
         InputSource inputSource = null;
         try {
             if (!stateFile.exists()) {
-                LOGGER.warning("state file '" + stateFile.getCanonicalPath()
+        LOGGER.warning("state file '" + stateFile.getAbsolutePath()
                         + "' does not exist");
                 return;
             }
@@ -587,15 +592,28 @@ public class GlobalState {
      *
      * @return File
      */
-    private File getStateFileLocation() {
+  private File getStateFileLocation(String extension) {
+    return getStateFileLocation(workDir, extension);
+  }
+
+  /**
+   * Return the location for our state file. If we were given a
+   * googleConnectorWorkDir (the expected case), use that; else use the current
+   * working directory and log an error.
+   *
+   * @return File
+   */
+  private static File getStateFileLocation(String workDir, String extension) {
+    final String stateFileName = SPConstants.CONNECTOR_NAME
+        + SPConstants.CONNECTOR_SUFFIX + extension;
         File f;
         if (workDir == null) {
-            LOGGER.warning("No working directory was given; using cwd");
-            f = new File(SPConstants.CONNECTOR_NAME
-                    + SPConstants.CONNECTOR_PREFIX);
+      LOGGER.warning("No working directory was given; using cwd.");
+      f = new File(stateFileName);
         } else {
-            f = new File(workDir, SPConstants.CONNECTOR_NAME
-                    + SPConstants.CONNECTOR_PREFIX);
+      LOGGER.info("Global state file name: " + stateFileName + " in dir: "
+          + workDir);
+      f = new File(workDir, stateFileName);
         }
         return f;
     }
@@ -665,8 +683,11 @@ public class GlobalState {
     }
 
     public void saveState() throws SharepointException {
+    final File tempFile = getStateFileLocation(SPConstants.CONNECTOR_TEMP_EXT);
+    final File stateFile = 
+        getStateFileLocation(SPConstants.CONNECTOR_STATE_EXT);
         try {
-            FileOutputStream fos = new FileOutputStream(getStateFileLocation());
+      FileOutputStream fos = new FileOutputStream(tempFile);
             OutputFormat of = new OutputFormat("XML", "UTF-8", true);
             of.setLineWidth(500);
             of.setIndent(2);
@@ -676,12 +697,31 @@ public class GlobalState {
             fos.close();
         } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Save State Failed", e);
-            throw new SharepointException("Save state failed", e);
-        } catch (final Throwable t) {
-            LOGGER.log(Level.WARNING, "Save State Failed", t);
-            throw new SharepointException("Save state failed", t);
+      if (tempFile.exists()) {
+        if (!tempFile.delete()) {
+          LOGGER.log(Level.WARNING, "Temporary state file cannot be removed "
+              + tempFile.getAbsolutePath(), e);
         }
+      }
+            throw new SharepointException("Save state failed", e);
+        }
+    
+    if (stateFile.exists()) {
+      if (!stateFile.delete()) {
+        LOGGER.log(Level.WARNING, "Error deleting old state file "
+            + stateFile.getAbsolutePath());
+        throw new SharepointException("Save state failed");
     }
+    }
+
+    if (!tempFile.renameTo(stateFile)) {
+      LOGGER.log(Level.WARNING, "Error renaming "
+          + tempFile.getAbsolutePath() + " to "
+          + stateFile.getAbsolutePath());
+    } else {
+      LOGGER.fine("Save State Complete" + stateFile.getAbsolutePath());
+    }
+  }
 
     public void dumpStateToXML(ContentHandler handler) throws SAXException {
         AttributesImpl atts = new AttributesImpl();
