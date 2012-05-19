@@ -213,7 +213,7 @@ public class TestConfiguration {
         ls.setType(SPConstants.GENERIC_LIST);
         SPDocument doc = new SPDocument(new Integer(docId).toString(), "X",
                 Calendar.getInstance(), null);
-        ls.setLastDocProcessedForWS(doc);
+        ls.setLastDocProcessed(doc);
         ls.setUrl(url);
 
         ls.setLastMod(dt);
