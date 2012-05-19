@@ -32,6 +32,7 @@
   <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
   <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
   <property name="downloads.dir" value="downloads" />
+  <property name="cm-third-paty.jar" value="${connector-manager.dir}/third-party/prod/" />
 
   <condition property="wsdl2java" value="wsdl2java.sh">
     <os family="unix" />
@@ -199,6 +200,7 @@
         <pathelement location="${config}" />
         <pathelement location="${classes}" />
         <pathelement location="${junit.jarfile}" />
+        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <fileset dir="${lib.jar.dir}">
           <include name="*.jar" />
         </fileset>
