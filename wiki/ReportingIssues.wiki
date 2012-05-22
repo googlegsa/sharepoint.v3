@@ -1,5 +1,6 @@
 #summary Reporting Issues with the Google Search Appliance Connector for SharePoint
 #labels Phase-Support
+*Reporting Issues with the Google Search Appliance Connector for SharePoint*
 
 For customers who qualify for enterprise-level support, Google
 provides support for the Google Search Appliance Connectors. You can
