@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.ldap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
@@ -91,12 +92,12 @@ public class UserGroupsServiceTest {
     userGroupsService.getAllParentGroups(TestConfiguration.ldapgroupname, parentGroups);
     // including the group it self.
     assertEquals(10, parentGroups.size());
-    assertEquals(new Boolean(true), parentGroups.contains(TestConfiguration.google));
+    assertTrue(parentGroups.contains(TestConfiguration.google));
+    assertTrue(parentGroups.contains(TestConfiguration.expectedParentGroup));
     // I&SBU-Web is parent of Google group
-    assertEquals(new Boolean(true), parentGroups.contains(TestConfiguration.expectedParentGroup));
     parentGroups = null;
     userGroupsService.getAllParentGroups(TestConfiguration.fakeoremptyldapgroupname, parentGroups);
-    assertEquals(null, parentGroups);
+    assertNull(parentGroups);
   }
 
   /**
@@ -116,6 +117,7 @@ public class UserGroupsServiceTest {
     assertNotNull(groups2); // cache for user3
     Set<String> groups3 = userGroupsService.getAllLdapGroups(TestConfiguration.ldapuser4);
     assertNotNull(groups3); // cache for user4
+		assertEquals(8, groups3.size());
 
     UserGroupsCache<Object, ConcurrentHashMap<String, Set<Principal>>>
         cacheStore = userGroupsService.getLugCacheStore();
