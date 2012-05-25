@@ -30,6 +30,7 @@
                           ows_Title='04909078-LN 08.B.0353 Company E&amp;P USA.pdf'
                           ows_ContentType='Algemeen document'
                           ows_ID='17603'
+                          ows_FSObjType="74;#0"
                           ows_Author='74;#Someone'
                           ows_Modified='2011-12-05T10:55:32Z'
                           ows_Editor='74;#Someone'
@@ -53,6 +54,7 @@
                           ows_Title='MyTitle'
                           ows_ContentType='Contract'
                           ows_ID='17614'
+                          ows_FSObjType="174;#0"
                           ows_Author='174;#Someone'
                           ows_Modified='2011-11-18T08:29:47Z'
                           ows_Editor='174;#Someone'

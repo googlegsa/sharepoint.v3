@@ -32,31 +32,24 @@ public class GSSiteDiscoveryWSTest extends TestCase {
 
   protected void setUp() throws Exception {
     super.setUp();
-    System.out.println("\n...Setting Up...");
-    System.out.println("Initializing SharepointClientContext ...");
     this.sharepointClientContext = TestConfiguration.initContext();
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    System.out.println("Initializing GSSiteDiscoveryWS ...");
     this.siteDisc = new GSSiteDiscoveryWS(this.sharepointClientContext,
         TestConfiguration.sharepointUrl);
   }
 
   public final void testGetMatchingSiteCollections() {
-    System.out.println("Testing getMatchingSiteCollections()");
-    final Set siteCol = this.siteDisc.getMatchingSiteCollections();
+    final Set siteCol = siteDisc.getMatchingSiteCollections();
     assertNotNull(siteCol);
-    System.out.println("Total site colllections discovered: " + siteCol.size());
-    System.out.println("[ getMatchingSiteCollections() ] Test Completed.");
+    assertEquals(10, siteCol.size());
   }
 
   public final void testGetFQDNHost() {
-    System.out.println("Testing getFQDNHost()");
     final String domain_fqdn = this.siteDisc.getFQDNHost(TestConfiguration.domain);
-    assertNotNull(domain_fqdn);
-    System.out.println("[ getFQDNHost() ] Test Completed.");
+    assertEquals(TestConfiguration.domain, domain_fqdn);
   }
 
   public final void testGetCurrentWebCrawlInfo() throws Exception {
@@ -75,12 +68,23 @@ public class GSSiteDiscoveryWSTest extends TestCase {
     assertNotNull(allListStates);
     assertTrue(allListStates.size() > 0);
 
+    // isNoCrawl should initially be false.
+    for (ListState listState : allListStates) {
+      assertFalse(listState.isNoCrawl());
+    }
+
+    // Set isNoCrawl to true for all lists.
     for (ListState listState : allListStates) {
       listState.setNoCrawl(true);
     }
 
-    WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
-    webCrawlInfo.setNoCrawl(true);
+    // Verify isNoCrawl is true.
+    for (ListState listState : allListStates) {
+      assertTrue(listState.isNoCrawl());
+    }
+
+    // Update the crawl state from the web service. This should
+    // set isNoCrawl back to false.
     siteDisc.updateListCrawlInfo(allListStates);
     for (ListState listState : allListStates) {
       assertFalse(listState.isNoCrawl());
@@ -94,7 +98,7 @@ public class GSSiteDiscoveryWSTest extends TestCase {
     WebCrawlInfo[] wsResult = siteDisc.getWebCrawlInfoInBatch(weburls);
     assertNotNull(wsResult);
     assertEquals(wsResult.length, weburls.length);
-    assertEquals(false, wsResult[0].isNoCrawl());
+    assertFalse(wsResult[0].isNoCrawl());
   }
 
   public final void testUpdateWebCrawlInfoInBatch() throws Exception {

@@ -142,9 +142,7 @@ public class SPListsWSTest extends TestCase {
   /**
    * Test for categories list items URLs of blog site
    */
-  // TODO: This test assumes that the root site is a blog so we need to re-create our
-  // test data so that the the root site at TestConfiguration.sharepointUrl is a blog.
-  public void failingtestGetListItemsForCategoriesInBlogSite()
+  public void testGetListItemsForCategoriesInBlogSite()
       throws MalformedURLException, RepositoryException {
     final List<SPDocument> items = listsHelper.getListItems(this.categoriesList, null, null, null);
     String baseCategoriesExpectedURL = Util.getWebApp(sharepointClientContext.getSiteURL())
@@ -161,9 +159,7 @@ public class SPListsWSTest extends TestCase {
   /**
    * Test for comment list items URLs of blog site
    */
-  // TODO: This test assumes that the root site is a blog so we need to re-create our
-  // test data so that the the root site at TestConfiguration.sharepointUrl is a blog.
-  public void failingtestGetListItemsForCommentsInBlogSite()
+  public void testGetListItemsForCommentsInBlogSite()
       throws MalformedURLException, RepositoryException {
     final List<SPDocument> items = listsHelper.getListItems(this.commentsList, null, null, null);
     String baseCommentExpectedURL = Util.getWebApp(sharepointClientContext.getSiteURL())
@@ -180,9 +176,7 @@ public class SPListsWSTest extends TestCase {
   /**
    * Test for posts list items URLs of blog site
    */
-  // TODO: This test assumes that the root site is a blog so we need to re-create our
-  // test data so that the the root site at TestConfiguration.sharepointUrl is a blog.
-  public void failingtestGetListItemsForPostsInBlogSite()
+  public void testGetListItemsForPostsInBlogSite()
       throws MalformedURLException, RepositoryException {
     final List<SPDocument> items = listsHelper.getListItems(this.postsList, null, null, null);
     String basePostsExpectedURL = Util.getWebApp(sharepointClientContext.getSiteURL())
