@@ -38,4 +38,13 @@ public interface BulkAuthorizationWS {
    *         failure.
    */
   public String checkConnectivity();
+
+  /**
+   * For checking the version of Google Services for SharePoint server.
+   *
+   * @return The version of Google SharePoint services deployed on to the
+   *         SharePoint server or return error messages to it's caller, which 
+   *         intern shown on the connector configuration UI.
+   */
+  public String getVersion();
 }

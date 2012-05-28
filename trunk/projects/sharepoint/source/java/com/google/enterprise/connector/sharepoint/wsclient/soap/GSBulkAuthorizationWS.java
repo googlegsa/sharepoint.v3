@@ -154,4 +154,43 @@ public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
       return e.getLocalizedMessage();
     }
   }
+
+  /**
+   * For checking version of Google SharePoint services deployed on to the SharePoint server.
+   *
+   * @return The version of Google SharePoint services deployed on to the SharePoint server.
+   * 
+   */
+  public String getVersion() {
+    String gssVersion = null;
+    try {
+      gssVersion = stub.getGSSVersion();
+      LOGGER.info("The version of Google Services for SharePoint deployed on to the "
+           + "Server is: " + gssVersion);
+      return gssVersion;
+    } catch (final AxisFault af) {
+      // Handling of username formats for different authentication models.
+      if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1) {
+        final String username = Util.switchUserNameFormat(stub.getUsername());
+        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
+            + stub.getUsername() + " ]. Trying with " + username);
+        stub.setUsername(username);
+        try {
+          gssVersion = stub.getGSSVersion();
+          LOGGER.info("The version of Google Services for SharePoint deployed on to the "
+               + "Server is: " + gssVersion);
+          return gssVersion;
+        } catch (final Exception e) {
+          LOGGER.log(Level.WARNING, "Can not connect to GSBulkAuthorization web service.", e);
+          return e.getLocalizedMessage();
+        }
+      } else {
+        LOGGER.log(Level.WARNING, "Can not connect to GSBulkAuthorization web service.", af);
+        return af.getLocalizedMessage();
+      }
+    } catch (final Throwable e) {
+      LOGGER.log(Level.WARNING, "Can not connect to GSBulkAuthorization web service.", e);
+      return e.getLocalizedMessage();
+    }
+  }
 }
