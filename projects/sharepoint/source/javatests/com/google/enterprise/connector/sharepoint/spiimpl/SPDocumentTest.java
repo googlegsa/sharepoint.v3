@@ -48,17 +48,14 @@ public class SPDocumentTest extends TestCase {
         TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID).getCrawlQueue();
     assertTrue(allDocs.size() > 0);
     this.doc = allDocs.get(0);
+    assertNotNull(this.doc);
     this.doc.setSharepointClientContext(spContext);
     this.doc.setContentDwnldURL(doc.getUrl());
-    try {
-      String str = UrlUtil.encode(doc.getUrl(), "UTF-8");
-      String charset = new GetMethod(str).getParams().getUriCharset();
-      URI uri = new URI(doc.getUrl(), true, charset);
-      System.out.println(str);
-      System.out.println(uri.toString());
-    } catch (Exception e) {
-      System.out.println(e);
-    }
+
+    String str = UrlUtil.encode(doc.getUrl(), "UTF-8");
+    String charset = new GetMethod(str).getParams().getUriCharset();
+    URI uri = new URI(doc.getUrl(), true, charset);
+    assertNotNull(uri);
   }
 
   public void testCompare() {

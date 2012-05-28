@@ -30,53 +30,28 @@ public class SharePointSessionTest extends TestCase {
   SharepointSession session;
 
   protected void setUp() throws Exception {
-    System.out.println("\n...Setting Up...");
-    System.out.println("Initializing SharepointClientContext ...");
     this.sharepointClientContext = TestConfiguration.initContext();
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setFeedType(FeedType.CONTENT_FEED);
 
-    System.out.println("Initializing SharepointConnector ...");
-    final SharepointConnector connector = new SharepointConnector();
+    final SharepointConnector connector =
+        TestConfiguration.getConnectorInstance();
     connector.setFQDNConversion(TestConfiguration.FQDNflag);
-    System.out.println("Initializing SharepointSession ...");
-    this.session = new SharepointSession(connector,
-        this.sharepointClientContext);
+    this.session = new SharepointSession(connector, sharepointClientContext);
   }
 
-  public void testGetAuthenticationManager() {
-    System.out.println("Testing getAuthenticationManager()...");
-    try {
-      final AuthenticationManager authZMan = this.session.getAuthenticationManager();
-      assertNotNull(authZMan);
-      System.out.println("[ getAuthenticationManager() ] Test Passed.");
-    } catch (final RepositoryException re) {
-      System.out.println(re);
-      System.out.println("[ getAuthenticationManager() ] Test Failed.");
-    }
+  public void testGetAuthenticationManager() throws Exception {
+    final AuthenticationManager authZMan = session.getAuthenticationManager();
+    assertNotNull(authZMan);
   }
 
-  public void testGetAuthorizationManager() {
-    System.out.println("Testing getAuthorizationManager()...");
-    try {
-      final AuthorizationManager authNMan = this.session.getAuthorizationManager();
-      assertNotNull(authNMan);
-      System.out.println("[ getAuthorizationManager() ] Test Passed.");
-    } catch (final RepositoryException re) {
-      System.out.println(re);
-      System.out.println("[ getAuthorizationManager() ] Test Failed.");
-    }
+  public void testGetAuthorizationManager() throws Exception {
+    final AuthorizationManager authNMan = session.getAuthorizationManager();
+    assertNotNull(authNMan);
   }
 
-  public void testGetTraversalManager() {
-    System.out.println("Testing getTraversalManager()...");
-    try {
-      final TraversalManager travMan = this.session.getTraversalManager();
-      assertNotNull(travMan);
-      System.out.println("[ getTraversalManager() ] Test Passed.");
-    } catch (final RepositoryException re) {
-      System.out.println(re);
-      System.out.println("[ getTraversalManager() ] Test Failed.");
-    }
+  public void testGetTraversalManager() throws Exception {
+    final TraversalManager travMan = session.getTraversalManager();
+    assertNotNull(travMan);
   }
 }

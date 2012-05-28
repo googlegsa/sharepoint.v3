@@ -27,6 +27,10 @@ import com.google.enterprise.connector.spi.Session;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.TraversalManager;
 
+import com.google.enterprise.connector.database.ConnectorPersistentStoreFactory;
+import com.google.enterprise.connector.spi.ConnectorPersistentStore;
+import com.google.enterprise.connector.util.database.testing.TestJdbcDatabase;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,24 +40,25 @@ public class SharepointSocialTraversalManagerTest {
   private SharepointConnector connector;
   private Session session;
 
-  static SharepointConnector createSharepointConnector(String socialOption) {
-    SharepointConnector connector = new SharepointConnector();
+  static SharepointConnector createSharepointConnector(String socialOption)
+      throws Exception {
+    SharepointConnector connector = TestConfiguration.getConnectorInstance();
     connector.setUserProfileServiceFactory(new MockUserProfileServiceFactory());
-    connector.setAuthorization(TestConfiguration.authorization);
-    connector.setDomain(TestConfiguration.domain);
-    connector
-        .setGoogleConnectorWorkDir(TestConfiguration.googleConnectorWorkDir);
-    connector.setGsaAdminPassword(TestConfiguration.getGsaAdminPassword());
-    connector.setGsaAdminUser(TestConfiguration.getGsaAdmin());
-    connector.setGsaHostAddress(TestConfiguration.getGsaHost());
-    connector.setIncludedURls(TestConfiguration.includedURls);
-    connector.setPassword(TestConfiguration.Password);
     connector.setFeedUnPublishedDocuments(true);
-    connector.setMySiteBaseURL(TestConfiguration.mySiteBaseURL);
     connector.setPushAcls(false);
     connector.setSocialOption(socialOption);
-    connector.setSharepointUrl(TestConfiguration.sharepointUrl);
-    connector.setUsername(TestConfiguration.username);
+    
+    TestJdbcDatabase database = new TestJdbcDatabase();
+    ConnectorPersistentStoreFactory factory =
+        new ConnectorPersistentStoreFactory(database);
+    ConnectorPersistentStore store =
+        factory.newConnectorPersistentStore("test", "Sharepoint", null);
+    connector.setUserGroupMembershipRowMapper(
+        TestConfiguration.getUserGroupMembershipRowMapper());
+    connector.setQueryProvider(
+        TestConfiguration.getUserDataStoreQueryProvider());
+    connector.setDatabaseAccess(store);
+
     return connector;
   }
 

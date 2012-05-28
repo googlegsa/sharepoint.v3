@@ -38,8 +38,6 @@ public class SharepointAuthorizationManagerTest extends TestCase {
   private final SPClientFactory clientFactory = new SPClientFactory();
 
   protected void setUp() throws Exception {
-    System.out.println("\n...Setting Up...");
-    System.out.println("Initializing SharepointClientContext ...");
     this.sharepointClientContext = new SharepointClientContext(
         clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
@@ -52,7 +50,6 @@ public class SharepointAuthorizationManagerTest extends TestCase {
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
-    System.out.println("Initializing SharepointAutho rizationManager ...");
   }
 
   public void testDocIdGrouping() throws SharepointException {

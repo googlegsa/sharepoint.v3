@@ -31,7 +31,6 @@ import com.google.enterprise.connector.sharepoint.social.SharepointSocialConnect
 import com.google.enterprise.connector.sharepoint.social.UserProfileServiceFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
-import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
 import com.google.enterprise.connector.spi.ConnectorPersistentStoreAware;
@@ -132,29 +131,6 @@ public class SharepointConnector implements Connector,
 
   public SharepointConnector() {
     socialConnector = new SharepointSocialConnector(this.sharepointClientContext);
-  }
-
-  /**
-   * Constructs a connector instance using the specified client factory class.
-   */
-  SharepointConnector(String clientFactoryClass) {
-    this(newClientFactory(clientFactoryClass));
-  }
-
-  SharepointConnector(ClientFactory clientFactory) {
-    this.clientFactory = clientFactory;
-  }
-
-  private static ClientFactory newClientFactory(String clientFactoryClass) {
-    if (LOGGER.isLoggable(Level.CONFIG))
-      LOGGER.config("NEW INSTANCE: " + clientFactoryClass);
-    try {
-      return (ClientFactory) Class.forName(clientFactoryClass).newInstance();
-    } catch (Exception e) {
-      LOGGER.log(Level.SEVERE, "Unable to create client factory '" +
-        clientFactoryClass + "'. " + e.getMessage(), e);
-      return new SPClientFactory();
-    }
   }
 
   /**

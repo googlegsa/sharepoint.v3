@@ -430,7 +430,7 @@ public class TestConfiguration {
     configMap.put("cacheRefreshInterval", cacheRefreshInterval);
     configMap.put("useCacheToStoreLdapUserGroupsMembership", Boolean.toString(useCacheToStoreLdapUserGroupsMembership));
     configMap.put(SPConstants.SOCIAL_OPTION, socialOption);
-    configMap.put(SPConstants.GSAHOSTADDRESS, gsaHost);
+    configMap.put(SPConstants.SOCIAL_USER_PROFILE_COLLECTION, "");
     configMap.put(SPConstants.GSAADMINUSER, gsaAdmin);
     configMap.put(SPConstants.GSAADMINPASSWORD, gsaAdminPassword);
 
@@ -795,6 +795,7 @@ public class TestConfiguration {
   public static SharepointConnector getConnectorInstance()
       throws RepositoryException {
     SharepointConnector connector = new SharepointConnector();
+    connector.setClientFactory(clientFactory);
     connector.setSharepointUrl(TestConfiguration.sharepointUrl);
     connector.setDomain(TestConfiguration.domain);
     connector.setUsername(TestConfiguration.username);
@@ -806,16 +807,16 @@ public class TestConfiguration {
     connector.setExcludedURls(TestConfiguration.excludedURls);
     connector.setMySiteBaseURL(TestConfiguration.mySiteBaseURL);
     connector.setAliasMap(TestConfiguration.AliasMap);
-    connector.setAuthorization(FeedType.METADATA_URL_FEED.toString());
+    connector.setAuthorization(authorization);
     connector.setUseSPSearchVisibility(TestConfiguration.useSPSearchVisibility);
     connector.setIncluded_metadata(TestConfiguration.whiteList);
     connector.setExcluded_metadata(TestConfiguration.blackList);
     connector.setFQDNConversion(true);
-    connector.setPushAcls(true);
+    connector.setPushAcls(false);
     connector.setCacheRefreshInterval("7200");
     connector.setInitialCacheSize("1000");
     connector.setPortNumber("389");
-    connector.setLdapServerHostAddress("10.88.33.159");
+    connector.setLdapServerHostAddress(ldapServerHostAddress);
     connector.setAuthenticationType("simple");
     connector.setConnectMethod("standard");
     connector.setSearchBase("DC=gdc-psl,DC=net");
@@ -823,6 +824,7 @@ public class TestConfiguration {
     connector.setSocialOption(TestConfiguration.getSocialOption());
     connector.setGsaAdminUser(TestConfiguration.getGsaAdmin());
     connector.setGsaAdminPassword(TestConfiguration.getGsaAdminPassword());
+    connector.setGsaHostAddress(gsaHost);
     connector.init();
     return connector;
   }

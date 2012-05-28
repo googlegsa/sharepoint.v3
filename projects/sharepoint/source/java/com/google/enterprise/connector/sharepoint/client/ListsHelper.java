@@ -713,9 +713,14 @@ public class ListsHelper {
         final MessageElement row = (MessageElement) obj;
         final SPDocument doc = ListsUtil.processListItemElement(
             sharepointClientContext, row, list, null);
-        listItems.add(doc);
+        if (doc == null) {
+          LOGGER.info("Skipping the ID [" + row.getAttribute(SPConstants.ID)
+              + "] under the List/Library URL " + list.getListURL() + ".");
+        } else {
+          listItems.add(doc);
+        }
       } catch (final Exception e) {
-        LOGGER.log(Level.WARNING, "Problem occured while parsing node", e);
+        LOGGER.log(Level.WARNING, "Problem occurred while parsing node", e);
         continue;
       }
     }
