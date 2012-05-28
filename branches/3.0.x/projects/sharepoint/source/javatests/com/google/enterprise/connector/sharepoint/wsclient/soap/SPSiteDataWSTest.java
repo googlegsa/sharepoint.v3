@@ -34,61 +34,46 @@ public class SPSiteDataWSTest extends TestCase {
   final SPClientFactory clientFactory = new SPClientFactory();
 
   protected void setUp() throws Exception {
-    System.out.println("\n...Setting Up...");
-    System.out.println("Initializing SharepointClientContext ...");
     this.sharepointClientContext = TestConfiguration.initContext();
 
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    System.out.println("Initializing SPSiteDataWS ...");
     this.siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
   }
 
-  public final void testSiteDataWS() throws Throwable {
-    System.out.println("Testing SPSiteDataWS(SharepointClientContext, siteName)...");
+  public final void testSiteDataWS() throws Exception {
     sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
     this.siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
     assertNotNull(this.siteDataWS);
-    System.out.println("[ SiteDataWS(SharepointClientContext, siteName) ] Test Passed");
   }
 
-  public void testGetNamedList() throws MalformedURLException,
-      RepositoryException {
-    System.out.println("Testing getNamedLists()...");
+  public void testGetNamedList() throws Exception {
     final GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
-    WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.sharepointUrl);
+    final WebState ws = state.makeWebState(sharepointClientContext,
+        TestConfiguration.sharepointUrl);
+    assertNotNull(ws);
     final List items = this.siteDataWS.getNamedLists(ws);
     assertNotNull(items);
-    System.out.println("[ getNamedLists() ] Test Passed.");
   }
 
-  public void testGetTitle() throws MalformedURLException, RepositoryException {
-    System.out.println("Testing getTitle()...");
-    try {
-      final String webTitle = this.siteDataWS.getTitle();
-      assertNotNull(webTitle);
-      System.out.println("[ getTitle() ] Test Passed.");
-    } catch (final Exception e) {
-      System.out.println("[ getTitle() ] Test Failed.");
-    }
+  public void testGetTitle() throws Exception {
+    final String webTitle = this.siteDataWS.getTitle();
+    assertNotNull(webTitle);
   }
 
-  public void testGetSiteData() throws MalformedURLException,
-      RepositoryException {
-    System.out.println("Testing getSiteDataAsList()...");
+  public void testGetSiteData() throws Exception {
     final GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
-    WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.sharepointUrl
-        + SPConstants.DEFAULT_SITE_LANDING_PAGE);
+    WebState ws = state.makeWebState(sharepointClientContext,
+        TestConfiguration.sharepointUrl + SPConstants.DEFAULT_SITE_LANDING_PAGE);
     final SPDocument document = this.siteDataWS.getSiteData(ws);
     assertNotNull(document);
     String author = document.getAuthor().toLowerCase();
     String objectType = document.getObjType();
     assertEquals(TestConfiguration.userNameFormat2, author);
     assertEquals("Site", objectType);
-    System.out.println("[ getSiteData() ] Test Passed.");
   }
 }

@@ -64,7 +64,7 @@ public class GSAclWSTest extends TestCase {
     globalState = TestConfiguration.initState(sharepointClientContext);
   }
 
-  public void testGetAclForUrls() {
+  public void testGetAclForUrls() throws Exception {
     WebState webState = globalState.lookupWeb(TestConfiguration.Site1_URL, sharepointClientContext);
     ListState listState = globalState.lookupList(TestConfiguration.Site1_URL, TestConfiguration.Site1_List1_GUID);
     assertNotNull(listState);
@@ -77,27 +77,18 @@ public class GSAclWSTest extends TestCase {
     testDocs.add(spdocument);
 
     // SharePoint document representing site landing page(site)
-    SPDocument spdocument2;
-    try {
-      spdocument2 = siteDataWS.getSiteData(webState);
-      testDocs.add(spdocument2);
-    } catch (SharepointException e1) {
-      System.out.println("Cannot create sharepoint document fro site landing Page");
-    }
+    final SPDocument spdocument2 = siteDataWS.getSiteData(webState);
+    testDocs.add(spdocument2);
 
     SPDocumentList docList = new SPDocumentList(testDocs, globalState);
     assertNotNull(docList);
 
-    try {
-      aclWS = new GSAclWS(sharepointClientContext, webState.getWebUrl());
-      aclWS.fetchAclForDocuments(docList, webState);
-      for (SPDocument document : docList.getDocuments()) {
-        assertNotNull(document);
-        assertNotNull(document.getUsersAclMap());
-        assertNotNull(document.getGroupsAclMap());
-      }
-    } catch (Exception e) {
-      fail(e.getMessage());
+    aclWS = new GSAclWS(sharepointClientContext, webState.getWebUrl());
+    aclWS.fetchAclForDocuments(docList, webState);
+    for (SPDocument document : docList.getDocuments()) {
+      assertNotNull(document);
+      assertNotNull(document.getUsersAclMap());
+      assertNotNull(document.getGroupsAclMap());
     }
   }
 

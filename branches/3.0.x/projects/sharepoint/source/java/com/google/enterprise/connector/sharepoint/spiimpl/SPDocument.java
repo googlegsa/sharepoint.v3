@@ -477,6 +477,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    */
   public Property findProperty(final String strPropertyName)
       throws RepositoryException {
+    if (!sharepointClientContext.isPushAcls() &&
+        documentType == DocumentType.ACL) {
+      LOGGER.log(Level.FINE, "Skipping properties for Document [" + url
+          + "] as DocumentType is ACL and PushAcls is false");
+      return null;
+    }
     final Collator collator = Util.getCollator();
     if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENTURL)) {
       return new SimpleProperty(new StringValue(getUrl()));
@@ -695,45 +701,47 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     if (null != documentType) {
       names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
     }
-    if (!isWebAppPolicyDoc()) {
-      // For regular document parent Url should not be null.
-      // empty parentUrl indicates error in ACL processing.
-      // so no ACL related properties will be sent in this case.
-      if (parentUrl != null) {
-        if (feedType == FeedType.CONTENT_FEED) {
-          names.add(SpiConstants.PROPNAME_ACLINHERITFROM_DOCID);
-          names.add(SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE);
-        } else {
-          names.add(SpiConstants.PROPNAME_ACLINHERITFROM);  
+    if (sharepointClientContext.isPushAcls()) {
+      if (!isWebAppPolicyDoc()) {
+        // For regular document parent Url should not be null.
+        // empty parentUrl indicates error in ACL processing.
+        // so no ACL related properties will be sent in this case.
+        if (parentUrl != null) {
+          if (feedType == FeedType.CONTENT_FEED) {
+            names.add(SpiConstants.PROPNAME_ACLINHERITFROM_DOCID);
+            names.add(SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE);
+          } else {
+            names.add(SpiConstants.PROPNAME_ACLINHERITFROM);  
+          }
+          names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
         }
+      } else {
+        // If document is web application policy document then ACL information
+        // is available, as connector will not create 
+        // partial web application policy document.
         names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
       }
-    } else {
-      // If document is web application policy document then ACL information
-      // is available, as connector will not create 
-      // partial web application policy document.
-      names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
-    }
 
-    if (null != usersAclMap) {
-      names.add(SpiConstants.PROPNAME_ACLUSERS);
-      for (Entry<Principal, Set<RoleType>> ace : usersAclMap.entrySet()) {
-        names.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX
-            + ace.getKey().getName());
+      if (null != usersAclMap) {
+        names.add(SpiConstants.PROPNAME_ACLUSERS);
+        for (Entry<Principal, Set<RoleType>> ace : usersAclMap.entrySet()) {
+          names.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX
+              + ace.getKey().getName());
+        }
       }
-    }
-    if (null != groupsAclMap) {
-      names.add(SpiConstants.PROPNAME_ACLGROUPS);
-      for (Entry<Principal, Set<RoleType>> ace : groupsAclMap.entrySet()) {
-        names.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX
-            + ace.getKey().getName());
+      if (null != groupsAclMap) {
+        names.add(SpiConstants.PROPNAME_ACLGROUPS);
+        for (Entry<Principal, Set<RoleType>> ace : groupsAclMap.entrySet()) {
+          names.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX
+              + ace.getKey().getName());
+        }
       }
-    }
-    if (null != denyUsersAclMap) {
-      names.add(SpiConstants.PROPNAME_ACLDENYUSERS);
-    }
-    if (null != denyGroupsAclMap) {
-      names.add(SpiConstants.PROPNAME_ACLDENYGROUPS);
+      if (null != denyUsersAclMap) {
+        names.add(SpiConstants.PROPNAME_ACLDENYUSERS);
+      }
+      if (null != denyGroupsAclMap) {
+        names.add(SpiConstants.PROPNAME_ACLDENYGROUPS);
+      }
     }
     // Add "extra" metadata fields, including those added by user to the
     // documentMetadata List for matching against patterns
