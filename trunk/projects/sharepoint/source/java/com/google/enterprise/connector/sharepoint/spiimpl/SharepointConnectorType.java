@@ -29,7 +29,6 @@ import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapCon
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
-import com.google.enterprise.connector.sharepoint.wsclient.util.JarUtils;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 import com.google.enterprise.connector.spi.ConnectorFactory;
 import com.google.enterprise.connector.spi.ConnectorType;
@@ -1863,18 +1862,6 @@ public class SharepointConnectorType implements ConnectorType {
       sharepointClientContext.setSiteURL(endpoint);
       final BulkAuthorizationWS testBulkAuth =
           clientFactory.getBulkAuthorizationWS(sharepointClientContext);
-      // TODO redirect error messages to the connector configuration UI. 
-      String gssVersion = testBulkAuth.getVersion();
-      if (gssVersion.equals(JarUtils.getJarVersion(this.getClass()))) {
-          LOGGER.info(gssVersion + " is the version of Google Services for SharePoint installed/deployed "
-               + "the SharePoint server.");
-      } else {
-          LOGGER.log(Level.WARNING, "There is a version mis match of the configured connector and "
-               + "the Google Services for SharePoint installed/deployed on to the SharePoint server. "
-               + "Check the version of Google Services for Share Point.");
-          return gssVersion;
-      }
-
       return testBulkAuth.checkConnectivity();
     } catch (final Exception e) {
       final String logMessage = "Problem while connecting.";
