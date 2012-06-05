@@ -89,6 +89,10 @@ public class SharepointConnector implements Connector,
   private ConnectorPersistentStore connectorPersistnetStore;
   private boolean fetchACLInBatches = false;
   private int aclBatchSizeFactor = 2;
+  /** Threshold value to identify large ACLs. **/
+  private int largeACLThreshold = 500;
+  /** Batch Size for SP Group Resolution. **/
+  private int groupResolutionBatchSize = 5000; 
   private int webServiceTimeOut = 300000;
   private String ldapServerHostAddress;
   private String portNumber;
@@ -491,6 +495,10 @@ public class SharepointConnector implements Connector,
     sharepointClientContext
         .setUserProfileServiceFactory(this.userProfileServiceFactory);
     socialConnector.init(sharepointClientContext);
+    
+    sharepointClientContext.setLargeACLThreshold(this.largeACLThreshold);
+    sharepointClientContext.setGroupResolutionBatchSize(
+        this.groupResolutionBatchSize);
 
     if (!oldLdapBehavior) {
       adGroupsConnector = new AdGroupsConnector();
@@ -539,8 +547,8 @@ public class SharepointConnector implements Connector,
     return useSPSearchVisibility;
   }
 
-  public void setUseSPSearchVisibility(boolean useSPSerachVisibility) {
-    this.useSPSearchVisibility = useSPSerachVisibility;
+  public void setUseSPSearchVisibility(boolean useSPSearchVisibility) {
+    this.useSPSearchVisibility = useSPSearchVisibility;
   }
 
   public List<String> getInfoPathBaseTemplate() {
@@ -970,5 +978,33 @@ public class SharepointConnector implements Connector,
 
   public void setUserProfileServiceFactory(UserProfileServiceFactory factory) {
     this.userProfileServiceFactory = factory;
+  }
+
+  /**
+   * @return the large ACL Threshold.
+   */
+  public int getLargeACLThreshold() {
+    return largeACLThreshold;
+  }
+
+  /**
+   * @param largeACLThreshold the the large ACL Threshold to set.
+   */
+  public void setLargeACLThreshold(int largeACLThreshold) {
+    this.largeACLThreshold = largeACLThreshold;
+  }
+
+  /**
+   * @return the group resolution batch size.
+   */
+  public int getGroupResolutionBatchSize() {
+    return groupResolutionBatchSize;
+  }
+
+  /**
+   * @param groupResolutionBatchSize the group resolution batch size to set.
+   */
+  public void setGroupResolutionBatchSize(int groupResolutionBatchSize) {
+    this.groupResolutionBatchSize = groupResolutionBatchSize;
   }
 }
