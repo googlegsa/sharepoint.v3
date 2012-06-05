@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -435,25 +437,17 @@ public abstract class ListsUtil {
       final SharepointClientContext sharepointClientContext,
       final MessageElement listItem, final ListState list, 
       final Set<String> allWebs) {
-    // Get all the required attributes.
-    if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
-      if (null != listItem.getAttribute(SPConstants.MODERATION_STATUS)) {
-        String docVersion =
-            listItem.getAttribute(SPConstants.MODERATION_STATUS);
-        if (docVersion != null && !docVersion.equals(
-            SPConstants.DocVersion.APPROVED.toString())) {
-          LOGGER.warning("List Item or Document is not yet published on SharePoint site, "
-              + "hence discarding the ID [" + listItem.getAttribute(SPConstants.ID)
-              + "] under the List/Document Library URL " + list.getListURL()
-              + ", and its current version is " + docVersion);
-          return null;
-        }
-      } else {
-        LOGGER.log(Level.WARNING, SPConstants.MODERATION_STATUS
-            + " is not found for one of the items in list or document library [ "
-            + list.getListURL() + " ]. ");
-      }
+    if (!isFeedableListItem(sharepointClientContext, listItem, list)) {
+      LOGGER.warning(
+          "List Item or Document is not yet published on SharePoint site, "
+          + "hence discarding the ID [" + listItem.getAttribute(SPConstants.ID)
+          + "] under the List/Document Library URL " + list.getListURL()
+          + ", and its current version is "
+          + listItem.getAttribute(SPConstants.MODERATION_STATUS));
+      return null;
     }
+
+    // Get all the required attributes.
     String fileref = listItem.getAttribute(SPConstants.FILEREF);
     if (fileref == null) {
       LOGGER.log(Level.WARNING, SPConstants.FILEREF
@@ -686,6 +680,41 @@ public abstract class ListsUtil {
       }
     }
     return doc;
+  }
+
+   /**
+   * Gets whether the given list item should be indexed.
+   *
+   * @param ctx the client context to check the
+   *     {@code feedUnPublishedDocuments} configuration property
+   * @param me the XML for the list item
+   * @param list the list the list item is in, used for logging
+   * @return {@code true} if the list item should be indexed, or
+   *     {@code false} if it should not be
+   */
+  public static boolean isFeedableListItem(SharepointClientContext ctx,
+      MessageElement me, ListState list) {
+    return isFeedableListItem(ctx.isFeedUnPublishedDocuments(),
+        me, list.getListURL());
+  }
+
+  @VisibleForTesting
+  static boolean isFeedableListItem(boolean isFeedUnpublishedDocuments,
+      MessageElement me, String listUrl) {
+    if (isFeedUnpublishedDocuments) {
+      return true;
+    } else {
+      String docVersion = me.getAttribute(SPConstants.MODERATION_STATUS);
+      if (Strings.isNullOrEmpty(docVersion)) {
+        LOGGER.warning(SPConstants.MODERATION_STATUS
+            + " is not found for the ID ["
+            + me.getAttribute(SPConstants.ID)
+            + "] under the List/Document Library URL " + listUrl);
+        return true;
+      } else {
+        return docVersion.equals(SPConstants.DocVersion.APPROVED.toString());
+      }
+    }
   }
 
   /**

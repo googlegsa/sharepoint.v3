@@ -85,4 +85,13 @@ public class MockAclWS implements AclWS {
       String strFeedType) {
     return null;
   }
+  
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  public boolean resolveSharePointGroups(WebState webState) {
+    return true;
+  }
 }
