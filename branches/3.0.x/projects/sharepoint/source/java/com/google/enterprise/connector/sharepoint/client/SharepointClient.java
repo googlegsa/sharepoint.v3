@@ -294,21 +294,52 @@ public class SharepointClient {
     // Do not try to re-fetch the ACL when documents are pending from
     // previous batch traversals
     if (null != resultSet && resultSet.size() > 0) {
-
       if (sharepointClientContext.isFetchACLInBatches()) {
-        aclRetrievalResult = fetchACLInBatches(resultSet, webState, globalState, sharepointClientContext.getAclBatchSizeFactor());
+        aclRetrievalResult = fetchACLInBatches(resultSet, webState,
+            globalState, sharepointClientContext.getAclBatchSizeFactor());
       } else {
-        aclRetrievalResult = fetchACLForDocuments(resultSet, webState, globalState);
+        aclRetrievalResult =
+            fetchACLForDocuments(resultSet, webState, globalState);
       }
-
-      if (!aclRetrievalResult) {
+      // Resolve SP Groups only if ACLs retrieval is successful
+      if (aclRetrievalResult) {
+        boolean spGroupResolutionResult = resolveSharePointGroups(webState);
+        return spGroupResolutionResult;
+      } else {
         LOGGER.log(Level.WARNING, "No documents will be sent for site [ "
             + webState.getWebUrl()
-            + " ] as ACL retrieval has failed. Please check the errors/logs associated with ACL retrieval before this");
+            + " ] as ACL retrieval has failed. Please check the errors/logs" +
+            " associated with ACL retrieval before this");
+        return false;
       }
     }
-
     return aclRetrievalResult;
+  }
+  
+  /**
+   * Resolves SharePoint Groups for WebState
+   * @param webState for which SharePoint Groups needs to be resolved
+   * @return boolean flag indicating if SharePoint Group Resolution for
+   *         WebState is successful. True = Success. False = Failure
+   */
+  private boolean resolveSharePointGroups(WebState webState) {
+    if (webState.getSPGroupsToResolve() == null ||
+        webState.getSPGroupsToResolve().isEmpty()) {
+      return true;
+    }
+    LOGGER.log(Level.INFO, "Resolving SharePoint Groups for ["
+        + webState.getWebUrl() + "]");
+    try {
+      AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
+          webState.getWebUrl());
+      return aclWs.resolveSharePointGroups(webState);      
+    } catch (Exception ex) {    
+      // Return false indicating that SharePoint Group Resolution is failed.
+      LOGGER.log(Level.WARNING,
+          "Problem while resolving groups under WebState [ "
+          + webState.getWebUrl() + " ].", ex);
+      return false;
+    }
   }
 
   /**

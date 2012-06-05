@@ -671,36 +671,21 @@ public class SPListsWS implements ListsWS {
          * updated items.
          */
 
-        if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
-          if (null != row.getAttribute(SPConstants.MODERATION_STATUS)) {
-            String docVersion = row.getAttribute(SPConstants.MODERATION_STATUS);
-            if (docVersion != null && !docVersion.equals(
-                SPConstants.DocVersion.APPROVED.toString())) {
-              // Added unpublished documents to delete list if
-              // FeedUnPublishedDocuments set to false, so
-              // that connector send delete feeds for unpublished
-              // content in SharePoint to GSA.
-              if (!sharepointClientContext.isInitialTraversal()) {
-                LOGGER.warning("Adding the list item or document ["
-                    + row.getAttribute(SPConstants.FILEREF)
-                    + "] to the deleted IDs list to send delete feeds "
-                    + "for unpublished content in the list URL: "
-                    + list.getListURL()
-                    + ", and its current version is " + docVersion);
-                deletedIDs.add(docId);
-              }
-            } else {
-              // Add only published documents to the list to send
-              // add feeds if FeedUnPublishedDocuments set to
-              // false.
-              updatedListItems.add(row);
-            }
-          }
-        } else {
-          // Add all published and unpublished content to the
-          // updatedListItems to send add feeds if
-          // feedUnPublishedDocuments set to true.
+        if (ListsUtil.isFeedableListItem(sharepointClientContext, row, list)) {
           updatedListItems.add(row);
+        } else if (!sharepointClientContext.isInitialTraversal()) {
+          // Added unpublished documents to delete list if
+          // feedUnPublishedDocuments is set to false, so
+          // that connector sends delete feeds for unpublished
+          // content in SharePoint to GSA.
+          LOGGER.warning("Adding the list item or document ["
+              + row.getAttribute(SPConstants.FILEREF)
+              + "] to the deleted IDs list to send delete feeds "
+              + "for unpublished content in the list URL: "
+              + list.getListURL()
+              + ", and its current version is "
+              + row.getAttribute(SPConstants.MODERATION_STATUS));
+          deletedIDs.add(docId);
         }
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "Problem occured while parsing the rs:data node", e);

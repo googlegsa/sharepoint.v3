@@ -84,6 +84,20 @@
 
   <!-- Web service time out value. Value should be mentioned in milliseconds -->
   <property name="webServiceTimeOut"><value>300000</value></property>
+  <!--
+    Threshold Value to identify ACL as large ACL. In order to avoid Web service
+    timeout errors, large ACLs will be processed individually.
+    largeACLThreshold = 0 will not identify any ACL as large ACL and it will
+    follow regular ACL processing.
+    -->
+  <property name="largeACLThreshold"><value>500</value></property>
+  <!--
+    groupResolutionBatchSize is used to arrive at an appropriate batch size
+    for SharePoint Group Resolution in order to avoid large SOAP response
+    and web service timeout error. groupResolutionBatchSize = 0 will result
+    in resolution of all SharePoint Groups.
+  -->
+  <property name="groupResolutionBatchSize"><value>5000</value></property> 
 
     <property name="queryProvider" ref="queryProvider" />
     <property name="userGroupMembershipRowMapper" ref="userGroupMembershipRowMapper" />

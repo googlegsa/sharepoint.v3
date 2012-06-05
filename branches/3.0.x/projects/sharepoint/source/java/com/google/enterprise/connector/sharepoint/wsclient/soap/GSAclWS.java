@@ -49,6 +49,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 import com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
@@ -155,7 +156,7 @@ public class GSAclWS implements AclWS{
     }
     try {
       result = stub.getAclForUrlsUsingInheritance(urls, useInheritance,
-          includePolicyAcls);
+          includePolicyAcls, sharepointClientContext.getLargeACLThreshold());
     } catch (final AxisFault af) {
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (sharepointClientContext.getDomain() != null)) {
@@ -165,7 +166,7 @@ public class GSAclWS implements AclWS{
         stub.setUsername(username);
         try {
           result = stub.getAclForUrlsUsingInheritance(urls, useInheritance,
-              includePolicyAcls);
+              includePolicyAcls, sharepointClientContext.getLargeACLThreshold());
         } catch (final Exception e) {
           LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
               + endpoint + " ].", e);
@@ -188,10 +189,25 @@ public class GSAclWS implements AclWS{
    * @param urlToDocMap Document map to update
    */
   private void fetchAclForDocumentsWithExcludedParents(String[] urls,
-      Map<String, SPDocument> urlToDocMap) {
+      Map<String, SPDocument> urlToDocMap, WebState webState) {
     GssGetAclForUrlsResult wsResult = getAclForUrls(urls, false, false);
     if (wsResult != null) {
-      processWsResponse(wsResult, urlToDocMap);
+      processWsResponse(wsResult, urlToDocMap, webState);
+    }
+  }
+  
+  /**
+   * To process documents with large ACLs
+   */
+  private void fetchAclForSPDocument(String documentUrl,
+      SPDocument document, WebState webState) {    
+    GssGetAclForUrlsResult wsResult =
+        getAclForUrls(new String[] { documentUrl },
+        supportsInheritedAcls, !supportsInheritedAcls);
+    if (wsResult != null) {
+      Map<String, SPDocument> docMapToPass = Maps.newHashMap();
+      docMapToPass.put(documentUrl, document);
+      processWsResponse(wsResult, docMapToPass, webState);
     }
   }
 
@@ -208,7 +224,7 @@ public class GSAclWS implements AclWS{
    *          represents the document URL
    */
   private void processWsResponse(GssGetAclForUrlsResult wsResult,
-      Map<String, SPDocument> urlToDocMap) {
+      Map<String, SPDocument> urlToDocMap, WebState webState) {
     if (wsResult == null || urlToDocMap == null) {
       return;
     }
@@ -222,6 +238,11 @@ public class GSAclWS implements AclWS{
     Set<UserGroupMembership> memberships = new TreeSet<UserGroupMembership>();
     Map<String, SPDocument> excludedParentUrlToDocMap = Maps.newHashMap();
     List<String> docUrlsToReprocess = Lists.newArrayList();
+    Map<String, SPDocument> largeACLUrlToDocMap = Maps.newHashMap();
+    List<String> largeAclUrlsToReprocess = Lists.newArrayList();
+    Map<String,List<SPDocument>> reprocessDocs =
+        Maps.newHashMap();
+
  ACL: for (GssAcl acl : allAcls) {
       String entityUrl = acl.getEntityUrl();
       GssAce[] allAces = acl.getAllAce();
@@ -239,6 +260,34 @@ public class GSAclWS implements AclWS{
         continue;
       }
       LOGGER.log(Level.CONFIG, "WsLog [ " + acl.getLogMessage() + " ] ");
+      boolean largeAcl = Boolean.parseBoolean(acl.getLargeAcl());
+      if (largeAcl) {
+        boolean inheritPermissions =
+            Boolean.parseBoolean(acl.getInheritPermissions());
+        if (inheritPermissions) {
+          String parentUrl = acl.getParentUrl();
+          // if parentUrl is null or empty then document will be processed
+          // as largeAcl document.
+          if (!Strings.isNullOrEmpty(parentUrl)) {
+            LOGGER.log(Level.INFO, "Document [ " + document.getUrl()
+                + " ] is idenified as Large ACL but with inherit permissions, "
+                + "with Parent URL as " + parentUrl);
+            List<SPDocument> childList =
+                reprocessDocs.get(parentUrl);
+            if (childList == null) {
+              childList = Lists.newArrayList();              
+            }
+            childList.add(document);
+            reprocessDocs.put(parentUrl, childList);
+            continue ACL;
+          }          
+        }
+        LOGGER.log(Level.INFO, "Document [ " + document.getUrl()
+            + " ] needs to be reprocessed as Large ACL Document");
+        largeAclUrlsToReprocess.add(document.getUrl());
+        largeACLUrlToDocMap.put(document.getUrl(), document);
+        continue ACL;
+      }
       Map<Principal, Set<RoleType>> userPermissionMap = Maps.newHashMap();
       Map<Principal, Set<RoleType>> groupPermissionMap = Maps.newHashMap();
       Map<Principal, Set<RoleType>> deniedUserPermissionMap = Maps.newHashMap();
@@ -294,8 +343,8 @@ public class GSAclWS implements AclWS{
           objectType = ObjectType.SITE_LANDING_PAGE;
         } else if (null != document.getParentList()) {
           if (document.getParentList().getPrimaryKey().equals(
-                  Util.getOriginalDocId(document.getDocId(),
-                      document.getFeedType()))) {
+              Util.getOriginalDocId(document.getDocId(),
+                  document.getFeedType()))) {
             objectType = ObjectType.LIST;
           }
         }
@@ -318,7 +367,8 @@ public class GSAclWS implements AclWS{
                     + " for Principal ["+ principalName + "]");
                 processPermissions(principal, deniedRoleTypes,
                     deniedUserPermissionMap, deniedGroupPermissionMap,
-                    principalName, siteCollUrl, memberships);
+                    principalName, siteCollUrl, memberships,
+                    webState);
               } else {
                 // Skipping ACL as denied ACLs are not supported as per
                 // Traversal Context.
@@ -340,7 +390,8 @@ public class GSAclWS implements AclWS{
           LOGGER.fine("Principal [ "+ principalName
               + " ] Allowed Role Types [ "+ allowedRoleTypes + " ]");
           processPermissions(principal, allowedRoleTypes, userPermissionMap,
-              groupPermissionMap, principalName, siteCollUrl, memberships);
+              groupPermissionMap, principalName, siteCollUrl, memberships,
+              webState);
         }
       }
       document.setUsersAclMap(userPermissionMap);
@@ -349,11 +400,35 @@ public class GSAclWS implements AclWS{
       document.setDenyGroupsAclMap(deniedGroupPermissionMap);
     }
 
+    if (!reprocessDocs.isEmpty()) {
+      for (String parentUrl : reprocessDocs.keySet()) {
+        LOGGER.fine("Processing Parent URL [ "+ parentUrl + " ] ");
+        SPDocument parent = new SPDocument(parentUrl, parentUrl,
+            Calendar.getInstance(), ActionType.ADD);
+        fetchAclForSPDocument(parentUrl, parent, webState);
+        List<SPDocument> childList = reprocessDocs.get(parentUrl);
+        if (childList != null) { 
+          for(SPDocument child : childList) {
+            copyAcls(parent, child);
+          }
+        }
+      }
+    }
+
+    if (!largeAclUrlsToReprocess.isEmpty()) {
+      for (String largeACLUrl : largeAclUrlsToReprocess) {
+        SPDocument documentToPass = largeACLUrlToDocMap.get(largeACLUrl);
+        if (documentToPass != null) {
+          fetchAclForSPDocument(largeACLUrl, documentToPass, webState);
+        }
+      }
+    }
+
     if (!docUrlsToReprocess.isEmpty()) {
       String[] arrToPass = new String[docUrlsToReprocess.size()];
       docUrlsToReprocess.toArray(arrToPass);
       fetchAclForDocumentsWithExcludedParents(arrToPass,
-          excludedParentUrlToDocMap);
+          excludedParentUrlToDocMap, webState);
     }
 
     if (null != sharepointClientContext.getUserDataStoreDAO()) {
@@ -366,6 +441,18 @@ public class GSAclWS implements AclWS{
       }
     }
   }
+  
+  /**
+   * Utility method to copy ACLs.
+   * @param source source SPDocument for copy
+   * @param target target SPDocument for copy
+   */
+  private void copyAcls(SPDocument source, SPDocument target) {
+    target.setUsersAclMap(source.getUsersAclMap());
+    target.setGroupsAclMap(source.getGroupsAclMap());
+    target.setDenyUsersAclMap(source.getDenyUsersAclMap());
+    target.setDenyGroupsAclMap(source.getDenyGroupsAclMap());
+  } 
 
   /**
    * Method to process GssAcl permissions.
@@ -381,7 +468,8 @@ public class GSAclWS implements AclWS{
   private void processPermissions(GssPrincipal principal,
       Set<RoleType> roleTypes, Map<Principal, Set<RoleType>> userPermissionMap,
       Map<Principal, Set<RoleType>> groupPermissionMap, String principalName,
-      String webStateUrl, Set<UserGroupMembership> memberships) {
+      String webStateUrl, Set<UserGroupMembership> memberships,
+      WebState webState) {
     String globalNamespace = sharepointClientContext.getGoogleGlobalNamespace();
     String localNamespace = sharepointClientContext.getGoogleLocalNamespace();
     if (PrincipalType.USER.equals(principal.getType())) {
@@ -403,10 +491,16 @@ public class GSAclWS implements AclWS{
       if (PrincipalType.SPGROUP.equals(principal.getType())
           && null != sharepointClientContext.getUserDataStoreDAO()) {
         GssPrincipal[] members = principal.getMembers();
-        for (GssPrincipal member : members) {
-          memberships.add(new UserGroupMembership(member.getID(),
-              getPrincipalName(member), principal.getID(), principalName,
-              webStateUrl));
+        if (members == null || members.length == 0) {
+          // If SharePoint group does not have any members
+          // then such groups will be resolved later.
+          webState.addSPGroupToResolve (Integer.toString(principal.getID()));         
+        } else {
+          for (GssPrincipal member : members) {
+            memberships.add(new UserGroupMembership(member.getID(),
+                getPrincipalName(member), principal.getID(), principalName,
+                webStateUrl));
+          }
         }
       }
     } else {
@@ -495,7 +589,7 @@ public class GSAclWS implements AclWS{
             + " ]. Document list : " + resultSet.toString());
         GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl,
             supportsInheritedAcls, !supportsInheritedAcls);
-        processWsResponse(wsResult, urlToDocMap);
+        processWsResponse(wsResult, urlToDocMap, webState);
       } catch (Exception e) {
         LOGGER.log(Level.WARNING, "Problem while getting ACL from site [ "
             + webState.getWebUrl() + " ]", e);
@@ -1032,7 +1126,8 @@ public class GSAclWS implements AclWS{
   public GssResolveSPGroupResult resolveSPGroup(String[] groupIds) {
     GssResolveSPGroupResult result = null;
     try {
-      result = stub.resolveSPGroup(groupIds);
+      result = stub.resolveSPGroupInBatch(groupIds,
+          sharepointClientContext.getGroupResolutionBatchSize());
     } catch (final AxisFault af) {
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (sharepointClientContext.getDomain() != null)) {
@@ -1043,19 +1138,95 @@ public class GSAclWS implements AclWS{
         try {
           result = stub.resolveSPGroup(groupIds);
         } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "UCall to resolveSPGroup call failed. endpoint [ "
+          LOGGER.log(Level.WARNING,
+              "Call to resolveSPGroup call failed. endpoint [ "
               + endpoint + " ].", e);
         }
       } else {
-        LOGGER.log(Level.WARNING, "Call to resolveSPGroup call failed. endpoint [ "
+        LOGGER.log(Level.WARNING,
+            "Call to resolveSPGroup call failed. endpoint [ "
             + endpoint + " ].", af);
       }
     } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "Call to resolveSPGroup call failed. endpoint [ "
+      LOGGER.log(Level.WARNING,
+          "Call to resolveSPGroup call failed. endpoint [ "
           + endpoint + " ].", e);
     }
     return result;
   }
+  
+  /**
+   * Resolves SharePoint Groups associated with WebState and stores
+   * User Group mapping in local database. Returns true if all groups
+   * are resolved without error. Returns false in case of error.
+   * 
+   * @param webState WebState for which groups needs to be resolved
+   * @return True if group resolution is successful,
+   *         False if group resolution failed
+   */
+  public boolean resolveSharePointGroups(WebState webState) {
+    // Return true if there are no groups to resolve
+    Set<String> spGroupsToResolve = webState.getSPGroupsToResolve();
+    if (spGroupsToResolve == null ||
+        spGroupsToResolve.isEmpty()) {
+      return true;
+    }    
+    try {
+      while (!spGroupsToResolve.isEmpty()) {
+        spGroupsToResolve = webState.getSPGroupsToResolve();
+        String[] groupIds = new String[spGroupsToResolve.size()];
+        spGroupsToResolve.toArray(groupIds);
+        GssResolveSPGroupResult result = resolveSPGroup(groupIds);
+        // Null check for result. Return false if result is null.
+        if (result == null) {
+          LOGGER.warning("Group Resolution null for WebState[ "
+              + webState.getWebUrl() + " ]. Returning false");
+          return false;
+        }
+        GssPrincipal[] groups = result.getPrinicpals();
+        if (groups !=null && groups.length > 0) {
+          Set<UserGroupMembership> memberships =
+              new TreeSet<UserGroupMembership>();
+          for (GssPrincipal group : groups) {         
+            for (GssPrincipal member : group.getMembers()) {
+              memberships.add(new UserGroupMembership(member.getID(),
+                  getPrincipalName(member), group.getID(), group.getName(),
+                  result.getSiteCollectionUrl()));
+            }
+            webState.removeSPGroupToResolve(Integer.toString(group.getID()));
+          }
+          if (!memberships.isEmpty() &&
+              sharepointClientContext.getUserDataStoreDAO() != null) {
+            try {
+              sharepointClientContext.getUserDataStoreDAO().addMemberships(
+                  memberships);
+            } catch (Exception e) {
+              LOGGER.log(Level.WARNING, "Failed to add #" + memberships.size()
+                  + " memberships in user data store.", e);
+              return false;
+            }
+          }
+          if (webState.getSPGroupsToResolve().isEmpty()) {
+            LOGGER.info("Group resolution complete for WebState [ " +
+                webState.getWebUrl()
+                +" ]");
+          } else {
+            LOGGER.info("Need to revisit group resolution for WebState [ "
+                + webState.getWebUrl() 
+                +" ] as all the groups are not resolved in current batch");
+          }
+        }
+      }
+      return true;
+    } catch (Exception ex) {
+      LOGGER.log(Level.WARNING,
+          "Group Resolution failed for WebState[ "
+              + webState.getWebUrl() + " ]. Returning false",ex);
+      return false;
+    }
+  }
+
+
 
   /**
    * Construct SPDocument object for representing Web application policy
@@ -1117,7 +1288,7 @@ public class GSAclWS implements AclWS{
     webAppPolicy.setDocumentType(DocumentType.ACL);
     Map<String, SPDocument> urlToDocMap = Maps.newHashMap();
     urlToDocMap.put(result.getSiteCollectionUrl(), webAppPolicy);
-    processWsResponse(result, urlToDocMap);
+    processWsResponse(result, urlToDocMap, webState);
     webAppPolicy.setWebAppPolicyDoc(true);
     return webAppPolicy;
   }

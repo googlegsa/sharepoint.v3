@@ -81,6 +81,7 @@ public class AdTestEntity {
         sb.append(alphabet.charAt(random.nextInt(alphabet.length())));
       }
     } while (names.contains(sb.toString().toLowerCase()));
+    names.add(sb.toString().toLowerCase());
     return sb.toString();
   }
 
