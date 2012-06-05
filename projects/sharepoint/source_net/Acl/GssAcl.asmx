@@ -271,6 +271,16 @@ public class GssAcl
         get { return inheritPermissions; }
         set { inheritPermissions = value; }
     }
+
+    // This field is typed as String instead of Boolean to ensure
+    // SOAP compatiblity with earlier versions of SharePoint Connectors.
+    private string largeAcl;
+
+    public String LargeAcl
+    {
+        get { return largeAcl; }
+        set { largeAcl = value; }
+    }
   
     public string EntityUrl
     {
@@ -806,7 +816,7 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
     {
-        return GetAclForUrlsUsingInheritance(urls, false, true);
+        return GetAclForUrlsUsingInheritance(urls, false, true, 0);
     } 
     
     /// <summary>
@@ -817,7 +827,7 @@ public class GssAclMonitor
     /// <param name="bIncludePolicyAcls">flag indicating to include Web Application Policy ACLs</param>
     /// <returns></returns>
     [WebMethod]
-    public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls,Boolean bUseInheritance, Boolean bIncludePolicyAcls)
+    public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls, Boolean bUseInheritance, Boolean bIncludePolicyAcls, int largeAclThreshold)
     {
         SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
         using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
@@ -872,27 +882,48 @@ public class GssAclMonitor
                         {
                             if (secobj.HasUniqueRoleAssignments || bUseInheritance == false)
                             {
-                                GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
-                                acl = new GssAcl(url, aceMap.Count);
-                                foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
+                                Boolean largeAcl = secobj.RoleAssignments.Count > largeAclThreshold && largeAclThreshold > 0;
+                                if (largeAcl && urls.Length > 1)
                                 {
-                                    acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+                                    acl = new GssAcl(url, 0);
+                                    allAcls.Add(acl);
+                                    acl.LargeAcl = largeAcl.ToString();
+                                    if (!secobj.HasUniqueRoleAssignments)
+                                    {
+                                        acl.ParentUrl = GssAclUtility.GetUrl(secobj.FirstUniqueAncestor, strWebappUrl);
+                                        acl.InheritPermissions = true.ToString();                                       
+                                    }
+                                    acl.AddLogMessage(String.Format("Large ACL for URL {0} with {1} role assignments", url, secobj.RoleAssignments.Count));                                   
                                 }
-                                allAcls.Add(acl);
+                                else
+                                {
+                                    SPUser owner = null;
+                                    try
+                                    {
+                                        owner = GssAclUtility.GetOwner(secobj);                                        
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                                    }
 
-                                try
-                                {
-                                    acl.Owner = GssAclUtility.DecodeIdentity(GssAclUtility.GetOwner(secobj).LoginName);
-                                }
-                                catch (Exception e)
-                                {
-                                    acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
-                                }
-                                if (!bIncludePolicyAcls)
-                                {
-                                    acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
-                                    acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
-                                }
+                                    GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
+                                    acl = new GssAcl(url, aceMap.Count);
+                                    if (owner != null)
+                                    {
+                                        acl.Owner = GssAclUtility.DecodeIdentity(owner.LoginName);
+                                    }
+                                    foreach (KeyValuePair<GssPrincipal, GssSharepointPermission> keyVal in aceMap)
+                                    {
+                                        acl.AddAce(new GssAce(keyVal.Key, keyVal.Value));
+                                    }
+                                    allAcls.Add(acl);
+                                    if (!bIncludePolicyAcls)
+                                    {
+                                        acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
+                                        acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
+                                    }
+                                }                                
                             }
                             else
                             {
@@ -1021,86 +1052,101 @@ public class GssAclMonitor
         result.SiteCollectionGuid = site.ID;
         return result;
     }
+
+    /// <summary>
+    /// Expands a SharePoint group to find all the member users and domain groups. Creates a <see cref="GssPrincipal"/> object for each of them and returns the same.
+    /// The group must exist in the site collection for which the request has been sent.
+    /// </summary>
+    /// <param name="groupId"> the SharePoint group ID/Name that is to be resolved </param>   
+    /// <returns> list of GssPrincipal object with the Members attribute set as the list of member users/domain-groups</returns>
+    [WebMethod]
+    public GssResolveSPGroupResult ResolveSPGroup(string[] groupId)
+    {
+        return ResolveSPGroupInBatch(groupId, -1);
+    }
+    
     
     /// <summary>
     /// Expands a SharePoint group to find all the member users and domain groups. Creates a <see cref="GssPrincipal"/> object for each of them and returns the same.
     /// The group must exist in the site collection for which the request has been sent.
     /// </summary>
     /// <param name="groupId"> the SharePoint group ID/Name that is to be resolved </param>
+    /// <param name="batchSize">batch size to limit number of users being returned. -1 to return everything</param>
     /// <returns> list of GssPrincipal object with the Members attribute set as the list of member users/domain-groups</returns>
     [WebMethod]
-    public GssResolveSPGroupResult ResolveSPGroup(string[] groupId)
+    public GssResolveSPGroupResult ResolveSPGroupInBatch(string[] groupId, int batchSize)
     {
-        SPSite site;
-        SPWeb web;
-        init(out site, out web);
+         SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
+         using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
+         {
+             using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
+             {
+                 GssResolveSPGroupResult result = new GssResolveSPGroupResult();
+                 List<GssPrincipal> prinicpals = new List<GssPrincipal>();
+                             
+                     if (groupId != null)
+                     {
+                         int principalCounter = 0;                                     
+                         foreach (string id in groupId)
+                         {                            
+                             GssPrincipal principal = null;
+                             try
+                             {
+                                 if (GSSITEADMINGROUP.Equals(id))
+                                 {
+                                     principal = new GssPrincipal(GSSITEADMINGROUP, -1);
+                                     // Get all the administrator users as member of the GSSITEADMINGROUP.
+                                     List<GssPrincipal> admins = new List<GssPrincipal>();
+                                     foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
+                                     {
+                                         GssPrincipal admin = GssAclUtility.GetGssPrincipalFromSPPrincipal(spPrincipal);
+                                         if (admin == null)
+                                         {
+                                             continue;
+                                         }
+                                         admins.Add(admin);
+                                     }
+                                     principal.Members = admins;
+                                     principalCounter += principal.Members.Count;
+                                 }
+                                 else
+                                 {
+                                     SPGroup spGroup = web.SiteGroups.GetByID(int.Parse(id));
+                                     if (spGroup != null)
+                                     {
+                                         principal = new GssPrincipal(spGroup.Name, spGroup.ID);
+                                         principal.Members = GssAclUtility.ResolveSPGroup(spGroup);
+                                         principalCounter += principal.Members.Count;
+                                     }
+                                     else
+                                     {
+                                         principal = new GssPrincipal(id, -2);
+                                         principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
+                                     }
+                                 }
+                                 principal.Type = GssPrincipal.PrincipalType.SPGROUP;
+                             }
+                             catch (Exception e)
+                             {
+                                 principal = new GssPrincipal(id, -2);
+                                 principal.AddLogMessage("Could not resolve Group Id [ " + id + " ]. Exception: " + e.Message);
+                                 principal.Type = GssPrincipal.PrincipalType.NA;
+                             }
+                             prinicpals.Add(principal);
 
-        GssResolveSPGroupResult result = new GssResolveSPGroupResult();
-        List<GssPrincipal> prinicpals = new List<GssPrincipal>();
-        try
-        {
-           
-            
-            if (null != groupId)
-            {
-                foreach (string id in groupId)
-                {
-                    GssPrincipal principal = null;
-                    try
-                    {
-                        if (GSSITEADMINGROUP.Equals(id))
-                        {
-                            principal = new GssPrincipal(GSSITEADMINGROUP, -1);
-                            // Get all the administrator users as member of the GSSITEADMINGROUP.
-                            List<GssPrincipal> admins = new List<GssPrincipal>();
-                            foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
-                            {
-                                GssPrincipal admin = GssAclUtility.GetGssPrincipalFromSPPrincipal(spPrincipal);
-                                if (null == admin)
-                                {
-                                    continue;
-                                }
-                                admins.Add(admin);
-                            }
-                            principal.Members = admins;
-                        }
-                        else
-                        {
-                            SPGroup spGroup = web.SiteGroups.GetByID(int.Parse(id));
-                            if (null != spGroup)
-                            {
-                                principal = new GssPrincipal(spGroup.Name, spGroup.ID);
-                                principal.Members = GssAclUtility.ResolveSPGroup(spGroup);
-                            }
-                            else
-                            {
-                                principal = new GssPrincipal(id, -2);
-                                principal.AddLogMessage("Could not resolve Group Id [ " + id + " ] ");
-                            }
-                        }
-                        principal.Type = GssPrincipal.PrincipalType.SPGROUP;
-                    }
-                    catch (Exception e)
-                    {
-                        principal = new GssPrincipal(id, -2);
-                        principal.AddLogMessage("Could not resolve Group Id [ " + id + " ]. Exception: " + e.Message);
-                        principal.Type = GssPrincipal.PrincipalType.NA;
-                    }
-                    prinicpals.Add(principal);
-                }
-            }
-        }
-        finally
-        {
-            if (web != null)
-            {
-                web.Dispose(); // Dispose the SPWeb Object
-            }
-        }
-        result.Prinicpals = prinicpals;
-        result.SiteCollectionUrl = site.Url;
-        result.SiteCollectionGuid = site.ID;
-        return result;
+                             if (batchSize > 0 && principalCounter >= batchSize)
+                             {                               
+                                 break;
+                             }
+                         }
+                     }
+                 result.Prinicpals = prinicpals;
+                 result.SiteCollectionUrl = site.Url;
+                 result.SiteCollectionGuid = site.ID;
+                 return result;
+                 
+             }
+         }      
     }
 
     /// <summary>
@@ -1380,7 +1426,7 @@ public sealed class GssAclUtility
 
         principal.Members = admins;
     }
-
+    
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from a list of role assignments
     /// </summary>
@@ -1390,7 +1436,7 @@ public sealed class GssAclUtility
     {
         foreach (SPRoleAssignment roleAssg in roles)
         {
-            GssPrincipal principal = GetGssPrincipalFromSPPrincipal(roleAssg.Member);
+            GssPrincipal principal = GetGssPrincipalFromSPPrincipal(roleAssg.Member, false);
             GssSharepointPermission permission = null;
 
             if (null == principal)
@@ -1502,6 +1548,29 @@ public sealed class GssAclUtility
         return web.Site.OpenWeb(web.ID);
 
 
+    }
+
+    public static String GetUrl(ISecurableObject spObject, String strSiteUrl)
+    {
+        String strUrl = String.Empty;
+        if (spObject is SPWeb)
+        {
+            using (SPWeb oWeb = (SPWeb)spObject)
+            {
+                strUrl = oWeb.Url + "/default.aspx";
+            }
+        }
+        else if (spObject is SPList)
+        {
+            SPList oList = (SPList)spObject;
+            strUrl = strSiteUrl + oList.RootFolder.ServerRelativeUrl;
+        }
+        else if (spObject is SPListItem)
+        {
+            SPListItem oItem = (SPListItem)spObject;
+            strUrl = strSiteUrl + oItem.Url;
+        }
+        return strUrl;
     }
 
     /// <summary>
@@ -1744,6 +1813,17 @@ public sealed class GssAclUtility
     /// <returns></returns>
     public static GssPrincipal GetGssPrincipalFromSPPrincipal(SPPrincipal spPrincipal)
     {
+        return GetGssPrincipalFromSPPrincipal(spPrincipal, true);
+    }
+
+    /// <summary>
+    /// create a GssPrincipal object from the SharePoint's SPPrincipal object and returns the same
+    /// </summary>
+    /// <param name="spPrincipal">SPPrincipal</param>
+    /// <param name="resolveGroup">flag to indicate if SPGroup needs to be resolved</param>
+    /// <returns></returns> 
+    public static GssPrincipal GetGssPrincipalFromSPPrincipal(SPPrincipal spPrincipal, Boolean resolveGroup)
+    {
         if (null == spPrincipal)
         {
             return null;
@@ -1751,24 +1831,31 @@ public sealed class GssAclUtility
         GssPrincipal gssPrincipal = null;
         if (spPrincipal is SPUser)
         {
-            SPUser user = (SPUser)spPrincipal;
+            SPUser user = (SPUser) spPrincipal;
             gssPrincipal = new GssPrincipal(user.LoginName, user.ID);
             if (user.IsDomainGroup)
             {
                 gssPrincipal.Type = GssPrincipal.PrincipalType.DOMAINGROUP;
             }
+            else
+            {
+                gssPrincipal.Type = GssPrincipal.PrincipalType.USER;
+            }
         }
         else if (spPrincipal is SPGroup)
         {
-            SPGroup group = (SPGroup)spPrincipal;
+            SPGroup group = (SPGroup) spPrincipal;
             gssPrincipal = new GssPrincipal(group.Name, group.ID);
             gssPrincipal.Type = GssPrincipal.PrincipalType.SPGROUP;
-            gssPrincipal.Members = ResolveSPGroup(group);
+            if (resolveGroup)
+            {
+                gssPrincipal.Members = ResolveSPGroup(group);
+            }           
         }
         else
         {
             gssPrincipal = new GssPrincipal(spPrincipal.Name, -2);
-            gssPrincipal.AddLogMessage("could not create GssPrincipal for SPSprincipal [ " + spPrincipal.Name + " ] since it's neither a SPGroup nor a SPUser. ");
+            gssPrincipal.AddLogMessage("could not create GssPrincipal for SPSprincipal [ " + spPrincipal.Name + " ] since it's neither a SPGroup nor a SPUser.");
         }
 
         return gssPrincipal;

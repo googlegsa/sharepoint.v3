@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -100,6 +101,8 @@ public class WebState implements StatefulObject {
 
   // for determining the crawl behavior of the web
   private WebCrawlInfo webCrawlInfo;
+  
+  private Set<String> spGroupsToResolve;
 
   /**
    * For the sole purpose of loading WebState nodes as WebState objects when
@@ -762,5 +765,45 @@ public class WebState implements StatefulObject {
 
   public void setWebApplicationPolicyChange(boolean webApplicationPolicyChange) {
     this.webApplicationPolicyChange = webApplicationPolicyChange;
+  }
+
+  /**
+   * @return the SharePoint groups to resolve.
+   */
+  public Set<String> getSPGroupsToResolve() {
+    return spGroupsToResolve;
+  }
+
+  /**
+   * @param spGroups SharePoint groups to resolve to set
+   */
+  public void setSPGroupsToResolve(Set<String> spGroups) {
+    this.spGroupsToResolve = spGroups;
+  }
+  
+  /**
+   * Method to add SharePoint Group to resolve for WebState
+   * @param spGroup to add
+   */
+  public void addSPGroupToResolve(String spGroup) {
+    if (spGroupsToResolve == null) {
+      spGroupsToResolve = new TreeSet<String>();      
+    }
+    spGroupsToResolve.add(spGroup);
+  }
+  
+  /**
+   * Method to remove SharePoint Group to resolve for WebState
+   * @param spGroup to remove
+   * @return true if SP group removed successfully, false if group is not
+   *         available for removal.
+   */
+  public boolean removeSPGroupToResolve(String spGroup) {
+    if (spGroupsToResolve != null && spGroupsToResolve.contains(spGroup)) {
+      spGroupsToResolve.remove(spGroup);
+      return true;
+    } else {
+      return false;
+    }
   }
 }

@@ -63,4 +63,13 @@ public interface AclWS {
    */
   public SPDocument getWebApplicationPolicy(WebState webState,
       String strFeedType);
+  
+  /**
+   * Execute resolveSharePointGroups method
+   * @param webState WebState for Group Resolution
+   * @return boolean flag indicating status of SP group resolution.
+   *         True if group resolution is successful. 
+   *         False if group resolution fails.
+   */
+  public boolean resolveSharePointGroups(WebState webState);
 }
