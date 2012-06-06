@@ -106,7 +106,7 @@
         </table>
 
         <a name="WebsCompleted">
-          <h2>Sites - Completed:</h2>
+          <h2>Sites - Completed</h2>
         </a>
         <table border="1" cellpadding="2" cellspacing="0">
           <thead style="font-weight:bold">
@@ -130,7 +130,7 @@
         </table>
 
         <a name="WebsPending">
-          <h2>Sites - Pending:</h2>
+          <h2>Sites - Pending</h2>
         </a>
         <table border="1" cellpadding="2" cellspacing="0">
           <thead style="font-weight:bold">
@@ -154,7 +154,7 @@
         </table>
 
         <a name="ListsCompleted">
-          <h2>Lists - Completed:</h2>
+          <h2>Lists - Completed</h2>
         </a>
         <table border="1" cellpadding="2" cellspacing="0">
           <thead style="font-weight:bold">
@@ -178,7 +178,7 @@
         </table>
 
         <a name="ListsPending">
-          <h2>Lists - Pending:</h2>
+          <h2>Lists - Pending</h2>
         </a>
         <table border="1" cellpadding="2" cellspacing="0">
           <thead style="font-weight:bold">
