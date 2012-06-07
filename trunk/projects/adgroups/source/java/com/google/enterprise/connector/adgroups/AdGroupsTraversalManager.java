@@ -108,9 +108,9 @@ public class AdGroupsTraversalManager implements TraversalManager {
         LOGGER.warning("Directory Controller changed!!! Connected to ["
             + dbServer.get("invocationid") + "], but expected ["
             + server.getDsServiceName()
-            + "]. Not able to perform partial updates - performing full"
-            + "recrawl. Consider configuring AdGroups connector to connect"
-            + "directly to FQDN address of one domain controller for partial"
+            + "]. Not able to perform partial updates - performing full "
+            + "recrawl. Consider configuring AdGroups connector to connect "
+            + "directly to FQDN address of one domain controller for partial "
             + "updates support.");
       }
     } else {
