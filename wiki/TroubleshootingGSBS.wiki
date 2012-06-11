@@ -9,13 +9,16 @@ This document has a list of troubleshooting tips and FAQ to quickly identify if 
 == Error Messages ==
 This section describes some commonly encountered error messages during search using the search box and their likely solutions.
 
-*401- Unauthorized*
+*401 - Unauthorized*
 
 You see this message when
 
 1. Your SharePoint site is using HTTP Basic and not Kerberos/NTLM authentication.
 
-2. You haven't configured your browser to use NTLM/Kerberos. Refer http://code.google.com/apis/searchappliance/documentation/connectors/200/connector_admin/searchbox_sharepoint.html#Kerberos for setting up your browser for NTLM/Kerberos.
+2. If SAML bridge and Search box are on the same box, you may have to disable loopback check functionality. 
+See http://support.microsoft.com/kb/926642/ for details. 
+
+3. You haven't configured your browser to use NTLM/Kerberos. Refer http://code.google.com/apis/searchappliance/documentation/connectors/200/connector_admin/searchbox_sharepoint.html#Kerberos for setting up your browser for NTLM/Kerberos.
 
 *The remote server returned an error: (502) Bad Gateway.Search Box logs show message: "The cookie contains only key 'secure'without any value"*
 
