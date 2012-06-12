@@ -381,6 +381,75 @@ public class UserGroupsService implements LdapService {
 	}
 
 	/**
+	 * Takes user SID as binary string, group RID as string and converts them to escaped hexa
+	 * representation of LDAP search filter
+	 *
+	 * @param sid user binary SID
+	 * @param primaryGroupId primary group RID (guaranteed to be within user's domain)
+	 * @return string containing LDAP search filter for user's primary group
+	 */
+	String createSearchFilterForPrimaryGroup(byte[] sid, String primaryGroupId) {
+		long primaryGroup = Long.parseLong(primaryGroupId);
+		// replace the last four bytes of user's SID with group RID
+		sid[sid.length - 1] = (byte)((primaryGroup >> 24) & 0xFF);
+		sid[sid.length - 2] = (byte)((primaryGroup >> 16) & 0xFF);
+		sid[sid.length - 3] = (byte)((primaryGroup >> 8) & 0xFF);
+		sid[sid.length - 4] = (byte)(primaryGroup & 0xFF);
+		// format the SID as escaped hexa (i.e. \01\05\ff...)
+		StringBuilder primaryGroupSid = new StringBuilder();
+		primaryGroupSid.append(LdapConstants.PREFIX_FOR_PRIMARY_GROUP_FILTER);
+		for (int i = 0; i < sid.length; ++i) {
+			int unsignedByte = sid[i] & 0xFF;
+			// add zero padding for single digits
+			if (unsignedByte < 16)
+				primaryGroupSid.append("\\0");
+			else
+				primaryGroupSid.append("\\");
+			primaryGroupSid.append(Integer.toHexString(unsignedByte));
+		}
+		primaryGroupSid.append(")");
+		return primaryGroupSid.toString();
+	}
+
+	/**
+	 * Returns user's primary group
+	 * 
+	 * @param userSid SID of the user in Active Directory
+	 * @param primaryGroupId domain local ID of the primary group
+	 * @return string containing the primary group's name
+	 */
+	String getPrimaryGroupForTheSearchUser(byte[] userSid, String primaryGroupId) {
+		if (userSid == null || primaryGroupId == null) {
+			return null;
+		}
+		String primaryGroupDN = null;
+		SearchControls searchCtls = makeSearchCtls(new String[]{LdapConstants.ATTRIBUTE_MEMBER_OF});
+		searchCtls.setReturningAttributes(new String[]{});
+		// Create the search filter
+		String searchFilter = createSearchFilterForPrimaryGroup(userSid, primaryGroupId);
+		// Specify the Base DN for the search
+		String searchBase = ldapConnectionSettings.getBaseDN();
+		NamingEnumeration<SearchResult> ldapResults = null;
+		try {
+			ldapResults = this.context.search(searchBase, searchFilter, searchCtls);
+			SearchResult sr = ldapResults.next();
+			primaryGroupDN = sr.getNameInNamespace();
+		} catch (NamingException ne) {
+			LOGGER.log(Level.WARNING, "Failed to retrieve primary group with SID: ["
+					+ searchFilter + "]", ne);
+		} finally {
+			try {
+				if (null != ldapResults) {
+					ldapResults.close();
+				}
+			} catch (NamingException e) {
+				LOGGER.log(Level.WARNING, "Exception during clean up of ldap results.", e);
+			}
+		}
+		return primaryGroupDN;
+	}
+
+	/**
 	 * Returns a set of all direct groups that the search user belongs to.
 	 * 
 	 * @param userName search user name
@@ -388,7 +457,11 @@ public class UserGroupsService implements LdapService {
 	 */
 	Set<String> getDirectGroupsForTheSearchUser(String userName) {
 		// Create the search controls.
-		SearchControls searchCtls = makeSearhCtls();
+		SearchControls searchCtls = makeSearchCtls(new String[]{
+			LdapConstants.ATTRIBUTE_MEMBER_OF,
+			LdapConstants.ATTRIBUTE_PRIMARY_GROUP_ID,
+			LdapConstants.ATTRIBUTE_OBJECTSID
+		});
 		// Create the search filter.
 		String searchFilter = createSearchFilterForDirectGroups(userName);
 		// Specify the Base DN for the search.
@@ -396,6 +469,8 @@ public class UserGroupsService implements LdapService {
 		int totalResults = 0;
 		Set<String> directGroups = new HashSet<String>();
 		NamingEnumeration<SearchResult> ldapResults = null;
+		byte[] userSid = null;
+		String primaryGroupId = null; 
 		try {
 			ldapResults = this.context.search(searchBase, searchFilter, searchCtls);
 			// Loop through the search results
@@ -405,14 +480,20 @@ public class UserGroupsService implements LdapService {
 				if (attrs != null) {
 					try {
 						for (NamingEnumeration<? extends Attribute> ae = attrs.getAll(); ae.hasMore();) {
-							Attribute attr = (Attribute) ae.next();
-							for (NamingEnumeration<?> e = attr.getAll(); e.hasMore(); totalResults++) {
-								directGroups.add(e.next().toString());
+							Attribute attr = ae.next();
+							if (attr.getID().equals(LdapConstants.ATTRIBUTE_OBJECTSID)){
+								userSid = (byte[])attr.get(0);
+							} else if (attr.getID().equals(LdapConstants.ATTRIBUTE_PRIMARY_GROUP_ID)) {
+								primaryGroupId = (String)attr.get(0);
+							} else {
+								for (NamingEnumeration<?> e = attr.getAll(); e.hasMore(); totalResults++) {
+									directGroups.add(e.next().toString());
+								}
 							}
 						}
 					} catch (NamingException e) {
 						LOGGER.log(Level.WARNING, "Exception while retrieving direct groups for the search user ["
-								+ userName + "]", e);
+							+ userName + "]", e);
 					}
 				}
 			}
@@ -429,18 +510,19 @@ public class UserGroupsService implements LdapService {
 				}
 			}
 		}
+		
+		directGroups.add(getPrimaryGroupForTheSearchUser(userSid, primaryGroupId));
 		LOGGER.info("[ " + userName + " ] is a direct member of "
 				+ directGroups.size() + " groups : " + directGroups);
 		return directGroups;
 	}
 
-	private SearchControls makeSearhCtls() {
+	private SearchControls makeSearchCtls(String attributes[]) {
 		SearchControls searchCtls = new SearchControls();
 		// Specify the search scope
 		searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 		// Specify the attributes to return
-		String returnedAtts[] = { LdapConstants.RETURN_ATTRIBUTES_DIRECT_GROUPS_LIST };
-		searchCtls.setReturningAttributes(returnedAtts);
+		searchCtls.setReturningAttributes(attributes);
 		return searchCtls;
 	}
 
@@ -481,7 +563,7 @@ public class UserGroupsService implements LdapService {
 	private Set<String> getAllParentGroupsForTheGroup(String groupName) {
 		Set<String> parentGroups = new HashSet<String>();
 		// Create the search controls
-		SearchControls searchCtls = makeSearhCtls();
+		SearchControls searchCtls = makeSearchCtls(new String[]{LdapConstants.ATTRIBUTE_MEMBER_OF});
 		// Create the search filter
 		String searchFilter = createSearchFilterForParentGroups(groupName);
 		// Specify the Base DN for the search
@@ -787,7 +869,7 @@ public class UserGroupsService implements LdapService {
 			String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
 			LOGGER.info("Quering User data store with the AD groups :"
 					+ finalADGroups + " and search user [" + finalSearchUserName + "]");
-			spGroups = getAllSPGroupsForSearchUserAndLdapGroups(searchUser, finalADGroups);
+			spGroups = getAllSPGroupsForSearchUserAndLdapGroups(finalSearchUserName, finalADGroups);
 			userGroupsMap.put(SPConstants.ADGROUPS, finalADGroups);
 			userGroupsMap.put(SPConstants.SPGROUPS, spGroups);
 		} finally {
