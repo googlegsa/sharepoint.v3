@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.ListsUtil;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -526,14 +527,27 @@ public class ListsHelper {
   private boolean handleListException(final ListState list, Throwable te) {
     LOGGER.log(Level.WARNING, "Unable to get the List Items for list [ "
         + list.getListURL() + " ]. ", te);
-
-    // If nothing can be done to recover from this exception, at least
-    // ensure that the crawl for this list will not proceed so that the user
-    // would not get any false impression afterwards. Following will ensure
-    // that list will not be sent as document and hence can not be assumed
-    // completed.
-    list.setNewList(false);
-    return false;
+    String ct = list.getChangeTokenForWSCall();
+    if (Strings.isNullOrEmpty(ct)) {
+      // If nothing can be done to recover from this exception, at least
+      // ensure that the crawl for this list will not proceed so that the user
+      // would not get any false impression afterwards. Following will ensure
+      // that list will not be sent as document and hence can not be assumed
+      // completed.
+      
+      // In case of error if Change Token is null then don't process List again
+      list.setNewList(false);
+      return false;
+    } else {
+      // If change token is not null, reset List State and Try again.
+      list.resetState();
+      LOGGER.log(Level.WARNING, "Current change token [ " + ct
+          + " ] of List [ " + list 
+          + " ] has expired or is invalid. "
+          + "State of the list was reset to initiate a full crawl....");
+      list.setNewList(true);
+      return true;
+    }
   }
 
   /**
