@@ -544,8 +544,8 @@ Connector 2.8 has a flag 'Feed ACLs' as a part of configuration UI. You need to 
      The web service has to be deployed on all front-end servers which are hosting sites  
      that you want the connector to crawl. 
 
-*Q. Where can I see ACls on GSA?*
-    You can see the Acls on Policy ACLs page under Serving section of the GSA.
+*Q. Where can I see ACLs on GSA?*
+    You can see the ACLs (permitted users and groups) for each URL under Crawl diagnostics of the GSA.
 
 *Q. Does the crawler user require any special permission for feeding ACL to GSA ?*
     For feeding ACL, the minimum required permission is either a "Full Read" at web application  
