@@ -547,11 +547,11 @@ Connector 2.8 has a flag 'Feed ACLs' as a part of configuration UI. You need to 
 *Q. Where can I see ACls on GSA?*
     You can see the Acls on Policy ACLs page under Serving section of the GSA.
 
-*Q. Do I require any special permission for Policy ACL AuthN ?*
-    For ACL, the minimum required permission is either a "Full Read" at web application  
+*Q. Does the crawler user require any special permission for feeding ACL to GSA ?*
+    For feeding ACL, the minimum required permission is either a "Full Read" at web application  
     level or, the user should be the site collection administrator. The user credential 
     that you use to configure the connector must have either of these two permissions if  
-    you are willing to use ACL based authorization of search results.
+    you are willing to use ACL based authorization.
 
 *Q. Does the connector support SharePoint 2010 ?*
      Yes, Connector 2.6.0 onward supports Share Point 2010 and SharePoint Foundation 2010. You need to use corresponding version of the Google services for SharePoint.
