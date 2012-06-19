@@ -338,7 +338,7 @@ public abstract class ListsUtil {
 
       if (SPConstants.LIST.equalsIgnoreCase(change.getLocalName())) {
         list.setNewList(true);
-        break;
+        continue;
       }
 
       final String changeType = change.getAttributeValue(SPConstants.CHANGETYPE);
