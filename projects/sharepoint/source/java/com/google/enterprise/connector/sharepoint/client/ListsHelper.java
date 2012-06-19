@@ -460,7 +460,11 @@ public class ListsHelper {
     final Set<String> deletedIDs = new HashSet<String>();
     final Set<String> restoredIDs = new HashSet<String>();
     final Set<String> renamedIDs = new HashSet<String>();
-    final List<SPDocument> requestListItems = Util.makeWSRequest(
+    // retry is defined as an array instead of simple boolean object
+    // since it needs to be used with inline class.
+    final boolean[] retry = new boolean[1];
+    List<SPDocument> requestListItems = null;
+    final List<SPDocument> initialRequestListItems = Util.makeWSRequest(
         sharepointClientContext, listsWS,
         new Util.RequestExecutor<List<SPDocument>>() {
       public List<SPDocument> onRequest(final BaseWS ws)
@@ -470,9 +474,33 @@ public class ListsHelper {
       }
       
       public void onError(final Throwable e) {
-        handleListException(list, e);
+        retry[0] = handleListException(list, e);     
       }
-    });
+    });    
+    if (initialRequestListItems != null && retry[0] == false) {
+      requestListItems = initialRequestListItems;
+    } else if (retry[0]) {
+      final String retryToken = list.getChangeTokenForWSCall();
+      LOGGER.log(Level.INFO,
+          "Retrying getListItemChangesSinceToken for List [" + list
+          + "] with Change Token [" + retryToken + "]");
+      final List<SPDocument> retryRequestListItems = Util.makeWSRequest(
+          sharepointClientContext, listsWS,
+          new Util.RequestExecutor<List<SPDocument>>() {
+            public List<SPDocument> onRequest(final BaseWS ws)
+                throws Throwable {
+              return ((ListsWS) ws).getListItemChangesSinceToken(list, listName, 
+                  viewName, queryInfo, retryToken, allWebs, deletedIDs, restoredIDs, renamedIDs);
+            }
+
+            public void onError(final Throwable e) {
+              handleListException(list, e);     
+            }
+          });
+      if (retryRequestListItems != null) {
+        requestListItems = retryRequestListItems;
+      }
+    }
 
     // If some folder renames are found in WS response, handle it first.
     if (renamedIDs.size() > 0 || restoredIDs.size() > 0) {
