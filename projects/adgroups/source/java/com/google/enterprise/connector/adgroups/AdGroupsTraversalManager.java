@@ -191,48 +191,48 @@ public class AdGroupsTraversalManager implements TraversalManager {
 
           LOGGER.info("Found " + entities.size() +
               " entities to update in the database.");
+          if (entities.size() > 0) {
+            // Merge entities discovered on current server into the database
+            LOGGER.info("[" + server.getnETBIOSName()
+                + "] update 1/8 - Inserting AD Entities into database.");
+            db.executeBatch(Query.MERGE_ENTITIES, entities);
 
-          // Merge entities discovered on current server into the database
-          LOGGER.info("[" + server.getnETBIOSName()
-              + "] update 1/8 - Inserting AD Entities into database.");
-          db.executeBatch(Query.MERGE_ENTITIES, entities);
+            // Merge group memberships into the database
+            LOGGER.info("[" + server.getnETBIOSName()
+                + "] update 2/8 - Inserting relationships into database.");
+            db.mergeMemberships(
+              Query.DELETE_MEMBERSHIPS, Query.ADD_MEMBERSHIPS, entities);
 
-          // Merge group memberships into the database
-          LOGGER.info("[" + server.getnETBIOSName()
-              + "] update 2/8 - Inserting relationships into database.");
-          db.mergeMemberships(
-            Query.DELETE_MEMBERSHIPS, Query.ADD_MEMBERSHIPS, entities);
+            // Update the members table to include link to primary key of
+            // entities table for faster lookup during serve time
+            LOGGER.info("[" + server.getnETBIOSName()
+                + "] update 3/8 - Crossreferencing entity relationships.");
+            db.execute(Query.MATCH_ENTITIES, null);
 
-          // Update the members table to include link to primary key of
-          // entities table for faster lookup during serve time
-          LOGGER.info("[" + server.getnETBIOSName()
-              + "] update 3/8 - Crossreferencing entity relationships.");
-          db.execute(Query.MATCH_ENTITIES, null);
+            // Resolve primary user's groups
+            LOGGER.info("[" + server.getnETBIOSName()
+                + "] update 4/8 - Resolving user primary groups.");
+            db.execute(Query.RESOLVE_PRIMARY_GROUP, null);
 
-          // Resolve primary user's groups
-          LOGGER.info("[" + server.getnETBIOSName()
-              + "] update 4/8 - Resolving user primary groups.");
-          db.execute(Query.RESOLVE_PRIMARY_GROUP, null);
+            // Resolve foreign security principals
+            LOGGER.info("[" + server.getnETBIOSName()
+                + "] update 5/8 - Resolving foreign security principals.");
+            db.execute(Query.RESOLVE_FOREIGN_SECURITY_PRINCIPALS, null);
 
-          // Resolve foreign security principals
-          LOGGER.info("[" + server.getnETBIOSName()
-              + "] update 5/8 - Resolving foreign security principals.");
-          db.execute(Query.RESOLVE_FOREIGN_SECURITY_PRINCIPALS, null);
-
-          // Update the server information
-          LOGGER.info("[" + server.getnETBIOSName()
-              + "] update 6/8 - Updating Domain controller info.");
-          db.execute(Query.UPDATE_SERVER, server.getSqlParams());
-          
-          // Commit the transaction
-          LOGGER.info("[" + server.getnETBIOSName()
-              + "] update 7/8 - Committing all modifications.");
-          db.commit();
-          
-          // All done
-          LOGGER.info("[" + server.getnETBIOSName()
-              + "] update 8/8 - domain information updated.");
-          
+            // Update the server information
+            LOGGER.info("[" + server.getnETBIOSName()
+                + "] update 6/8 - Updating Domain controller info.");
+            db.execute(Query.UPDATE_SERVER, server.getSqlParams());
+            
+            // Commit the transaction
+            LOGGER.info("[" + server.getnETBIOSName()
+                + "] update 7/8 - Committing all modifications.");
+            db.commit();
+            
+            // All done
+            LOGGER.info("[" + server.getnETBIOSName()
+                + "] update 8/8 - domain information updated.");
+          }
           i.remove();
         } catch (SQLException e) {
           LOGGER.log(Level.WARNING, "Merging data into database failed\n:", e);
