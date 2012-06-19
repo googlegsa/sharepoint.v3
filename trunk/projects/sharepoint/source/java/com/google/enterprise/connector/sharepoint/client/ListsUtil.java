@@ -325,7 +325,7 @@ public abstract class ListsUtil {
     LOGGER.log(Level.FINE, "Change Token Received [ " + lastChangeToken
         + " ]. ");
     if (lastChangeToken == null) {
-      LOGGER.log(Level.SEVERE, "No Change Token Found in the Web Service Response !!!! "
+      LOGGER.log(Level.WARNING, "No Change Token Found in the Web Service Response !!!! "
           + "The current change token might have become invalid; please check the "
           + "Event Cache table of SharePoint content database.");
     }
@@ -346,12 +346,11 @@ public abstract class ListsUtil {
         LOGGER.log(Level.WARNING, "Unknown change type! Skipping... ");
         continue;
       } else if (changeType.equalsIgnoreCase("InvalidToken")) {
-        String ct = list.getChangeTokenForWSCall();
-        list.resetState();
+        String ct = list.getChangeTokenForWSCall();       
         throw new SharepointException(
             "Current change token [ " + ct + " ] of List [ " + list 
                 + " ] has expired or is invalid. "
-                + "State of the list was reset to initiate a full crawl....");
+                + "State of the list will be reset to initiate a full crawl.");
       }
 
       final String itemId = change.getValue();
@@ -508,7 +507,7 @@ public abstract class ListsUtil {
             Util.getWebApp(sharepointClientContext.getSiteURL());
     String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
     fsObjType = Util.normalizeMetadataValue(fsObjType);
-    LOGGER.log(Level.INFO, "fsObjType [ " + fsObjType
+    LOGGER.log(Level.FINE, "fsObjType [ " + fsObjType
              + " ]. ");
     // fsobjtype = 1 indicates this is a folder.
     // (Applicable for Default Folder content Type as well as for
