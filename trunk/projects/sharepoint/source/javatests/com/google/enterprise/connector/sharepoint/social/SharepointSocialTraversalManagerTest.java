@@ -42,12 +42,20 @@ public class SharepointSocialTraversalManagerTest {
 
   static SharepointConnector createSharepointConnector(String socialOption)
       throws Exception {
-    SharepointConnector connector = TestConfiguration.getConnectorInstance();
+    SharepointConnector connector = TestConfiguration.getSmallDomainConnectorInstance();
     connector.setUserProfileServiceFactory(new MockUserProfileServiceFactory());
     connector.setFeedUnPublishedDocuments(true);
     connector.setPushAcls(false);
     connector.setSocialOption(socialOption);
     
+    return connector;
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    connector = createSharepointConnector("only");
+    connector.init();
+
     TestJdbcDatabase database = new TestJdbcDatabase();
     ConnectorPersistentStoreFactory factory =
         new ConnectorPersistentStoreFactory(database);
@@ -59,13 +67,6 @@ public class SharepointSocialTraversalManagerTest {
         TestConfiguration.getUserDataStoreQueryProvider());
     connector.setDatabaseAccess(store);
 
-    return connector;
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    connector = createSharepointConnector("only");
-    connector.init();
     session = connector.login();
   }
 
