@@ -826,7 +826,18 @@ public class GSAclWS implements AclWS{
           // TODO : Need to change setWebApplicationPolicyChange
           // to something like setRevisitWebHome.
           if (supportsInheritedAcls) {
+            LOGGER.log(Level.INFO, "Change in Web Permissions - Reseting Site home Page");
             webstate.setWebApplicationPolicyChange(true);
+            for (ListState list : webstate.getAllListStateSet()) {
+              if (list.isApplyReadSecurity() && list.isInheritedSecurity()) {
+                LOGGER.log(Level.INFO, "Change in Web Permissions -"
+                    + " Resetting list state URL [ "
+                    + list.getListURL()
+                    + " ] because effective permisssions modified"
+                    + " for List with Read Security");
+                list.resetState();
+              }
+            }
           } else {
             isWebChanged = true;
             // Since, role assignment at web have changed, we need to
@@ -859,7 +870,7 @@ public class GSAclWS implements AclWS{
           // Assuming the worst case scenario of Limited Access
           // deletion
           LOGGER.log(Level.INFO, "Resetting list state URL [ "
-              + webstate.getWebUrl()
+              + listState
               + " ] because some role has been deleted and the deleted role"
               + " could be Limited Access.");
           listState.resetState();
@@ -867,6 +878,13 @@ public class GSAclWS implements AclWS{
           if (supportsInheritedAcls) {
             // Revisit List home for ACL changes.
             listState.markListToRevisitListHome(sharepointClientContext.getFeedType());
+            if (listState.isApplyReadSecurity()) {
+              LOGGER.log(Level.INFO, "Resetting list state URL [ "
+                  + listState.getListURL()
+                  + " ] because effective permisssions modified"
+                  + " for List with Read Security");
+              listState.resetState();
+            }
           } else {
             if (!processedLists.contains(listState)) {
               LOGGER.log(Level.INFO, "Marking List [ "

@@ -156,6 +156,11 @@ public class ListState implements StatefulObject {
 
   // Folders that are renamed/restored
   private List<Folder> changedFolders = new LinkedList<Folder>();
+  
+  // Read Security for List State
+  private boolean applyReadSecurity = false;
+  
+  
 
   /**
    * @param inPrimaryKey
@@ -1027,6 +1032,7 @@ public class ListState implements StatefulObject {
       sendListAsDocument = inList.isSendListAsDocument();
       inheritedSecurity = inList.isInheritedSecurity();
       noCrawl = inList.isNoCrawl();
+      applyReadSecurity = inList.isApplyReadSecurity();
     }
   }
 
@@ -1576,5 +1582,19 @@ public class ListState implements StatefulObject {
 
   public void addToChangedFolders(Folder changedFolder) {
     this.changedFolders.add(changedFolder);
+  }
+
+  /**
+   * @return the applyReadSecurity
+   */
+  public boolean isApplyReadSecurity() {
+    return applyReadSecurity;
+  }
+
+  /**
+   * @param applyReadSecurity the applyReadSecurity to set
+   */
+  public void setApplyReadSecurity(boolean applyReadSecurity) {
+    this.applyReadSecurity = applyReadSecurity;
   }
 }
