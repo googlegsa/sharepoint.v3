@@ -1261,10 +1261,12 @@ public class SharepointClient {
           LOGGER.fine("Getting alerts under site [ " + webURL + " ]");
           processAlerts(ws, sharePointClientContext);       
         }
-        // Get site data for the web and update webState.        
-        LOGGER.fine("Getting landing page data for the site [ " + webURL
-            + " ]"); 
-        processSiteData(ws, sharepointClientContext);
+        if (nDocuments < sharePointClientContext.getBatchHint()) {
+          // Get site data for the web and update webState.        
+          LOGGER.fine("Getting landing page data for the site [ " + webURL
+              + " ]");
+          processSiteData(ws, sharepointClientContext);
+        }        
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "Following exception occured while traversing/updating web state URL [ "
             + webURL + " ]. ", e);
