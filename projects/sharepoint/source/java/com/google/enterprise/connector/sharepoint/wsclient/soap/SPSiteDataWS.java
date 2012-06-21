@@ -223,6 +223,7 @@ public class SPSiteDataWS implements SiteDataWS {
               strBaseTemplate, url, webstate);
 
           list.setInheritedSecurity(element.isInheritedSecurity());
+          list.setApplyReadSecurity(element.getReadSecurity() == 2);
 
           String myNewListConst = "";
           final String listUrl = element.getDefaultViewUrl();// e.g.

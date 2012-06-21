@@ -183,12 +183,19 @@ public class BulkAuthorization : System.Web.Services.WebService
                         {
                             item = list.GetItemById(itemId);
                             if (item != null)
-                            {
-                                bool isAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
-                                authData.IsAllowed = isAllowed;
+                            {                             
+                                if (list.ReadSecurity == 2)
+                                {
+                                    authData.IsAllowed = VerifyReadSecurity(item, user);
+                                }
+                                else
+                                {
+                                    authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                                }
+                              
                                 bItemFound = true;
                             }
-                        }                       
+                        }
                     }
 
                     /*
@@ -200,8 +207,15 @@ public class BulkAuthorization : System.Web.Services.WebService
                     {                        
                         item = web.GetListItem(url);
                         if (item != null)
-                        {
-                            authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                        {                           
+                            if (item.ParentList.ReadSecurity == 2)
+                            {
+                                authData.IsAllowed = VerifyReadSecurity(item, user);
+                            }
+                            else
+                            {
+                                authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                            }
                         }                       
                     }
                 }
@@ -213,6 +227,33 @@ public class BulkAuthorization : System.Web.Services.WebService
         }
     }
 
+    private Boolean VerifyReadSecurity(SPListItem item, SPUser user)
+    {
+        Boolean bUserHasManageListPermissions = item.DoesUserHavePermissions(user, SPBasePermissions.ManageLists);
+        if (bUserHasManageListPermissions)
+        {
+            return true;
+        }
+        else
+        {           
+            try
+            {
+                SPUser owner = GetOwner(item);
+                if (owner != null && user.ID == owner.ID)
+                {
+                    return item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                }
+                return false;
+
+            }
+            catch (Exception exOwner)
+            {
+                // Since Exception in fetching Owner, returing false;
+               return false;
+            }
+        }
+    }
+    
     /// <summary>
     /// Exception is not serializable and cannot be sent on wire. This method provides a convenient way to get the entire
     /// exception message by looking recursively into the cause of the exception until the root cause is found.
@@ -228,6 +269,53 @@ public class BulkAuthorization : System.Web.Services.WebService
             e = e.InnerException;
         }
         return message.ToString();
+    }
+
+    /// <summary>
+    /// Retrieves the Owner's information about a given ISecurable entity
+    /// </summary>
+    /// <param name="secobj"></param>
+    /// <returns></returns>
+    private SPUser GetOwner(ISecurableObject secobj)
+    {
+        SPUser owner = null;
+        if (secobj is SPList)
+        {
+            owner = ((SPList)secobj).Author;
+        }
+        else if (secobj is SPListItem)
+        {
+            SPListItem item = (SPListItem)secobj;
+            SPFile file = item.File;
+            if (null != file)
+            {
+                // Case of Document Library
+                owner = file.Author;
+            }
+            else
+            {
+                // Case of other generic lists
+                String key = "Created By";
+                SPFieldUser field = item.Fields[key] as SPFieldUser;
+                if (field != null)
+                {
+                    SPFieldUserValue fieldValue = field.GetFieldValue(item[key].ToString()) as SPFieldUserValue;
+                    if (fieldValue != null)
+                    {
+                        owner = fieldValue.User;
+                    }
+                }
+            }
+        }
+        else if (secobj is SPWeb)
+        {
+            owner = ((SPWeb)secobj).Author;
+        }
+        else
+        {
+            throw new Exception("Uncompatible entity type. A listitem, list or a web is expected. ");
+        }
+        return owner;
     }
 }
 

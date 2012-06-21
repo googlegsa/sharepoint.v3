@@ -324,6 +324,7 @@ public abstract class ListsUtil {
     final String lastChangeToken = changeElement.getAttributeValue(SPConstants.LASTCHANGETOKEN);
     LOGGER.log(Level.FINE, "Change Token Received [ " + lastChangeToken
         + " ]. ");
+    boolean saveChangeToken = true;
     if (lastChangeToken == null) {
       LOGGER.log(Level.WARNING, "No Change Token Found in the Web Service Response !!!! "
           + "The current change token might have become invalid; please check the "
@@ -337,7 +338,15 @@ public abstract class ListsUtil {
       }
 
       if (SPConstants.LIST.equalsIgnoreCase(change.getLocalName())) {
+        if (list.isExisting() 
+            && !Strings.isNullOrEmpty(list.getChangeTokenForWSCall())) {
+          LOGGER.log(Level.INFO, "Resetting Known List [" + list.getListURL() 
+              + "] as List metadata modified");
+          list.resetState();
+          saveChangeToken = false;
+        }
         list.setNewList(true);
+        list.setExisting(false);        
         continue;
       }
 
@@ -349,8 +358,8 @@ public abstract class ListsUtil {
         String ct = list.getChangeTokenForWSCall();       
         throw new SharepointException(
             "Current change token [ " + ct + " ] of List [ " + list 
-                + " ] has expired or is invalid. "
-                + "State of the list will be reset to initiate a full crawl.");
+            + " ] has expired or is invalid. "
+            + "State of the list will be reset to initiate a full crawl.");
       }
 
       final String itemId = change.getValue();
@@ -419,7 +428,9 @@ public abstract class ListsUtil {
       }
     }
 
-    list.saveNextChangeTokenForWSCall(lastChangeToken);
+    if (saveChangeToken) {
+      list.saveNextChangeTokenForWSCall(lastChangeToken);
+    }
   }
 
   /**
