@@ -246,6 +246,20 @@ public class SharepointClient {
         break;
       }
     }
+    
+    ListState listForWeb = webState.lookupList(webState.getPrimaryKey());
+    if (listForWeb != null) {
+      SPDocumentList resultsList =
+          handleCrawlQueueForList(globalState, webState, listForWeb);
+      if (resultsList != null) {
+        if (resultSet != null) {
+          resultSet.addAll(resultsList);
+        } else {
+          resultSet = resultsList;
+        }        
+      }
+    }
+    
 
     // Fetch ACL for all the documents crawled from the current WebState
     if (!handleACLForDocuments(resultSet, webState, globalState, sendPendingDocs)) {
@@ -972,6 +986,9 @@ public class SharepointClient {
         webState.AddOrUpdateListStateInWebState(listState, listState.getLastMod());
         LOGGER.info("discovered new listState. List URL: "
             + listState.getListURL());
+        final SPDocument listDocToAdd = listState.getDocumentInstance(
+            sharepointClientContext.getFeedType());
+        listItems.add(listDocToAdd);
 
         if (SPType.SP2007 == webState.getSharePointType()) {
           if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
@@ -1260,13 +1277,11 @@ public class SharepointClient {
           // getAlerts WS call is made.
           LOGGER.fine("Getting alerts under site [ " + webURL + " ]");
           processAlerts(ws, sharePointClientContext);       
-        }
-        if (nDocuments < sharePointClientContext.getBatchHint()) {
-          // Get site data for the web and update webState.        
-          LOGGER.fine("Getting landing page data for the site [ " + webURL
-              + " ]");
-          processSiteData(ws, sharepointClientContext);
         }        
+        // Get site data for the web and update webState.        
+        LOGGER.fine("Getting landing page data for the site [ " + webURL
+            + " ]");
+        processSiteData(ws, sharepointClientContext);
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "Following exception occured while traversing/updating web state URL [ "
             + webURL + " ]. ", e);
