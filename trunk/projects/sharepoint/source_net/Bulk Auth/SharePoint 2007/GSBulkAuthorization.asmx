@@ -35,6 +35,8 @@ public class BulkAuthorization : System.Web.Services.WebService
     [WebMethod]
     public string CheckConnectivity()
     {
+        // To force connector to use authentication in case anonymous acess is enabled
+        SPContext.Current.Web.ToString();
         // All the pre-requisites for running this web service should be checked here.
         SPSecurity.RunWithElevatedPrivileges(delegate()
         {
@@ -47,6 +49,8 @@ public class BulkAuthorization : System.Web.Services.WebService
     [WebMethod]
     public string GetGSSVersion()
     {
+        // To force connector to use authentication in case anonymous acess is enabled
+        SPContext.Current.Web.ToString();
         return "2.8.4";
     }
 
@@ -65,6 +69,8 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         // TODO Check if user is app pool user (SharePoint\\System). If yes, return true for everything.
         ///////
+        // To force connector to use authentication in case anonymous acess is enabled
+        SPContext.Current.Web.ToString();
         WSContext wsContext = new WSContext(username);
         foreach (AuthDataPacket authDataPacket in authDataPacketArray)
         {
