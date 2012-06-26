@@ -175,8 +175,9 @@ public class AdGroupsTraversalManager implements TraversalManager {
             ldapQuery = AdConstants.LDAP_QUERY;
           } else {
             LOGGER.info("Partial recrawl start");
+            // We have to increment last because LDAP supports only >= operator
             ldapQuery = AdConstants.PARTIAL_QUERY_START
-                + last + AdConstants.PARTIAL_QUERY_END;
+                + (last+1) + AdConstants.PARTIAL_QUERY_END;
           }
 
           LOGGER.info("Querying server " + ldapQuery);
