@@ -38,6 +38,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     public string CheckConnectivity()
     {
         // All the pre-requisites for running this web service should be checked here.
+        SPContext.Current.Web.ToString();
         SPSecurity.RunWithElevatedPrivileges(delegate()
         {
         });
@@ -59,6 +60,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         // TODO Check if user is app pool user (SharePoint\\System). If yes, return true for everything.
         ///////
+        SPContext.Current.Web.ToString();
         WSContext wsContext = new WSContext(username);
         foreach (AuthDataPacket authDataPacket in authDataPacketArray)
         {
@@ -96,10 +98,19 @@ public class BulkAuthorization : System.Web.Services.WebService
 
                 DateTime authDataStartTime = System.DateTime.Now;
                 try
-                {
-                    SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA);
-                    SPUser user = wsContext.User;
-                    Authorize(authData, web, user);
+                {                  
+                    using(SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA))
+                    {
+                        if (web != null && web.Exists)
+                        {
+                            SPUser user = wsContext.User;
+                            Authorize(authData, web, user);
+                        }
+                        else
+                        {
+                            throw new Exception("Error creating Web for URL " + authData.Container.Url);
+                        }
+                    };
                 }
                 catch (Exception e)
                 {
@@ -145,7 +156,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         }
         else if (authData.Type == AuthData.EntityType.SITE)
         {
-            bool isAllowd = web.DoesUserHavePermissions(SPBasePermissions.ViewPages);
+            bool isAllowd = web.DoesUserHavePermissions(user.LoginName, SPBasePermissions.ViewPages);
             authData.IsAllowed = isAllowd;
         }
         else
@@ -389,12 +400,24 @@ public class WSContext
     }
 
     ~WSContext()
-    {
-        site.Dispose();
+    {     
+        if (this.site != null)
+        {
+            try
+            {
+                site.Dispose();
+            }
+            catch (Exception exDispose)
+            {
+                // Ignoring Dispose Exception. 
+                // This is possible scenario for weak reference exception.
+                exDispose = null;
+            }
+        }
     }
 
     /// <summary>
-    /// Reinitialize SPSite using the passed in url. All subsequest requests will be served using this SPSite
+    /// Reinitialize SPSite using the passed in url. All subsequest requests will be served using this SPSite 
     /// </summary>
     /// <param name="url"></param>
     internal void Using(string url)
@@ -402,7 +425,7 @@ public class WSContext
         SPSite site = null;
         SPSecurity.RunWithElevatedPrivileges(delegate()
         {
-            // try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.
+            // try creating the SPSite object for the incoming URL. If fails, try again by changing the URL format FQDN to Non-FQDN or vice-versa.        
             try
             {
                 site = new SPSite(url);
@@ -653,16 +676,11 @@ internal class UserInfoHolder
     }
 
     /// <summary>
-    /// If the SPuser object is not yet constructed, try to get it using the passed-in SPSite
+    /// Reinitialize SPUser object when WSContext.Site is reinitialized.
     /// </summary>
     /// <param name="site"></param>
     internal void TryInit(SPSite site)
     {
-        if (null != user)
-        {
-            return;
-        }
-
         SPWeb web = null;
         try
         {
