@@ -13,19 +13,22 @@
 <%   
     const string PublicAndSecureSearch = "publicAndSecure";
     const string PublicSearch = "public";
+    const string SecureOnly = "secureOnly";
 
     // Setting the URL for the Search Tips Link 
     string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString() + "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
+    linkSearchTips.NavigateUrl = SearchTipsHtmlPageURL;
 
     /*
      * Checking if session value is null for setting the initial type of search. Session value null means 
      * either the user is done with the searching or he/ she has opened the web application for the first time
      * in the browser.
      */
+    string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
     if (Session["PublicSearchStatus"] == null)
     {
         // Getting the default search type from web.config file.
-        string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
+        
         if (defaultSearchType == PublicAndSecureSearch)
         {
             /*
@@ -46,6 +49,24 @@
         }
     }
 
+    if (defaultSearchType == SecureOnly)
+    {
+        setInitialStatusForUIControlsAsPerSearchType(false);
+        hideControl(chkPublicSearch);
+        hideControl(divPublicSearch);
+
+    }
+    string showScope = WebConfigurationManager.AppSettings["showScope"];
+    if (!String.IsNullOrEmpty(showScope) && (String.Compare(showScope, "false", true) == 0))
+    {
+        hideControl(idSearchScope);
+    }
+
+    string showSearchTips = WebConfigurationManager.AppSettings["showSearchTips"];
+    if (!String.IsNullOrEmpty(showSearchTips) && (String.Compare(showSearchTips, "false", true) == 0))
+    {
+        hideControl(linkSearchTips);
+    }
     /*
     * Call the function for checkbox checked changed event, so that the latest status for the 
     * public search checkbox is assigned to 'hfPublicSearch' hiddenfield variable.
@@ -537,6 +558,21 @@ function SearchTextOnBlur()
         hfPublicSearch.Value = isInitialSearchTypeSetToPublic.ToString().ToLower();
         Session["PublicSearchStatus"] = isInitialSearchTypeSetToPublic.ToString().ToLower();
     }
+    void hideControl(WebControl controlToHide)
+    {
+        if (controlToHide != null)
+        {
+            controlToHide.Style.Add("display", "none");
+        }
+    }
+
+    void hideControl(HtmlControl controlToHide)
+    {
+        if (controlToHide != null)
+        {
+            controlToHide.Style.Add("display", "none");
+        }
+    }
     
     
 </script>
@@ -565,7 +601,7 @@ function SearchTextOnBlur()
 </a>
 </div>
 <div>
-    <a href="<%=SearchTipsHtmlPageURL %>" style="font-size:xx-small; color:#003399; text-decoration:underline" >Search&nbsp;Tips</a>
+   <asp:HyperLink id="linkSearchTips" Text="Search Tips" runat="server" style="font-size:xx-small; color:#003399; text-decoration:underline"/> 
 </div>
 
 
