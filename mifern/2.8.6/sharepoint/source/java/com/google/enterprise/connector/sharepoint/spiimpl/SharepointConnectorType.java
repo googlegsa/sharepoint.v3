@@ -1796,8 +1796,7 @@ public class SharepointConnectorType implements ConnectorType {
 			InputStream krb5In = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_KRB5);
 			if (krb5In != null) {
 				try {
-					File krb5File = new File(googleConnWorkDir
-							+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
+					File krb5File = new File(googleConnWorkDir, SPConstants.FILE_KRB5);
 					String krb5Config = new String(ByteStreams.toByteArray(krb5In), SPConstants.UTF_8);
 					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_UPPERCASE, configData.get(SPConstants.DOMAIN).toString().toUpperCase());
 					krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_LOWERCASE, configData.get(SPConstants.DOMAIN).toString().toLowerCase());
@@ -1813,8 +1812,7 @@ public class SharepointConnectorType implements ConnectorType {
 			InputStream loginIn = SharepointConnectorType.class.getClassLoader().getResourceAsStream(SPConstants.CONFIG_LOGIN);
 			if (loginIn != null) {
 				try {
-					File loginFile = new File(googleConnWorkDir
-							+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
+					File loginFile = new File(googleConnWorkDir, SPConstants.FILE_LOGIN);
 					String loginConfig = new String(ByteStreams.toByteArray(loginIn), SPConstants.UTF_8);
 					FileOutputStream out = new FileOutputStream(loginFile);
 					out.write(loginConfig.getBytes(SPConstants.UTF_8));
@@ -1825,9 +1823,9 @@ public class SharepointConnectorType implements ConnectorType {
 			}
 
 			System.setProperty(SPConstants.SYS_PROP_AUTH_LOGIN_CONFIG, googleConnWorkDir
-					+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_LOGIN);
+					+ File.separator + SPConstants.FILE_LOGIN);
 			System.setProperty(SPConstants.SYS_PROP_AUTH_KRB5_CONFIG, googleConnWorkDir
-					+ SPConstants.DOUBLEBACKSLASH + SPConstants.FILE_KRB5);
+					+ File.separator + SPConstants.FILE_KRB5);
 			System.setProperty(SPConstants.SYS_PROP_AUTH_USESUBJETCREDSONLY, SPConstants.FALSE);
 		}
 	}
@@ -1835,13 +1833,11 @@ public class SharepointConnectorType implements ConnectorType {
 	private void unregisterKerberosSetUp(Map configData) {
 		AuthPolicy.unregisterAuthScheme(SPConstants.NEGOTIATE);
 		String googleConnWorkDir = (String) configData.get(GOOGLE_CONN_WORK_DIR);
-		File fileKrb5 = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH
-				+ SPConstants.FILE_KRB5);
+		File fileKrb5 = new File(googleConnWorkDir, SPConstants.FILE_KRB5);
 		if (fileKrb5 != null && fileKrb5.exists()) {
 			fileKrb5.delete();
 		}
-		File fileLogin = new File(googleConnWorkDir + SPConstants.DOUBLEBACKSLASH
-				+ SPConstants.FILE_LOGIN);
+		File fileLogin = new File(googleConnWorkDir, SPConstants.FILE_LOGIN);
 		if (fileLogin != null && fileLogin.exists()) {
 			fileLogin.delete();
 		}
