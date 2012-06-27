@@ -882,6 +882,12 @@ public class UserGroupsService implements LdapService {
         finalADGroups.add(
             new Principal(PrincipalType.UNKNOWN, globalNamespace, adGroup));
       }
+      finalADGroups.add(
+          new Principal(PrincipalType.UNKNOWN, globalNamespace, "Everyone"));
+      finalADGroups.add(new Principal(PrincipalType.UNKNOWN,
+          globalNamespace, "NT AUTHORITY\\authenticated users"));
+      finalADGroups.add(new Principal(PrincipalType.UNKNOWN,
+          globalNamespace, "NT AUTHORITY\\interactive"));
     }
     String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
     LOGGER.info("Querying user data store with the AD groups: "
