@@ -1414,7 +1414,8 @@ public class ListsWS {
         if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
           if (null != row.getAttribute(SPConstants.MODERATION_STATUS)) {
             String docVersion = row.getAttribute(SPConstants.MODERATION_STATUS);
-            if (docVersion != SPConstants.DocVersion.APPROVED.toString()) {
+            if (docVersion != null && !docVersion.equals(
+                SPConstants.DocVersion.APPROVED.toString())) {
               // Added unpublished documents to delete list if
               // FeedUnPublishedDocuments set to false, so
               // that connector send delete feeds for unpublished
@@ -1422,8 +1423,10 @@ public class ListsWS {
               if (!sharepointClientContext.isInitialTraversal()) {
                 LOGGER.warning("Adding the list item or document ["
                     + row.getAttribute(SPConstants.FILEREF)
-                    + "] to the deleted ID's list to send delete feeds for unpublished content in the list URL :"
-                    + list.getListURL());
+                    + "] to the deleted IDs list to send delete feeds "
+                    + "for unpublished content in the list URL: "
+                    + list.getListURL()
+                    + ", and its current version is " + docVersion);
                 deletedIDs.add(docId);
               }
             } else {
@@ -1532,19 +1535,14 @@ public class ListsWS {
     // Get all the required attributes.
     if (!sharepointClientContext.isFeedUnPublishedDocuments()) {
       if (null != listItem.getAttribute(SPConstants.MODERATION_STATUS)) {
-        int docVersion = Integer.parseInt(listItem.getAttribute(SPConstants.MODERATION_STATUS));
-        if (docVersion != 0) {
-          // ModerationStatus="0" for approved/ published list
-          // list item or document status
-          // ModerationStatus="1" for rejected list item or document status
-          // ModerationStatus="2" for pending list item or document status
-          // ModerationStatus="3" for draft list item or document status
-
-          LOGGER.warning("List Item or Document is not yet published on SharePoint site, hence discarding the ID ["
-              + listItem.getAttribute(SPConstants.ID)
-              + "] under the List/Document Library URL "
-              + list.getListURL()
-              + " , and it's current version is " + docVersion);
+        String docVersion =
+            listItem.getAttribute(SPConstants.MODERATION_STATUS);
+        if (docVersion != null && !docVersion.equals(
+            SPConstants.DocVersion.APPROVED.toString())) {
+          LOGGER.warning("List Item or Document is not yet published on SharePoint site, "
+              + "hence discarding the ID [" + listItem.getAttribute(SPConstants.ID)
+              + "] under the List/Document Library URL " + list.getListURL()
+              + ", and its current version is " + docVersion);
           return null;
         }
       } else {
