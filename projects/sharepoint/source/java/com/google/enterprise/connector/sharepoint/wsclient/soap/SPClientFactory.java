@@ -194,7 +194,7 @@ public class SPClientFactory implements ClientFactory {
     }
     try {
       int responseCode = httpClient.executeMethod(method);
-      if (responseCode != 200) {
+      if (responseCode != 200 && responseCode != 404) {
         LOGGER.log(Level.WARNING,
             "Http Response Code = "+ responseCode + " for Url [ "
         + method.getURI() + " ]. Reinitializing HttpClient.");     
