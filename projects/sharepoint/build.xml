@@ -328,29 +328,48 @@
     </jar>
   </target>
 
-  <target name="make-downloads-dir">
-    <mkdir dir="${downloads.dir}" />
-  </target>
-
-  <target name="download-sharepoint-connector" depends="jar,javadoc,make-downloads-dir">
-
+  <target name="download-sharepoint-connector" depends="jar,javadoc">
     <property name="downloads.prefix"
-              value="${downloads.dir}/connector-sharepoint-${svn.branch}" />
+              value="connector-sharepoint-${svn.branch}" />
 
-    <zip destfile="${downloads.prefix}-src.zip" basedir="."
-      includes="javadoc/**/*, config/**/*, License/**/*, source/**/*, wsdl/**/*, source_net/**/*, build.xml, Build_ReadMe.txt, COPYING, README, RELEASE_NOTES" />
-    <checksum algorithm="SHA-1" file="${downloads.prefix}-src.zip" />
-
-    <zip destfile="${downloads.prefix}.zip">
-      <zipfileset dir="." includes="README,RELEASE_NOTES,License/**/*,Scripts,lib/**/*" excludes="License/dev,lib/dev,License/dev/**/*,lib/dev/**/*"/>
-      <zipfileset dir="." includes="COPYING" prefix="License" />
-      <zipfileset dir="config/config/" includes="logging.properties" fullpath="config/logging.properties" />
-      <zipfileset dir="config/config/" includes="ClaimsLogin.aspx" fullpath="config/ClaimsLogin.aspx" />
-      <zipfileset dir="${jar.dir}" includes="connector-sharepoint.jar" fullpath="connector-sharepoint.jar" />
-      <zipfileset file="${adgroups.jar}" prefix="lib" />
+    <zip destfile="${downloads.dir}/${downloads.prefix}-src.zip">
+      <zipfileset dir="." prefix="${downloads.prefix}">
+        <include name="javadoc/**" />
+        <include name="config/**" />
+        <include name="License/**" />
+        <include name="source/**" />
+        <include name="source_net/**" />
+        <include name="wsdl/**" />
+        <include name="build.xml" />
+        <include name="Build_ReadMe.txt" />
+        <include name="COPYING" />
+        <include name="README" />
+        <include name="RELEASE_NOTES" />
+      </zipfileset>
     </zip>
-    <checksum algorithm="SHA-1" file="${downloads.prefix}.zip" />
+    <checksum algorithm="SHA-1"
+              file="${downloads.dir}/${downloads.prefix}-src.zip" />
 
+    <zip destfile="${downloads.dir}/${downloads.prefix}.zip">
+      <zipfileset dir="." prefix="${downloads.prefix}">
+        <include name="README" />
+        <include name="RELEASE_NOTES" />
+        <!-- Do not include dev subdirectories for these next two. -->
+        <include name="License/*.*" />
+        <include name="lib/*.*" />
+      </zipfileset>
+      <zipfileset dir="." prefix="${downloads.prefix}/License">
+        <include name="COPYING" />
+      </zipfileset>
+      <zipfileset dir="config/config/" prefix="${downloads.prefix}/config">
+        <include name="logging.properties" />
+        <include name="ClaimsLogin.aspx" />
+      </zipfileset>
+      <zipfileset file="${jarfile}" prefix="${downloads.prefix}" />
+      <zipfileset file="${adgroups.jar}" prefix="${downloads.prefix}/lib" />
+    </zip>
+    <checksum algorithm="SHA-1"
+              file="${downloads.dir}/${downloads.prefix}.zip" />
   </target>
 
   <target name="clean" depends="clean_code_coverage" description="Deletes files produced by compile and test.">

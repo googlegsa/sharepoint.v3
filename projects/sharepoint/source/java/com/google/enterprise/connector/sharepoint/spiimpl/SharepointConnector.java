@@ -505,8 +505,7 @@ public class SharepointConnector implements Connector,
       adGroupsConnector.setHostname(ldapServerHostAddress);
       adGroupsConnector.setPort(portNumber);
       adGroupsConnector.setMethod(connectMethod);
-      adGroupsConnector.setPrincipal(
-          domain + SPConstants.DOUBLEBACKSLASH + username);
+      adGroupsConnector.setPrincipal(username + SPConstants.AT + domain);
       adGroupsConnector.setPassword(password);
       adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
       adGroupsConnector.init();

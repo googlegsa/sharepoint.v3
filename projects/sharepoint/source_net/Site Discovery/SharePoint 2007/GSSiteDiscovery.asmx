@@ -24,6 +24,8 @@ public class SiteDiscovery : System.Web.Services.WebService
     /// <returns></returns>
     [WebMethod]
     public string CheckConnectivity() {
+        // To force connector to use authentication in case anonymous acess is enabled
+        SPContext.Current.Web.ToString();
     SPWebApplicationCollection wc1 = SPWebService.AdministrationService.WebApplications;
         SPWebApplicationCollection wc2 = SPWebService.ContentService.WebApplications;
         return "success";
@@ -36,6 +38,8 @@ public class SiteDiscovery : System.Web.Services.WebService
     [WebMethod]
     public ArrayList GetAllSiteCollectionFromAllWebApps()
     {
+        // To force connector to use authentication in case anonymous acess is enabled
+        SPContext.Current.Web.ToString();
         ArrayList webSiteList = new ArrayList();
         //get the site collection for the central administration       
         foreach (SPWebApplication wa in SPWebService.AdministrationService.WebApplications)
@@ -147,6 +151,8 @@ public class SiteDiscovery : System.Web.Services.WebService
         {
             throw new Exception("SharePoint site not found");
         }
+        // To force connector to use authentication in case anonymous acess is enabled
+        SPContext.Current.Web.ToString();
         try
         {
             WebCrawlInfo webCrawlInfo = new WebCrawlInfo();
@@ -199,6 +205,8 @@ public class SiteDiscovery : System.Web.Services.WebService
                     }
                     else
                     {
+                        // To force connector to use authentication in case anonymous acess is enabled
+                        web.ToString();
                         webCrawlInfo.CrawlAspxPages = web.AllowAutomaticASPXPageIndexing;
                         webCrawlInfo.NoCrawl = web.NoCrawl;
                         webCrawlInfo.Status = true;
@@ -279,6 +287,9 @@ public class SiteDiscovery : System.Web.Services.WebService
         {
             throw new Exception("SharePoint site not found");
         }
+
+        // To force connector to use authentication in case anonymous acess is enabled
+        SPContext.Current.Web.ToString();
         List<ListCrawlInfo> listCrawlInfo = new List<ListCrawlInfo>();
         foreach (string guid in listGuids)
         {
@@ -323,6 +334,8 @@ public class SiteDiscovery : System.Web.Services.WebService
         {
             throw new Exception("SharePoint site not found");
         }
+        // To force connector to use authentication in case anonymous acess is enabled
+        SPContext.Current.Web.ToString();
         try
         {
             Guid key = new Guid(listGUID);
