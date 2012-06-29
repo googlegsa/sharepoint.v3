@@ -158,6 +158,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    * @return the toBeFed
    */
   public boolean isToBeFed() {
+    if (sharepointClientContext != null) {
+      if (!sharepointClientContext.isPushAcls() 
+          && documentType == DocumentType.ACL) {
+       return false;
+      }
+    }
     return toBeFed;
   }
 

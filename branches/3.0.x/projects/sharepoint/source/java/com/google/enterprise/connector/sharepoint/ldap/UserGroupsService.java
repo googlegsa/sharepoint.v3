@@ -536,13 +536,15 @@ public class UserGroupsService implements LdapService {
   public void getAllParentGroups(String groupName,
       final Set<String> parentGroupsInfo) {
     if (!Strings.isNullOrEmpty(groupName)) {
-      parentGroupsInfo.add(getGroupDNForTheGroup(groupName));
+      parentGroupsInfo.add(groupName);
       Set<String> parentGroups = getAllParentGroupsForTheGroup(groupName);
       LOGGER.log(Level.INFO, "Parent groups for the group [" + groupName
           + "] : " + parentGroups);
 
       for (String group : parentGroups) {
-        getAllParentGroups(group, parentGroupsInfo);
+        if (!parentGroupsInfo.contains(group)) {
+          getAllParentGroups(group, parentGroupsInfo);
+        }
       }
     }
   }
@@ -618,9 +620,9 @@ public class UserGroupsService implements LdapService {
 
   private String createSearchFilterForParentGroups(String groupName) {
     StringBuffer filter;
-    String groupDN = getGroupDNForTheGroup(groupName);
-    filter = new StringBuffer().append(LdapConstants.PREFIX_FOR_PARENTS_GROUPS_FILTER
-        + ldapEscape(groupDN) + SPConstants.DOUBLE_CLOSE_PARENTHESIS);
+    filter = new StringBuffer().append(
+        LdapConstants.PREFIX_FOR_PARENTS_GROUPS_FILTER
+        + ldapEscape(groupName) + SPConstants.DOUBLE_CLOSE_PARENTHESIS);
     return filter.toString();
   }
 
@@ -642,31 +644,75 @@ public class UserGroupsService implements LdapService {
     }
     LOGGER.info("[ " + userName + " ] is a direct or indirect member of "
         + ldapGroups.size() + " groups");
+    Set<String> groupNames = getSAMAccountNames(ldapGroups);
     if (null != directGroups) {
       directGroups = null;
       this.context = null;
     }
-    return ldapGroups;
+    return groupNames;
   }
-
+  
   /**
-   * Returns DN name for the given group while making LDAP search query to get
-   * all parents groups for a given group we need to retrieve the DN name for a
-   * group.
-   *
-   * @param groupName
-   * @return group DN from group name.
+   * Retrieves sAMAccountNames for list of entities
+   * @param groups list of distinguishedNames of all groups to resolve
+   * @return sAMAccountName for each of the entities
    */
-  String getGroupDNForTheGroup(String groupName) {
-    // LDAP queries return escaped commas to avoid ambiguity, find first not escaped comma
-    int comma = groupName.indexOf(SPConstants.COMMA);
-    while (comma > 0 && comma < groupName.length() && (groupName.charAt(comma - 1) == SPConstants.DOUBLEBACKSLASH_CHAR)) {
-      comma = groupName.indexOf(SPConstants.COMMA, comma + 1);
+  Set<String> getSAMAccountNames(Set<String> distinguishedNames) {
+    Set<String> result = new HashSet<String>();
+    // Create the search controls
+    SearchControls searchCtls = makeSearchCtls(
+        new String[] {LdapConstants.ATTRIBUTE_SAMACCOUNTNAME});
+    // Create the search filter
+    StringBuffer filter = new StringBuffer("(|");
+    // AD LDAP allows filters up to 10^7 bytes, we will hit issues, we should
+    // hit out of memory in parent group resolution before hitting this limit
+    for (String dn : distinguishedNames) {
+      filter.append(LdapConstants.PREFIX_FOR_GROUP_FILTER)
+          .append(ldapEscape(dn)).append(")");
     }
-    String tmpGroupName = groupName.substring(0, comma > 0 ? comma : groupName.length());
-    tmpGroupName = tmpGroupName.substring(tmpGroupName.indexOf(SPConstants.EQUAL_TO) + 1);
-    tmpGroupName = tmpGroupName.replace(SPConstants.DOUBLEBACKSLASH, SPConstants.BLANK_STRING);
-    return tmpGroupName;
+    filter.append(")");
+    // Specify the Base DN for the search
+    String searchBase = ldapConnectionSettings.getBaseDN();
+    NamingEnumeration<SearchResult> ldapResults = null;
+    try {
+      ldapResults = this.context.search(
+          searchBase, filter.toString(), searchCtls);
+      while (ldapResults.hasMoreElements()) {
+        SearchResult sr = ldapResults.next();
+        Attributes attrs = sr.getAttributes();
+        if (attrs != null) {
+          try {
+            Attribute sAMAccountName = attrs.get(
+                LdapConstants.ATTRIBUTE_SAMACCOUNTNAME);
+            if (sAMAccountName == null || sAMAccountName.size() == 0) {
+              LOGGER.log(Level.WARNING,
+                  "Could not establish sAMAccountName for [" 
+                  + sr.getNameInNamespace() + "]");
+              continue;
+            }
+            result.add(sAMAccountName.get(0).toString());
+          } catch (NamingException e) {
+            LOGGER.log(Level.WARNING,
+                "Exception while retrieving group names. Search filter ["
+                + filter + "]", e);
+          }
+        }
+      }
+    } catch (NamingException ne) {
+      LOGGER.log(Level.WARNING,
+          "Exception while retrieving group names. Search filter ["
+          + filter + "]", ne);
+    } finally {
+      try {
+        if (null != ldapResults) {
+          ldapResults.close();
+        }
+      } catch (NamingException e) {
+        LOGGER.log(
+            Level.WARNING, "Exception during clean up of ldap results.", e);
+      }
+    }
+    return result;
   }
 
   /**
@@ -836,6 +882,12 @@ public class UserGroupsService implements LdapService {
         finalADGroups.add(
             new Principal(PrincipalType.UNKNOWN, globalNamespace, adGroup));
       }
+      finalADGroups.add(
+          new Principal(PrincipalType.UNKNOWN, globalNamespace, "Everyone"));
+      finalADGroups.add(new Principal(PrincipalType.UNKNOWN,
+          globalNamespace, "NT AUTHORITY\\authenticated users"));
+      finalADGroups.add(new Principal(PrincipalType.UNKNOWN,
+          globalNamespace, "NT AUTHORITY\\interactive"));
     }
     String finalSearchUserName = addUserNameFormatForTheSearchUser(searchUser);
     LOGGER.info("Querying user data store with the AD groups: "

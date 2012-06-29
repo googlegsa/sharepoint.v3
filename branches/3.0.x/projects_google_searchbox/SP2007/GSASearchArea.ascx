@@ -13,21 +13,24 @@
 <%
     const string PublicAndSecureSearch = "publicAndSecure";
     const string PublicSearch = "public";
+    const string SecureOnly = "secureOnly";
     string accessStatus = "";
     string searchQuery = "";
     
     // Setting the URL for the Search Tips Link 
-    string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString()+ "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
+    string SearchTipsHtmlPageURL = WebConfigurationManager.AppSettings["GSALocation"].ToString() + "/" + WebConfigurationManager.AppSettings["SearchTipsHTMLFileName"].ToString();
+    linkSearchTips.NavigateUrl = SearchTipsHtmlPageURL;
       
     /*
      * Checking if session value is null for setting the initial type of search. Session value null means 
      * either the user is done with the searching or he/ she has opened the web application for the first time
      * in the browser.
      */
+    string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
     if (Session["PublicSearchStatus"] == null)
     {
         // Getting the default search type from web.config file.
-        string defaultSearchType = WebConfigurationManager.AppSettings["defaultSearchType"].ToString();
+        
         if (defaultSearchType == PublicAndSecureSearch)
         {
             /*
@@ -47,7 +50,24 @@
             setInitialStatusForUIControlsAsPerSearchType(true);
         }
     }
-    
+    if (defaultSearchType == SecureOnly)
+    {
+        setInitialStatusForUIControlsAsPerSearchType(false);
+        hideControl(chkPublicSearch);
+        hideControl(divPublicSearch);
+
+    }
+    string showScope = WebConfigurationManager.AppSettings["showScope"];
+    if (!String.IsNullOrEmpty(showScope) && (String.Compare(showScope, "false", true) == 0))
+    {
+        hideControl(idSearchScope);
+    }
+
+    string showSearchTips = WebConfigurationManager.AppSettings["showSearchTips"];
+    if (!String.IsNullOrEmpty(showSearchTips) && (String.Compare(showSearchTips, "false", true) == 0))
+    {
+        hideControl(linkSearchTips);
+    }
     
     
     /*
@@ -647,6 +667,22 @@
         chkPublicSearch.Checked = isInitialSearchTypeSetToPublic;
         hfPublicSearch.Value = Convert.ToString(isInitialSearchTypeSetToPublic);
     }
+
+    void hideControl(WebControl controlToHide)
+    {
+        if (controlToHide != null)
+        {
+            controlToHide.Style.Add("display", "none");
+        }
+    }
+
+    void hideControl(HtmlControl controlToHide)
+    {
+        if (controlToHide != null)
+        {
+            controlToHide.Style.Add("display", "none");
+        }
+    }
 </script>
 
 
@@ -681,8 +717,8 @@
                 <img border='0' src="/_layouts/images/gosearch.gif" alt="<%SPHttpUtility.AddQuote(SPHttpUtility.HtmlEncode(SearchImageToolTip),Response.Output);%>"></a>
             </div>
         </td>
-        <td>
-            <a href="<%=SearchTipsHtmlPageURL %>" style="font-size:xx-small; color:#003399; text-decoration:underline" >Search&nbsp;Tips</a>
+        <td>            
+            <asp:HyperLink id="linkSearchTips" Text="Search Tips" runat="server" style="font-size:xx-small; color:#003399; text-decoration:underline"/>  
         </td>
     </tr>
 </table>

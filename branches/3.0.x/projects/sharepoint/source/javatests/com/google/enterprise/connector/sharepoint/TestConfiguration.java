@@ -90,6 +90,12 @@ public class TestConfiguration {
   public static boolean useCacheToStoreLdapUserGroupsMembership = false;
   public static String cacheRefreshInterval;
 
+  public static String domain2;
+  public static String username2;
+  public static String password2;
+  public static String ldapServerHostAddress2;
+  public static String sharepointUrl2;
+
   public static String searchUserID;
   public static String searchUserPwd;
   public static String SearchDocID1;
@@ -244,6 +250,12 @@ public class TestConfiguration {
     authorization = properties.getProperty("authorization");
     useSPSearchVisibility = Boolean.parseBoolean(
         properties.getProperty("useSPSearchVisibility"));
+
+    domain2 = properties.getProperty("domain2");
+    username2 = properties.getProperty("username2");
+    password2 = properties.getProperty("password2");
+    ldapServerHostAddress2 = properties.getProperty("ldapServerHostAddress2");
+    sharepointUrl2 = properties.getProperty("sharepointUrl2");
 
     searchUserID = properties.getProperty("SearchUserID");
     searchUserPwd = properties.getProperty("SearchUserPwd");
@@ -788,7 +800,7 @@ public class TestConfiguration {
   }
 
   /**
-   * Returns an instance of {@link SharepointConnector} for testing purpose
+   * Gets an instance of {@link SharepointConnector} for testing purpose.
    *
    * @return Instance of {@link SharepointConnector}
    */
@@ -826,6 +838,24 @@ public class TestConfiguration {
     connector.setGsaAdminPassword(TestConfiguration.getGsaAdminPassword());
     connector.setGsaHostAddress(gsaHost);
     connector.init();
+    return connector;
+  }
+
+  /**
+   * Gets an instance of {@link SharepointConnector} for testing purpose.
+   * This instance uses credentials, LDAP host and SharePoint URL of domain
+   * that is much smaller than getConnectorInstance.
+   *
+   * @return Instance of {@link SharepointConnector}
+   */
+  public static SharepointConnector getSmallDomainConnectorInstance()
+      throws RepositoryException {
+    SharepointConnector connector = getConnectorInstance();
+    connector.setSharepointUrl(sharepointUrl2);
+    connector.setDomain(domain2);
+    connector.setUsername(username2);
+    connector.setPassword(password2);
+    connector.setLdapServerHostAddress(ldapServerHostAddress2);
     return connector;
   }
 

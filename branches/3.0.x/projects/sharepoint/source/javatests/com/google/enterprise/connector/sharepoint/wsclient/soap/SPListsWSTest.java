@@ -213,6 +213,7 @@ public class SPListsWSTest extends TestCase {
       assertNull(testList.getCrawlQueue());
       assertFalse(testList.isAclChanged());
       assertEquals(0, testList.getLastDocIdCrawledForAcl());
+      assertTrue(this.testList.isNewList());
       final List items = listsHelper.getListItemChangesSinceToken(this.testList, null);
       assertNotNull(items);
     }

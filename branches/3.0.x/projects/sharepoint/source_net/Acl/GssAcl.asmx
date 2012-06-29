@@ -151,8 +151,10 @@ public class GssSharepointPermission
     /// Converts a SPBasePermission object into a set of string representing the actual permission being used
     /// </summary>
     /// <param name="spPerms"></param>
+    /// <param name="applyReadSecurity">flag to indicate if read security is applicable</param>
+    /// <param name="checkViewListItems">flag to indicate if user should have ViewListItems permissions. This is to avoid limited acccess users in Web service response.</param>
     /// <returns></returns>
-    private List<string> GetPermissions(SPBasePermissions spPerms)
+    private List<string> GetPermissions(SPBasePermissions spPerms, Boolean applyReadSecurity, Boolean checkViewListItems)
     {
         List<string> perms = new List<string>();
         foreach (SPBasePermissions value in Enum.GetValues(typeof(SPBasePermissions)))
@@ -162,6 +164,13 @@ public class GssSharepointPermission
                 perms.Add(value.ToString());
             }
         }
+        // When Read Security is applicable, user should minimum have manage List permissions to view the items
+        // which are not created by them.
+        if ((applyReadSecurity && !perms.Contains(SPBasePermissions.ManageLists.ToString()))
+            || (checkViewListItems && !perms.Contains(SPBasePermissions.ViewListItems.ToString())))
+        {
+            perms.Clear();
+        }        
         return perms;
     }
 
@@ -170,10 +179,12 @@ public class GssSharepointPermission
     /// </summary>
     /// <param name="allowedPermissions"></param>
     /// <param name="deniedPermission"></param>
-    public void UpdatePermission(SPBasePermissions allowedPermissions, SPBasePermissions deniedPermission)
+    /// <param name="applyReadSecurity"> flag to indicate if read security is applicable</param>
+    public void UpdatePermission(SPBasePermissions allowedPermissions, SPBasePermissions deniedPermission, Boolean applyReadSecurity)
     {
-        this.allowedPermissions.AddRange(GetPermissions(allowedPermissions));
-        this.deniedPermission.AddRange(GetPermissions(deniedPermission));
+        // Read security check will be applied only for allowed permissions
+        this.allowedPermissions.AddRange(GetPermissions(allowedPermissions, applyReadSecurity, true));
+        this.deniedPermission.AddRange(GetPermissions(deniedPermission, false, false));
     }
 }
 
@@ -878,9 +889,15 @@ public class GssAclMonitor
                     {
                         Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
                         secobj = GssAclUtility.IdentifyObject(url, web);
+                        Boolean readSecurityApplicable = false;
+                        if (secobj is SPListItem)
+                        {
+                            SPList parentList = ((SPListItem) secobj).ParentList;
+                            readSecurityApplicable = (parentList.ReadSecurity == 2);
+                        }
                         if (secobj != null)
                         {
-                            if (secobj.HasUniqueRoleAssignments || bUseInheritance == false)
+                            if (secobj.HasUniqueRoleAssignments || bUseInheritance == false || readSecurityApplicable)
                             {
                                 Boolean largeAcl = secobj.RoleAssignments.Count > largeAclThreshold && largeAclThreshold > 0;
                                 if (largeAcl && urls.Length > 1)
@@ -888,27 +905,41 @@ public class GssAclMonitor
                                     acl = new GssAcl(url, 0);
                                     allAcls.Add(acl);
                                     acl.LargeAcl = largeAcl.ToString();
-                                    if (!secobj.HasUniqueRoleAssignments)
+                                    if (!readSecurityApplicable)
                                     {
-                                        acl.ParentUrl = GssAclUtility.GetUrl(secobj.FirstUniqueAncestor, strWebappUrl);
-                                        acl.InheritPermissions = true.ToString();                                       
-                                    }
-                                    acl.AddLogMessage(String.Format("Large ACL for URL {0} with {1} role assignments", url, secobj.RoleAssignments.Count));                                   
+                                        if (!secobj.HasUniqueRoleAssignments)
+                                        {
+                                            acl.ParentUrl = GssAclUtility.GetUrl(secobj.FirstUniqueAncestor, strWebappUrl);
+                                            acl.InheritPermissions = true.ToString();
+                                        }
+                                    }                                                         
+                                    acl.AddLogMessage(String.Format("Large ACL for URL {0} with {1} role assignments with readsecurity as {2}", url, secobj.RoleAssignments.Count, readSecurityApplicable));                                   
                                 }
                                 else
                                 {
                                     SPUser owner = null;
+                                    String strGetOwnerException = null;
                                     try
                                     {
                                         owner = GssAclUtility.GetOwner(secobj);                                        
                                     }
                                     catch (Exception e)
                                     {
-                                        acl.AddLogMessage("Owner information was not found becasue following exception occured: " + e.Message);
+                                        strGetOwnerException = "Owner information was not found because following exception occured: " + e.Message;
                                     }
 
-                                    GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap);
-                                    acl = new GssAcl(url, aceMap.Count);
+                                    // largeAclThreshold > 0 check to ensure connector supports large ACLs, else SP Groups will be reloved as part of ACL processing.
+                                    GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap, readSecurityApplicable, largeAclThreshold > 0);
+                                    if (readSecurityApplicable)
+                                    {
+                                        GssAclUtility.AddOwnerToAcl(aceMap, owner, secobj);                                       
+                                    }
+                                    
+                                    acl = new GssAcl(url, aceMap.Count);                                  
+                                    if (!String.IsNullOrEmpty(strGetOwnerException))
+                                    {
+                                        acl.AddLogMessage(strGetOwnerException);
+                                    }                                    
                                     if (owner != null)
                                     {
                                         acl.Owner = GssAclUtility.DecodeIdentity(owner.LoginName);
@@ -937,12 +968,14 @@ public class GssAclMonitor
                         {
                             acl = new GssAcl(url, 0);
                             acl.AddLogMessage("Problem Identifying Object with Url [" + url + " ] ");
+                            allAcls.Add(acl);
                         }
                     }
                     catch (Exception e)
                     {
                         acl = new GssAcl(url, 0);
                         acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
+                        allAcls.Add(acl);
                     }
                     finally
                     {
@@ -1364,7 +1397,7 @@ public sealed class GssAclUtility
 
             foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
             {
-                permission.UpdatePermission(policyRole.GrantRightsMask, policyRole.DenyRightsMask);
+                permission.UpdatePermission(policyRole.GrantRightsMask, policyRole.DenyRightsMask, false);
             }
         }
 
@@ -1392,7 +1425,7 @@ public sealed class GssAclUtility
 
             foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
             {
-                permission.UpdatePermission(policyRole.GrantRightsMask, policyRole.DenyRightsMask);
+                permission.UpdatePermission(policyRole.GrantRightsMask, policyRole.DenyRightsMask, false);
             }
         }
     }
@@ -1409,7 +1442,7 @@ public sealed class GssAclUtility
         principal.Type = GssPrincipal.PrincipalType.SPGROUP;
         GssSharepointPermission permission = new GssSharepointPermission();
         // Administrators have Full Rights in the site collection.
-        permission.UpdatePermission(SPBasePermissions.FullMask, SPBasePermissions.EmptyMask);
+        permission.UpdatePermission(SPBasePermissions.FullMask, SPBasePermissions.EmptyMask, false);
         aceMap.Add(principal, permission);
 
         // Get all the administrator user as member of the GSSITEADMINGROUP.
@@ -1426,18 +1459,39 @@ public sealed class GssAclUtility
 
         principal.Members = admins;
     }
+    public static void AddOwnerToAcl(Dictionary<GssPrincipal, GssSharepointPermission> aceMap, SPUser owner, ISecurableObject secobj)
+    {
+        SPListItem item = (SPListItem) secobj;
+        if (owner != null && item.DoesUserHavePermissions(owner, SPBasePermissions.ViewListItems))
+        {
+            GssPrincipal gssPrincipal = new GssPrincipal(owner.LoginName, owner.ID);
+            gssPrincipal.Type = GssPrincipal.PrincipalType.USER;
+            GssSharepointPermission permission;
+            if (aceMap.ContainsKey(gssPrincipal))
+            {
+                permission = aceMap[gssPrincipal];
+            }
+            else
+            {
+                permission = new GssSharepointPermission();
+                aceMap.Add(gssPrincipal, permission);
+           }
+           permission.UpdatePermission(SPBasePermissions.FullMask, SPBasePermissions.EmptyMask, false);
+        }
+    }
     
     /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from a list of role assignments
     /// </summary>
     /// <param name="roles"> list of role assignments </param>
     /// <param name="userAceMap"> ACE Map to be updated </param>
-    public static void FetchRoleAssignmentsForAcl(SPRoleAssignmentCollection roles, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
+    public static void FetchRoleAssignmentsForAcl(SPRoleAssignmentCollection roles, Dictionary<GssPrincipal, GssSharepointPermission> aceMap, Boolean readSecurityApplicable, Boolean resolveGroup )
     {
         foreach (SPRoleAssignment roleAssg in roles)
         {
-            GssPrincipal principal = GetGssPrincipalFromSPPrincipal(roleAssg.Member, false);
+            GssPrincipal principal = GetGssPrincipalFromSPPrincipal(roleAssg.Member, resolveGroup);
             GssSharepointPermission permission = null;
+            Boolean bNewPrincipal = false;
 
             if (null == principal)
             {
@@ -1451,12 +1505,23 @@ public sealed class GssAclUtility
             else
             {
                 permission = new GssSharepointPermission();
-                aceMap.Add(principal, permission);
+                bNewPrincipal = true;
+
             }
 
             foreach (SPRoleDefinition roledef in roleAssg.RoleDefinitionBindings)
             {
-                permission.UpdatePermission(roledef.BasePermissions, SPBasePermissions.EmptyMask);
+                permission.UpdatePermission(roledef.BasePermissions, SPBasePermissions.EmptyMask, readSecurityApplicable);
+            }
+
+            if (bNewPrincipal)
+            {
+                if (permission.AllowedPermissions.Count > 0 || permission.DeniedPermission.Count > 0)
+                {
+                    // Adding permissions only if non empty.
+                    // This check will avoid empty ACLs
+                    aceMap.Add(principal, permission);
+                }
             }
         }
     }
@@ -1578,7 +1643,7 @@ public sealed class GssAclUtility
     /// </summary>
     /// <param name="child">ISecurable Object. This can be SPListItem, SPlist or SPWeb</param>
     /// <returns></returns>
-    public static void GetParentUrl(ISecurableObject child, String strSiteUrl,GssAcl aclToUpdate)
+    public static void GetParentUrl(ISecurableObject child, String strSiteUrl, GssAcl aclToUpdate)
     {      
         if (child == null)
         {
@@ -1604,7 +1669,7 @@ public sealed class GssAclUtility
                     {
                         //If item is available at root level (outside folder) return default view URL for SPList (same URL is being used in ListState by connector)
                         aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
-                        aclToUpdate.ParentId = String.Format("{{{0}}}",oChildItem.ParentList.ID.ToString());
+                        aclToUpdate.ParentId = String.Format("{{{0}}}", oChildItem.ParentList.ID.ToString());
                     }
                     else
                     {
