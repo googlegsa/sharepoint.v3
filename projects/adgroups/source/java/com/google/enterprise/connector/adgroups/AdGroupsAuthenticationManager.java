@@ -120,6 +120,13 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
               password)) {
         return new AuthenticationResponse(false, "", null);
       }
+      StringBuffer sb = new StringBuffer("Resolved ").append(groups.size())
+          .append(" AD group(s) for user [").append(username).append("]")
+          .append(" domain [").append(domain).append("]: ");
+      for (Principal group : groups) {
+        sb.append("[").append(group.getName()).append("] ");
+      }
+      LOGGER.info(sb.toString());
       return new AuthenticationResponse(true, "", groups);
     } catch (SQLException e) {
       LOGGER.log(Level.WARNING,
