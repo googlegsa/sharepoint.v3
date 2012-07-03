@@ -90,8 +90,9 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
     if (Strings.isNullOrEmpty(domain)) {
       query = Query.SELECT_USER_BY_SAMACCOUNTNAME;
     } else {
+      //TODO: rename the DB bound variable to domain
       sqlIdentity.put(AdConstants.DB_NETBIOSNAME, domain);
-      query = Query.SELECT_USER_BY_NETBIOS_SAMACCOUNTNAME;
+      query = Query.SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME;
     }
 
     try {
