@@ -79,8 +79,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
     if (sharepointClientContext.isPushAcls()) {
       LdapConnectionSettings ldapConnectionSettings = sharepointClientContext.getLdapConnectionSettings();
-      if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())
-          && !Strings.isNullOrEmpty(ldapConnectionSettings.getBaseDN())) {
+      if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())) {
         ldapService = new UserGroupsService(inSharepointClientContext);
       } else {
         ldapService = null;
