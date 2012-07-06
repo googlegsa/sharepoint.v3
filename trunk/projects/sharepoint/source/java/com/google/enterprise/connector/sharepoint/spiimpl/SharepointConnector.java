@@ -203,8 +203,8 @@ public class SharepointConnector implements Connector,
             .warning("This can be normal if the target Sharepoint server is pre 2010");
       }
     }
-    Session adGroupsSession = oldLdapBehavior ? null
-        : adGroupsConnector.login();
+    Session adGroupsSession = 
+        !oldLdapBehavior && pushAcls ? adGroupsConnector.login() : null;
     return new SharepointSession(
         this, sharepointClientContext, socialSession, adGroupsSession);
   }
