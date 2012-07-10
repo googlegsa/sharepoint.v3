@@ -158,7 +158,7 @@ public class AdTestServer extends AdServer {
     for (int i = 0; i < users.size(); ++i) {
       if (i % 2000 == 0) {
         oui++;
-        ou = "ou=users_" + oui + "," + rootOu;;
+        ou = "ou=users_" + oui + "," + rootOu;
         if (!prepared) {
           createOu(ou);
         }
