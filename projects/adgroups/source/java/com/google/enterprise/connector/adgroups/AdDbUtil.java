@@ -323,7 +323,6 @@ public class AdDbUtil {
    */
   public void mergeMemberships(final Set<AdEntity> entities)
       throws SQLException {
-    LOGGER.setLevel(Level.FINEST);
     for (AdEntity e : entities) {
       Set<String> dbMemberships = new HashSet<String>();
       for (HashMap<String, Object> dbMembership: 
