@@ -21,10 +21,12 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,15 +37,15 @@ public class AdDbUtil {
     Logger.getLogger(AdDbUtil.class.getName());
 
   public enum Query {
+    TEST_SERVERS("TEST_SERVERS"),
     CREATE_SERVERS_SEQUENCE("CREATE_SERVERS_SEQUENCE"),
     CREATE_SERVERS("CREATE_SERVERS"),
+    TEST_ENTITIES("TEST_ENTITIES"),
     CREATE_ENTITIES_SEQUENCE("CREATE_ENTITIES_SEQUENCE"),
     CREATE_ENTITIES("CREATE_ENTITIES"),
+    TEST_MEMBERS("TEST_MEMBERS"),
     CREATE_MEMBERS_SEQUENCE("CREATE_MEMBERS_SEQUENCE"),
     CREATE_MEMBERS("CREATE_MEMBERS"),
-    CLEAN_MEMBERS("CLEAN_MEMBERS"),
-    CLEAN_FOREIGN_MEMBERS("CLEAN_FOREIGN_MEMBERS"),
-    CLEAN_ENTITIES("CLEAN_ENTITIES"),
     SELECT_SERVER("SELECT_SERVER"),
     UPDATE_SERVER("UPDATE_SERVER"),
     MERGE_ENTITIES("MERGE_ENTITIES"),
@@ -56,7 +58,11 @@ public class AdDbUtil {
     SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME
         ("SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME"),
     SELECT_WELLKNOWN_MEMBERSHIPS("SELECT_WELLKNOWN_MEMBERSHIPS"),
-    SELECT_MEMBERSHIPS_BY_ENTITYID("SELECT_MEMBERSHIPS_BY_ENTITYID");
+    SELECT_MEMBERSHIPS_BY_ENTITYID("SELECT_MEMBERSHIPS_BY_ENTITYID"),
+    SELECT_MEMBERSHIPS_BY_DN("SELECT_MEMBERSHIPS_BY_DN"),
+    DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN
+        ("DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN"),
+    SELECT_ALL_ENTITIES_BY_SID("SELECT_ALL_ENTITIES_BY_SID");
 
     private String query;
     Query(String query) {
@@ -91,14 +97,24 @@ public class AdDbUtil {
     this.dataSource = dataSource;
     try {
       connection = dataSource.getConnection();
-      execute(Query.CREATE_SERVERS_SEQUENCE, null);
-      execute(Query.CREATE_SERVERS, null);
-      execute(Query.CREATE_ENTITIES_SEQUENCE, null);
-      execute(Query.CREATE_ENTITIES, null);
-      execute(Query.CREATE_MEMBERS_SEQUENCE, null);
-      execute(Query.CREATE_MEMBERS, null);
-      commit();
-      connection.setAutoCommit(false);
+      try {
+        select(Query.TEST_SERVERS, null);
+      } catch (SQLException e) {
+        execute(Query.CREATE_SERVERS_SEQUENCE, null);
+        execute(Query.CREATE_SERVERS, null);
+      }
+      try {
+        select(Query.TEST_ENTITIES, null);
+      } catch (SQLException e) {
+        execute(Query.CREATE_ENTITIES_SEQUENCE, null);
+        execute(Query.CREATE_ENTITIES, null);
+      }
+      try {
+        select(Query.TEST_MEMBERS, null);
+      } catch (SQLException e) {
+        execute(Query.CREATE_MEMBERS_SEQUENCE, null);
+        execute(Query.CREATE_MEMBERS, null);
+      }
     } catch (SQLException e) {
       LOGGER.log(
           Level.SEVERE, "Errors establishing connection to the database.", e);
@@ -188,7 +204,18 @@ public class AdDbUtil {
         params.get(identifiers.get(i)));
     }
   }
-
+  
+  public Set<String> selectOne(Query query,
+      Map<String, Object> params, String returnColumn) throws SQLException {
+    Set<String> result = new HashSet<String>();
+    List<HashMap<String, Object>> rows = select(query, params);
+    
+    for (HashMap<String, Object> row : rows) {
+      result.add((String) row.get(returnColumn));
+    }
+    return result;
+  }
+  
   /**
    * Executes select statement in the database
    * @param query to be executed
@@ -197,7 +224,7 @@ public class AdDbUtil {
    * @throws SQLException
    */
   public List<HashMap<String, Object>>
-    select(Query query, Map<String, Object> params) throws SQLException {
+      select(Query query, Map<String, Object> params) throws SQLException {
     PreparedStatement statement = null;
     ResultSet rs = null;
     try {
@@ -214,8 +241,13 @@ public class AdDbUtil {
       while (rs.next()) {
         HashMap<String, Object> result = new HashMap<String, Object>();
         for (int i = 0; i < rsmd.getColumnCount(); ++i) {
-          result.put(rsmd.getColumnName(i + 1).toLowerCase(Locale.ENGLISH),
-              rs.getObject(rsmd.getColumnName(i + 1)));
+          if (rsmd.getColumnType(i + 1) == java.sql.Types.TIMESTAMP) {
+            result.put(rsmd.getColumnName(i + 1).toLowerCase(Locale.ENGLISH),
+                rs.getTimestamp(rsmd.getColumnName(i + 1)));
+          } else {
+            result.put(rsmd.getColumnName(i + 1).toLowerCase(Locale.ENGLISH),
+                rs.getObject(rsmd.getColumnName(i + 1)));
+          }
         }
         results.add(result);
       }
@@ -260,7 +292,7 @@ public class AdDbUtil {
    * @param entities list of entities
    * @throws SQLException
    */
-  public void executeBatch(Query query, List<AdEntity> entities)
+  public void executeBatch(Query query, Set<AdEntity> entities)
       throws SQLException {
     PreparedStatement statement = null;
     try {
@@ -286,63 +318,87 @@ public class AdDbUtil {
   }
 
   /**
-   * Query to execute
-   * @param remove query to remove all memberships from the database
-   * @param insert insert query to insert memberships into the database
-   * @param entities list of entities whose memberships we should run the
-   *        insert query on
+   * Merges memberships from Active Directory to the database
+   * @param entities list of entities whose memberships we should update
    */
-  public void mergeMemberships(
-      final Query remove, final Query insert, final List<AdEntity> entities)
+  public void mergeMemberships(final Set<AdEntity> entities)
       throws SQLException {
-    executeBatch(remove, entities);
-    
-    PreparedStatement addStatement = null;
-    try {
-      List<String> addIdentifiers = new ArrayList<String>();
-      String insertSql = sortParams(insert, addIdentifiers);
-      addStatement = connection.prepareStatement(insertSql);
+    LOGGER.setLevel(Level.FINEST);
+    for (AdEntity e : entities) {
+      Set<String> dbMemberships = new HashSet<String>();
+      for (HashMap<String, Object> dbMembership: 
+        select(Query.SELECT_MEMBERSHIPS_BY_DN, e.getSqlParams())) {
+        dbMemberships.add((String) dbMembership.get(AdConstants.DB_MEMBERDN));
+      }
+      Set<String> adMemberships = e.getMembers();
+      
+      if (LOGGER.isLoggable(Level.FINE)) {
+        StringBuffer sb = new StringBuffer("For user [").append(e).append(
+            "] identified "+ dbMemberships.size() +" memberships in Database:");
+        for (String dbMembership : dbMemberships) {
+          sb.append("[").append(dbMembership).append("] ");
+        }
+        sb.append(" and " + adMemberships.size()
+            + " memberships in Active Directory:");
+        for (String adMembership : adMemberships) {
+          sb.append("[").append(adMembership).append("] ");
+        }
+        LOGGER.fine(sb.toString());
+      }
+
+      PreparedStatement insertStatement = null;
+      try {
+        List<String> identifiers = new ArrayList<String>();
+        insertStatement = connection.prepareStatement(
+            sortParams(Query.ADD_MEMBERSHIPS, identifiers));
   
+        int batch = 0;
+        for (String s: adMemberships) {
+          if (!dbMemberships.contains(s)) {
+            LOGGER.finer("Adding [" + s + "] as member to group [" + e + "]");
+            Map<String, Object> addParams = e.getSqlParams();
+            addParams.put(AdConstants.DB_MEMBERDN, s);
+            addParams(insertStatement, identifiers, addParams);
+            insertStatement.addBatch();
+            if (++batch == batchHint) {
+              insertStatement.executeBatch();
+              batch = 0;
+            }
+          }
+          dbMemberships.remove(s);
+        }
+        insertStatement.executeBatch();
+      } finally {
+        if (insertStatement != null) {
+          insertStatement.close();
+        }
+      }
+      
+      // whatever remained in dbMemberships must be removed from DB
+      Map<String, Object> params = e.getSqlParams();
+      PreparedStatement delStatement = null;
       int batch = 0;
-      for (AdEntity e: entities) {
-        for (String s: e.getMembers()) {
-          Map<String, Object> params = e.getSqlParams();
-          params.put("memberdn", s);
-          addParams(addStatement, addIdentifiers, params);
-          addStatement.addBatch();
+      try {
+        List<String> identifiers = new ArrayList<String>();
+        delStatement = connection.prepareStatement(sortParams(
+            Query.DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN, identifiers));
+        Map<String, Object> delParams = e.getSqlParams();
+
+        for (String s : dbMemberships) {
+          LOGGER.finer("Removing [" + s + "] from group [" + e + "]");
+          delParams.put(AdConstants.DB_MEMBERDN, s);
+          addParams(delStatement, identifiers, delParams);
+          delStatement.addBatch();
           if (++batch == batchHint) {
-            addStatement.executeBatch();
+            delStatement.executeBatch();
             batch = 0;
           }
         }
+      } finally {
+        if (delStatement != null) {
+          delStatement.close();
+        }
       }
-      addStatement.executeBatch();
-    } finally {
-      if (addStatement != null) {
-        addStatement.close();
-      }
-    }
-  }
-
-  /**
-   * Execute commit of the current transaction
-   */
-  public void commit() {
-    try {
-      connection.commit();
-    } catch (SQLException e) {
-      LOGGER.warning("Commit failed "  + e.getMessage() + e.getStackTrace());
-    }
-  }
-
-  /**
-   * Execute rollback of the current transaction
-   */
-  public void rollback() {
-    try {
-      connection.rollback();
-    } catch (SQLException e) {
-      LOGGER.warning("Rollback failed "  + e.getMessage() + e.getStackTrace());
     }
   }
 
