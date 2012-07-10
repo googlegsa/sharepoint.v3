@@ -14,10 +14,10 @@
 
 package com.google.enterprise.connector.adgroups;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -31,9 +31,19 @@ public class AdEntity {
   private String primaryGroupId;
   private String sid;
   private String objectGUID;
-  private List<String> members;
+  private Set<String> members;
   private long uSNChanged;
   private boolean wellKnown;
+
+  private Object getAttribute(Attributes attributes, String name)
+      throws NamingException {
+    Attribute attribute = attributes.get(name);
+    if (attribute != null) {
+      return attribute.get(0);
+    } else {
+      return null;
+    }
+  }
 
   /**
    * Standard constructor for AdEntity. The instance is created from LDAP
@@ -46,20 +56,17 @@ public class AdEntity {
     wellKnown = false;
     Attributes attrs = searchResult.getAttributes();
     sAMAccountName =
-        (String) attrs.get(AdConstants.ATTR_SAMACCOUNTNAME).get(0);
+        (String) getAttribute(attrs, AdConstants.ATTR_SAMACCOUNTNAME);
     objectGUID =
-        getTextGuid((byte[]) attrs.get(AdConstants.ATTR_OBJECTGUID).get(0));
-    sid = getTextSid((byte[]) attrs.get(AdConstants.ATTR_OBJECTSID).get(0));
-    uSNChanged =
-        Long.parseLong((String) attrs.get(AdConstants.ATTR_USNCHANGED).get(0));
-    if (attrs.get(AdConstants.ATTR_PRIMARYGROUPID) != null) {
-      primaryGroupId =
-          (String)attrs.get(AdConstants.ATTR_PRIMARYGROUPID).get(0);
-    }
-    if (attrs.get(AdConstants.ATTR_UPN) != null) {
-      userPrincipalName = (String) attrs.get(AdConstants.ATTR_UPN).get(0);
-    }
-    members = new ArrayList<String>();
+        getTextGuid((byte[]) getAttribute(attrs, AdConstants.ATTR_OBJECTGUID));
+    sid = getTextSid((byte[]) getAttribute(attrs, AdConstants.ATTR_OBJECTSID));
+    uSNChanged = Long.parseLong(
+        (String) getAttribute(attrs, AdConstants.ATTR_USNCHANGED));
+    primaryGroupId =
+        (String) getAttribute(attrs, AdConstants.ATTR_PRIMARYGROUPID);
+    userPrincipalName = (String) getAttribute(attrs, AdConstants.ATTR_UPN);
+
+    members = new HashSet<String>();
 
     Attribute member = attrs.get(AdConstants.ATTR_MEMBER);
     if (member != null) {
@@ -150,10 +157,12 @@ public class AdEntity {
     map.put(AdConstants.DB_SAMACCOUNTNAME, sAMAccountName);
     map.put(AdConstants.DB_UPN, userPrincipalName);
     map.put(AdConstants.DB_PRIMARYGROUPID, primaryGroupId);
-    map.put(AdConstants.DB_DOMAINSID,
-        sid.substring(0, sid.lastIndexOf(AdConstants.HYPHEN_CHAR)));
-    map.put(AdConstants.DB_RID,
-        sid.substring(sid.lastIndexOf(AdConstants.HYPHEN_CHAR) + 1));
+    if (sid != null) {
+      map.put(AdConstants.DB_DOMAINSID,
+          sid.substring(0, sid.lastIndexOf(AdConstants.HYPHEN_CHAR)));
+      map.put(AdConstants.DB_RID,
+          sid.substring(sid.lastIndexOf(AdConstants.HYPHEN_CHAR) + 1));
+    }
     map.put(AdConstants.DB_OBJECTGUID, objectGUID);
     map.put(AdConstants.DB_USNCHANGED, uSNChanged);
     map.put(AdConstants.DB_WELLKNOWN, wellKnown ? 1 : 0);
@@ -178,7 +187,19 @@ public class AdEntity {
   /**
    * @return the members
    */
-  public List<String> getMembers() {
+  public Set<String> getMembers() {
     return members;
+  }
+
+  @Override
+  public String toString() {
+    return dn;
+  }
+
+  /**
+   * @return the dn
+   */
+  public String getDn() {
+    return dn;
   }
 }

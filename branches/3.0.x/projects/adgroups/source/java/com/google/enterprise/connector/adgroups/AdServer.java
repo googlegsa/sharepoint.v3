@@ -19,10 +19,12 @@ import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,7 +49,6 @@ public class AdServer {
 
   protected LdapContext ldapContext = null;
   private SearchControls searchCtls;
-  private Control[] resultControls;
 
   // properties necessary for connection
   private String hostName;
@@ -65,6 +66,7 @@ public class AdServer {
   private int highestCommittedUSN;
   private String invocationID;
   private String dnsRoot;
+  private Timestamp lastFullSync;
 
   public AdServer(
       Method connectMethod,
@@ -145,18 +147,6 @@ public class AdServer {
     }
 
     LOGGER.info("Sucessfully created an Initial LDAP context");
-    try {
-      resultControls = new Control[] {new PagedResultsControl(1000, false)};
-      ldapContext.setRequestControls(resultControls);
-    } catch (IOException e) {
-      LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. "
-        + "Will continue without paging - this can cause issue if there"
-        + "are more than 1000 members in one group.", e);
-    } catch (NamingException e) {
-      LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. "
-          + "Will continue without paging - this can cause issue if there"
-          + "are more than 1000 members in one group.", e);
-    }
 
     nETBIOSName = (String) get("(ncName=" + dn + ")",
         AdConstants.ATTR_NETBIOSNAME, configurationNamingContext);
@@ -198,14 +188,42 @@ public class AdServer {
   }
 
   /**
+   * Set request controls on the LDAP query 
+   * @param deleted include deleted control
+   */
+  private void setControls(boolean deleted) {
+    try {
+      Control[] controls;
+      if (deleted) {
+        controls = new Control[] {
+            new PagedResultsControl(1000, false), new DeletedControl()};
+      } else {
+        controls = new Control[] {
+            new PagedResultsControl(1000, false)};
+      }
+      ldapContext.setRequestControls(controls);
+    } catch (IOException e) {
+      LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. "
+        + "Will continue without paging - this can cause issue if there"
+        + "are more than 1000 members in one group.", e);
+    } catch (NamingException e) {
+      LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. "
+          + "Will continue without paging - this can cause issue if there"
+          + "are more than 1000 members in one group.", e);
+    }
+  }
+
+  /**
    * Searches Active Directory and creates AdEntity on each result found
    * @param filter LDAP filter to search in the AD for
    * @param attributes list of attributes to retrieve
    * @return list of entities found
    */
-  public ArrayList<AdEntity> search(String filter, String[] attributes) {
-    ArrayList<AdEntity> results = new ArrayList<AdEntity>();
+  public Set<AdEntity> search(
+      String filter, boolean deleted, String[] attributes) {
+    Set<AdEntity> results = new HashSet<AdEntity>();
     searchCtls.setReturningAttributes(attributes);
+    setControls(deleted);
     try {
       byte[] cookie = null;
       do {
@@ -227,16 +245,14 @@ public class AdServer {
           }
         }
       } while ((cookie != null) && (cookie.length != 0));
-
     } catch (NamingException e) {
-      System.out.println("TODO:" + e);
+      LOGGER.log(Level.WARNING, "", e);
     } catch (IOException e) {
       LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. Will"
           + " continue without paging - this can cause issue if there are more"
           + " than 1000 members in one group. ",
           e);
     }
-
     return results;
   }
 
@@ -253,6 +269,10 @@ public class AdServer {
     map.put(AdConstants.DB_NETBIOSNAME, nETBIOSName);
     map.put(AdConstants.DB_SID, sid);
     map.put(AdConstants.DB_DNSROOT, dnsRoot);
+    if (lastFullSync != null) {
+      map.put(AdConstants.DB_LASTFULLSYNC,
+          new java.sql.Timestamp(lastFullSync.getTime()));
+    }
     return map;
   }
 
@@ -282,5 +302,46 @@ public class AdServer {
    */
   public String getnETBIOSName() {
     return nETBIOSName;
+  }
+
+  /**
+   * @return the sid
+   */
+  public String getSid() {
+    return sid;
+  }
+
+  class DeletedControl implements Control {
+    @Override
+    public byte[] getEncodedValue() {
+        return new byte[] {};
+    }
+    @Override
+    public String getID() {
+        return "1.2.840.113556.1.4.417";
+    }
+    @Override
+    public boolean isCritical() {
+        return true;
+    }
+  }
+
+  /**
+   * @return the lastFullSync
+   */
+  public Timestamp getLastFullSync() {
+    return lastFullSync;
+  }
+
+  /**
+   * @param lastFullSync the lastFullSync to set
+   */
+  public void setLastFullSync(Timestamp lastFullSync) {
+    this.lastFullSync = lastFullSync;
+  }
+  
+  @Override
+  public String toString() {
+    return "[" + nETBIOSName + "] ";
   }
 }
