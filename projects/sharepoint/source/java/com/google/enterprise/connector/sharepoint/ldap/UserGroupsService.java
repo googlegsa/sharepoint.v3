@@ -104,13 +104,12 @@ public class UserGroupsService implements LdapService {
 
   private UserGroupsService(LdapConnectionSettings ldapConnectionSettings,
       SharepointClientContext inSharepointClientContext) {
-    if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())
-        || !Strings.isNullOrEmpty(ldapConnectionSettings.getBaseDN())) {
+    if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())) {
       this.ldapConnectionSettings = ldapConnectionSettings;
       ldapConnection = new LdapConnection(ldapConnectionSettings);
       context = getLdapContext();
     } else {
-      LOGGER.warning("Not attempting to create LDAP context, because LDAP host name or base DN is empty or null.");
+      LOGGER.warning("Not attempting to create LDAP context, because LDAP host name is empty or null.");
     }
 
     this.sharepointClientContext = inSharepointClientContext;

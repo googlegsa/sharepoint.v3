@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 
 import javax.naming.CommunicationException;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * This class provides an implementation of AuthenticationManager SPI provided

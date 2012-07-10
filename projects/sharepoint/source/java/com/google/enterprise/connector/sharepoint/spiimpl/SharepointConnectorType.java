@@ -2131,7 +2131,6 @@ public class SharepointConnectorType implements ConnectorType {
         }
         if (!Strings.isNullOrEmpty(ldapServerHostAddress)
             && !Strings.isNullOrEmpty(portNumber)
-            && !Strings.isNullOrEmpty(searchBase)
             && !Strings.isNullOrEmpty(domain)) {
 
           LOGGER.config("Checking for a valid port number.");

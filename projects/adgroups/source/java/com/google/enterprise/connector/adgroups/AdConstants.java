@@ -40,11 +40,13 @@ public class AdConstants {
   // and ADS_GROUP_TYPE_SECURITY_ENABLED = 2147483648.
   public static final String LDAP_QUERY =
       "(|(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2147483648))"
-          + "(objectClass=user))";
-  public static final String PARTIAL_QUERY_START =
-      "(&(" + AdConstants.ATTR_USNCHANGED + ">=";
-  public static final String PARTIAL_QUERY_END =
-      ")" + AdConstants.LDAP_QUERY + ")";
+          + "(&(objectClass=user)(objectCategory=person)))";
+  public static final String PARTIAL_LDAP_QUERY =
+      "(&(uSNChanged>=%d)" + LDAP_QUERY + ")";
+
+  public static final String TOMBSTONE_QUERY =
+      "(&(|(objectClass=group)(objectclass=user))(isDeleted=TRUE)("
+      + ATTR_USNCHANGED + ">=%d))";
 
   public static final String DB_DN = "dn";
   public static final String DB_GROUPID = "groupid";
@@ -63,6 +65,8 @@ public class AdConstants {
   public static final String DB_HIGHESTCOMMITTEDUSN = "highestcommittedusn";
   public static final String DB_INVOCATIONID = "invocationid";
   public static final String DB_DSSERVICENAME = "dsservicename";
+  public static final String DB_MEMBERDN = "memberdn";
+  public static final String DB_LASTFULLSYNC = "lastfullsync";
 
   public static final String COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY =
       "com.sun.jndi.ldap.LdapCtxFactory";
