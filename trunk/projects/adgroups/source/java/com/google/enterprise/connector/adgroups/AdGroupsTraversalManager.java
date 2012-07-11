@@ -84,7 +84,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
     }
   }
 
-  public long getHighestCommitedUsn(AdServer server) {
+  public long getLastCrawledChange(AdServer server) {
     List<HashMap<String, Object>> dbServers;
     try {
       dbServers =
@@ -172,13 +172,20 @@ public class AdGroupsTraversalManager implements TraversalManager {
         server.initialize();
         String ldapQuery;
         String tombstoneQuery = null;
-        long last = getHighestCommitedUsn(server);
+        long last = getLastCrawledChange(server);
+
+        LOGGER.info(server + "Last crawled change [" + last
+            + "]. Last change on the server [" + server.getHighestCommittedUSN()
+            + "]");
 
         if (last == -1) {
           continue;
         } else if (last == 0) {
           LOGGER.info(server + "Full recrawl start");
           ldapQuery = AdConstants.LDAP_QUERY;
+        } else if (last == server.getHighestCommittedUSN()){
+          LOGGER.info(server + "No updates on the server");
+          continue;
         } else {
           LOGGER.info(server + "Partial recrawl start");
           ldapQuery = String.format(AdConstants.PARTIAL_LDAP_QUERY, last + 1);
