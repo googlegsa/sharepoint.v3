@@ -1384,16 +1384,17 @@ public class SharepointClient {
       // need to check whether the site exist or not and is not null
       if (webState.isExisting() && null != webState) {
         document = siteDataWS.getSiteData(webState);
-        if (null != document) {
-          documentList.add(document);
-        }
+        // Site Home Page document will be added as last doc from
+        // dummy list state. This is required for sending delete feed.
+       
       }
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Problem while getting site data. ", e);
     }  
     // Web Application Policy Document processing.
     // Web Application Policy Document will be associated with each webstate.
-    if (sharepointClientContext.isPushAcls()) {
+    if (sharepointClientContext.isPushAcls()
+        && webState.isWebApplicationPolicyChange()) {
       try {
         AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
             webState.getWebUrl());
@@ -1416,6 +1417,8 @@ public class SharepointClient {
       // Mark dummy list state to true in order to differentiate this list state
       // with
       // other lists in web state.
+      //adding list page document.
+      documentList.add(document);
       dummySiteListState.setSiteDefaultPage(true);
       webState.AddOrUpdateListStateInWebState(dummySiteListState, currentDummySiteDataList.getLastMod());
       dummySiteListState.setCrawlQueue(documentList);

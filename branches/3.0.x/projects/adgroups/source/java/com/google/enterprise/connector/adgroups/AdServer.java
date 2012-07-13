@@ -63,7 +63,7 @@ public class AdServer {
   private String configurationNamingContext;
   private String dsServiceName;
   private String sid;
-  private int highestCommittedUSN;
+  private long highestCommittedUSN;
   private String invocationID;
   private String dnsRoot;
   private Timestamp lastFullSync;
@@ -91,38 +91,36 @@ public class AdServer {
    * against Active Directory.
    */
   public void connect() throws CommunicationException, NamingException {
-    if (ldapContext == null) {
-      Hashtable<String, String> env = new Hashtable<String, String>();
+    Hashtable<String, String> env = new Hashtable<String, String>();
 
-      // Use the built-in LDAP support.
-      env.put(Context.INITIAL_CONTEXT_FACTORY,
-          AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
-      if (Strings.isNullOrEmpty(principal)) {
-        env.put(Context.SECURITY_AUTHENTICATION, 
-            AdConstants.AUTHN_TYPE_ANONYMOUS);
-      } else {
-        env.put(Context.SECURITY_AUTHENTICATION,
-            AdConstants.AUTHN_TYPE_SIMPLE);
-        env.put(Context.SECURITY_PRINCIPAL, principal);
-        env.put(Context.SECURITY_CREDENTIALS, password);
-      }
-
-      String ldapUrl =
-          connectMethod.toString() + hostName + AdConstants.COLON + port;
-      LOGGER.info("LDAP provider url: " + ldapUrl);
-      env.put(Context.PROVIDER_URL, ldapUrl);
-      ldapContext = new InitialLdapContext(env, null);
-      
-      Attributes attributes = ldapContext.getAttributes(AdConstants.EMPTY);
-      dn = attributes.get(
-          AdConstants.ATTR_DEFAULTNAMINGCONTEXT).get(0).toString();
-      dsServiceName = attributes.get(
-          AdConstants.ATTR_DSSERVICENAME).get(0).toString();
-      highestCommittedUSN = Integer.parseInt(attributes.get(
-          AdConstants.ATTR_HIGHESTCOMMITTEDUSN).get(0).toString());
-      configurationNamingContext = attributes.get(
-          AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
+    // Use the built-in LDAP support.
+    env.put(Context.INITIAL_CONTEXT_FACTORY,
+        AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
+    if (Strings.isNullOrEmpty(principal)) {
+      env.put(Context.SECURITY_AUTHENTICATION, 
+          AdConstants.AUTHN_TYPE_ANONYMOUS);
+    } else {
+      env.put(Context.SECURITY_AUTHENTICATION,
+          AdConstants.AUTHN_TYPE_SIMPLE);
+      env.put(Context.SECURITY_PRINCIPAL, principal);
+      env.put(Context.SECURITY_CREDENTIALS, password);
     }
+
+    String ldapUrl =
+        connectMethod.toString() + hostName + AdConstants.COLON + port;
+    LOGGER.info("LDAP provider url: " + ldapUrl);
+    env.put(Context.PROVIDER_URL, ldapUrl);
+    ldapContext = new InitialLdapContext(env, null);
+
+    Attributes attributes = ldapContext.getAttributes(AdConstants.EMPTY);
+    dn = attributes.get(
+        AdConstants.ATTR_DEFAULTNAMINGCONTEXT).get(0).toString();
+    dsServiceName = attributes.get(
+        AdConstants.ATTR_DSSERVICENAME).get(0).toString();
+    highestCommittedUSN = Integer.parseInt(attributes.get(
+        AdConstants.ATTR_HIGHESTCOMMITTEDUSN).get(0).toString());
+    configurationNamingContext = attributes.get(
+        AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
   }
 
   public void initialize() throws RepositoryException {
@@ -343,5 +341,12 @@ public class AdServer {
   @Override
   public String toString() {
     return "[" + nETBIOSName + "] ";
+  }
+
+  /**
+   * @return the highestCommittedUSN
+   */
+  public long getHighestCommittedUSN() {
+    return highestCommittedUSN;
   }
 }
