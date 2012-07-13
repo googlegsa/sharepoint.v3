@@ -324,6 +324,10 @@ public class AdDbUtil {
   public void mergeMemberships(final Set<AdEntity> entities)
       throws SQLException {
     for (AdEntity e : entities) {
+      // if entity is user we don't need to check memberships
+      if (e.getPrimaryGroupId() != null) {
+        continue;
+      }
       Set<String> dbMemberships = new HashSet<String>();
       for (HashMap<String, Object> dbMembership: 
         select(Query.SELECT_MEMBERSHIPS_BY_DN, e.getSqlParams())) {
@@ -393,6 +397,7 @@ public class AdDbUtil {
             batch = 0;
           }
         }
+        delStatement.executeBatch();
       } finally {
         if (delStatement != null) {
           delStatement.close();
