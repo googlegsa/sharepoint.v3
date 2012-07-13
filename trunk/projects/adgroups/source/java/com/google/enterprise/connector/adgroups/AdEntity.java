@@ -202,4 +202,11 @@ public class AdEntity {
   public String getDn() {
     return dn;
   }
+
+  /**
+   * @return the primaryGroupId
+   */
+  public String getPrimaryGroupId() {
+    return primaryGroupId;
+  }
 }
