@@ -667,22 +667,27 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    *
    * @param tableName name to find out in the result set.
    * @param rsTables is the result set
-   * @param byIndex a flag indicating whether to use index 1 or the table
-   *        name SPConstants.TABLE_NAME
+   * @param fromStatement a flag indicating whether the result set comes
+            from a prepared statement.
    * @return true if the given table name found in the result set.
    * @throws SQLException
    */
   private boolean isTableNameExists(String tableName, ResultSet rsTables,
-      boolean byIndex) throws SQLException {
+      boolean fromStatement) throws SQLException {
     boolean tableFound = false;
 
-    if (!rsTables.isBeforeFirst()) {
-      rsTables.beforeFirst();
+    // Only reset the result set if it comes from a prepared statement.
+    // If the result set comes from a getTables call then if may not 
+    // support the required opperations.
+    if (fromStatement) {
+      if (!rsTables.isBeforeFirst()) {
+        rsTables.beforeFirst();
+      }
     }
 
     while (rsTables.next()) {
       String currName;
-      if (byIndex) {
+      if (fromStatement) {
         currName = rsTables.getString(1);
       } else {
         currName = rsTables.getString(SPConstants.TABLE_NAME);
