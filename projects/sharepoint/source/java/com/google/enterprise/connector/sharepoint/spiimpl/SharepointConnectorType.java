@@ -616,24 +616,10 @@ public class SharepointConnectorType implements ConnectorType {
           buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
               + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
               + "\"");
-          buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME);
+          buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME);
           buf.append("\"");
           if (Strings.isNullOrEmpty(value)
               || value
-              .equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT
-              + SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
-              + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
-              + SPConstants.EQUAL_TO + "\"");
-          buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME);
-          buf.append("\"");
-          if (value
               .equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME)) {
             buf.append(SPConstants.SPACE + SPConstants.SELECTED
                 + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
@@ -652,8 +638,22 @@ public class SharepointConnectorType implements ConnectorType {
             buf.append(SPConstants.SPACE + SPConstants.SELECTED
                 + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
           }
+          buf.append(SPConstants.CLOSE_ELEMENT
+              + SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME);
+          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+              + SPConstants.CLOSE_ELEMENT);
+          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+              + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
+              + SPConstants.EQUAL_TO + "\"");
+          buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME);
+          buf.append("\"");
+          if (value
+              .equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME)) {
+            buf.append(SPConstants.SPACE + SPConstants.SELECTED
+                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+          }
           buf.append(SPConstants.SPACE + ">"
-              + SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME
+              + SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME
               + SPConstants.SPACE);
           buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
               + SPConstants.CLOSE_ELEMENT);
