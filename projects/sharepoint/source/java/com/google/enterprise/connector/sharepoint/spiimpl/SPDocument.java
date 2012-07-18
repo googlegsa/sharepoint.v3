@@ -847,7 +847,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       try {
         method = new GetMethod(docURL);
         responseCode = sharepointClientContext.checkConnectivity(docURL, method);
-        if (null == method) {
+        if (null == method || responseCode != 200) {
           return SPConstants.CONNECTIVITY_FAIL;
         }
         content = method.getResponseBodyAsStream();
