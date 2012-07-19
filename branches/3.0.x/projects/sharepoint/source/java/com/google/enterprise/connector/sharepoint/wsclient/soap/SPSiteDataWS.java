@@ -33,9 +33,12 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
+import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.holders.UnsignedIntHolder;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.methods.HeadMethod;
 
 import java.rmi.RemoteException;
 import java.text.Collator;
@@ -467,6 +470,22 @@ public class SPSiteDataWS implements SiteDataWS {
         sWebMetadata.value.getLastModified().getInstance(),
         sWebMetadata.value.getAuthor(), SPConstants.SITE, webState.getTitle(),
         sharepointClientContext.getFeedType(), webState.getSharePointType());
+    HttpMethodBase method = null;
+    String strUrl = siteDataDocument.getUrl();
+    try {
+      method = new HeadMethod(strUrl);
+      int responseCode =
+          sharepointClientContext.checkConnectivity(strUrl, method);
+      if (responseCode != 200) {
+        LOGGER.log(Level.INFO,"Possible Publishing website.Marking Url ["
+            + strUrl + " ] with Document Type as ACL");
+        siteDataDocument.setDocumentType(DocumentType.ACL);
+      }
+    } catch (final Exception e) {
+      LOGGER.log(Level.WARNING, "Unable to connect [ " + strUrl
+          + " ] marking site home page as ACL document", e);
+      siteDataDocument.setDocumentType(DocumentType.ACL);
+    }
 
     return siteDataDocument;
   }

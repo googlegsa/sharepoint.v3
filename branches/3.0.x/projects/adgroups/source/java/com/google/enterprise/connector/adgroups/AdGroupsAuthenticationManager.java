@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.adgroups;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
@@ -29,6 +30,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,6 +52,7 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
 
   private final AdDbUtil db;
   private final String globalNamespace;
+  private Map<String,String> dnsRootToNetbiosMapping = Maps.newHashMap();
 
   /**
    * @param connector an instance of an {@link AdGroupsConnector}
@@ -127,6 +130,11 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
         sb.append("[").append(group.getName()).append("] ");
       }
       LOGGER.info(sb.toString());
+      String dnsRoot = (String) user.get(AdConstants.DB_DNSROOT);
+      String netBios = (String) user.get(AdConstants.DB_NETBIOSNAME);
+      if (!dnsRootToNetbiosMapping.containsKey(dnsRoot)) {
+    	  dnsRootToNetbiosMapping.put(dnsRoot, netBios);
+      }
       return new AuthenticationResponse(true, "", groups);
     } catch (SQLException e) {
       LOGGER.log(Level.WARNING,
@@ -134,6 +142,20 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
           + username + "] domain [" + domain + "].", e);
       return new AuthenticationResponse(false, "", null);
     }
+  }
+  /**
+   * Method to fetch netbios for user. This method is expected to be called
+   * after authenticating user with AD Connector.
+   * @param identity Authentication identity to get netbios name
+   * @return netbios name for user identity
+   */
+  public String getNetBiosNameForUser(final AuthenticationIdentity identity) {
+    final String domain = identity.getDomain();
+    if (dnsRootToNetbiosMapping.containsKey(domain)) {
+      return  dnsRootToNetbiosMapping.get(domain);
+    } else {
+      return domain;
+    }	 
   }
 
   /**
