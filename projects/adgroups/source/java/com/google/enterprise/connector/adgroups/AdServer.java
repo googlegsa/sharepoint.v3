@@ -229,7 +229,18 @@ public class AdServer {
             ldapContext.search(dn, filter, searchCtls);
         while (ldapResults.hasMoreElements()) {
           SearchResult sr = ldapResults.next();
-          results.add(new AdEntity(sr));
+          try {
+            results.add(new AdEntity(sr));
+          } catch (Exception ex) {           
+            // It is possible that Search Result returned is missing
+            // few attributes required to construct AD Entity object.
+            // Such results will be ignored.
+            // This exception is logged and ignored to allow connector to
+            // continue crawling otherwise connector can not
+            // proceed with traversal.
+            LOGGER.log(Level.WARNING, "Error Processing Search Result "
+                + sr, ex);
+          }
         }
         cookie = null;
         Control[] resultResponseControls = ldapContext.getResponseControls();

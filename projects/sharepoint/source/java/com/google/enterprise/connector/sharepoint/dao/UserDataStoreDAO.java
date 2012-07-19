@@ -107,10 +107,10 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       throws SharepointException {
     Set<String> groupNames = new HashSet<String>();
     for (Principal group : groups) {
-      groupNames.add(group.getName());
+      groupNames.add(group.getName().toLowerCase());
     }
     List<UserGroupMembership> spMemberships =
-        getAllMembershipsForSearchUserAndLdapGroups(groupNames, searchUser);
+        getAllMembershipsForSearchUserAndLdapGroups(groupNames, searchUser.toLowerCase());
     Set<Principal> spGroups = new HashSet<Principal>();
     for (UserGroupMembership membership : spMemberships) {
       // append name space to SP groups.
@@ -405,13 +405,13 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     switch (query) {
     case UDS_SELECT_FOR_USERNAME:
       for (UserGroupMembership membership : memberships) {
-        namedParams[count++] = query.createParameter(membership.getUserName());
+        namedParams[count++] = query.createParameter(membership.getUserName().toLowerCase());
       }
       break;
 
     case UDS_INSERT:
       for (UserGroupMembership membership : memberships) {
-        namedParams[count++] = query.createParameter(membership.getUserId(), membership.getUserName(), membership.getGroupId(), membership.getGroupName(), membership.getNamespace());
+        namedParams[count++] = query.createParameter(membership.getUserId(), membership.getUserName().toLowerCase(), membership.getGroupId(), membership.getGroupName(), membership.getNamespace());
       }
       break;
 

@@ -113,11 +113,14 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 
     @SuppressWarnings("unchecked")
     Collection<Principal> adGroups =
-        (Collection<Principal>) adAuthResult.getGroups();
+    (Collection<Principal>) adAuthResult.getGroups();
+    String domain =
+    		adGroupsAuthenticationManager.getNetBiosNameForUser(identity);
+   
     Set<Principal> spGroups = sharepointClientContext
         .getUserDataStoreDAO().getSharePointGroupsForSearchUserAndLdapGroups(
             sharepointClientContext.getGoogleLocalNamespace(), adGroups,
-            identity.getDomain() + SPConstants.DOUBLEBACKSLASH
+            domain + SPConstants.DOUBLEBACKSLASH
             + identity.getUsername());
 
     Collection<Principal> groups = new ArrayList<Principal>();
@@ -160,7 +163,15 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 
     // If domain is not received as part of the authentication request, use
     // the one from SharePointClientContext
-    if ((domain == null) || (domain.length() == 0)) {
+    // dnsroot to netbios conversion is required only when PushAcls is true
+    // This code will be executed only when connector is configured for
+    // late binding (PushAcls = false) Other scenario to cover is when
+    // oldldapbehavior is true and connector is configured to feed ACLs.
+    // If domain name contains "." char, it will be treated as dnsroot name
+    // and it will be replaced with connector domain. Group resolution will
+    // work only if connector is configured using netbios name.    
+    if ((domain == null) || (domain.length() == 0) ||
+        ((domain.indexOf(".") > -1) && sharepointClientContext.isPushAcls())) {
       domain = sharepointClientContext.getDomain();
     }
 
