@@ -650,10 +650,11 @@ public class UserGroupsService implements LdapService {
     }
     return groupNames;
   }
-  
+
   /**
    * Retrieves sAMAccountNames for list of entities
-   * @param groups list of distinguishedNames of all groups to resolve
+   * @param distinguishedNames set of distinguishedNames of all groups
+   *     to resolve
    * @return sAMAccountName for each of the entities
    */
   Set<String> getSAMAccountNames(Set<String> distinguishedNames) {
