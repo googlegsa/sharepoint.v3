@@ -96,6 +96,7 @@ public class AdServer {
     // Use the built-in LDAP support.
     env.put(Context.INITIAL_CONTEXT_FACTORY,
         AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
+    env.put("com.sun.jndi.ldap.read.timeout", "3000");
     if (Strings.isNullOrEmpty(principal)) {
       env.put(Context.SECURITY_AUTHENTICATION, 
           AdConstants.AUTHN_TYPE_ANONYMOUS);

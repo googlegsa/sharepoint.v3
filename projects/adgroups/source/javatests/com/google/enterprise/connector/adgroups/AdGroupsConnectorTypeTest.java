@@ -19,74 +19,113 @@ import com.google.enterprise.connector.spi.ConfigureResponse;
 
 import junit.framework.TestCase;
 
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AdGroupsConnectorTypeTest extends TestCase {
-  private List<String> keys;
-  private Map<String, String> configMap;
-  private AdGroupsConnectorType sharepointConnectorType;
 
-  protected void setUp() throws Exception {
-    configMap = new HashMap<String, String>();
-    configMap.putAll(TestConfiguration.getConfigMap());
-    keys = new ArrayList<String>();
-    keys.addAll(configMap.keySet());
-    sharepointConnectorType = new AdGroupsConnectorType();
-    sharepointConnectorType.setConfigKeys(keys);
+  protected Map<String, String> configure(String hostname, String port,
+      String method, String principal, String password) {
+    Map<String, String> config = new HashMap<String, String>();
+
+    config.put("hostname", hostname);
+    config.put("port", port);
+    config.put("method", method);
+    config.put("principal", principal);
+    config.put("password", password);
+
+    return config;
+  }
+  
+  protected void assertContains(ConfigureResponse response, String message) {
+    assertTrue(response.getFormSnippet().replace("</tr>", "</tr>\r"),
+        response.getFormSnippet().contains(message));
   }
 
-  public void testValidateConfig() {
-    final ConfigureResponse configRes =
-        sharepointConnectorType.validateConfig(configMap, Locale.ENGLISH, null);
-    if (configRes != null) {
-      fail(configRes.getMessage());
-    }
+  public void testCorrect() {
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config = configure(TestConfiguration.d1hostname,
+            Integer.toString(TestConfiguration.d1plaintextport), "STANDARD",
+            TestConfiguration.d1principal, 
+            TestConfiguration.d1password);
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.validateConfig(config, null, null);
+    assertNull(response);
   }
 
-  public void testGetConfigForm() {
-    final ConfigureResponse configureResponse =
-        sharepointConnectorType.getConfigForm(Locale.ENGLISH);
-    final String initialConfigForm = configureResponse.getFormSnippet();
-    checkForExpectedFields(initialConfigForm);
-    checkForDisabledFields(initialConfigForm);
+  public void testEmptyData() {
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config = configure("", "", "STANDARD", "", "");
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.validateConfig(config, null, null);
+    assertFalse(response.getMessage().isEmpty());
   }
 
-  public void testGetPopulatedConfigForm() {
-    final ConfigureResponse response =
-        sharepointConnectorType.getPopulatedConfigForm(configMap, new Locale("test"));
-    final String populatedConfigForm = response.getFormSnippet();
-    checkForExpectedFields(populatedConfigForm);
+  public void testEmptyDataSSL() {
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config = configure("", "", "SSL", "", "");
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.validateConfig(config, null, null);
+    assertFalse(response.getMessage().isEmpty());
   }
 
-  /** Asserts that the given pattern is found in the given string. */
-  private void assertFind(String strPattern, String configForm) {
-    assertTrue("Match for " + strPattern + " not found in: " + configForm,
-        Pattern.compile(strPattern).matcher(configForm).find());
+  public void testUnknownHost() {
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config =
+        configure("invalid.hostname", "389", "STANDARD", "", "");
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.validateConfig(config, null, null);
+    assertContains(response, "Can't resolve hostname");    
   }
 
-  private void checkForExpectedFields(final String configForm) {
-    assertFind("<input.*id=\"domain\".*>", configForm);
-    assertFind("<input.*id=\"username\".*>", configForm);
-    assertFind("<input.*id=\"appendNamespaceInSPGroup\".*>", configForm);
-    assertFind("<select.*id=\"usernameFormatInAce\".*>", configForm);
-    assertFind("<select.*id=\"groupnameFormatInAce\".*>", configForm);
-    assertFind("<input.*id=\"ldapServerHostAddress\".*>", configForm);
-    assertFind("<input.*id=\"portNumber\".*>", configForm);
-    assertFind("<select.*id=\"authenticationType\".*>", configForm);
-    assertFind("<select.*id=\"connectMethod\".*>", configForm);
-    assertFind("<input.*id=\"useCacheToStoreLdapUserGroupsMembership\".*>", configForm);
-    assertFind("<input.*id=\"initialCacheSize\".*>", configForm);
-    assertFind("<input.*id=\"cacheRefreshInterval\".*>", configForm);
+  public void testRefusedConnection() throws Exception {
+    // get unused port number on current computer
+    ServerSocket s = new ServerSocket(0);
+    int port = s.getLocalPort();
+    s.close();
+
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config =
+        configure("localhost", "" + port, "STANDARD", "", "");
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.validateConfig(config, null, null);
+    assertContains(response, "Connection refused");
   }
 
-  private void checkForDisabledFields(final String configForm) {
-    assertFind("<input.*id=\"cacheRefreshInterval\" disabled=\"true\".*>", configForm);
-    assertFind("<input.*id=\"initialCacheSize\".*disabled=\"true\".*>", configForm);
+  public void testSlowHost() throws Exception {
+    // socket that never responds to requests
+    ServerSocket s = new ServerSocket(0);
+    int port = s.getLocalPort();
+
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config =
+        configure("localhost", "" + port, "STANDARD", "", "");
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.validateConfig(config, null, null);
+    assertContains(response, "LDAP response read timed out");
+  }
+
+  public void testIncorrectUsername() {
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config = configure(TestConfiguration.d1hostname,
+            Integer.toString(TestConfiguration.d1plaintextport), "STANDARD",
+            TestConfiguration.d1principal + "invalid", 
+            TestConfiguration.d1password);
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.validateConfig(config, null, null);
+    assertContains(response, "Invalid credentials.");
+  }
+
+  public void testIncorrectPassword() {
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config = configure(TestConfiguration.d1hostname,
+            Integer.toString(TestConfiguration.d1plaintextport), "STANDARD",
+            TestConfiguration.d1principal, 
+            TestConfiguration.d1password + "invalid");
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.validateConfig(config, null, null);
+    assertContains(response, "Invalid credentials.");
   }
 }
