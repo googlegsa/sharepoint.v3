@@ -542,7 +542,7 @@ public class SharepointConnectorType implements ConnectorType {
             this.pushAcls = SPConstants.OFF;
           }
           buf.append(SPConstants.SPACE + SPConstants.ON_CLICK);
-          buf.append("\"enableFeedAclsRelatedHtmlControles();\"");
+          buf.append("\"enableFeedAclsRelatedHtmlControls();\"");
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
           // It allows to select check box using it's label.
           buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
@@ -574,7 +574,7 @@ public class SharepointConnectorType implements ConnectorType {
           }
 
           buf.append(SPConstants.SPACE + SPConstants.ON_CLICK);
-          buf.append("\"enableOrDisableUserGroupsCacheControles();\"");
+          buf.append("\"enableOrDisableUserGroupsCacheControls();\"");
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
           // It allows to select check box using it's label.
           buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
@@ -1063,6 +1063,16 @@ public class SharepointConnectorType implements ConnectorType {
       unregisterKerberosSetUp(configData);
     }
 
+    // Check boxes (like PUSH_ACLS, USE_SP_SEARCH_VISIBILITY, etc) are
+    // specified by the connector manager as either being set to "on" or being
+    // nonexistent in configData. These need to be modified to "true" and
+    // "false", respectively, so that they are interpreted correctly by the
+    // connector. This must be done prior to the rest of the checks being
+    // performed, or else if the save fails and the form is presented again,
+    // they will be presented with the opposite value that they were saved
+    // with.
+    convertCheckBoxes(configData);
+
     for (final Iterator<String> i = keys.iterator(); i.hasNext();) {
       final String key = i.next();
       final String val = configData.get(key);
@@ -1177,20 +1187,6 @@ public class SharepointConnectorType implements ConnectorType {
       setSharepointCredentials(key, val);
     }
 
-    // The Use SP indexing options is a checkbox which is turned on by
-    // default. In case the user unchecks it, no HTML form element is
-    // returned for the same and hence the connector should add to the
-    // config map with a value of "false" indicating that the SP indexing
-    // options are not to be considered by the connector. If it is
-    // available, overwrite its value "on" with "true".
-    if (!configData.containsKey(SPConstants.USE_SP_SEARCH_VISIBILITY)) {
-      configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY,
-          Boolean.toString(false));
-    } else {
-      configData.put(SPConstants.USE_SP_SEARCH_VISIBILITY,
-          Boolean.toString(true));
-    }
-
     if ((username != null)
         && ((username.indexOf("@") != -1) || (username.indexOf("\\") != -1))
         && (domain != null) && !domain.equals(SPConstants.BLANK_STRING)) {
@@ -1233,10 +1229,6 @@ public class SharepointConnectorType implements ConnectorType {
       return false;
     }
     status = null;
-
-    // Validating the feed ACLs related check boxes which are off by
-    // default.
-    validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(configData);
 
     if (!validateFeedAclsRelatedHtmlControls(ed)) {
       return false;
@@ -1460,7 +1452,7 @@ public class SharepointConnectorType implements ConnectorType {
           + "\r\n document.getElementById('" + SPConstants.ALIAS_MAP
           + "').value=aliasString;" + "\r\n }";
 
-      js += "\r\n function enableOrDisableUserGroupsCacheControles () {"
+      js += "\r\n function enableOrDisableUserGroupsCacheControls() {"
           + ""
           + "\r\n if (document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").checked == true){ "
           + "\r\n document.getElementById(\"initialCacheSize\").disabled=false"
@@ -1472,7 +1464,7 @@ public class SharepointConnectorType implements ConnectorType {
 
           + "\r\n }" + "\r\n }";
 
-      js += "\r\n function enableFeedAclsRelatedHtmlControles () {"
+      js += "\r\n function enableFeedAclsRelatedHtmlControls() {"
           + ""
           + "\r\n if (document.getElementById(\"pushAcls\").checked == true){ "
           + "\r\n document.getElementById(\"portNumber\").disabled=false"
@@ -1483,10 +1475,12 @@ public class SharepointConnectorType implements ConnectorType {
           + "\r\n document.getElementById(\"authenticationType\").disabled=false"
           + "\r\n document.getElementById(\"connectMethod\").disabled=false"
           + "\r\n document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").disabled=false"
-          + "\r\n document.getElementById(\"appendNamespaceInSPGroup\").checked=true"
           + "\r\n if (document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").checked == true){ "
           + "\r\n document.getElementById(\"initialCacheSize\").disabled=false"
           + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=false"
+          + "\r\n } else {"
+          + "\r\n document.getElementById(\"initialCacheSize\").disabled=true"
+          + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=true"
           + "\r\n }"
 
           + "\r\n } else {"
@@ -1509,8 +1503,10 @@ public class SharepointConnectorType implements ConnectorType {
 
       js += "\r\n function trim(s) {return s.replace( /^\\s*/, \"\" ).replace( /\\s*$/, \"\" );}";
 
-      js += "document.getElementById('" + SPConstants.SHAREPOINT_URL
-          + "').focus()";
+      js += "\r\n document.getElementById('" + SPConstants.SHAREPOINT_URL
+          + "').focus();";
+
+      js += "\r\n enableFeedAclsRelatedHtmlControls();";
 
       js += "\r\n ]]> \r\n </script> \r\n";
       buf.append(js);
@@ -2074,34 +2070,20 @@ public class SharepointConnectorType implements ConnectorType {
   }
 
   /**
-   * Validating feed ACLs related check boxes.
+   * Convert check boxes from being either not in the map or set to "on" to
+   * being set to either "false" or "true".
    *
    * @param configData
    */
-  private void validateFeedAclsAndLdapUserGroupsCacheCheckBoxes(
+  private void convertCheckBoxes(
       final Map<String, String> configData) {
-    if (!configData.containsKey(SPConstants.PUSH_ACLS)) {
-      configData.put(SPConstants.PUSH_ACLS, Boolean.toString(false));
-    } else {
-      configData.put(SPConstants.PUSH_ACLS, Boolean.toString(true));
-    }
-    if (!configData.containsKey(SPConstants.FEED_UNPUBLISHED_CONTENT)) {
-      configData.put(SPConstants.FEED_UNPUBLISHED_CONTENT,
-          Boolean.toString(false));
-    } else {
-      configData.put(SPConstants.FEED_UNPUBLISHED_CONTENT,
-          Boolean.toString(true));
-    }
+    String[] keys = {SPConstants.USE_SP_SEARCH_VISIBILITY,
+                     SPConstants.PUSH_ACLS,
+                     SPConstants.FEED_UNPUBLISHED_CONTENT,
+                     SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP};
 
-    if (!configData
-        .containsKey(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
-      configData.put(
-          SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP,
-          Boolean.toString(false));
-    } else {
-      configData.put(
-          SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP,
-          Boolean.toString(true));
+    for (String key : keys) {
+      configData.put(key, Boolean.toString(configData.containsKey(key)));
     }
   }
 
