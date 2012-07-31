@@ -131,7 +131,7 @@ public class TestConfiguration {
     dmds.setUrl(TestConfiguration.mssqlUrl);
     dmds.setUsername(TestConfiguration.mssqlUser);
     dmds.setPassword(TestConfiguration.mssqlPassword);
-    dbs.put("mssql", dmds);
+    dbs.put("sqlserver", dmds);
 
     dmds = new DriverManagerDataSource();
     dmds.setDriverClassName("org.h2.jdbcx.JdbcDataSource");
