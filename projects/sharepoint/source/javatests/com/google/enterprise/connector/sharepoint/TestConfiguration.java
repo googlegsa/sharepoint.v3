@@ -223,6 +223,12 @@ public class TestConfiguration {
   private static String gsaAdmin;
   private static String gsaAdminPassword;
   private static String socialOption;
+  
+  //UTF-8 support
+  public static String UTF8SiteUrl;
+  
+  //publishing site
+  public static String publishingSiteUrl;
 
   public static ClientFactory clientFactory = new SPClientFactory();
 
@@ -413,6 +419,8 @@ public class TestConfiguration {
     gsaAdminPassword = properties.getProperty("GsaAdminPassword");
 
     socialOption = properties.getProperty("SocialOption");
+    UTF8SiteUrl = properties.getProperty("UTF8SiteUrl");
+    publishingSiteUrl = properties.getProperty("PublishingSiteUrl");
   }
 
   public static Map<String, String> getConfigMap() {
