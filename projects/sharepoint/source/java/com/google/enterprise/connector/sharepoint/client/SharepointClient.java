@@ -200,6 +200,9 @@ public class SharepointClient {
     SPDocumentList resultSet = null;
     for (final Iterator<ListState> iter = webState.getCurrentListstateIterator(); iter.hasNext();) {
       final ListState list = iter.next();
+      if (list.isSiteDefaultPage()) {
+        continue;
+      }
 
       // Mark this list as current list so that the next traversal
       // request starts from here and already scanned lists are not
@@ -1393,8 +1396,7 @@ public class SharepointClient {
     }  
     // Web Application Policy Document processing.
     // Web Application Policy Document will be associated with each webstate.
-    if (sharepointClientContext.isPushAcls()
-        && webState.isWebApplicationPolicyChange()) {
+    if (sharepointClientContext.isPushAcls()) {
       try {
         AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
             webState.getWebUrl());
