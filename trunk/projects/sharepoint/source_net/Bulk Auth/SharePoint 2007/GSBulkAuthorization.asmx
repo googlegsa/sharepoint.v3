@@ -172,7 +172,29 @@ public class BulkAuthorization : System.Web.Services.WebService
         {
             try
             {
-                SPList list = web.GetListFromUrl(url);
+                SPList list = null;
+                try
+                {
+                    list = web.GetListFromUrl(url);
+                }
+                catch (Exception ex)
+                {
+                    //ignoring exception for possible folder URL
+                    ex = null;
+                    try
+                    {
+                        SPFolder oFolder = web.GetFolder(url);
+                        if (oFolder != null && oFolder.Item != null)
+                        {
+                            list = oFolder.Item.ParentList;
+                        }
+                    }
+                    catch (Exception exFolder)
+                    {
+                        // ignoring exception.
+                        exFolder = null;
+                    }
+                }
                 if (authData.Type == AuthData.EntityType.LIST)
                 {
                     bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
