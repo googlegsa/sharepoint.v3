@@ -100,6 +100,31 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
       return authenticateAgainstSharepoint(identity);
     }
   }
+  
+  /**
+   * Returns the search user name after changing its format to the user name
+   * format specified by the connector administrator during connector
+   * configuration.
+   *
+   * @param userName
+   * @param domain
+   */
+  private String addUserNameFormatForTheSearchUser(final String userName,
+      final String domain) {
+    String format = this.sharepointClientContext.getUsernameFormatInAce();
+    LOGGER.config("Username format in ACE : " + format);
+    String domainToUse = (Strings.isNullOrEmpty(domain)) ?
+        this.sharepointClientContext.getDomain() : domain;
+        LOGGER.log(Level.FINE, "domainToUse [ " + domainToUse
+            + " ], input domain [ " + domain + " ]. "); 
+    if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+      return Util.getUserNameAtDomain(userName, domainToUse);
+    } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+      return Util.getUserNameWithDomain(userName, domainToUse);
+    } else {
+      return userName;
+    }
+  }
 
   //TODO: make this claims aware - authorize against Sharepoint and resolve
   //groups against AD only if necessary
@@ -115,11 +140,12 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     @SuppressWarnings("unchecked")
     Collection<Principal> adGroups =
         (Collection<Principal>) adAuthResult.getGroups();
+    String strUserName =
+        addUserNameFormatForTheSearchUser(identity.getUsername(), identity.getDomain());
     Set<Principal> spGroups = sharepointClientContext
         .getUserDataStoreDAO().getSharePointGroupsForSearchUserAndLdapGroups(
             sharepointClientContext.getGoogleLocalNamespace(), adGroups,
-            identity.getDomain() + SPConstants.DOUBLEBACKSLASH
-            + identity.getUsername());
+            strUserName);
 
     Collection<Principal> groups = new ArrayList<Principal>();
     groups.addAll(adGroups);
