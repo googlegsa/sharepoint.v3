@@ -127,6 +127,14 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
         sb.append("[").append(group.getName()).append("] ");
       }
       LOGGER.info(sb.toString());
+      if (identity instanceof MutableIdentity) {
+        MutableIdentity mutable = (MutableIdentity) identity;
+        mutable.setDomain((String) user.get(AdConstants.DB_NETBIOSNAME));
+        mutable.setUsername((String) user.get(AdConstants.DB_SAMACCOUNTNAME));
+        LOGGER.fine("New identity: [" + domain + "\\" + username
+            + "] Active Directory: [" + identity.getDomain()
+            + "\\" + identity.getUsername() + "]");
+      }
       return new AuthenticationResponse(true, "", groups);
     } catch (SQLException e) {
       LOGGER.log(Level.WARNING,

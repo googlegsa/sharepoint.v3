@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.adgroups.AdGroupsAuthenticationManager;
+import com.google.enterprise.connector.adgroups.MutableIdentity;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -94,7 +95,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
       final AuthenticationIdentity identity) throws RepositoryLoginException,
       RepositoryException {
     if (adGroupsAuthenticationManager != null) {
-      return authenticateAgainstActiveDirectory(identity);
+      return authenticateAgainstActiveDirectory(new MutableIdentity(identity));
     } else {
       return authenticateAgainstSharepoint(identity);
     }
