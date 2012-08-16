@@ -207,16 +207,20 @@ public class UserGroupsService implements LdapService {
       try {
         ctx = new InitialLdapContext(env, null);
       } catch (CommunicationException e) {
-        errors.put(LdapConnectionError.CommunicationException, e.getCause().toString());
+        errors.put(LdapConnectionError.CommunicationException,
+            e.getCause() != null ? e.getCause().toString() : null);
         LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a communication failure.", e);
       } catch (AuthenticationNotSupportedException e) {
-        errors.put(LdapConnectionError.AuthenticationNotSupportedException, e.getCause().toString());
+        errors.put(LdapConnectionError.AuthenticationNotSupportedException,
+            e.getCause() != null ? e.getCause().toString() : null);
         LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication not supported exception.", e);
       } catch (AuthenticationException ae) {
-        errors.put(LdapConnectionError.AuthenticationFailedException, ae.getCause().toString());
+        errors.put(LdapConnectionError.AuthenticationFailedException,
+            ae.getCause() != null ? ae.getCause().toString() : null);
         LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication exception.", ae);
       } catch (NamingException e) {
-        errors.put(LdapConnectionError.NamingException, e.getCause().toString());
+        errors.put(LdapConnectionError.NamingException,
+            e.getCause() != null ? e.getCause().toString() : null);
         LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a naming exception.", e);
       }
       if (ctx == null) {
