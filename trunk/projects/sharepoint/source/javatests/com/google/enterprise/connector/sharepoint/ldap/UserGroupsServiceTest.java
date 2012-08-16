@@ -22,6 +22,8 @@ import static org.junit.Assert.assertTrue;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
+import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
@@ -208,6 +210,20 @@ public class UserGroupsServiceTest {
   public void testLdapEscape() {
     assertEquals("\\2a\\28\\29\\5c\\00\\2f", this.userGroupsService.ldapEscape("*()\\\0/"));
     assertEquals("Group, Name \\28Comment\\29", this.userGroupsService.ldapEscape("Group, Name (Comment)"));
+  }
+
+  @Test
+  public void testInvalidCredentials() {
+    LdapConnectionSettings lcs = new LdapConnectionSettings(Method.STANDARD,
+        TestConfiguration.ldapServerHostAddress,
+        TestConfiguration.portNumber,
+        TestConfiguration.searchBase,
+        AuthType.SIMPLE,
+        TestConfiguration.username,
+        TestConfiguration.Password + "invalidatepassword",
+        TestConfiguration.ldapDomainName);
+    // we are testing if NPE is thrown, no asserts needed
+    LdapConnection l = new LdapConnection(lcs);
   }
 
   /**
