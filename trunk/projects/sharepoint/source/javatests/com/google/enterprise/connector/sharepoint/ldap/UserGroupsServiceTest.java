@@ -210,13 +210,6 @@ public class UserGroupsServiceTest {
     assertEquals("Group, Name \\28Comment\\29", this.userGroupsService.ldapEscape("Group, Name (Comment)"));
   }
 
-  @Test
-  public void testGetGroupDNForTheGroup() {
-    assertEquals("Domain Users", this.userGroupsService.getGroupDNForTheGroup("CN=Domain Users,CN=Users,DC=example,DC=com"));
-    assertEquals("Group, Name (Comment)", this.userGroupsService.getGroupDNForTheGroup("CN=Group\\, Name (Comment),CN=Users,DC=example,DC=com"));
-    assertEquals("no comma", this.userGroupsService.getGroupDNForTheGroup("no comma"));
-  }
-
   /**
    * @throws java.lang.Exception
    */
