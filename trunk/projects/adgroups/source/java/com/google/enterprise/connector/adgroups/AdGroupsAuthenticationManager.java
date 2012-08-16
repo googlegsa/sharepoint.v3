@@ -120,13 +120,15 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
               password)) {
         return new AuthenticationResponse(false, "", null);
       }
-      StringBuffer sb = new StringBuffer("Resolved ").append(groups.size())
-          .append(" AD group(s) for user [").append(username).append("]")
-          .append(" domain [").append(domain).append("]: ");
-      for (Principal group : groups) {
-        sb.append("[").append(group.getName()).append("] ");
+      if (LOGGER.isLoggable(Level.INFO)) {
+        StringBuffer sb = new StringBuffer("Resolved ").append(groups.size())
+            .append(" AD group(s) for user [").append(username).append("]")
+            .append(" domain [").append(domain).append("]: ");
+        for (Principal group : groups) {
+          sb.append("[").append(group.getName()).append("] ");
+        }
+        LOGGER.info(sb.toString());
       }
-      LOGGER.info(sb.toString());
       if (identity instanceof MutableIdentity) {
         MutableIdentity mutable = (MutableIdentity) identity;
         mutable.setDomain((String) user.get(AdConstants.DB_NETBIOSNAME));
