@@ -779,7 +779,7 @@ public class UserGroupsService implements LdapService {
     if (null != searchUser && null != lugCacheStore) {
       if (lugCacheStore.getSize() > 0
           && lugCacheStore.contains(searchUser.toLowerCase())) {
-        userGroupsMap = lugCacheStore.get(searchUser);
+        userGroupsMap = lugCacheStore.get(searchUser.toLowerCase());
         if (null != userGroupsMap) {
           allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
           allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));

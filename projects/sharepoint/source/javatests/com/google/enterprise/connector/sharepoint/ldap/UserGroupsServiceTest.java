@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.ldap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +29,7 @@ import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapCon
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.Principal;
 
 import org.junit.After;
@@ -224,6 +226,28 @@ public class UserGroupsServiceTest {
         TestConfiguration.ldapDomainName);
     // we are testing if NPE is thrown, no asserts needed
     LdapConnection l = new LdapConnection(lcs);
+  }
+
+  @Test
+  public void testUppercaseUserInCacheStore() throws SharepointException {
+    String searchUser1 = TestConfiguration.searchUser1;
+
+    // perform search twice so the second time is from the cache
+    userGroupsService.getAllGroupsForSearchUser(sharepointClientContext, searchUser1);
+
+    // Try uppercase retrieval
+    Set<Principal> groupsUppercaseRetrieval =
+        userGroupsService.getAllGroupsForSearchUser(
+            sharepointClientContext,
+            searchUser1.toUpperCase());
+    assertTrue(groupsUppercaseRetrieval.size() > 0);
+
+    // Try lowercase retrieval
+    Set<Principal> groupsLowercaseRetrieval =
+        userGroupsService.getAllGroupsForSearchUser(
+            sharepointClientContext,
+            searchUser1.toLowerCase());
+    assertTrue(groupsLowercaseRetrieval.size() > 0);
   }
 
   /**
