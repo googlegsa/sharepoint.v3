@@ -24,8 +24,10 @@ import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
 
 import junit.framework.TestCase;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -122,6 +124,64 @@ public class AdGroupsConnectorTest extends TestCase {
 
       runUsernameTest("Lowercase domain",
           am, username, domain.toLowerCase(), TestConfiguration.d1password);
+    }
+  }
+
+  public void testGroupDeletion() throws Exception {
+    for (String dbType : TestConfiguration.dbs.keySet()) {
+      // setup active directory and create user
+      AdTestServer ad = new AdTestServer(
+          Method.SSL, 
+          TestConfiguration.d1hostname, 
+          TestConfiguration.d1port,
+          TestConfiguration.d1principal,
+          TestConfiguration.d1password);
+      ad.initialize();
+      String ou = TestConfiguration.testOu + "_groupdeletion";
+      ad.deleteOu(ou);
+      ad.createOu(ou);
+      Set<String> names = new HashSet<String>();
+      List<AdTestEntity> namespace = new ArrayList<AdTestEntity>();
+      Random random = new Random(TestConfiguration.seed);
+      AdTestEntity group = new AdTestEntity(names, namespace, random, 1);
+      AdTestEntity user = new AdTestEntity(names, namespace, random);
+      ad.createGroup(false, group, ou);
+      ad.createUser(false, user, ou);
+      user.memberOf.add(group);
+      group.children.add(user);
+      ad.setMembers(false, group);
+
+      // crawl the active directory
+      AdGroupsConnector con = new AdGroupsConnector();
+      con.setMethod("SSL");
+      con.setHostname(TestConfiguration.d1hostname);
+      con.setPort(Integer.toString(TestConfiguration.d1port));
+      con.setPrincipal(TestConfiguration.d1principal);
+      con.setPassword(TestConfiguration.d1password);
+      con.setDataSource(dbType, TestConfiguration.dbs.get(dbType));
+      Session s = con.login();
+      s.getTraversalManager().startTraversal();
+
+      // delete the group
+      ad.deleteEntity(group);
+
+      // recrawl the active directory
+      s.getTraversalManager().resumeTraversal("");
+
+      // get groups for the created user
+      AuthenticationResponse response = s.getAuthenticationManager()
+          .authenticate(new SimpleAuthenticationIdentity(user.sAMAccountName));
+
+      @SuppressWarnings("unchecked") Collection<Principal> principals =
+          (Collection<Principal>) response.getGroups();
+      assertNotNull(principals);
+      assertTrue(principals.size() > 0);
+
+      String groupname = ad.getnETBIOSName() + "\\" + group.sAMAccountName;
+
+      for (Principal principal : principals) {
+        assertFalse("Not deleted group", principal.getName().equals(groupname));
+      }
     }
   }
 
