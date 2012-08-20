@@ -122,6 +122,9 @@ public class AdTestServer extends AdServer {
     }
   }
 
+  public void deleteEntity(AdTestEntity entity) throws Exception {
+    ldapContext.destroySubcontext(entity.getDn());
+  }
   public void generateUsersAndGroups(boolean prepared, String rootOu,
       Random random, int groupCount, int userCount) throws Exception {
     names = new HashSet<String>(groupCount + userCount);
