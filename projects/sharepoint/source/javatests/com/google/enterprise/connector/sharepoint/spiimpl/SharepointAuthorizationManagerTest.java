@@ -120,6 +120,7 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 
     Set<String> docids = new HashSet<String>();
     docids.add(TestConfiguration.SearchDocID4);
+    docids.add(TestConfiguration.SearchDocID114);
     docids.add(TestConfiguration.SearchDocID115);
     docids.add(TestConfiguration.SearchDocID116);
     docids.add(TestConfiguration.searchDocID117);

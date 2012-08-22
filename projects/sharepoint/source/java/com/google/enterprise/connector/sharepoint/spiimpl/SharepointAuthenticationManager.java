@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.adgroups.AdGroupsAuthenticationManager;
+import com.google.enterprise.connector.adgroups.MutableIdentity;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -94,9 +95,34 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
       final AuthenticationIdentity identity) throws RepositoryLoginException,
       RepositoryException {
     if (adGroupsAuthenticationManager != null) {
-      return authenticateAgainstActiveDirectory(identity);
+      return authenticateAgainstActiveDirectory(new MutableIdentity(identity));
     } else {
       return authenticateAgainstSharepoint(identity);
+    }
+  }
+  
+  /**
+   * Returns the search user name after changing its format to the user name
+   * format specified by the connector administrator during connector
+   * configuration.
+   *
+   * @param userName
+   * @param domain
+   */
+  private String addUserNameFormatForTheSearchUser(final String userName,
+      final String domain) {
+    String format = this.sharepointClientContext.getUsernameFormatInAce();
+    LOGGER.config("Username format in ACE : " + format);
+    String domainToUse = (Strings.isNullOrEmpty(domain)) ?
+        this.sharepointClientContext.getDomain() : domain;
+        LOGGER.log(Level.FINE, "domainToUse [ " + domainToUse
+            + " ], input domain [ " + domain + " ]. "); 
+    if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+      return Util.getUserNameAtDomain(userName, domainToUse);
+    } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+      return Util.getUserNameWithDomain(userName, domainToUse);
+    } else {
+      return userName;
     }
   }
 
@@ -113,15 +139,13 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 
     @SuppressWarnings("unchecked")
     Collection<Principal> adGroups =
-    (Collection<Principal>) adAuthResult.getGroups();
-    String domain =
-    		adGroupsAuthenticationManager.getNetBiosNameForUser(identity);
-   
+        (Collection<Principal>) adAuthResult.getGroups();
+    String strUserName =
+        addUserNameFormatForTheSearchUser(identity.getUsername(), identity.getDomain());
     Set<Principal> spGroups = sharepointClientContext
         .getUserDataStoreDAO().getSharePointGroupsForSearchUserAndLdapGroups(
             sharepointClientContext.getGoogleLocalNamespace(), adGroups,
-            domain + SPConstants.DOUBLEBACKSLASH
-            + identity.getUsername());
+            strUserName);
 
     Collection<Principal> groups = new ArrayList<Principal>();
     groups.addAll(adGroups);
@@ -163,15 +187,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
 
     // If domain is not received as part of the authentication request, use
     // the one from SharePointClientContext
-    // dnsroot to netbios conversion is required only when PushAcls is true
-    // This code will be executed only when connector is configured for
-    // late binding (PushAcls = false) Other scenario to cover is when
-    // oldldapbehavior is true and connector is configured to feed ACLs.
-    // If domain name contains "." char, it will be treated as dnsroot name
-    // and it will be replaced with connector domain. Group resolution will
-    // work only if connector is configured using netbios name.    
-    if ((domain == null) || (domain.length() == 0) ||
-        ((domain.indexOf(".") > -1) && sharepointClientContext.isPushAcls())) {
+    if ((domain == null) || (domain.length() == 0)) {
       domain = sharepointClientContext.getDomain();
     }
 

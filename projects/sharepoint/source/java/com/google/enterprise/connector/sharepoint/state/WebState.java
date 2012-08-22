@@ -57,9 +57,8 @@ public class WebState implements StatefulObject {
 
   // By default mark all web state as exisitng when they are created.
   private boolean exists = true;
-  // Flag indicating Web Application Policy Change. Default is true
-  // so that web application policy is processed as part of initial crawl.
-  private boolean webApplicationPolicyChange = true;
+  // Flag indicating Web Application Policy Change. Default is false;
+  private boolean webApplicationPolicyChange = false;
 
   private TreeSet<ListState> allListStateSet = new TreeSet<ListState>();
   private final Map<String, ListState> keyMap = new HashMap<String, ListState>();

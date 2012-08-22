@@ -207,16 +207,20 @@ public class UserGroupsService implements LdapService {
       try {
         ctx = new InitialLdapContext(env, null);
       } catch (CommunicationException e) {
-        errors.put(LdapConnectionError.CommunicationException, e.getCause().toString());
+        errors.put(LdapConnectionError.CommunicationException,
+            e.getCause() != null ? e.getCause().toString() : null);
         LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a communication failure.", e);
       } catch (AuthenticationNotSupportedException e) {
-        errors.put(LdapConnectionError.AuthenticationNotSupportedException, e.getCause().toString());
+        errors.put(LdapConnectionError.AuthenticationNotSupportedException,
+            e.getCause() != null ? e.getCause().toString() : null);
         LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication not supported exception.", e);
       } catch (AuthenticationException ae) {
-        errors.put(LdapConnectionError.AuthenticationFailedException, ae.getCause().toString());
+        errors.put(LdapConnectionError.AuthenticationFailedException,
+            ae.getCause() != null ? ae.getCause().toString() : null);
         LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to authentication exception.", ae);
       } catch (NamingException e) {
-        errors.put(LdapConnectionError.NamingException, e.getCause().toString());
+        errors.put(LdapConnectionError.NamingException,
+            e.getCause() != null ? e.getCause().toString() : null);
         LOGGER.log(Level.WARNING, "Could not obtain an initial context to query LDAP (Active Directory) due to a naming exception.", e);
       }
       if (ctx == null) {
@@ -650,10 +654,11 @@ public class UserGroupsService implements LdapService {
     }
     return groupNames;
   }
-  
+
   /**
    * Retrieves sAMAccountNames for list of entities
-   * @param groups list of distinguishedNames of all groups to resolve
+   * @param distinguishedNames set of distinguishedNames of all groups
+   *     to resolve
    * @return sAMAccountName for each of the entities
    */
   Set<String> getSAMAccountNames(Set<String> distinguishedNames) {
@@ -774,7 +779,7 @@ public class UserGroupsService implements LdapService {
     if (null != searchUser && null != lugCacheStore) {
       if (lugCacheStore.getSize() > 0
           && lugCacheStore.contains(searchUser.toLowerCase())) {
-        userGroupsMap = lugCacheStore.get(searchUser);
+        userGroupsMap = lugCacheStore.get(searchUser.toLowerCase());
         if (null != userGroupsMap) {
           allUserGroups.addAll(userGroupsMap.get(SPConstants.ADGROUPS));
           allUserGroups.addAll(userGroupsMap.get(SPConstants.SPGROUPS));

@@ -121,6 +121,14 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       spGroups.add(
           new Principal(PrincipalType.UNQUALIFIED, localNamespace, groupName));
     }
+    if (LOGGER.isLoggable(Level.INFO)) {
+      StringBuffer sb = new StringBuffer("Resolved ").append(spGroups.size())
+          .append(" SP group(s): ");
+      for (Principal spGroup : spGroups) {
+        sb.append(spGroup.getName()).append(", ");
+      }
+      LOGGER.info(sb.delete(sb.length() - 2, sb.length()).toString());
+    }
     return spGroups;
   }
 
@@ -152,8 +160,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       throw new SharepointException("Query execution failed while getting "
           + "the membership info of a given user and AD groups.", t);
     }
-    LOGGER.log(Level.INFO, memberships.size()
-        + " Memberships identified for LDAP directory groups in User Data Store.");
     if (null == groups) {
       ldapGroups.remove(searchUser);
     } else {
