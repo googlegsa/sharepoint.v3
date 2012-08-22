@@ -1,0 +1,3 @@
+# Set the value of this property to point to the directory where the Connector Manager SPI jars can be found
+# eg: CONNECTOR_MANAGER_DIR=../../../CM/trunk/connector-manager
+CONNECTOR_MANAGER_DIR=

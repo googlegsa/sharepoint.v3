@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+  <bean id="Active_Directory_Groups"
+    class="com.google.enterprise.connector.adgroups.AdGroupsConnector"
+    parent="Active_Directory_Groups_Defaults" singleton="false" init-method="init">
+
+    <!-- THE FOLLOWING COMMENTED-SECTION SHOULD BE USED ONLY FOR ADVANCED CONFIGURATION OF THE SHAREPOINT CONNECTOR.
+      YOU MAY DELETE THE COMMENT TAGS AND MAKE NECESSARY CHANGES IN THE INCLUDED_METADATA, EXCLUDED_METADATA AND FQDN-CONVERSION PROPERTIES -->
+
+  </bean>
+</beans>
