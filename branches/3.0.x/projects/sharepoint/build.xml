@@ -370,6 +370,17 @@
     </zip>
     <checksum algorithm="SHA-1"
               file="${downloads.dir}/${downloads.prefix}.zip" />
+
+    <!-- Preserve the existing file name and directory layout. -->
+    <property name="gss.prefix"
+              value="Google_Services_for_SharePoint_${svn.branch}" />
+    <zip destfile="${downloads.dir}/${gss.prefix}.zip">
+      <zipfileset dir="" prefix="${gss.prefix}">
+        <include name="source_net/**" />
+      </zipfileset>
+    </zip>
+    <checksum algorithm="SHA-1"
+              file="${downloads.dir}/${gss.prefix}.zip" />
   </target>
 
   <target name="clean" depends="clean_code_coverage" description="Deletes files produced by compile and test.">

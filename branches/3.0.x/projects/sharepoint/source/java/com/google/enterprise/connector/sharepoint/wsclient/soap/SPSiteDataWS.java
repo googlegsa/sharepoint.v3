@@ -471,7 +471,7 @@ public class SPSiteDataWS implements SiteDataWS {
         sWebMetadata.value.getAuthor(), SPConstants.SITE, webState.getTitle(),
         sharepointClientContext.getFeedType(), webState.getSharePointType());
     HttpMethodBase method = null;
-    String strUrl = siteDataDocument.getUrl();
+    String strUrl = Util.encodeURL(siteDataDocument.getUrl());
     try {
       method = new HeadMethod(strUrl);
       int responseCode =

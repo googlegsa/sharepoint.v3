@@ -485,9 +485,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       throws RepositoryException {
     if (!sharepointClientContext.isPushAcls() &&
         documentType == DocumentType.ACL) {
-      LOGGER.log(Level.FINE, "Skipping properties for Document [" + url
-          + "] as DocumentType is ACL and PushAcls is false");
-      return null;
+      throw new SkippedDocumentException(
+          "This should not happen here, isToBeFed() = " + isToBeFed()
+          + ". Skipping document [" + url
+          + "] as DocumentType is ACL and PushAcls is false.");
     }
     final Collator collator = Util.getCollator();
     if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENTURL)) {

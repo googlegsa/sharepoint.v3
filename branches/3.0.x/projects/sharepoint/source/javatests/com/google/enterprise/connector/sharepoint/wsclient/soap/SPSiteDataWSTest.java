@@ -22,6 +22,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 
 import java.net.MalformedURLException;
 import java.util.List;
@@ -76,4 +77,35 @@ public class SPSiteDataWSTest extends TestCase {
     assertEquals(TestConfiguration.userNameFormat2, author);
     assertEquals("Site", objectType);
   }
+  
+  public void testGetSiteDataWithUtf() throws Exception {
+    final GlobalState state = new GlobalState(clientFactory,
+        TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
+    WebState ws = state.makeWebState(sharepointClientContext,
+        TestConfiguration.UTF8SiteUrl);
+    final SPDocument document = this.siteDataWS.getSiteData(ws);
+    assertNotNull(document);
+    // document Type should be null. For Publishing sites it will be ACL.
+    assertNull(document.getDocumentType());
+    String author = document.getAuthor().toLowerCase();
+    String objectType = document.getObjType();
+    assertEquals(TestConfiguration.userNameFormat2, author);
+    assertEquals("Site", objectType);
+  }
+  
+  public void testGetSiteDataPublishingSite() throws Exception {
+    final GlobalState state = new GlobalState(clientFactory,
+        TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
+    WebState ws = state.makeWebState(sharepointClientContext,
+        TestConfiguration.publishingSiteUrl + SPConstants.DEFAULT_SITE_LANDING_PAGE);
+    final SPDocument document = this.siteDataWS.getSiteData(ws);
+    assertNotNull(document);
+    // document Type should be null. For Publishing sites it will be ACL.
+    assertEquals(DocumentType.ACL,document.getDocumentType());
+    String author = document.getAuthor().toLowerCase();
+    String objectType = document.getObjType();
+    assertEquals(TestConfiguration.userNameFormat2, author);
+    assertEquals("Site", objectType);
+  }
+  
 }

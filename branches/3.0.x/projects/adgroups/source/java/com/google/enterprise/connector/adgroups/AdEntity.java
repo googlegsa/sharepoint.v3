@@ -60,8 +60,10 @@ public class AdEntity {
     objectGUID =
         getTextGuid((byte[]) getAttribute(attrs, AdConstants.ATTR_OBJECTGUID));
     sid = getTextSid((byte[]) getAttribute(attrs, AdConstants.ATTR_OBJECTSID));
-    uSNChanged = Long.parseLong(
-        (String) getAttribute(attrs, AdConstants.ATTR_USNCHANGED));
+    String s = (String) getAttribute(attrs, AdConstants.ATTR_USNCHANGED);
+    if (s != null) {
+      uSNChanged = Long.parseLong(s);
+    }
     primaryGroupId =
         (String) getAttribute(attrs, AdConstants.ATTR_PRIMARYGROUPID);
     userPrincipalName = (String) getAttribute(attrs, AdConstants.ATTR_UPN);
@@ -118,9 +120,12 @@ public class AdEntity {
    * representation. Text version is used to avoid dealing with different BLOB
    * types between databases.
    * @param objectSid binary array with the SID
-   * @return textual representation of SID
+   * @return textual representation of SID or null
    */
   public static String getTextSid(byte[] objectSid) {
+    if (objectSid == null) {
+      return null;
+    }
     StringBuilder strSID = new StringBuilder(AdConstants.SID_START);
     long version = objectSid[0];
     strSID.append(Long.toString(version));

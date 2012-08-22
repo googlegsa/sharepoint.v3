@@ -212,27 +212,37 @@
     </jar>
   </target>
 
-  <target name="make-downloads-dir">
-    <mkdir dir="${downloads.dir}" />
-  </target>
-
-  <target name="download-adgroups-connector" depends="jar,javadoc,make-downloads-dir">
-
+  <target name="download-adgroups-connector" depends="jar,javadoc">
     <property name="downloads.prefix"
-              value="${downloads.dir}/connector-adgroups-${svn.branch}" />
+              value="connector-adgroups-${svn.branch}" />
 
-    <zip destfile="${downloads.prefix}-src.zip" basedir="."
-      includes="javadoc/**/*, config/**/*, License/**/*, source/**/*, build.xml, Build_ReadMe.txt, COPYING, README, RELEASE_NOTES" />
-    <checksum algorithm="SHA-1" file="${downloads.prefix}-src.zip" />
-
-    <zip destfile="${downloads.prefix}.zip">
-      <zipfileset dir="." includes="README,RELEASE_NOTES,License/**/*,Scripts,lib/**/*" excludes="License/dev,lib/dev,License/dev/**/*,lib/dev/**/*"/>
-      <zipfileset dir="." includes="COPYING" prefix="License" />
-      <zipfileset dir="config/" includes="logging.properties" fullpath="config/logging.properties" />
-      <zipfileset dir="${jar.dir}" includes="connector-adgroups.jar" fullpath="connector-adgroups.jar" />
+    <zip destfile="${downloads.dir}/${downloads.prefix}-src.zip">
+      <zipfileset dir="." prefix="${downloads.prefix}">
+        <include name="javadoc/**" />
+        <include name="config/**" />
+        <include name="source/**" />
+        <include name="build.xml" />
+        <include name="COPYING" />
+        <include name="RELEASE_NOTES" />
+      </zipfileset>
     </zip>
-    <checksum algorithm="SHA-1" file="${downloads.prefix}.zip" />
+    <checksum algorithm="SHA-1"
+              file="${downloads.dir}/${downloads.prefix}-src.zip" />
 
+    <zip destfile="${downloads.dir}/${downloads.prefix}.zip">
+      <zipfileset dir="." prefix="${downloads.prefix}">
+        <include name="RELEASE_NOTES" />
+      </zipfileset>
+      <zipfileset dir="." prefix="${downloads.prefix}/License">
+        <include name="COPYING" />
+      </zipfileset>
+      <zipfileset dir="config" prefix="${downloads.prefix}/config">
+        <include name="logging.properties" />
+      </zipfileset>
+      <zipfileset file="${jarfile}" prefix="${downloads.prefix}" />
+    </zip>
+    <checksum algorithm="SHA-1"
+              file="${downloads.dir}/${downloads.prefix}.zip" />
   </target>
 
   <target name="clean" depends="clean_code_coverage" description="Deletes files produced by compile and test.">
