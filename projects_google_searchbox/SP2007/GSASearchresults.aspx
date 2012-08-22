@@ -1116,14 +1116,13 @@ else if(document.attachEvent)
                                         // Add the other cookies to the cookie container
                                         HttpContext.Current.Response.Cookies.Add(responseCookies);
                                     }
-                                    
-                                    responseCookies = null;
 
                                     /*Cookie Information*/
                                     gProps.log("Cookie Name= " + objResp.Cookies[j].Name
                                         + "| Value= " + objResp.Cookies[j].Value
                                         + "| Domain= " + objReq.RequestUri.Host
                                         + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
+                                    responseCookies = null;                                    
                                 }
                             }//end if condition for SAML
                             // ********************************************

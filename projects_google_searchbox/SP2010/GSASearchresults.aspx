@@ -116,7 +116,7 @@ div.ms-areaseparatorright{
             public bool BLOCK_LOGGING = false;            
             
             /*
-             * The default location points to the 12 hive location where SharePoint usually logs all its messages
+             * The default location points to the 14 hive location where SharePoint usually logs all its messages
              * User can always override this location and point to a different location.
              */
             public const String DEFAULT_LOG_LOCATION = @"C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\";
@@ -1149,14 +1149,13 @@ else if(document.attachEvent)
                                     // Add the other cookies to the cookie containe
                                     HttpContext.Current.Response.Cookies.Add(responseCookies);
                                 }
-                                
-                                responseCookies = null;
 
                                 /*Cookie Information*/
                                 gProps.log("Cookie Name= " + objResp.Cookies[j].Name
                                     + "| Value= " + objResp.Cookies[j].Value
                                     + "| Domain= " + objReq.RequestUri.Host
                                     + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
+                                responseCookies = null;                                
                             }                         
                          }//end if condition for SAML
                         // ********************************************
