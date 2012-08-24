@@ -184,6 +184,51 @@ public class AdGroupsConnectorTest extends TestCase {
       }
     }
   }
+  
+  public void testUserRenames() throws Exception {
+    for (String dbType : TestConfiguration.dbs.keySet()) {
+      // Initialize AD
+      AdTestServer ad = new AdTestServer(
+          Method.SSL, 
+          TestConfiguration.d1hostname, 
+          TestConfiguration.d1port,
+          TestConfiguration.d1principal,
+          TestConfiguration.d1password);
+
+      ad.initialize();
+      String ou = TestConfiguration.testOu + "_userrenames";
+      ad.deleteOu(ou);
+      ad.createOu(ou);
+      Set<String> names = new HashSet<String>();
+      List<AdTestEntity> namespace = new ArrayList<AdTestEntity>();
+      Random random = new Random(TestConfiguration.seed);
+      AdTestEntity user = new AdTestEntity(names, namespace, random);
+      // create the user
+      ad.createUser(false, user, ou);
+
+      // crawl AD
+      AdGroupsConnector con = new AdGroupsConnector();
+      con.setMethod("SSL");
+      con.setHostname(TestConfiguration.d1hostname);
+      con.setPort(Integer.toString(TestConfiguration.d1port));
+      con.setPrincipal(TestConfiguration.d1principal);
+      con.setPassword(TestConfiguration.d1password);
+      con.setDataSource(dbType, TestConfiguration.dbs.get(dbType));
+      Session s = con.login();
+      s.getTraversalManager().startTraversal();
+
+      // rename user
+      ad.renameEntity(user, "new commonName");
+
+      // recrawl AD
+      s.getTraversalManager().resumeTraversal("");
+
+      assertTrue("Authentication successful for renamed user", 
+          s.getAuthenticationManager().authenticate(
+              new SimpleAuthenticationIdentity(
+                  user.sAMAccountName, TestConfiguration.password)).isValid());
+    }
+  }
 
   public void testScalability() throws Exception {
     AdTestServer ad = new AdTestServer(
