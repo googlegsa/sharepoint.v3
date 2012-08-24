@@ -105,6 +105,10 @@ public class AdTestServer extends AdServer {
     }
   }
 
+  public void renameEntity(AdTestEntity e, String newName) throws Exception {
+    ldapContext.rename(e.getDn(), e.getDn().replace(e.commonName, newName));
+  }
+
   public void createGroup(boolean prepared, AdTestEntity group, String ou)
       throws Exception {
     BasicAttributes attrs = new BasicAttributes();
