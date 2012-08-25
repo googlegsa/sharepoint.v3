@@ -112,6 +112,8 @@ public class SharepointConnector implements Connector,
   private UserProfileServiceFactory userProfileServiceFactory;
   private AdGroupsConnector adGroupsConnector;
   private boolean oldLdapBehavior = false;
+  private int socialFullTraversalInterval = 7;
+  
 
   /**
    * Describes whether user profiles are fetched.
@@ -510,6 +512,8 @@ public class SharepointConnector implements Connector,
       adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
       adGroupsConnector.init();
     }
+    sharepointClientContext.setSocialFullTraversalInterval(
+        this.socialFullTraversalInterval);
   }
 
   /**
@@ -1005,5 +1009,14 @@ public class SharepointConnector implements Connector,
    */
   public void setGroupResolutionBatchSize(int groupResolutionBatchSize) {
     this.groupResolutionBatchSize = groupResolutionBatchSize;
+  }
+
+  public int getSocialFullTraversalInterval() {
+    return socialFullTraversalInterval;
+  }
+
+  public void setSocialFullTraversalInterval(
+      int socialFullTraversalInterval) {
+    this.socialFullTraversalInterval = socialFullTraversalInterval;
   }
 }

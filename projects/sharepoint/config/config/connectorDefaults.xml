@@ -98,6 +98,15 @@
     in resolution of all SharePoint Groups.
   -->
   <property name="groupResolutionBatchSize"><value>5000</value></property> 
+  <!--
+    socialFullTraversalInterval is used to specify interval in
+	number of days to perform automatic full traversal of user profiles.
+	Default value is 7. socialFullTraversalInterval = 0 will
+	cause full traversal of User Profiles during each traversal cycle.
+	socialFullTraversalInterval < 0 will always perform
+	incremental traversal and no automatic full traversal.
+  -->
+  <property name="socialFullTraversalInterval"><value>7</value></property>
 
     <property name="queryProvider" ref="queryProvider" />
     <property name="userGroupMembershipRowMapper" ref="userGroupMembershipRowMapper" />
