@@ -106,6 +106,8 @@ public class SharepointClientContext implements Cloneable {
   private int largeACLThreshold = 500;
   /** Batch Size for SP Group Resolution. **/
   private int groupResolutionBatchSize = 5000;
+  
+  private int socialFullTraversalInterval = 7;
 
   private int webServiceTimeOut = 300000;
   private int initialCacheSize;
@@ -1176,6 +1178,15 @@ public class SharepointClientContext implements Cloneable {
    */
   public void setGroupResolutionBatchSize(int groupResolutionBatchSize) {
     this.groupResolutionBatchSize = groupResolutionBatchSize;
+  }
+
+  public int getSocialFullTraversalInterval() {
+    return socialFullTraversalInterval;
+  }
+
+  public void setSocialFullTraversalInterval(
+      int socialFullTraversalInterval) {
+    this.socialFullTraversalInterval = socialFullTraversalInterval;
   }
  
 }
