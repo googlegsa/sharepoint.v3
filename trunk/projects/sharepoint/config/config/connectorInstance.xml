@@ -94,15 +94,15 @@
     <property name="groupResolutionBatchSize"><value>5000</value></property>
   -->
  <!--
-    socialFullTraversalInterval is used to specify interval in
+    userProfileFullTraversalInterval is used to specify interval in
 	number of days to perform automatic full traversal of user profiles.
-	Default value is 7. socialFullTraversalInterval = 0 will
+	Default value is 7. userProfileFullTraversalInterval = 0 will
 	cause full traversal of User Profiles during each traversal cycle.
-	socialFullTraversalInterval < 0 will always perform
+	userProfileFullTraversalInterval < 0 will always perform
 	incremental traversal and no automatic full traversal.
   -->
   <!--
-    <property name="socialFullTraversalInterval"><value>7</value></property>
+  <property name="userProfileFullTraversalInterval"><value>7</value></property>
   -->
   <!--
   <property name="infoPathBaseTemplate">

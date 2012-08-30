@@ -157,9 +157,8 @@ public class SharepointSocialClientContext {
   public String getUserProfileCollection() {
     return userProfileCollection;
   }
- 
-  public int getFullTraversalIntervalInDays() {
-    return this.spClientContext.getSocialFullTraversalInterval();
-  }
 
+  public int getFullTraversalIntervalInDays() {
+    return this.spClientContext.getUserProfileFullTraversalInterval();
+  }
 }
