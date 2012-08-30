@@ -178,7 +178,7 @@ public class GSAclWSTest extends TestCase {
           equalsIgnoreCase(TestConfiguration.SearchDocID404)) {
         // Search Doc ID 404 - Item Inside Folder with 
         // Inheriting permissions.
-        checkInheritPermissions(document, TestConfiguration.SearchDocID403);
+        checkInheritPermissions(document, TestConfiguration.SearchDocID410);
       } else if (document.getUrl().
           equalsIgnoreCase(TestConfiguration.SearchDocID405)) {
         // Search Doc ID 405 - Attachment for List item with 
