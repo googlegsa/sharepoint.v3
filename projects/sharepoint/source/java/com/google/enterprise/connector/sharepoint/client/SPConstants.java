@@ -449,6 +449,8 @@ public class SPConstants {
   public static final String GROUPNAME_FORMAT_IN_ACE = "Groupname Format in ACE";
   public static final String CONNECT_METHOD_STANDARD_HELP = "connectMethodStandard_help";
   public static final String CONNECT_METHOD_SSL_HELP = "connectMethodSSL_help";
+  public static final String LDAP_CONFIGURATION_SETTINGS =
+      "ldapConfigurationSettings";
   public static final String LDAP_SERVER_HOST_ADDRESS = "ldapServerHostAddress";
   public static final String PORT_NUMBER = "portNumber";
   public static final String SEARCH_BASE = "searchBase";
@@ -583,7 +585,6 @@ public class SPConstants {
   public static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
   public static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
   public static final String UDS_COLUMN_USER_NAME = "SPUserName";
-  public static final String HELP_SOCIAL_OPTION = "SocialOptionHelp";
 
   public static class SPBasePermissions {
     public static final String EMPTYMASK = "EmptyMask";

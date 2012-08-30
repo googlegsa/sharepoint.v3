@@ -724,7 +724,7 @@ public class SharepointConnectorType implements ConnectorType {
           buf.append(SPConstants.BREAK_LINE);
           buf.append(SPConstants.TR_START + SPConstants.TD_START
               + SPConstants.START_BOLD);
-          buf.append("LDAP Configuration Settings");
+          buf.append(rb.getString(SPConstants.LDAP_CONFIGURATION_SETTINGS));
           buf.append(SPConstants.END_BOLD);
         } else {
           buf.append(SPConstants.OPEN_ELEMENT);
