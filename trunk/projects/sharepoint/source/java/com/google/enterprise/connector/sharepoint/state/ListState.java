@@ -840,12 +840,6 @@ public class ListState implements StatefulObject {
           String id = match.group();
           startPos = match.start();
           endPos = match.end();
-          if (((startPos > 0) && (idPart.charAt(startPos - 1) == SPConstants.SLASH_CHAR))
-              || ((endPos < idPart.length()) && (idPart.charAt(endPos) == '~'))) {
-            continue;
-            // This is a folder ID and we do not need send any feed
-            // for folders.
-          }
           id = id.substring(1);
           if (Util.isNumeric(id)) {
             depIds.add(id);
