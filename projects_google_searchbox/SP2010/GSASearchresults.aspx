@@ -1102,6 +1102,18 @@ else if(document.attachEvent)
                                             newcc.Add(responseCookies);
                                         }
 
+                                        if (name == "GSA_SESSION_ID")
+                                        {
+                                            // TODO : This is a special handling in this page to forward GSA_SESSION_ID Cookie
+                                            // Needs to be taken care when moving this code to common module.
+                                            HttpCookie cDummy = new HttpCookie("GSA_SESSION_ID");                                           
+                                            cDummy.Value = HttpUtility.UrlEncode(value, utf8);
+                                            cDummy.Domain = HttpContext.Current.Request.Url.Host;
+                                            cDummy.Expires = DateTime.Now.AddDays(1);
+                                            HttpContext.Current.Response.Cookies.Add(cDummy);
+                                            gProps.log("Added Dummy Cookie GSA_SESSION_ID=" + value, LOG_LEVEL.INFO); 
+                                        }
+
                                         /*Cookie Information*/
                                         gProps.log("Cookie Name= " + responseCookies.Name
                                             + "| Value= " + value

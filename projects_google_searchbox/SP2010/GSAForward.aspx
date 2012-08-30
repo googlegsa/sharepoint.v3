@@ -660,6 +660,11 @@
       System.Net.ServicePointManager.Expect100Continue = false;
       // Create an HTTP request to the composed GSA URL.
       HttpWebRequest fwdHttpReq = (HttpWebRequest)WebRequest.Create(gsaUrl);
+
+      CookieContainer cc = null;
+      cc = gsaHelper.SetCookies(cc, HttpContext.Current.Request.Cookies, fwdHttpReq.RequestUri.Host);
+      fwdHttpReq.CookieContainer = cc;
+     
       if (HttpContext.Current.Request.HttpMethod == "POST")
       {
           // If this is a POST request then copy the body and required request
@@ -710,6 +715,8 @@
               HttpContext.Current.Response.BinaryWrite(buffer);
           }
       }
+      // Arun : This is to doc preview to work.
+      HttpContext.Current.Response.Headers.Remove("Transfer-Encoding");
       Response.Cache.SetCacheability(HttpCacheability.NoCache);
       HttpContext.Current.Response.StatusCode = (int)response.StatusCode;
       HttpContext.Current.Response.End(); 
