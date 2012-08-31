@@ -156,7 +156,9 @@ public class GSAclWS implements AclWS{
     }
     try {
       result = stub.getAclForUrlsUsingInheritance(urls, useInheritance,
-          includePolicyAcls, sharepointClientContext.getLargeACLThreshold());
+          includePolicyAcls, sharepointClientContext.getLargeACLThreshold(),
+          sharepointClientContext.getFeedType().equals(
+              FeedType.METADATA_URL_FEED));
     } catch (final AxisFault af) {
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (sharepointClientContext.getDomain() != null)) {
@@ -166,7 +168,9 @@ public class GSAclWS implements AclWS{
         stub.setUsername(username);
         try {
           result = stub.getAclForUrlsUsingInheritance(urls, useInheritance,
-              includePolicyAcls, sharepointClientContext.getLargeACLThreshold());
+              includePolicyAcls, sharepointClientContext.getLargeACLThreshold(),
+              sharepointClientContext.getFeedType().equals(
+                  FeedType.METADATA_URL_FEED));
         } catch (final Exception e) {
           LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
               + endpoint + " ].", e);

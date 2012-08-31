@@ -55,7 +55,10 @@ public class SharepointConnectorTypeTest extends TestCase {
   public void testValidateConfig() {
     final ConfigureResponse configRes =
         sharepointConnectorType.validateConfig(configMap, Locale.ENGLISH, null);
-    assertNull(configRes);
+    if (configRes != null) {
+      fail("Expected null but got: " + configRes.getMessage() + "\n"
+          + configRes.getFormSnippet());
+    }
   }
 
   public void testGetConfigForm() {
@@ -85,26 +88,41 @@ public class SharepointConnectorTypeTest extends TestCase {
   }
 
   private void checkForExpectedFields(final String configForm) {
+    // TODO: This works but it's self-referential: the value of "keys"
+    // here comes from TestConfiguration and not connectorType.xml.
+    for (String key : keys) {
+      assertFind("<(input|textarea|select).*id=\""+key+"\".*>", configForm);
+    }
+
+    // TODO: If we get canonical keys above, we don't need the rest of this.
     assertFind("<input.*id=\"sharepointUrl\".*>", configForm);
-    assertFind("<textarea.*id=\"excludedURls\".*>", configForm);
-    assertFind("<input.*id=\"aliasMap\".*>", configForm);
-    assertFind("<textarea.*id=\"includedURls\".*>", configForm);
+    assertFind("<input.*id=\"kdcserver\".*>", configForm);
     assertFind("<input.*id=\"domain\".*>", configForm);
     assertFind("<input.*id=\"username\".*>", configForm);
+    assertFind("<input.*id=\"password\".*>", configForm);
     assertFind("<input.*id=\"mySiteBaseURL\".*>", configForm);
-    assertFind("<input.*id=\"authorization\".*>", configForm);
+    assertFind("<textarea.*id=\"includedURls\".*>", configForm);
+    assertFind("<textarea.*id=\"excludedURls\".*>", configForm);
+    assertFind("<input.*id=\"aliasMap\".*>", configForm);
     assertFind("<input.*id=\"useSPSearchVisibility\".*>", configForm);
+    assertFind("<input.*id=\"feedUnPublishedDocuments\".*>", configForm);
+    assertFind("<input.*id=\"authorization\".*>", configForm);
     assertFind("<input.*id=\"pushAcls\".*>", configForm);
     assertFind("<input.*id=\"appendNamespaceInSPGroup\".*>", configForm);
     assertFind("<select.*id=\"usernameFormatInAce\".*>", configForm);
     assertFind("<select.*id=\"groupnameFormatInAce\".*>", configForm);
     assertFind("<input.*id=\"ldapServerHostAddress\".*>", configForm);
     assertFind("<input.*id=\"portNumber\".*>", configForm);
+    assertFind("<input.*id=\"searchBase\".*>", configForm);
     assertFind("<select.*id=\"authenticationType\".*>", configForm);
     assertFind("<select.*id=\"connectMethod\".*>", configForm);
     assertFind("<input.*id=\"useCacheToStoreLdapUserGroupsMembership\".*>", configForm);
     assertFind("<input.*id=\"initialCacheSize\".*>", configForm);
     assertFind("<input.*id=\"cacheRefreshInterval\".*>", configForm);
+    assertFind("<input.*id=\"socialOption\".*>", configForm);
+    assertFind("<input.*id=\"userProfileCollection\".*>", configForm);
+    assertFind("<input.*id=\"gsaAdminUser\".*>", configForm);
+    assertFind("<input.*id=\"gsaAdminPassword\".*>", configForm);
   }
 
   private void checkForDisabledFields(final String configForm) {

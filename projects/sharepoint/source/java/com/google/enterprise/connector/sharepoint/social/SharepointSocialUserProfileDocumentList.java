@@ -18,6 +18,7 @@ import com.google.common.base.Strings;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.util.SystemClock;
 
 import java.rmi.RemoteException;
 import java.util.logging.Logger;
@@ -53,11 +54,13 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
   final static Logger LOGGER = SharepointSocialConnector.LOGGER;
   public static final String CHECKPOINT_PREFIX = "sp_userprofile";
   private final SharepointUserProfileConnection service;
+  private long lastFullSync = 0L;
 
   public static class UserProfileCheckpoint {
     private int offset;
     private int profileCount;
     private boolean none; // no checkpoint
+    private long lastFullSync = 0L;
 
     public UserProfileCheckpoint() {
       this.none = true;
@@ -76,12 +79,13 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
         this.none = true;
       } else {
         String[] parts = checkpoint.split(",");
-        if ((parts.length != 3) || (!parts[0].equals(CHECKPOINT_PREFIX))) {
+        if ((parts.length != 4) || (!parts[0].equals(CHECKPOINT_PREFIX))) {
           // no or invalid checkpoint
           this.none = true;
         } else {
           offset = Integer.parseInt(parts[1]);
           profileCount = Integer.parseInt(parts[2]);
+          lastFullSync = Long.parseLong(parts[3]);
         }
       }
     }
@@ -97,6 +101,10 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
     public boolean isNoCheckpoint() {
       return none;
     }
+    
+    public long getLastFullSync() {
+      return lastFullSync;
+    }
 
   }
 
@@ -109,11 +117,15 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
     } catch (RemoteException e) {
       throw new RepositoryException(e);
     }
-    if (checkpoint.none || (checkpoint.profileCount != profileCount)) {
+    if (checkpoint.none) {
       offset = 0;
     } else {
-      offset = checkpoint.offset;
+      // This is incremental crawl.Since connector has processed user
+      // profile at checkpoint.offset value in previous crawl cycle,
+      // setting offset value to next user profile at checkpoint.offset + 1
+      offset = checkpoint.offset + 1;
     }
+    lastFullSync = checkpoint.getLastFullSync();
   }
 
   /**
@@ -127,13 +139,19 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
 
   @Override
   public String checkpoint() throws RepositoryException {
-    return CHECKPOINT_PREFIX + "," + Integer.toString(offset) + ","
-        + Integer.toString(profileCount);
+    return CHECKPOINT_PREFIX + "," + offset + ","
+        + profileCount + "," + lastFullSync;
   }
 
   @Override
   public Document nextDocument() throws RepositoryException {
-    if (offset >= profileCount) {
+    if (offset > profileCount) {
+      // Synchronizing offset to profile count at end of traversal
+      offset = profileCount;
+      if (lastFullSync == 0L) {
+        // lastFullSync = 0L indicates this was part of full crawl.
+        lastFullSync = new SystemClock().getTimeMillis();
+      }
       return null;
     }
     LOGGER.fine("Returning userprofile at index = " + offset + " of size= "

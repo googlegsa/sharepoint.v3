@@ -625,11 +625,7 @@ public abstract class ListsUtil {
     }
 
     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-      if (fsObjType.equals("1")) {
-        docId = url.toString() + SPConstants.DOC_TOKEN + docId;      
-      } else {
-        docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;
-      }
+      docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;      
     }
     doc = new SPDocument(docId, url.toString(), calMod, author, strObjectType,
         list.getParentWebState().getTitle(),

@@ -34,6 +34,7 @@
             <s:element minOccurs="1" maxOccurs="1" name="bUseInheritance" type="s:boolean" />
             <s:element minOccurs="1" maxOccurs="1" name="bIncludePolicyAcls" type="s:boolean" />
             <s:element minOccurs="1" maxOccurs="1" name="largeAclThreshold" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="bMetaUrlFeed" type="s:boolean" />
           </s:sequence>
         </s:complexType>
       </s:element>
