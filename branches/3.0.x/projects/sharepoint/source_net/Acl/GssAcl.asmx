@@ -827,7 +827,7 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrls(string[] urls)
     {
-        return GetAclForUrlsUsingInheritance(urls, false, true, 0);
+        return GetAclForUrlsUsingInheritance(urls, false, true, 0,false);
     } 
     
     /// <summary>
@@ -838,7 +838,7 @@ public class GssAclMonitor
     /// <param name="bIncludePolicyAcls">flag indicating to include Web Application Policy ACLs</param>
     /// <returns></returns>
     [WebMethod]
-    public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls, Boolean bUseInheritance, Boolean bIncludePolicyAcls, int largeAclThreshold)
+    public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls, Boolean bUseInheritance, Boolean bIncludePolicyAcls, int largeAclThreshold, Boolean bMetaUrlFeed)
     {
         SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
         using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
@@ -960,7 +960,7 @@ public class GssAclMonitor
                             {
                                 acl = new GssAcl(url, 0);
                                 acl.InheritPermissions = "true";
-                                GssAclUtility.GetParentUrl(secobj, strWebappUrl, acl);
+                                GssAclUtility.GetParentUrl(secobj, strWebappUrl, acl, bMetaUrlFeed);
                                 allAcls.Add(acl);
                             }
                         }
@@ -1643,7 +1643,7 @@ public sealed class GssAclUtility
     /// </summary>
     /// <param name="child">ISecurable Object. This can be SPListItem, SPlist or SPWeb</param>
     /// <returns></returns>
-    public static void GetParentUrl(ISecurableObject child, String strSiteUrl, GssAcl aclToUpdate)
+    public static void GetParentUrl(ISecurableObject child, String strSiteUrl, GssAcl aclToUpdate, Boolean bMetaUrlFeed)
     {      
         if (child == null)
         {
@@ -1664,17 +1664,20 @@ public sealed class GssAclUtility
                 }
                 if (oFile != null)
                 {
+                    aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;                    
                     //To check if Item is available at root level or inside folder
                     if (String.Compare(oFile.ParentFolder.ServerRelativeUrl, oChildItem.ParentList.RootFolder.ServerRelativeUrl, true) == 0)
                     {
-                        //If item is available at root level (outside folder) return default view URL for SPList (same URL is being used in ListState by connector)
-                        aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
+                        //If item is available at root level (outside folder) return default view URL for SPList (same URL is being used in ListState by connector)                       
                         aclToUpdate.ParentId = String.Format("{{{0}}}", oChildItem.ParentList.ID.ToString());
                     }
                     else
                     {
-                        //If item is available inside folder return folder Url. Other option is to return DefaultView url with rootfolder parameter
-                        aclToUpdate.ParentUrl = strSiteUrl + oFile.ParentFolder.ServerRelativeUrl;
+                        //If item is available inside folder then return folder Url in case of meta url feeds.
+                        if (bMetaUrlFeed)
+                        {
+                            aclToUpdate.ParentUrl = strSiteUrl + oFile.ParentFolder.ServerRelativeUrl;
+                        }
                         aclToUpdate.ParentId = oFile.ParentFolder.Item.ID.ToString();
                     }
                 }

@@ -45,7 +45,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -223,10 +223,10 @@ public class TestConfiguration {
   private static String gsaAdmin;
   private static String gsaAdminPassword;
   private static String socialOption;
-  
+
   //UTF-8 support
   public static String UTF8SiteUrl;
-  
+
   //publishing site
   public static String publishingSiteUrl;
 
@@ -424,31 +424,36 @@ public class TestConfiguration {
   }
 
   public static Map<String, String> getConfigMap() {
-    final Map<String, String> configMap = new HashMap<String, String>();
+    // TODO: We should check this against the keys in connectorType.xml.
+    // Using a LinkedHashMap to preserve ordering.
+    final Map<String, String> configMap = new LinkedHashMap<String, String>();
 
     configMap.put("sharepointUrl", sharepointUrl);
-    configMap.put("aliasMap", AliasMap);
-    configMap.put("domain", domain);
     configMap.put("kdcserver", kdcserver);
+    configMap.put("domain", domain);
     configMap.put("username", username);
     configMap.put("password", Password);
     configMap.put("mySiteBaseURL", mySiteBaseURL);
     configMap.put("includedURls", includedURls);
     configMap.put("excludedURls", excludedURls);
+    configMap.put("aliasMap", AliasMap);
+    configMap.put("useSPSearchVisibility",
+        Boolean.toString(useSPSearchVisibility));
+    configMap.put("feedUnPublishedDocuments", "true");
     configMap.put("authorization", authorization);
-    configMap.put("useSPSearchVisibility", Boolean.toString(useSPSearchVisibility));
     configMap.put("pushAcls", Boolean.toString(pushAcls));
+    configMap.put("appendNamespaceInSPGroup", appendNamespaceInSPGroup);
     configMap.put("usernameFormatInAce", usernameFormatInAce);
     configMap.put("groupnameFormatInAce", groupnameFormatInAce);
     configMap.put("ldapServerHostAddress", ldapServerHostAddress);
     configMap.put("portNumber", Integer.toString(portNumber));
+    configMap.put("searchBase", searchBase);
     configMap.put("authenticationType", authenticationType);
     configMap.put("connectMethod", connectMethod);
-    configMap.put("searchBase", searchBase);
-    configMap.put("appendNamespaceInSPGroup", appendNamespaceInSPGroup);
+    configMap.put("useCacheToStoreLdapUserGroupsMembership",
+        Boolean.toString(useCacheToStoreLdapUserGroupsMembership));
     configMap.put("initialCacheSize", initialCacheSize);
     configMap.put("cacheRefreshInterval", cacheRefreshInterval);
-    configMap.put("useCacheToStoreLdapUserGroupsMembership", Boolean.toString(useCacheToStoreLdapUserGroupsMembership));
     configMap.put(SPConstants.SOCIAL_OPTION, socialOption);
     configMap.put(SPConstants.SOCIAL_USER_PROFILE_COLLECTION, "");
     configMap.put(SPConstants.GSAADMINUSER, gsaAdmin);

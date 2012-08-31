@@ -18,7 +18,9 @@ import com.google.enterprise.connector.sharepoint.social.SharepointSocialUserPro
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalManager;
+import com.google.enterprise.connector.util.SystemClock;
 
+import java.rmi.RemoteException;
 import java.util.logging.Logger;
 
 /**
@@ -56,17 +58,80 @@ public class SharepointSocialTraversalManager implements TraversalManager {
     LOGGER.info("Starting traversal: SharepointSocial");
     SharepointUserProfileConnection cxn;
     cxn = new SharepointUserProfileConnection(ctxt);
-    UserProfileCheckpoint profileCheckpoint = new UserProfileCheckpoint(
-        checkpoint);
-    if ((!profileCheckpoint.isNoCheckpoint())
-        && (profileCheckpoint.getOffset() >= profileCheckpoint.getProfileCount())) {
-      return null; // end of traverse
+    UserProfileCheckpoint profileCheckpoint;
+    int fullTraversalIntervalInDays = ctxt.getFullTraversalIntervalInDays();
+    LOGGER.info(
+        "fullTraversalIntervalInDays = " + fullTraversalIntervalInDays);
+    if (fullTraversalIntervalInDays == 0) {
+      LOGGER.info(
+          "Connector configured to perform full crawl each cycle");
+      profileCheckpoint = new UserProfileCheckpoint(null);
+    } else if (fullTraversalIntervalInDays < 0) {
+      LOGGER.info(
+          "Connector not configured to perform full crawl automatically.");
+      profileCheckpoint = new UserProfileCheckpoint(checkpoint);
+    } else {
+      UserProfileCheckpoint existingProfileCheckpoint =
+          new UserProfileCheckpoint(checkpoint);
+      // TODO: For manual testing this value can me modified to test various
+      // scenarios. Other option is to modify connector checkpoint value
+      // and restart CM for new value to take effect.
+      long fullTraversalInterval =
+          fullTraversalIntervalInDays * 24 * 60 * 60 * 1000L;
+      long currentTime = new SystemClock().getTimeMillis();      
+      if (existingProfileCheckpoint.getLastFullSync() > 0L) {
+        // Perform this check only if initial crawl is done and
+        // LastFullSync value is available.
+        if ((currentTime - existingProfileCheckpoint.getLastFullSync())
+            > fullTraversalInterval) {
+          LOGGER.info(
+              "Performing full crawl for social connector "
+                  + "as Full Traversal Interval elapsed.");
+          profileCheckpoint = new UserProfileCheckpoint(null);
+        } else {
+          LOGGER.info(
+              "Performing incremental crawl with available checkpoint.");
+          profileCheckpoint = existingProfileCheckpoint;
+        }
+      } else {
+        LOGGER.info(
+            "Part of Initial crawl. " 
+                + "Performing incremental crawl with available checkpoint.");
+        profileCheckpoint = existingProfileCheckpoint;
+      }      
     }
-    SharepointSocialUserProfileDocumentList docList = new SharepointSocialUserProfileDocumentList(
-        cxn, profileCheckpoint);
-    LOGGER
-        .info("SharepointSocialDocumentList for UserProfiles created and returned");
+    if (checkpointAtEnd(profileCheckpoint, cxn)) {
+      return null;
+    }
+    SharepointSocialUserProfileDocumentList docList =
+        new SharepointSocialUserProfileDocumentList(
+            cxn, profileCheckpoint);
+    LOGGER.info(
+        "SharepointSocialDocumentList for UserProfiles created and returned");
     return docList;
   }
-
+  
+  private boolean checkpointAtEnd (UserProfileCheckpoint profileCheckpoint,
+      SharepointUserProfileConnection cxn) throws RepositoryException {
+    if (!profileCheckpoint.isNoCheckpoint()) {
+      int profileCount = 0;
+      try {
+        profileCount = cxn.openConnection();
+      } catch (RemoteException e) {
+        throw new RepositoryException(e);
+      }
+      if (profileCheckpoint.getOffset() >= profileCount) {
+        // Since offset is greater than or equal to profile count assumption is
+        // connector has discovered all profiles. This may not be true always
+        // since deletion of User profiles will result in change in count and
+        // connector might miss few profiles (maximum number of 
+        // missing new profiles equals to number of deletions).
+        // Periodic Full sync will take care of this scenario.
+        // TODO: Handle deletes.
+        return true;
+      } 
+    }
+    return false;
+  }  
 }
+

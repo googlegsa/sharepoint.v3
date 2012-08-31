@@ -116,7 +116,7 @@ div.ms-areaseparatorright{
             public bool BLOCK_LOGGING = false;            
             
             /*
-             * The default location points to the 12 hive location where SharePoint usually logs all its messages
+             * The default location points to the 14 hive location where SharePoint usually logs all its messages
              * User can always override this location and point to a different location.
              */
             public const String DEFAULT_LOG_LOCATION = @"C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\";
@@ -1102,6 +1102,18 @@ else if(document.attachEvent)
                                             newcc.Add(responseCookies);
                                         }
 
+                                        if (name == "GSA_SESSION_ID")
+                                        {
+                                            // TODO : This is a special handling in this page to forward GSA_SESSION_ID Cookie
+                                            // Needs to be taken care when moving this code to common module.
+                                            HttpCookie cDummy = new HttpCookie("GSA_SESSION_ID");                                           
+                                            cDummy.Value = HttpUtility.UrlEncode(value, utf8);
+                                            cDummy.Domain = HttpContext.Current.Request.Url.Host;
+                                            cDummy.Expires = DateTime.Now.AddDays(1);
+                                            HttpContext.Current.Response.Cookies.Add(cDummy);
+                                            gProps.log("Added Dummy Cookie GSA_SESSION_ID=" + value, LOG_LEVEL.INFO); 
+                                        }
+
                                         /*Cookie Information*/
                                         gProps.log("Cookie Name= " + responseCookies.Name
                                             + "| Value= " + value
@@ -1149,14 +1161,13 @@ else if(document.attachEvent)
                                     // Add the other cookies to the cookie containe
                                     HttpContext.Current.Response.Cookies.Add(responseCookies);
                                 }
-                                
-                                responseCookies = null;
 
                                 /*Cookie Information*/
                                 gProps.log("Cookie Name= " + objResp.Cookies[j].Name
                                     + "| Value= " + objResp.Cookies[j].Value
                                     + "| Domain= " + objReq.RequestUri.Host
                                     + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
+                                responseCookies = null;                                
                             }                         
                          }//end if condition for SAML
                         // ********************************************

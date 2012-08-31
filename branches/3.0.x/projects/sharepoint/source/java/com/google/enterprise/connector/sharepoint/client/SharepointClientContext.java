@@ -101,11 +101,13 @@ public class SharepointClientContext implements Cloneable {
 
   private boolean fetchACLInBatches = false;
   private int aclBatchSizeFactor = 2;
-  
+
   /** Threshold value to identify large ACLs. **/
   private int largeACLThreshold = 500;
   /** Batch Size for SP Group Resolution. **/
   private int groupResolutionBatchSize = 5000;
+
+  private int userProfileFullTraversalInterval = 7;
 
   private int webServiceTimeOut = 300000;
   private int initialCacheSize;
@@ -1149,7 +1151,7 @@ public class SharepointClientContext implements Cloneable {
   public UserProfileServiceFactory getUserProfileServiceFactory() {
     return userProfileServiceFactory;
   }
-  
+
   /**
    * @return the large ACL Threshold.
    */
@@ -1177,5 +1179,13 @@ public class SharepointClientContext implements Cloneable {
   public void setGroupResolutionBatchSize(int groupResolutionBatchSize) {
     this.groupResolutionBatchSize = groupResolutionBatchSize;
   }
- 
+
+  public int getUserProfileFullTraversalInterval() {
+    return userProfileFullTraversalInterval;
+  }
+
+  public void setUserProfileFullTraversalInterval(
+      int userProfileFullTraversalInterval) {
+    this.userProfileFullTraversalInterval = userProfileFullTraversalInterval;
+  }
 }

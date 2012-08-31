@@ -300,6 +300,8 @@ public class SharepointConnectorType implements ConnectorType {
         }
 
         if (collator.equals(key, SPConstants.SOCIAL_OPTION)) {
+          //TODO : Enable Yes option back after fixing b/7048149
+          /*
           buf.append(SPConstants.BREAK_LINE);
           buf.append(SPConstants.OPEN_ELEMENT);
           buf.append(SPConstants.INPUT);
@@ -313,7 +315,7 @@ public class SharepointConnectorType implements ConnectorType {
           }
           buf.append(" /" + SPConstants.CLOSE_ELEMENT);
           buf.append(rb.getString(SPConstants.SOCIAL_OPTION_YES));
-
+          */
           buf.append(SPConstants.BREAK_LINE);
           buf.append(SPConstants.OPEN_ELEMENT);
           buf.append(SPConstants.INPUT);
@@ -722,7 +724,7 @@ public class SharepointConnectorType implements ConnectorType {
           buf.append(SPConstants.BREAK_LINE);
           buf.append(SPConstants.TR_START + SPConstants.TD_START
               + SPConstants.START_BOLD);
-          buf.append("LDAP Configuration Settings");
+          buf.append(rb.getString(SPConstants.LDAP_CONFIGURATION_SETTINGS));
           buf.append(SPConstants.END_BOLD);
         } else {
           buf.append(SPConstants.OPEN_ELEMENT);

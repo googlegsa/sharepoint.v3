@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
@@ -34,6 +35,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.WsUtil;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 import org.apache.axis.client.Call;
+import org.apache.axis.transport.http.HTTPTransport;
 
 import java.net.MalformedURLException;
 import java.util.Calendar;
@@ -94,7 +96,13 @@ public class SPListsWSTest extends TestCase {
     // A call to Call.initialize is required to reset the Axis HTTP transport
     // back to the orginal set by Axis.
     Call.initialize();
-}
+  }
+
+  public void tearDown() throws Exception {
+    // Reset the Axis transport protocol back to HTTP. This is needed
+    // since some tests change the Axis transport protocol to a file.
+    Call.setTransportForProtocol("http", HTTPTransport.class);
+  }
 
   public final void testListsWS() throws Throwable {
     System.out.println("Testing SPListsWS(SharepointClientContext, siteName)...");
@@ -262,10 +270,75 @@ public class SPListsWSTest extends TestCase {
     assertTrue(items.size() > 0);
   }
 
-  private List getSite1TestListChangesSinceToken() throws SharepointException {
+  private List<SPDocument> getSite1TestListChangesSinceToken()
+      throws SharepointException {
     sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
     listsHelper = new ListsHelper(sharepointClientContext);
-    assertNotNull(listsHelper);
     return listsHelper.getListItemChangesSinceToken(testList, null);
+  }
+
+  /**
+   * Verifies that the connector can load the supported characters.
+   */
+  public final void testSupportedCharacters() throws Throwable {
+    Call.setTransportForProtocol("http", FileTransport.class);
+    FileTransport.setResponseFileName("source/javatests/data/unicode-chars.xml");
+
+    // The SAX client factory is registered by the SharepointClient constructor 
+    // so we need to create a new instance of SharepointClient.
+    SharepointClient sharepointClient = new SharepointClient(clientFactory,
+        sharepointClientContext);
+
+    List<SPDocument> items = getSite1TestListChangesSinceToken();
+    assertNotNull(items);
+    assertTrue(items.size() > 0);
+    
+    SPDocument doc = getGetDocumentFromListById(items, 1);
+    assertNotNull(doc);
+    String docTitle = getDocStringAttribute(doc, "Title");
+    assertNotNull(docTitle);
+    assertEquals(92, docTitle.length());
+    assertEquals(0, docTitle.indexOf('!'));
+    assertEquals(28, docTitle.indexOf('A'));
+    assertEquals(89, docTitle.indexOf('~'));
+    assertEquals(90, docTitle.indexOf('\u2013'));
+    assertEquals(91, docTitle.indexOf('\u2014'));
+
+    doc = getGetDocumentFromListById(items, 2);
+    assertNotNull(doc);
+    docTitle = getDocStringAttribute(doc, "Title");
+    assertNotNull(docTitle);
+    assertEquals(95, docTitle.length());
+    assertEquals(0, docTitle.indexOf('\u00A1'));
+    assertEquals(37, docTitle.indexOf('\u00C6'));
+    assertEquals(94, docTitle.indexOf('\u00FF'));
+
+    doc = getGetDocumentFromListById(items, 3);
+    assertNotNull(doc);
+    docTitle = getDocStringAttribute(doc, "Title");
+    assertNotNull(docTitle);
+    assertEquals(66, docTitle.length());
+    assertEquals(0, docTitle.indexOf('\u0410'));
+    assertEquals(32, docTitle.indexOf('\u042F'));
+    assertEquals(65, docTitle.indexOf('\u044F'));
+  }
+
+  private SPDocument getGetDocumentFromListById(List<SPDocument> docs,
+      int docId) {
+    for (SPDocument doc : docs) {
+      if (doc.getDocId().endsWith("|" + docId)) {
+        return doc;
+      }
+    }
+    return null;
+  }
+
+  private String getDocStringAttribute(SPDocument doc, String attrName) {
+    for (Attribute attr : doc.getAllAttrs()) {
+      if (attr.getName().equals(attrName)) {
+        return (String) attr.getValue();
+      }
+    }
+    return null;
   }
 }
