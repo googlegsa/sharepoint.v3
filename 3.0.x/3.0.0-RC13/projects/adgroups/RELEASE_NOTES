@@ -1,0 +1,28 @@
+
+    Google Search Appliance Connector for Active Directory Groups
+                            Release Notes
+
+This document contains the release notes for Google Search Appliance
+Connector for Active Directory Groups. The following sections describe
+the release in detail and provide information that supplements the
+main documentation.
+
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+
+
+Release 3.0.0, Aug 21, 2012
+===========================
+
+Introduction
+------------
+This is the first full release of this product. This connector
+replaces functionality previously provided by the SharePoint
+connector. This connector can be used automatically in conjunction
+with the SharePoint connector as a drop-in replacement for the
+previous functionality, or used separately with other connectors or
+content sources.
+
+Summary of Changes
+------------------
+For a summary of changes see the Release Notes for the Google Search
+Appliance Connector for SharePoint.
