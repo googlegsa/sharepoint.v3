@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -250,6 +251,21 @@ public class UserGroupsServiceTest {
     assertTrue(groupsLowercaseRetrieval.size() > 0);
   }
 
+
+  @Test
+  public void testGetGroupDNForTheGroup() {
+    Set<String> groupNames = new HashSet<String>();
+    groupNames.add("CN=Domain Users,CN=Users,DC=gsa-connectors,DC=com");
+    groupNames.add("CN=Group\\, Name (Comment),DC=gsa-connectors,DC=com");
+    groupNames.add("CN=Group2_Name (Comment),DC=gsa-connectors,DC=com");
+    groupNames.add("no comma");
+    
+    Set<String> samNames = userGroupsService.getSAMAccountNames(groupNames);
+    assertNotNull(samNames);
+    assertEquals(ImmutableSet.of(
+        "Domain Users", "GrpNmCmt", "Group2_Name (Comment)"), samNames);
+  }
+  
   /**
    * @throws java.lang.Exception
    */
