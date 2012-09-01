@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -99,9 +100,41 @@ public class SharepointConnectorType implements ConnectorType {
   // Create dummy context for doing validations.
   private SharepointClientContext sharepointClientContext = null;
 
-  private List<String> keys = null;
+  private final List<String> configKeys = ImmutableList.<String>builder().add(
+      "sharepointUrl",
+      "kdcserver",
+      "domain",
+      "username",
+      "password",
+      "mySiteBaseURL",
+      "includedURls",
+      "excludedURls",
+      "aliasMap",
+      "sharepointCrawlingOptions",
+      // Tests have useSPSearchVisibility and feedUnPublishedDocuments instead.
+      "authorization",
+      // Push ACLs configuration
+      "pushAcls",
+      // Tests have appendNamespaceInSPGroup
+      "usernameFormatInAce",
+      "groupnameFormatInAce",
+      // ldap configuration
+      "ldapServerHostAddress",
+      "portNumber",
+      "searchBase",
+      "authenticationType",
+      "connectMethod",
+      // LDAP user groups membership cache settings
+      "useCacheToStoreLdapUserGroupsMembership",
+      "initialCacheSize",
+      "cacheRefreshInterval",
+      // gdata connection credential
+      "socialOption",
+      "userProfileCollection",
+      "gsaAdminUser",
+      "gsaAdminPassword"
+    ).build();
   private final HashMap<Object, String> configStrings = new HashMap<Object, String>();
-  private String initialConfigForm = null;
 
   ResourceBundle rb = null;
   public static final String GOOGLE_CONN_WORK_DIR = "googleConnectorWorkDir";
@@ -143,22 +176,6 @@ public class SharepointConnectorType implements ConnectorType {
     this.clientFactory = clientFactory;
   }
 
-/**
-   * Sets the keys that are required for configuration. These are the actual
-   * keys used by the class.
-   *
-   * @param inKeys
-   *          A list of String keys
-   */
-  public void setConfigKeys(final List<String> inKeys) {
-    if (keys != null) {
-      throw new IllegalStateException();
-    }
-    if (inKeys != null) {
-      keys = inKeys;
-    }
-  }
-
   /**
    * Sets the display strings for the configuration form depending on the
    * language settings.
@@ -166,9 +183,8 @@ public class SharepointConnectorType implements ConnectorType {
   private void setConfigStrings() {
     if (rb != null) {
       // checking the parameters of the resource bundle passed
-      for (int iKey = 0; iKey < keys.size(); ++iKey) {
-        final Object key = keys.get(iKey);
-        configStrings.put(key, rb.getString((String) key));
+      for (String key : configKeys) {
+        configStrings.put(key, rb.getString(key));
       }
       configStrings.put(SPConstants.MANDATORY_FIELDS,
           rb.getString(SPConstants.MANDATORY_FIELDS));
@@ -177,19 +193,6 @@ public class SharepointConnectorType implements ConnectorType {
     } else {
       LOGGER.warning("unable to get resource bundle");
     }
-  }
-
-  /**
-   * Gets the initial/blank form.
-   *
-   * @return HTML form as string
-   */
-  private String getInitialConfigForm() {
-    if (keys == null) {
-      throw new IllegalStateException();
-    }
-    initialConfigForm = makeConfigForm(null, null);
-    return initialConfigForm;
   }
 
   /**
@@ -204,625 +207,52 @@ public class SharepointConnectorType implements ConnectorType {
   private String makeConfigForm(final Map<String, String> configMap,
       final ErrorDignostics ed) {
     final StringBuffer buf = new StringBuffer();
-    if (keys != null) {
-      for (String key : keys) {
-        final String configKey = configStrings.get(key);
+    for (String key : configKeys) {
+      final String configKey = configStrings.get(key);
 
-        if ((ed == null) || !key.equals(ed.error_key)) {
-          appendStartRow(buf, key, configKey, false);
-        } else {
-          appendStartRow(buf, key, configKey, true);
-        }
+      boolean isError = (ed != null) && key.equals(ed.error_key);
+      appendStartRow(buf, key, configKey, isError);
 
-        if (collator.equals(key, SPConstants.ALIAS_MAP)) {
-          appendTableForAliasMapping(buf);
-          if (configMap == null) {
-            appendRowForAliasMapping(buf, SPConstants.BLANK_STRING,
-                SPConstants.BLANK_STRING, false);
-          } else {
-            final String aliasMapString = configMap.get(key);
-            parseAlias(aliasMapString, null);
-            if (aliasMap == null) {
-              appendRowForAliasMapping(buf, SPConstants.BLANK_STRING,
-                  SPConstants.BLANK_STRING, false);
-            } else {
-              final Set<String> aliasValues = aliasMap.keySet();
-              int i = 0;
-              for (final Iterator<String> aliasItr = aliasValues.iterator(); aliasItr
-                  .hasNext();) {
-                final String alias_source_pattern = aliasItr.next();
-                String alias_host_port = "";
-                final ArrayList<String> aliases = aliasMap
-                    .get(alias_source_pattern);
-                if (aliases.size() == 0) {
-                  if (i % 2 == 0) {
-                    appendRowForAliasMapping(buf, SPConstants.BLANK_STRING,
-                        SPConstants.BLANK_STRING, false);
-                  } else {
-                    appendRowForAliasMapping(buf, SPConstants.BLANK_STRING,
-                        SPConstants.BLANK_STRING, true);
-                  }
-                  ++i;
-                } else {
-                  try {
-                    for (final Iterator<String> it = aliases.iterator(); it
-                        .hasNext();) {
-                      alias_host_port = it.next();
-                      if (it.hasNext() || aliasItr.hasNext()) {
-                        if (i % 2 == 0) {
-                          appendRowForAliasMapping(buf, alias_source_pattern,
-                              alias_host_port, false);
-                        } else {
-                          appendRowForAliasMapping(buf, alias_source_pattern,
-                              alias_host_port, true);
-                        }
-                      } else {
-                        if (i % 2 == 0) {
-                          appendRowForAliasMapping(buf, alias_source_pattern,
-                              alias_host_port, false);
-                        } else {
-                          appendRowForAliasMapping(buf, alias_source_pattern,
-                              alias_host_port, true);
-                        }
-                      }
-                      ++i;
-                    }
-                  } catch (final Exception e) {
-                    final String logMessage = "Could not find the alias value for the pattern ["
-                        + alias_source_pattern + "].";
-                    LOGGER.log(Level.WARNING, logMessage, e);
-                  }
-                }
-              }
-            }
-          }
-          buf.append(SPConstants.TR_START);
-          buf.append(SPConstants.TD_START_ADDMRE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.SUBMIT);
-          appendAttribute(buf, SPConstants.VALUE,
-              rb.getString(SPConstants.ADD_MORE));
-          appendAttribute(buf, SPConstants.ONCLICK, "addRow(); return false");
-          buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.TD_END);
-          buf.append(SPConstants.TR_END);
-
-          buf.append(SPConstants.END_TABLE);
-        }
-
-        String value = null;
-        if (configMap != null) {
-          value = configMap.get(key);
-        }
-        if (value == null) {
-          value = "";
-        }
-
-        if (collator.equals(key, SPConstants.SOCIAL_OPTION)) {
-          //TODO : Enable Yes option back after fixing b/7048149
-          /*
-          buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_YES);
-          appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.SOCIAL_OPTION_YES));
-          if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_YES)) {
-            appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
-          }
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.SOCIAL_OPTION_YES));
-          */
-          buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_NO);
-          appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.SOCIAL_OPTION_NO));
-        //Checking radio button for No if value is blank or No or any other value other than Yes and Social Only
-          if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_YES) == false && value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_ONLY) == false ) {
-            appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
-          }
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.SOCIAL_OPTION_NO));
-          buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_ONLY);
-          appendAttribute(buf, SPConstants.TITLE, rb.getString(SPConstants.SOCIAL_OPTION_ONLY));
-          if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_ONLY)) {
-            appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
-          }
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.SOCIAL_OPTION_ONLY));
-        } else if (collator.equals(key, SPConstants.AUTHORIZATION)) {
-
-          buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(buf, SPConstants.VALUE,
-              FeedType.METADATA_URL_FEED.toString());
-          appendAttribute(buf, SPConstants.TITLE,
-              rb.getString(SPConstants.HELP_AUTHZ_BY_GSA));
-          if ((value.length() == 0)
-              || value.equalsIgnoreCase(FeedType.METADATA_URL_FEED.toString())) {
-            appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
-          }
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.AUTHZ_BY_GSA));
-          buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(buf, SPConstants.VALUE,
-              FeedType.CONTENT_FEED.toString());
-          appendAttribute(buf, SPConstants.TITLE,
-              rb.getString(SPConstants.HELP_AUTHZ_BY_CONNECTOR));
-          if (value.equalsIgnoreCase(FeedType.CONTENT_FEED.toString())) {
-            appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
-          }
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.AUTHZ_BY_CONNECTOR));
-        } else if (collator.equals(key, SPConstants.SHAREPOINT_CRAWLING_OPTION)) {
-          // displaying search visibility option
-          String spSearchVisibilityValue = null;
-          String spSearchVisibilityKey = SPConstants.USE_SP_SEARCH_VISIBILITY;
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, spSearchVisibilityKey);
-          appendAttribute(buf, SPConstants.CONFIG_ID, spSearchVisibilityKey);
-          appendAttribute(buf, SPConstants.TITLE,
-              rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_HELP));
-          // The value can be true if its a pre-configured connector
-          // being edited and blank if the default connector form is
-          // being displayed.
-          if (configMap != null) {
-            spSearchVisibilityValue = configMap
-                .get(SPConstants.USE_SP_SEARCH_VISIBILITY);
-          }
-
-          if (spSearchVisibilityValue == null) {
-            spSearchVisibilityValue = "";
-          }
-          if (spSearchVisibilityValue.equalsIgnoreCase("true")
-              || spSearchVisibilityValue.length() == 0) {
-            appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-          }
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          // It allows to select check box using it's label.
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-              + SPConstants.EQUAL_TO + "\""
-              + SPConstants.USE_SP_SEARCH_VISIBILITY + "\""
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
-              + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
-
-          // dispplaying unpublished content feed option
-          String feedUnpublishedContentValue = null;
-          String unpublishedContentKey = SPConstants.FEED_UNPUBLISHED_CONTENT;
-          buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, unpublishedContentKey);
-          appendAttribute(buf, SPConstants.CONFIG_ID, unpublishedContentKey);
-          appendAttribute(buf, SPConstants.TITLE,
-              rb.getString(unpublishedContentKey));
-          if (configMap != null) {
-            feedUnpublishedContentValue = configMap
-                .get(SPConstants.FEED_UNPUBLISHED_CONTENT);
-          }
-          if (feedUnpublishedContentValue == null) {
-            feedUnpublishedContentValue = "";
-          }
-          if (feedUnpublishedContentValue.equalsIgnoreCase("true")
-              || feedUnpublishedContentValue.length() == 0) {
-            appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-          } else {
-            appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
-          }
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          // It allows to select check box using it's label.
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-              + SPConstants.EQUAL_TO + "\""
-              + SPConstants.FEED_UNPUBLISHED_CONTENT + "\""
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
-              + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.BREAK_LINE);
-
-        } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          buf.append(SPConstants.SPACE + SPConstants.STYLE);
-
-          if (editMode) {
-            if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
-              buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                  + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-            }
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
-              + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
-              + "\"");
-          buf.append(SPConstants.AUTHENTICATION_TYPE_SIMPLE);
-          buf.append("\"");
-          if (Strings.isNullOrEmpty(value)
-              || value.equalsIgnoreCase(SPConstants.AUTHENTICATION_TYPE_SIMPLE)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT
-              + SPConstants.AUTHENTICATION_TYPE_SIMPLE);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
-              + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
-              + SPConstants.EQUAL_TO + "\"");
-          buf.append(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
-          buf.append("\"");
-          if (value.equalsIgnoreCase(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT
-              + SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
-              + SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
-        } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          buf.append(SPConstants.SPACE + SPConstants.STYLE);
-          if (editMode) {
-            if ((this.pushAcls == null) || (this.pushAcls.equalsIgnoreCase(SPConstants.OFF))) {
-              buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                  + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-            }
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
-              + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
-              + "\"");
-          buf.append(SPConstants.CONNECT_METHOD_STANDARD);
-          buf.append("\"");
-          if (Strings.isNullOrEmpty(value)
-              || value.equalsIgnoreCase(SPConstants.CONNECT_METHOD_STANDARD)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT
-              + SPConstants.CONNECT_METHOD_STANDARD);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
-              + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
-              + SPConstants.EQUAL_TO + "\"");
-          buf.append(SPConstants.CONNECT_METHOD_SSL);
-          buf.append("\"");
-          if (value.equalsIgnoreCase(SPConstants.CONNECT_METHOD_SSL)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.CONNECT_METHOD_SSL);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
-              + SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
-        } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(buf, SPConstants.TITLE,
-              rb.getString(SPConstants.PUSH_ACLS_LABEL));
-          if (value.equalsIgnoreCase("true") || value.length() == 0) {
-            appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-          } else {
-            appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
-            this.pushAcls = SPConstants.OFF;
-          }
-          buf.append(SPConstants.SPACE + SPConstants.ON_CLICK);
-          buf.append("\"enableFeedAclsRelatedHtmlControls();\"");
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          // It allows to select check box using it's label.
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-              + SPConstants.EQUAL_TO + "\"" + key + "\""
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
-              + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
-        } else if (collator.equals(key,
-            SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
-          buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(
-              buf,
-              SPConstants.TITLE,
-              rb.getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
-          if (value.equalsIgnoreCase("false") || value.length() == 0) {
-            appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
-            if (editMode) {
-              buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                  + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-            }
-          } else {
-            appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
-          }
-
-          buf.append(SPConstants.SPACE + SPConstants.ON_CLICK);
-          buf.append("\"enableOrDisableUserGroupsCacheControls();\"");
-          buf.append(" /" + SPConstants.CLOSE_ELEMENT);
-          // It allows to select check box using it's label.
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
-              + SPConstants.EQUAL_TO + "\"" + key + "\""
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(rb
-              .getString(SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
-              + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
-        } else if ((collator.equals(key, SPConstants.EXCLUDED_URLS))
-            || (collator.equals(key, SPConstants.INCLUDED_URLS))) {
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.TEXTAREA);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          appendAttribute(buf, SPConstants.ROWS, SPConstants.ROWS_VALUE);
-          appendAttribute(buf, SPConstants.COLS, SPConstants.COLS_VALUE);
-          appendAttribute(buf, SPConstants.TEXTBOX_SIZE,
-              SPConstants.TEXTBOX_SIZE_VALUE);
-          buf.append(SPConstants.CLOSE_ELEMENT);
-
-          buf.append(value.replace(SPConstants.SPACE, SPConstants.NEW_LINE));
-
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.END_TEXTAREA);
-          buf.append(SPConstants.CLOSE_ELEMENT);
-        } else if (collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)) {
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          buf.append(SPConstants.SPACE + SPConstants.STYLE);
-          if (editMode) {
-            if ((this.pushAcls == null) || (this.pushAcls.equalsIgnoreCase(SPConstants.OFF))) {
-              buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                  + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-            }
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
-              + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
-              + "\"");
-          buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME);
-          buf.append("\"");
-          if (Strings.isNullOrEmpty(value)
-              || value
-              .equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT
-              + SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
-              + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
-              + SPConstants.EQUAL_TO + "\"");
-          buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME);
-          buf.append("\"");
-          if (value
-              .equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT
-              + SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
-              + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
-              + SPConstants.EQUAL_TO + "\"");
-          buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME);
-          buf.append("\"");
-          if (value
-              .equalsIgnoreCase(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.SPACE + ">"
-              + SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME
-              + SPConstants.SPACE);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
-              + SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
-        } else if (collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
-
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          buf.append(SPConstants.SPACE + SPConstants.STYLE);
-          if (editMode) {
-            if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
-              buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                  + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-            }
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
-          buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
-              + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
-              + "\"");
-          buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME);
-          buf.append("\"");
-          if (value
-              .equalsIgnoreCase(SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT
-              + SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
-              + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
-              + SPConstants.EQUAL_TO + "\"");
-          buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME);
-          buf.append("\"");
-          if (Strings.isNullOrEmpty(value)
-              || value
-              .equalsIgnoreCase(SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(SPConstants.CLOSE_ELEMENT
-              + SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
-              + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
-              + SPConstants.EQUAL_TO + "\"");
-          buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN);
-          buf.append("\"");
-          if (value
-              .equalsIgnoreCase(SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN)) {
-            buf.append(SPConstants.SPACE + SPConstants.SELECTED
-                + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
-          }
-          buf.append(">"
-              + SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN);
-          buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
-              + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
-              + SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
-          buf.append(SPConstants.TD_END);
-          buf.append(SPConstants.TR_END);
-          buf.append(SPConstants.BREAK_LINE);
-          buf.append(SPConstants.TR_START + SPConstants.TD_START
-              + SPConstants.START_BOLD);
-          buf.append(rb.getString(SPConstants.LDAP_CONFIGURATION_SETTINGS));
-          buf.append(SPConstants.END_BOLD);
-        } else {
-          buf.append(SPConstants.OPEN_ELEMENT);
-          buf.append(SPConstants.INPUT);
-          if (collator.equals(key, SPConstants.PASSWORD)
-              || collator.equals(key, SPConstants.GSAADMINPASSWORD)) {
-            appendAttribute(buf, SPConstants.TYPE, SPConstants.PASSWORD);
-          } else if (collator.equals(key, SPConstants.ALIAS_MAP)) {
-            appendAttribute(buf, SPConstants.TYPE, SPConstants.HIDDEN);
-          } else {
-            appendAttribute(buf, SPConstants.TYPE, SPConstants.TEXT);
-          }
-          appendAttribute(buf, SPConstants.CONFIG_NAME, key);
-          appendAttribute(buf, SPConstants.CONFIG_ID, key);
-          if (collator.equals(key, SPConstants.PORT_NUMBER)
-              || collator.equals(key, SPConstants.INITAL_CACHE_SIZE)
-              || collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
-            if (collator.equals(key, SPConstants.PORT_NUMBER)) {
-              if (Strings.isNullOrEmpty(value)) {
-                appendAttribute(buf, SPConstants.VALUE,
-                    SPConstants.LDAP_DEFAULT_PORT_NUMBER);
-              } else if (value
-                  .equalsIgnoreCase(SPConstants.LDAP_DEFAULT_PORT_NUMBER)) {
-                appendAttribute(buf, SPConstants.VALUE,
-                    SPConstants.LDAP_DEFAULT_PORT_NUMBER);
-              } else {
-                appendAttribute(buf, SPConstants.VALUE, value.trim());
-              }
-              if (editMode) {
-                if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
-                  buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                      + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-                }
-              }
-            } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
-              if (Strings.isNullOrEmpty(value)) {
-                if (null == this.useCacheToStoreLdapUserGroupsMembership
-                    || this.useCacheToStoreLdapUserGroupsMembership
-                    .equalsIgnoreCase(SPConstants.OFF)) {
-                  buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                      + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-                }
-                appendAttribute(buf, SPConstants.VALUE,
-                    SPConstants.LDAP_INITIAL_CACHE_SIZE);
-              } else if (value
-                  .equalsIgnoreCase(SPConstants.LDAP_INITIAL_CACHE_SIZE)) {
-                appendAttribute(buf, SPConstants.VALUE,
-                    SPConstants.LDAP_INITIAL_CACHE_SIZE);
-              } else {
-                appendAttribute(buf, SPConstants.VALUE, value);
-              }
-            } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
-              if (Strings.isNullOrEmpty(value)) {
-                if (null == this.useCacheToStoreLdapUserGroupsMembership
-                    || this.useCacheToStoreLdapUserGroupsMembership
-                    .equalsIgnoreCase(SPConstants.OFF)) {
-                  buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                      + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-                }
-                appendAttribute(buf, SPConstants.VALUE,
-                    SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
-              } else if (value
-                  .equalsIgnoreCase(SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME)) {
-                appendAttribute(buf, SPConstants.VALUE,
-                    SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
-              } else {
-                appendAttribute(buf, SPConstants.VALUE, value.trim());
-              }
-            }
-            buf.append(SPConstants.SPACE + SPConstants.ONKEY_PRESS);
-            buf.append("\"return onlyNumbers(event);\"");
-          } else {
-            appendAttribute(buf, SPConstants.VALUE, value);
-          }
-          if (collator.equals(key, SPConstants.SHAREPOINT_URL)
-              || collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
-            appendAttribute(buf, SPConstants.TEXTBOX_SIZE,
-                SPConstants.TEXTBOX_SIZE_VALUE);
-          }
-
-          if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)
-              || collator.equals(key, SPConstants.SEARCH_BASE)) {
-            appendAttribute(buf, SPConstants.TEXTBOX_SIZE,
-                SPConstants.TEXTBOX_SIZE_VALUE);
-            if (editMode) {
-              if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
-                buf.append(SPConstants.SPACE + SPConstants.DISABLED
-                    + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
-              }
-            }
-          }
-
-          buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
-        }
-        buf.append(SPConstants.TD_END);
-        buf.append(SPConstants.TR_END);
+      if (collator.equals(key, SPConstants.ALIAS_MAP)) {
+        addAliasMap(buf, key, configMap);
       }
-    }// end null check
+
+      String value = null;
+      if (configMap != null) {
+        value = configMap.get(key);
+      }
+      if (value == null) {
+        value = "";
+      }
+
+      if (collator.equals(key, SPConstants.SOCIAL_OPTION)) {
+        addSocialOption(value, buf, key);
+      } else if (collator.equals(key, SPConstants.AUTHORIZATION)) {
+        addAuthorization(value, buf, key);
+      } else if (collator.equals(key, SPConstants.SHAREPOINT_CRAWLING_OPTION)) {
+        addSharePointCrawlingOption(value, buf, key, configMap);
+      } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
+        addAuthentication(value, buf, key);
+      } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
+        addConnectMethod(value, buf, key);
+      } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
+        addPushAcls(value, buf, key);
+      } else if (collator.equals(key,
+            SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+        addUseLdapCache(value, buf, key);
+      } else if ((collator.equals(key, SPConstants.EXCLUDED_URLS))
+            || (collator.equals(key, SPConstants.INCLUDED_URLS))) {
+        addUrlPatterns(value, buf, key);
+      } else if (collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)) {
+        addUserFormat(value, buf, key);
+      } else if (collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
+        addGroupFormat(value, buf, key);
+      } else {
+        addTextField(value, buf, key);
+      }
+      buf.append(SPConstants.TD_END);
+      buf.append(SPConstants.TR_END);
+    }
 
     buf.append(SPConstants.START_BOLD);
     buf.append(configStrings.get(SPConstants.MANDATORY_FIELDS));
@@ -831,6 +261,625 @@ public class SharepointConnectorType implements ConnectorType {
     addJavaScript(buf);
 
     return buf.toString();
+  }
+
+  private void addAliasMap(StringBuffer buf, String key,
+      Map<String, String> configMap) {
+    appendTableForAliasMapping(buf);
+    if (configMap == null) {
+      appendRowForAliasMapping(buf, SPConstants.BLANK_STRING,
+          SPConstants.BLANK_STRING, false);
+    } else {
+      final String aliasMapString = configMap.get(key);
+      parseAlias(aliasMapString, null);
+      if (aliasMap == null) {
+        appendRowForAliasMapping(buf, SPConstants.BLANK_STRING,
+            SPConstants.BLANK_STRING, false);
+      } else {
+        final Set<String> aliasValues = aliasMap.keySet();
+        int i = 0;
+        for (final Iterator<String> aliasItr = aliasValues.iterator(); aliasItr
+                 .hasNext();) {
+          final String alias_source_pattern = aliasItr.next();
+          String alias_host_port = "";
+          final ArrayList<String> aliases = aliasMap
+              .get(alias_source_pattern);
+          if (aliases.size() == 0) {
+            if (i % 2 == 0) {
+              appendRowForAliasMapping(buf, SPConstants.BLANK_STRING,
+                  SPConstants.BLANK_STRING, false);
+            } else {
+              appendRowForAliasMapping(buf, SPConstants.BLANK_STRING,
+                  SPConstants.BLANK_STRING, true);
+            }
+            ++i;
+          } else {
+            try {
+              for (final Iterator<String> it = aliases.iterator(); it
+                       .hasNext();) {
+                alias_host_port = it.next();
+                if (it.hasNext() || aliasItr.hasNext()) {
+                  if (i % 2 == 0) {
+                    appendRowForAliasMapping(buf, alias_source_pattern,
+                        alias_host_port, false);
+                  } else {
+                    appendRowForAliasMapping(buf, alias_source_pattern,
+                        alias_host_port, true);
+                  }
+                } else {
+                  if (i % 2 == 0) {
+                    appendRowForAliasMapping(buf, alias_source_pattern,
+                        alias_host_port, false);
+                  } else {
+                    appendRowForAliasMapping(buf, alias_source_pattern,
+                        alias_host_port, true);
+                  }
+                }
+                ++i;
+              }
+            } catch (final Exception e) {
+              final String logMessage =
+                  "Could not find the alias value for the pattern ["
+                  + alias_source_pattern + "].";
+              LOGGER.log(Level.WARNING, logMessage, e);
+            }
+          }
+        }
+      }
+    }
+    buf.append(SPConstants.TR_START);
+    buf.append(SPConstants.TD_START_ADDMRE);
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.SUBMIT);
+    appendAttribute(buf, SPConstants.VALUE,
+        rb.getString(SPConstants.ADD_MORE));
+    appendAttribute(buf, SPConstants.ONCLICK, "addRow(); return false");
+    buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.TD_END);
+    buf.append(SPConstants.TR_END);
+
+    buf.append(SPConstants.END_TABLE);
+  }
+
+  private void addSocialOption(String value, StringBuffer buf, String key) {
+    // TODO : Enable Yes option back after fixing b/7048149
+    /*
+      buf.append(SPConstants.BREAK_LINE);
+      buf.append(SPConstants.OPEN_ELEMENT);
+      buf.append(SPConstants.INPUT);
+      appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+      appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+      appendAttribute(buf, SPConstants.CONFIG_ID, key);
+      appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_YES);
+      appendAttribute(buf, SPConstants.TITLE,
+          rb.getString(SPConstants.SOCIAL_OPTION_YES));
+      if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_YES)) {
+        appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+      }
+      buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+      buf.append(rb.getString(SPConstants.SOCIAL_OPTION_YES));
+    */
+    buf.append(SPConstants.BREAK_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_NO);
+    appendAttribute(buf, SPConstants.TITLE,
+        rb.getString(SPConstants.SOCIAL_OPTION_NO));
+    // Checking radio button for No if value is blank or No or any
+    // other value other than Yes and Social Only.
+    if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_YES) == false
+        && value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_ONLY) == false ) {
+      appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+    }
+    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+    buf.append(rb.getString(SPConstants.SOCIAL_OPTION_NO));
+    buf.append(SPConstants.BREAK_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    appendAttribute(buf, SPConstants.VALUE, SPConstants.SOCIAL_OPTION_ONLY);
+    appendAttribute(buf, SPConstants.TITLE,
+        rb.getString(SPConstants.SOCIAL_OPTION_ONLY));
+    if (value.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_ONLY)) {
+      appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+    }
+    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+    buf.append(rb.getString(SPConstants.SOCIAL_OPTION_ONLY));
+  }
+
+  private void addAuthorization(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.BREAK_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    appendAttribute(buf, SPConstants.VALUE,
+        FeedType.METADATA_URL_FEED.toString());
+    appendAttribute(buf, SPConstants.TITLE,
+        rb.getString(SPConstants.HELP_AUTHZ_BY_GSA));
+    if ((value.length() == 0)
+        || value.equalsIgnoreCase(FeedType.METADATA_URL_FEED.toString())) {
+      appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+    }
+    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+    buf.append(rb.getString(SPConstants.AUTHZ_BY_GSA));
+    buf.append(SPConstants.BREAK_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.RADIO);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    appendAttribute(buf, SPConstants.VALUE, FeedType.CONTENT_FEED.toString());
+    appendAttribute(buf, SPConstants.TITLE,
+        rb.getString(SPConstants.HELP_AUTHZ_BY_CONNECTOR));
+    if (value.equalsIgnoreCase(FeedType.CONTENT_FEED.toString())) {
+      appendAttribute(buf, SPConstants.CHECKED, SPConstants.CHECKED);
+    }
+    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+    buf.append(rb.getString(SPConstants.AUTHZ_BY_CONNECTOR));
+  }
+
+  private void addSharePointCrawlingOption(String value, StringBuffer buf,
+      String key, Map<String, String> configMap) {
+    // displaying search visibility option
+    String spSearchVisibilityValue = null;
+    String spSearchVisibilityKey = SPConstants.USE_SP_SEARCH_VISIBILITY;
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, spSearchVisibilityKey);
+    appendAttribute(buf, SPConstants.CONFIG_ID, spSearchVisibilityKey);
+    appendAttribute(buf, SPConstants.TITLE,
+        rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_HELP));
+    // The value can be true if its a pre-configured connector
+    // being edited and blank if the default connector form is
+    // being displayed.
+    if (configMap != null) {
+      spSearchVisibilityValue =
+          configMap.get(SPConstants.USE_SP_SEARCH_VISIBILITY);
+    }
+
+    if (spSearchVisibilityValue == null) {
+      spSearchVisibilityValue = "";
+    }
+    if (spSearchVisibilityValue.equalsIgnoreCase("true")
+        || spSearchVisibilityValue.length() == 0) {
+      appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+    }
+    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+    // It allows to select check box using it's label.
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+        + SPConstants.EQUAL_TO + "\""
+        + SPConstants.USE_SP_SEARCH_VISIBILITY + "\""
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+        + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
+
+    // dispplaying unpublished content feed option
+    String feedUnpublishedContentValue = null;
+    String unpublishedContentKey = SPConstants.FEED_UNPUBLISHED_CONTENT;
+    buf.append(SPConstants.BREAK_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, unpublishedContentKey);
+    appendAttribute(buf, SPConstants.CONFIG_ID, unpublishedContentKey);
+    appendAttribute(buf, SPConstants.TITLE,
+        rb.getString(unpublishedContentKey));
+    if (configMap != null) {
+      feedUnpublishedContentValue =
+          configMap.get(SPConstants.FEED_UNPUBLISHED_CONTENT);
+    }
+    if (feedUnpublishedContentValue == null) {
+      feedUnpublishedContentValue = "";
+    }
+    if (feedUnpublishedContentValue.equalsIgnoreCase("true")
+        || feedUnpublishedContentValue.length() == 0) {
+      appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+    } else {
+      appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+    }
+    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+    // It allows to select check box using it's label.
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+        + SPConstants.EQUAL_TO + "\""
+        + SPConstants.FEED_UNPUBLISHED_CONTENT + "\""
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+        + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.BREAK_LINE);
+  }
+
+  private void addAuthentication(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    buf.append(SPConstants.SPACE + SPConstants.STYLE);
+
+    if (editMode) {
+      if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+        buf.append(SPConstants.SPACE + SPConstants.DISABLED
+            + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+      }
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
+        + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
+        + "\"");
+    buf.append(SPConstants.AUTHENTICATION_TYPE_SIMPLE);
+    buf.append("\"");
+    if (Strings.isNullOrEmpty(value)
+        || value.equalsIgnoreCase(SPConstants.AUTHENTICATION_TYPE_SIMPLE)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT
+        + SPConstants.AUTHENTICATION_TYPE_SIMPLE);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+        + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
+        + SPConstants.EQUAL_TO + "\"");
+    buf.append(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
+    buf.append("\"");
+    if (value.equalsIgnoreCase(SPConstants.AUTHENTICATION_TYPE_ANONYMOUS)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT
+        + SPConstants.AUTHENTICATION_TYPE_ANONYMOUS);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
+        + SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
+  }
+
+  private void addConnectMethod(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    buf.append(SPConstants.SPACE + SPConstants.STYLE);
+    if (editMode) {
+      if ((this.pushAcls == null)
+          || (this.pushAcls.equalsIgnoreCase(SPConstants.OFF))) {
+        buf.append(SPConstants.SPACE + SPConstants.DISABLED
+            + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+      }
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
+        + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
+        + "\"");
+    buf.append(SPConstants.CONNECT_METHOD_STANDARD);
+    buf.append("\"");
+    if (Strings.isNullOrEmpty(value)
+        || value.equalsIgnoreCase(SPConstants.CONNECT_METHOD_STANDARD)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT
+        + SPConstants.CONNECT_METHOD_STANDARD);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+        + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
+        + SPConstants.EQUAL_TO + "\"");
+    buf.append(SPConstants.CONNECT_METHOD_SSL);
+    buf.append("\"");
+    if (value.equalsIgnoreCase(SPConstants.CONNECT_METHOD_SSL)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.CONNECT_METHOD_SSL);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
+        + SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
+  }
+
+  private void addPushAcls(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    appendAttribute(buf, SPConstants.TITLE,
+        rb.getString(SPConstants.PUSH_ACLS_LABEL));
+    if (value.equalsIgnoreCase("true") || value.length() == 0) {
+      appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+    } else {
+      appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+      this.pushAcls = SPConstants.OFF;
+    }
+    buf.append(SPConstants.SPACE + SPConstants.ON_CLICK);
+    buf.append("\"enableFeedAclsRelatedHtmlControls();\"");
+    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+    // It allows to select check box using it's label.
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+        + SPConstants.EQUAL_TO + "\"" + key + "\""
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+        + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
+  }
+
+  private void addUseLdapCache(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.BREAK_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    appendAttribute(buf, SPConstants.TYPE, SPConstants.CHECKBOX);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    appendAttribute(buf, SPConstants.TITLE, rb.getString(
+            SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
+    if (value.equalsIgnoreCase("false") || value.length() == 0) {
+      appendAttribute(buf, SPConstants.UNCHECKED, Boolean.toString(false));
+      if (editMode) {
+        buf.append(SPConstants.SPACE + SPConstants.DISABLED
+            + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+      }
+    } else {
+      appendAttribute(buf, SPConstants.CHECKED, Boolean.toString(true));
+    }
+
+    buf.append(SPConstants.SPACE + SPConstants.ON_CLICK);
+    buf.append("\"enableOrDisableUserGroupsCacheControls();\"");
+    buf.append(" /" + SPConstants.CLOSE_ELEMENT);
+    // It allows to select check box using it's label.
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.LABEL_FOR
+        + SPConstants.EQUAL_TO + "\"" + key + "\""
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(rb.getString(
+            SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+        + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
+  }
+
+  private void addUrlPatterns(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.TEXTAREA);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    appendAttribute(buf, SPConstants.ROWS, SPConstants.ROWS_VALUE);
+    appendAttribute(buf, SPConstants.COLS, SPConstants.COLS_VALUE);
+    appendAttribute(buf, SPConstants.TEXTBOX_SIZE,
+        SPConstants.TEXTBOX_SIZE_VALUE);
+    buf.append(SPConstants.CLOSE_ELEMENT);
+
+    buf.append(value.replace(SPConstants.SPACE, SPConstants.NEW_LINE));
+
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.END_TEXTAREA);
+    buf.append(SPConstants.CLOSE_ELEMENT);
+  }
+
+  private void addUserFormat(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    buf.append(SPConstants.SPACE + SPConstants.STYLE);
+    if (editMode) {
+      if ((this.pushAcls == null)
+          || (this.pushAcls.equalsIgnoreCase(SPConstants.OFF))) {
+        buf.append(SPConstants.SPACE + SPConstants.DISABLED
+            + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+      }
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
+        + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
+        + "\"");
+    buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME);
+    buf.append("\"");
+    if (Strings.isNullOrEmpty(value)
+        || value.equalsIgnoreCase(
+            SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT
+        + SPConstants.USERNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_USERNAME);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+        + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
+        + SPConstants.EQUAL_TO + "\"");
+    buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME);
+    buf.append("\"");
+    if (value.equalsIgnoreCase(
+            SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT
+        + SPConstants.USERNAME_FORMAT_IN_ACE_USERNAME_AT_DOMAINNAME);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+        + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
+        + SPConstants.EQUAL_TO + "\"");
+    buf.append(SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME);
+    buf.append("\"");
+    if (value.equalsIgnoreCase(
+            SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.SPACE + ">"
+        + SPConstants.USERNAME_FORMAT_IN_ACE_ONLY_USERNAME
+        + SPConstants.SPACE);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
+        + SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
+  }
+
+  private void addGroupFormat(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SELECT);
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    buf.append(SPConstants.SPACE + SPConstants.STYLE);
+    if (editMode) {
+      if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+        buf.append(SPConstants.SPACE + SPConstants.DISABLED
+            + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+      }
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT + SPConstants.NEW_LINE);
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.OPTION
+        + SPConstants.SPACE + SPConstants.VALUE + SPConstants.EQUAL_TO
+        + "\"");
+    buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME);
+    buf.append("\"");
+    if (value.equalsIgnoreCase(
+            SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT
+        + SPConstants.GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+        + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
+        + SPConstants.EQUAL_TO + "\"");
+    buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME);
+    buf.append("\"");
+    if (Strings.isNullOrEmpty(value)
+        || value.equalsIgnoreCase(
+            SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(SPConstants.CLOSE_ELEMENT
+        + SPConstants.GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT
+        + SPConstants.OPTION + SPConstants.SPACE + SPConstants.VALUE
+        + SPConstants.EQUAL_TO + "\"");
+    buf.append(SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN);
+    buf.append("\"");
+    if (value.equalsIgnoreCase(
+            SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN)) {
+      buf.append(SPConstants.SPACE + SPConstants.SELECTED
+          + SPConstants.EQUAL_TO + "\"" + SPConstants.SELECTED + "\"");
+    }
+    buf.append(">" + SPConstants.GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN);
+    buf.append(SPConstants.OPEN_ELEMENT + "/" + SPConstants.OPTION
+        + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.NEW_LINE + SPConstants.OPEN_ELEMENT + "/"
+        + SPConstants.SELECT + SPConstants.CLOSE_ELEMENT);
+    buf.append(SPConstants.TD_END);
+    buf.append(SPConstants.TR_END);
+    buf.append(SPConstants.BREAK_LINE);
+    buf.append(SPConstants.TR_START + SPConstants.TD_START
+        + SPConstants.START_BOLD);
+    buf.append(rb.getString(SPConstants.LDAP_CONFIGURATION_SETTINGS));
+    buf.append(SPConstants.END_BOLD);
+  }
+
+  private void addTextField(String value, StringBuffer buf, String key) {
+    buf.append(SPConstants.OPEN_ELEMENT);
+    buf.append(SPConstants.INPUT);
+    if (collator.equals(key, SPConstants.PASSWORD)
+        || collator.equals(key, SPConstants.GSAADMINPASSWORD)) {
+      appendAttribute(buf, SPConstants.TYPE, SPConstants.PASSWORD);
+    } else if (collator.equals(key, SPConstants.ALIAS_MAP)) {
+      appendAttribute(buf, SPConstants.TYPE, SPConstants.HIDDEN);
+    } else {
+      appendAttribute(buf, SPConstants.TYPE, SPConstants.TEXT);
+    }
+    appendAttribute(buf, SPConstants.CONFIG_NAME, key);
+    appendAttribute(buf, SPConstants.CONFIG_ID, key);
+    if (collator.equals(key, SPConstants.PORT_NUMBER)
+        || collator.equals(key, SPConstants.INITAL_CACHE_SIZE)
+        || collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
+      if (collator.equals(key, SPConstants.PORT_NUMBER)) {
+        if (Strings.isNullOrEmpty(value)) {
+          appendAttribute(buf, SPConstants.VALUE,
+              SPConstants.LDAP_DEFAULT_PORT_NUMBER);
+        } else if (value.equalsIgnoreCase(
+                SPConstants.LDAP_DEFAULT_PORT_NUMBER)) {
+          appendAttribute(buf, SPConstants.VALUE,
+              SPConstants.LDAP_DEFAULT_PORT_NUMBER);
+        } else {
+          appendAttribute(buf, SPConstants.VALUE, value.trim());
+        }
+        if (editMode) {
+          if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+          }
+        }
+      } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
+        if (Strings.isNullOrEmpty(value)) {
+          if (null == this.useCacheToStoreLdapUserGroupsMembership
+              || this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(
+                  SPConstants.OFF)) {
+            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+          }
+          appendAttribute(buf, SPConstants.VALUE,
+              SPConstants.LDAP_INITIAL_CACHE_SIZE);
+        } else if (value.equalsIgnoreCase(
+                SPConstants.LDAP_INITIAL_CACHE_SIZE)) {
+          appendAttribute(buf, SPConstants.VALUE,
+              SPConstants.LDAP_INITIAL_CACHE_SIZE);
+        } else {
+          appendAttribute(buf, SPConstants.VALUE, value);
+        }
+      } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
+        if (Strings.isNullOrEmpty(value)) {
+          if (null == this.useCacheToStoreLdapUserGroupsMembership
+              || this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(
+                  SPConstants.OFF)) {
+            buf.append(SPConstants.SPACE + SPConstants.DISABLED
+                + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+          }
+          appendAttribute(buf, SPConstants.VALUE,
+              SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
+        } else if (value.equalsIgnoreCase(
+                SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME)) {
+          appendAttribute(buf, SPConstants.VALUE,
+              SPConstants.LDAP_CACHE_REFRESH_INTERVAL_TIME);
+        } else {
+          appendAttribute(buf, SPConstants.VALUE, value.trim());
+        }
+      }
+      buf.append(SPConstants.SPACE + SPConstants.ONKEY_PRESS);
+      buf.append("\"return onlyNumbers(event);\"");
+    } else {
+      appendAttribute(buf, SPConstants.VALUE, value);
+    }
+    if (collator.equals(key, SPConstants.SHAREPOINT_URL)
+        || collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
+      appendAttribute(buf, SPConstants.TEXTBOX_SIZE,
+          SPConstants.TEXTBOX_SIZE_VALUE);
+    }
+
+    if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)
+        || collator.equals(key, SPConstants.SEARCH_BASE)) {
+      appendAttribute(buf, SPConstants.TEXTBOX_SIZE,
+          SPConstants.TEXTBOX_SIZE_VALUE);
+      if (editMode) {
+        if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
+          buf.append(SPConstants.SPACE + SPConstants.DISABLED
+              + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
+        }
+      }
+    }
+
+    buf.append(SPConstants.SLASH + SPConstants.CLOSE_ELEMENT);
   }
 
   /**
@@ -1075,8 +1124,7 @@ public class SharepointConnectorType implements ConnectorType {
     // with.
     convertCheckBoxes(configData);
 
-    for (final Iterator<String> i = keys.iterator(); i.hasNext();) {
-      final String key = i.next();
+    for (String key : configKeys) {
       final String val = configData.get(key);
 
       if (isRequired(key)) {
@@ -1297,10 +1345,8 @@ public class SharepointConnectorType implements ConnectorType {
         return new ConfigureResponse("resource bundle not found", "");
       }
     }
-    final StringBuffer buf = new StringBuffer(2048);
-    buf.append(makeConfigForm(configMap, ed));
-
-    return new ConfigureResponse(ed.error_message, buf.toString());
+    return new ConfigureResponse(ed.error_message,
+        makeConfigForm(configMap, ed));
   }
 
   /**
@@ -1313,10 +1359,7 @@ public class SharepointConnectorType implements ConnectorType {
     collator = Util.getCollator(locale);
     rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
     setConfigStrings();
-    final ConfigureResponse result = new ConfigureResponse("",
-        getInitialConfigForm());
-
-    return result;
+    return new ConfigureResponse("", makeConfigForm(null, null));
   }
 
   /**
@@ -1336,10 +1379,7 @@ public class SharepointConnectorType implements ConnectorType {
     collator = Util.getCollator(locale);
     rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
     setConfigStrings();
-    final ConfigureResponse result = new ConfigureResponse("", makeConfigForm(
-        configMap, null));
-
-    return result;
+    return new ConfigureResponse("", makeConfigForm(configMap, null));
   }
 
   /**

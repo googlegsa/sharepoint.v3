@@ -36,10 +36,8 @@ public class SharepointConnectorTypeTest extends TestCase {
   private boolean editMode = false;
 
   protected void setUp() throws Exception {
-    configMap = new HashMap<String, String>();
-    configMap.putAll(TestConfiguration.getConfigMap());
-    keys = new ArrayList<String>();
-    keys.addAll(configMap.keySet());
+    configMap = new HashMap<String, String>(TestConfiguration.getConfigMap());
+    keys = configMap.keySet();
     String isSelected = configMap.get(SPConstants.PUSH_ACLS);
     // if feedAcls option gets selected
     if (!isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
@@ -49,7 +47,6 @@ public class SharepointConnectorTypeTest extends TestCase {
     }
     sharepointConnectorType = new SharepointConnectorType();
     sharepointConnectorType.setClientFactory(new SPClientFactory());
-    sharepointConnectorType.setConfigKeys(keys);
   }
 
   public void testValidateConfig() {
