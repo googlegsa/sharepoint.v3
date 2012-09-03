@@ -115,7 +115,6 @@ public class SharepointConnectorType implements ConnectorType {
       "authorization",
       // Push ACLs configuration
       "pushAcls",
-      // Tests have appendNamespaceInSPGroup
       "usernameFormatInAce",
       "groupnameFormatInAce",
       // ldap configuration

@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.collect.Maps;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
@@ -21,22 +22,19 @@ import com.google.enterprise.connector.spi.ConfigureResponse;
 
 import junit.framework.TestCase;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Matcher;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class SharepointConnectorTypeTest extends TestCase {
-  private List<String> keys;
+  private Set<String> keys;
   private Map<String, String> configMap;
   private SharepointConnectorType sharepointConnectorType;
-  private boolean editMode = false;
+  private boolean editMode;
 
   protected void setUp() throws Exception {
-    configMap = new HashMap<String, String>(TestConfiguration.getConfigMap());
+    configMap = Maps.newHashMap(TestConfiguration.getConfigMap());
     keys = configMap.keySet();
     String isSelected = configMap.get(SPConstants.PUSH_ACLS);
     // if feedAcls option gets selected
@@ -105,7 +103,6 @@ public class SharepointConnectorTypeTest extends TestCase {
     assertFind("<input.*id=\"feedUnPublishedDocuments\".*>", configForm);
     assertFind("<input.*id=\"authorization\".*>", configForm);
     assertFind("<input.*id=\"pushAcls\".*>", configForm);
-    assertFind("<input.*id=\"appendNamespaceInSPGroup\".*>", configForm);
     assertFind("<select.*id=\"usernameFormatInAce\".*>", configForm);
     assertFind("<select.*id=\"groupnameFormatInAce\".*>", configForm);
     assertFind("<input.*id=\"ldapServerHostAddress\".*>", configForm);
