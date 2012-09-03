@@ -77,7 +77,6 @@ public class TestConfiguration {
   public static boolean useSPSearchVisibility;
 
   public static boolean pushAcls = true;
-  public static String appendNamespaceInSPGroup;
   public static String usernameFormatInAce;
   public static String groupnameFormatInAce;
   public static String ldapServerHostAddress;
@@ -407,7 +406,6 @@ public class TestConfiguration {
     pushAcls = Boolean.parseBoolean(properties.getProperty("pushAcls"));
     useCacheToStoreLdapUserGroupsMembership = Boolean.parseBoolean(
         properties.getProperty("useCacheToStoreLdapUserGroupsMembership"));
-    appendNamespaceInSPGroup = properties.getProperty("appendNamespaceInSPGroup");
     userNameFormatInACE = properties.getProperty("usernameFormatInAce");
     groupNameFormatInACE = properties.getProperty("groupnameFormatInAce");
 
@@ -442,7 +440,6 @@ public class TestConfiguration {
     configMap.put("feedUnPublishedDocuments", "true");
     configMap.put("authorization", authorization);
     configMap.put("pushAcls", Boolean.toString(pushAcls));
-    configMap.put("appendNamespaceInSPGroup", appendNamespaceInSPGroup);
     configMap.put("usernameFormatInAce", usernameFormatInAce);
     configMap.put("groupnameFormatInAce", groupnameFormatInAce);
     configMap.put("ldapServerHostAddress", ldapServerHostAddress);
