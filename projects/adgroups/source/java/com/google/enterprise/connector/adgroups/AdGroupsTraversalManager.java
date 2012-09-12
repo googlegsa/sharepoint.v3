@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.naming.NamingException;
+import javax.naming.InterruptedNamingException;
 
 public class AdGroupsTraversalManager implements TraversalManager {
   private static final Logger LOGGER =
@@ -128,7 +128,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
             + dbServer.get(AdConstants.DB_INVOCATIONID) + "], but expected ["
             + server.getDsServiceName()
             + "]. Not able to perform partial updates - performing full "
-            + "recrawl. Consider configuring AdGroups connector to connect "
+            + "recrawl. Consider configuring AD groups connector to connect "
             + "directly to FQDN address of one domain controller for partial "
             + "updates support.");
       }
@@ -238,7 +238,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
           LOGGER.info(
               server + "update 1/8 - Removing tombstones from database.");
           db.executeBatch(Query.DELETE_MEMBERSHIPS, tombstones);
-          
+
           // Merge entities discovered on current server into the database
           LOGGER.info(
               server + "update 2/8 - Inserting AD Entities into database.");
@@ -281,6 +281,9 @@ public class AdGroupsTraversalManager implements TraversalManager {
       } catch (RepositoryException e) {
         LOGGER.log(Level.WARNING, "Connecting to the domain ["
             + server.getnETBIOSName() + "] failed\n:", e);
+      } catch (InterruptedNamingException e) {
+        LOGGER.log(Level.INFO, "Thread was interrupted, exiting AD crawl.", e);
+        break;
       }
     }
   }

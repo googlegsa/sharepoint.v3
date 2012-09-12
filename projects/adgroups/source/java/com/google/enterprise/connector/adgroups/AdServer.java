@@ -32,6 +32,7 @@ import javax.naming.AuthenticationException;
 import javax.naming.AuthenticationNotSupportedException;
 import javax.naming.CommunicationException;
 import javax.naming.Context;
+import javax.naming.InterruptedNamingException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -218,8 +219,8 @@ public class AdServer {
    * @param attributes list of attributes to retrieve
    * @return list of entities found
    */
-  public Set<AdEntity> search(
-      String filter, boolean deleted, String[] attributes) {
+  public Set<AdEntity> search(String filter, boolean deleted,
+      String[] attributes) throws InterruptedNamingException {
     Set<AdEntity> results = new HashSet<AdEntity>();
     searchCtls.setReturningAttributes(attributes);
     setControls(deleted);
@@ -255,6 +256,8 @@ public class AdServer {
           }
         }
       } while ((cookie != null) && (cookie.length != 0));
+    } catch (InterruptedNamingException e) {
+      throw e;
     } catch (NamingException e) {
       LOGGER.log(Level.WARNING, "", e);
     } catch (IOException e) {
