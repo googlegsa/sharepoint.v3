@@ -17,7 +17,7 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import com.google.common.collect.Maps;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.mock.MockClientFactory;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 
 import junit.framework.TestCase;
@@ -44,7 +44,7 @@ public class SharepointConnectorTypeTest extends TestCase {
       editMode = false;
     }
     sharepointConnectorType = new SharepointConnectorType();
-    sharepointConnectorType.setClientFactory(new SPClientFactory());
+    sharepointConnectorType.setClientFactory(new MockClientFactory());
   }
 
   public void testValidateConfig() {
