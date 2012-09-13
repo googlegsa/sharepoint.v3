@@ -14,7 +14,9 @@
 
 package com.google.enterprise.connector.sharepoint.social;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
@@ -24,6 +26,7 @@ import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.TraversalManager;
 
@@ -35,7 +38,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class SharepointSocialTraversalManagerTest {
+  private static final List<String> EXPECTED_NAMES =
+      Arrays.asList(MockUserProfileGenerator.names);
 
   private SharepointConnector connector;
   private Session session;
@@ -47,7 +56,7 @@ public class SharepointSocialTraversalManagerTest {
     connector.setFeedUnPublishedDocuments(true);
     connector.setPushAcls(false);
     connector.setSocialOption(socialOption);
-    
+
     return connector;
   }
 
@@ -74,29 +83,92 @@ public class SharepointSocialTraversalManagerTest {
   public void tearDown() throws Exception {
   }
 
-  @Test
-  public void testStartTraversaSocial() throws RepositoryException {
-    TraversalManager trav = session.getTraversalManager();
-    trav.setBatchHint(500);
-    DocumentList docList = trav.startTraversal();
+  private void testUserProfiles(DocumentList docList)
+      throws RepositoryException {
+    ArrayList<String> names = new ArrayList<String>();
+    testUserProfiles(docList, names);
+    assertEquals(EXPECTED_NAMES, names);
+  }
+
+  private void testUserProfiles(DocumentList docList, ArrayList<String> names)
+      throws RepositoryException {
     assertNotNull(docList);
-    Document doc = docList.nextDocument();
-    assertNotNull(doc);
-    while (doc != null) {
+    Document doc;
+    while ((doc = docList.nextDocument()) != null) {
+      assertTrue(doc.getClass().toString(),
+          doc instanceof SocialUserProfileDocument);
+      SocialUserProfileDocument socialDoc = (SocialUserProfileDocument) doc;
+      // I'm using getUserContent to simplify the comparisons.
+      // MockUserProfileGenerator happens to return bare usernames here.
+      names.add(socialDoc.getUserContent().toString());
+
       Property propDocId = doc.findProperty(SpiConstants.PROPNAME_DOCID);
       assertNotNull(propDocId);
-      assertTrue(propDocId.nextValue().toString().contains("social"));
-      doc = docList.nextDocument();
+      String docid = propDocId.nextValue().toString();
+      assertTrue(docid, docid.startsWith("social"));
     }
   }
 
+
   @Test
-  public void testResumeTraversal() throws RepositoryException {
+  public void testStartTraversal() throws RepositoryException {
     TraversalManager trav = session.getTraversalManager();
     trav.setBatchHint(500);
     DocumentList docList = trav.startTraversal();
-    assertNotNull(docList);
-    docList = trav.resumeTraversal("");
-    assertNotNull(docList);
+    testUserProfiles(docList);
+  }
+
+  @Test
+  public void testResumeTraversal_whole() throws RepositoryException {
+    TraversalManager trav = session.getTraversalManager();
+    trav.setBatchHint(500);
+    DocumentList docList = trav.resumeTraversal(
+        SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX);
+    testUserProfiles(docList);
+  }
+
+  @Test
+  public void testResumeTraversal_partial() throws RepositoryException {
+    TraversalManager trav = session.getTraversalManager();
+    trav.setBatchHint(500);
+    int halfSize = EXPECTED_NAMES.size() / 2;
+    int halfway = new MockUserProfileGenerator().getNextValue(halfSize);
+    String checkpoint =
+        SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX
+        + ",0," + halfway;
+    DocumentList docList = trav.resumeTraversal(checkpoint);
+    ArrayList<String> names = new ArrayList<String>();
+    testUserProfiles(docList, names);
+    assertEquals(EXPECTED_NAMES.subList(halfSize + 1, EXPECTED_NAMES.size()),
+        names);
+  }
+
+  @Test
+  public void testMultipleBatches() throws RepositoryException {
+    TraversalManager trav = session.getTraversalManager();
+    ArrayList<String> names = new ArrayList<String>();
+
+    int halfSize = EXPECTED_NAMES.size() / 2;
+    trav.setBatchHint(halfSize);
+    DocumentList docList = trav.startTraversal();
+    testUserProfiles(docList, names);
+    assertEquals(EXPECTED_NAMES.subList(0, halfSize), names);
+
+    String checkpoint = docList.checkpoint();
+    assertTrue(checkpoint, checkpoint.startsWith(
+        SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX + ",0,"));
+    trav.setBatchHint(500);
+    docList = trav.resumeTraversal(checkpoint);
+    testUserProfiles(docList, names);
+    assertEquals(EXPECTED_NAMES, names);
+  }
+
+  @Test
+  public void testResumeTraversal_nonsocial() throws RepositoryException {
+    TraversalManager trav = session.getTraversalManager();
+    trav.setBatchHint(500);
+    DocumentList docList = trav.resumeTraversal("");
+    // We expect no results here because the social option is ONLY.
+    assertNull(docList);
   }
 }
