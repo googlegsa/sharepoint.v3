@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.social;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.ContactData;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.GetUserProfileByIndexResult;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.Privacy;
@@ -24,15 +25,16 @@ import java.util.Random;
 
 /**
  * Mock user profile generator for testing.
- * 
+ *
  * @author tapasnay
  */
 public class MockUserProfileGenerator implements UserProfileServiceGenerator {
 
   private static final String EXAMPLE_DOMAIN_PREFIX = "EXAMPLE\\";
   private static final String EXAMPLE_COM = "@example.com";
-  GetUserProfileByIndexResult[] profiles;
-  static String[] names = { "ramankk",
+
+  static final String[] names = {
+      "ramankk",
       "arunk",
       "rchandika",
       "shwetapathak",
@@ -40,7 +42,8 @@ public class MockUserProfileGenerator implements UserProfileServiceGenerator {
       "martincochran",
       "tapasnay",
       "shkumar" };
-  static String[] skills = { "sql",
+  static final String[] skills = {
+      "sql",
       "search",
       "javascript",
       "sharepoint",
@@ -49,7 +52,8 @@ public class MockUserProfileGenerator implements UserProfileServiceGenerator {
       "C++",
       "python",
       "sql server" };
-  static String[] titles = { "Software Engineer",
+  static final String[] titles = {
+      "Software Engineer",
       "Software Engineer",
       "Manager",
       "Software Engineer",
@@ -57,7 +61,8 @@ public class MockUserProfileGenerator implements UserProfileServiceGenerator {
       "Manager",
       "Software Engineer",
       "Software Engineer" };
-  static String[] firstNames = { "Raman",
+  static final String[] firstNames = {
+      "Raman",
       "Arun",
       "Radha",
       "Shweta",
@@ -65,7 +70,8 @@ public class MockUserProfileGenerator implements UserProfileServiceGenerator {
       "Martin",
       "Tapas",
       "Shailesh" };
-  static String[] lastNames = { "Kumar",
+  static final String[] lastNames = {
+      "Kumar",
       "P G",
       "Chandika",
       "Pathak",
@@ -108,12 +114,35 @@ public class MockUserProfileGenerator implements UserProfileServiceGenerator {
     return names.length;
   }
 
+
+  @VisibleForTesting
+  int getNextValue(int arrayIndex) {
+    return (arrayIndex + 1 >= names.length) ? -1 : arrayIndex * 2 + 4;
+  }
+
+  @VisibleForTesting
+  int getArrayIndex(int profileIndex) {
+    return (profileIndex <= 2) ? 0 : (profileIndex - 1) / 2;
+  }
+
   public GetUserProfileByIndexResult getUserProfileByIndex(int index) {
+    // Create a sparse map of indexes: 2, 4, 6, etc. As with SharePoint,
+    // asking for a missing entry returns the next higher one. We skip
+    // index 0 just to be mean.
+    int arrayIndex = getArrayIndex(index);
+
     GetUserProfileByIndexResult profile = new GetUserProfileByIndexResult();
-    PropertyData[] profileData = { 
+    profile.setUserProfile(getProfileData(arrayIndex));
+    profile.setNextValue(Integer.toString(getNextValue(arrayIndex)));
+    return profile;
+  }
+
+  /** @param index a zero-based index into the private data arrays */
+  private PropertyData[] getProfileData(int index) {
+    return new PropertyData[] {
         new PropertyData(false, false,
-        SharepointSocialConstants.PROPNAME_RESPONSIBILITY, Privacy.Public,
-        makeValue(1)),
+            SharepointSocialConstants.PROPNAME_RESPONSIBILITY, Privacy.Public,
+            makeValue(1)),
         new PropertyData(false, false,
             SharepointSocialConstants.PROPNAME_PASTPROJECTS, Privacy.Public,
             makeValue(3)),
@@ -134,9 +163,6 @@ public class MockUserProfileGenerator implements UserProfileServiceGenerator {
             makeValue(lastNames[index])),
         new PropertyData(false, false, "Title", Privacy.Public,
             makeValue(titles[index])) };
-
-    profile.setUserProfile(profileData);
-    return profile;
   }
 
   public ContactData[] getUserColleagues(String key) {
