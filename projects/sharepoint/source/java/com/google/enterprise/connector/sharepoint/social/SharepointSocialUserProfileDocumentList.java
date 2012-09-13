@@ -18,15 +18,17 @@ import com.google.common.base.Strings;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.util.SystemClock;
 
 import java.rmi.RemoteException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Document list is implemented for user profile documents for SharePoint. The
  * checkpoint implementation on this document list simply keeps track of the
- * offset for the next document and the count of the documents. On resume we
+ * index for the next document. On resume we
  * fetch from here. However, it is possible that profiles have been
  * added/deleted at source in the mean time. Further, SharePoint does not give
  * any explicit guarantee that the next time things will be in the same order.
@@ -49,29 +51,23 @@ import java.util.logging.Logger;
 
 public class SharepointSocialUserProfileDocumentList implements DocumentList {
 
-  private int offset;
-  private int profileCount;
   final static Logger LOGGER = SharepointSocialConnector.LOGGER;
   public static final String CHECKPOINT_PREFIX = "sp_userprofile";
   private final SharepointUserProfileConnection service;
   private long lastFullSync = 0L;
+  private int nextProfileIndex = -1; 
+  private boolean end = false;
+  private final int batchHint;
+  private int batchCount = 0;
 
   public static class UserProfileCheckpoint {
-    private int offset;
-    private int profileCount;
     private boolean none; // no checkpoint
     private long lastFullSync = 0L;
+    private int nextProfileIndex;   
 
     public UserProfileCheckpoint() {
       this.none = true;
-      this.offset = 0;
-      this.profileCount = 0;
-    }
-
-    public UserProfileCheckpoint(int offset, int count) {
-      this.offset = offset;
-      this.profileCount = count;
-      this.none = false;
+      nextProfileIndex = -1;
     }
 
     public UserProfileCheckpoint(String checkpoint) {
@@ -79,23 +75,14 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
         this.none = true;
       } else {
         String[] parts = checkpoint.split(",");
-        if ((parts.length != 4) || (!parts[0].equals(CHECKPOINT_PREFIX))) {
+        if ((parts.length != 3) || (!parts[0].equals(CHECKPOINT_PREFIX))) {
           // no or invalid checkpoint
           this.none = true;
-        } else {
-          offset = Integer.parseInt(parts[1]);
-          profileCount = Integer.parseInt(parts[2]);
-          lastFullSync = Long.parseLong(parts[3]);
+        } else {         
+          lastFullSync = Long.parseLong(parts[1]);
+          nextProfileIndex = Integer.parseInt(parts[2]);
         }
       }
-    }
-
-    public int getOffset() {
-      return offset;
-    }
-
-    public int getProfileCount() {
-      return profileCount;
     }
 
     public boolean isNoCheckpoint() {
@@ -106,99 +93,107 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
       return lastFullSync;
     }
 
+    public int getNextProfileIndex() {
+      return nextProfileIndex;
+    }   
   }
 
   public SharepointSocialUserProfileDocumentList(
       SharepointUserProfileConnection connection,
-      UserProfileCheckpoint checkpoint) throws RepositoryException {
+      UserProfileCheckpoint checkpoint, int batchHint) throws RepositoryException {
     service = connection;
     try {
-      profileCount = connection.openConnection();
+      int profileCount = connection.openConnection();
+      LOGGER.info("Total Profile Count = " + profileCount);      
     } catch (RemoteException e) {
       throw new RepositoryException(e);
     }
     if (checkpoint.none) {
-      offset = 0;
+      this.nextProfileIndex = -1;
     } else {
-      // This is incremental crawl.Since connector has processed user
-      // profile at checkpoint.offset value in previous crawl cycle,
-      // setting offset value to next user profile at checkpoint.offset + 1
-      offset = checkpoint.offset + 1;
+      // This is incremental crawl. Connector will use next Profile Index
+      // value to fetch next profile.
+      this.nextProfileIndex = checkpoint.getNextProfileIndex();      
     }
     lastFullSync = checkpoint.getLastFullSync();
-  }
-
-  /**
-   * Create an empty document list.
-   */
-  public SharepointSocialUserProfileDocumentList() {
-    offset = 0;
-    profileCount = 0;
-    service = null;
+    this.batchHint = batchHint;   
   }
 
   @Override
   public String checkpoint() throws RepositoryException {
-    return CHECKPOINT_PREFIX + "," + offset + ","
-        + profileCount + "," + lastFullSync;
+    return CHECKPOINT_PREFIX + "," + lastFullSync
+        + "," + nextProfileIndex;
   }
 
   @Override
   public Document nextDocument() throws RepositoryException {
-    if (offset > profileCount) {
-      // Synchronizing offset to profile count at end of traversal
-      offset = profileCount;
-      if (lastFullSync == 0L) {
-        // lastFullSync = 0L indicates this was part of full crawl.
-        lastFullSync = new SystemClock().getTimeMillis();
-      }
+    if (end) {
+      return null;      
+    }
+    if (batchCount >= batchHint) {
+      LOGGER.fine("Returning null as reached batch hint = "
+          + batchHint);
       return null;
     }
-    LOGGER.fine("Returning userprofile at index = " + offset + " of size= "
-        + profileCount);
-    Document doc;
+    LOGGER.fine("Returning userprofile at index = " + nextProfileIndex);
+    Document doc = null;
     try {
-      doc = service.getProfile(offset);
-    } catch (RemoteException e) {
-      LOGGER.warning("There was a failure fetching profile at index = "
-          + offset + " retrying...");
-      // There was a failure getting the next profile. It is possible that the
-      // service connection has been stale and invalid. We will retry once by
-      // reopening the connection.
-      int newCount;
-      try {
-        // if openConnection throws service is out of bounds, we release current
-        // batch and wait for resume
-        newCount = service.openConnection();
-      } catch (RemoteException eAgain) {
-        LOGGER
-            .severe("User profile service not reachable anymore, continuing with "
-                + "partial list, to be resumed");
-        return null;
+      doc = fetchNextProfile(true);
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING,
+          "There was a failure fetching profile at index = "
+              + nextProfileIndex, e);    
+    }
+    batchCount++;
+    return doc;
+  }
+
+  private void markEnd() {
+    LOGGER.fine("Marking end");
+    if (lastFullSync == 0L) {
+      // lastFullSync = 0L indicates this was part of full crawl.
+      lastFullSync = new SystemClock().getTimeMillis();
+    }
+    end = true;
+  }
+
+  private Document fetchNextProfile(boolean retry) throws RepositoryException {
+    Document doc = null;
+    try {
+      doc = service.getProfile(nextProfileIndex);
+      if (doc != null) {
+        SharePointSocialUserProfileDocument socialDoc =
+            (SharePointSocialUserProfileDocument) doc;
+        if (socialDoc.getNextValue() != -1 &&
+            socialDoc.getNextValue() != nextProfileIndex) {
+          nextProfileIndex = socialDoc.getNextValue();         
+          LOGGER.fine("Setting Next Index = " + nextProfileIndex);
+        } else {
+          LOGGER.fine("Marking end with socialDoc.getNextValue() = "
+              + socialDoc.getNextValue());
+          markEnd();
+        }
+      } else {
+        LOGGER.fine("Marking end as Doc is null");
+        markEnd();
       }
-      if (newCount != profileCount) {
-        LOGGER
-            .warning("Count of user profiles changed. Continuing, but the data may be "
-                + "stale");
-        profileCount = newCount;
-        if (offset >= profileCount) {
-          offset = profileCount; // set the pointer at the end, so that
-                                 // checkpoint is consistent
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING,
+          "There was a failure fetching profile at index = "
+              + nextProfileIndex + " retrying...", e);   
+      if (retry) {
+        try {
+          // if openConnection throws service is out of bounds, 
+          // we release current batch and wait for resume
+          service.openConnection();
+        } catch (RemoteException eAgain) {
+          LOGGER.log(Level.WARNING, "User profile service not reachable,"
+              + " continuing with partial list, to be resumed", eAgain);        
           return null;
         }
-      }
-      try {
-        doc = service.getProfile(offset);
-      } catch (RemoteException ex) {
-        // if this throws again, possibly service is out of bounds
-        // close the current batch, can be resumed later
-        LOGGER
-            .severe("User profile service not reachable anymore, continuing with "
-                + "partial list, to be resumed");
-        return null;
+        doc = fetchNextProfile(false);
       }
     }
-    offset++; // we got a valid item to return, advance the counter
     return doc;
   }
 }
