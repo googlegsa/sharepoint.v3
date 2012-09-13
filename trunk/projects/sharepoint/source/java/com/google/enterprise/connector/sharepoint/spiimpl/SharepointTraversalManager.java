@@ -178,6 +178,9 @@ public class SharepointTraversalManager implements TraversalManager,
    */
   public void setBatchHint(final int hintNew) throws RepositoryException {
     hint = hintNew;
+    if (socialTraversal != null) {
+      socialTraversal.setBatchHint(hintNew);
+    }
     LOGGER.info("BatchHint Set to [ " + hintNew + " ] ");
   }
 

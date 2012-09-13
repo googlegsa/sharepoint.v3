@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.social;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.ContactData;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.GetUserProfileByIndexResult;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.Privacy;
@@ -109,9 +110,21 @@ public class SharepointUserProfileConnection {
     boolean secure = config.isSecureSearch();
 
     PropertyData[] props = getUserProfileByIndexResult.getUserProfile();
-    SocialUserProfileDocument userProfile = new SocialUserProfileDocument(ctxt
+    SharePointSocialUserProfileDocument userProfile =
+        new SharePointSocialUserProfileDocument(ctxt
         .getUserProfileCollection());
     userProfile.setPublic(true);
+    String nextValue = getUserProfileByIndexResult.getNextValue();
+    LOGGER.fine("Next User Profile Index : " + nextValue);
+    if (!Strings.isNullOrEmpty(nextValue)) {
+      userProfile.setNextValue(Integer.parseInt(nextValue));
+    }
+    if (props == null) {
+      // returning null as properties are empty.
+      // This is an indication that no more profiles are available
+      // at and beyond index value.
+      return null;
+    }
 
     for (PropertyData propertyData : props) {
 

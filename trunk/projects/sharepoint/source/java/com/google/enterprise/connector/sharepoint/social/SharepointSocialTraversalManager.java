@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.social;
 
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialUserProfileDocumentList.UserProfileCheckpoint;
+import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalManager;
@@ -33,6 +34,7 @@ import java.util.logging.Logger;
 public class SharepointSocialTraversalManager implements TraversalManager {
   private static final Logger LOGGER = SharepointSocialConnector.LOGGER;
   private SharepointSocialClientContext ctxt;
+  private int batchHint = 500;
 
   public SharepointSocialTraversalManager(SharepointSocialClientContext ctxt) {
     this.ctxt = ctxt;
@@ -41,12 +43,12 @@ public class SharepointSocialTraversalManager implements TraversalManager {
   @Override
   public DocumentList resumeTraversal(String checkpoint)
       throws RepositoryException {
-
     return traverse(checkpoint);
   }
 
   @Override
   public void setBatchHint(int batchHint) throws RepositoryException {
+    this.batchHint = batchHint;
   }
 
   @Override
@@ -98,14 +100,14 @@ public class SharepointSocialTraversalManager implements TraversalManager {
             "Part of Initial crawl. " 
                 + "Performing incremental crawl with available checkpoint.");
         profileCheckpoint = existingProfileCheckpoint;
-      }      
+      }     
     }
     if (checkpointAtEnd(profileCheckpoint, cxn)) {
       return null;
     }
     SharepointSocialUserProfileDocumentList docList =
         new SharepointSocialUserProfileDocumentList(
-            cxn, profileCheckpoint);
+            cxn, profileCheckpoint, batchHint);
     LOGGER.info(
         "SharepointSocialDocumentList for UserProfiles created and returned");
     return docList;
@@ -114,24 +116,16 @@ public class SharepointSocialTraversalManager implements TraversalManager {
   private boolean checkpointAtEnd (UserProfileCheckpoint profileCheckpoint,
       SharepointUserProfileConnection cxn) throws RepositoryException {
     if (!profileCheckpoint.isNoCheckpoint()) {
-      int profileCount = 0;
       try {
-        profileCount = cxn.openConnection();
+        cxn.openConnection();
+        Document doc = cxn.getProfile(profileCheckpoint.getNextProfileIndex());
+        // doc null is indicator for no more profiles are available to crawl.
+        return (doc == null);
       } catch (RemoteException e) {
         throw new RepositoryException(e);
       }
-      if (profileCheckpoint.getOffset() >= profileCount) {
-        // Since offset is greater than or equal to profile count assumption is
-        // connector has discovered all profiles. This may not be true always
-        // since deletion of User profiles will result in change in count and
-        // connector might miss few profiles (maximum number of 
-        // missing new profiles equals to number of deletions).
-        // Periodic Full sync will take care of this scenario.
-        // TODO: Handle deletes.
-        return true;
-      } 
     }
     return false;
-  }  
+  }
 }
 
