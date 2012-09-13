@@ -194,7 +194,11 @@ public class SharepointTraversalManager implements TraversalManager,
           rsSocial = this.socialTraversal.resumeTraversal(checkPoint);
         }
       } catch (RepositoryException e) {
-        LOGGER.severe("Failed getting userprofiles, continuing with the site");
+        boolean continuing =
+            sharepointClientContext.getSocialOption() != SocialOption.ONLY;
+        String message = "Failed getting user profiles"
+            + (continuing ? ", continuing with the sites" : "");
+        LOGGER.log(Level.SEVERE, message, e);
         rsSocial = null;
       }
     } else {
