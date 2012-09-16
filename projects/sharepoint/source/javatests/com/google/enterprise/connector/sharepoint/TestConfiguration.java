@@ -64,12 +64,12 @@ public class TestConfiguration {
   public static String googleLocalNamespace;
 
   public static String sharepointUrl;
-  public static String AliasMap;
+  public static String aliasMap;
   public static String domain;
   public static String kdcserver;
   public static String username;
   public static String testuser;
-  public static String Password;
+  public static String password;
   public static String mySiteBaseURL;
   public static String includedURls;
   public static String excludedURls;
@@ -244,11 +244,11 @@ public class TestConfiguration {
     googleGlobalNamespace = properties.getProperty("googleGlobalNamespace");
     googleLocalNamespace = properties.getProperty("googleLocalNamespace");
     sharepointUrl = properties.getProperty("sharepointUrl");
-    AliasMap = properties.getProperty("AliasMap");
+    aliasMap = properties.getProperty("aliasMap");
     domain = properties.getProperty("domain");
     kdcserver = properties.getProperty("kdcserver");
     username = properties.getProperty("username");
-    Password = properties.getProperty("password");
+    password = properties.getProperty("Password");
     mySiteBaseURL = properties.getProperty("mySiteBaseURL");
     includedURls = properties.getProperty("includedURls");
     excludedURls = properties.getProperty("excludedURls");
@@ -422,7 +422,6 @@ public class TestConfiguration {
   }
 
   public static Map<String, String> getConfigMap() {
-    // TODO: We should check this against the keys in connectorType.xml.
     // Using a LinkedHashMap to preserve ordering.
     final Map<String, String> configMap = new LinkedHashMap<String, String>();
 
@@ -430,11 +429,11 @@ public class TestConfiguration {
     configMap.put("kdcserver", kdcserver);
     configMap.put("domain", domain);
     configMap.put("username", username);
-    configMap.put("password", Password);
+    configMap.put("Password", password);
     configMap.put("mySiteBaseURL", mySiteBaseURL);
     configMap.put("includedURls", includedURls);
     configMap.put("excludedURls", excludedURls);
-    configMap.put("aliasMap", AliasMap);
+    configMap.put("aliasMap", aliasMap);
     configMap.put("useSPSearchVisibility",
         Boolean.toString(useSPSearchVisibility));
     configMap.put("feedUnPublishedDocuments", "true");
@@ -561,11 +560,11 @@ public class TestConfiguration {
     final SharepointClientContext sharepointClientContext = new SharepointClientContext(
         clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
-        TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.password, TestConfiguration.googleConnectorWorkDir,
         TestConfiguration.googleGlobalNamespace,
         TestConfiguration.googleLocalNamespace,
         TestConfiguration.includedURls, TestConfiguration.excludedURls,
-        TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+        TestConfiguration.mySiteBaseURL, TestConfiguration.aliasMap,
         TestConfiguration.feedType, useSPSearchVisibility);
 
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
@@ -593,7 +592,7 @@ public class TestConfiguration {
     ctxt.setDomain(TestConfiguration.domain);
     ctxt.setUrl(TestConfiguration.sharepointUrl);
     ctxt.setUserName(TestConfiguration.username);
-    ctxt.setPassword(TestConfiguration.Password);
+    ctxt.setPassword(TestConfiguration.password);
 
     return ctxt;
   }
@@ -821,14 +820,14 @@ public class TestConfiguration {
     connector.setSharepointUrl(TestConfiguration.sharepointUrl);
     connector.setDomain(TestConfiguration.domain);
     connector.setUsername(TestConfiguration.username);
-    connector.setPassword(TestConfiguration.Password);
+    connector.setPassword(TestConfiguration.password);
     connector.setGoogleConnectorWorkDir(TestConfiguration.googleConnectorWorkDir);
     connector.setGoogleGlobalNamespace(TestConfiguration.googleGlobalNamespace);
     connector.setGoogleLocalNamespace(TestConfiguration.googleLocalNamespace);
     connector.setIncludedURls(TestConfiguration.includedURls);
     connector.setExcludedURls(TestConfiguration.excludedURls);
     connector.setMySiteBaseURL(TestConfiguration.mySiteBaseURL);
-    connector.setAliasMap(TestConfiguration.AliasMap);
+    connector.setAliasMap(TestConfiguration.aliasMap);
     connector.setAuthorization(authorization);
     connector.setUseSPSearchVisibility(TestConfiguration.useSPSearchVisibility);
     connector.setIncluded_metadata(TestConfiguration.whiteList);
@@ -924,7 +923,7 @@ public class TestConfiguration {
   public static LdapConnectionSettings getLdapConnetionSettings() {
     LdapConnectionSettings settings = new LdapConnectionSettings(
         Method.STANDARD, ldapServerHostAddress, portNumber, searchBase,
-        AuthType.SIMPLE, username, Password, ldapDomainName);
+        AuthType.SIMPLE, username, password, ldapDomainName);
     return settings;
   }
 

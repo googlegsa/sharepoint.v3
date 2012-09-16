@@ -43,11 +43,11 @@ public class SharepointAuthenticationManagerTest extends TestCase {
     this.sharepointClientContext = new SharepointClientContext(
         clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
-        TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.password, TestConfiguration.googleConnectorWorkDir,
         TestConfiguration.googleGlobalNamespace,
         TestConfiguration.googleLocalNamespace,
         TestConfiguration.includedURls, TestConfiguration.excludedURls,
-        TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+        TestConfiguration.mySiteBaseURL, TestConfiguration.aliasMap,
         TestConfiguration.feedType, TestConfiguration.useSPSearchVisibility);
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);

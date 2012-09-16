@@ -63,11 +63,11 @@ public class UserGroupsServiceTest {
     sharepointClientContext = new SharepointClientContext(
         clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
-        TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.password, TestConfiguration.googleConnectorWorkDir,
         TestConfiguration.googleGlobalNamespace,
         TestConfiguration.googleLocalNamespace,
         TestConfiguration.includedURls, TestConfiguration.excludedURls,
-        TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+        TestConfiguration.mySiteBaseURL, TestConfiguration.aliasMap,
         TestConfiguration.feedType, TestConfiguration.useSPSearchVisibility);
     sharepointClientContext.setGroupnameFormatInAce(TestConfiguration.groupNameFormatInACE);
     sharepointClientContext.setUsernameFormatInAce(TestConfiguration.userNameFormatInACE);
@@ -223,7 +223,7 @@ public class UserGroupsServiceTest {
         TestConfiguration.searchBase,
         AuthType.SIMPLE,
         TestConfiguration.username,
-        TestConfiguration.Password + "invalidatepassword",
+        TestConfiguration.password + "invalidatepassword",
         TestConfiguration.ldapDomainName);
     // we are testing if NPE is thrown, no asserts needed
     LdapConnection l = new LdapConnection(lcs);

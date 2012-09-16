@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
@@ -50,7 +51,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,8 +84,59 @@ import javax.naming.ldap.LdapContext;
 public class SharepointConnectorType implements ConnectorType {
   private final Logger LOGGER = Logger.getLogger(SharepointConnectorType.class
       .getName());
-  private final String className = SharepointConnectorType.class.getName();
-  private Collator collator = Util.getCollator();
+
+  public static final String GOOGLE_CONN_WORK_DIR = "googleConnectorWorkDir";
+
+  private final static List<String> CONFIG_LABELS;
+
+  @VisibleForTesting
+  final static List<String> CONFIG_FIELDS;
+
+  static {
+    ImmutableList<String> prefix = ImmutableList.of(
+        "sharepointUrl",
+        "kdcserver",
+        "domain",
+        "username",
+        "Password",
+        "mySiteBaseURL",
+        "includedURls",
+        "excludedURls",
+        "aliasMap");
+    ImmutableList<String> suffix = ImmutableList.of(
+        "authorization",
+        // Push ACLs configuration
+        "pushAcls",
+        "usernameFormatInAce",
+        "groupnameFormatInAce",
+        // ldap configuration
+        "ldapServerHostAddress",
+        "portNumber",
+        "searchBase",
+        "authenticationType",
+        "connectMethod",
+        // LDAP user groups membership cache settings
+        "useCacheToStoreLdapUserGroupsMembership",
+        "initialCacheSize",
+        "cacheRefreshInterval",
+        // User profile settings
+        "socialOption",
+        "userProfileCollection",
+        // gdata connection credential
+        "gsaAdminUser",
+        "gsaAdminPassword");
+    CONFIG_LABELS = ImmutableList.<String>builder()
+        .addAll(prefix)
+        .add("sharepointCrawlingOptions")
+        .addAll(suffix)
+        .build();
+    CONFIG_FIELDS = ImmutableList.<String>builder()
+        .addAll(prefix)
+        .add("useSPSearchVisibility")
+        .add("feedUnPublishedDocuments")
+        .addAll(suffix)
+        .build();
+  }
 
   private String sharepointUrl = null;
   private String domain = null;
@@ -100,43 +151,7 @@ public class SharepointConnectorType implements ConnectorType {
   // Create dummy context for doing validations.
   private SharepointClientContext sharepointClientContext = null;
 
-  private final List<String> configKeys = ImmutableList.<String>builder().add(
-      "sharepointUrl",
-      "kdcserver",
-      "domain",
-      "username",
-      "password",
-      "mySiteBaseURL",
-      "includedURls",
-      "excludedURls",
-      "aliasMap",
-      "sharepointCrawlingOptions",
-      // Tests have useSPSearchVisibility and feedUnPublishedDocuments instead.
-      "authorization",
-      // Push ACLs configuration
-      "pushAcls",
-      "usernameFormatInAce",
-      "groupnameFormatInAce",
-      // ldap configuration
-      "ldapServerHostAddress",
-      "portNumber",
-      "searchBase",
-      "authenticationType",
-      "connectMethod",
-      // LDAP user groups membership cache settings
-      "useCacheToStoreLdapUserGroupsMembership",
-      "initialCacheSize",
-      "cacheRefreshInterval",
-      // gdata connection credential
-      "socialOption",
-      "userProfileCollection",
-      "gsaAdminUser",
-      "gsaAdminPassword"
-    ).build();
-  private final HashMap<Object, String> configStrings = new HashMap<Object, String>();
-
-  ResourceBundle rb = null;
-  public static final String GOOGLE_CONN_WORK_DIR = "googleConnectorWorkDir";
+  private ResourceBundle rb = null;
   private String pushAcls = null;
   private String usernameFormatInAce;
   private String groupnameFormatInAce;
@@ -176,25 +191,6 @@ public class SharepointConnectorType implements ConnectorType {
   }
 
   /**
-   * Sets the display strings for the configuration form depending on the
-   * language settings.
-   */
-  private void setConfigStrings() {
-    if (rb != null) {
-      // checking the parameters of the resource bundle passed
-      for (String key : configKeys) {
-        configStrings.put(key, rb.getString(key));
-      }
-      configStrings.put(SPConstants.MANDATORY_FIELDS,
-          rb.getString(SPConstants.MANDATORY_FIELDS));
-      LOGGER.config("Config Strings loaded from the resource bundle : "
-          + configStrings.toString());
-    } else {
-      LOGGER.warning("unable to get resource bundle");
-    }
-  }
-
-  /**
    * Makes a config form snippet using the keys (in the supplied order) and, if
    * passed a non-null config map, pre-filling values in from that map.
    *
@@ -206,13 +202,13 @@ public class SharepointConnectorType implements ConnectorType {
   private String makeConfigForm(final Map<String, String> configMap,
       final ErrorDignostics ed) {
     final StringBuffer buf = new StringBuffer();
-    for (String key : configKeys) {
-      final String configKey = configStrings.get(key);
+    for (String key : CONFIG_LABELS) {
+      String configKey = rb.getString(key);
 
       boolean isError = (ed != null) && key.equals(ed.error_key);
       appendStartRow(buf, key, configKey, isError);
 
-      if (collator.equals(key, SPConstants.ALIAS_MAP)) {
+      if (key.equals(SPConstants.ALIAS_MAP)) {
         addAliasMap(buf, key, configMap);
       }
 
@@ -224,27 +220,27 @@ public class SharepointConnectorType implements ConnectorType {
         value = "";
       }
 
-      if (collator.equals(key, SPConstants.SOCIAL_OPTION)) {
+      if (key.equals(SPConstants.SOCIAL_OPTION)) {
         addSocialOption(value, buf, key);
-      } else if (collator.equals(key, SPConstants.AUTHORIZATION)) {
+      } else if (key.equals(SPConstants.AUTHORIZATION)) {
         addAuthorization(value, buf, key);
-      } else if (collator.equals(key, SPConstants.SHAREPOINT_CRAWLING_OPTION)) {
-        addSharePointCrawlingOption(value, buf, key, configMap);
-      } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
+      } else if (key.equals(SPConstants.SHAREPOINT_CRAWLING_OPTIONS)) {
+        addSharePointCrawlingOptions(value, buf, key, configMap);
+      } else if (key.equals(SPConstants.AUTHENTICATION_TYPE)) {
         addAuthentication(value, buf, key);
-      } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
+      } else if (key.equals(SPConstants.CONNECT_METHOD)) {
         addConnectMethod(value, buf, key);
-      } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
+      } else if (key.equals(SPConstants.PUSH_ACLS)) {
         addPushAcls(value, buf, key);
-      } else if (collator.equals(key,
-            SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
+      } else if (key.equals(
+          SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
         addUseLdapCache(value, buf, key);
-      } else if ((collator.equals(key, SPConstants.EXCLUDED_URLS))
-            || (collator.equals(key, SPConstants.INCLUDED_URLS))) {
+      } else if ((key.equals(SPConstants.EXCLUDED_URLS))
+          || (key.equals(SPConstants.INCLUDED_URLS))) {
         addUrlPatterns(value, buf, key);
-      } else if (collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)) {
+      } else if (key.equals(SPConstants.USERNAME_FORMAT_IN_ACE)) {
         addUserFormat(value, buf, key);
-      } else if (collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
+      } else if (key.equals(SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
         addGroupFormat(value, buf, key);
       } else {
         addTextField(value, buf, key);
@@ -254,7 +250,7 @@ public class SharepointConnectorType implements ConnectorType {
     }
 
     buf.append(SPConstants.START_BOLD);
-    buf.append(configStrings.get(SPConstants.MANDATORY_FIELDS));
+    buf.append(rb.getString(SPConstants.MANDATORY_FIELDS));
     buf.append(SPConstants.END_BOLD);
 
     addJavaScript(buf);
@@ -425,9 +421,14 @@ public class SharepointConnectorType implements ConnectorType {
     buf.append(rb.getString(SPConstants.AUTHZ_BY_CONNECTOR));
   }
 
-  private void addSharePointCrawlingOption(String value, StringBuffer buf,
+  private void addSharePointCrawlingOptions(String value, StringBuffer buf,
       String key, Map<String, String> configMap) {
-    // displaying search visibility option
+    addUseSpSearchVisibility(value, buf, key, configMap);
+    addFeedUnpublishedContent(value, buf, key, configMap);
+  }
+
+  private void addUseSpSearchVisibility(String value, StringBuffer buf,
+      String key, Map<String, String> configMap) {
     String spSearchVisibilityValue = null;
     String spSearchVisibilityKey = SPConstants.USE_SP_SEARCH_VISIBILITY;
     buf.append(SPConstants.OPEN_ELEMENT);
@@ -461,9 +462,10 @@ public class SharepointConnectorType implements ConnectorType {
     buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
     buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
+  }
 
-    // dispplaying unpublished content feed option
-    String feedUnpublishedContentValue = null;
+  private void addFeedUnpublishedContent(String value, StringBuffer buf,
+      String key, Map<String, String> configMap) {
     String unpublishedContentKey = SPConstants.FEED_UNPUBLISHED_CONTENT;
     buf.append(SPConstants.BREAK_LINE);
     buf.append(SPConstants.OPEN_ELEMENT);
@@ -473,6 +475,7 @@ public class SharepointConnectorType implements ConnectorType {
     appendAttribute(buf, SPConstants.CONFIG_ID, unpublishedContentKey);
     appendAttribute(buf, SPConstants.TITLE,
         rb.getString(unpublishedContentKey));
+    String feedUnpublishedContentValue = null;
     if (configMap != null) {
       feedUnpublishedContentValue =
           configMap.get(SPConstants.FEED_UNPUBLISHED_CONTENT);
@@ -503,7 +506,6 @@ public class SharepointConnectorType implements ConnectorType {
     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
     appendAttribute(buf, SPConstants.CONFIG_ID, key);
     buf.append(SPConstants.SPACE + SPConstants.STYLE);
-
     if (editMode) {
       if (this.pushAcls.equalsIgnoreCase(SPConstants.OFF)) {
         buf.append(SPConstants.SPACE + SPConstants.DISABLED
@@ -790,20 +792,20 @@ public class SharepointConnectorType implements ConnectorType {
   private void addTextField(String value, StringBuffer buf, String key) {
     buf.append(SPConstants.OPEN_ELEMENT);
     buf.append(SPConstants.INPUT);
-    if (collator.equals(key, SPConstants.PASSWORD)
-        || collator.equals(key, SPConstants.GSAADMINPASSWORD)) {
+    if (key.equals(SPConstants.PASSWORD)
+        || key.equals(SPConstants.GSAADMINPASSWORD)) {
       appendAttribute(buf, SPConstants.TYPE, SPConstants.PASSWORD);
-    } else if (collator.equals(key, SPConstants.ALIAS_MAP)) {
+    } else if (key.equals(SPConstants.ALIAS_MAP)) {
       appendAttribute(buf, SPConstants.TYPE, SPConstants.HIDDEN);
     } else {
       appendAttribute(buf, SPConstants.TYPE, SPConstants.TEXT);
     }
     appendAttribute(buf, SPConstants.CONFIG_NAME, key);
     appendAttribute(buf, SPConstants.CONFIG_ID, key);
-    if (collator.equals(key, SPConstants.PORT_NUMBER)
-        || collator.equals(key, SPConstants.INITAL_CACHE_SIZE)
-        || collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
-      if (collator.equals(key, SPConstants.PORT_NUMBER)) {
+    if (key.equals(SPConstants.PORT_NUMBER)
+        || key.equals(SPConstants.INITAL_CACHE_SIZE)
+        || key.equals(SPConstants.CACHE_REFRESH_INTERVAL)) {
+      if (key.equals(SPConstants.PORT_NUMBER)) {
         if (Strings.isNullOrEmpty(value)) {
           appendAttribute(buf, SPConstants.VALUE,
               SPConstants.LDAP_DEFAULT_PORT_NUMBER);
@@ -820,7 +822,7 @@ public class SharepointConnectorType implements ConnectorType {
                 + SPConstants.EQUAL_TO + "\"" + SPConstants.TRUE + "\"");
           }
         }
-      } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
+      } else if (key.equals(SPConstants.INITAL_CACHE_SIZE)) {
         if (Strings.isNullOrEmpty(value)) {
           if (null == this.useCacheToStoreLdapUserGroupsMembership
               || this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(
@@ -837,7 +839,7 @@ public class SharepointConnectorType implements ConnectorType {
         } else {
           appendAttribute(buf, SPConstants.VALUE, value);
         }
-      } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
+      } else if (key.equals(SPConstants.CACHE_REFRESH_INTERVAL)) {
         if (Strings.isNullOrEmpty(value)) {
           if (null == this.useCacheToStoreLdapUserGroupsMembership
               || this.useCacheToStoreLdapUserGroupsMembership.equalsIgnoreCase(
@@ -860,14 +862,14 @@ public class SharepointConnectorType implements ConnectorType {
     } else {
       appendAttribute(buf, SPConstants.VALUE, value);
     }
-    if (collator.equals(key, SPConstants.SHAREPOINT_URL)
-        || collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
+    if (key.equals(SPConstants.SHAREPOINT_URL)
+        || key.equals(SPConstants.MYSITE_BASE_URL)) {
       appendAttribute(buf, SPConstants.TEXTBOX_SIZE,
           SPConstants.TEXTBOX_SIZE_VALUE);
     }
 
-    if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)
-        || collator.equals(key, SPConstants.SEARCH_BASE)) {
+    if (key.equals(SPConstants.LDAP_SERVER_HOST_ADDRESS)
+        || key.equals(SPConstants.SEARCH_BASE)) {
       appendAttribute(buf, SPConstants.TEXTBOX_SIZE,
           SPConstants.TEXTBOX_SIZE_VALUE);
       if (editMode) {
@@ -1043,44 +1045,44 @@ public class SharepointConnectorType implements ConnectorType {
     if (val == null) {
       return;
     }
-    if (collator.equals(key, SPConstants.USERNAME)) {
+    if (key.equals(SPConstants.USERNAME)) {
       username = val.trim();
-    } else if (collator.equals(key, SPConstants.DOMAIN)) {
+    } else if (key.equals(SPConstants.DOMAIN)) {
       domain = val.trim();
-    } else if (collator.equals(key, SPConstants.PASSWORD)) {
+    } else if (key.equals(SPConstants.PASSWORD)) {
       password = val;
-    } else if (collator.equals(key, SPConstants.SHAREPOINT_URL)) {
+    } else if (key.equals(SPConstants.SHAREPOINT_URL)) {
       sharepointUrl = val.trim();
-    } else if (collator.equals(key, SPConstants.INCLUDED_URLS)) {
+    } else if (key.equals(SPConstants.INCLUDED_URLS)) {
       includeURL = val;
-    } else if (collator.equals(key, SPConstants.EXCLUDED_URLS)) {
+    } else if (key.equals(SPConstants.EXCLUDED_URLS)) {
       excludeURL = val;
-    } else if (collator.equals(key, SPConstants.MYSITE_BASE_URL)) {
+    } else if (key.equals(SPConstants.MYSITE_BASE_URL)) {
       mySiteUrl = val.trim();
-    } else if (collator.equals(key, SPConstants.USE_SP_SEARCH_VISIBILITY)) {
+    } else if (key.equals(SPConstants.USE_SP_SEARCH_VISIBILITY)) {
       useSPSearchVisibility = val.trim();
-    } else if (collator.equals(key, SPConstants.PUSH_ACLS)) {
+    } else if (key.equals(SPConstants.PUSH_ACLS)) {
       this.pushAcls = val.trim();
-    } else if (collator.equals(key, SPConstants.USERNAME_FORMAT_IN_ACE)) {
+    } else if (key.equals(SPConstants.USERNAME_FORMAT_IN_ACE)) {
       this.usernameFormatInAce = val.trim();
-    } else if (collator.equals(key, SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
+    } else if (key.equals(SPConstants.GROUPNAME_FORMAT_IN_ACE)) {
       this.groupnameFormatInAce = val.trim();
-    } else if (collator.equals(key, SPConstants.LDAP_SERVER_HOST_ADDRESS)) {
+    } else if (key.equals(SPConstants.LDAP_SERVER_HOST_ADDRESS)) {
       this.ldapServerHostAddress = val.trim();
-    } else if (collator.equals(key, SPConstants.PORT_NUMBER)) {
+    } else if (key.equals(SPConstants.PORT_NUMBER)) {
       this.portNumber = val.trim();
-    } else if (collator.equals(key, SPConstants.SEARCH_BASE)) {
+    } else if (key.equals(SPConstants.SEARCH_BASE)) {
       this.searchBase = val.trim();
-    } else if (collator.equals(key, SPConstants.AUTHENTICATION_TYPE)) {
+    } else if (key.equals(SPConstants.AUTHENTICATION_TYPE)) {
       this.authenticationType = val.trim();
-    } else if (collator.equals(key, SPConstants.CONNECT_METHOD)) {
+    } else if (key.equals(SPConstants.CONNECT_METHOD)) {
       this.connectMethod = val.trim();
-    } else if (collator.equals(key,
+    } else if (key.equals(
         SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP)) {
       this.useCacheToStoreLdapUserGroupsMembership = val.trim();
-    } else if (collator.equals(key, SPConstants.INITAL_CACHE_SIZE)) {
+    } else if (key.equals(SPConstants.INITAL_CACHE_SIZE)) {
       this.initialCacheSize = val.trim();
-    } else if (collator.equals(key, SPConstants.CACHE_REFRESH_INTERVAL)) {
+    } else if (key.equals(SPConstants.CACHE_REFRESH_INTERVAL)) {
       this.cacheRefreshInterval = val.trim();
     }
   }
@@ -1105,9 +1107,9 @@ public class SharepointConnectorType implements ConnectorType {
     }
 
     FeedType feedType = null;
-    String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
+    String kdcServer = configData.get(SPConstants.KDC_SERVER);
 
-    if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
+    if (!Strings.isNullOrEmpty(kdcServer)) {
       kerberosSetUp(configData);
     } else {
       unregisterKerberosSetUp(configData);
@@ -1123,7 +1125,7 @@ public class SharepointConnectorType implements ConnectorType {
     // with.
     convertCheckBoxes(configData);
 
-    for (String key : configKeys) {
+    for (String key : CONFIG_FIELDS) {
       final String val = configData.get(key);
 
       if (isRequired(key)) {
@@ -1132,7 +1134,7 @@ public class SharepointConnectorType implements ConnectorType {
           ed.set(key, rb.getString(SPConstants.REQ_FIELDS_MISSING)
               + SPConstants.SPACE + rb.getString(key));
           return false;
-        } else if (collator.equals(key, SPConstants.SHAREPOINT_URL)) {
+        } else if (key.equals(SPConstants.SHAREPOINT_URL)) {
           if (!isURL(val)) {
             ed.set(key, rb.getString(SPConstants.MALFORMED_URL));
             return false;
@@ -1141,7 +1143,7 @@ public class SharepointConnectorType implements ConnectorType {
             ed.set(key, rb.getString(SPConstants.REQ_FQDN_URL));
             return false;
           }
-        } else if (collator.equals(key, SPConstants.INCLUDED_URLS)) {
+        } else if (key.equals(SPConstants.INCLUDED_URLS)) {
           final Set<String> invalidSet = validatePatterns(val);
           if (invalidSet != null) {
             ed.set(
@@ -1151,7 +1153,7 @@ public class SharepointConnectorType implements ConnectorType {
             return false;
           }
         }
-      } else if (collator.equals(key, SPConstants.ALIAS_MAP) && (val != null)
+      } else if (key.equals(SPConstants.ALIAS_MAP) && (val != null)
           && !val.equals(SPConstants.BLANK_STRING)) {
         final Set<String> wrongEntries = new HashSet<String>();
         final String message = parseAlias(val, wrongEntries);
@@ -1160,7 +1162,7 @@ public class SharepointConnectorType implements ConnectorType {
               + wrongEntries);
           return false;
         }
-      } else if (collator.equals(key, SPConstants.EXCLUDED_URLS)) {
+      } else if (key.equals(SPConstants.EXCLUDED_URLS)) {
         final Set<String> invalidSet = validatePatterns(val);
         if (invalidSet != null) {
           ed.set(
@@ -1170,10 +1172,10 @@ public class SharepointConnectorType implements ConnectorType {
           LOGGER.warning("Invalid Exclude pattern:" + val);
           return false;
         }
-      } else if (collator.equals(key, SPConstants.AUTHORIZATION)) {
+      } else if (key.equals(SPConstants.AUTHORIZATION)) {
         feedType = FeedType.getFeedType(val);
-      } else if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)
-          && collator.equals(key, SPConstants.KDC_SERVER)) {
+      } else if (!Strings.isNullOrEmpty(kdcServer)
+          && key.equals(SPConstants.KDC_SERVER)) {
         boolean isFQDN = false;
         if (!Util.isFQDN(kdcServer)) {
           ed.set(SPConstants.KDC_SERVER,
@@ -1191,7 +1193,7 @@ public class SharepointConnectorType implements ConnectorType {
             return false;
           }
         }
-      } else if (collator.equals(key, SPConstants.SOCIAL_OPTION)) {
+      } else if (key.equals(SPConstants.SOCIAL_OPTION)) {
         if ( (val != null) ){
           String option = val.trim();  
           if ((!option.equalsIgnoreCase(SPConstants.BLANK_STRING)) 
@@ -1334,10 +1336,8 @@ public class SharepointConnectorType implements ConnectorType {
    */
   private ConfigureResponse makeValidatedForm(
       final Map<String, String> configMap, final ErrorDignostics ed) {
-    final String sFunName = className
-        + ".makeValidatedForm(final Map configMap, ErrorDignostics ed)";
     if (configMap == null) {
-      LOGGER.warning(sFunName + ": configMap is not found");
+      LOGGER.warning("configMap is not found");
       if (rb != null) {
         return new ConfigureResponse(rb.getString("CONFIGMAP_NOT_FOUND"), "");
       } else {
@@ -1354,10 +1354,7 @@ public class SharepointConnectorType implements ConnectorType {
   public ConfigureResponse getConfigForm(final Locale locale) {
     LOGGER.config("Locale " + locale);
     this.editMode = false;
-
-    collator = Util.getCollator(locale);
     rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
-    setConfigStrings();
     return new ConfigureResponse("", makeConfigForm(null, null));
   }
 
@@ -1369,33 +1366,20 @@ public class SharepointConnectorType implements ConnectorType {
       final Map<String, String> configMap, final Locale locale) {
     LOGGER.config("Locale " + locale);
     String isSelected = configMap.get(SPConstants.PUSH_ACLS);
-    if (null != isSelected && !isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
-      this.editMode = SPConstants.EDIT_MODE;
-    } else {
-      this.editMode = false;
-    }
-
-    collator = Util.getCollator(locale);
+    this.editMode =
+        (null != isSelected && !isSelected.equalsIgnoreCase(SPConstants.TRUE));
     rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
-    setConfigStrings();
     return new ConfigureResponse("", makeConfigForm(configMap, null));
   }
 
   /**
    * Called by connector-manager to validate the connector configuration values.
    */
-  // due to GCM changes
   public ConfigureResponse validateConfig(final Map<String, String> configData,
-      final Locale locale, final ConnectorFactory arg2) {
-    return this.validateConfig(configData, locale);
-  }
-
-  public ConfigureResponse validateConfig(final Map<String, String> configData,
-      final Locale locale) {
+      final Locale locale, final ConnectorFactory unused) {
     LOGGER.config("Locale " + locale);
 
     rb = ResourceBundle.getBundle("SharepointConnectorResources", locale);
-    setConfigStrings();
 
     final ErrorDignostics ed = new ErrorDignostics();
     if (validateConfigMap(configData, ed)) {
@@ -1405,15 +1389,13 @@ public class SharepointConnectorType implements ConnectorType {
     final ConfigureResponse configureResponse = makeValidatedForm(configData,
         ed);
 
-    LOGGER.config("message:\n" + configureResponse.getMessage());
+    LOGGER.config("message: " + configureResponse.getMessage());
     return configureResponse;
   }
 
   /**
    * Stores any error message corresponding to any field on the connector's
    * configuration page. *
-   *
-   * @author nitendra_thakur
    */
   class ErrorDignostics {
     String error_key;
@@ -1426,16 +1408,19 @@ public class SharepointConnectorType implements ConnectorType {
   }
 
   /**
-   * Desc : returns true if the Config Key is a mandatory field.
+   * Returns true if the config key is a mandatory field.
    *
-   * @param configKey
    * @return is this field is mandatory?
    */
-  private boolean isRequired(final String configKey) {
-    if (collator.equals(configKey, SPConstants.SHAREPOINT_URL)
-        || collator.equals(configKey, SPConstants.USERNAME)
-        || collator.equals(configKey, SPConstants.PASSWORD)
-        || collator.equals(configKey, SPConstants.INCLUDED_URLS)) {
+  // TODO: sharepointUrl and includedUrls should not always be
+  // required, but the tests should be updated to include testing when
+  // they are required if they are removed from this list.
+  @VisibleForTesting
+  boolean isRequired(String configKey) {
+    if (configKey.equals(SPConstants.SHAREPOINT_URL)
+        || configKey.equals(SPConstants.USERNAME)
+        || configKey.equals(SPConstants.PASSWORD)
+        || configKey.equals(SPConstants.INCLUDED_URLS)) {
       return true;
     } else {
       return false;
@@ -1450,7 +1435,7 @@ public class SharepointConnectorType implements ConnectorType {
    */
   public void addJavaScript(final StringBuffer buf) {
     if (buf != null) {
-      String js = "\r\n <script language=\"JavaScript\"> \r\n <![CDATA[ ";
+      String js = "\r\n <script type=\"text/javascript\"> \r\n <![CDATA[ ";
       js += "\r\n function addRow() {"
           + "\r\n var i=1;    var aliasTable = document.getElementById('aliasContainer');    var len=aliasTable.rows.length;"
           + "\r\n for(i=1;i<len-1;i++){"
@@ -1462,20 +1447,17 @@ public class SharepointConnectorType implements ConnectorType {
           + "\r\n }"
           + "\r\n }"
           + "\r\n var newrow = aliasTable.insertRow(len-1);"
-          +
-
-          "\r\n newCell0 = newrow.insertCell(0); newCell0.innerHTML= '<input type=\"text\" size=\""
+          + "\r\n newCell0 = newrow.insertCell(0); "
+          + "newCell0.innerHTML= '<input type=\"text\" size=\""
           + SPConstants.ALIAS_TEXTBOX_SIZE_VALUE
           + "\" onchange=\"readAlias()\"/> '; "
           + "\r\n newCell1 = newrow.insertCell(1); newCell1.innerHTML= '<input type=\"text\" size=\""
           + SPConstants.ALIAS_TEXTBOX_SIZE_VALUE
           + "\" onchange=\"readAlias()\"/> '; "
-          +
-
-          "\r\n if(row.cells[0].style.backgroundColor=='') { newCell0.style.backgroundColor='#DDDDDD'; newCell1.style.backgroundColor='#DDDDDD'; }"
-          +
-
-          "\r\n }";
+          + "\r\n if(row.cells[0].style.backgroundColor=='') { "
+          + "newCell0.style.backgroundColor='#DDDDDD'; "
+          + "newCell1.style.backgroundColor='#DDDDDD'; }"
+          + "\r\n }";
 
       js += "\r\n function readAlias(){"
           + "\r\n var aliasString=''; var i=1; var aliasTable = document.getElementById('aliasContainer'); var SOURCE_ALIAS_SEPARATOR=/\\$\\$EQUAL\\$\\$/; var ALIAS_ENTRIES_SEPARATOR=/\\$\\$CRLF\\$\\$/;"
@@ -1494,19 +1476,15 @@ public class SharepointConnectorType implements ConnectorType {
           + "').value=aliasString;" + "\r\n }";
 
       js += "\r\n function enableOrDisableUserGroupsCacheControls() {"
-          + ""
           + "\r\n if (document.getElementById(\"useCacheToStoreLdapUserGroupsMembership\").checked == true){ "
           + "\r\n document.getElementById(\"initialCacheSize\").disabled=false"
           + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=false"
-
           + "\r\n } else {"
           + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=true"
           + "\r\n document.getElementById(\"initialCacheSize\").disabled=true"
-
           + "\r\n }" + "\r\n }";
 
       js += "\r\n function enableFeedAclsRelatedHtmlControls() {"
-          + ""
           + "\r\n if (document.getElementById(\"pushAcls\").checked == true){ "
           + "\r\n document.getElementById(\"portNumber\").disabled=false"
           + "\r\n document.getElementById(\"ldapServerHostAddress\").disabled=false"
@@ -1523,7 +1501,6 @@ public class SharepointConnectorType implements ConnectorType {
           + "\r\n document.getElementById(\"initialCacheSize\").disabled=true"
           + "\r\n document.getElementById(\"cacheRefreshInterval\").disabled=true"
           + "\r\n }"
-
           + "\r\n } else {"
           + "\r\n document.getElementById(\"portNumber\").disabled=true"
           + "\r\n document.getElementById(\"ldapServerHostAddress\").disabled=true"
