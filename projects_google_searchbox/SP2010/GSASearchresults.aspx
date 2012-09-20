@@ -164,7 +164,9 @@ div.ms-areaseparatorright{
                   embeddedModeQueryArg = "&emsingleres=" +
                       HttpUtility.UrlEncode("/_layouts/GSAForward.aspx?forward=") +
                       "&emmain=" +
-                      HttpUtility.UrlEncode("/_layouts/GSASearchresults.aspx");
+                      HttpUtility.UrlEncode("/_layouts/GSASearchresults.aspx") +
+                      "&emdvhost=" +
+                      HttpUtility.UrlEncode(GSALocation);
                 }
                 string useContainerTheme =
                     WebConfigurationManager.AppSettings["UseContainerTheme"];
