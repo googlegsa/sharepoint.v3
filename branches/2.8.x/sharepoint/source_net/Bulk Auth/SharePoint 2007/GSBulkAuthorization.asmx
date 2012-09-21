@@ -47,7 +47,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     [WebMethod]
     public string GetGSSVersion()
     {
-        return "2.8.4";
+        return "2.8.6";
     }
 
     /// <summary>
