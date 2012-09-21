@@ -192,13 +192,6 @@ public class UserGroupsServiceTest {
 		assertEquals("\\2a\\28\\29\\5c\\00\\2f", this.userGroupsService.ldapEscape("*()\\\0/"));
 		assertEquals("Group, Name \\28Comment\\29", this.userGroupsService.ldapEscape("Group, Name (Comment)"));
 	}
-	
-	@Test
-	public void testGetGroupDNForTheGroup() {
-		assertEquals("Domain Users", this.userGroupsService.getGroupDNForTheGroup("CN=Domain Users,CN=Users,DC=example,DC=com"));
-		assertEquals("Group, Name (Comment)", this.userGroupsService.getGroupDNForTheGroup("CN=Group\\, Name (Comment),CN=Users,DC=example,DC=com"));
-		assertEquals("no comma", this.userGroupsService.getGroupDNForTheGroup("no comma"));
-	}
 
 	@Test
 	public void testCreateSearchFilterForPrimaryGroup() {
