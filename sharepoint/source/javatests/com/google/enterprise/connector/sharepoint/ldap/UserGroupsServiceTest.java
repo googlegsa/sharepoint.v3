@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.ldap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -23,6 +24,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -201,6 +203,28 @@ public class UserGroupsServiceTest {
 		assertEquals("(objectSid=\\01\\05\\15\\ff\\ff\\00\\00)", this.userGroupsService.createSearchFilterForPrimaryGroup(usersid, "65535"));
 		assertEquals("(objectSid=\\01\\05\\15\\fc\\fd\\fe\\ff)", this.userGroupsService.createSearchFilterForPrimaryGroup(usersid, "4294901244"));
 	}
+
+  @Test
+  public void testUppercaseUserInCacheStore() throws SharepointException {
+    String searchUser1 = TestConfiguration.searchUser1;
+
+    // perform search twice so the second time is from the cache
+    userGroupsService.getAllGroupsForSearchUser(sharepointClientContext, searchUser1);
+
+    // Try uppercase retrieval
+    Set<String> groupsUppercaseRetrieval =
+        userGroupsService.getAllGroupsForSearchUser(
+            sharepointClientContext,
+            searchUser1.toUpperCase());
+    assertTrue(groupsUppercaseRetrieval.size() > 0);
+
+    // Try lowercase retrieval
+    Set<String> groupsLowercaseRetrieval =
+        userGroupsService.getAllGroupsForSearchUser(
+            sharepointClientContext,
+            searchUser1.toLowerCase());
+    assertTrue(groupsLowercaseRetrieval.size() > 0);
+  }
 
 	/**
 	 * @throws java.lang.Exception
