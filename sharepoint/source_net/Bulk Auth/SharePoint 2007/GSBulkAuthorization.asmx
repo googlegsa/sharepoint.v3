@@ -406,7 +406,16 @@ public class WSContext
     {     
         if (this.site != null)
         {
-            site.Dispose();
+            try
+            {
+                site.Dispose();
+            }
+            catch (Exception exDispose)
+            {
+                // Ignoring Dispose Exception. 
+                // This is possible scenario for weak reference exception.
+                exDispose = null;
+            }
         }
     }
 
