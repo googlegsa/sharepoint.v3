@@ -693,6 +693,11 @@ public class GssAclMonitor
         {
             throw new Exception("SharePoint site not found");
         }
+        // workaroud to trigger authentication as soon as possible.
+        // For anomymous access site, below call will generate 401 response
+        // which will result in connector using NTLM to process web service call
+        // as it does for secured content.
+        web.ToString();
     }
 
     /// <summary>
@@ -1349,7 +1354,7 @@ public sealed class GssAclUtility
 
 
     }
-    
+
     /// <summary>
     /// Retrieves the Owner's information about a given ISecurable entity
     /// </summary>
