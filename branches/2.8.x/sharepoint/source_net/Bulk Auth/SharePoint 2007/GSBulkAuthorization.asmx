@@ -36,6 +36,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     public string CheckConnectivity()
     {
         // All the pre-requisites for running this web service should be checked here.
+        SPContext.Current.Web.ToString();
         SPSecurity.RunWithElevatedPrivileges(delegate()
         {
         });
@@ -65,6 +66,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         // TODO Check if user is app pool user (SharePoint\\System). If yes, return true for everything.
         ///////
+        SPContext.Current.Web.ToString();
         WSContext wsContext = new WSContext(username);
         foreach (AuthDataPacket authDataPacket in authDataPacketArray)
         {
