@@ -8,7 +8,7 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 2.8.6, June 27, 2012
+Release 2.8.6, September 24, 2012
 ====================================
 
 Introduction
@@ -21,12 +21,10 @@ Summary of Changes / New Features
 This patch contains fix for the following issues.
 
 --Issue 2906154 Cannot add a On-board Sharepoint connector with Kerberos KDC host name entry
---Issue 5489487 GSS version should be defined explicitly.
 --Issue 5549668 SharePoint connector should correctly resolve user's primary group
 --Issue 5596005 SharePoint connector should correctly resolve the user's special group 'NT AUTHORITY\authenticated users'
 --Issue 5883396 Direct user membership of Sharepoint groups is not working
 --Issue 5923376 SharePoint Connector goes into infinite loop and encounters StackOverflowError upon resolving parent groups during Group Resolution
---Issue 6057626 Google Services for Sharepoint are not correctly disposing of resources.
 --Issue 6253811 List items with "ows__ModerationStatus" attribute is always marked as unpublished document and not properly fed.
 
 Version Compatibility
