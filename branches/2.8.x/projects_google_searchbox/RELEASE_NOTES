@@ -1,12 +1,12 @@
 >Release Notes
 ==============
 
-This document contains the release notes for Google Search Box for SharePoint 2.8.4. The following sections describe the release in detail and provide information that supplements the main documentation.
+This document contains the release notes for Google Search Box for SharePoint 2.8.8. The following sections describe the release in detail and provide information that supplements the main documentation.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 2.8.4, March 30, 2012
-=============================
+Release 2.8.8, September 25, 2012
+=================================
 
 Introduction
 -------------
@@ -17,7 +17,7 @@ Issues fixed:
 [Issue 5096616] - Context search for list item fails when the SharePoint site collection is created using the “/sites/” path.
 
 	
-For a farm setup, the Google Search Box 2.8.4 must be installed on all the SharePoint Installations (machines).
+For a farm setup, the Google Search Box 2.8.8 must be installed on all the SharePoint Installations (machines).
    
 Instructions for manual deployment of Google Search Box for SharePoint and the custom master page:
 --------------------------------------------------------------------------------------------------
@@ -143,21 +143,21 @@ Steps:
 
 Version Compatibility
 ---------------------
-The Google Search Box for SharePoint 2.8.4 is supported on the following SharePoint versions:
+The Google Search Box for SharePoint 2.8.8 is supported on the following SharePoint versions:
 * Microsoft Office SharePoint Server 2007 (MOSS 2007) 
 * Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
 * Microsoft SharePoint 2010
 
 Browser Compatibility
 ---------------------
-The Google Search Box for SharePoint 2.8.4 is certified on following browsers:
+The Google Search Box for SharePoint 2.8.8 is certified on following browsers:
 * Microsoft Internet Explorer 6.0
 * Microsoft Internet Explorer 7.0
 * Mozilla Firefox 3.0.5
 
 Platform Support
 ------------------
-Google Search Box for SharePoint 2.8.4 can be installed on both 32-bit and 64-bit Windows Server Enterprise Operating System.
+Google Search Box for SharePoint 2.8.8 can be installed on both 32-bit and 64-bit Windows Server Enterprise Operating System.
 
 Certified Against
 -------------------
