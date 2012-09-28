@@ -741,8 +741,6 @@ else if(document.attachEvent)
             
                 
                 <%
-                    
-                    
                     GoogleSearchBox gProps = new GoogleSearchBox();
                     NameValueCollection inquery = HttpContext.Current.Request.QueryString;
                     string searchResp;
@@ -755,12 +753,19 @@ else if(document.attachEvent)
                     
                     ////////////////////////////CONSTRUCT THE SEARCH QUERY FOR GOOGLE SEARCH APPLIANCE ///////////////////////////////////
                     //The search query comes in 'k' parameter
-                    if (inquery["k"] != null)
-                    {
-                        qQuery = inquery["k"];
-                        if (inquery["cachedurl"] != null)
+                    if (inquery["k"] != null || (inquery["q"] != null && String.IsNullOrEmpty(inquery["access"])))
+                    { 
+                        if (!String.IsNullOrEmpty(inquery["cachedurl"]))
                         {
                             qQuery = inquery["cachedurl"];
+                        }
+                        else if (!String.IsNullOrEmpty(inquery["k"]))
+                        {
+                            qQuery = inquery["k"];
+                        }
+                        else 
+                        {
+                            qQuery = inquery["q"];
                         }
                         myquery = qQuery;//for paging in custom stylesheet
                         
@@ -835,20 +840,26 @@ else if(document.attachEvent)
                                 {
                                     gProps.accessLevel = "p";  // Perform 'public search'
                                 }
-                                else if(Session["PublicSearchStatus"] != null)
+                                else if (Session["PublicSearchStatus"] != null)
                                 {
                                     /*
                                      * If querystring parameter value is null, assign value from the
                                      * Session to the accesslevel search parameter.
                                      */
-                                    if (Convert.ToString(Session["PublicSearchStatus"]) == "false")
+
+                                    String publicSearchStatus = Session["PublicSearchStatus"].ToString();
+                                    if (publicSearchStatus == "false")
                                     {
                                         gProps.accessLevel = "a"; // Perform 'public and secure search'
                                     }
-                                    else if (Convert.ToString(Session["PublicSearchStatus"]) == "true")
+                                    else if (publicSearchStatus == "true")
                                     {
                                         gProps.accessLevel = "p";  // Perform 'public search'
                                     }
+                                }
+                                else
+                                {
+                                    gProps.accessLevel = "a";
                                 }
                             }
                             else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
@@ -856,11 +867,12 @@ else if(document.attachEvent)
                                 gProps.accessLevel = "p";  // Perform 'public search'
                             }
                         }
-                        else     /* 
+                        else
+                        {
+                                  /* 
                                   * This code will be executed only when suggestions are provided by the GSA. Here, the scope url's value
                                   * will be retrieved from the GSA's search request 'access' parameter.
                                   */
-                        {
                             if (inquery["access"] != null)
                             {
                                 string publicSearchCheckboxStatus = inquery["access"].ToString();
@@ -871,6 +883,27 @@ else if(document.attachEvent)
                                 else
                                 {
                                     gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                            }
+                            else
+                            {
+                                /*
+                                 * If querystring parameter value is null, assign value from the
+                                 * Session to the accesslevel search parameter.
+                                 */
+
+                                String publicSearchStatus = Session["PublicSearchStatus"].ToString();
+                                if (publicSearchStatus == "false")
+                                {
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else if (publicSearchStatus == "true")
+                                {
+                                    gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                                else
+                                {
+                                    gProps.accessLevel = WebConfigurationManager.AppSettings["accesslevel"].ToString();
                                 }
                             }
                         }
