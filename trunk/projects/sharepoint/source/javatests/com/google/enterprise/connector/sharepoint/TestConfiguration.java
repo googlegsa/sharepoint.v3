@@ -248,7 +248,7 @@ public class TestConfiguration {
     domain = properties.getProperty("domain");
     kdcserver = properties.getProperty("kdcserver");
     username = properties.getProperty("username");
-    password = properties.getProperty("Password");
+    password = properties.getProperty("password");
     mySiteBaseURL = properties.getProperty("mySiteBaseURL");
     includedURls = properties.getProperty("includedURls");
     excludedURls = properties.getProperty("excludedURls");
@@ -429,7 +429,7 @@ public class TestConfiguration {
     configMap.put("kdcserver", kdcserver);
     configMap.put("domain", domain);
     configMap.put("username", username);
-    configMap.put("Password", password);
+    configMap.put("password", password);
     configMap.put("mySiteBaseURL", mySiteBaseURL);
     configMap.put("includedURls", includedURls);
     configMap.put("excludedURls", excludedURls);

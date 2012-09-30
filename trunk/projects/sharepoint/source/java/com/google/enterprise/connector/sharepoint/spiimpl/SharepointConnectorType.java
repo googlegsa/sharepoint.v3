@@ -98,7 +98,7 @@ public class SharepointConnectorType implements ConnectorType {
         "kdcserver",
         "domain",
         "username",
-        "Password",
+        "password",
         "mySiteBaseURL",
         "includedURls",
         "excludedURls",

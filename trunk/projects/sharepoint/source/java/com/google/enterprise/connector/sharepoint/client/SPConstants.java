@@ -363,7 +363,7 @@ public class SPConstants {
   public static final String CLOSE_ELEMENT = ">";
   public static final String OPEN_ELEMENT = "<";
   public static final String BREAK_LINE = "<br/>\r\n";
-  public static final String PASSWORD = "Password";
+  public static final String PASSWORD = "password";
   public static final String TR_END = "</tr>\r\n";
   public static final String TD_END = "</td>\r\n";
   public static final String TD_START = "<td style=\"white-space: nowrap\">";
@@ -445,8 +445,8 @@ public class SPConstants {
   public static final Object DOUBLE_CLOSE_PARENTHESIS = "))";
   public static final String PUSH_ACLS = "pushAcls";
   public static final String PUSH_ACLS_LABEL = "push_Acls";
-  public static final String USERNAME_FORMAT_IN_ACE = "Username Format in ACE";
-  public static final String GROUPNAME_FORMAT_IN_ACE = "Groupname Format in ACE";
+  public static final String USERNAME_FORMAT_IN_ACE = "usernameFormatInAce";
+  public static final String GROUPNAME_FORMAT_IN_ACE = "groupnameFormatInAce";
   public static final String CONNECT_METHOD_STANDARD_HELP = "connectMethodStandard_help";
   public static final String CONNECT_METHOD_SSL_HELP = "connectMethodSSL_help";
   public static final String LDAP_CONFIGURATION_SETTINGS =
