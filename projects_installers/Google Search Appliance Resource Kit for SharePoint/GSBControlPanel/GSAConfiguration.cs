@@ -41,10 +41,17 @@ namespace GSBControlPanel
         private string defaultSearchType = "publicAndSecure";
         private string searchTipsHTMLFileName = "user_help.html";
 
+        private Boolean enableEmbeddedMode = false;
+        public Boolean EnableEmbeddedMode
+        {
+            get { return enableEmbeddedMode; }
+            set { enableEmbeddedMode = value; }
+        }
+
         public string LogLocation
         {
-            get { return logLocation; }
-            set { logLocation = value; }
+            get{return logLocation;}
+            set{logLocation=value;}
         }
 
         public string ApplianceLocation
@@ -70,6 +77,7 @@ namespace GSBControlPanel
             get { return enableLogging; }
             set { enableLogging = value; }
         }
+
         public string AccessLevel
         {
             get { return accesslevel; }
@@ -100,14 +108,13 @@ namespace GSBControlPanel
             set { searchTipsHTMLFileName = value; }
         }
 
-
-        public void SaveConfigurationsToFile(string webConfigFilePath, bool isInstaller)
+        public void SaveConfigurationsToFile(string webConfigFilePath,bool isInstaller)
         {
             GSBApplicationConfigManager gcm = new GSBApplicationConfigManager();
 
             gcm.LoadXML(webConfigFilePath);
             gcm.EnsureParentNodesForGSAParameters();//ensure that all the nodes are in place
-            //else create them
+                                                    //else create them
 
             gcm.ModifyNode("/configuration/appSettings", "siteCollection", SiteCollection);
             gcm.ModifyNode("/configuration/appSettings", "GSALocation", ApplianceLocation);
@@ -129,14 +136,20 @@ namespace GSBControlPanel
             // Code for enabling Session State on SharePoint Web Application
             gcm.ModifyNodeForHttpModule("//httpModules", "Session", SessionStateModule);
 
+            gcm.ModifyNode("/configuration/appSettings", "EnableEmbeddedMode", EnableEmbeddedMode.ToString().ToLower());
+            // UseContainerTheme configuartion parameter value should be same as EnableEmbeddedMode
+            gcm.ModifyNode("/configuration/appSettings", "UseContainerTheme", EnableEmbeddedMode.ToString().ToLower());
+            
             //this needs to be saved only during installation. should be unchnaged otherwise
             if (isInstaller == true)
             {
                 gcm.ModifyNode("/configuration/appSettings", "xslGSA2SP", GsaToSpStyle);//for custom stylesheet
                 gcm.ModifyNode("/configuration/appSettings", "xslSP2result", SpToResultStyle);//for custom stylesheet
-
+                
                 //add for logging
                 gcm.ModifyNode("/configuration/appSettings", "logLocation", logLocation);//for custom stylesheet
+                // Setting filterParameter to "p" only during initial deployment.
+                gcm.ModifyNode("/configuration/appSettings", "filterParameter", "p");
             }
             else
             {
@@ -152,7 +165,7 @@ namespace GSBControlPanel
                 //1. Read the respective nodes form the web.config of as given web ApplicationException.
                 //2. if ValueType = blank or null put value, get current dir and put the values accordingly
 
-
+                
                 //sample values
                 //<add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\GSA2SP.xsl" />
                 //<add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\SP_Actual.xsl" />
@@ -160,7 +173,7 @@ namespace GSBControlPanel
 
                 string StylesheetPath = "";
                 string CurrentDir = Directory.GetCurrentDirectory();//Get the current Directory value (common for all)
-
+                
                 //read style#1
                 StylesheetPath = gcm.GetNodeValue("/configuration/appSettings/add[@key='xslGSA2SP']");
                 if ((null == StylesheetPath) || (StylesheetPath.Trim().Equals("")))
@@ -179,7 +192,6 @@ namespace GSBControlPanel
             }
             gcm.SaveXML();//finally save the resultant modified values
         }
-
 
 
         #region additional parameters for custom styling
