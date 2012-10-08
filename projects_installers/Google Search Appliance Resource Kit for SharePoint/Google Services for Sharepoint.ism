@@ -357,7 +357,7 @@
 		<row><td>GSASAMLBridgeBin</td><td>{15B86AAC-8739-4E19-A386-C0E5A85B33C5}</td><td>BIN6</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASearchControl</td><td>{FE2DFA77-DCCD-48F4-A25E-0BE106A0AB4D}</td><td>CONTROLTEMPLATES</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASearchResults</td><td>{1CB31388-6092-4570-BCDA-77E2E175ED35}</td><td>LAYOUTS</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASimulator</td><td>{569D833A-F9F4-4253-A7EB-CE5849BB800C}</td><td>GSA_SIMULATOR2</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASimulator</td><td>{569D833A-F9F4-4253-A7EB-CE5849BB800C}</td><td>GSA_SIMULATOR2</td><td>8</td><td/><td>gsa.log</td><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASimulatorBin</td><td>{FB470EB6-C240-49F6-9FCE-54E411D0E482}</td><td>BIN4</td><td>8</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASimulatorForSharePointAppPoolComponent</td><td>{7B46C283-ED43-48FC-8200-431F1F39BCA7}</td><td>GSA_RESOURCE_KIT</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASimulatorForSharePointWebsiteComponent</td><td>{915F2FD5-1601-4EBD-9C17-C60C7F47ABA1}</td><td>GSA_RESOURCE_KIT</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -1034,6 +1034,7 @@
 		<col def="S255">ISComments</col>
 		<row><td>CheckASPNET</td><td>65</td><td>ISSetup.dll</td><td>f1</td><td>0</td><td/></row>
 		<row><td>CheckIISServiceRunning</td><td>65</td><td>ISSetup.dll</td><td>f2</td><td>0</td><td/></row>
+		<row><td>CheckIISVersion</td><td>65</td><td>ISSetup.dll</td><td>f3</td><td>0</td><td/></row>
 		<row><td>CleanUpStaleSites</td><td>82</td><td>cleanupstalewebsites.exe</td><td>"[GSA_RESOURCE_KIT]"</td><td/><td/></row>
 		<row><td>GSBLaunchWebAppList</td><td>82</td><td>configuration_wizard.exe</td><td>"[INSTALLDIR]"</td><td/><td/></row>
 		<row><td>GSBUnInstallCleanWebConfig</td><td>82</td><td>gsbcleanupgsasettings.exe</td><td>"[INSTALLDIR]"</td><td/><td/></row>
@@ -1913,7 +1914,7 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
-		<row><td>ac.log</td><td>GSASAMLBridge</td><td>ac.log</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\ac.log</td><td>1</td><td/></row>
+		<row><td>ac.log</td><td>GSASAMLBridge</td><td>ac.log</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;SAMLSRC&gt;\saml-bridge\ac.log</td><td>1</td><td/></row>
 		<row><td>ac.suo</td><td>GSASAMLBridge</td><td>ac.suo</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\ac.suo</td><td>1</td><td/></row>
 		<row><td>app_code.compiled</td><td>GSASAMLBridgeBin</td><td>APP_CO~1.COM|App_Code.compiled</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLBINDIR&gt;\App_Code.compiled</td><td>1</td><td/></row>
 		<row><td>app_code.compiled1</td><td>GSASimulatorBin</td><td>APP_CO~1.COM|App_Code.compiled</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMBINDIR&gt;\App_Code.compiled</td><td>1</td><td/></row>
@@ -1962,7 +1963,7 @@
 		<row><td>google.gif</td><td>GSASimulator</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\google.gif</td><td>1</td><td/></row>
 		<row><td>google.gif1</td><td>GSASAMLBridge</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\google.gif</td><td>1</td><td/></row>
 		<row><td>google_custom_search_waterma</td><td>GoogleWatermarkImage</td><td>GOOGLE~1.GIF|google_custom_search_watermark.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\google_custom_search_watermark.gif</td><td>1</td><td/></row>
-		<row><td>gsa.log</td><td>GSASimulator</td><td>gsa.log</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\gsa.log</td><td>1</td><td/></row>
+		<row><td>gsa.log</td><td>GSASimulator</td><td>gsa.log</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;SAMLSRC&gt;\gsa-simulator\gsa.log</td><td>1</td><td/></row>
 		<row><td>gsa2sp.xsl</td><td>GoogleSearchBoxComponent</td><td>GSA2SP.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\GSA2SP.xsl</td><td>1</td><td/></row>
 		<row><td>gsaapplication.master</td><td>GSASearchResults</td><td>GSAAPP~1.MAS|GSAapplication.master</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSAapplication.master</td><td>1</td><td/></row>
 		<row><td>gsasearcharea.ascx</td><td>GSASearchControl</td><td>GSASEA~1.ASC|GSASearchArea.ascx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSASearchArea.ascx</td><td>1</td><td/></row>
@@ -2497,6 +2498,7 @@
 		<col def="S255">Target</col>
 		<row><td>f1</td><td>64</td><td>GetASPNETKEY</td><td/></row>
 		<row><td>f2</td><td>64</td><td>GetIISServiceState</td><td/></row>
+		<row><td>f3</td><td>65600</td><td>GetIISVersion</td><td/></row>
 	</table>
 
 	<table name="ISLanguage">
@@ -2552,6 +2554,10 @@
 		<col key="yes" def="s255">User</col>
 		<col def="I4">Permission</col>
 		<col def="I4">Attributes</col>
+		<row><td>ac.log</td><td>File</td><td>[%USERDOMAIN]</td><td>Everyone</td><td>1880031679</td><td>0</td></row>
+		<row><td>ac.log</td><td>File</td><td>[%USERDOMAIN]</td><td>Local System</td><td>1880031679</td><td>0</td></row>
+		<row><td>gsa.log</td><td>File</td><td>[%USERDOMAIN]</td><td>Everyone</td><td>1880031679</td><td>0</td></row>
+		<row><td>gsa.log</td><td>File</td><td>[%USERDOMAIN]</td><td>Local System</td><td>0</td><td>0</td></row>
 	</table>
 
 	<table name="ISLogicalDisk">
@@ -4549,7 +4555,8 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>AppSearch</td><td/><td>400</td><td>AppSearch</td><td/></row>
 		<row><td>CCPSearch</td><td>CCP_TEST</td><td>500</td><td>CCPSearch</td><td/></row>
 		<row><td>CheckASPNET</td><td/><td>1215</td><td/><td/></row>
-		<row><td>CheckIISServiceRunning</td><td/><td>1212</td><td/><td/></row>
+		<row><td>CheckIISServiceRunning</td><td/><td>1213</td><td/><td/></row>
+		<row><td>CheckIISVersion</td><td/><td>1212</td><td/><td/></row>
 		<row><td>CostFinalize</td><td/><td>1000</td><td>CostFinalize</td><td/></row>
 		<row><td>CostInitialize</td><td/><td>800</td><td>CostInitialize</td><td/></row>
 		<row><td>ExecuteAction</td><td/><td>1300</td><td>ExecuteAction</td><td/></row>

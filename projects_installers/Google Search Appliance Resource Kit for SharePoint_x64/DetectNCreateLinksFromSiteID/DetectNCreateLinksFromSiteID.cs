@@ -17,6 +17,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.DirectoryServices;
 using System.Windows.Forms;
+using Microsoft.Win32;
+using System.IO;
 
 namespace GoogleResourceKitForSharePoint
 {
@@ -30,8 +32,20 @@ namespace GoogleResourceKitForSharePoint
             string SAML_BRIDGE = "SAMLBridge";
             string SEARCH_BOX_TEST_UTILITY = "SearchBoxTestUtility";
             int siteID = GetWebSiteId(SITENAME);
+            if (siteID == -1)
+            {
+                MessageBox.Show("Site '" + SITENAME + "' is not available.", "DetectNCreateLinksFromSiteID.exe", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
             String port = GetPortFromSiteID(siteID);
+
+            if (port == string.Empty)
+            {
+                MessageBox.Show("Could not detect the port for '" + SITENAME + "'", "DetectNCreateLinksFromSiteID.exe", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             String host = GetHostName();
             String PROTOCOL = "http://";
             String TEST_UTILITY_CONSTANT = "/SearchSite.aspx";
@@ -64,6 +78,7 @@ namespace GoogleResourceKitForSharePoint
                 }
             }
             System.Diagnostics.Process.Start(url);//launch a web site in default browser
+            
         }
 
         /// <summary>
@@ -93,15 +108,19 @@ namespace GoogleResourceKitForSharePoint
                                     result = Int32.Parse(site.Name);
                                     break;
                                 }
-
-
                             }
                         }
                     }
-                    catch (Exception) { }
+                    catch (Exception e)
+                    {
+                        HandleException(e);
+                    }
                 }
             }
-            catch (Exception) { }
+            catch (Exception e)
+            {
+                HandleException(e);
+            }
 
             return result;
         }
@@ -113,19 +132,28 @@ namespace GoogleResourceKitForSharePoint
         /// <returns>Port of the given site. e.g. :80</returns>
         public static String GetPortFromSiteID(int SiteID)
         {
-            DirectoryEntry site = new DirectoryEntry("IIS://localhost/w3svc/" + SiteID);
-            
-            //Get everything currently in the serverbindings propery.
-            PropertyValueCollection serverBindings = site.Properties["ServerBindings"];
-            String PortString = serverBindings[0].ToString();
-            
-            //cleanup the port string
-            if (null != PortString)
+            try
             {
-                PortString = PortString.Replace(":", "");
-            }
+                DirectoryEntry site = new DirectoryEntry("IIS://localhost/w3svc/" + SiteID);
 
-            return PortString;//Get the first port
+                //Get everything currently in the serverbindings propery.
+                PropertyValueCollection serverBindings = site.Properties["ServerBindings"];
+                String PortString = serverBindings[0].ToString();
+
+                //cleanup the port string
+                if (null != PortString)
+                {
+                    PortString = PortString.Replace(":", "");
+                }
+
+                return PortString;//Get the first port
+            }
+            catch (Exception e)
+            {
+                HandleException(e);
+                return string.Empty;
+            }
+            
         }
 
         /// <summary>
@@ -137,5 +165,110 @@ namespace GoogleResourceKitForSharePoint
             return System.Environment.MachineName;
         }
 
+        public static void HandleException(Exception e)
+        {
+            StringBuilder errStr = new StringBuilder(string.Empty);
+
+            try
+            {
+                errStr.AppendLine(e.Message.Trim() + "\n");
+                RegistryKey hklm = Registry.LocalMachine;
+                RegistryKey subKeyInetStp = hklm.OpenSubKey("SOFTWARE\\Microsoft\\InetStp", false);
+                RegistryKey subKeyInetStpComponents = hklm.OpenSubKey("SOFTWARE\\Microsoft\\InetStp\\Components", false);
+                RegistryKey subKeyAspNet = hklm.OpenSubKey("SOFTWARE\\Microsoft\\ASP.NET", false);
+                Object objIISv = null;
+                Object objMetabase = null;
+                Object objASPNETEnabled = null;
+                Object objASPNETv = null;
+                Int16 IISv = 0;
+                Int16 Metabase = 0;
+                Int16 ASPNETEnabled = 0;
+                Int16 ASPv = 0;
+
+                if (subKeyInetStp != null)
+                {
+                    objIISv = subKeyInetStp.GetValue("MajorVersion");
+                    if (objIISv != null)
+                    {
+                        IISv = Convert.ToInt16(objIISv);
+                    }
+                }
+
+                if (subKeyInetStpComponents != null)
+                {
+                    objMetabase = subKeyInetStpComponents.GetValue("Metabase");
+                    if (objMetabase != null)
+                    {
+                        Metabase = Convert.ToInt16(objMetabase);
+                    }
+
+                    objASPNETEnabled = subKeyInetStpComponents.GetValue("ASPNET");
+                    if (objASPNETEnabled != null)
+                    {
+                        ASPNETEnabled = Convert.ToInt16(objASPNETEnabled);
+                    }
+                }
+
+                if (IISv < 6)
+                {
+                    errStr.AppendLine("IIS is either not installed or does not meet minimum requirements.  IIS must be version 6.0 or higher.\n");
+                }
+                else if (IISv == 6)
+                {
+                    //Check for ASP.NET 2.0
+                    if (subKeyAspNet != null)
+                    {
+                        objASPNETv = subKeyAspNet.GetValue("RootVer");
+                        if (objASPNETv != null)
+                        {
+                            string sASPv = Convert.ToString(objASPNETv);
+                            try
+                            {
+                                //Get the ASP.NET version
+                                ASPv = Convert.ToInt16(sASPv.Substring(0, sASPv.IndexOf('.')));
+                                if (!(ASPv >= 2))
+                                {
+                                    errStr.AppendLine("ASP.NET must be version 2.0 or higher.\n");
+                                }
+                            }
+                            catch
+                            {
+                                errStr.AppendLine("ASP.NET must be version 2.0 or higher.\n");
+                            }
+                        }
+                        else
+                        {
+                            errStr.AppendLine("Confirm ASP.NET 2.0 or higher is installed.\n");
+                        }
+                    }
+                    else
+                    {
+                        errStr.AppendLine("Confirm ASP.NET 2.0 or higher is installed.\n");
+                    }
+                }
+                else // IISv > 6
+                {
+                    /* IIS 6 Metabase Compatibility role service and ASP.NET must be enabled*/
+                    if (!(Metabase > 0))
+                    {
+                        errStr.AppendLine("IIS 6 Metabase Compatibility role service not installed.\n");
+                    }
+                    if (!(ASPNETEnabled > 0))
+                    {
+                        errStr.AppendLine("ASP.NET not enabled.\n");
+                    }
+                }
+            }
+
+            catch (Exception) { }
+
+            finally
+            {
+                if (errStr.ToString() != string.Empty)
+                {
+                    MessageBox.Show("The following issues were encountered:\n\n" + errStr, "DetectNCreateLinksFromSiteID.exe", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
     }
 }

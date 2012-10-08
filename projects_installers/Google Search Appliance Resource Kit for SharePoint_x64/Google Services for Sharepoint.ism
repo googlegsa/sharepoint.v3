@@ -229,7 +229,6 @@
 	<table name="AppSearch">
 		<col key="yes" def="s72">Property</col>
 		<col key="yes" def="s72">Signature_</col>
-		<row><td>ASPNETKEY</td><td>NewSignature16</td></row>
 		<row><td>ASPNETKEY</td><td>NewSignature17</td></row>
 		<row><td>IISROOTFOLDER</td><td>_IISROOTFOLDER</td></row>
 		<row><td>IISROOTLOCATION</td><td>NewSignature11</td></row>
@@ -362,7 +361,7 @@
 		<row><td>GSASearchControl_SP2010</td><td>{63872797-1FDC-48C9-86B7-09D99C7F7EB9}</td><td>CONTROLTEMPLATES</td><td>264</td><td>SP2010&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASearchResults_SP2007</td><td>{4F8C6252-6B48-4582-A3B5-441B1115875A}</td><td>LAYOUTS</td><td>264</td><td>SP2010=""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASearchResults_SP2010</td><td>{4AE29CD3-2C2C-4E07-AD49-E704D9A62164}</td><td>LAYOUTS</td><td>264</td><td>SP2010&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASimulator</td><td>{1F30E299-F3D2-4156-94E6-8B0C36FF4EF6}</td><td>GSA_SIMULATOR2</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASimulator</td><td>{1F30E299-F3D2-4156-94E6-8B0C36FF4EF6}</td><td>GSA_SIMULATOR2</td><td>264</td><td/><td>gsa.log</td><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASimulatorBin</td><td>{D037E920-ED96-480E-9C57-8D8E99F0D7D1}</td><td>BIN4</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASimulatorForSharePointAppPoolComponent</td><td>{F741F8C9-6A19-48D7-AD6E-1EBDF38C0EBE}</td><td>GSA_RESOURCE_KIT</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASimulatorForSharePointWebsiteComponent</td><td>{FB9FCD38-D2BE-44E7-AD35-A374E8802B43}</td><td>GSA_RESOURCE_KIT</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -1037,6 +1036,7 @@
 		<col def="S255">ISComments</col>
 		<row><td>CheckASPNET</td><td>1</td><td>ISSetup.dll</td><td>f2</td><td>0</td><td/></row>
 		<row><td>CheckIISServiceRunning</td><td>65</td><td>ISSetup.dll</td><td>f3</td><td>0</td><td/></row>
+		<row><td>CheckIISVersion</td><td>65</td><td>ISSetup.dll</td><td>f1</td><td>0</td><td/></row>
 		<row><td>CleanUpStaleSites</td><td>82</td><td>cleanupstalewebsites.exe</td><td>"[GSA_RESOURCE_KIT]"</td><td/><td/></row>
 		<row><td>GSBLaunchWebAppList</td><td>82</td><td>configuration_wizard.exe</td><td>"[INSTALLDIR]"</td><td/><td/></row>
 		<row><td>GSBUnInstallCleanWebConfig</td><td>82</td><td>gsbcleanupgsasettings.exe</td><td>"[INSTALLDIR]"</td><td/><td/></row>
@@ -1919,7 +1919,7 @@
 		<col def="S255">ISBuildSourcePath</col>
 		<col def="I4">ISAttributes</col>
 		<col def="S72">ISComponentSubFolder_</col>
-		<row><td>ac.log</td><td>GSASAMLBridge</td><td>ac.log</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\ac.log</td><td>1</td><td/></row>
+		<row><td>ac.log</td><td>GSASAMLBridge</td><td>ac.log</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;SAMLSRC&gt;\saml-bridge\ac.log</td><td>1</td><td/></row>
 		<row><td>ac.suo</td><td>GSASAMLBridge</td><td>ac.suo</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\ac.suo</td><td>1</td><td/></row>
 		<row><td>app_code.compiled</td><td>GSASAMLBridgeBin</td><td>APP_CO~1.COM|App_Code.compiled</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLBINDIR&gt;\App_Code.compiled</td><td>1</td><td/></row>
 		<row><td>app_code.compiled1</td><td>GSASimulatorBin</td><td>APP_CO~1.COM|App_Code.compiled</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMBINDIR&gt;\App_Code.compiled</td><td>1</td><td/></row>
@@ -1969,7 +1969,7 @@
 		<row><td>google.gif</td><td>GSASAMLBridge</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\google.gif</td><td>1</td><td/></row>
 		<row><td>google.gif1</td><td>GSASimulator</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\google.gif</td><td>1</td><td/></row>
 		<row><td>google_custom_search_waterma</td><td>GoogleWatermarkImage</td><td>GOOGLE~1.GIF|google_custom_search_watermark.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\google_custom_search_watermark.gif</td><td>1</td><td/></row>
-		<row><td>gsa.log</td><td>GSASimulator</td><td>gsa.log</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\searchboxtestutilitymockgsa\gsa-simulator\gsa.log</td><td>1</td><td/></row>
+		<row><td>gsa.log</td><td>GSASimulator</td><td>gsa.log</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;SAMLSRC&gt;\gsa-simulator\gsa.log</td><td>1</td><td/></row>
 		<row><td>gsa2sp.xsl</td><td>GoogleSearchBoxComponent</td><td>GSA2SP.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\GSA2SP.xsl</td><td>1</td><td/></row>
 		<row><td>gsaapplication.master</td><td>GSASearchResults_SP2007</td><td>GSAAPP~1.MAS|GSAapplication.master</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSAapplication.master</td><td>1</td><td/></row>
 		<row><td>gsaforward.aspx</td><td>GSASearchResults_SP2010</td><td>GSAFOR~1.ASP|GSAForward.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSAForward.aspx</td><td>1</td><td/></row>
@@ -2507,6 +2507,7 @@
 		<col def="I4">Type</col>
 		<col def="s72">Source</col>
 		<col def="S255">Target</col>
+		<row><td>f1</td><td>64</td><td>GetIISVersion</td><td/></row>
 		<row><td>f2</td><td>0</td><td>GetASPNETKEY</td><td/></row>
 		<row><td>f3</td><td>64</td><td>GetIISServiceState</td><td/></row>
 	</table>
@@ -2564,6 +2565,10 @@
 		<col key="yes" def="s255">User</col>
 		<col def="I4">Permission</col>
 		<col def="I4">Attributes</col>
+		<row><td>ac.log</td><td>File</td><td>[%USERDOMAIN]</td><td>Everyone</td><td>1880031679</td><td>0</td></row>
+		<row><td>ac.log</td><td>File</td><td>[%USERDOMAIN]</td><td>Local System</td><td>1880031679</td><td>0</td></row>
+		<row><td>gsa.log</td><td>File</td><td>[%USERDOMAIN]</td><td>Everyone</td><td>1880031679</td><td>0</td></row>
+		<row><td>gsa.log</td><td>File</td><td>[%USERDOMAIN]</td><td>Local System</td><td>1880031679</td><td>0</td></row>
 	</table>
 
 	<table name="ISLogicalDisk">
@@ -4594,6 +4599,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>CCPSearch</td><td>CCP_TEST</td><td>500</td><td>CCPSearch</td><td/></row>
 		<row><td>CheckASPNET</td><td/><td>1219</td><td/><td/></row>
 		<row><td>CheckIISServiceRunning</td><td/><td>1218</td><td/><td/></row>
+		<row><td>CheckIISVersion</td><td/><td>1216</td><td/><td/></row>
 		<row><td>CostFinalize</td><td/><td>1000</td><td>CostFinalize</td><td/></row>
 		<row><td>CostInitialize</td><td/><td>800</td><td>CostInitialize</td><td/></row>
 		<row><td>ExecuteAction</td><td/><td>1300</td><td>ExecuteAction</td><td/></row>
@@ -4988,7 +4994,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>SAMLPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
 		<row><td>SHOWLAUNCHPROGRAM</td><td>0</td><td/></row>
 		<row><td>SearchControlOriginalLocation</td><td>C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\</td><td/></row>
-		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;STSADMPATH;SAML_BRIDGE3;GSA_RESOURCE_KIT;SHAREPOINTLOCATION;STSADMPATH;SP2010;ASPNETKEY;ASPNETKEY</td><td/></row>
+		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;STSADMPATH;SAML_BRIDGE3;GSA_RESOURCE_KIT;SHAREPOINTLOCATION;STSADMPATH;SP2010;ASPNETKEY</td><td/></row>
 		<row><td>SetupType</td><td>Typical</td><td/></row>
 		<row><td>TESTUTILITYPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
 		<row><td>UpgradeCode</td><td>{A9A5C3C2-1F45-47DA-877B-66078B3EA554}</td><td/></row>
@@ -5042,8 +5048,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>NewSignature11</td><td>2</td><td>SOFTWARE\Microsoft\INetStp</td><td>PathWWWRoot</td><td>2</td></row>
 		<row><td>NewSignature13</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\14.0</td><td>Location</td><td>18</td></row>
 		<row><td>NewSignature15</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\14.0</td><td>Location</td><td>18</td></row>
-		<row><td>NewSignature16</td><td>2</td><td>NewKey</td><td/><td/></row>
-		<row><td>NewSignature17</td><td>2</td><td>Software\Microsoft\InetStp\Components</td><td>ASPNET</td><td>18</td></row>
+		<row><td>NewSignature17</td><td>2</td><td>Software\Microsoft\ASP.NET</td><td>RootVer</td><td>18</td></row>
 		<row><td>_IISROOTFOLDER</td><td>2</td><td>Software\Microsoft\InetStp</td><td>PathWWWRoot</td><td>16</td></row>
 		<row><td>_IIS_VERSION</td><td>2</td><td>SYSTEM\CurrentControlSet\Services\W3SVC\Parameters</td><td>MajorVersion</td><td>18</td></row>
 	</table>
