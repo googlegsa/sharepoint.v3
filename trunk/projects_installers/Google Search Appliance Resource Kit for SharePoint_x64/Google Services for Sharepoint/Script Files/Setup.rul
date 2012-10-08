@@ -19,6 +19,7 @@
 // The argument it accepts must be a handle to the Installer database.
 export prototype GetASPNETKEY(HWND);
 export prototype GetIISServiceState(HWND);
+export prototype GetIISVersion(HWND);
 
 // To Do:  Declare global variables, define constants, and prototype user-
 //         defined and DLL functions here.
@@ -55,7 +56,7 @@ function GetASPNETKEY(hMSI)
 begin
 	nvSize = 256;
 	MsiGetProperty(ISMSI_HANDLE, "ASPNETKEY", szASPNETKEY, nvSize);
-	if (szASPNETKEY != "#1") then
+	if (szASPNETKEY = "") then
 		//Error
 		MessageBox("WARNING: Installer could not confirm that ASP.NET is installed and enabled.", WARNING);
 	endif;
@@ -76,4 +77,51 @@ begin
 		//Error
 		MessageBox("WARNING: Installer could not detect the state of the IIS service.  IIS service may not be installed.", WARNING);
 	endif;
+end;
+
+
+function GetIISVersion(hMSI)
+	NUMBER nResult, nVersion, nType, nSize, nMetabase, nASPNET;
+	STRING szName, szValue;
+begin
+	szName = "MajorVersion";
+	RegDBSetDefaultRoot(HKEY_LOCAL_MACHINE);	
+	nSize = -1;
+	nType = REGDB_NUMBER;
+
+	nResult = RegDBGetKeyValueEx("SOFTWARE\\Microsoft\\InetStp", szName, nType, szValue, nSize);
+	if (ISERR_SUCCESS != nResult) then
+		MessageBox("An error occurred getting IIS version.", WARNING);
+	endif;
+
+	nResult = StrToNum(nVersion, szValue);
+	
+	//if IIS version is greater than 6.0
+	if(nVersion > 6) then
+
+		//check that IIS 6 Metabase Compatibility is installed
+		szName = "Metabase";
+		nResult = RegDBGetKeyValueEx("Software\\Microsoft\\InetStp\\Components", szName, nType, szValue, nSize);
+		if (ISERR_SUCCESS != nResult) then
+			MessageBox("WARNING: An error occurred detecting IIS 6 Metabase Compatibility role service.  IIS 6 Metabase Compatibility is required for IIS 7.0 and higher.", WARNING);
+		else
+			nResult = StrToNum(nMetabase, szValue);
+			if(!(nMetabase > 0)) then
+				MessageBox("WARNING: Installer did not detect that IIS 6 Metabase Compatibility is installed.  IIS 6 Metabase Compatibility is required for IIS 7.0 and higher.", WARNING);
+			endif;
+		endif;
+
+		//check that ASP.NET is enabled
+		szName = "ASPNET";
+		nResult = RegDBGetKeyValueEx("Software\\Microsoft\\InetStp\\Components", szName, nType, szValue, nSize);
+		if (ISERR_SUCCESS != nResult) then
+			MessageBox("WARNING: An error occurred detecting ASP.NET.  Please confirm ASP.NET role service is installed and enabled.", WARNING);
+		else
+			nResult = StrToNum(nASPNET, szValue);
+			if(!(nASPNET > 0)) then
+				MessageBox("WARNING: ASP.NET role service is not enabled.", WARNING);
+			endif;
+		endif;
+	endif;
+	
 end;
