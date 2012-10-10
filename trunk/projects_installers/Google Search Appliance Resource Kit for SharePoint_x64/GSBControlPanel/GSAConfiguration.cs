@@ -150,6 +150,9 @@ namespace GSBControlPanel
                 gcm.ModifyNode("/configuration/appSettings", "logLocation", logLocation);//for custom stylesheet
                 // Setting filterParameter to "p" only during initial deployment.
                 gcm.ModifyNode("/configuration/appSettings", "filterParameter", "p");
+                // ShowScope and ShowSearchTips parameters to True only during initial deployment
+                gcm.ModifyNode("/configuration/appSettings", "showScope", "true");
+                gcm.ModifyNode("/configuration/appSettings", "showSearchTips", "true");
             }
             else
             {
