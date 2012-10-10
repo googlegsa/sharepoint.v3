@@ -199,9 +199,6 @@ namespace GSBControlPanel
         public GSAConfiguration PopulateGSAConfiguration(string ApplicationBasePath)
         {
             GSAConfiguration gc = new GSAConfiguration();
-            Boolean embeddedModeApplicable = SPFarm.Local.BuildVersion.Major == 14;
-
-            
             if (tbGSALocation.Text != null)
             { 
                 //remove the trailing slash if present
@@ -244,7 +241,7 @@ namespace GSBControlPanel
             {
                 gc.UseGsaStyling = "true";
             }
-            gc.EnableEmbeddedMode = embeddedModeApplicable && rbGSAFrontEnd.Checked;  
+            gc.EnableEmbeddedMode = rbGSAFrontEnd.Checked;  
 
             if (rbPublic.Checked == true)
             {
@@ -322,16 +319,6 @@ namespace GSBControlPanel
         private void rbGSAFrontEnd_CheckedChanged(object sender, EventArgs e)
         {
             enableFrontendConfiguration(rbGSAFrontEnd.Checked);
-            if (rbGSAFrontEnd.Checked)
-            {
-                Boolean embeddedModeApplicable = SPFarm.Local.BuildVersion.Major == 14;
-                if (!embeddedModeApplicable && loadComplete)
-                {
-                    MessageBox.Show("You need to install SPS_Frontend on the GSA. For more information, please refer the product documentation.", "Google Search Box for SharePoint", MessageBoxButtons.OK);
-                }
-
-            }
-           
         }
 
         private void rbPublic_CheckedChanged(object sender, EventArgs e)
