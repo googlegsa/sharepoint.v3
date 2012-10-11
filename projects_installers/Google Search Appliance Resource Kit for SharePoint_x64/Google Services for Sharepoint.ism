@@ -1973,6 +1973,7 @@
 		<row><td>gsa2sp.xsl</td><td>GoogleSearchBoxComponent</td><td>GSA2SP.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\GSA2SP.xsl</td><td>1</td><td/></row>
 		<row><td>gsaapplication.master</td><td>GSASearchResults_SP2007</td><td>GSAAPP~1.MAS|GSAapplication.master</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSAapplication.master</td><td>1</td><td/></row>
 		<row><td>gsaforward.aspx</td><td>GSASearchResults_SP2010</td><td>GSAFOR~1.ASP|GSAForward.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSAForward.aspx</td><td>1</td><td/></row>
+		<row><td>gsaforward.aspx1</td><td>GSASearchResults_SP2007</td><td>GSAFOR~1.ASP|GSAForward.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSAForward.aspx</td><td>1</td><td/></row>
 		<row><td>gsasearcharea.ascx</td><td>GSASearchControl_SP2007</td><td>GSASEA~1.ASC|GSASearchArea.ascx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSASearchArea.ascx</td><td>1</td><td/></row>
 		<row><td>gsasearcharea.ascx1</td><td>GSASearchControl_SP2010</td><td>GSASEA~1.ASC|GSASearchArea.ascx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSASearchArea.ascx</td><td>1</td><td/></row>
 		<row><td>gsasearchresults.aspx</td><td>GSASearchResults_SP2010</td><td>GSASEA~1.ASP|GSASearchresults.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSASearchresults.aspx</td><td>1</td><td/></row>
@@ -4597,9 +4598,9 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<col def="I4">ISAttributes</col>
 		<row><td>AppSearch</td><td/><td>400</td><td>AppSearch</td><td/></row>
 		<row><td>CCPSearch</td><td>CCP_TEST</td><td>500</td><td>CCPSearch</td><td/></row>
-		<row><td>CheckASPNET</td><td/><td>1219</td><td/><td/></row>
-		<row><td>CheckIISServiceRunning</td><td/><td>1218</td><td/><td/></row>
-		<row><td>CheckIISVersion</td><td/><td>1216</td><td/><td/></row>
+		<row><td>CheckASPNET</td><td>Not Installed</td><td>1219</td><td/><td/></row>
+		<row><td>CheckIISServiceRunning</td><td>Not Installed</td><td>1218</td><td/><td/></row>
+		<row><td>CheckIISVersion</td><td>Not Installed</td><td>1216</td><td/><td/></row>
 		<row><td>CostFinalize</td><td/><td>1000</td><td>CostFinalize</td><td/></row>
 		<row><td>CostInitialize</td><td/><td>800</td><td>CostInitialize</td><td/></row>
 		<row><td>ExecuteAction</td><td/><td>1300</td><td>ExecuteAction</td><td/></row>
