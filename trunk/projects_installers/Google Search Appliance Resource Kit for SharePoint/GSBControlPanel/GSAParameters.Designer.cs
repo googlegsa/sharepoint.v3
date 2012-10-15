@@ -98,7 +98,7 @@ namespace GSBControlPanel
             this.tbSiteCollection.Size = new System.Drawing.Size(377, 20);
             this.tbSiteCollection.TabIndex = 1;
             this.tbSiteCollection.Text = "default_collection";
-            this.toolTip1.SetToolTip(this.tbSiteCollection, "Enter the collection name. For entering multiple collections use pipe (|) as sepa" +
+            this.toolTip1.SetToolTip(this.tbSiteCollection, "Enter the GSA collection name. For entering multiple collections use pipe (|) as sepa" +
                     "rator. E.g. colln1|colln2");
             this.tbSiteCollection.TextChanged += new System.EventHandler(this.tbSiteCollection_TextChanged);
             // 
