@@ -371,7 +371,8 @@ public abstract class ListsUtil {
 
       LOGGER.config("Received change type as: " + changeType);
 
-      if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
+      if (SPConstants.DELETE.equalsIgnoreCase(changeType) ||
+          SPConstants.MOVE_AWAY.equalsIgnoreCase(changeType)) {
         if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
           // Delete feed processing is done only in case of
           // content feed

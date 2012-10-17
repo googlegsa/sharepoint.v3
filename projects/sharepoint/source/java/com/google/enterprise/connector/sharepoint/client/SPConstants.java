@@ -188,6 +188,7 @@ public class SPConstants {
   public static final String DELETE = "Delete";
   public static final String RESTORE = "Restore";
   public static final String RENAME = "Rename";
+  public static final String MOVE_AWAY = "MoveAway";
   public static final String DATA = "data";
   public static final String LIST_ITEM_COLLECTION_POSITION_NEXT = "ListItemCollectionPositionNext";
   public static final String CONTENT_TYPE_FOLDER = "Folder";
