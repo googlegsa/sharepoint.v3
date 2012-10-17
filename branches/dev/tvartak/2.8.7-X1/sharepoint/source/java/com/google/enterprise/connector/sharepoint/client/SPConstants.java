@@ -180,6 +180,7 @@ public class SPConstants {
   public static final String FIELD = "Field";
   public static final String CHANGETYPE = "ChangeType";
   public static final String DELETE = "Delete";
+  public static final String MOVE_AWAY = "MoveAway";
   public static final String RESTORE = "Restore";
   public static final String RENAME = "Rename";
   public static final String DATA = "data";

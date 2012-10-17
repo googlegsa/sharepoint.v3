@@ -1226,7 +1226,8 @@ public class ListsWS {
 
       LOGGER.config("Received change type as: " + changeType);
 
-      if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
+      if (SPConstants.DELETE.equalsIgnoreCase(changeType) ||
+          SPConstants.MOVE_AWAY.equalsIgnoreCase(changeType)) {
         if (FeedType.CONTENT_FEED != sharepointClientContext.getFeedType()) {
           // Delete feed processing is done only in case of
           // content feed
@@ -1244,8 +1245,9 @@ public class ListsWS {
         }
         LOGGER.log(Level.INFO, "ItemID ["
             + itemId
-            + "] has been deleted. Delete feeds will be sent for this and all the dependednt IDs. listURL ["
-            + list.getListURL() + " ] ");
+            + "] has been deleted / moved out. "
+            + "Delete feeds will be sent for this and all the dependednt IDs."
+            + " listURL [" + list.getListURL() + " ] ");
         try {
           deletedIDs.addAll(list.getExtraIDs(itemId));
         } catch (final Exception e) {
