@@ -8,6 +8,28 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
+THIS IS A DEVELOPMENT BUILD THAT IS NOT SUPPORTED BY GOOGLE.
+
+If you have issues with this build, you can send email to
+google-enterprise-connectors-feedback@googlegroups.com.
+Google may not respond to every message.
+
+Release 2.8.7-X1, October 17, 2012
+====================================
+
+Introduction
+------------
+This is an experimental release with some enhancements. Users of previous releases are encouraged to upgrade. Your feedback is important to us.
+Keep in mind that we are continuing to work on the Google Search Appliance Connector for SharePoint and things may change in the future.
+
+Summary of Changes / New Features
+---------------------------------
+This patch contains a fix for the following issues:
+
+Issue 7327268 Sharepoint connector does not send delete feeds for moved documents
+Issue 6513812 SharePoint Connector should support multivalued metadata
+
+
 Release 2.8.6, September 24, 2012
 ====================================
 
