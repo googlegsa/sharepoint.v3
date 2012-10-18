@@ -1,6 +1,6 @@
-Welcome to the Google Search Box for SharePoint 2.6.10
+Welcome to the Google Search Box for SharePoint 3.0.0
 
-The Google Search Box for SharePoint overrides the native SharePoint site search with search provided by the Google Search Appliance (GSA), while retaining the look-and-feel of the native SharePoint search facility. The Google Search Box for SharePoint works with the Google Search Appliance Connector for SharePoint, which must be deployed before you install the Search Box.
+The Google Search Box for SharePoint overrides the native SharePoint site search with search provided by the Google Search Appliance (GSA), while retaining the look-and-feel of the native SharePoint search facility.
 
 The Google Search Box for SharePoint can be used to perform search on 'Public' and 'Public and secured' contents indexed on Google Search Appliance using the context of the currently logged in user. Use the Google Search Box to search all documents indexed on GSA. The Google Search Box supports the HTTP Basic, NTLM & Kerberos authentication protocols, with some constraints.
 
@@ -9,7 +9,7 @@ The Google Search Box for SharePoint is enabled on all SharePoint web applicatio
 Documentation Links
 -------------------
     * Configuring the Google Search Box for Microsoft SharePoint
-      http://code.google.com/apis/searchappliance/documentation/connectors/260/connector_admin/searchbox_sharepoint.html
+      http://www.google.com/support/enterprise/static/gsa/docs/admin/connector_30/searchbox_sharepoint/
 
     * Google Enterprise Connector for SharePoint
       http://code.google.com/p/google-enterprise-connector-sharepoint/
