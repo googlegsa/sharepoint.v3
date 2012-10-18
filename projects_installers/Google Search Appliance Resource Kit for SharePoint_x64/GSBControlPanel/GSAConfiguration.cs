@@ -41,6 +41,13 @@ namespace GSBControlPanel
         private string defaultSearchType = "publicAndSecure";
         private string searchTipsHTMLFileName = "user_help.html";
 
+        private Boolean enableEmbeddedMode = false;
+        public Boolean EnableEmbeddedMode
+        {
+            get { return enableEmbeddedMode; }
+            set { enableEmbeddedMode = value; }
+        }
+
         public string LogLocation
         {
             get{return logLocation;}
@@ -128,6 +135,10 @@ namespace GSBControlPanel
 
             // Code for enabling Session State on SharePoint Web Application
             gcm.ModifyNodeForHttpModule("//httpModules","//modules", "Session", SessionStateModule);
+
+            gcm.ModifyNode("/configuration/appSettings", "EnableEmbeddedMode", EnableEmbeddedMode.ToString().ToLower());
+            // UseContainerTheme configuartion parameter value should be same as EnableEmbeddedMode
+            gcm.ModifyNode("/configuration/appSettings", "UseContainerTheme", EnableEmbeddedMode.ToString().ToLower());
             
             //this needs to be saved only during installation. should be unchnaged otherwise
             if (isInstaller == true)
@@ -137,6 +148,11 @@ namespace GSBControlPanel
                 
                 //add for logging
                 gcm.ModifyNode("/configuration/appSettings", "logLocation", logLocation);//for custom stylesheet
+                // Setting filterParameter to "p" only during initial deployment.
+                gcm.ModifyNode("/configuration/appSettings", "filterParameter", "p");
+                // ShowScope and ShowSearchTips parameters to True only during initial deployment
+                gcm.ModifyNode("/configuration/appSettings", "showScope", "true");
+                gcm.ModifyNode("/configuration/appSettings", "showSearchTips", "true");
             }
             else
             {
