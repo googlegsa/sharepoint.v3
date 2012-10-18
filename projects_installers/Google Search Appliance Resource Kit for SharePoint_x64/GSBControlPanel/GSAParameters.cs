@@ -22,7 +22,6 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.SharePoint.Administration;
 
 namespace GSBControlPanel
 {
@@ -49,8 +48,6 @@ namespace GSBControlPanel
         [DllImport("User32.Dll")]
         public static extern IntPtr DrawMenuBar(int hwnd);
         #endregion API declarations and constants
-
-        Boolean loadComplete = false;
 
         //disable the Close button
         public void DisableCloseButton(int hWnd)
@@ -121,16 +118,33 @@ namespace GSBControlPanel
         {
             GSBApplicationConfigManager gcm = new GSBApplicationConfigManager();
             gcm.LoadXML(webConfigFilePath);
-            string myVal = readAppSettings(gcm, "GSALocation");
+            string myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='GSALocation']");
+
+            if (null == myVal)
+            {
+                myVal = "";
+            }
             tbGSALocation.Text = myVal;
 
-            myVal = readAppSettings(gcm, "siteCollection");
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='siteCollection']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
             tbSiteCollection.Text = myVal;
 
-            myVal = readAppSettings(gcm, "frontEnd");
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='frontEnd']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
             tbFrontEnd.Text = myVal;
 
-            myVal = readAppSettings(gcm, "GSAStyle");
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='GSAStyle']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
             if (myVal.ToLower().Equals("true"))
             {
                 rbGSAFrontEnd.Checked = true;
@@ -140,8 +154,11 @@ namespace GSBControlPanel
                 rbCustomStylesheet.Checked = true;
             }
 
-
-            myVal = readAppSettings(gcm, "verbose");
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='verbose']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
             if (myVal.ToLower().Equals("true"))
             {
                 cbEnableLogging.Checked = true;
@@ -152,7 +169,11 @@ namespace GSBControlPanel
             }
 
             // Get value for accesslevel key from web.config and accordingly populate the radiobuttons
-            myVal = readAppSettings(gcm, "accesslevel");
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='accesslevel']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
             if (myVal.ToLower().Equals("a"))
             {
                 rbPublicAndSecure.Checked = true;
@@ -163,8 +184,12 @@ namespace GSBControlPanel
             }
 
             // Get value for defaultSearchType key from web.config and accordingly populate the radiobuttons
-            myVal = readAppSettings(gcm, "defaultSearchType");
-            if (myVal.ToLower().Equals("publicandsecure"))
+            myVal = gcm.GetNodeValue("/configuration/appSettings/add[@key='defaultSearchType']");
+            if (null == myVal)
+            {
+                myVal = "";
+            }
+            if (myVal.ToLower().Equals("publicAndSecure"))
             {
                 rbPublicAndSecureDefaultSearchType.Checked = true;
             }
@@ -172,24 +197,6 @@ namespace GSBControlPanel
             {
                 rbPublicDefaultSearchType.Checked = true;
             }
-
-            enableFrontendConfiguration(rbGSAFrontEnd.Checked);
-            enableDefaultSearchTypeConfiguration(rbPublicAndSecure.Checked);
-            loadComplete = true;
-        }
-
-        private String readAppSettings(GSBApplicationConfigManager gcm, String key)
-        {
-            String appSettingValue = gcm.GetNodeValue(String.Format("/configuration/appSettings/add[@key='{0}']", key));
-            if (String.IsNullOrEmpty(appSettingValue))
-            {
-                return String.Empty;
-            }
-            else
-            {
-                return appSettingValue.Trim();
-            }
-
         }
 
         /// <summary>
@@ -199,6 +206,8 @@ namespace GSBControlPanel
         public GSAConfiguration PopulateGSAConfiguration(string ApplicationBasePath)
         {
             GSAConfiguration gc = new GSAConfiguration();
+
+            
             if (tbGSALocation.Text != null)
             { 
                 //remove the trailing slash if present
@@ -241,7 +250,6 @@ namespace GSBControlPanel
             {
                 gc.UseGsaStyling = "true";
             }
-            gc.EnableEmbeddedMode = rbGSAFrontEnd.Checked;  
 
             if (rbPublic.Checked == true)
             {
@@ -305,41 +313,5 @@ namespace GSBControlPanel
                 btnOk.Enabled = true;
             }
         }
-
-        private void rbCustomStylesheet_CheckedChanged(object sender, EventArgs e)
-        {
-            enableFrontendConfiguration(rbGSAFrontEnd.Checked);
-        }
-
-        private void enableFrontendConfiguration(Boolean applicable)
-        {
-            tbFrontEnd.Enabled = applicable;
-        }
-
-        private void rbGSAFrontEnd_CheckedChanged(object sender, EventArgs e)
-        {
-            enableFrontendConfiguration(rbGSAFrontEnd.Checked);
-        }
-
-        private void rbPublic_CheckedChanged(object sender, EventArgs e)
-        {
-            enableDefaultSearchTypeConfiguration(rbPublicAndSecure.Checked);
-        }
-        private void enableDefaultSearchTypeConfiguration(Boolean applicable)
-        {
-            rbPublicDefaultSearchType.Enabled = applicable;
-            rbPublicAndSecureDefaultSearchType.Enabled = applicable;
-            if (!applicable)
-            {
-                rbPublicDefaultSearchType.Checked = true;
-            }
-        }
-        
-        private void rbPublicAndSecure_CheckedChanged(object sender, EventArgs e)
-        {
-            enableDefaultSearchTypeConfiguration(rbPublicAndSecure.Checked);
-
-        }
-
     }
 }

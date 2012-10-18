@@ -1942,13 +1942,9 @@ public sealed class GssAclUtility
             return null;
         }
         GssPrincipal gssPrincipal = null;
-        SPPrincipalInfo userInfo = null;
-        // ResolvePrincipal is very expensive for deleted users in multidomain environments - check if login is valid first
-        if (SPUtility.IsLoginValid(site, login))
-        {
-            userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, login, SPPrincipalType.All, SPPrincipalSource.All, false);
-        }
-        if (userInfo == null)
+        
+        SPPrincipalInfo userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, login, SPPrincipalType.All, SPPrincipalSource.All, false);
+        if (null == userInfo)
         {
             gssPrincipal = new GssPrincipal(login, -2);
             gssPrincipal.AddLogMessage("[ " + login + " ] could not be resolved to a valid windows principal. ");

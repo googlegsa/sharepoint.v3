@@ -45,17 +45,17 @@ namespace GSBControlPanel
             this.rbCustomStylesheet = new System.Windows.Forms.RadioButton();
             this.rbPublicAndSecure = new System.Windows.Forms.RadioButton();
             this.rbPublic = new System.Windows.Forms.RadioButton();
-            this.rbPublicAndSecureDefaultSearchType = new System.Windows.Forms.RadioButton();
-            this.rbPublicDefaultSearchType = new System.Windows.Forms.RadioButton();
             this.label2 = new System.Windows.Forms.Label();
             this.gbSelectFrontEnd = new System.Windows.Forms.GroupBox();
-            this.lblStylesheet = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.lblCheckConnectivityStatus = new System.Windows.Forms.Label();
             this.lblCause = new System.Windows.Forms.Label();
             this.lblServeMethod = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.rbPublicAndSecureDefaultSearchType = new System.Windows.Forms.RadioButton();
             this.lblDefaultSearchType = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.rbPublicDefaultSearchType = new System.Windows.Forms.RadioButton();
             this.gbSelectFrontEnd.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -98,7 +98,7 @@ namespace GSBControlPanel
             this.tbSiteCollection.Size = new System.Drawing.Size(377, 20);
             this.tbSiteCollection.TabIndex = 1;
             this.tbSiteCollection.Text = "default_collection";
-            this.toolTip1.SetToolTip(this.tbSiteCollection, "Enter the GSA collection name. For entering multiple collections use pipe (|) as sepa" +
+            this.toolTip1.SetToolTip(this.tbSiteCollection, "Enter the collection name. For entering multiple collections use pipe (|) as sepa" +
                     "rator. E.g. colln1|colln2");
             this.tbSiteCollection.TextChanged += new System.EventHandler(this.tbSiteCollection_TextChanged);
             // 
@@ -113,7 +113,7 @@ namespace GSBControlPanel
             // 
             // tbFrontEnd
             // 
-            this.tbFrontEnd.Location = new System.Drawing.Point(115, 152);
+            this.tbFrontEnd.Location = new System.Drawing.Point(114, 110);
             this.tbFrontEnd.Name = "tbFrontEnd";
             this.tbFrontEnd.Size = new System.Drawing.Size(377, 20);
             this.tbFrontEnd.TabIndex = 2;
@@ -125,7 +125,7 @@ namespace GSBControlPanel
             // lblFrontEnd
             // 
             this.lblFrontEnd.AutoSize = true;
-            this.lblFrontEnd.Location = new System.Drawing.Point(8, 155);
+            this.lblFrontEnd.Location = new System.Drawing.Point(9, 113);
             this.lblFrontEnd.Name = "lblFrontEnd";
             this.lblFrontEnd.Size = new System.Drawing.Size(53, 13);
             this.lblFrontEnd.TabIndex = 0;
@@ -134,7 +134,7 @@ namespace GSBControlPanel
             // cbEnableLogging
             // 
             this.cbEnableLogging.AutoSize = true;
-            this.cbEnableLogging.Location = new System.Drawing.Point(120, 285);
+            this.cbEnableLogging.Location = new System.Drawing.Point(92, 289);
             this.cbEnableLogging.Name = "cbEnableLogging";
             this.cbEnableLogging.Size = new System.Drawing.Size(65, 17);
             this.cbEnableLogging.TabIndex = 6;
@@ -173,7 +173,6 @@ namespace GSBControlPanel
             this.rbGSAFrontEnd.Text = "Use Search Appliance\'s Front End";
             this.toolTip1.SetToolTip(this.rbGSAFrontEnd, "Select to use Appliance\'s Frontend for rendering the search result");
             this.rbGSAFrontEnd.UseVisualStyleBackColor = true;
-            this.rbGSAFrontEnd.CheckedChanged += new System.EventHandler(this.rbGSAFrontEnd_CheckedChanged);
             // 
             // rbCustomStylesheet
             // 
@@ -187,7 +186,6 @@ namespace GSBControlPanel
             this.rbCustomStylesheet.Text = "Use local stylesheet";
             this.toolTip1.SetToolTip(this.rbCustomStylesheet, "Select to use local stylesheet deployed on your machine. ");
             this.rbCustomStylesheet.UseVisualStyleBackColor = true;
-            this.rbCustomStylesheet.CheckedChanged += new System.EventHandler(this.rbCustomStylesheet_CheckedChanged);
             // 
             // rbPublicAndSecure
             // 
@@ -199,10 +197,8 @@ namespace GSBControlPanel
             this.rbPublicAndSecure.TabIndex = 1;
             this.rbPublicAndSecure.TabStop = true;
             this.rbPublicAndSecure.Text = "Public and Secure";
-            this.toolTip1.SetToolTip(this.rbPublicAndSecure, "Select to configure Search Box to serve  public as well as secured search results" +
-                    ".");
+            this.toolTip1.SetToolTip(this.rbPublicAndSecure, "Select to use Appliance\'s Frontend for rendering the search result");
             this.rbPublicAndSecure.UseVisualStyleBackColor = true;
-            this.rbPublicAndSecure.CheckedChanged += new System.EventHandler(this.rbPublicAndSecure_CheckedChanged);
             // 
             // rbPublic
             // 
@@ -212,33 +208,8 @@ namespace GSBControlPanel
             this.rbPublic.Size = new System.Drawing.Size(54, 17);
             this.rbPublic.TabIndex = 0;
             this.rbPublic.Text = "Public";
-            this.toolTip1.SetToolTip(this.rbPublic, "Select to configure Search Box to serve public only search results.");
+            this.toolTip1.SetToolTip(this.rbPublic, "Select to use local stylesheet deployed on your machine. ");
             this.rbPublic.UseVisualStyleBackColor = true;
-            this.rbPublic.CheckedChanged += new System.EventHandler(this.rbPublic_CheckedChanged);
-            // 
-            // rbPublicAndSecureDefaultSearchType
-            // 
-            this.rbPublicAndSecureDefaultSearchType.AutoSize = true;
-            this.rbPublicAndSecureDefaultSearchType.Checked = true;
-            this.rbPublicAndSecureDefaultSearchType.Location = new System.Drawing.Point(178, 13);
-            this.rbPublicAndSecureDefaultSearchType.Name = "rbPublicAndSecureDefaultSearchType";
-            this.rbPublicAndSecureDefaultSearchType.Size = new System.Drawing.Size(149, 17);
-            this.rbPublicAndSecureDefaultSearchType.TabIndex = 1;
-            this.rbPublicAndSecureDefaultSearchType.TabStop = true;
-            this.rbPublicAndSecureDefaultSearchType.Text = "Public and Secure Search";
-            this.toolTip1.SetToolTip(this.rbPublicAndSecureDefaultSearchType, "Select to configure Public and Secure Search as default search type.");
-            this.rbPublicAndSecureDefaultSearchType.UseVisualStyleBackColor = true;
-            // 
-            // rbPublicDefaultSearchType
-            // 
-            this.rbPublicDefaultSearchType.AutoSize = true;
-            this.rbPublicDefaultSearchType.Location = new System.Drawing.Point(6, 13);
-            this.rbPublicDefaultSearchType.Name = "rbPublicDefaultSearchType";
-            this.rbPublicDefaultSearchType.Size = new System.Drawing.Size(91, 17);
-            this.rbPublicDefaultSearchType.TabIndex = 0;
-            this.rbPublicDefaultSearchType.Text = "Public Search";
-            this.toolTip1.SetToolTip(this.rbPublicDefaultSearchType, "Select to configure Public Search as default search type.");
-            this.rbPublicDefaultSearchType.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
@@ -253,20 +224,20 @@ namespace GSBControlPanel
             // 
             this.gbSelectFrontEnd.Controls.Add(this.rbGSAFrontEnd);
             this.gbSelectFrontEnd.Controls.Add(this.rbCustomStylesheet);
-            this.gbSelectFrontEnd.Location = new System.Drawing.Point(115, 103);
+            this.gbSelectFrontEnd.Location = new System.Drawing.Point(114, 136);
             this.gbSelectFrontEnd.Name = "gbSelectFrontEnd";
             this.gbSelectFrontEnd.Size = new System.Drawing.Size(377, 41);
             this.gbSelectFrontEnd.TabIndex = 3;
             this.gbSelectFrontEnd.TabStop = false;
             // 
-            // lblStylesheet
+            // label3
             // 
-            this.lblStylesheet.AutoSize = true;
-            this.lblStylesheet.Location = new System.Drawing.Point(8, 121);
-            this.lblStylesheet.Name = "lblStylesheet";
-            this.lblStylesheet.Size = new System.Drawing.Size(56, 13);
-            this.lblStylesheet.TabIndex = 0;
-            this.lblStylesheet.Text = "Stylesheet";
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(7, 145);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(56, 13);
+            this.label3.TabIndex = 0;
+            this.label3.Text = "Stylesheet";
             // 
             // lblCheckConnectivityStatus
             // 
@@ -293,7 +264,7 @@ namespace GSBControlPanel
             // lblServeMethod
             // 
             this.lblServeMethod.AutoSize = true;
-            this.lblServeMethod.Location = new System.Drawing.Point(8, 198);
+            this.lblServeMethod.Location = new System.Drawing.Point(7, 196);
             this.lblServeMethod.Name = "lblServeMethod";
             this.lblServeMethod.Size = new System.Drawing.Size(74, 13);
             this.lblServeMethod.TabIndex = 41;
@@ -309,10 +280,23 @@ namespace GSBControlPanel
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             // 
+            // rbPublicAndSecureDefaultSearchType
+            // 
+            this.rbPublicAndSecureDefaultSearchType.AutoSize = true;
+            this.rbPublicAndSecureDefaultSearchType.Checked = true;
+            this.rbPublicAndSecureDefaultSearchType.Location = new System.Drawing.Point(178, 13);
+            this.rbPublicAndSecureDefaultSearchType.Name = "rbPublicAndSecureDefaultSearchType";
+            this.rbPublicAndSecureDefaultSearchType.Size = new System.Drawing.Size(149, 17);
+            this.rbPublicAndSecureDefaultSearchType.TabIndex = 1;
+            this.rbPublicAndSecureDefaultSearchType.TabStop = true;
+            this.rbPublicAndSecureDefaultSearchType.Text = "Public and Secure Search";
+            this.toolTip1.SetToolTip(this.rbPublicAndSecureDefaultSearchType, "Select to use Appliance\'s Frontend for rendering the search result");
+            this.rbPublicAndSecureDefaultSearchType.UseVisualStyleBackColor = true;
+            // 
             // lblDefaultSearchType
             // 
             this.lblDefaultSearchType.AutoSize = true;
-            this.lblDefaultSearchType.Location = new System.Drawing.Point(8, 243);
+            this.lblDefaultSearchType.Location = new System.Drawing.Point(3, 243);
             this.lblDefaultSearchType.Name = "lblDefaultSearchType";
             this.lblDefaultSearchType.Size = new System.Drawing.Size(105, 13);
             this.lblDefaultSearchType.TabIndex = 43;
@@ -328,20 +312,31 @@ namespace GSBControlPanel
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             // 
+            // rbPublicDefaultSearchType
+            // 
+            this.rbPublicDefaultSearchType.AutoSize = true;
+            this.rbPublicDefaultSearchType.Location = new System.Drawing.Point(6, 13);
+            this.rbPublicDefaultSearchType.Name = "rbPublicDefaultSearchType";
+            this.rbPublicDefaultSearchType.Size = new System.Drawing.Size(91, 17);
+            this.rbPublicDefaultSearchType.TabIndex = 0;
+            this.rbPublicDefaultSearchType.Text = "Public Search";
+            this.toolTip1.SetToolTip(this.rbPublicDefaultSearchType, "Select to use local stylesheet deployed on your machine. ");
+            this.rbPublicDefaultSearchType.UseVisualStyleBackColor = true;
+            // 
             // frmGSAParams
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(522, 339);
+            this.ClientSize = new System.Drawing.Size(522, 330);
             this.Controls.Add(this.lblDefaultSearchType);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.lblServeMethod);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.lblCause);
             this.Controls.Add(this.lblCheckConnectivityStatus);
-            this.Controls.Add(this.lblStylesheet);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.gbSelectFrontEnd);
             this.Controls.Add(this.cbEnableLogging);
             this.Controls.Add(this.label2);
@@ -389,7 +384,7 @@ namespace GSBControlPanel
         private System.Windows.Forms.GroupBox gbSelectFrontEnd;
         private System.Windows.Forms.RadioButton rbGSAFrontEnd;
         private System.Windows.Forms.RadioButton rbCustomStylesheet;
-        private System.Windows.Forms.Label lblStylesheet;
+        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label lblCheckConnectivityStatus;
         private System.Windows.Forms.Label lblCause;
         private System.Windows.Forms.RadioButton rbPublicAndSecure;

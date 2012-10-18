@@ -133,10 +133,6 @@
                     for (int i = 0; i < CookieCollection.Count - 1; i++)
                     {
                         string tempCookieName = CookieCollection[i].Name;
-                        if (tempCookieName == "GSBS_GSA_SESSION_ID")
-                        {
-                            tempCookieName = "GSA_SESSION_ID";
-                        }
                         c.Name = tempCookieName;
                         Encoding utf8 = Encoding.GetEncoding("utf-8");
                         String value = CookieCollection[i].Value;
@@ -623,16 +619,7 @@
               responseCookies.Value = objResp.Cookies[j].Value;
               responseCookies.Domain = objReq.RequestUri.Host;
               responseCookies.Expires = objResp.Cookies[j].Expires;
-              /*Cookie Information*/
-              gsaHelper.log("Cookie Name= " + objResp.Cookies[j].Name
-                  + "| Value= " + objResp.Cookies[j].Value
-                  + "| Domain= " + objReq.RequestUri.Host
-                  + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
-              if (responseCookies.Name == "GSA_SESSION_ID")
-              {
-                  gsaHelper.log("Skipping Cookie Name = " + objResp.Cookies[j].Name, LOG_LEVEL.INFO);
-                  continue;
-              }
+
               ///* 
               // * The 'secure' cookie issue - Setting for secure cookie, which will decide whether the secure cookie should be passed on for processing or not.
               // * Value 'false' indicates that cookie will be not be dropped, and value 'true' indicates that the cookie will be dropped.
@@ -654,7 +641,12 @@
                   HttpContext.Current.Response.Cookies.Add(responseCookies);
               }
 
-        
+              /*Cookie Information*/
+              gsaHelper.log("Cookie Name= " + objResp.Cookies[j].Name
+                  + "| Value= " + objResp.Cookies[j].Value
+                  + "| Domain= " + objReq.RequestUri.Host
+                  + "| Expires= " + responseCookies.Expires, LOG_LEVEL.INFO);
+              
               responseCookies = null;
           }
       }//end if condition for SAML
@@ -701,10 +693,6 @@
       // Copy all Cookies.
       foreach (Cookie c in response.Cookies)
       {
-          if (c.Name == "GSA_SESSION_ID")
-          {
-              continue;
-          }
           HttpContext.Current.Response.SetCookie(new HttpCookie(c.Name, c.Value));
       }
       // Copy the response body.

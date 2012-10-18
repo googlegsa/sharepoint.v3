@@ -188,7 +188,6 @@ public class SPConstants {
   public static final String DELETE = "Delete";
   public static final String RESTORE = "Restore";
   public static final String RENAME = "Rename";
-  public static final String MOVE_AWAY = "MoveAway";
   public static final String DATA = "data";
   public static final String LIST_ITEM_COLLECTION_POSITION_NEXT = "ListItemCollectionPositionNext";
   public static final String CONTENT_TYPE_FOLDER = "Folder";
@@ -364,7 +363,7 @@ public class SPConstants {
   public static final String CLOSE_ELEMENT = ">";
   public static final String OPEN_ELEMENT = "<";
   public static final String BREAK_LINE = "<br/>\r\n";
-  public static final String PASSWORD = "password";
+  public static final String PASSWORD = "Password";
   public static final String TR_END = "</tr>\r\n";
   public static final String TD_END = "</td>\r\n";
   public static final String TD_START = "<td style=\"white-space: nowrap\">";
@@ -410,7 +409,7 @@ public class SPConstants {
   public static final String MYSITE_BASE_URL = "mySiteBaseURL";
   public static final String ALIAS_MAP = "aliasMap";
   public static final String AUTHORIZATION = "authorization";
-  public static final String SHAREPOINT_CRAWLING_OPTIONS = "sharepointCrawlingOptions";
+  public static final String SHAREPOINT_CRAWLING_OPTION = "sharepointCrawlingOptions";
   public static final String AUTHZ_BY_CONNECTOR = "AuthZ_By_Connector";
   public static final String HELP_AUTHZ_BY_CONNECTOR = "Help_AuthZ_By_Connector";
   public static final String AUTHZ_BY_GSA = "AuthZ_By_GSA";
@@ -446,8 +445,8 @@ public class SPConstants {
   public static final Object DOUBLE_CLOSE_PARENTHESIS = "))";
   public static final String PUSH_ACLS = "pushAcls";
   public static final String PUSH_ACLS_LABEL = "push_Acls";
-  public static final String USERNAME_FORMAT_IN_ACE = "usernameFormatInAce";
-  public static final String GROUPNAME_FORMAT_IN_ACE = "groupnameFormatInAce";
+  public static final String USERNAME_FORMAT_IN_ACE = "Username Format in ACE";
+  public static final String GROUPNAME_FORMAT_IN_ACE = "Groupname Format in ACE";
   public static final String CONNECT_METHOD_STANDARD_HELP = "connectMethodStandard_help";
   public static final String CONNECT_METHOD_SSL_HELP = "connectMethodSSL_help";
   public static final String LDAP_CONFIGURATION_SETTINGS =
@@ -555,6 +554,7 @@ public class SPConstants {
   public static final String STYLE = "style=\"width:11em\"";
   public static final String OPTION = "option";
   public static final String SELECTED = "selected";
+  public static final boolean EDIT_MODE = true;
   public static final int DEFAULT_TIMEOUT_FOR_WS = 300000;
   public static final String MODERATION_STATUS = "ows__ModerationStatus";
   public static final String FEED_UNPUBLISHED_CONTENT = "feedUnPublishedDocuments";

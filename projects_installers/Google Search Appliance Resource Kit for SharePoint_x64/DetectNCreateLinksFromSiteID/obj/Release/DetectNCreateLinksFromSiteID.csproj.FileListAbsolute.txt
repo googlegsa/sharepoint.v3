@@ -30,13 +30,3 @@ C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFro
 C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache
 C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
 C:\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb
-C:\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.exe
-C:\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.pdb
-C:\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache
-C:\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
-C:\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\ResolveAssemblyReference.cache
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.exe
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.exe
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\bin\Release\DetectNCreateLinksFromSiteID.pdb
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\DetectNCreateLinksFromSiteID\obj\Release\DetectNCreateLinksFromSiteID.pdb

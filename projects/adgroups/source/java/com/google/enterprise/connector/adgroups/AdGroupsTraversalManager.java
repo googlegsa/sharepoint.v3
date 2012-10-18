@@ -84,7 +84,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
     }
   }
 
-  private long getLastCrawledChange(AdServer server, boolean resetTraversal) {
+  public long getLastCrawledChange(AdServer server) {
     List<HashMap<String, Object>> dbServers;
     try {
       dbServers =
@@ -93,11 +93,6 @@ public class AdGroupsTraversalManager implements TraversalManager {
       LOGGER.log(Level.INFO, "Other connector is currently crawling the dn ["
           + server.getDn() + "]", e);
       return -1;
-    }
-
-    if (resetTraversal) {
-      LOGGER.info(server + "Start traversal requested. Performing full crawl.");
-      return 0;
     }
 
     if (dbServers.size() == 0) {
@@ -122,12 +117,8 @@ public class AdGroupsTraversalManager implements TraversalManager {
           .equals(server.getDsServiceName())) {
         if (dbServer.get(AdConstants.DB_INVOCATIONID)
             .equals(server.getInvocationID())) {
-          long last = ((Number) dbServer.get(
-              AdConstants.DB_HIGHESTCOMMITTEDUSN)).longValue();
-          LOGGER.info(server + "Last crawled change [" + last
-              + "]. Last change on the server ["
-              + server.getHighestCommittedUSN() + "]");
-          return last;
+          return ((Number) dbServer.get(AdConstants.DB_HIGHESTCOMMITTEDUSN))
+              .longValue();
         } else {
           LOGGER.warning("Directory Controller [" + server.getDsServiceName()
               + "] has been restored from backup. Performing full recrawl.");
@@ -149,7 +140,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
     return 0;
   }
 
-  private void run(boolean resetTraversal) {
+  public void run() {
     try {
       db.executeBatch(AdDbUtil.Query.MERGE_ENTITIES, wellKnownEntities);
       Map<String, Object> wellKnownServer = new HashMap<String, Object>();
@@ -179,12 +170,15 @@ public class AdGroupsTraversalManager implements TraversalManager {
     for (AdServer server : servers) {
       try {
         server.initialize();
-
         String ldapQuery;
         String tombstoneQuery = null;
-        long last = getLastCrawledChange(server, resetTraversal);
+        long last = getLastCrawledChange(server);
+
+        LOGGER.info(server + "Last crawled change [" + last
+            + "]. Last change on the server [" + server.getHighestCommittedUSN()
+            + "]");
+
         if (last == -1) {
-          LOGGER.info(server + "Skipping crawl");
           continue;
         } else if (last == 0) {
           LOGGER.info(server + "Full recrawl start");
@@ -297,7 +291,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
   @Override
   public DocumentList resumeTraversal(String checkpoint)
       throws RepositoryException {
-    run(false);
+    run();
     return null;
   }
 
@@ -308,7 +302,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
 
   @Override
   public DocumentList startTraversal() throws RepositoryException {
-    run(true);
+    run();
     return null;
   }
 }

@@ -8,437 +8,14 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
-Release 3.0.0, October 17, 2012
-===============================
+Release 3.0.0-RC15, September 13, 2012
+======================================
+THIS IS A DEVELOPMENT BUILD THAT IS NOT SUPPORTED BY GOOGLE.
 
-Introduction
-------------
-This is a major release with new features. Users of previous releases
-should check the "Version Compatibility" section below for
-instructions on how to use existing data with this new release.
+If you have issues with this build, you can send email to
+google-enterprise-connectors-feedback@googlegroups.com.
+Google may not respond to every message.
 
-Summary of Changes
-------------------
-For a summary of the new features, see the Guide to Release 3.0:
-
-http://www.google.com/support/enterprise/static/gsa/docs/admin/connector_30/sharepoint_guide/
-
-This release contains fixes for the following issues:
-
---Issues 7106972, 7069010 Crawling SharePoint user profiles includes
-                duplicates and skips other user profiles.
-
---Issue 7029190 Crawling SharePoint user profiles does not detect add and
-                update operations.
-
---Issue 6989566 Configuring the SharePoint connector with invalid LDAP
-                credentials returns an instantiator error.
-
---Issue 6902008 SharePoint connector logs a warning,
-                "java.lang.IllegalArgumentException: Invalid uri", in each
-                crawl cycle for a landing URL with Unicode characters.
-
---Issue 6874026 SharePoint connector form fields are disabled sometimes
-                when "Authorization by ACL" is checked.
-
---Issue 6873929 SharePoint connector form checkbox does not enable or
-                disable all relevant fields.
-
---Issue 6843364 SharePoint connector fails to resolve any SharePoint local
-                groups when "username@domain" is used as the ACE format.
-
---Issues 6821169, 5677405 SharePoint local group lookup from the user
-                datastore is case-sensitive.
-
---Issue 6767310 SharePoint connector provides wrong display URL for
-                contents in a publishing site.
-
---Issue 6735483 SharePoint connector should re-use HTTP connections.
-
---Issue 6580594 List setting "Read items that were created by the user"
-                should be included when determining permissions.
-
---Issue 6530382, 6443750 Make "domain\username" the default username format
-                for SharePoint connector ACLs.
-
---Issue 6494321 SharePoint connector should do a full re-sync when
-                lastChangeToken is missing.
-
---Issue 6485375 SharePoint ACLs should be case-insensitive.
-
---Issue 6479902 Duplicate entries for URL rewrite properties in SharePoint
-                advanced properties XML.
-
---Issue 6396450 Large number of users and groups per document will cause
-                web service call in IIS to timeout.
-
---Issue 6341917 Search Base configuration property must be entered even
-                when it is not needed.
-
---Issue 5963073 SharePoint connector doesn't differentiate between
-                commonName, sAMAccountName and user userPrincipalName.
-
---Issue 5946034 SharePoint connector should correctly resolve nested groups
-                across different domains in an Active Directory forest.
-
---Issue 5941470 SharePoint SOAP response has duplicate attributes
-
---Issue 5935844 SharePoint connector should support multiple LDAP servers
-                for group resolution.
-
---Issue 5595837 SharePoint connector group resolution should not assume the
-                user's and resolved groups' domain name is the same as
-                configured in the "Domain" field on the connector
-                configuration form.
-
---Issue 5477838 SharePoint connector should support Claims-Based
-                Authentication.
-
---Issue 5267933 SharePoint connector logs "SAXParseException: Character
-                reference &quot;&amp;#30&quot; is an invalid XML
-                character".
-
---Issue 5241871 SharePoint connector logs exception when parsing extraIDs
-                and skips these documents.
-
---Issue 4279410 SharePoint connector should support crawling of SharePoint
-                user profiles and feed them to Expert Search on GSA.
-
-Version Compatibility
----------------------
-This version works with Connector Manager version 3.0.0 and above. Versions
-lower than 3.0.0 of the Connector Manager will not work correctly with this
-version of the connector. Connectors with version 2.4.0 and above can be
-safely upgraded using the steps given below.
-
-This version works with Google Services for SharePoint 3.0.0 and above.
-Versions lower than 3.0.0 of Google Services for SharePoint will not work
-correctly with this version of the connector.
-
-Google strongly recommends reindexing your SharePoint content with this
-release, due to changes in the ACL structures in the connector, feeds, and
-GSA index, and corresponding changes in user identity and group resolution
-in the authentication mechanisms.
-
-SharePoint local group resolution support with GSA 6.10.4.G.22 is limited
-to HTTP Based NTLM and Connector authentication. All authentication
-mechanisms work with GSA 6.12 and higher. Flex AuthZ support in the
-connector works only with GSA 6.14 and higher. ACL inheritance and Deny
-permission, and crawling user profiles for Expert Search work only with GSA
-7.0 and higher. All the other connector features will continue to work on
-GSA 7.0.14.G.84, 6.14.0.G.28, 6.12.0.G.30, and 6.10.4.G.22.
-
-Manually upgrade an existing connector and Google Services for SharePoint
-------------------------------------------------------------------------
-The steps to manually upgrade an existing connector or a Google Services for SharePoint can be found at http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/ManualInstallation.
-
-Platform Support
-------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
-
-Certified Against
--------------------
-32-bit:
--------
-Microsoft Windows Server 2003
-Enterprise Edition
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-Red Hat Linux 5 (32-bit)
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-64-bit:
---------
-Microsoft Windows Server 2003
-Enterprise x64 Edition
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-Note: This release has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
-
-GSA Support:
----------------------
-This connector version has been certified against 6.10.4.G.22, 6.12.0.G.30,
-6.14.0.G.28, and 7.0.14.G.84.
-
-Known Issues/Limitations
-------------------------
-1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
-java.net.BindException: Address already in use: JVM_Bind
-Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
-http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
-
-2) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
-the credentials used are of a local machine user.
-
-3) In this release, following features are not supported on SharePoint versions prior to SP2007
-- Fix for issue#53 (Connector should support SharePoint farm )
-- Bulk Authorization by connector
-- ACL
-
-4) The "Kerberos KDC Hostname" field on connector configuration page is not localized
-
-5) Issue 139: Upgrade HTTPClient library and AXis to newer versions
--- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
-document. One observation is that this exception occurs whenever the
-"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
-occurs as reported in Issue 59
-
-Stacktrace seen in logs:
-java.io.IOException: Attempted read on closed stream.
-at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
-at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
-
-Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
-Possible workaround:
--- Ensure that the SharePoint server is fast enough for serving content
--- Also please see the workaround mentioned in Issue 59
-
-6) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
--- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
-7) 5032165: SharePoint connector Alias mapping is not working for default.aspx pages.
-8) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
-9) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
-10) When you remove a connector, it removes only the entries with the namespace URL which it was configured and not for all of it sub sites and so on.
-
-
-Release 2.8.8, September 25, 2012
-====================================
-
-Introduction
-------------
-This is a maintenance release that improves quality without adding any
-new functionality. Users of previous releases are encouraged to review
-the changes below to determine whether to upgrade.
-
-Summary of Changes
-------------------
-This patch contains fixes for the following issues in the connector:
-
---Issue 6933666 SharePoint connector user groups membership cache does
-                not work when verifiedUserId contains uppercase letter.
-
---Issue 6363227 SharePoint connector resolves Exchange Distribution
-                Groups from AD, which are not valid for assigning
-                Permissions in SharePoint, leading to False PERMITs when
-                using ACLs.
-
---Issue 6171941 SharePoint connector setup page has inconsistent
-                behavior when the configuration has an error.
-
---Issue 4597389 SharePoint state file is truncated.
-
-This patch contains fixes for the following issues in the Google
-Services for SharePoint:
-
---Issue 7116426 GetAclForWebApplicationPolicy timeout for deleted users.
-
---Issue 6663561 Connector stops crawling if Authorization by ACL AND
-                SharePoint anonymous access are both enabled.
-
---Issue 6181689 Authorization by SharePoint connector always returns
-                PERMIT at Site level.
-
---Issue 6057626 Google Services for SharePoint are not correctly
-                disposing of resources.
-
---Issue 5489487 Google Services for SharePoint version should be defined
-                explicitly.
-
-Version Compatibility
----------------------
-This version works with Connector Manager version 2.8.0 and above.
-Connector manager version 2.8.6 is recommended. Versions lower than
-2.8.0 of the Connector Manager will not work correctly with this version
-of the connector. SharePoint local group resolution support with GSA
-6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication.
-All authentication mechanisms work with GSA 6.12 and higher. Flex AuthZ
-support in the connector works only with GSA 6.14. All the other
-connector features will continue to work on GSA 6.14.0.G.28,
-6.12.0.G.30, 6.10.4.G.22, and 6.8.0.G.30. Connectors with version 2.4.0
-and above can be safely upgraded using the steps given below.
-
-Manually upgrade an existing connector and Google Services for SharePoint
-------------------------------------------------------------------------
-The steps to manually upgrade an existing connector or a Google Services for SharePoint can be found at http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/ManualInstallation.
-
-Platform Support
-------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
-
-Certified Against
--------------------
-32-bit:
--------
-Microsoft Windows Server 2003
-Enterprise Edition
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-Red Hat Linux 5 (32-bit)
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-64-bit:
---------
-Microsoft Windows Server 2003
-Enterprise x64 Edition
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-Note: This release has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
-
-GSA Support:
----------------------
-This connector version has been certified against GSA 6.8.0.G.30, 6.10.4.G.22, 6.12.0.G.30 and 6.14.0.G.28.
-
-Known Issues/Limitations
-------------------------
-1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
-java.net.BindException: Address already in use: JVM_Bind
-Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
-http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
-
-2) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
-the credentials used are of a local machine user.
-
-3) In this release, following features are not supported on SharePoint versions prior to SP2007
-- Fix for issue#53 (Connector should support SharePoint farm )
-- Bulk Authorization by connector
-- ACL
-
-4) The "Kerberos KDC Hostname" field on connector configuration page is not localized
-
-5) Issue 139: Upgrade HTTPClient library and AXis to newer versions
--- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
-document. One observation is that this exception occurs whenever the
-"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
-occurs as reported in Issue 59
-
-Stacktrace seen in logs:
-java.io.IOException: Attempted read on closed stream.
-at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
-at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
-
-Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
-Possible workaround:
--- Ensure that the SharePoint server is fast enough for serving content
--- Also please see the workaround mentioned in Issue 59
-
-6) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
--- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
-7) 5032165: SharePoint connector Alias mapping is not working for default.aspx pages.
-8) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
-9) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
-10) When you remove a connector, it removes only the entries with the namespace URL which it was configured and not for all of it sub sites and so on.
-
-----------------------------------------------------------------------------------------------------------------------
-
-Release 2.8.6, September 24, 2012
-====================================
-
-Introduction
-------------
-This is an upgrade release with some enhancements. Users of previous releases are encouraged to upgrade. Your feedback is important to us.
-Keep in mind that we are continuing to work on the Google Search Appliance Connector for SharePoint and things may change in the future.
-
-Summary of Changes / New Features
----------------------------------
-This patch contains fix for the following issues.
-
---Issue 2906154 Cannot add a On-board SharePoint connector with Kerberos KDC host name entry
---Issue 5549668 SharePoint connector should correctly resolve user's primary group
---Issue 5596005 SharePoint connector should correctly resolve the user's special group 'NT AUTHORITY\authenticated users'
---Issue 5883396 Direct user membership of SharePoint groups is not working
---Issue 5923376 SharePoint Connector goes into infinite loop and encounters StackOverflowError upon resolving parent groups during Group Resolution
---Issue 6253811 List items with "ows__ModerationStatus" attribute is always marked as unpublished document and not properly fed.
-
-Version Compatibility
----------------------
-This version works with Connector Manager Version 2.8.0 and above.
-Versions lower than 2.8.0 of the Connector Manager will not work correctly with this version of the connector.
-SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher. 
-Flex AuthZ support in the connector works only with GSA 6.14.
-All the other connector features will continue to work on GSA 6.14.0.G.28, 6.12.0.G.30, 6.10.4.G.22, and 6.8.0.G.30.
-Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
-
-Manually upgrade an existing connector and Google Services for SharePoint
-------------------------------------------------------------------------
-The steps to manually upgrade an existing connector or a Google Services for SharePoint can be found at http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/ManualInstallation.
-
-Platform Support
-------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
-
-Certified Against
--------------------
-32-bit:
--------
-Microsoft Windows Server 2003
-Enterprise Edition
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-Red Hat Linux 5 (32-bit)
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-64-bit:
---------
-Microsoft Windows Server 2003
-Enterprise x64 Edition
-Intel(R) Xeon(R) CPU
-E5504 @ 2.00GHz, 2.00 GB of RAM
-
-Note: This release has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
-
-GSA Support:
----------------------
-This connector version has been certified against GSA 6.8.0.G.30, 6.10.4.G.22, 6.12.0.G.30 and 6.14.0.G.28.
-
-Known Issues/Limitations
-------------------------
-1) Issue 59: The following exception occurs intermittently on some machines where the local ports are not released properly after being used.
-java.net.BindException: Address already in use: JVM_Bind
-Workaround: Stop the connector and restart it after some time to avoid this issue. Also increase the # of available ports as described here:
-http://support.microsoft.com/default.aspx?scid=kb;en-us;196271
-
-2) Issue 70: Connector configuration is saved for invalid domain name when the authentication scheme for SharePoint site is NTLM and
-the credentials used are of a local machine user.
-
-3) In this release, following features are not supported on SharePoint versions prior to SP2007
-- Fix for issue#53 (Connector should support SharePoint farm )
-- Bulk Authorization by connector
-- ACL
-
-4) The "Kerberos KDC Hostname" field on connector configuration page is not localized
-
-5) Issue 139: Upgrade HTTPClient library and AXis to newer versions
--- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
-document. One observation is that this exception occurs whenever the
-"java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
-occurs as reported in Issue 59
-
-Stacktrace seen in logs:
-java.io.IOException: Attempted read on closed stream.
-at org.apache.commons.httpclient.AutoCloseInputStream.isReadAllowed(AutoCloseInputStream.java:183)
-at org.apache.commons.httpclient.AutoCloseInputStream.read(AutoCloseInputStream.java:107)
-
-Impact: Document content cannot be fetched and hence not indexed whenever this problem is encountered
-Possible workaround:
--- Ensure that the SharePoint server is fast enough for serving content
--- Also please see the workaround mentioned in Issue 59
-
-6) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
--- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
-7) 5032165: SharePoint connector Alias mapping is not working for default.aspx pages.
-8) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
-9) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
-10) When you remove a connector, it removes only the entries with the namespace URL which it was configured and not for all of it sub sites and so on.
-
-----------------------------------------------------------------------------------------------------------------------
 
 Release 2.8.4, March 30, 2012
 ====================================
@@ -452,10 +29,12 @@ Summary of Changes / New Features
 ---------------------------------
 This patch contains fix for the following issues.
 
+--Issue 6057626 Google Services for Sharepoint are not correctly disposing of resources.
 --Issue 5595594 Group resolution fails for special characters in group name.
 --Issue 5713953 SharePoint connector sets incorrect display URL for some of the object types.
 --Issue 5579962 Changes not detected when a SharePoint folder is moved within the same site.
 --Issue 5529449 SharePoint Connector does not exclude meta tag parentwebtitle.
+--Issue 5489487 GSS version should be defined explicitly.
 --Issue 5479101 SharePoint connector fails to add group member ship in the user datastore if groupname has more than 40 characters.
 --Issue 4672274 SharePoint connector should support all types of Site/list templates for sending ACLs to GSA.
 --Issue 4457286 SharePoint connector does not remove database tables when connector instance is deleted.
@@ -468,8 +47,8 @@ Version Compatibility
 ---------------------
 This version works with Connector Manager Version 2.8.0 and above.
 Versions lower than 2.8.0 of the Connector Manager will not work correctly with this version of the connector.
-SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher. 
-Flex AuthZ support in the connector works only with GSA 6.14.
+SharePoint local group resolution support will work only with HTTP Based NTLM and Connector authentication with GSA 6.10.4.G.22.
+Flex AuthZ support in connector works only with GSA 6.14.
 All the other connector features will continue to work on GSA 6.14.0.G.28, 6.12.0.G.30, 6.10.4.G.22, and 6.8.0.G.30.
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
 
@@ -514,7 +93,7 @@ GssAclwsdl.aspx
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -557,9 +136,12 @@ the credentials used are of a local machine user.
 - Bulk Authorization by connector
 - ACL
 
-5) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+4) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
 
-6) Issue 139: Upgrade HTTPClient library and AXis to newer versions
+6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+7) Issue 139: Upgrade HTTPClient library and AXis to newer versions
 -- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
 document. One observation is that this exception occurs whenever the
 "java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
@@ -575,11 +157,11 @@ Possible workaround:
 -- Ensure that the SharePoint server is fast enough for serving content
 -- Also please see the workaround mentioned in Issue 59
 
-7) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
 -- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
-8) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
-9) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
-10) When you remove a connector, it removes only the entries with the namespace URL which it was configured and not for all of it sub sites and so on.
+9) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
+10) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
+11) When you remove a connector, it removes only the entries with the namespace URL which it was configured and not for all of it sub sites and so on.
 
 ----------------------------------------------------------------------------------------------------------------------
 
@@ -610,8 +192,8 @@ Version Compatibility
 This version works with Connector Manager Version 2.8.0 and above.
 Versions lower than 2.8.0 of the Connector Manager will not work correctly with this version of the connector.
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
-SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher. 
-Flex AuthZ support in the connector works only with GSA 6.14.
+SharePoint local group resolution support will work only with HTTP Based NTLM and Connector authentication with GSA 6.10.4.G.22.
+Flex AuthZ support in connector works only with GSA 6.14.
 All the other connector features will continue to work on 6.14.0.G.28, 6.12.0.G.30, GSA 6.10.4.G.22, and 6.8.0.G.30.
 
 Steps to manually upgrade the existing connector
@@ -655,7 +237,7 @@ GssAclwsdl.aspx
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -698,9 +280,12 @@ the credentials used are of a local machine user.
 - Bulk Authorization by connector
 - ACL
 
-5) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+5) SharePoint groups are not resolved in the current ACL support. The implication of this is that all the users who have granted access on documents not directly but through a SharePoint group will not be authorized at search time.
+Connector do send the SharePoint groups in the ACLs but these groups are of no use unless they are resolved at serve time. This is planned feature for the next release.
 
-6) Issue 139: Upgrade HTTPClient library and AXis to newer versions
+6) The "Kerberos KDC Hostname" field on connector configuration page is not localized
+
+7) Issue 139: Upgrade HTTPClient library and AXis to newer versions
 -- When SharePoint server is slow in serving content, Connector Manager gets java.lang.IOException when pulling content of a
 document. One observation is that this exception occurs whenever the
 "java.net.SocketException: No buffer space available (maximum connections reached?): JVM_Bind"
@@ -716,12 +301,12 @@ Possible workaround:
 -- Ensure that the SharePoint server is fast enough for serving content
 -- Also please see the workaround mentioned in Issue 59
 
-7) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
+8) Issue 140: jcifs classes are not initialized when connector is run on Linux 64-bit environment
 -- HttpClient-Modified library makes use of Jcifs for supporting NTLM V2. On Suse Linux 64-bit environment it has been observed that Jcifs classes like Type1Message are not initialized properly and hence connector configuration does not get saved.
-8) 4903561: SharePoint connector has no validation for the LDAP search base.
-9) 4902133: SharePoint Connector authN at serve time fails for Chinese username.
-10) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
-11) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
+9) 4903561: SharePoint connector has no validation for the LDAP search base.
+10) 4902133: SharePoint Connector authN at serve time fails for Chinese username.
+11) 5022878: When web-service time-out value is set to null, connector instance dis-appears from the admin console.
+12) 5003394: Tool tips on the SharePoint connector configuration UI should give more details for each field.
 
 ----------------------------------------------------------------------------------------------------------------------
 
@@ -862,7 +447,7 @@ GssAclwsdl.aspx
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -1006,7 +591,7 @@ GssAclwsdl.aspx
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -1136,7 +721,7 @@ GssAclwsdl.aspx
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -1250,7 +835,7 @@ Steps to manually deploy the patch release
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -1353,7 +938,7 @@ Steps to manually deploy the patch release
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -1506,7 +1091,7 @@ Note: In case of a SharePoint farm environment, the web service has to be deploy
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -1609,7 +1194,7 @@ Versions lower than 2.4.0 of the Connector Manager will not work correctly with 
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments.
 
 Certified Against
 -------------------
@@ -1632,7 +1217,7 @@ Intel(R) Xeon(R) CPU
 E5504 @ 2.00GHz, 2.00 GB of RAM
 
 Performance Test details:
-Performance Test Results for Metadata and URL Feed mode:
+Performance Test Results for Metadata & URL Feed mode:
 
 Test Environment Details:
 
@@ -1788,7 +1373,7 @@ Versions lower than 2.4.0 of the Connector Manager will not work correctly with 
 
 Platform Support
 ------------------
-The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments
+The connector can be installed and run on both 32-bit & 64-bit Windows and Linux environments
 
 Certified Against
 -------------------

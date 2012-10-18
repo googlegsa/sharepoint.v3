@@ -634,15 +634,6 @@
          }
     }
     
-    
-
-    // Handles the keypress event and delegates to GSA suggest handler, if available.
-    function HandleQuerySuggest(e, inputEle) {
-        if (window['ss_handleKey']) {
-            ss_handleKey(e, inputEle);
-        }
-    }
-    
 </script>
 
 
@@ -674,9 +665,7 @@
     void setInitialStatusForUIControlsAsPerSearchType(bool isInitialSearchTypeSetToPublic)
     {
         chkPublicSearch.Checked = isInitialSearchTypeSetToPublic;
-        String publicSearchStatus = isInitialSearchTypeSetToPublic.ToString().ToLower();
-        hfPublicSearch.Value = publicSearchStatus;
-        Session["PublicSearchStatus"] = publicSearchStatus;
+        hfPublicSearch.Value = Convert.ToString(isInitialSearchTypeSetToPublic);
     }
 
     void hideControl(WebControl controlToHide)
@@ -698,7 +687,7 @@
 
 
 
-<table border="0" cellpadding="0" cellspacing="0" style="position: relative; float: left;">
+<table border="0" cellpadding="0" cellspacing="0">
     <tr class='ms-searchbox'>
         <td>
         <asp:HiddenField ID="hfPublicSearch" runat="server"   />
@@ -716,7 +705,7 @@
             <div style="background-image: url(/_layouts/images/google_custom_search_watermark.gif);
                 background-repeat: no-repeat; background-position: left; background-color: Transparent">
           <asp:TextBox ID="txtSearch" runat="server"  Width="190px" style="height:auto; background-color: transparent; color:#003399" 
-             ToolTip="Enter search query term" onKeyPress="SendSearchRequesttoGSAOnEnterClick()" onfocus="javascript:return SearchTextOnFocus()" onblur="javascript:return SearchTextOnBlur();" onKeyUp="HandleQuerySuggest(event, this);" autocomplete="off" ></asp:TextBox>
+             ToolTip="Enter search query term" onKeyPress="SendSearchRequesttoGSAOnEnterClick()" onfocus="javascript:return SearchTextOnFocus()" onblur="javascript:return SearchTextOnBlur();" ></asp:TextBox>
             </div>
         </td>
         

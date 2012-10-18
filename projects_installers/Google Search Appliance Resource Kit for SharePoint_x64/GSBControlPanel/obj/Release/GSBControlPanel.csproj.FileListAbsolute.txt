@@ -56,13 +56,3 @@ C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Release\GSBControlPanel.frmGSAParams
 C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Release\GSBControlPanel.csproj.GenerateResource.Cache
 C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Release\Configuration Wizard.exe
 C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Release\Configuration Wizard.pdb
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\bin\Release\Configuration Wizard.exe
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\bin\Release\Configuration Wizard.pdb
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\bin\Release\Microsoft.SharePoint.Search.dll
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\bin\Release\Microsoft.SharePoint.Search.xml
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\ResolveAssemblyReference.cache
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\GSBControlPanel.frmWebApplicationList.resources
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\GSBControlPanel.frmGSAParams.resources
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\GSBControlPanel.csproj.GenerateResource.Cache
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\Configuration Wizard.exe
-C:\_\google-enterprise-connector-sharepoint\projects_installers\Google Search Appliance Resource Kit for SharePoint_x64\GSBControlPanel\obj\Release\Configuration Wizard.pdb

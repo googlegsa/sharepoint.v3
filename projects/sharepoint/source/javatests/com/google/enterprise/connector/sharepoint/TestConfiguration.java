@@ -64,12 +64,12 @@ public class TestConfiguration {
   public static String googleLocalNamespace;
 
   public static String sharepointUrl;
-  public static String aliasMap;
+  public static String AliasMap;
   public static String domain;
   public static String kdcserver;
   public static String username;
   public static String testuser;
-  public static String password;
+  public static String Password;
   public static String mySiteBaseURL;
   public static String includedURls;
   public static String excludedURls;
@@ -77,6 +77,7 @@ public class TestConfiguration {
   public static boolean useSPSearchVisibility;
 
   public static boolean pushAcls = true;
+  public static String appendNamespaceInSPGroup;
   public static String usernameFormatInAce;
   public static String groupnameFormatInAce;
   public static String ldapServerHostAddress;
@@ -244,11 +245,11 @@ public class TestConfiguration {
     googleGlobalNamespace = properties.getProperty("googleGlobalNamespace");
     googleLocalNamespace = properties.getProperty("googleLocalNamespace");
     sharepointUrl = properties.getProperty("sharepointUrl");
-    aliasMap = properties.getProperty("aliasMap");
+    AliasMap = properties.getProperty("AliasMap");
     domain = properties.getProperty("domain");
     kdcserver = properties.getProperty("kdcserver");
     username = properties.getProperty("username");
-    password = properties.getProperty("password");
+    Password = properties.getProperty("password");
     mySiteBaseURL = properties.getProperty("mySiteBaseURL");
     includedURls = properties.getProperty("includedURls");
     excludedURls = properties.getProperty("excludedURls");
@@ -406,6 +407,7 @@ public class TestConfiguration {
     pushAcls = Boolean.parseBoolean(properties.getProperty("pushAcls"));
     useCacheToStoreLdapUserGroupsMembership = Boolean.parseBoolean(
         properties.getProperty("useCacheToStoreLdapUserGroupsMembership"));
+    appendNamespaceInSPGroup = properties.getProperty("appendNamespaceInSPGroup");
     userNameFormatInACE = properties.getProperty("usernameFormatInAce");
     groupNameFormatInACE = properties.getProperty("groupnameFormatInAce");
 
@@ -422,6 +424,7 @@ public class TestConfiguration {
   }
 
   public static Map<String, String> getConfigMap() {
+    // TODO: We should check this against the keys in connectorType.xml.
     // Using a LinkedHashMap to preserve ordering.
     final Map<String, String> configMap = new LinkedHashMap<String, String>();
 
@@ -429,16 +432,17 @@ public class TestConfiguration {
     configMap.put("kdcserver", kdcserver);
     configMap.put("domain", domain);
     configMap.put("username", username);
-    configMap.put("password", password);
+    configMap.put("password", Password);
     configMap.put("mySiteBaseURL", mySiteBaseURL);
     configMap.put("includedURls", includedURls);
     configMap.put("excludedURls", excludedURls);
-    configMap.put("aliasMap", aliasMap);
+    configMap.put("aliasMap", AliasMap);
     configMap.put("useSPSearchVisibility",
         Boolean.toString(useSPSearchVisibility));
     configMap.put("feedUnPublishedDocuments", "true");
     configMap.put("authorization", authorization);
     configMap.put("pushAcls", Boolean.toString(pushAcls));
+    configMap.put("appendNamespaceInSPGroup", appendNamespaceInSPGroup);
     configMap.put("usernameFormatInAce", usernameFormatInAce);
     configMap.put("groupnameFormatInAce", groupnameFormatInAce);
     configMap.put("ldapServerHostAddress", ldapServerHostAddress);
@@ -560,11 +564,11 @@ public class TestConfiguration {
     final SharepointClientContext sharepointClientContext = new SharepointClientContext(
         clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
-        TestConfiguration.password, TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
         TestConfiguration.googleGlobalNamespace,
         TestConfiguration.googleLocalNamespace,
         TestConfiguration.includedURls, TestConfiguration.excludedURls,
-        TestConfiguration.mySiteBaseURL, TestConfiguration.aliasMap,
+        TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
         TestConfiguration.feedType, useSPSearchVisibility);
 
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
@@ -592,7 +596,7 @@ public class TestConfiguration {
     ctxt.setDomain(TestConfiguration.domain);
     ctxt.setUrl(TestConfiguration.sharepointUrl);
     ctxt.setUserName(TestConfiguration.username);
-    ctxt.setPassword(TestConfiguration.password);
+    ctxt.setPassword(TestConfiguration.Password);
 
     return ctxt;
   }
@@ -820,14 +824,14 @@ public class TestConfiguration {
     connector.setSharepointUrl(TestConfiguration.sharepointUrl);
     connector.setDomain(TestConfiguration.domain);
     connector.setUsername(TestConfiguration.username);
-    connector.setPassword(TestConfiguration.password);
+    connector.setPassword(TestConfiguration.Password);
     connector.setGoogleConnectorWorkDir(TestConfiguration.googleConnectorWorkDir);
     connector.setGoogleGlobalNamespace(TestConfiguration.googleGlobalNamespace);
     connector.setGoogleLocalNamespace(TestConfiguration.googleLocalNamespace);
     connector.setIncludedURls(TestConfiguration.includedURls);
     connector.setExcludedURls(TestConfiguration.excludedURls);
     connector.setMySiteBaseURL(TestConfiguration.mySiteBaseURL);
-    connector.setAliasMap(TestConfiguration.aliasMap);
+    connector.setAliasMap(TestConfiguration.AliasMap);
     connector.setAuthorization(authorization);
     connector.setUseSPSearchVisibility(TestConfiguration.useSPSearchVisibility);
     connector.setIncluded_metadata(TestConfiguration.whiteList);
@@ -923,7 +927,7 @@ public class TestConfiguration {
   public static LdapConnectionSettings getLdapConnetionSettings() {
     LdapConnectionSettings settings = new LdapConnectionSettings(
         Method.STANDARD, ldapServerHostAddress, portNumber, searchBase,
-        AuthType.SIMPLE, username, password, ldapDomainName);
+        AuthType.SIMPLE, username, Password, ldapDomainName);
     return settings;
   }
 

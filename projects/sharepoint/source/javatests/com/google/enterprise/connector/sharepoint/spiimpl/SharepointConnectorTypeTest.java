@@ -14,99 +14,71 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import com.google.common.collect.Maps;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.wsclient.mock.MockClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SharepointConnectorTypeTest extends TestCase {
+  private List<String> keys;
   private Map<String, String> configMap;
-  private SharepointConnectorType connectorType;
-  private boolean editMode;
-  private final ResourceBundle bundle =
-      ResourceBundle.getBundle("SharepointConnectorResources", Locale.ENGLISH);
+  private SharepointConnectorType sharepointConnectorType;
+  private boolean editMode = false;
 
   protected void setUp() throws Exception {
-    configMap = Maps.newHashMap(TestConfiguration.getConfigMap());
+    configMap = new HashMap<String, String>();
+    configMap.putAll(TestConfiguration.getConfigMap());
+    keys = new ArrayList<String>();
+    keys.addAll(configMap.keySet());
     String isSelected = configMap.get(SPConstants.PUSH_ACLS);
-    editMode = !isSelected.equalsIgnoreCase(SPConstants.TRUE);
-    connectorType = new SharepointConnectorType();
-    connectorType.setClientFactory(new MockClientFactory());
-  }
-
-  public void testConfigFields() {
-    // Be careful to preserve ordering in both collections.
-    assertEquals(
-        new ArrayList<String>(TestConfiguration.getConfigMap().keySet()),
-        SharepointConnectorType.CONFIG_FIELDS);
+    // if feedAcls option gets selected
+    if (!isSelected.equalsIgnoreCase(SPConstants.TRUE)) {
+      editMode = SPConstants.EDIT_MODE;
+    } else {
+      editMode = false;
+    }
+    sharepointConnectorType = new SharepointConnectorType();
+    sharepointConnectorType.setClientFactory(new SPClientFactory());
+    sharepointConnectorType.setConfigKeys(keys);
   }
 
   public void testValidateConfig() {
-    ConfigureResponse response =
-        connectorType.validateConfig(configMap, Locale.ENGLISH, null);
-    if (response != null) {
-      fail("Expected null but got: " + response.getMessage() + "\n"
-          + response.getFormSnippet());
-    }
-  }
-
-  /** Tests fields that are always required. */
-  public void testValidateConfigRequiredFields() {
-    for (String key : SharepointConnectorType.CONFIG_FIELDS) {
-      if (connectorType.isRequired(key)) {
-        System.out.println("REQUIRED: " + key);
-        configMap = Maps.newHashMap(TestConfiguration.getConfigMap());
-        configMap.remove(key);
-        ConfigureResponse response = connectorType.validateConfig(configMap,
-            Locale.ENGLISH, null);
-        assertNotNull(key, response);
-        assertFind(bundle.getString(key), response.getMessage());
-        assertFind("<font color=\"red\">", response.getFormSnippet());
-        checkFormSnippet(response.getFormSnippet());
-      }
-    }
-  }
-
-  /**
-   * Tests fields that can be optional. The test configurations should
-   * be such that all of them are optional here.
-   */
-  // TODO: Test fields that may be required in other configurations
-  // (e.g., LDAP settings with ACLs enabled, or user profile settings).
-  public void testValidateConfigOptionalFields() {
-    for (String key : SharepointConnectorType.CONFIG_FIELDS) {
-      if (!connectorType.isRequired(key)) {
-        configMap = Maps.newHashMap(TestConfiguration.getConfigMap());
-        configMap.put("socialOption", "no");
-        configMap.remove(key);
-        ConfigureResponse response = connectorType.validateConfig(configMap,
-            Locale.ENGLISH, null);
-        if (response != null) {
-          fail("Expected null but got: " + response.getMessage() + "\n"
-              + response.getFormSnippet());
-        }
-      }
+    final ConfigureResponse configRes =
+        sharepointConnectorType.validateConfig(configMap, Locale.ENGLISH, null);
+    if (configRes != null) {
+      fail("Expected null but got: " + configRes.getMessage() + "\n"
+          + configRes.getFormSnippet());
     }
   }
 
   public void testGetConfigForm() {
-    ConfigureResponse response = connectorType.getConfigForm(Locale.ENGLISH);
-    checkFormSnippet(response.getFormSnippet());
+    final ConfigureResponse configureResponse =
+        sharepointConnectorType.getConfigForm(Locale.ENGLISH);
+    final String initialConfigForm = configureResponse.getFormSnippet();
+    checkForExpectedFields(initialConfigForm);
+    if (!editMode) {
+      checkForDisabledFields(initialConfigForm);
+    }
   }
 
   public void testGetPopulatedConfigForm() {
-    ConfigureResponse response =
-        connectorType.getPopulatedConfigForm(configMap, new Locale("test"));
-    checkFormSnippet(response.getFormSnippet());
+    final ConfigureResponse response =
+        sharepointConnectorType.getPopulatedConfigForm(configMap, new Locale("test"));
+    final String populatedConfigForm = response.getFormSnippet();
+    checkForExpectedFields(populatedConfigForm);
+    if (!editMode) {
+      checkForExpectedFields(populatedConfigForm);
+    }
   }
 
   /** Asserts that the given pattern is found in the given string. */
@@ -115,21 +87,42 @@ public class SharepointConnectorTypeTest extends TestCase {
         Pattern.compile(strPattern).matcher(configForm).find());
   }
 
-  /** Checks the given form snippet for completeness. */
-  private void checkFormSnippet(String formSnippet) {
-    checkForExpectedFields(formSnippet);
-    if (!editMode) {
-      checkForDisabledFields(formSnippet);
-    }
-    StringBuffer buffer = new StringBuffer();
-    connectorType.addJavaScript(buffer);
-    assertFind(Pattern.quote(buffer.toString()), formSnippet);
-  }
-
   private void checkForExpectedFields(final String configForm) {
-    for (String key : SharepointConnectorType.CONFIG_FIELDS) {
+    // TODO: This works but it's self-referential: the value of "keys"
+    // here comes from TestConfiguration and not connectorType.xml.
+    for (String key : keys) {
       assertFind("<(input|textarea|select).*id=\""+key+"\".*>", configForm);
     }
+
+    // TODO: If we get canonical keys above, we don't need the rest of this.
+    assertFind("<input.*id=\"sharepointUrl\".*>", configForm);
+    assertFind("<input.*id=\"kdcserver\".*>", configForm);
+    assertFind("<input.*id=\"domain\".*>", configForm);
+    assertFind("<input.*id=\"username\".*>", configForm);
+    assertFind("<input.*id=\"password\".*>", configForm);
+    assertFind("<input.*id=\"mySiteBaseURL\".*>", configForm);
+    assertFind("<textarea.*id=\"includedURls\".*>", configForm);
+    assertFind("<textarea.*id=\"excludedURls\".*>", configForm);
+    assertFind("<input.*id=\"aliasMap\".*>", configForm);
+    assertFind("<input.*id=\"useSPSearchVisibility\".*>", configForm);
+    assertFind("<input.*id=\"feedUnPublishedDocuments\".*>", configForm);
+    assertFind("<input.*id=\"authorization\".*>", configForm);
+    assertFind("<input.*id=\"pushAcls\".*>", configForm);
+    assertFind("<input.*id=\"appendNamespaceInSPGroup\".*>", configForm);
+    assertFind("<select.*id=\"usernameFormatInAce\".*>", configForm);
+    assertFind("<select.*id=\"groupnameFormatInAce\".*>", configForm);
+    assertFind("<input.*id=\"ldapServerHostAddress\".*>", configForm);
+    assertFind("<input.*id=\"portNumber\".*>", configForm);
+    assertFind("<input.*id=\"searchBase\".*>", configForm);
+    assertFind("<select.*id=\"authenticationType\".*>", configForm);
+    assertFind("<select.*id=\"connectMethod\".*>", configForm);
+    assertFind("<input.*id=\"useCacheToStoreLdapUserGroupsMembership\".*>", configForm);
+    assertFind("<input.*id=\"initialCacheSize\".*>", configForm);
+    assertFind("<input.*id=\"cacheRefreshInterval\".*>", configForm);
+    assertFind("<input.*id=\"socialOption\".*>", configForm);
+    assertFind("<input.*id=\"userProfileCollection\".*>", configForm);
+    assertFind("<input.*id=\"gsaAdminUser\".*>", configForm);
+    assertFind("<input.*id=\"gsaAdminPassword\".*>", configForm);
   }
 
   private void checkForDisabledFields(final String configForm) {
