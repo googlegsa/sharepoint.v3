@@ -133,6 +133,12 @@ namespace GSBCleanUpGSASettings
                                 // Deleting the node corresponding to the HTML help file for Search Tips
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='SearchTipsHTMLFileName']");
 
+                                // Embedded mode related app settings
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='EnableEmbeddedMode']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='UseContainerTheme']");
+
+                                // filterParameter app settings
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='filterParameter']");
                                 mgr.SaveXML();
                                 #endregion delete APP setting nodes
                             }
