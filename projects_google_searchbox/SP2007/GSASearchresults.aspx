@@ -4,9 +4,7 @@
 <%-- <% Enabled the Session state in the page by setting the attribute 'EnableSessionState' to true  %>--%>
 <%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
     MasterPageFile="~/_layouts/application.master" EnableSessionState="True"
-    ValidateRequest="false" %> 
-
-
+    ValidateRequest="false" %>
 <%@ Register TagPrefix="wssawc" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
     Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
@@ -15,12 +13,6 @@
 <%@ Register TagPrefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls"
     Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
-
-
-
-
-
-
 <%@ Import Namespace="Microsoft.SharePoint.ApplicationPages" %>
 <%@ Import Namespace="Microsoft.SharePoint" %>
 <%@ Import Namespace="System.Net" %>
@@ -105,6 +97,7 @@
             public string xslGSA2SP;
             public string xslSP2result;
             public string temp = "true";
+            public string embeddedModeQueryArg = "";
             public const String PRODUCTNAME = "GSBS";
             public LOG_LEVEL currentLogLevel = LOG_LEVEL.ERROR;
 
@@ -153,7 +146,27 @@
                     HttpContext.Current.Response.End();
                 }
 
-                //set thelog location
+                // Embedded mode settings. We should enable this by default
+                // if it is not specified.
+                string enableEmbeddedMode =
+                    WebConfigurationManager.AppSettings["EnableEmbeddedMode"];
+                if (enableEmbeddedMode == null ||
+                    enableEmbeddedMode.Trim().Equals("true")) {
+                  embeddedModeQueryArg = "&emsingleres=" +
+                      HttpUtility.UrlEncode("/_layouts/GSAForward.aspx?forward=") +
+                      "&emmain=" +
+                      HttpUtility.UrlEncode("/_layouts/GSASearchresults.aspx") +
+                      "&emdvhost=" +
+                      HttpUtility.UrlEncode(GSALocation);
+                }
+                string useContainerTheme =
+                    WebConfigurationManager.AppSettings["UseContainerTheme"];
+                if (useContainerTheme == null ||
+                    useContainerTheme.Trim().Equals("true")) {
+                  embeddedModeQueryArg = embeddedModeQueryArg +
+                      "&emdstyle=true";
+                }
+
                 LogLocation = getLogLocationFromConfig();
 
                 //set the current log level
@@ -746,15 +759,20 @@ else if(document.attachEvent)
                         ////////////////////////////CONSTRUCT THE SEARCH QUERY FOR GOOGLE SEARCH APPLIANCE ///////////////////////////////////
                         //The search query comes in 'k' parameter
 
-                    
-                        
-                        
-                        if (inquery["k"] != null)
+                        if (inquery["k"] != null || (inquery["q"] != null && String.IsNullOrEmpty(inquery["access"])))
                         {
-                            qQuery = inquery["k"];
-                            if (inquery["cachedurl"] != null)
+
+                            if (!String.IsNullOrEmpty(inquery["cachedurl"]))
                             {
                                 qQuery = inquery["cachedurl"];
+                            }
+                            else if (!String.IsNullOrEmpty(inquery["k"]))
+                            {
+                                qQuery = inquery["k"];
+                            }
+                            else
+                            {
+                                qQuery = inquery["q"];
                             }
                             myquery = qQuery;//for paging in custom stylesheet
 
@@ -812,54 +830,97 @@ else if(document.attachEvent)
                              * for any suggestions listed, if any. Here, the value for the public search parameter will be retrieved 
                              * from the querystring's 'isPublicSearch' parameter.
                              */
-                            if (inquery["isPublicSearch"] != null)
+                        if (inquery["isPublicSearch"] != null)
+                        {
+                            /* 
+                             * Here the value for the access parameter will be decided on the basis of the value of
+                             * isPublicSearch and the saved web.config file settings.
+                             */
+                            if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
                             {
-                                /* 
-                                 * Here the value for the access parameter will be decided on the basis of the value of
-                                 * isPublicSearch and the saved web.config file settings.
-                                 */
-                                if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("a"))
+                                if (inquery["isPublicSearch"] == "false")
                                 {
-                                    if (inquery["isPublicSearch"] == "false")
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else if (inquery["isPublicSearch"] == "true")
+                                {
+                                    gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                                else if (Session["PublicSearchStatus"] != null)
+                                {
+                                    /*
+                                     * If querystring parameter value is null, assign value from the
+                                     * Session to the accesslevel search parameter.
+                                     */
+
+                                    String publicSearchStatus = Session["PublicSearchStatus"].ToString();
+                                    if (publicSearchStatus == "false")
                                     {
                                         gProps.accessLevel = "a"; // Perform 'public and secure search'
                                     }
-                                    else
+                                    else if (publicSearchStatus == "true")
                                     {
                                         gProps.accessLevel = "p";  // Perform 'public search'
                                     }
                                 }
-                                else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
+                                else
+                                {
+                                    gProps.accessLevel = "a";
+                                }
+                            }
+                            else if (WebConfigurationManager.AppSettings["accesslevel"].ToString().Equals("p"))
+                            {
+                                gProps.accessLevel = "p";  // Perform 'public search'
+                            }
+                        }
+                        else
+                        {
+                            /* 
+                            * This code will be executed only when suggestions are provided by the GSA. Here, the scope url's value
+                            * will be retrieved from the GSA's search request 'access' parameter.
+                            */
+                            if (inquery["access"] != null)
+                            {
+                                string publicSearchCheckboxStatus = inquery["access"].ToString();
+                                if (publicSearchCheckboxStatus == "a")
+                                {
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else
                                 {
                                     gProps.accessLevel = "p";  // Perform 'public search'
                                 }
                             }
-                            else /* 
-                                  * This code will be executed only when suggestions are provided by the GSA. Here, the scope url's value
-                                  * will be retrieved from the GSA's search request 'access' parameter.
-                                  */
+                            else
                             {
-                                if (inquery["access"] != null)
+                                /*
+                                 * If querystring parameter value is null, assign value from the
+                                 * Session to the accesslevel search parameter.
+                                 */
+
+                                String publicSearchStatus = Session["PublicSearchStatus"] != null ? Session["PublicSearchStatus"].ToString() : String.Empty;
+                                if (publicSearchStatus == "false")
                                 {
-                                    string publicSearchCheckboxStatus = inquery["access"].ToString();
-                                    if (publicSearchCheckboxStatus == "a")
-                                    {
-                                        gProps.accessLevel = "a"; // Perform 'public and secure search'
-                                    }
-                                    else
-                                    {
-                                        gProps.accessLevel = "p";  // Perform 'public search'
-                                    }
+                                    gProps.accessLevel = "a"; // Perform 'public and secure search'
+                                }
+                                else if (publicSearchStatus == "true")
+                                {
+                                    gProps.accessLevel = "p";  // Perform 'public search'
+                                }
+                                else
+                                {
+                                    gProps.accessLevel = WebConfigurationManager.AppSettings["accesslevel"].ToString();
                                 }
                             }
+                        }
 
                             /*
-                             * Adding filter parameter to the search request sent to GSA. Value for the filter parameter will be set into the
-                             * web.config file of SharePoint web application, at the time of installation, and can be updated using search
-                             * box configuration wizard screen, at post-installation time.
-                             */
-                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&exclude_apps=1&site=" + gProps.siteCollection + "&filter=" + WebConfigurationManager.AppSettings["filterParameter"].ToString();                               
-                            
+                                 * Adding filter parameter to the search request sent to GSA. Value for the filter parameter will be set into the
+                                 * web.config file of SharePoint web application, at the time of installation, and can be updated using search
+                                 * box configuration wizard screen, at post-installation time.
+                                 */
+                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&exclude_apps=1&site=" + gProps.siteCollection + "&filter=" + WebConfigurationManager.AppSettings["filterParameter"].ToString();
+                           
 
                             if (gProps.frontEnd.Trim() != "")
                             {
@@ -907,7 +968,13 @@ else if(document.attachEvent)
                         else
                         {
                             searchReq = HttpContext.Current.Request.Url.Query;
-                            searchReq = HttpUtility.UrlDecode(searchReq); // Decoding the URL received from the current request 
+                            if (gProps.embeddedModeQueryArg == "")
+                            {
+                                // Decoding the URL received from the current request
+                                // if we are NOT running in embedded mode.
+                                searchReq = HttpUtility.UrlDecode(searchReq);
+                               
+                            }
                         }
                         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -920,7 +987,7 @@ else if(document.attachEvent)
                             StreamReader objSR = null;
                             CookieContainer cc = new CookieContainer();
                             int i;
-                            String GSASearchUrl = gProps.GSALocation + "/search" + searchReq;
+			                String GSASearchUrl = gProps.GSALocation + "/search" + searchReq + gProps.embeddedModeQueryArg;
                             ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
                             objResp = (HttpWebResponse)gProps.GetResponse(false, GSASearchUrl, null, null);//fire getresponse
                             string contentEncoding = objResp.Headers["Content-Encoding"];
@@ -1070,7 +1137,19 @@ else if(document.attachEvent)
                                                 // Add the other cookies to the cookie container
                                                 newcc.Add(responseCookies);
                                             }
-                                            
+
+                                            if (name == "GSA_SESSION_ID")
+                                            {
+                                                // TODO : This is a special handling in this page to forward GSA_SESSION_ID Cookie
+                                                // Needs to be taken care when moving this code to common module.
+                                                HttpCookie cDummy = new HttpCookie("GSBS_GSA_SESSION_ID");
+                                                cDummy.Value = HttpUtility.UrlEncode(value, utf8);
+                                                cDummy.Domain = HttpContext.Current.Request.Url.Host;
+                                                cDummy.Expires = responseCookies.Expires;
+                                                HttpContext.Current.Response.Cookies.Add(cDummy);
+                                                gProps.log("Added Dummy Cookie GSA_SESSION_ID = " + value, LOG_LEVEL.INFO);
+                                            }
+
                                             /*Cookie Information*/
                                             gProps.log("Cookie Name= " + responseCookies.Name
                                                 + "| Value= " + value
