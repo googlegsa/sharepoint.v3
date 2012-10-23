@@ -19,6 +19,7 @@ import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 import com.google.enterprise.connector.spi.ConnectorFactory;
 import com.google.enterprise.connector.spi.ConnectorType;
+import com.google.enterprise.connector.spi.XmlUtils;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -77,10 +78,21 @@ public class AdGroupsConnectorType implements ConnectorType {
         configuration = configuration.replace("$ssl", conf.get(s).equals("SSL") ? "selected='selected'" : "");
         configuration = configuration.replace("$standard", conf.get(s).equals("SSL") ? "" : "selected='selected'");
       } else {
-        configuration = configuration.replace("$" + s, conf.get(s));
+        configuration = configuration.replace("$" + s, xmlEscape(conf.get(s)));
       }
     }
     return new ConfigureResponse("", configuration);
+  }
+
+  private CharSequence xmlEscape(String value) {
+    StringBuilder buffer = new StringBuilder();
+    try {
+      XmlUtils.xmlAppendAttrValue(Strings.nullToEmpty(value), buffer);
+    } catch (IOException impossible) {
+      // StringBuilder does not throw this exception.
+      throw new AssertionError(impossible);
+    }
+    return buffer;
   }
 
   /**
