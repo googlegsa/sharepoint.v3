@@ -38,9 +38,16 @@ public class AdGroupsConnectorTypeTest extends TestCase {
 
     return config;
   }
-  
+
   protected void assertContains(ConfigureResponse response, String message) {
+    assertNotNull(message);
     assertTrue(response.getFormSnippet().replace("</tr>", "</tr>\r"),
+        response.getFormSnippet().contains(message));
+  }
+
+  protected void assertNotContains(ConfigureResponse response, String message) {
+    assertNotNull(message);
+    assertFalse(response.getFormSnippet().replace("</tr>", "</tr>\r"),
         response.getFormSnippet().contains(message));
   }
 
@@ -60,7 +67,7 @@ public class AdGroupsConnectorTypeTest extends TestCase {
     Map<String, String> config = configure("", "", "STANDARD", "", "");
     type.setConfigKeys(new ArrayList<String>(config.keySet()));
     ConfigureResponse response = type.validateConfig(config, null, null);
-    assertFalse(response.getMessage().isEmpty());
+    assertFalse(response.getMessage().length() == 0);
   }
 
   public void testEmptyDataSSL() {
@@ -68,7 +75,7 @@ public class AdGroupsConnectorTypeTest extends TestCase {
     Map<String, String> config = configure("", "", "SSL", "", "");
     type.setConfigKeys(new ArrayList<String>(config.keySet()));
     ConfigureResponse response = type.validateConfig(config, null, null);
-    assertFalse(response.getMessage().isEmpty());
+    assertFalse(response.getMessage().length() == 0);
   }
 
   public void testUnknownHost() {
@@ -127,5 +134,20 @@ public class AdGroupsConnectorTypeTest extends TestCase {
     type.setConfigKeys(new ArrayList<String>(config.keySet()));
     ConfigureResponse response = type.validateConfig(config, null, null);
     assertContains(response, "Invalid credentials.");
+  }
+
+  public void testXmlEscaping() {
+    AdGroupsConnectorType type = new AdGroupsConnectorType();
+    Map<String, String> config = configure("over<there>", "389", "STANDARD",
+        "O'Reilly", "good&bad");
+    type.setConfigKeys(new ArrayList<String>(config.keySet()));
+    ConfigureResponse response = type.getPopulatedConfigForm(config, null);
+    assertContains(response, "over&lt;there>");
+    assertContains(response, "O&#39;Reilly");
+    assertContains(response, "good&amp;bad");
+    // To avoid typos in assertNotContains.
+    assertNotContains(response, config.get("hostname"));
+    assertNotContains(response, config.get("principal"));
+    assertNotContains(response, config.get("password"));
   }
 }
