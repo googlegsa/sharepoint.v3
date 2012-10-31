@@ -160,7 +160,8 @@ public class ListState implements StatefulObject {
   // Read Security for List State
   private boolean applyReadSecurity = false;
   
-  
+  // List Item Collection Position Next value for pagination
+  private String listItemCollectionPositionNext;  
 
   /**
    * @param inPrimaryKey
@@ -869,7 +870,7 @@ public class ListState implements StatefulObject {
    */
   public void removeExtraID(final String docID) {
     LOGGER.log(Level.FINEST, "Request to delete docID #" + docID
-        + " ] is received. List URL [ " + listURL + " ]. ");
+        + " ] from extraIDs is received. List URL [ " + listURL + " ]. ");
     if (!Util.isNumeric(docID)) {
       // This must be a list itself. And, we do not bother about list
       // here. We only need list items.
@@ -886,6 +887,19 @@ public class ListState implements StatefulObject {
       final int startPos = match.start();
       if (!idPart.endsWith("~")) {
         extraIDs.delete(startPos, startPos + 1 + docID.length());
+      } else {
+        // This is a folder
+        // Check if dependent Ids are removed.
+        Set<String> depIDs = getExtraIDs(docID);
+        if (depIDs == null || depIDs.size() == 1) {
+          int folderNameIndex = extraIDs.indexOf("/#"+ docID, startPos);
+          if (folderNameIndex > startPos) {
+            extraIDs.delete(startPos, folderNameIndex + 2 + docID.length());
+          }        
+        } else {
+          LOGGER.log(Level.FINE, "DocID #" + docID
+              + " ] is not removed from extraids.");
+        }
       }
     }
   }
@@ -1200,6 +1214,7 @@ public class ListState implements StatefulObject {
     atts.addAttribute("", "", SPConstants.LAST_CRAWLED_DATETIME, SPConstants.STATE_ATTR_CDATA, getLastCrawledDateTime());
     atts.addAttribute("", "", SPConstants.STATE_TYPE, SPConstants.STATE_ATTR_CDATA, getType());
     atts.addAttribute("", "", SPConstants.STATE_ISACLCHANGED, SPConstants.STATE_ATTR_CDATA, String.valueOf(isAclChanged()));
+    atts.addAttribute("", "", SPConstants.STATE_LISTITEMCOLLECTION_POSITION_NEXT, SPConstants.STATE_ATTR_CDATA, getListItemCollectionPositionNext());
     if (isAclChanged()) {
       atts.addAttribute("", "", SPConstants.STATE_LASTDOCIDCRAWLEDFORACL, SPConstants.STATE_ATTR_CDATA, String.valueOf(getLastDocIdCrawledForAcl()));
     }
@@ -1386,6 +1401,8 @@ public class ListState implements StatefulObject {
       if (SPType.SP2007 == web.getSharePointType()) {
         list.setChangeTokenForWSCall(atts.getValue(SPConstants.STATE_CHANGETOKEN));
         list.saveNextChangeTokenForWSCall(atts.getValue(SPConstants.STATE_CACHED_CHANGETOKEN));
+        list.setListItemCollectionPositionNext(
+            atts.getValue(SPConstants.STATE_LISTITEMCOLLECTION_POSITION_NEXT));
 
         if (FeedType.CONTENT_FEED == feedType) {
           try {
@@ -1590,5 +1607,14 @@ public class ListState implements StatefulObject {
    */
   public void setApplyReadSecurity(boolean applyReadSecurity) {
     this.applyReadSecurity = applyReadSecurity;
+  }
+
+  public String getListItemCollectionPositionNext() {
+    return listItemCollectionPositionNext;
+  }
+
+  public void setListItemCollectionPositionNext(
+      String listItemCollectionPositionNext) {
+    this.listItemCollectionPositionNext = listItemCollectionPositionNext;
   }
 }
