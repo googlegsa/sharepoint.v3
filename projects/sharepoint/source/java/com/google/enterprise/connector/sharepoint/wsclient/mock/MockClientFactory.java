@@ -254,8 +254,7 @@ public class MockClientFactory implements ClientFactory {
     if (fixedId) {
       // This generates an ID from the URL that is passed in so that we get
       // the same ID for a URL.
-      id = Integer.toHexString(url.hashCode());
-      id = String.format("%1$#32s", id).replace(" ", "0");
+      id = String.format("%032x", url.hashCode());
       id = "{" + id.substring(0, 8) + "-" + id.substring(8, 12) + "-" +
           id.substring(12, 16) + "-" + id.substring(16, 20) + "-" +
           id.substring(20) + "}";
