@@ -1,5 +1,4 @@
 #summary Manual installation steps for Google Search Box 3.0.0
-#labels Deprecated
 
 = Pre-requisites =
 
@@ -7,7 +6,7 @@
  * The search Box can also be deployed on machine with SharePoint Server 2010 or SharePoint Foundation 2010 installed (64-bit).
  * For a SharePoint farm scenario, you need to install the Search Box for all the SharePoint Web Front Ends connected to the farm. 
  * The Google Search Box for SharePoint can be downloaded from 
-http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/detail?name=GSBS-3.0.0.zip&can=2&q=#makechanges
+http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list
 
 
 = Steps: =
