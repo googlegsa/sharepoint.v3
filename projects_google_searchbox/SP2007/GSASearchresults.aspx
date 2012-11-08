@@ -919,7 +919,10 @@ else if(document.attachEvent)
                                  * web.config file of SharePoint web application, at the time of installation, and can be updated using search
                                  * box configuration wizard screen, at post-installation time.
                                  */
-                            searchReq = "?q=" + qQuery + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1" + "&oe=UTF-8&ie=UTF-8&exclude_apps=1&site=" + gProps.siteCollection + "&filter=" + WebConfigurationManager.AppSettings["filterParameter"].ToString();
+                            String filterParameter = !String.IsNullOrEmpty(WebConfigurationManager.AppSettings["filterParameter"]) ? WebConfigurationManager.AppSettings["filterParameter"] : String.Empty;
+                            searchReq = "?q=" + HttpUtility.UrlEncode(qQuery) + "&access=" + gProps.accessLevel + "&getfields=*&output=xml_no_dtd&ud=1"
+                                + "&oe=UTF-8&ie=UTF-8&exclude_apps=1&site=" + gProps.siteCollection
+                                + "&filter=" + filterParameter;
                            
 
                             if (gProps.frontEnd.Trim() != "")
