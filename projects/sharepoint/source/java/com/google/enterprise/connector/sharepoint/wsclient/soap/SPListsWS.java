@@ -574,6 +574,7 @@ public class SPListsWS implements ListsWS {
     final String receivedNextPage = dataElement.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
     LOGGER.log(Level.FINE, "Next Page Received [ " + receivedNextPage + " ]. ");
     list.setNextPage(receivedNextPage);
+    list.setListItemCollectionPositionNext(receivedNextPage);
     /*
      * One may think of using nextPage as the backbone of page by page crawling
      * when threshold is reached. This definitely seems to be a simple and

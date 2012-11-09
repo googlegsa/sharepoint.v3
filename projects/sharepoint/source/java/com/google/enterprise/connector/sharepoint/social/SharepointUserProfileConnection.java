@@ -20,6 +20,7 @@ import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofilese
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.Privacy;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.PropertyData;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.ValueData;
+import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument.ColleagueData;
@@ -113,7 +114,15 @@ public class SharepointUserProfileConnection {
     SharePointSocialUserProfileDocument userProfile =
         new SharePointSocialUserProfileDocument(ctxt
         .getUserProfileCollection());
-    userProfile.setPublic(true);
+    
+    //This is a place holder property for ACL    
+    userProfile.setProperty(SpiConstants.PROPNAME_ACLGROUPS, "Secured");
+    String globalNamespace =
+        ctxt.getSpClientContext().getGoogleGlobalNamespace();
+    // Default ACL for User profile document
+    userProfile.AddAllowAclToDocument(
+        globalNamespace, "NT AUTHORITY\\Authenticated Users");
+  
     String nextValue = getUserProfileByIndexResult.getNextValue();
     LOGGER.fine("Next User Profile Index : " + nextValue);
     if (!Strings.isNullOrEmpty(nextValue)) {

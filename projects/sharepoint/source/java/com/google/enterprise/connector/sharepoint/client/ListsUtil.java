@@ -292,7 +292,7 @@ public abstract class ListsUtil {
         me.addChildElement(new MessageElement(new QName("OptimizeFor"))).addTextNode("ItemIds");
       }
 
-      if (nextPage != null) {
+      if (!Strings.isNullOrEmpty(nextPage)) {
         me.addChildElement(new MessageElement(new QName("Paging"))).addAttribute(
             SOAPFactory.newInstance().createName("ListItemCollectionPositionNext"), nextPage);
       }
@@ -380,11 +380,20 @@ public abstract class ListsUtil {
           continue;
         }
         if (list.isInDeleteCache(itemId)) {
+          // Check if all dependent ids are processed
+          Set<String> depIds = list.getExtraIDs(itemId);
+          if (depIds == null || depIds.size() == 1) {
           // We have already processed this.
           LOGGER.log(Level.WARNING, "skipping deleted ItemID [" + itemId
               + "] because it has been processed in previous batch traversal(s). listURL ["
               + list.getListURL() + " ]. ");
           continue;
+          } else {
+            LOGGER.log(Level.WARNING, "Deleted ItemID [" + itemId
+                + "] is already processed but"
+                + " dependent ids are still not processed form listURL ["
+                + list.getListURL() + " ]. ");
+          }
         }
         LOGGER.log(Level.INFO, "ItemID [" + itemId + "] has been deleted. "
             + "Delete feeds will be sent for this and all the dependent IDs. "

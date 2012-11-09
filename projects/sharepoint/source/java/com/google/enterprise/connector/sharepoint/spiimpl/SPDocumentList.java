@@ -329,6 +329,10 @@ public class SPDocumentList implements DocumentList {
       // documents which are being crawled because of any ACL change.
       // This is to keep the regular crawling separate from ACl based
       // crawling.
+      if (FeedType.CONTENT_FEED == spDocument.getFeedType()) {
+        // Remove document id from delete cache if item is restored back.
+        listState.removeFromDeleteCache(currentID);
+      }
       if (!spDocument.isForAclChange()) {
         listState.setLastDocProcessed(spDocument);
 

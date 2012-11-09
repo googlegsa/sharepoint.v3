@@ -289,6 +289,9 @@ public class SPConstants {
   public static final String STATE_ACLNEXTCHANGETOKEN = "AclNextChangeToken";
   public static final String STATE_ISACLCHANGED = "IsAclChanged";
   public static final String STATE_LASTDOCIDCRAWLEDFORACL = "LastDocIdCrawledForAcl";
+  
+  public static final String STATE_LISTITEMCOLLECTION_POSITION_NEXT =
+      "ListItemCollectionPositionNext";
 
   public static final String STATE_EXTRAIDS_FOLDERS = "FolderItemIDs";
   public static final String STATE_EXTRAIDS_ATTACHMENTS = "Attachments";

@@ -435,7 +435,11 @@ public class ListsHelper {
       public MessageElement[] getQuery() throws Exception {
         if (null == token) {
           String lastDocID = "0";
-          if (null != list.getLastDocForWSRefresh()) {
+          LOGGER.log(Level.INFO, "List Item Collection Position Next ["
+          + list.getListItemCollectionPositionNext() + "]");
+          if (null != list.getLastDocForWSRefresh()
+              && Strings.isNullOrEmpty(
+                  list.getListItemCollectionPositionNext())) {
             lastDocID = Util.getOriginalDocId(list.getLastDocForWSRefresh().getDocId(),
                 sharepointClientContext.getFeedType());
           }
@@ -452,7 +456,8 @@ public class ListsHelper {
       }
 
       public MessageElement[] getQueryOptions() throws Exception {
-        return ListsUtil.createQueryOptions(true, null, null);
+        return ListsUtil.createQueryOptions(
+            true, null, list.getListItemCollectionPositionNext());
       }
     };
 
@@ -604,7 +609,7 @@ public class ListsHelper {
           + " ] for numeric value", e);
     }
 
-    Collections.sort(allDeletedIDs);
+   Collections.sort(allDeletedIDs);
     LOGGER.log(Level.FINE, "Constructing delete feeds for IDs " + allDeletedIDs
         + ". ");
     for (String currentItemID : deletedIDs) {
@@ -612,6 +617,9 @@ public class ListsHelper {
         if (LOGGER.isLoggable(Level.FINER)) {
           LOGGER.log(Level.FINER, "Skipping document with original ID: "
               + currentItemID + " from list : " + list.getListURL());
+          // Since currentItemID is alraedy processed but it is part of extra id
+          // try to remove it from extra id
+          list.removeExtraID(currentItemID);
         }
         continue;
       }
