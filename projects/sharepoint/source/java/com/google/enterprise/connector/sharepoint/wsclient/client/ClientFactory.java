@@ -90,6 +90,14 @@ public interface ClientFactory {
    */
   public SiteDiscoveryWS getSiteDiscoveryWS(SharepointClientContext ctx,
       String webUrl);
+  
+  /**
+   * Gets the instance of User Profile Change Web Service
+   * @param ctx
+   * @return
+   */
+  public UserProfileChangeWS getUserProfileChangeWS(
+      SharepointClientContext ctx);
 
   /**
    * Check connectivity to the specified URL with the specified credentials.
