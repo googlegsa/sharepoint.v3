@@ -15,6 +15,8 @@
 package com.google.enterprise.connector.sharepoint.social;
 
 import com.google.common.base.Strings;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -22,6 +24,8 @@ import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.util.SystemClock;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,48 +63,13 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
   private boolean end = false;
   private final int batchHint;
   private int batchCount = 0;
+  private String userProfileChangeToken = "";
+  private List<Document> updatedDocuments;
 
-  public static class UserProfileCheckpoint {
-    private boolean none; // no checkpoint
-    private long lastFullSync = 0L;
-    private int nextProfileIndex;   
 
-    public UserProfileCheckpoint() {
-      this.none = true;
-      nextProfileIndex = -1;
-    }
-
-    public UserProfileCheckpoint(String checkpoint) {
-      if (Strings.isNullOrEmpty(checkpoint)) {
-        this.none = true;
-      } else {
-        String[] parts = checkpoint.split(",");
-        if ((parts.length != 3) || (!parts[0].equals(CHECKPOINT_PREFIX))) {
-          // no or invalid checkpoint
-          this.none = true;
-        } else {         
-          lastFullSync = Long.parseLong(parts[1]);
-          nextProfileIndex = Integer.parseInt(parts[2]);
-        }
-      }
-    }
-
-    public boolean isNoCheckpoint() {
-      return none;
-    }
-    
-    public long getLastFullSync() {
-      return lastFullSync;
-    }
-
-    public int getNextProfileIndex() {
-      return nextProfileIndex;
-    }   
-  }
-
-  public SharepointSocialUserProfileDocumentList(
+ public SharepointSocialUserProfileDocumentList(
       SharepointUserProfileConnection connection,
-      UserProfileCheckpoint checkpoint, int batchHint) throws RepositoryException {
+      SharePointSocialCheckpoint checkpoint, int batchHint, List<Document> updatedDocuments) throws RepositoryException {
     service = connection;
     try {
       int profileCount = connection.openConnection();
@@ -108,25 +77,40 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
     } catch (RemoteException e) {
       throw new RepositoryException(e);
     }
-    if (checkpoint.none) {
+    if (checkpoint.isEmptyUserProfileCheckpoint()) {
       this.nextProfileIndex = -1;
     } else {
       // This is incremental crawl. Connector will use next Profile Index
       // value to fetch next profile.
-      this.nextProfileIndex = checkpoint.getNextProfileIndex();      
+      this.nextProfileIndex = checkpoint.getUserProfileNextIndex();      
     }
-    lastFullSync = checkpoint.getLastFullSync();
+    lastFullSync = checkpoint.getUserProfileLastFullSync();
+    this.updatedDocuments = updatedDocuments;
+    userProfileChangeToken = checkpoint.getUserProfileChangeToken();
     this.batchHint = batchHint;   
   }
 
+ 
+
   @Override
   public String checkpoint() throws RepositoryException {
-    return CHECKPOINT_PREFIX + "," + lastFullSync
-        + "," + nextProfileIndex;
+   SharePointSocialCheckpoint checkpoint = new SharePointSocialCheckpoint("");
+   checkpoint.setUserProfileLastFullSync(lastFullSync);
+   checkpoint.setUserProfileNextIndex(nextProfileIndex);
+   checkpoint.setUserProfileChangeToken(userProfileChangeToken);   
+   return CHECKPOINT_PREFIX + checkpoint.toString();
   }
 
   @Override
   public Document nextDocument() throws RepositoryException {
+    
+    if (updatedDocuments != null && updatedDocuments.size() > 0) {
+      
+      Document updatedDoc =  updatedDocuments.remove(0);
+      LOGGER.fine("Returning updatedDoc = "
+          + updatedDoc);
+      return updatedDoc;
+    }
     if (end) {
       return null;      
     }
