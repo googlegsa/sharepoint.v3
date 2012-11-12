@@ -22,7 +22,6 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
@@ -347,9 +346,9 @@ public class SharepointClient {
     LOGGER.log(Level.INFO, "Resolving SharePoint Groups for ["
         + webState.getWebUrl() + "]");
     try {
-      AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
+      AclHelper aclHelper = new AclHelper(sharepointClientContext,
           webState.getWebUrl());
-      return aclWs.resolveSharePointGroups(webState);      
+      return aclHelper.resolveSharePointGroups(webState);      
     } catch (Exception ex) {    
       // Return false indicating that SharePoint Group Resolution is failed.
       LOGGER.log(Level.WARNING,
@@ -385,9 +384,9 @@ public class SharepointClient {
     LOGGER.log(Level.INFO, "Fetching ACls for #" + resultSet.size()
         + " documents crawled from web " + webState.getWebUrl());
     try {
-      AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
+      AclHelper aclHelper = new AclHelper(sharepointClientContext,
           webState.getWebUrl());
-      aclWs.fetchAclForDocuments(resultSet, webState);
+      aclHelper.fetchAclForDocuments(resultSet, webState);
     } catch (Throwable t) {
       logError(resultSet, webState, t);
       // Return false indicating that the ACL retrieval for current batch
@@ -941,9 +940,9 @@ public class SharepointClient {
       Collections.rotate(listCollection, -(listCollection.indexOf(nextList)));
     }
 
-    AclWS aclWs = clientFactory.getAclWS(tempCtx, webState.getWebUrl());
+    AclHelper aclHelper = new AclHelper(tempCtx, webState.getWebUrl());
     try {
-      aclWs.fetchAclChangesSinceTokenAndUpdateState(webState);
+      aclHelper.fetchAclChangesSinceTokenAndUpdateState(webState);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
           + webState.getWebUrl() + " ]. ", e);
@@ -1081,7 +1080,8 @@ public class SharepointClient {
             webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
             // Any documents to be crawled because of ACl Changes
-            aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsHelper);
+            aclChangedItems = aclHelper.
+                getListItemsForAclChangeAndUpdateState(listState, listsHelper);
 
             if (null == aclChangedItems
                 || aclChangedItems.size() < sharepointClientContext.getBatchHint()) {
@@ -1398,10 +1398,10 @@ public class SharepointClient {
     // Web Application Policy Document will be associated with each webstate.
     if (sharepointClientContext.isPushAcls()) {
       try {
-        AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
+        AclHelper aclHelper = new AclHelper(sharepointClientContext,
             webState.getWebUrl());
-        if (aclWs != null) {
-          SPDocument webAppPolicy = aclWs.getWebApplicationPolicy(webState,
+        if (aclHelper != null) {
+          SPDocument webAppPolicy = aclHelper.getWebApplicationPolicy(webState,
               sharepointClientContext.getFeedType().toString());
           if (webAppPolicy != null) {
             documentList.add(webAppPolicy);
