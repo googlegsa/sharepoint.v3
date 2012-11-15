@@ -18,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
+import com.google.enterprise.connector.sharepoint.client.BulkAuthorizationHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -28,7 +29,6 @@ import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnect
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
-import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
@@ -1874,8 +1874,8 @@ public class SharepointConnectorType implements ConnectorType {
 
     try {
       sharepointClientContext.setSiteURL(endpoint);
-      final BulkAuthorizationWS testBulkAuth =
-          clientFactory.getBulkAuthorizationWS(sharepointClientContext);
+      final BulkAuthorizationHelper testBulkAuth =
+          new BulkAuthorizationHelper(sharepointClientContext);
       return testBulkAuth.checkConnectivity();
     } catch (final Exception e) {
       final String logMessage = "Problem while connecting.";
