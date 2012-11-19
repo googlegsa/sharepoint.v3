@@ -465,19 +465,18 @@ public class SPSiteDataWS implements SiteDataWS {
 
     final SPDocument siteDataDocument = new SPDocument(webState.getPrimaryKey()
         + SPConstants.DEFAULT_SITE_LANDING_PAGE + SPConstants.DOC_TOKEN
-        + sWebMetadata.value.getWebID(), webState.getWebUrl()
-        + SPConstants.DEFAULT_SITE_LANDING_PAGE,
-        sWebMetadata.value.getLastModified().getInstance(),
+        + sWebMetadata.value.getWebID(),
+        webState.getWebUrl() + SPConstants.DEFAULT_SITE_LANDING_PAGE,
+        sWebMetadata.value.getLastModified(),
         sWebMetadata.value.getAuthor(), SPConstants.SITE, webState.getTitle(),
         sharepointClientContext.getFeedType(), webState.getSharePointType());
-    HttpMethodBase method = null;
     String strUrl = Util.encodeURL(siteDataDocument.getUrl());
     try {
-      method = new HeadMethod(strUrl);
+      HttpMethodBase method = new HeadMethod(strUrl);
       int responseCode =
           sharepointClientContext.checkConnectivity(strUrl, method);
       if (responseCode != 200) {
-        LOGGER.log(Level.INFO,"Possible Publishing website.Marking Url ["
+        LOGGER.log(Level.INFO, "Possible Publishing website. Marking Url [ "
             + strUrl + " ] with Document Type as ACL");
         siteDataDocument.setDocumentType(DocumentType.ACL);
       }

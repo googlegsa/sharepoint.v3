@@ -190,10 +190,12 @@ public class SPListsWS implements ListsWS {
       if (me != null) {
         if (me.length > 0) {
           if (me[0] != null) {
-            final Iterator ita = me[0].getChildElements();
+            Iterator<?> ita = me[0].getChildElements();
             while ((ita != null) && (ita.hasNext())) {
               final MessageElement attachmentsOmElement = (MessageElement) ita.next();
-              for (final Iterator attachmentsIt = attachmentsOmElement.getChildElements(); attachmentsIt.hasNext();) {
+              Iterator<?> attachmentsIt =
+                  attachmentsOmElement.getChildElements();
+              while (attachmentsIt.hasNext()) {
                 final String url = attachmentsIt.next().toString();
                 LOGGER.config("Attachment URL: " + url);
 
@@ -277,10 +279,12 @@ public class SPListsWS implements ListsWS {
     if (res != null) {
       final MessageElement[] me = res.get_any();
       if ((me != null) && (me.length > 0)) {
-        for (final Iterator itChilds = me[0].getChildElements(); itChilds.hasNext();) {
+        Iterator<?> itChilds = me[0].getChildElements();
+        while (itChilds.hasNext()) {
           final MessageElement child = (MessageElement) itChilds.next();
           if (SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
-            for (final Iterator itrchild = child.getChildElements(); itrchild.hasNext();) {
+            Iterator<?> itrchild = child.getChildElements();
+            while (itrchild.hasNext()) {
               final MessageElement row = (MessageElement) itrchild.next();
               final SPDocument doc = ListsUtil.processListItemElement(
                   sharepointClientContext, row, list, allWebs);
@@ -369,12 +373,14 @@ public class SPListsWS implements ListsWS {
     if (res != null) {
       final MessageElement[] me = res.get_any();
       if ((me != null) && (me.length > 0)) {
-        for (final Iterator itChilds = me[0].getChildElements(); itChilds.hasNext();) {
+        Iterator<?> itChilds = me[0].getChildElements();
+        while (itChilds.hasNext()) {
           final MessageElement child = (MessageElement) itChilds.next();
           if (SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
             final String tmpNextPage = child.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
             String lastItemID = null;
-            for (final Iterator itrchild = child.getChildElements(); itrchild.hasNext();) {
+            Iterator<?> itrchild = child.getChildElements();
+            while (itrchild.hasNext()) {
               final MessageElement row = (MessageElement) itrchild.next();            
               final String fsObjType =
                   Util.normalizeMetadataValue(
@@ -505,7 +511,8 @@ public class SPListsWS implements ListsWS {
       if ((me != null) && (me.length > 0)) {
         // To ensure that Changes are accessed before documents
         boolean inSequence = false;
-        for (final Iterator itChilds = me[0].getChildElements(); itChilds.hasNext();) {
+        Iterator<?> itChilds = me[0].getChildElements();
+        while (itChilds.hasNext()) {
           final MessageElement child = (MessageElement) itChilds.next();
           if (SPConstants.CHANGES.equalsIgnoreCase(child.getLocalName())) {
             inSequence = true;
@@ -589,7 +596,8 @@ public class SPListsWS implements ListsWS {
      * ListItemCollectionPositionNext keeps recrawling the same set of document
      * again and again."
      */
-    for (final Iterator itrchild = dataElement.getChildElements(); itrchild.hasNext();) {
+    Iterator<?> itrchild = dataElement.getChildElements();
+    while (itrchild.hasNext()) {
       try {
         final MessageElement row = (MessageElement) itrchild.next();
         final String docId = row.getAttribute(SPConstants.ID);

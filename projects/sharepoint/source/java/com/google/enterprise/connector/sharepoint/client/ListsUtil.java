@@ -331,7 +331,8 @@ public abstract class ListsUtil {
           + "Event Cache table of SharePoint content database.");
     }
 
-    for (final Iterator itrchild = changeElement.getChildElements(); itrchild.hasNext();) {
+    Iterator<?> itrchild = changeElement.getChildElements();
+    while (itrchild.hasNext()) {
       final MessageElement change = (MessageElement) itrchild.next();
       if (null == change) {
         continue;
@@ -491,7 +492,7 @@ public abstract class ListsUtil {
       author = listItem.getAttribute(SPConstants.AUTHOR);
     }
     String docId = listItem.getAttribute(SPConstants.ID);
-    final Iterator itAttrs = listItem.getAllAttributes();
+    Iterator<?> itAttrs = listItem.getAllAttributes();
 
     // Start processing based on the above read attributes.
 
