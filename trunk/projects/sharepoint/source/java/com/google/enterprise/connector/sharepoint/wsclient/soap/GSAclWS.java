@@ -83,6 +83,7 @@ public class GSAclWS implements AclWS{
   private final Logger LOGGER = Logger.getLogger(GSAclWS.class.getName());
   private SharepointClientContext sharepointClientContext = null;
   private boolean supportsInheritedAcls = false;
+  private boolean supportsDenyAcls = false;
 
   /**
    * @param inSharepointClientContext The Context is passed so that necessary
@@ -107,7 +108,9 @@ public class GSAclWS implements AclWS{
     }
     if (null != sharepointClientContext.getTraversalContext()) {
       supportsInheritedAcls = 
-          sharepointClientContext.getTraversalContext().supportsInheritedAcls();     
+          sharepointClientContext.getTraversalContext().supportsInheritedAcls();
+      supportsDenyAcls = 
+          sharepointClientContext.getTraversalContext().supportsDenyAcls();
     }
     LOGGER.log(Level.CONFIG, "Supports ACL " + supportsInheritedAcls);
     endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
@@ -366,7 +369,7 @@ public class GSAclWS implements AclWS{
                 + "] Denied Role Types [ " + deniedRoleTypes + " ]");
             //Pass denied permissions only if Reader role is denied.
             if (deniedRoleTypes.contains(RoleType.READER)) {
-              if (supportsInheritedAcls) {
+              if (supportsDenyAcls) {
                 LOGGER.fine("Processing Deny permissions"
                     + " for Principal ["+ principalName + "]");
                 processPermissions(principal, deniedRoleTypes,
@@ -378,8 +381,8 @@ public class GSAclWS implements AclWS{
                 // Traversal Context.
                 LOGGER.warning("Skipping ACL as Deny permissions are detected"
                     + "for Document [" + entityUrl + "] for Principal ["
-                    + principalName + " ] when Supports ACL ["
-                    + supportsInheritedAcls + "].");
+                    + principalName + " ] when Supports deny ACL ["
+                    + supportsDenyAcls + "].");
                 continue ACL;
               }
             }
