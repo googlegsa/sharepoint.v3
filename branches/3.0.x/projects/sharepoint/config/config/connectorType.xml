@@ -4,40 +4,6 @@
   <bean id="sharepoint-connector"
     class="com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnectorType">
     <property name="clientFactory" ref="clientFactory" />
-    <property name="configKeys">
-      <list>
-    <value>sharepointUrl</value>
-    <value>kdcserver</value>
-        <value>domain</value>
-        <value>username</value>
-        <value>password</value>
-        <value>mySiteBaseURL</value>
-        <value>includedURls</value>
-        <value>excludedURls</value>
-        <value>aliasMap</value>
-        <value>sharepointCrawlingOptions</value>
-        <value>authorization</value>
-        <!-- Push ACLs configuration -->
-        <value>pushAcls</value>
-        <value>usernameFormatInAce</value>
-        <value>groupnameFormatInAce</value>
-        <!-- ldap configuration -->
-        <value>ldapServerHostAddress</value>
-        <value>portNumber</value>
-        <value>searchBase</value>
-        <value>authenticationType</value>
-        <value>connectMethod</value>
-        <!--  LDAP user groups membership cache settings -->
-        <value>useCacheToStoreLdapUserGroupsMembership</value>
-        <value>initialCacheSize</value>
-        <value>cacheRefreshInterval</value>
-        <!--  gdata connection credential --> 
-        <value>socialOption</value> 
-        <value>userProfileCollection</value>
-        <value>gsaAdminUser</value>
-        <value>gsaAdminPassword</value>
-      </list>
-    </property>
   </bean>
 
   <bean id="clientFactory"
