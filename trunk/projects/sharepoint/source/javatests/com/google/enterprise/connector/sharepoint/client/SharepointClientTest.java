@@ -70,15 +70,15 @@ public class SharepointClientTest extends TestCase {
     System.out.println("Testing [ testTraverse() ]...");
     final int iPageSizeHint = 100;
     this.sharepointClient.updateGlobalState(this.globalState);
-    final Set webStates = this.globalState.getAllWebStateSet();
-    final WebState curr_webState = (WebState) (webStates.toArray())[0];
-    final SPDocumentList rs = this.sharepointClient.traverse(this.globalState, curr_webState, iPageSizeHint, false);
+    Set<WebState> webStates = this.globalState.getAllWebStateSet();
+    WebState curr_webState = webStates.iterator().next();
+    SPDocumentList rs = this.sharepointClient.traverse(this.globalState,
+        curr_webState, iPageSizeHint, false);
     int numDocs = 0;
     try {
       System.out.println("Documents found - ");
-      SPDocument pm;
       if (rs != null) {
-        pm = (SPDocument) rs.nextDocument();
+        SPDocument pm = (SPDocument) rs.nextDocument();
         while (pm != null) {
           System.out.println("<document>");
           final Property lastModProp = pm.findProperty(SpiConstants.PROPNAME_LASTMODIFIED);
@@ -138,7 +138,6 @@ public class SharepointClientTest extends TestCase {
           pm = (SPDocument) rs.nextDocument();
         }
       }
-
     } catch (final RepositoryException e) {
       e.printStackTrace();
     }

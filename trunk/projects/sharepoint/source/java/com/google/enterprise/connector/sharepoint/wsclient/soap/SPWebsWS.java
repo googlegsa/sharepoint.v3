@@ -132,8 +132,7 @@ public class SPWebsWS implements WebsWS {
     if (webcollnResult != null) {
       final MessageElement[] meWebs = webcollnResult.get_any();
       if ((meWebs != null) && (meWebs[0] != null)) {
-
-        final Iterator itWebs = meWebs[0].getChildElements();
+        Iterator<?> itWebs = meWebs[0].getChildElements();
         if (itWebs != null) {
           while (itWebs.hasNext()) {
             // e.g. <ns1:Web Title="ECSCDemo"
