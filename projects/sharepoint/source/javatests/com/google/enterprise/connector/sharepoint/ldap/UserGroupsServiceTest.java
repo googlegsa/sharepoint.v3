@@ -63,11 +63,11 @@ public class UserGroupsServiceTest {
     sharepointClientContext = new SharepointClientContext(
         clientFactory, TestConfiguration.sharepointUrl, TestConfiguration.domain,
         TestConfiguration.kdcserver, TestConfiguration.username,
-        TestConfiguration.Password, TestConfiguration.googleConnectorWorkDir,
+        TestConfiguration.password, TestConfiguration.googleConnectorWorkDir,
         TestConfiguration.googleGlobalNamespace,
         TestConfiguration.googleLocalNamespace,
         TestConfiguration.includedURls, TestConfiguration.excludedURls,
-        TestConfiguration.mySiteBaseURL, TestConfiguration.AliasMap,
+        TestConfiguration.mySiteBaseURL, TestConfiguration.aliasMap,
         TestConfiguration.feedType, TestConfiguration.useSPSearchVisibility);
     sharepointClientContext.setGroupnameFormatInAce(TestConfiguration.groupNameFormatInACE);
     sharepointClientContext.setUsernameFormatInAce(TestConfiguration.userNameFormatInACE);
@@ -223,7 +223,7 @@ public class UserGroupsServiceTest {
         TestConfiguration.searchBase,
         AuthType.SIMPLE,
         TestConfiguration.username,
-        TestConfiguration.Password + "invalidatepassword",
+        TestConfiguration.password + "invalidatepassword",
         TestConfiguration.ldapDomainName);
     // we are testing if NPE is thrown, no asserts needed
     LdapConnection l = new LdapConnection(lcs);
@@ -234,21 +234,27 @@ public class UserGroupsServiceTest {
     String searchUser1 = TestConfiguration.searchUser1;
 
     // perform search twice so the second time is from the cache
-    userGroupsService.getAllGroupsForSearchUser(sharepointClientContext, searchUser1);
+    Set<Principal> groups = userGroupsService.getAllGroupsForSearchUser(
+        sharepointClientContext, searchUser1);
+    assertHasGroup(TestConfiguration.domain + "\\group_1", groups);
+    assertHasGroup(TestConfiguration.domain + "\\group_2", groups);
+    assertHasGroup(TestConfiguration.domain + "\\group_3", groups);
+    assertHasGroup(TestConfiguration.domain + "\\group_4", groups);
+    assertHasGroup(TestConfiguration.domain + "\\group_5", groups);
 
     // Try uppercase retrieval
     Set<Principal> groupsUppercaseRetrieval =
         userGroupsService.getAllGroupsForSearchUser(
             sharepointClientContext,
             searchUser1.toUpperCase());
-    assertTrue(groupsUppercaseRetrieval.size() > 0);
+    assertEquals(groups, groupsUppercaseRetrieval);
 
     // Try lowercase retrieval
     Set<Principal> groupsLowercaseRetrieval =
         userGroupsService.getAllGroupsForSearchUser(
             sharepointClientContext,
             searchUser1.toLowerCase());
-    assertTrue(groupsLowercaseRetrieval.size() > 0);
+    assertEquals(groups, groupsLowercaseRetrieval);
   }
 
 
@@ -264,6 +270,22 @@ public class UserGroupsServiceTest {
     assertNotNull(samNames);
     assertEquals(ImmutableSet.of(
         "Domain Users", "GrpNmCmt", "Group2_Name (Comment)"), samNames);
+  }
+  
+  /**
+   * Asserts that a Principal set has a specific group by name.
+   *
+   * @param groupName The group name to look for
+   * @param groups The Principal set to check
+   */
+  private void assertHasGroup(String groupName, Set<Principal> groups) {
+    for (Principal p : groups) {
+      if (p.getName().equalsIgnoreCase(groupName)) {
+        return;
+      }
+    }
+    assertTrue("Principal set [" + groups +
+        "] does not contain the group " + groupName + ".", false);
   }
   
   /**
