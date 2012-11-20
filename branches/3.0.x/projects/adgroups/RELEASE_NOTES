@@ -10,6 +10,31 @@ main documentation.
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
 
+Release 3.0.4, Nov 19, 2012
+===========================
+
+Introduction
+------------
+This is a maintenance release that improves quality without adding any
+new functionality. Users of previous releases are encouraged to
+upgrade.
+
+This connector replaces functionality previously provided by the
+SharePoint connector. This connector can be used automatically in
+conjunction with the SharePoint connector as a drop-in replacement for
+the previous functionality, or used separately with other connectors
+or content sources.
+
+Summary of Changes
+------------------
+This release contains fixes for the following issues:
+
+--Issue 7390387: AD groups connector does not escape form field values
+                 in the config form.
+--Issue 7141861: AD groups connector does not support reset traversal.
+--Issue 6513826: Add less verbose logging level for MBean messages.
+
+
 Release 3.0.0, September 7, 2012
 =================================
 
