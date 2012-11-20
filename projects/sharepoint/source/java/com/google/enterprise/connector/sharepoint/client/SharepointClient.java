@@ -631,7 +631,16 @@ public class SharepointClient {
     if (null == wsGS) {// new web
       LOGGER.config("Making WebState for : " + webUrl);
       try {
-        web = globalState.makeWebState(sharepointClientContext, webUrl);
+        int responseCode = sharepointClientContext.checkConnectivity(
+            Util.encodeURL(webUrl) + SPConstants.LISTS_END_POINT, null);
+        if (responseCode != 400 && responseCode != 404) {
+          web = globalState.makeWebState(sharepointClientContext, webUrl);
+        } else {
+          LOGGER.warning("Unable to connect to list web service for web. "
+              + "Skipping WebState creation for URL [ " + webUrl + " ].");
+          sharepointClientContext.logExcludedURL("[ " + webUrl
+              + " ] identified as invalid Web Url");
+        }
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "Problem while creating web state for url [ "
             + webUrl + " ]. ", e);
