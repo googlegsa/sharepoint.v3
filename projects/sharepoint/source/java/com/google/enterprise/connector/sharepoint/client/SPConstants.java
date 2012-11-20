@@ -136,6 +136,8 @@ public class SPConstants {
   public static final String GSPSITEDISCOVERYWS_END_POINT = "/_vti_bin/GSSiteDiscovery.asmx";
   public static final String SITEDATAENDPOINT = "/_vti_bin/SiteData.asmx";
   public static final String USERPROFILEENDPOINT = "/_vti_bin/UserProfileService.asmx";
+  public static final String USERPROFILECHANGEENDPOINT =
+      "/_vti_bin/UserProfileChangeService.asmx";
   public static final String GSACLENDPOINT = "/_vti_bin/GssAcl.asmx";
 
   public static final String DEFAULT_ROWLIMIT = "1000";

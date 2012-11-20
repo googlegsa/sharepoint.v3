@@ -32,6 +32,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
 import org.xml.sax.helpers.AttributesImpl;
@@ -146,6 +147,17 @@ public class MockClientFactory implements ClientFactory {
   public SiteDiscoveryWS getSiteDiscoveryWS(final SharepointClientContext ctx,
     String webUrl) {
     return new MockSiteDiscoveryWS(ctx, webUrl);
+  }
+  
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  /* @Override */
+  public UserProfileChangeWS getUserProfileChangeWS(
+      final SharepointClientContext ctx) {
+    return new MockUserProfileChangeWS(ctx);
   }
 
   /**

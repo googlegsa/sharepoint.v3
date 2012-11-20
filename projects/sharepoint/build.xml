@@ -41,6 +41,7 @@
   <property name="cm-third-paty.jar" value="${connector-manager.dir}/third-party/prod/" />
   <property name="sql.properties" value="source/java/com/google/enterprise/connector/sharepoint/sql/" />
   <property name="cm-third-paty_jcr.jar" value="${connector-manager.dir}/third-party/tests/" />
+  <property name="json.jarfile" location="${connector-manager.dir}/third-party/prod/json.jar" />
   <condition property="wsdl2java" value="wsdl2java.sh">
     <os family="unix" />
   </condition>
@@ -170,6 +171,9 @@
     <wsdl2java url="${wsdl}/SP2010UserProfileService.wsdl"
                package="${generated.package}.sp2010.userprofileservice"
                generates="${src_generated}/sp2010/userprofileservice/UserProfileService.java"/>
+	<wsdl2java url="${wsdl}/UserProfileChangeService.wsdl"
+               package="${generated.package}.userprofilechangeservice"
+               generates="${src_generated}/userprofilechangeservice/UserProfileChangeService.java"/>
   </target>
 
   <target name="compile_stubs" depends="init, stubs">
@@ -205,6 +209,7 @@
         <pathelement location="${config}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <pathelement location="${adgroups.jar}" />
+		<pathelement location="${json.jarfile}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
@@ -231,6 +236,7 @@
         <pathelement location="${junit.jarfile}" />
         <pathelement location="${adgroups.jar}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+        <pathelement location="${json.jarfile}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>

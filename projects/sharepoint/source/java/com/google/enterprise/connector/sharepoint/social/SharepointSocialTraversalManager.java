@@ -14,14 +14,21 @@
 
 package com.google.enterprise.connector.sharepoint.social;
 
-import com.google.enterprise.connector.sharepoint.social.SharepointSocialUserProfileDocumentList.UserProfileCheckpoint;
+import com.google.common.base.Strings;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 import com.google.enterprise.connector.spi.TraversalManager;
 import com.google.enterprise.connector.util.SystemClock;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -35,15 +42,23 @@ public class SharepointSocialTraversalManager implements TraversalManager {
   private static final Logger LOGGER = SharepointSocialConnector.LOGGER;
   private SharepointSocialClientContext ctxt;
   private int batchHint = 500;
+  private SharePointUserProfileClient userProfileClient;
 
   public SharepointSocialTraversalManager(SharepointSocialClientContext ctxt) {
     this.ctxt = ctxt;
+    userProfileClient = new SharePointUserProfileClient(ctxt);
   }
 
   @Override
   public DocumentList resumeTraversal(String checkpoint)
       throws RepositoryException {
-    return traverse(checkpoint);
+    String socialCheckpoint = checkpoint;
+    if (checkpoint.startsWith(
+        SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX)) {
+      socialCheckpoint = checkpoint.substring(
+          SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX.length());
+    }
+    return traverse(socialCheckpoint);
   }
 
   @Override
@@ -60,36 +75,52 @@ public class SharepointSocialTraversalManager implements TraversalManager {
     LOGGER.info("Starting traversal: SharepointSocial");
     SharepointUserProfileConnection cxn;
     cxn = new SharepointUserProfileConnection(ctxt);
-    UserProfileCheckpoint profileCheckpoint;
+    SharePointSocialCheckpoint profileCheckpoint;
+    SharePointSocialCheckpoint existingProfileCheckpoint =
+        new SharePointSocialCheckpoint(checkpoint);
+    if (Strings.isNullOrEmpty(
+        existingProfileCheckpoint.getUserProfileChangeToken())) {
+      // When connector is reset or during first crawl
+      // get latest change token from SharePoint and
+      // update checkpoint for incremental runs.
+      existingProfileCheckpoint.setUserProfileChangeToken(
+          userProfileClient.getCurrentChangeTokenOnSharePoint());
+    }
     int fullTraversalIntervalInDays = ctxt.getFullTraversalIntervalInDays();
     LOGGER.info(
         "fullTraversalIntervalInDays = " + fullTraversalIntervalInDays);
     if (fullTraversalIntervalInDays == 0) {
       LOGGER.info(
           "Connector configured to perform full crawl each cycle");
-      profileCheckpoint = new UserProfileCheckpoint(null);
+      profileCheckpoint = new SharePointSocialCheckpoint(null);
+      // This is to ensure delete feeds are generated for previous run.
+      profileCheckpoint.setUserProfileChangeToken(
+          existingProfileCheckpoint.getUserProfileChangeToken());
     } else if (fullTraversalIntervalInDays < 0) {
       LOGGER.info(
           "Connector not configured to perform full crawl automatically.");
-      profileCheckpoint = new UserProfileCheckpoint(checkpoint);
+      profileCheckpoint = existingProfileCheckpoint;
     } else {
-      UserProfileCheckpoint existingProfileCheckpoint =
-          new UserProfileCheckpoint(checkpoint);
+
       // TODO: For manual testing this value can me modified to test various
       // scenarios. Other option is to modify connector checkpoint value
       // and restart CM for new value to take effect.
       long fullTraversalInterval =
           fullTraversalIntervalInDays * 24 * 60 * 60 * 1000L;
       long currentTime = new SystemClock().getTimeMillis();      
-      if (existingProfileCheckpoint.getLastFullSync() > 0L) {
+      if (existingProfileCheckpoint.getUserProfileLastFullSync() > 0L) {
         // Perform this check only if initial crawl is done and
         // LastFullSync value is available.
-        if ((currentTime - existingProfileCheckpoint.getLastFullSync())
+        long timeElapsed = currentTime - 
+            existingProfileCheckpoint.getUserProfileLastFullSync();
+        if (timeElapsed
             > fullTraversalInterval) {
-          LOGGER.info(
-              "Performing full crawl for social connector "
-                  + "as Full Traversal Interval elapsed.");
-          profileCheckpoint = new UserProfileCheckpoint(null);
+          LOGGER.info("Performing full crawl for social connector "
+              + "as Full Traversal Interval elapsed.");
+          profileCheckpoint = new SharePointSocialCheckpoint(null);
+          // This is to ensure delete feeds are generated for previous run.
+          profileCheckpoint.setUserProfileChangeToken(
+              existingProfileCheckpoint.getUserProfileChangeToken());
         } else {
           LOGGER.info(
               "Performing incremental crawl with available checkpoint.");
@@ -100,25 +131,37 @@ public class SharepointSocialTraversalManager implements TraversalManager {
             "Part of Initial crawl. " 
                 + "Performing incremental crawl with available checkpoint.");
         profileCheckpoint = existingProfileCheckpoint;
-      }     
+      }
     }
-    if (checkpointAtEnd(profileCheckpoint, cxn)) {
+    boolean needToProcessUpdates =
+        needToProcessProfileUpdates(profileCheckpoint);
+    List<Document> updatedDocs = null;
+    if (needToProcessUpdates) {
+      updatedDocs = userProfileClient.getUpdatedDocuments(profileCheckpoint);
+      LOGGER.info(
+          "Updated UserProfiles =" + updatedDocs);
+    }
+    if ((updatedDocs == null || updatedDocs.isEmpty()) 
+        && checkpointAtEnd(profileCheckpoint, cxn)) {
       return null;
     }
+
     SharepointSocialUserProfileDocumentList docList =
         new SharepointSocialUserProfileDocumentList(
-            cxn, profileCheckpoint, batchHint);
+            cxn, profileCheckpoint, batchHint, updatedDocs);
     LOGGER.info(
         "SharepointSocialDocumentList for UserProfiles created and returned");
     return docList;
   }
-  
-  private boolean checkpointAtEnd (UserProfileCheckpoint profileCheckpoint,
+
+  private boolean checkpointAtEnd (
+      SharePointSocialCheckpoint profileCheckpoint,
       SharepointUserProfileConnection cxn) throws RepositoryException {
-    if (!profileCheckpoint.isNoCheckpoint()) {
+    if (!profileCheckpoint.isEmptyUserProfileCheckpoint()) {
       try {
         cxn.openConnection();
-        Document doc = cxn.getProfile(profileCheckpoint.getNextProfileIndex());
+        Document doc = cxn.getProfile(
+            profileCheckpoint.getUserProfileNextIndex());
         // doc null is indicator for no more profiles are available to crawl.
         return (doc == null);
       } catch (RemoteException e) {
@@ -127,5 +170,30 @@ public class SharepointSocialTraversalManager implements TraversalManager {
     }
     return false;
   }
+
+  private boolean needToProcessProfileUpdates (
+      SharePointSocialCheckpoint profileCheckpoint) {
+    String currentChangeToken = profileCheckpoint.getUserProfileChangeToken();
+    if (Strings.isNullOrEmpty(currentChangeToken)) {
+      return false;
+    } else {
+      String currentChangeTokenOnSharePoint =
+          userProfileClient.getCurrentChangeTokenOnSharePoint();
+      LOGGER.info("Current Change Token on SharePoint = ["
+          + currentChangeTokenOnSharePoint
+          + "Existing Change Token with Connector = ["
+          + currentChangeToken);
+      if (!Strings.isNullOrEmpty(currentChangeTokenOnSharePoint)) {
+        return !currentChangeToken.equalsIgnoreCase(
+            currentChangeTokenOnSharePoint);
+      } else {
+        // In case of error/ missing latest Token,
+        // Return true to ensure connector attempts
+        // to get updates with existing Change Token
+        return true;
+      }      
+    }
+  } 
+
 }
 

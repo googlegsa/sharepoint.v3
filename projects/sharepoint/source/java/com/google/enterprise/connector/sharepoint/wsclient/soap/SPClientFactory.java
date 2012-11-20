@@ -24,6 +24,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
 import org.apache.commons.httpclient.Credentials;
@@ -177,7 +178,7 @@ public class SPClientFactory implements ClientFactory {
    * @return a new site discovery service instance.
    */
   public SiteDiscoveryWS getSiteDiscoveryWS(final SharepointClientContext ctx,
-    String webUrl) {
+      String webUrl) {
     try {
       return new GSSiteDiscoveryWS(ctx, webUrl);
     } catch (final Exception e) {
@@ -197,7 +198,7 @@ public class SPClientFactory implements ClientFactory {
       if (responseCode != 200 && responseCode != 404) {
         LOGGER.log(Level.WARNING,
             "Http Response Code = "+ responseCode + " for Url [ "
-        + method.getURI() + " ]. Reinitializing HttpClient.");     
+                + method.getURI() + " ]. Reinitializing HttpClient.");     
         httpClient = GetHttpClient(credentials);
         responseCode = httpClient.executeMethod(method);
       }
@@ -205,12 +206,12 @@ public class SPClientFactory implements ClientFactory {
     } catch(Exception ex) {    
       LOGGER.log(Level.WARNING,
           "Error Connecting Server for Url [ "
-      + method.getURI() + " ]. Reinitializing HttpClient.", ex);
+              + method.getURI() + " ]. Reinitializing HttpClient.", ex);
       httpClient = GetHttpClient(credentials);
       return httpClient.executeMethod(method);
     }  
   }
-  
+
   private HttpClient GetHttpClient(Credentials credentials) {
     HttpClient httpClientToUse = new HttpClient();
 
@@ -235,6 +236,23 @@ public class SPClientFactory implements ClientFactory {
       headerValue = header.getValue();
     }
     return headerValue;
+  }
+
+  /**
+   * Gets the instance of the User Profile Change web service.
+   *
+   * @return a new User Profile Change service instance.
+   */
+  public UserProfileChangeWS getUserProfileChangeWS(
+      SharepointClientContext ctx) {  
+    try {
+      return new SPUserProfileChangeWS(ctx);
+    } catch (final Exception e) {
+      LOGGER.log(Level.WARNING,
+          "Unable to create SharePoint User" 
+              +" Profile Change web service instance.", e);
+      return null;
+    }
   }
 }
 
