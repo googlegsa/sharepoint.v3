@@ -1,0 +1,7 @@
+﻿<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <Control 
+		Id="SmallSearchInputBox"
+		ControlSrc="~/_controltemplates/GSASearchArea.ascx" 
+    Sequence="10"
+	/>
+</Elements>
