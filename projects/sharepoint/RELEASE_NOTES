@@ -28,6 +28,15 @@ http://www.google.com/support/enterprise/static/gsa/docs/admin/connector_30/shar
 
 This release contains fixes for the following issues:
 
+--Issue 7554816 Support DENY with GSA 7.0 when inherited ACLs are disabled.
+                To workaround issue 6969557, Feeding inherited ACLs is
+                broken for distributed crawl and serve, you can disable
+                inherited ACLs using the feed.disable.inherited.acls
+                property in applicationContext.properties. With this
+                change, the SharePoint connector will still support DENY
+                permissions on the web application policy in that
+                configuration.
+
 --Issue 7503627 SharePoint connector generates 400 Bad Request error
                 messages in connector logs for linked sites with invalid
                 SharePoint URLs.
