@@ -1,0 +1,10 @@
+bin\Release\Verify Installation.exe.config
+bin\Release\Verify Installation.exe
+bin\Release\Verify Installation.XmlSerializers.dll
+bin\Release\Verify Installation.pdb
+obj\Release\ResolveAssemblyReference.cache
+obj\Release\WindowsApplication1.Form1.resources
+obj\Release\CheckConnectivity.csproj.GenerateResource.Cache
+obj\Release\Verify Installation.exe
+obj\Release\Verify Installation.pdb
+obj\Release\Verify Installation.XmlSerializers.dll
