@@ -31,7 +31,7 @@ public class AdEntity {
   private String primaryGroupId;
   private String sid;
   private String objectGUID;
-  private Set<String> members;
+  private Set<AdMembership> members;
   private long uSNChanged;
   private boolean wellKnown;
 
@@ -68,12 +68,12 @@ public class AdEntity {
         (String) getAttribute(attrs, AdConstants.ATTR_PRIMARYGROUPID);
     userPrincipalName = (String) getAttribute(attrs, AdConstants.ATTR_UPN);
 
-    members = new HashSet<String>();
+    members = new HashSet<AdMembership>();
 
     Attribute member = attrs.get(AdConstants.ATTR_MEMBER);
     if (member != null) {
       for (int i = 0; i < member.size(); ++i) {
-        members.add(member.get(i).toString());
+        members.add(new AdMembership(member.get(i).toString()));
       }
     }
   }
@@ -192,7 +192,7 @@ public class AdEntity {
   /**
    * @return the members
    */
-  public Set<String> getMembers() {
+  public Set<AdMembership> getMembers() {
     return members;
   }
 

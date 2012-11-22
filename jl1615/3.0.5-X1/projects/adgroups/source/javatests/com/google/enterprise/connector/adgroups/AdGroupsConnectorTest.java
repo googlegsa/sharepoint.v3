@@ -21,6 +21,7 @@ import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.Session;
 import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
+import com.google.enterprise.connector.spi.TraversalManager;
 
 import junit.framework.TestCase;
 
@@ -281,6 +282,64 @@ public class AdGroupsConnectorTest extends TestCase {
         for (AdTestEntity e : groupsCorrect) {
           assertTrue(groups.contains(ad.getnETBIOSName()
               + AdConstants.BACKSLASH + e.sAMAccountName));
+        }
+      }
+    }
+  }
+
+  public void testMultipleThreads() throws Exception {
+    for (String dbType : TestConfiguration.dbs.keySet()) {
+      AdGroupsConnector con = new AdGroupsConnector();
+      con.setMethod("SSL");
+      con.setHostname(TestConfiguration.d1hostname);
+      con.setPort(Integer.toString(TestConfiguration.d1port));
+      con.setPrincipal(TestConfiguration.d1principal);
+      con.setPassword(TestConfiguration.d1password);
+
+      con.setDataSource(dbType, TestConfiguration.dbs.get(dbType));
+      Session s = con.login();
+      AuthenticationManager am = s.getAuthenticationManager();
+      TraversalManager tm = s.getTraversalManager();
+      tm.startTraversal();
+      
+      // four threads which will be crawling the database simultaneously
+      List<TestThread> threads = new ArrayList<TestThread>();
+      for (int i = 0; i < 4; ++i) {
+        TestThread t = new TestThread(TestConfiguration.d1hostname,
+            TestConfiguration.d1port,
+            TestConfiguration.d1principal,
+            TestConfiguration.d1password,
+            dbType, TestConfiguration.dbs.get(dbType), 2);
+        t.start();
+        threads.add(t);
+      }
+
+      String username = TestConfiguration.d1principal.split("\\\\")[1];
+      AuthenticationResponse response = am.authenticate(
+          new SimpleAuthenticationIdentity(username));
+      // we will expect to find exactly the same number of groups during crawl
+      int constGroups = response.getGroups().size();
+      boolean finished = false;
+
+      // Run Authentication every 200ms and measure if it was faster than 3 sec
+      while (!finished) {
+        Thread.sleep(200);
+        long start = System.currentTimeMillis();
+        response = am.authenticate(
+          new SimpleAuthenticationIdentity(username));
+        long diff = System.currentTimeMillis() - start; 
+        assertTrue("Less than three seconds [" + diff + "]" , diff < 3000);
+        assertTrue("Principal valid: " + TestConfiguration.d1principal,
+            response.isValid());
+        int groups = response.getGroups().size(); 
+        assertEquals("Group number constant start: [" + constGroups
+            + "] now: [" + groups + "]" , constGroups, groups);
+        finished = true;
+        for (TestThread t : threads) {
+          if (t.isAlive()) {
+            finished = false;
+            break;
+          }
         }
       }
     }
