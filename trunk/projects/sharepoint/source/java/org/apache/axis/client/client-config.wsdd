@@ -15,8 +15,8 @@ xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
     <parameter name="http.protocol.expect-continue" >true</parameter>
     <parameter name="http.authentication.preemptive" >false</parameter>
   </transport>
-  <transport name="FileTransport" pivot="java:com.google.enterprise.connector.sharepoint.wsclient.handlers.FileSender" />
-  
+  @test.transport@
+
   <globalConfiguration>
     <parameter name="ReplacementValue" value="_" />
 
