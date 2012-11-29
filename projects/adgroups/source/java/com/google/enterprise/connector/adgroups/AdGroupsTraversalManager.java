@@ -263,11 +263,15 @@ public class AdGroupsTraversalManager implements TraversalManager {
               Long memberId = db.getEntityId(
                   Query.FIND_ENTITY, e.getSqlParams());
 
-              Map<String, Object> map = new HashMap<String, Object>(3);
-              map.put(AdConstants.DB_GROUPID, groupId);
-              map.put(AdConstants.DB_MEMBERDN, e.getDn());
-              map.put(AdConstants.DB_MEMBERID, memberId);
-              db.execute(Query.MERGE_MEMBERSHIP, map);
+              // due to exception during last traversal primary group might
+              // not exist in the DB yet
+              if (groupId != null) {
+                Map<String, Object> map = new HashMap<String, Object>(3);
+                map.put(AdConstants.DB_GROUPID, groupId);
+                map.put(AdConstants.DB_MEMBERDN, e.getDn());
+                map.put(AdConstants.DB_MEMBERID, memberId);
+                db.execute(Query.MERGE_MEMBERSHIP, map);
+              }
             }
 
             for (AdMembership m : e.getMembers()) {
