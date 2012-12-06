@@ -107,7 +107,7 @@ public class SharepointClientContext implements Cloneable {
   /** Batch Size for SP Group Resolution. **/
   private int groupResolutionBatchSize = 5000;
 
-  private int userProfileFullTraversalInterval = 7;
+  private int userProfileFullTraversalInterval = 1;
 
   private int webServiceTimeOut = 300000;
   private int initialCacheSize;
