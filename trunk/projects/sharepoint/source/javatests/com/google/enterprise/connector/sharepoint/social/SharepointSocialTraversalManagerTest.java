@@ -49,6 +49,9 @@ public class SharepointSocialTraversalManagerTest {
   private SharepointConnector connector;
   private Session session;
 
+  private SharepointConnector connectorNonSocial;
+  private Session sessionNonSocial;
+
   static SharepointConnector createSharepointConnector(String socialOption)
       throws Exception {
     SharepointConnector connector = TestConfiguration.getSmallDomainConnectorInstance();
@@ -64,7 +67,15 @@ public class SharepointSocialTraversalManagerTest {
   public void setUp() throws Exception {
     connector = createSharepointConnector("only");
     connector.init();
+    session = initSession(connector);
 
+    connectorNonSocial = createSharepointConnector("only");
+    connectorNonSocial.setUserProfileServiceFactory(null);
+    connectorNonSocial.init();
+    sessionNonSocial = initSession(connectorNonSocial);
+  }
+
+  static private Session initSession(SharepointConnector connector) throws Exception {
     TestJdbcDatabase database = new TestJdbcDatabase();
     ConnectorPersistentStoreFactory factory =
         new ConnectorPersistentStoreFactory(database);
@@ -76,7 +87,7 @@ public class SharepointSocialTraversalManagerTest {
         TestConfiguration.getUserDataStoreQueryProvider());
     connector.setDatabaseAccess(store);
 
-    session = connector.login();
+    return connector.login();
   }
 
   @After
@@ -165,9 +176,10 @@ public class SharepointSocialTraversalManagerTest {
 
   @Test
   public void testResumeTraversal_nonsocial() throws RepositoryException {
-    TraversalManager trav = session.getTraversalManager();
+    TraversalManager trav = sessionNonSocial.getTraversalManager();
     trav.setBatchHint(500);
-    DocumentList docList = trav.resumeTraversal("");
+    DocumentList docList = trav.resumeTraversal(
+        SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX);
     // We expect no results here because the social option is ONLY.
     assertNull(docList);
   }
