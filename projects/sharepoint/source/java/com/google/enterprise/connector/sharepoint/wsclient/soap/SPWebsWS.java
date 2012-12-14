@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.wsclient.soap;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SiteDataHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.generated.webs.GetWebCollectionResponseGetWebCollectionResult;
 import com.google.enterprise.connector.sharepoint.generated.webs.GetWebResponseGetWebResult;
@@ -214,9 +215,9 @@ public class SPWebsWS implements WebsWS {
           + " SharepointConnectorType: " + spType);
 
       if (SPType.SP2003 == spType) {
-        final SPSiteDataWS siteDataWS =
-            new SPSiteDataWS(sharepointClientContext);
-        webTitle = siteDataWS.getTitle();
+        final SiteDataHelper siteData =
+            new SiteDataHelper(sharepointClientContext);
+        webTitle = siteData.getTitle();
       } else {
         GetWebResponseGetWebResult resWeb = null;
         try {

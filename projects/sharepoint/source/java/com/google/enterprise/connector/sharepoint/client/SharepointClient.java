@@ -25,7 +25,6 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
-import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
@@ -901,8 +900,8 @@ public class SharepointClient {
 
     // get all the lists for the given web // e.g. picture,wiki,document
     // libraries etc.
-    final SiteDataWS siteDataWS = clientFactory.getSiteDataWS(tempCtx);
-    List<ListState> listCollection = siteDataWS.getNamedLists(webState);
+    final SiteDataHelper siteData = new SiteDataHelper(tempCtx);
+    List<ListState> listCollection = siteData.getNamedLists(webState);
 
     // Remove duplicate lists, if any.
     // TODO: We do not need to do this. Web Service does not return
@@ -1388,10 +1387,10 @@ public class SharepointClient {
       SharepointClientContext ctxToPass = 
               (SharepointClientContext) tempCtx.clone();
       ctxToPass.setSiteURL(webState.getWebUrl());
-      final SiteDataWS siteDataWS = clientFactory.getSiteDataWS(ctxToPass);
+      final SiteDataHelper siteData = new SiteDataHelper(ctxToPass);
       // need to check whether the site exist or not and is not null
       if (webState.isExisting() && null != webState) {
-        document = siteDataWS.getSiteData(webState);
+        document = siteData.getSiteData(webState);
         // Site Home Page document will be added as last doc from
         // dummy list state. This is required for sending delete feed.
       }
