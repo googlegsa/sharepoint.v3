@@ -29,9 +29,6 @@ import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAce;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAcl;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChange;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclChangeCollection;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclMonitor;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclMonitorLocator;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.GssAclMonitorSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult;
 import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments;
@@ -47,6 +44,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
@@ -78,12 +76,11 @@ import javax.xml.rpc.ServiceException;
  * @author nitendra_thakur
  */
 public class AclHelper {
-  private String endpoint;
-  private GssAclMonitorSoap_BindingStub stub = null;
   private final Logger LOGGER = Logger.getLogger(AclHelper.class.getName());
   private SharepointClientContext sharepointClientContext = null;
   private boolean supportsInheritedAcls = false;
   private boolean supportsDenyAcls = false;
+  private final AclWS aclWS;
 
   /**
    * @param inSharepointClientContext The Context is passed so that necessary
@@ -100,6 +97,9 @@ public class AclHelper {
       throw new SharepointException("SharePointClient context cannot be null ");
     }
     sharepointClientContext = inSharepointClientContext;
+    aclWS = sharepointClientContext.getClientFactory().getAclWS(
+        sharepointClientContext, siteurl);
+
     if (!sharepointClientContext.isPushAcls()) {
       return;
     }
@@ -113,31 +113,17 @@ public class AclHelper {
           sharepointClientContext.getTraversalContext().supportsDenyAcls();
     }
     LOGGER.log(Level.CONFIG, "Supports ACL " + supportsInheritedAcls);
-    endpoint = Util.encodeURL(siteurl) + SPConstants.GSACLENDPOINT;
-    LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
-
-    final GssAclMonitorLocator loc = new GssAclMonitorLocator();
-    loc.setGssAclMonitorSoapEndpointAddress(endpoint);
-    final GssAclMonitor service = loc;
-
-    try {
-      stub = (GssAclMonitorSoap_BindingStub) service.getGssAclMonitorSoap();
-    } catch (final ServiceException e) {
-      LOGGER.log(Level.WARNING, e.getMessage(), e);
-      throw new SharepointException("Unable to create GssAcl stub");
-    }
 
     final String strDomain = sharepointClientContext.getDomain();
     String strUser = sharepointClientContext.getUsername();
     final String strPassword = sharepointClientContext.getPassword();
+    final int timeout = sharepointClientContext.getWebServiceTimeOut();
+    LOGGER.fine("Setting time-out to " + timeout + " milliseconds.");
 
     strUser = Util.getUserNameWithDomain(strUser, strDomain);
-    stub.setUsername(strUser);
-    stub.setPassword(strPassword);
-    // The web service time-out value
-    stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
-    LOGGER.fine("Set time-out of : "
-        + sharepointClientContext.getWebServiceTimeOut() + " milliseconds");
+    aclWS.setUsername(strUser);
+    aclWS.setPassword(strPassword);
+    aclWS.setTimeout(timeout);
   }
 
   /**
@@ -151,42 +137,27 @@ public class AclHelper {
    *  be false.
    * @return web service response {@link GssGetAclForUrlsResult} as it is
    */
-  private GssGetAclForUrlsResult getAclForUrls(String[] urls,
-      boolean useInheritance, boolean includePolicyAcls) {
-    GssGetAclForUrlsResult result = null;
+  private GssGetAclForUrlsResult getAclForUrls(final String[] urls,
+      final boolean useInheritance, final boolean includePolicyAcls) {
     if (null == urls || urls.length == 0) {
-      return result;
+      return null;
     }
-    try {
-      result = stub.getAclForUrlsUsingInheritance(urls, useInheritance,
-          includePolicyAcls, sharepointClientContext.getLargeACLThreshold(),
-          sharepointClientContext.getFeedType().equals(
-              FeedType.METADATA_URL_FEED));
-    } catch (final AxisFault af) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          result = stub.getAclForUrlsUsingInheritance(urls, useInheritance,
-              includePolicyAcls, sharepointClientContext.getLargeACLThreshold(),
-              sharepointClientContext.getFeedType().equals(
-                  FeedType.METADATA_URL_FEED));
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
-              + endpoint + " ].", e);
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
-            + endpoint + " ].", af);
+
+    return Util.makeWSRequest(sharepointClientContext, aclWS,
+        new Util.RequestExecutor<GssGetAclForUrlsResult>() {
+      public GssGetAclForUrlsResult onRequest(final BaseWS ws)
+          throws Throwable {
+        return ((AclWS) ws).getAclForUrlsUsingInheritance(urls, 
+            useInheritance, includePolicyAcls, 
+            sharepointClientContext.getLargeACLThreshold(),
+            sharepointClientContext.getFeedType().equals(
+                FeedType.METADATA_URL_FEED));
       }
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "Call to getAclForUrls failed. endpoint [ "
-          + endpoint + " ].", e);
-    }
-    return result;
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING, "Call to getAclForUrls failed.", e);
+      }
+    });
   }
 
   /**
@@ -677,32 +648,20 @@ public class AclHelper {
    *         is
    */
   private GssGetAclChangesSinceTokenResult getAclChangesSinceToken(
-      WebState webstate) {
-    GssGetAclChangesSinceTokenResult result = null;
-    try {
-      result = stub.getAclChangesSinceToken(webstate.getAclChangeTokenForWsCall(), webstate.getNextAclChangeToken());
-    } catch (final AxisFault af) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          result = stub.getAclChangesSinceToken(webstate.getAclChangeTokenForWsCall(), webstate.getNextAclChangeToken());
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "ACl change detection has failed. endpoint [ "
-              + endpoint + " ].", e);
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "ACl change detection has failed. endpoint [ "
-            + endpoint + " ].", af);
+      final WebState webstate) {
+    return Util.makeWSRequest(sharepointClientContext, aclWS,
+        new Util.RequestExecutor<GssGetAclChangesSinceTokenResult>() {
+      public GssGetAclChangesSinceTokenResult onRequest(final BaseWS ws)
+          throws Throwable {
+        return ((AclWS) ws).getAclChangesSinceToken(
+            webstate.getAclChangeTokenForWsCall(),
+            webstate.getNextAclChangeToken());
       }
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "ACl change detection has failed. endpoint [ "
-          + endpoint + " ].", e);
-    }
-    return result;
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING, "ACL change detection has failed.", e);
+      }
+    });
   }
 
   public void fetchAclChangesSinceTokenAndUpdateState(WebState webState) {
@@ -1070,39 +1029,27 @@ public class AclHelper {
    *         parent list whose GUID was passed in the argument
    */
   private GssGetListItemsWithInheritingRoleAssignments GetListItemsWithInheritingRoleAssignments(
-      String listGuid, String lastItemId) {
-    int intLastItemId = 0;
-    try {
-      intLastItemId = Integer.parseInt(lastItemId);
-    } catch (Exception e) {
-      LOGGER.log(Level.FINEST, "The incoming lastItemId [ " + lastItemId
-          + " ] is not of a list item. Returning...", e);
+      final String listGuid, String lastItemId) {
+    final int intLastItemId = Util.parseNumeric(lastItemId, 0);
+    if (0 == intLastItemId) {
+      LOGGER.finest("The incoming lastItemId [ " + lastItemId
+          + " ] is not of a list item.");
     }
-    GssGetListItemsWithInheritingRoleAssignments result = null;
-    try {
-      result = stub.getListItemsWithInheritingRoleAssignments(listGuid, sharepointClientContext.getBatchHint(), intLastItemId);
-    } catch (final AxisFault af) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          result = stub.getListItemsWithInheritingRoleAssignments(listGuid, sharepointClientContext.getBatchHint(), intLastItemId);
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Failed to get ListItems With Inheriting RoleAssignments. endpoint [ "
-              + endpoint + " ].", e);
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "Failed to get ListItems With Inheriting RoleAssignments. endpoint [ "
-            + endpoint + " ].", af);
+
+    return Util.makeWSRequest(sharepointClientContext, aclWS,
+        new Util.RequestExecutor<
+            GssGetListItemsWithInheritingRoleAssignments>() {
+      public GssGetListItemsWithInheritingRoleAssignments onRequest(
+          final BaseWS ws) throws Throwable {
+        return ((AclWS) ws).getListItemsWithInheritingRoleAssignments(
+            listGuid, sharepointClientContext.getBatchHint(), intLastItemId);
       }
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "Failed to get ListItems With Inheriting RoleAssignments. endpoint [ "
-          + endpoint + " ].", e);
-    }
-    return result;
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING,
+            "Failed to get ListItems With Inheriting RoleAssignments.", e);
+      }
+    });
   }
 
   /**
@@ -1114,31 +1061,17 @@ public class AclHelper {
    *         parent web site whose ID was passed in the argument
    */
   private String[] getListsWithInheritingRoleAssignments() {
-    String[] result = null;
-    try {
-      result = stub.getListsWithInheritingRoleAssignments();
-    } catch (final AxisFault af) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          result = stub.getListsWithInheritingRoleAssignments();
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Failed to get List With Inheriting RoleAssignments. endpoint [ "
-              + endpoint + " ].", e);
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "Failed to get List With Inheriting RoleAssignments. endpoint [ "
-            + endpoint + " ].", af);
+    return Util.makeWSRequest(sharepointClientContext, aclWS,
+        new Util.RequestExecutor<String[]>() {
+      public String[] onRequest(final BaseWS ws) throws Throwable {
+        return ((AclWS) ws).getListsWithInheritingRoleAssignments();
       }
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "Failed to get List With Inheriting RoleAssignments. endpoint [ "
-          + endpoint + " ].", e);
-    }
-    return result;
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING,
+            "Failed to get List With Inheriting RoleAssignments.", e);
+      }
+    });
   }
 
   /**
@@ -1148,36 +1081,20 @@ public class AclHelper {
    * @param groupIds IDs of the SP Groups to be resolved
    * @return web service response {@link GssResolveSPGroupResult} as it is
    */
-  public GssResolveSPGroupResult resolveSPGroup(String[] groupIds) {
-    GssResolveSPGroupResult result = null;
-    try {
-      result = stub.resolveSPGroupInBatch(groupIds,
-          sharepointClientContext.getGroupResolutionBatchSize());
-    } catch (final AxisFault af) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          result = stub.resolveSPGroup(groupIds);
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING,
-              "Call to resolveSPGroup call failed. endpoint [ "
-              + endpoint + " ].", e);
-        }
-      } else {
-        LOGGER.log(Level.WARNING,
-            "Call to resolveSPGroup call failed. endpoint [ "
-            + endpoint + " ].", af);
+  public GssResolveSPGroupResult resolveSPGroup(final String[] groupIds) {
+    return Util.makeWSRequest(sharepointClientContext, aclWS,
+        new Util.RequestExecutor<GssResolveSPGroupResult>() {
+      public GssResolveSPGroupResult onRequest(final BaseWS ws)
+          throws Throwable {
+        return ((AclWS) ws).resolveSPGroupInBatch(groupIds,
+            sharepointClientContext.getGroupResolutionBatchSize());
       }
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING,
-          "Call to resolveSPGroup call failed. endpoint [ "
-          + endpoint + " ].", e);
-    }
-    return result;
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING,
+            "Call to resolveSPGroupInBatch call failed.", e);
+      }
+    });
   }
   
   /**
@@ -1251,44 +1168,28 @@ public class AclHelper {
     }
   }
 
-
-
   /**
    * Construct SPDocument object for representing Web application policy
    * ACL information
    */
-
   public SPDocument getWebApplicationPolicy(WebState webState,
       String strFeedType) {
-    GssGetAclForUrlsResult result = null;
+    GssGetAclForUrlsResult result = Util.makeWSRequest(
+        sharepointClientContext, aclWS,
+        new Util.RequestExecutor<GssGetAclForUrlsResult>() {
+      public GssGetAclForUrlsResult onRequest(final BaseWS ws) 
+          throws Throwable {
+        return ((AclWS) ws).getAclForWebApplicationPolicy();
+      }
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING,
+            "Call to getAclForWebApplicationPolicy failed.", e);
+      }
+    });
+
     FeedType feedType = FeedType.getFeedType(strFeedType);
     SPDocument webAppPolicy = null;
-    try {
-      result = stub.getAclForWebApplicationPolicy();
-    } catch (final AxisFault af) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          result = stub.getAclForWebApplicationPolicy();
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING,
-              "Call to getAclForWebApplicationPolicy failed. endpoint [ "
-              + endpoint + " ].", e);
-        }
-      } else {
-        LOGGER.log(Level.WARNING,
-            "Call to getAclForWebApplicationPolicy failed. endpoint [ "
-            + endpoint + " ].", af);
-      }
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING,
-          "Call to getAclForWebApplicationPolicy failed. endpoint [ "
-          + endpoint + " ].", e);
-    }
     if (result == null) {
       return webAppPolicy;
     }
@@ -1323,30 +1224,15 @@ public class AclHelper {
    * checking the Web Service connectivity
    */
   public void checkConnectivity() throws SharepointException {
-    try {
-      stub.checkConnectivity();
-    } catch (final AxisFault af) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          stub.checkConnectivity();
-        } catch (final Exception e) {
-          throw new SharepointException(
-              "Call to checkConnectivity failed. endpoint [ " + endpoint
-                  + " ].", e);
-        }
-      } else {
-        throw new SharepointException(
-            "Call to checkConnectivity failed. endpoint [ " + endpoint + " ].",
-            af);
+    Util.makeWSRequestVoid(sharepointClientContext, aclWS,
+        new Util.RequestExecutorVoid() {
+      public void onRequest(final BaseWS ws) throws Throwable {
+        ((AclWS) ws).checkConnectivity();
       }
-    } catch (final Exception e) {
-      throw new SharepointException(
-          "Call to checkConnectivity failed. endpoint [ " + endpoint + " ].", e);
-    }
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING, "Call to checkConnectivity failed.", e);
+      }
+    });
   }
 }

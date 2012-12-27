@@ -16,11 +16,11 @@ package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclChangesSinceTokenResult;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetAclForUrlsResult;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssGetListItemsWithInheritingRoleAssignments;
+import com.google.enterprise.connector.sharepoint.generated.gssacl.GssResolveSPGroupResult;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 
 import java.util.logging.Logger;
@@ -29,6 +29,8 @@ import java.util.List;
 public class MockAclWS implements AclWS {
   private static final Logger LOGGER = Logger.getLogger(MockAclWS.class.getName());
   private final SharepointClientContext sharepointClientContext;
+  private String username;
+  private String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
@@ -41,13 +43,23 @@ public class MockAclWS implements AclWS {
     sharepointClientContext = ctx;
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public void fetchAclForDocuments(SPDocumentList resultSet,
-    WebState webState) {
+  /* @Override */
+  public String getUsername() {
+    return username;
+  }
+
+  /* @Override */
+  public void setUsername(final String username) {
+    this.username = username;
+  }
+
+  /* @Override */
+  public void setPassword(final String password) {
+    this.password = password;
+  }
+
+  /* @Override */
+  public void setTimeout(final int timeout) {
   }
 
   /**
@@ -55,7 +67,7 @@ public class MockAclWS implements AclWS {
    *
    * This is a stub implementation.
    */
-  public void fetchAclChangesSinceTokenAndUpdateState(WebState webState) {
+  public void checkConnectivity() throws Exception {
   }
 
   /**
@@ -63,8 +75,7 @@ public class MockAclWS implements AclWS {
    *
    * This is a stub implementation.
    */
-  public List<SPDocument> getListItemsForAclChangeAndUpdateState(
-      ListState listState, ListsHelper listsHelper) {
+  public String[] getListsWithInheritingRoleAssignments() {
     return null;
   }
 
@@ -73,16 +84,8 @@ public class MockAclWS implements AclWS {
    *
    * This is a stub implementation.
    */
-  public void checkConnectivity() throws SharepointException {
-  }
-
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public SPDocument getWebApplicationPolicy(WebState webState,
-      String strFeedType) {
+  public GssResolveSPGroupResult resolveSPGroupInBatch(
+      String[] groupIds, int batchSize) {
     return null;
   }
   
@@ -91,7 +94,40 @@ public class MockAclWS implements AclWS {
    *
    * This is a stub implementation.
    */
-  public boolean resolveSharePointGroups(WebState webState) {
-    return true;
+  public GssGetListItemsWithInheritingRoleAssignments 
+      getListItemsWithInheritingRoleAssignments(String listGuid,
+      int batchHint, int lastItemId) {
+    return null;
+  }
+  
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  public GssGetAclChangesSinceTokenResult getAclChangesSinceToken(
+      String token, String nextToken) {
+    return null;
+  }
+  
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  public GssGetAclForUrlsResult getAclForUrlsUsingInheritance(
+      String[] urls, boolean useInheritance, boolean includePolicyAcls,
+      int largeAclThreshold, boolean metaUrlFeed) {
+    return null;
+  }
+  
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  public GssGetAclForUrlsResult getAclForWebApplicationPolicy()
+      throws Exception {
+    return null;
   }
 }
