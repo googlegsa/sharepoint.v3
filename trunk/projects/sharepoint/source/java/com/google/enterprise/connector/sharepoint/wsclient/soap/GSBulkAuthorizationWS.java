@@ -25,8 +25,6 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 
-import org.apache.axis.AxisFault;
-
 import java.rmi.RemoteException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,36 +54,50 @@ public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
   public GSBulkAuthorizationWS(
       final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
+    sharepointClientContext = inSharepointClientContext;
+    endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
+        + SPConstants.GSPBULKAUTHORIZATION_ENDPOINT;
+    LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
 
-    if (inSharepointClientContext != null) {
-      sharepointClientContext = inSharepointClientContext;
-      endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
-          + SPConstants.GSPBULKAUTHORIZATION_ENDPOINT;
-      LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
+    final BulkAuthorizationLocator bulkloc = new BulkAuthorizationLocator();
+    bulkloc.setBulkAuthorizationSoapEndpointAddress(endpoint);
+    final BulkAuthorization service = bulkloc;
 
-      final BulkAuthorizationLocator bulkloc = new BulkAuthorizationLocator();
-      bulkloc.setBulkAuthorizationSoapEndpointAddress(endpoint);
-      final BulkAuthorization service = bulkloc;
-
-      try {
-        stub = (BulkAuthorizationSoap_BindingStub) service.getBulkAuthorizationSoap();
-      } catch (final ServiceException e) {
-        LOGGER.log(Level.WARNING, "Unable to get bulk authZ soap stub ", e);
-        throw new SharepointException("Unable to get bulk authZ soap stub");
-      }
-
-      final String strDomain = inSharepointClientContext.getDomain();
-      String strUser = inSharepointClientContext.getUsername();
-      final String strPassword = inSharepointClientContext.getPassword();
-
-      strUser = Util.getUserNameWithDomain(strUser, strDomain);
-      stub.setUsername(strUser);
-      stub.setPassword(strPassword);
-      // The web service time-out value
-      stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
-      LOGGER.fine("Set time-out of : "
-          + sharepointClientContext.getWebServiceTimeOut() + " milliseconds");
+    try {
+      stub = (BulkAuthorizationSoap_BindingStub)
+          service.getBulkAuthorizationSoap();
+    } catch (final ServiceException e) {
+      LOGGER.log(Level.WARNING, "Unable to get bulk authZ soap stub ", e);
+      throw new SharepointException("Unable to get bulk authZ soap stub");
     }
+  }
+
+  /**
+   * (@inheritDoc)
+   */
+  public String getUsername() {
+    return stub.getUsername();
+  }
+
+  /**
+   * (@inheritDoc)
+   */
+  public void setUsername(final String username) {
+    stub.setUsername(username);
+  }
+
+  /**
+   * (@inheritDoc)
+   */
+  public void setPassword(final String password) {
+    stub.setPassword(password);
+  }
+
+  /**
+   * (@inheritDoc)
+   */
+  public void setTimeout(final int timeout) {
+    stub.setTimeout(timeout);
   }
 
   /**
@@ -99,22 +111,9 @@ public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
    */
   public AuthDataPacket[] authorize(final AuthDataPacket[] authDataPacketArray,
       final String userId) throws RemoteException {
-    ArrayOfAuthDataPacketHolder arrayOfAuthDataPacketHolder = new ArrayOfAuthDataPacketHolder(
-        authDataPacketArray);
-    try {
-      stub.authorize(arrayOfAuthDataPacketHolder, userId);
-    } catch (final AxisFault af) {
-      // Handling of username formats for different authentication models.
-      if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        stub.authorize(arrayOfAuthDataPacketHolder, userId);
-      } else {
-        throw af;
-      }
-    }
+    ArrayOfAuthDataPacketHolder arrayOfAuthDataPacketHolder = 
+        new ArrayOfAuthDataPacketHolder(authDataPacketArray);
+    stub.authorize(arrayOfAuthDataPacketHolder, userId);
     return arrayOfAuthDataPacketHolder.value;
   }
 
@@ -124,34 +123,7 @@ public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
    * @return The connectivity status "success" if succeed or the reason for
    *         failure.
    */
-  public String checkConnectivity() {
-    String status = null;
-    try {
-      status = stub.checkConnectivity();
-      LOGGER.info("GS Connectivity status: " + status);
-      return status;
-    } catch (final AxisFault af) { // Handling of username formats for
-      // different authentication models.
-      if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          status = stub.checkConnectivity();
-          LOGGER.info("GS Connectivity status: " + status);
-          return status;
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Can not connect to GSBulkAuthorization web service.", e);
-          return e.getLocalizedMessage();
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "Can not connect to GSBulkAuthorization web service.", af);
-        return af.getLocalizedMessage();
-      }
-    } catch (final Throwable e) {
-      LOGGER.log(Level.WARNING, "Can not connect to GSBulkAuthorization web service.", e);
-      return e.getLocalizedMessage();
-    }
+  public String checkConnectivity() throws RemoteException {
+    return stub.checkConnectivity();
   }
 }
