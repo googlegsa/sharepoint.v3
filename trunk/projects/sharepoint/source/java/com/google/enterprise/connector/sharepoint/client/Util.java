@@ -877,6 +877,22 @@ public final class Util {
   }
 
   /**
+   * Converts a string to a numeric.
+   *
+   * @param value The string to convert
+   * @param defaultValue The default value to return in case of error
+   */
+  public static int parseNumeric(final String value, int defaultValue) {
+    try {
+      return Integer.parseInt(value);
+    } catch (Exception e) {
+      LOGGER.log(Level.FINE, "Unable to parse integral value " + 
+          value + ".", e);
+      return defaultValue;
+    }
+  }
+
+  /**
    * Checks to see if the incoming value is a valid URL
    *
    * @param value
@@ -1509,5 +1525,59 @@ public final class Util {
       executor.onError(e);
     }
     return null;
+  }
+
+  /**
+   * An interferace used for making SOAP requests.
+   */
+  public interface RequestExecutorVoid {
+    /**
+     * Called to make a SOAP request.
+     *
+     * @param ws the web service interface to use to make the request
+     */
+    void onRequest(final BaseWS ws) throws Throwable;
+
+    /**
+     * Called when an exception occurs when make the web service request.
+     *
+     * @param e the exception that was thrown
+     */
+    void onError(final Throwable e);
+  }
+
+  /**
+   * Makes a web service request.
+   *
+   * @param ctx the context
+   * @param ws the web service interface to use to make the request
+   * @param executor the interface that makes the request and handles errors
+   */
+  public static void makeWSRequestVoid(SharepointClientContext ctx, BaseWS ws,
+      RequestExecutorVoid executor) {
+    try {
+      executor.onRequest(ws);
+    } catch (AxisFault af) {
+      // Handling of username formats for different authentication models.
+      // Switch the username format from domain\\username to username@domain
+      // or vice versa.
+      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
+          && (ctx.getDomain() != null)) {
+        final String username = Util.switchUserNameFormat(ws.getUsername());
+        LOGGER.info("Web service call failed for username [ " 
+            + ws.getUsername() + " ], re-trying with username [ " 
+            + username + " ].");
+        ws.setUsername(username);
+        try {
+          executor.onRequest(ws);
+        } catch (final Throwable e) {
+          executor.onError(e);
+        }
+      } else {
+        executor.onError(af);
+      }
+    } catch (final Throwable e) {
+      executor.onError(e);
+    }
   }
 }
