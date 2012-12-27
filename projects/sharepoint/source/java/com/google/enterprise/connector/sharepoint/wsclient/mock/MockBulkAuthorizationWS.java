@@ -25,6 +25,8 @@ import java.rmi.RemoteException;
 public class MockBulkAuthorizationWS implements BulkAuthorizationWS {
   private static final Logger LOGGER = Logger.getLogger(MockBulkAuthorizationWS.class.getName());
   private final SharepointClientContext sharepointClientContext;
+  private String username;
+  private String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
@@ -35,6 +37,25 @@ public class MockBulkAuthorizationWS implements BulkAuthorizationWS {
    */
   public MockBulkAuthorizationWS(final SharepointClientContext ctx) {
     sharepointClientContext = ctx;
+  }
+
+  /* @Override */
+  public String getUsername() {
+    return username;
+  }
+
+  /* @Override */
+  public void setUsername(final String username) {
+    this.username = username;
+  }
+
+  /* @Override */
+  public void setPassword(final String password) {
+    this.password = password;
+  }
+
+  /* @Override */
+  public void setTimeout(final int timeout) {
   }
 
   /**
