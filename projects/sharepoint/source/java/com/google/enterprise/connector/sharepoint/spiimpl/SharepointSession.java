@@ -17,10 +17,10 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import com.google.enterprise.connector.adgroups.AdGroupsAuthenticationManager;
 import com.google.enterprise.connector.adgroups.AdGroupsTraversalManager;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SiteDiscoveryHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialTraversalManager;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
-import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationManager;
 import com.google.enterprise.connector.spi.AuthorizationManager;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -96,10 +96,10 @@ public class SharepointSession implements Session {
       throws RepositoryException {
     LOGGER.info("getAuthorizationManager()");
     ClientFactory clientFactory = connector.getClientFactory();
-    SiteDiscoveryWS siteDiscoveryWS =
-        clientFactory.getSiteDiscoveryWS(sharepointClientContext, null);
+    SiteDiscoveryHelper siteDiscovery =
+        new SiteDiscoveryHelper(sharepointClientContext, null);
     return new SharepointAuthorizationManager(clientFactory, 
-        sharepointClientContext, siteDiscoveryWS.getMatchingSiteCollections());
+        sharepointClientContext, siteDiscovery.getMatchingSiteCollections());
   }
 
   /**
