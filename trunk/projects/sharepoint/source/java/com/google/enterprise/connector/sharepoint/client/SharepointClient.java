@@ -25,7 +25,6 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
-import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
@@ -550,9 +549,10 @@ public class SharepointClient {
       }
 
       // Get all top level sites from the farm. Supported only in SP2007.
-      final SiteDiscoveryWS gspSiteDiscoveryWS =
-          clientFactory.getSiteDiscoveryWS(sharepointClientContext, null);
-      final Set<String> sitecollection = gspSiteDiscoveryWS.getMatchingSiteCollections();
+      final SiteDiscoveryHelper siteDiscovery =
+          new SiteDiscoveryHelper(sharepointClientContext, null);
+      final Set<String> sitecollection = 
+          siteDiscovery.getMatchingSiteCollections();
       allSites.addAll(sitecollection);
     }
   }
@@ -670,9 +670,9 @@ public class SharepointClient {
     }
     SharepointClientContext tempCtx = (SharepointClientContext) sharepointClientContext.clone();
 
-    SiteDiscoveryWS webCrawlInfoFetcher = null;
+    SiteDiscoveryHelper webCrawlInfoFetcher = null;
     if (sharepointClientContext.isUseSPSearchVisibility()) {
-      webCrawlInfoFetcher = clientFactory.getSiteDiscoveryWS(tempCtx, null);
+      webCrawlInfoFetcher = new SiteDiscoveryHelper(tempCtx, null);
     }
 
     // At the start of a new traversal cycle, we update the WebCrawlInfo of
@@ -911,7 +911,7 @@ public class SharepointClient {
 
     if (tempCtx.isUseSPSearchVisibility()) {
       try {
-        SiteDiscoveryWS gssd = clientFactory.getSiteDiscoveryWS(
+        SiteDiscoveryHelper gssd = new SiteDiscoveryHelper(
             tempCtx, webState.getWebUrl());
         gssd.updateListCrawlInfo(listCollection);
       } catch (Exception e) {
