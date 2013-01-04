@@ -496,10 +496,10 @@ public class AclHelper {
    * @return a string that represents the user/group name in the appropriate format
    */
   /*
-   * marked package-private because of JUnit test case
-   * GssAclTest.testGetPrincipalName
+   * Marked public of JUnit test case GssAclTest.testGetPrincipalName.
    */
-  String getPrincipalName(GssPrincipal principal) {
+  @VisibleForTesting
+  public String getPrincipalName(GssPrincipal principal) {
     String principalname = Util.getUserFromUsername(principal.getName());
     final String domain = Util.getDomainFromUsername(principal.getName());
     String domainStringConst = SPConstants.DOMAIN_CONSTANT_IN_ACL;
