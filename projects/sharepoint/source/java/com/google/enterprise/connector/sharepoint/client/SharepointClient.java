@@ -27,7 +27,6 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
-import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.apache.axis.utils.XMLUtils;
@@ -607,16 +606,16 @@ public class SharepointClient {
      */
     if (null == wsGS) {
       final String webAppURL = Util.getWebApp(url);
-      WebsWS websWS = null;
+      WebsHelper webs = null;
       try {
         sharepointClientContext.setSiteURL(webAppURL);
-        websWS = clientFactory.getWebsWS(sharepointClientContext);
+        webs = new WebsHelper(sharepointClientContext);
       } catch (final Exception e) {
-        LOGGER.log(Level.WARNING, "webWS creation failed for URL [ " + url
-            + " ]. ", e);
+        LOGGER.log(Level.WARNING, "WebsHelper creation failed for URL [ "
+            + url + " ]. ", e);
       }
-      if (null != websWS) {
-        webUrl = websWS.getWebURLFromPageURL(url);
+      if (null != webs) {
+        webUrl = webs.getWebURLFromPageURL(url);
         if (!url.equals(webUrl)) {
           wsGS = globalState.lookupWeb(webUrl, null);
         }
@@ -1310,9 +1309,9 @@ public class SharepointClient {
 
       // Get the next web and discover its direct children
       sharepointClientContext.setSiteURL(webURL);
-      WebsWS websWS = clientFactory.getWebsWS(sharepointClientContext);
+      WebsHelper webs = new WebsHelper(sharepointClientContext);
       try {
-        final Set<String> allWebStateSet = websWS.getDirectChildsites();
+        final Set<String> allWebStateSet = webs.getDirectChildsites();
         final int size = allWebStateSet.size();
         if (size > 0) {
           LOGGER.log(Level.INFO, "Discovered " + size + " child sites under [ "

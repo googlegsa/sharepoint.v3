@@ -15,14 +15,14 @@ package com.google.enterprise.connector.sharepoint.state;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.WebsHelper;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState.CrawlState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
-import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.apache.xerces.parsers.SAXParser;
@@ -503,16 +503,16 @@ public class GlobalState {
     final SharepointClientContext spContext = (SharepointClientContext) sharepointClientContext.clone();
     if (null == ws) {
       final String webAppURL = Util.getWebApp(key);
-      WebsWS websWS = null;
+      WebsHelper webs = null;
       try {
         spContext.setSiteURL(webAppURL);
-        websWS = clientFactory.getWebsWS(spContext);
+        webs = new WebsHelper(spContext);
       } catch (final Exception e) {
-        LOGGER.log(Level.WARNING, "webWS creation failed for URL [ " + key
+        LOGGER.log(Level.WARNING, "webs creation failed for URL [ " + key
             + " ]. ", e);
       }
-      if (null != websWS) {
-        final String tmpKey = websWS.getWebURLFromPageURL(key);
+      if (null != webs) {
+        final String tmpKey = webs.getWebURLFromPageURL(key);
         if (!key.equals(tmpKey)) {
           ws = keyMap.get(tmpKey);
           ;
