@@ -14,16 +14,16 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.WebsHelper;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
-import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
@@ -145,8 +145,8 @@ public class WebState implements StatefulObject {
 
     webId = webUrl = spURL;
     spContext.setSiteURL(webUrl);
-    final WebsWS websWS = clientFactory.getWebsWS(spContext);
-    title = websWS.getWebTitle(webUrl, spType);
+    final WebsHelper webs = new WebsHelper(spContext);
+    title = webs.getWebTitle(webUrl, spType);
     if (FeedType.CONTENT_FEED == spContext.getFeedType()
         && SPType.SP2003 == spType) {
       LOGGER.warning("excluding "
