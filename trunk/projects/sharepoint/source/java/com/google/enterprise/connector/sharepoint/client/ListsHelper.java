@@ -183,6 +183,7 @@ public class ListsHelper {
             baseList.getParentWebState().getTitle(),
             sharepointClientContext.getFeedType(),
             baseList.getParentWebState().getSharePointType());
+        attchmnt.setParentList(baseList);
         attchmnt.setAction(ActionType.DELETE);
         listAttachments.add(attchmnt);
       }

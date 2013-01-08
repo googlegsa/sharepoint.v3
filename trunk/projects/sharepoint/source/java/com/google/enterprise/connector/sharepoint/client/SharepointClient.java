@@ -110,7 +110,9 @@ public class SharepointClient {
     }
     final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
     for (SPDocument doc : list.getCrawlQueue()) {
-      doc.setParentList(list);
+      if (doc.getParentList() == null) {
+        doc.setParentList(list);
+      }
       doc.setParentWeb(web);
       doc.setSharepointClientContext(sharepointClientContext);
       // Update necessary information required for downloading contents.
@@ -991,10 +993,6 @@ public class SharepointClient {
         webState.AddOrUpdateListStateInWebState(listState, listState.getLastMod());
         LOGGER.info("discovered new listState. List URL: "
             + listState.getListURL());
-        final SPDocument listDocToAdd = listState.getDocumentInstance(
-            sharepointClientContext.getFeedType());
-        listItems.add(listDocToAdd);
-
         if (SPType.SP2007 == webState.getSharePointType()) {
           if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             // In case of content feed, we need to keep track of
@@ -1390,6 +1388,7 @@ public class SharepointClient {
       // need to check whether the site exist or not and is not null
       if (webState.isExisting() && null != webState) {
         document = siteData.getSiteData(webState);
+        document.setParentList(dummySiteListState);
         // Site Home Page document will be added as last doc from
         // dummy list state. This is required for sending delete feed.
       }
@@ -1405,6 +1404,7 @@ public class SharepointClient {
         if (aclHelper != null) {
           SPDocument webAppPolicy = aclHelper.getWebApplicationPolicy(webState,
               sharepointClientContext.getFeedType().toString());
+          webAppPolicy.setParentList(dummySiteListState);
           if (webAppPolicy != null) {
             documentList.add(webAppPolicy);
           }

@@ -643,6 +643,7 @@ public abstract class ListsUtil {
         sharepointClientContext.getFeedType(), list.getParentWebState().getSharePointType());
     doc.setFileref(fileref);
     doc.setDisplayUrl(displayUrl);
+    doc.setParentList(list);
 
     if (fileSize != null && !fileSize.equals("")) {
       try {
