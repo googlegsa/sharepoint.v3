@@ -1546,6 +1546,7 @@ public class ListState implements StatefulObject {
         getParentWebState().getSharePointType());
 
     listDoc.setAllAttributes(getAttrs());
+    listDoc.setParentList(this);
 
     // If SharePoint is not configured to crawl aspx pages
     // then set Document Type as ACL

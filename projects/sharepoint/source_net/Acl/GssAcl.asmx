@@ -1288,7 +1288,7 @@ public class GssAclMonitor
                 || changeList.BaseType == SPBaseType.GenericList
                 || changeList.BaseType == SPBaseType.Issue)
             {
-                query.ViewAttributes = "Scope = 'Recursive'";
+                query.ViewAttributes = "Scope = 'RecursiveAll'";
             }
 
             SPListItemCollection items = changeList.GetItems(query);

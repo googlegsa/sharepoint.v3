@@ -372,6 +372,7 @@ public class WebState implements StatefulObject {
                   SPConstants.OBJTYPE_LIST_ITEM, 
                   list.getParentWebState().getTitle(), FeedType.CONTENT_FEED, SPType.SP2007);
               doc.setAction(ActionType.DELETE);
+              doc.setParentList(list);
               deletedDocs.add(doc);
 
               // If this list can contain attachments, assume that
@@ -389,6 +390,7 @@ public class WebState implements StatefulObject {
                       list.getParentWebState().getTitle(),
                       FeedType.CONTENT_FEED, SPType.SP2007);
                   attchmnt.setAction(ActionType.DELETE);
+                  attchmnt.setParentList(list);
                   deletedDocs.add(attchmnt);
                 }
               }
@@ -419,6 +421,7 @@ public class WebState implements StatefulObject {
                   SPConstants.OBJTYPE_LIST_ITEM, list.getParentWebState()
                       .getTitle(), FeedType.CONTENT_FEED, SPType.SP2007);
               doc.setAction(ActionType.DELETE);
+              doc.setParentList(list);
               if (!list.isSendListAsDocument() || !isCrawlAspxPages()) {
                 // send the listState as a feed only if it was
                 // included (not excluded) in the URL pattern

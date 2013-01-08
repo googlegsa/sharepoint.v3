@@ -215,6 +215,7 @@ public class SPListsWS implements ListsWS {
                       baseList.getParentWebState().getTitle(),
                       sharepointClientContext.getFeedType(),
                       listItem.getSPType());
+                  doc.setParentList(baseList);
 
                   listAttachments.add(doc);
                 } else {
