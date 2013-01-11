@@ -19,8 +19,11 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
+import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument;
+import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 import com.google.enterprise.connector.util.SystemClock;
 
 import java.rmi.RemoteException;
@@ -49,7 +52,7 @@ import java.util.logging.Logger;
  * consider the other strategy later, based on observation on how things go.
  * Also assuming, missing a few experts once a while, and rarely, is not
  * critical.
- * 
+ *
  * @author tapasnay
  */
 
@@ -59,21 +62,23 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
   public static final String CHECKPOINT_PREFIX = "sp_userprofile";
   private final SharepointUserProfileConnection service;
   private long lastFullSync = 0L;
-  private int nextProfileIndex = -1; 
+  private int nextProfileIndex = -1;
   private boolean end = false;
   private final int batchHint;
   private int batchCount = 0;
   private String userProfileChangeToken = "";
-  private List<Document> updatedDocuments;
+  private List<SharePointSocialUserProfileDocument> updatedDocuments;
 
 
- public SharepointSocialUserProfileDocumentList(
+  public SharepointSocialUserProfileDocumentList(
       SharepointUserProfileConnection connection,
-      SharePointSocialCheckpoint checkpoint, int batchHint, List<Document> updatedDocuments) throws RepositoryException {
+      SharePointSocialCheckpoint checkpoint, int batchHint,
+      List<SharePointSocialUserProfileDocument> updatedDocuments)
+          throws RepositoryException {
     service = connection;
     try {
       int profileCount = connection.openConnection();
-      LOGGER.info("Total Profile Count = " + profileCount);      
+      LOGGER.info("Total Profile Count = " + profileCount);
     } catch (RemoteException e) {
       throw new RepositoryException(e);
     }
@@ -82,37 +87,55 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
     } else {
       // This is incremental crawl. Connector will use next Profile Index
       // value to fetch next profile.
-      this.nextProfileIndex = checkpoint.getUserProfileNextIndex();      
+      this.nextProfileIndex = checkpoint.getUserProfileNextIndex();
     }
     lastFullSync = checkpoint.getUserProfileLastFullSync();
     this.updatedDocuments = updatedDocuments;
     userProfileChangeToken = checkpoint.getUserProfileChangeToken();
-    this.batchHint = batchHint;   
+    this.batchHint = batchHint;
   }
 
- 
+
 
   @Override
   public String checkpoint() throws RepositoryException {
    SharePointSocialCheckpoint checkpoint = new SharePointSocialCheckpoint("");
    checkpoint.setUserProfileLastFullSync(lastFullSync);
    checkpoint.setUserProfileNextIndex(nextProfileIndex);
-   checkpoint.setUserProfileChangeToken(userProfileChangeToken);   
+   checkpoint.setUserProfileChangeToken(userProfileChangeToken);
    return CHECKPOINT_PREFIX + checkpoint.toString();
   }
 
   @Override
   public Document nextDocument() throws RepositoryException {
-    
-    if (updatedDocuments != null && updatedDocuments.size() > 0) {
-      
-      Document updatedDoc =  updatedDocuments.remove(0);
-      LOGGER.fine("Returning updatedDoc = "
-          + updatedDoc);
-      return updatedDoc;
+    while (updatedDocuments != null && updatedDocuments.size() > 0) {
+      SharePointSocialUserProfileDocument updatedDoc =
+          updatedDocuments.remove(0);
+      if (updatedDoc.getActionType() == ActionType.DELETE) {
+        LOGGER.fine("Returning deleted Doc = "
+            + updatedDoc);
+        batchCount++;
+        return updatedDoc;
+      }
+      String userAccount = updatedDoc.getUserKey().toString();
+      if (!Strings.isNullOrEmpty(userAccount)) {
+        try {
+          SocialUserProfileDocument updatedProfile =
+              service.getProfileByName(userAccount);
+          if (updatedProfile != null) {
+            batchCount++;
+            return updatedProfile;
+          }
+        } catch (Exception e) {
+          // Ignoring exceptions so connector can process next change.
+          LOGGER.log(Level.WARNING, "Error fetching updated profile for = "
+                  + userAccount, e);
+        }
+      }
     }
+
     if (end) {
-      return null;      
+      return null;
     }
     if (batchCount >= batchHint) {
       LOGGER.fine("Returning null as reached batch hint = "
@@ -126,7 +149,7 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
     } catch (Exception e) {
       LOGGER.log(Level.WARNING,
           "There was a failure fetching profile at index = "
-              + nextProfileIndex, e);    
+              + nextProfileIndex, e);
     }
     batchCount++;
     return doc;
@@ -150,7 +173,7 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
             (SharePointSocialUserProfileDocument) doc;
         if (socialDoc.getNextValue() != -1 &&
             socialDoc.getNextValue() != nextProfileIndex) {
-          nextProfileIndex = socialDoc.getNextValue();         
+          nextProfileIndex = socialDoc.getNextValue();
           LOGGER.fine("Setting Next Index = " + nextProfileIndex);
         } else {
           LOGGER.fine("Marking end with socialDoc.getNextValue() = "
@@ -164,15 +187,15 @@ public class SharepointSocialUserProfileDocumentList implements DocumentList {
     } catch (Exception e) {
       LOGGER.log(Level.WARNING,
           "There was a failure fetching profile at index = "
-              + nextProfileIndex + " retrying...", e);   
+              + nextProfileIndex + " retrying...", e);
       if (retry) {
         try {
-          // if openConnection throws service is out of bounds, 
+          // if openConnection throws service is out of bounds,
           // we release current batch and wait for resume
           service.openConnection();
         } catch (RemoteException eAgain) {
           LOGGER.log(Level.WARNING, "User profile service not reachable,"
-              + " continuing with partial list, to be resumed", eAgain);        
+              + " continuing with partial list, to be resumed", eAgain);
           return null;
         }
         doc = fetchNextProfile(false);
