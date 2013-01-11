@@ -185,4 +185,14 @@ public class MockUserProfileGenerator implements UserProfileServiceGenerator {
     return colleagues;
   }
 
+  @Override
+  public PropertyData[] getUserProfileByName(String accountName) {    
+    for (int i = 0; i < names.length; i++) {
+      if (names[i].equalsIgnoreCase(accountName)) {
+        return getProfileData(i);
+      }
+    }
+    return null;
+  }
+
 }
