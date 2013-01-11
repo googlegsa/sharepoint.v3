@@ -97,6 +97,9 @@ public class AclHelper {
       throw new SharepointException("SharePointClient context cannot be null ");
     }
     sharepointClientContext = inSharepointClientContext;
+    if (null == siteurl) {
+      siteurl = sharepointClientContext.getSiteURL();
+    }
     aclWS = sharepointClientContext.getClientFactory().getAclWS(
         sharepointClientContext, siteurl);
 
