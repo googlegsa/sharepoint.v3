@@ -1,0 +1,20 @@
+C:\GSBControlPanel\bin\Debug\Configuration Wizard.exe
+C:\GSBControlPanel\bin\Debug\Configuration Wizard.pdb
+C:\GSBControlPanel\bin\Debug\Microsoft.SharePoint.Search.dll
+C:\GSBControlPanel\bin\Debug\Microsoft.SharePoint.Search.xml
+C:\GSBControlPanel\obj\Debug\ResolveAssemblyReference.cache
+C:\GSBControlPanel\obj\Debug\GSBControlPanel.frmWebApplicationList.resources
+C:\GSBControlPanel\obj\Debug\GSBControlPanel.frmGSAParams.resources
+C:\GSBControlPanel\obj\Debug\GSBControlPanel.csproj.GenerateResource.Cache
+C:\GSBControlPanel\obj\Debug\Configuration Wizard.exe
+C:\GSBControlPanel\obj\Debug\Configuration Wizard.pdb
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\bin\Debug\Configuration Wizard.exe
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\bin\Debug\Configuration Wizard.pdb
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\bin\Debug\Microsoft.SharePoint.Search.dll
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\bin\Debug\Microsoft.SharePoint.Search.xml
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Debug\ResolveAssemblyReference.cache
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Debug\GSBControlPanel.frmWebApplicationList.resources
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Debug\GSBControlPanel.frmGSAParams.resources
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Debug\GSBControlPanel.csproj.GenerateResource.Cache
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Debug\Configuration Wizard.exe
+C:\Priya\GSARKS_x64\RC2\GSBControlPanel\obj\Debug\Configuration Wizard.pdb
