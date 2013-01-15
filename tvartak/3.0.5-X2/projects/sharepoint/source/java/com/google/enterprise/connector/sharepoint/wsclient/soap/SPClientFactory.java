@@ -188,7 +188,7 @@ public class SPClientFactory implements ClientFactory {
     }
   }
 
-  public int checkConnectivity(HttpMethodBase method,
+  public synchronized int checkConnectivity(HttpMethodBase method,
       Credentials credentials) throws IOException {
     if (httpClient == null) {
       httpClient = GetHttpClient(credentials);
@@ -209,7 +209,7 @@ public class SPClientFactory implements ClientFactory {
               + method.getURI() + " ]. Reinitializing HttpClient.", ex);
       httpClient = GetHttpClient(credentials);
       return httpClient.executeMethod(method);
-    }  
+    }
   }
 
   private HttpClient GetHttpClient(Credentials credentials) {
