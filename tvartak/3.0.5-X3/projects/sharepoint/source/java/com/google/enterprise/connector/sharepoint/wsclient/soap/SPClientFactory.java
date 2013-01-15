@@ -45,7 +45,6 @@ import java.util.logging.Logger;
  */
 public class SPClientFactory implements ClientFactory {
   private static final Logger LOGGER = Logger.getLogger(SPClientFactory.class.getName());
-  private HttpClient httpClient = null;
 
   /**
    * Gets the instance of the alerts web service.
@@ -190,32 +189,9 @@ public class SPClientFactory implements ClientFactory {
 
   public int checkConnectivity(HttpMethodBase method,
       Credentials credentials) throws IOException {
-    if (httpClient == null) {
-      httpClient = GetHttpClient(credentials);
-    }
-    try {
-      int responseCode = httpClient.executeMethod(method);
-      if (responseCode != 200 && responseCode != 404) {
-        LOGGER.log(Level.WARNING,
-            "Http Response Code = "+ responseCode + " for Url [ "
-                + method.getURI() + " ]. Reinitializing HttpClient.");     
-        httpClient = GetHttpClient(credentials);
-        responseCode = httpClient.executeMethod(method);
-      }
-      return responseCode;      
-    } catch(Exception ex) {    
-      LOGGER.log(Level.WARNING,
-          "Error Connecting Server for Url [ "
-              + method.getURI() + " ]. Reinitializing HttpClient.", ex);
-      httpClient = GetHttpClient(credentials);
-      return httpClient.executeMethod(method);
-    }  
-  }
+    final HttpClient httpClient = new HttpClient();
 
-  private HttpClient GetHttpClient(Credentials credentials) {
-    HttpClient httpClientToUse = new HttpClient();
-
-    HttpClientParams params = httpClientToUse.getParams();
+    HttpClientParams params = httpClient.getParams();
     // Fix for the Issue[5408782] SharePoint connector fails to traverse a site,
     // circular redirect exception is observed.
     params.setBooleanParameter(HttpClientParams.ALLOW_CIRCULAR_REDIRECTS, true);
@@ -225,8 +201,8 @@ public class SPClientFactory implements ClientFactory {
     // to follow.
     params.setIntParameter(HttpClientParams.MAX_REDIRECTS, 10);
 
-    httpClientToUse.getState().setCredentials(AuthScope.ANY, credentials);
-    return httpClientToUse;
+    httpClient.getState().setCredentials(AuthScope.ANY, credentials);
+    return httpClient.executeMethod(method);
   }
 
   public String getResponseHeader(HttpMethodBase method, String headerName) {
