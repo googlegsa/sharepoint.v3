@@ -244,12 +244,14 @@ public class AdGroupsTraversalManager implements TraversalManager {
         if (entities.size() > 0 || tombstones.size() > 0) {
           // Remove all tombstones from the database
           LOGGER.info(
-              server + "update 1/5 - Removing tombstones from database.");
+              server + "update 1/5 - Removing tombstones from database ("
+              + tombstones.size() + ")");
           db.executeBatch(Query.DELETE_MEMBERSHIPS, tombstones);
 
           // Merge entities discovered on current server into the database
           LOGGER.info(
-              server + "update 2/5 - Inserting AD Entities into database.");
+              server + "update 2/5 - Inserting AD Entities into database ("
+              + entities.size() + ")");
           db.executeBatch(Query.MERGE_ENTITIES, entities);
 
           // Merge group memberships into the database
@@ -275,17 +277,9 @@ public class AdGroupsTraversalManager implements TraversalManager {
             }
 
             for (AdMembership m : e.getMembers()) {
-              if (m.memberDn.toLowerCase().contains(
-                  "cn=foreignsecurityprincipals,dc=")) {
-                int start = m.memberDn.indexOf('=');
-                int end = m.memberDn.indexOf(',');
-                String sid = m.memberDn.substring(start + 1, end);
-                int ridStart = sid.lastIndexOf('-');
-                Map<String, Object> map = new HashMap<String, Object>(2);
-                map.put(AdConstants.DB_DOMAINSID, sid.substring(0, ridStart));
-                map.put(AdConstants.DB_RID, sid.substring(
-                    ridStart + 1, sid.length()));
-                m.memberId = db.getEntityId(Query.FIND_FOREIGN, map);
+              Map<String, Object> foreign = m.parseForeignSecurityPrincipal();
+              if (foreign != null) {
+                m.memberId = db.getEntityId(Query.FIND_FOREIGN, foreign);
               } else {
                 m.memberId = db.getEntityId(Query.FIND_GROUP, m.getSqlParams());
               }
