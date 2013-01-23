@@ -14,30 +14,22 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.SiteDataHelper;
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.generated.webs.GetWebCollectionResponseGetWebCollectionResult;
 import com.google.enterprise.connector.sharepoint.generated.webs.GetWebResponseGetWebResult;
-import com.google.enterprise.connector.sharepoint.generated.webs.Webs;
-import com.google.enterprise.connector.sharepoint.generated.webs.WebsLocator;
-import com.google.enterprise.connector.sharepoint.generated.webs.WebsSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
-import org.apache.axis.AxisFault;
 import org.apache.axis.message.MessageElement;
 
-import java.rmi.RemoteException;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling Webs.asmx Provides a layer to talk to the Webs Web
@@ -47,10 +39,10 @@ import javax.xml.rpc.ServiceException;
  * @author nitendra_thakur
  */
 public class WebsHelper {
-  private String endpoint;
-  private WebsSoap_BindingStub stub = null;
-  private final Logger LOGGER = Logger.getLogger(WebsHelper.class.getName());
+  private static final Logger LOGGER =
+      Logger.getLogger(WebsHelper.class.getName());
   private SharepointClientContext sharepointClientContext = null;
+  private WebsWS websWS;
 
   /**
    * @param inSharepointClientContext The Context is passed so that necessary
@@ -61,35 +53,23 @@ public class WebsHelper {
    */
   public WebsHelper(final SharepointClientContext inSharepointClientContext)
       throws SharepointException {
-
-    if (inSharepointClientContext != null) {
-      sharepointClientContext = inSharepointClientContext;
-      endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
-          + SPConstants.WEBSENDPOINT;
-      LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
-      final WebsLocator loc = new WebsLocator();
-      loc.setWebsSoapEndpointAddress(endpoint);
-      final Webs service = loc;
-
-      try {
-        stub = (WebsSoap_BindingStub) service.getWebsSoap();
-      } catch (final ServiceException e) {
-        LOGGER.log(Level.WARNING, e.getMessage(), e);
-        throw new SharepointException("Unable to create webs stub");
-      }
-
-      final String strDomain = inSharepointClientContext.getDomain();
-      String strUser = inSharepointClientContext.getUsername();
-      final String strPassword = inSharepointClientContext.getPassword();
-
-      strUser = Util.getUserNameWithDomain(strUser, strDomain);
-      stub.setUsername(strUser);
-      stub.setPassword(strPassword);
-      // The web service time-out value
-      stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
-      LOGGER.fine("Set time-out of : "
-          + sharepointClientContext.getWebServiceTimeOut() + " milliseconds");
+    if (null == inSharepointClientContext) {
+      throw new SharepointException("SharePointClient context cannot be null.");
     }
+    sharepointClientContext = inSharepointClientContext;
+    websWS = sharepointClientContext.getClientFactory().getWebsWS(
+        sharepointClientContext);
+
+    final String strDomain = sharepointClientContext.getDomain();
+    String strUser = sharepointClientContext.getUsername();
+    final String strPassword = sharepointClientContext.getPassword();
+    final int timeout = sharepointClientContext.getWebServiceTimeOut();
+    LOGGER.fine("Setting time-out to " + timeout + " milliseconds.");
+
+    strUser = Util.getUserNameWithDomain(strUser, strDomain);
+    websWS.setUsername(strUser);
+    websWS.setPassword(strPassword);
+    websWS.setTimeout(timeout);
   }
 
   /**
@@ -100,36 +80,21 @@ public class WebsHelper {
    */
   public Set<String> getDirectChildsites() {
     final Set<String> allWebsList = new TreeSet<String>();
-    // to store all the sub-webs state
-    GetWebCollectionResponseGetWebCollectionResult webcollnResult = null;
-
-    try {
-      webcollnResult = stub.getWebCollection();
-    } catch (final AxisFault af) {
-      // Handling of username formats for different authentication models.
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          webcollnResult = stub.getWebCollection();
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Unable to get the child webs for the web site ["
-              + sharepointClientContext.getSiteURL() + "].", e);
-          return allWebsList;
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "Unable to get the child webs for the web site ["
-            + sharepointClientContext.getSiteURL() + "].", af);
-        return allWebsList;
-      }
-    } catch (final RemoteException e) {
-      LOGGER.log(Level.WARNING, "Unable to get the child webs for the web site ["
-          + sharepointClientContext.getSiteURL() + "].", e);
-      return allWebsList;
-    }
+    
+    final GetWebCollectionResponseGetWebCollectionResult webcollnResult =
+        Util.makeWSRequest(sharepointClientContext, websWS,
+            new Util.RequestExecutor<
+                GetWebCollectionResponseGetWebCollectionResult>() {
+          public GetWebCollectionResponseGetWebCollectionResult 
+              onRequest(final BaseWS ws) throws Throwable {
+            return ((WebsWS) ws).getWebCollection();
+          }
+          
+          public void onError(final Throwable e) {
+            LOGGER.log(Level.WARNING,
+                "Unable to get the child webs for the web site.", e);
+          }
+        });
 
     if (webcollnResult != null) {
       final MessageElement[] meWebs = webcollnResult.get_any();
@@ -167,38 +132,23 @@ public class WebsHelper {
   public String getWebURLFromPageURL(final String pageURL) {
     LOGGER.config("Page URL: " + pageURL);
 
-    String strWebURL = null;
-    try {
-      strWebURL = stub.webUrlFromPageUrl(pageURL);
-    } catch (final AxisFault af) { // Handling of username formats for
-      // different authentication models.
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          strWebURL = stub.webUrlFromPageUrl(pageURL);
-        } catch (final Exception e) {
-          strWebURL = Util.getWebURLForWSCall(pageURL);
-          LOGGER.log(Level.WARNING, "Unable to get the sharepoint web URL for the URL: [ "
-              + pageURL + " ]. Using [ " + strWebURL + " ] as web URL. ");
-          return strWebURL;
-        }
-      } else {
-        strWebURL = Util.getWebURLForWSCall(pageURL);
-        LOGGER.log(Level.WARNING, "Unable to get the sharepoint web URL for the URL: [ "
-            + pageURL + " ]. Using [ " + strWebURL + " ] as web URL. ");
-        return strWebURL;
-      }
-    } catch (final Throwable e) {
+    String strWebURL =
+        Util.makeWSRequest(sharepointClientContext, websWS,
+            new Util.RequestExecutor<String>() {
+          public String onRequest(final BaseWS ws) throws Throwable {
+            return ((WebsWS) ws).webUrlFromPageUrl(pageURL);
+          }
+          
+          public void onError(final Throwable e) {
+            LOGGER.log(Level.WARNING,
+                "Unable to get the sharepoint web URL for the URL.", e);
+          }
+        });
+
+    if (Strings.isNullOrEmpty(strWebURL)) {
       strWebURL = Util.getWebURLForWSCall(pageURL);
-      LOGGER.log(Level.WARNING, "Unable to get the sharepoint web URL for the URL: [ "
-          + pageURL + " ]. Using [ " + strWebURL + " ] as web URL. ");
-      return strWebURL;
     }
-    LOGGER.log(Level.CONFIG, "WebURL: " + strWebURL);
+    LOGGER.config("WebURL: " + strWebURL);
     return strWebURL;
   }
 
@@ -211,48 +161,43 @@ public class WebsHelper {
    */
   public String getWebTitle(final String webURL, final SPType spType) {
     String webTitle = "No Title";
-    try {
-      LOGGER.config("Getting title for Web: " + webURL
-          + " SharepointConnectorType: " + spType);
 
-      if (SPType.SP2003 == spType) {
+    LOGGER.config("Getting title for Web: " + webURL
+        + " SharepointConnectorType: " + spType);
+
+    if (SPType.SP2003 == spType) {
+      try {
         final SiteDataHelper siteData =
             new SiteDataHelper(sharepointClientContext);
         webTitle = siteData.getTitle();
-      } else {
-        GetWebResponseGetWebResult resWeb = null;
-        try {
-          resWeb = stub.getWeb(webURL);
-        } catch (final AxisFault af) {
-          if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-              && (sharepointClientContext.getDomain() != null)) {
-            final String username = Util.switchUserNameFormat(stub.getUsername());
-            LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-                + stub.getUsername() + " ]. Trying with " + username);
-            stub.setUsername(username);
-            try {
-              resWeb = stub.getWeb(webURL);
-            } catch (final Exception e) {
-              LOGGER.log(Level.WARNING, "Unable to Get Title for web [ "
-                  + webURL + " ]. Using the default web Title. ", e);
+      } catch (final Exception e) {
+        LOGGER.log(Level.WARNING, "Unable to Get Title for web [ " + webURL
+            + " ]. Using the default web Title. " + e);
+      }
+    } else {
+      final GetWebResponseGetWebResult resWeb =
+          Util.makeWSRequest(sharepointClientContext, websWS,
+              new Util.RequestExecutor<GetWebResponseGetWebResult>() {
+            public GetWebResponseGetWebResult onRequest(final BaseWS ws)
+                throws Throwable {
+              return ((WebsWS) ws).getWeb(webURL);
             }
-          } else {
-            LOGGER.log(Level.WARNING, "Unable to Get Title for web [ " + webURL
-                + " ]. Using the default web Title. ", af);
-          }
-        }
-        if (null != resWeb) {
-          final MessageElement[] meArray = resWeb.get_any();
-          if ((meArray != null) && (meArray[0] != null)) {
-            webTitle = meArray[0].getAttribute(SPConstants.WEB_TITLE);
-          }
+            
+            public void onError(final Throwable e) {
+              LOGGER.log(Level.WARNING, "Unable to get title for web. "
+                  + "The request to getWeb failed.", e);
+            }
+          });
+
+      if (null != resWeb) {
+        final MessageElement[] meArray = resWeb.get_any();
+        if ((meArray != null) && (meArray.length > 0)
+            && (meArray[0] != null)) {
+          webTitle = meArray[0].getAttribute(SPConstants.WEB_TITLE);
         }
       }
-    } catch (final Exception e) {
-      LOGGER.log(Level.WARNING, "Unable to Get Title for web [ " + webURL
-          + " ]. Using the default web Title. " + e);
     }
-    LOGGER.log(Level.FINE, "Title: " + webTitle);
+    LOGGER.fine("Title: " + webTitle);
     return webTitle;
   }
 
@@ -262,36 +207,21 @@ public class WebsHelper {
    * @return the Web Service connectivity status
    */
   public String checkConnectivity() {
-    try {
-      // at least contribute permission is required. Fails in case of
-      // SP2003 if the url url contains repeated slashes.
-      stub.getWebCollection();
-    } catch (final AxisFault af) {
-      if (SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) == -1) {
-        // This is not an unauthorized exception. Do not retry with
-        // different username format.
-        LOGGER.log(Level.WARNING, "Unable to connect.", af);
-        return af.getFaultString();
-      }
-      final String username = Util.switchUserNameFormat(stub.getUsername());
-      if ((username == null) || username.equals(stub.getUsername())) {
-        LOGGER.log(Level.WARNING, "Unable to connect.", af);
-        return af.getFaultString();
-      }
-      LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-          + stub.getUsername() + " ]. Trying with " + username);
-      stub.setUsername(username);
-      try {
-        stub.getWebCollection();
-      } catch (final Exception e) {
-        LOGGER.log(Level.WARNING, "Unable to connect.", e);
-        return e.getLocalizedMessage();
-      }
-    } catch (final Exception e) {
-      LOGGER.log(Level.WARNING, "Unable to connect.", e);
-      return e.getLocalizedMessage();
-    }
+    final StringBuffer connectivityResponse = new StringBuffer();
 
-    return SPConstants.CONNECTIVITY_SUCCESS;
+    Util.makeWSRequestVoid(sharepointClientContext, websWS,
+        new Util.RequestExecutorVoid() {
+      public void onRequest(final BaseWS ws) throws Throwable {
+        ((WebsWS) ws).getWebCollection();
+        connectivityResponse.append(SPConstants.CONNECTIVITY_SUCCESS);
+      }
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING, "Unable to connect.", e);
+        connectivityResponse.append(e.getLocalizedMessage());
+      }
+    });
+
+    return connectivityResponse.toString();
   }
 }
