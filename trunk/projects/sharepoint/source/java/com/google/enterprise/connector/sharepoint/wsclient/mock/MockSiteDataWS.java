@@ -15,12 +15,11 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sWebMetadataHolder;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 
+import java.rmi.RemoteException;
 import java.util.logging.Logger;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +27,8 @@ import java.util.List;
 public class MockSiteDataWS implements SiteDataWS {
   private static final Logger LOGGER = Logger.getLogger(MockSiteDataWS.class.getName());
   private final SharepointClientContext sharepointClientContext;
+  private String username;
+  private String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
@@ -40,14 +41,23 @@ public class MockSiteDataWS implements SiteDataWS {
     sharepointClientContext = ctx;
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public List<ListState> getNamedLists(final WebState webstate)
-      throws SharepointException {
-    return Collections.emptyList();
+  /* @Override */
+  public String getUsername() {
+    return username;
+  }
+
+  /* @Override */
+  public void setUsername(final String username) {
+    this.username = username;
+  }
+
+  /* @Override */
+  public void setPassword(final String password) {
+    this.password = password;
+  }
+
+  /* @Override */
+  public void setTimeout(final int timeout) {
   }
 
   /**
@@ -55,8 +65,16 @@ public class MockSiteDataWS implements SiteDataWS {
    *
    * This is a stub implementation.
    */
-  public SPDocument getSiteData(final WebState webState)
-      throws SharepointException {
+  public ArrayOf_sListHolder getListCollection() throws RemoteException {
+    return null;
+  }
+
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  public _sWebMetadataHolder getSiteData() throws RemoteException {
     return null;
   }
 }

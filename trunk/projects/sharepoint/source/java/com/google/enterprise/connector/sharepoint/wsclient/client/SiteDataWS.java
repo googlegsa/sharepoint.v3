@@ -14,34 +14,26 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
+import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sWebMetadataHolder;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
-public interface SiteDataWS {
+public interface SiteDataWS extends BaseWS {
   /**
-   * Gets the collection of all the lists on the sharepoint server which are of
-   * a given type. E.g., DocumentLibrary
+   * Gets the collection of all the lists on the sharepoint server.
    *
-   * @param webstate The web from which the list/libraries are to be discovered
-   * @return list of BaseList objects.
+   * @return ArrayOf_sListHolder
+   * @throws RemoteException
    */
-  public List<ListState> getNamedLists(WebState webstate)
-      throws SharepointException;
+  public ArrayOf_sListHolder getListCollection() throws RemoteException;
 
   /**
-   * Makes a call to Site Data web service to retrieve site meta data and create
-   * a SPDocuemnt and it returns a single SPDcoument.This method returns null if
-   * and only if any one of SiteData stub or webState is null.
+   * Makes a call to Site Data web service to retrieve site meta data.
    *
-   * @param webState The web from which we need to construct SPDcoument for it's
-   *          landing page.
-   * @return a single SPDocument for the given web.
-   * @throws SharepointException
+   * @return _sWebMetadataHolder
+   * @throws RemoteException
    */
-  public SPDocument getSiteData(WebState webState)
-      throws SharepointException;
+  public _sWebMetadataHolder getSiteData() throws RemoteException;
 }
