@@ -14,33 +14,21 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteData;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataLocator;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.generated.sitedata._sList;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOfStringHolder;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sFPUrlHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListWithTimeHolder;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sWebWithTimeHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sWebMetadataHolder;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 
-import org.apache.axis.AxisFault;
-import org.apache.axis.holders.UnsignedIntHolder;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.HeadMethod;
 
-import java.rmi.RemoteException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,21 +37,16 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.rpc.ServiceException;
-import javax.xml.rpc.holders.StringHolder;
-
 /**
  * This class holds data and methods for any call to SiteData web service.
  *
  * @author amit_kagrawal
  */
 public class SiteDataHelper {
-
-  private final Logger LOGGER =
+  private static final Logger LOGGER =
       Logger.getLogger(SiteDataHelper.class.getName());
   private SharepointClientContext sharepointClientContext;
-  private String endpoint;
-  private SiteDataSoap_BindingStub stub = null;
+  private SiteDataWS siteDataWS;
   private static final String ATTR_READSECURITY = "ReadSecurity";
 
   /**
@@ -75,35 +58,23 @@ public class SiteDataHelper {
    */
   public SiteDataHelper(final SharepointClientContext 
       inSharepointClientContext) throws SharepointException {
-    if (inSharepointClientContext != null) {
-      sharepointClientContext = inSharepointClientContext;
-      endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
-          + SPConstants.SITEDATAENDPOINT;
-      LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
-
-      final SiteDataLocator loc = new SiteDataLocator();
-      loc.setSiteDataSoapEndpointAddress(endpoint);
-      final SiteData servInterface = loc;
-
-      try {
-        stub = (SiteDataSoap_BindingStub) servInterface.getSiteDataSoap();
-      } catch (final ServiceException e) {
-        LOGGER.log(Level.WARNING, e.getMessage(), e);
-        throw new SharepointException("unable to create sitedata stub");
-      }
-
-      final String strDomain = inSharepointClientContext.getDomain();
-      String strUser = inSharepointClientContext.getUsername();
-      final String strPassword = inSharepointClientContext.getPassword();
-
-      strUser = Util.getUserNameWithDomain(strUser, strDomain);
-      stub.setUsername(strUser);
-      stub.setPassword(strPassword);
-      // The web service time-out value
-      stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
-      LOGGER.fine("Set time-out of : "
-          + sharepointClientContext.getWebServiceTimeOut() + " milliseconds");
+    if (null == inSharepointClientContext) {
+      throw new SharepointException("SharePointClient context cannot be null.");
     }
+    sharepointClientContext = inSharepointClientContext;
+    siteDataWS = sharepointClientContext.getClientFactory().getSiteDataWS(
+        sharepointClientContext);
+
+    final String strDomain = sharepointClientContext.getDomain();
+    String strUser = sharepointClientContext.getUsername();
+    final String strPassword = sharepointClientContext.getPassword();
+    final int timeout = sharepointClientContext.getWebServiceTimeOut();
+    LOGGER.fine("Setting time-out to " + timeout + " milliseconds.");
+
+    strUser = Util.getUserNameWithDomain(strUser, strDomain);
+    siteDataWS.setUsername(strUser);
+    siteDataWS.setPassword(strPassword);
+    siteDataWS.setTimeout(timeout);
   }
 
   /**
@@ -113,52 +84,31 @@ public class SiteDataHelper {
    * @param webstate The web from which the list/libraries are to be discovered
    * @return list of BaseList objects.
    */
-  public List<ListState> getNamedLists(final WebState webstate)
-      throws SharepointException {
+  public List<ListState> getNamedLists(final WebState webstate) {
     final ArrayList<ListState> listCollection = new ArrayList<ListState>();
-    if (stub == null) {
-      LOGGER.warning("Unable to get the list collection because stub is null");
-      return listCollection;
-    }
-
     if (webstate == null) {
       LOGGER.warning("Unable to get the list collection because webstate is null");
       return listCollection;
     }
 
-    final Collator collator = Util.getCollator();
-    final ArrayOf_sListHolder vLists = new ArrayOf_sListHolder();
-    final UnsignedIntHolder getListCollectionResult = new UnsignedIntHolder();
-
-    try {
-      stub.getListCollection(getListCollectionResult, vLists);
-    } catch (final AxisFault af) { // Handling of username formats for
-      // different authentication models.
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          stub.getListCollection(getListCollectionResult, vLists);
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Unable to get List Collection for stubURL[ "
-              + sharepointClientContext.getSiteURL() + " ].", e);
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "Unable to get List Collection for stubURL[ "
-            + sharepointClientContext.getSiteURL() + " ].", af);
-      }
-    } catch (final Throwable e) {
-      LOGGER.log(Level.WARNING, "Unable to get List Collection for stubURL[ "
-          + sharepointClientContext.getSiteURL() + " ].", e);
-    }
-
+    final ArrayOf_sListHolder vLists =
+        Util.makeWSRequest(sharepointClientContext, siteDataWS,
+            new Util.RequestExecutor<ArrayOf_sListHolder>() {
+          public ArrayOf_sListHolder onRequest(final BaseWS ws)
+              throws Throwable {
+            return ((SiteDataWS) ws).getListCollection();
+          }
+          
+          public void onError(final Throwable e) {
+            LOGGER.log(Level.WARNING, "Call to getListCollection failed.", e);
+          }
+        });
     if (vLists == null) {
       LOGGER.log(Level.WARNING, "Unable to get the list collection");
       return listCollection;
     }
+
+    final Collator collator = Util.getCollator();
 
     try {
       final _sList[] sl = vLists.value;
@@ -296,7 +246,6 @@ public class SiteDataHelper {
       }
     } catch (final Throwable e) {
       LOGGER.log(Level.FINER, e.getMessage(), e);
-      return listCollection;
     }
 
     if (listCollection.size() > 0) {
@@ -347,60 +296,37 @@ public class SiteDataHelper {
     return list;
   }
 
-  // for debugging purpose
-  /*
-   * private void dumpcollection(ArrayList colln){ if(colln==null){ return; }
-   * LOGGER.config("-----------------------------------"); for(int
-   * i=0;i<colln.size();++i){ BaseList list = (BaseList) colln.get(i);
-   * LOGGER.config("Internal Name: "+list.getInternalName());
-   * LOGGER.config("Title: "+list.getTitle());
-   * LOGGER.config("Type: "+list.getType());
-   * LOGGER.config("Type: "+list.getLastMod()); }
-   * LOGGER.config("-----------------------------------"); }
+  /**
+   * Return the site metadata.
+   *
+   * @return the {@link _sWebMetadataHolder}
    */
+  private _sWebMetadataHolder getWebMetadata() {
+    return Util.makeWSRequest(sharepointClientContext, siteDataWS,
+        new Util.RequestExecutor<_sWebMetadataHolder>() {
+          public _sWebMetadataHolder onRequest(final BaseWS ws)
+              throws Throwable {
+            return ((SiteDataWS) ws).getSiteData();
+          }
+          
+          public void onError(final Throwable e) {
+            LOGGER.log(Level.WARNING, "Call to getSiteData failed.", e);
+          }
+        });
+  }
 
   /**
    * Retrieves the title of a Web Site. Should only be used in case of SP2003
    * Top URL. For all other cases, WebWS.getTitle() is the preferred method.
    */
-  public String getTitle() throws RemoteException {
-    final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
-    final _sWebMetadataHolder sWebMetadata = new _sWebMetadataHolder();
-    final ArrayOf_sWebWithTimeHolder vWebs = new ArrayOf_sWebWithTimeHolder();
-    final ArrayOf_sListWithTimeHolder vLists = new ArrayOf_sListWithTimeHolder();
-    final ArrayOf_sFPUrlHolder vFPUrls = new ArrayOf_sFPUrlHolder();
-    final StringHolder strRoles = new StringHolder();
-    final ArrayOfStringHolder vRolesUsers = new ArrayOfStringHolder();
-    final ArrayOfStringHolder vRolesGroups = new ArrayOfStringHolder();
-    try {
-      stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
-      return sWebMetadata.value.getTitle();
-    } catch (final AxisFault af) { // Handling of username formats for
-      // different authentication models.
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
-          return sWebMetadata.value.getTitle();
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Unable to get the title for web because call to the WS failed. endpoint [ "
-              + endpoint + " ]", e);
-          return "";
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "Unable to get the title for web because call to the WS failed. endpoint [ "
-            + endpoint + " ]", af);
-        return "";
-      }
-    } catch (final Throwable e) {
-      LOGGER.log(Level.WARNING, "Unable to get the title for web because call to the WS failed. endpoint [ "
-          + endpoint + " ]", e);
+  public String getTitle() {
+    final _sWebMetadataHolder sWebMetadata = getWebMetadata();
+    if (sWebMetadata == null) {
+      LOGGER.warning(
+          "Unable to get site data. The call to getSiteData returned null.");
       return "";
     }
+    return sWebMetadata.value.getTitle();
   }
 
   /**
@@ -411,55 +337,20 @@ public class SiteDataHelper {
    * @param webState The web from which we need to construct SPDcoument for it's
    *          landing page.
    * @return a single SPDocument for the given web.
-   * @throws SharepointException
    */
-  public SPDocument getSiteData(final WebState webState)
-      throws SharepointException {
-    final UnsignedIntHolder getWebResult = new UnsignedIntHolder();
-    final _sWebMetadataHolder sWebMetadata = new _sWebMetadataHolder();
-    final ArrayOf_sWebWithTimeHolder vWebs = new ArrayOf_sWebWithTimeHolder();
-    final ArrayOf_sListWithTimeHolder vLists = new ArrayOf_sListWithTimeHolder();
-    final ArrayOf_sFPUrlHolder vFPUrls = new ArrayOf_sFPUrlHolder();
-    final StringHolder strRoles = new StringHolder();
-    final ArrayOfStringHolder vRolesUsers = new ArrayOfStringHolder();
-    final ArrayOfStringHolder vRolesGroups = new ArrayOfStringHolder();
-
-    if (stub == null) {
-      LOGGER.warning("Unable to get the list collection because stub is null");
-      // in case if SiteData web service end point is not created properly.
-      return null;
-    }
-
+  public SPDocument getSiteData(final WebState webState) {
     if (webState == null) {
       LOGGER.warning("Unable to get the list collection because webstate is null");
       // in case if the web state is null and is not existing in SharePoint
       // server.
       return null;
     }
-    try {
-      stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
-    } catch (final AxisFault af) {
-      // Handling of username formats for
-      // different authentication models.
-      if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles, vRolesUsers, vRolesGroups);
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Unable to get site data for web because call to the WS failed. endpoint [ "
-              + endpoint + " ]", e);
-        }
-      } else {
-        LOGGER.log(Level.WARNING, "Unable to get site data for web because call to the WS failed. endpoint [ "
-            + endpoint + " ]", af);
-      }
-    } catch (final Throwable e) {
-      LOGGER.log(Level.WARNING, "Unable to get the data for web because call to the WS failed. endpoint [ "
-          + endpoint + " ]", e);
+
+    final _sWebMetadataHolder sWebMetadata = getWebMetadata();
+    if (sWebMetadata == null) {
+      LOGGER.warning(
+          "Unable to get site data. The call to getSiteData returned null.");
+      return null;
     }
 
     final SPDocument siteDataDocument = new SPDocument(webState.getPrimaryKey()
@@ -487,5 +378,4 @@ public class SiteDataHelper {
 
     return siteDataDocument;
   }
-
 }
