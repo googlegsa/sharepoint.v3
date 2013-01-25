@@ -4190,10 +4190,10 @@
 		<row><td>ID_STRING13</td><td>1033</td><td>SEARCH~1|SearchBoxLogs</td><td>0</td><td/><td>345890542</td></row>
 		<row><td>ID_STRING14</td><td>1033</td><td>GOOGLE~2|GoogleSearchBoxforSharePoint</td><td>0</td><td/><td>345849710</td></row>
 		<row><td>ID_STRING15</td><td>1033</td><td>SAML Site</td><td>0</td><td/><td>345894063</td></row>
-		<row><td>ID_STRING16</td><td>1033</td><td>GSARES~1.12|GSA Resource Kit for SharePoint 3.0.0</td><td>0</td><td/><td>882942059</td></row>
+		<row><td>ID_STRING16</td><td>1033</td><td>GSARES~1.12|GSA Resource Kit for SharePoint 3.0.4</td><td>0</td><td/><td>-1063186928</td></row>
 		<row><td>ID_STRING17</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-325225679</td></row>
 		<row><td>ID_STRING18</td><td>1033</td><td>CONFIG~1|Configuration Wizard</td><td>0</td><td/><td>-325203119</td></row>
-		<row><td>ID_STRING19</td><td>1033</td><td>GOOGLE~1.12|Google Search Box for SharePoint 3.0.0</td><td>0</td><td/><td>882915435</td></row>
+		<row><td>ID_STRING19</td><td>1033</td><td>GOOGLE~1.12|Google Search Box for SharePoint 3.0.4</td><td>0</td><td/><td>-1063131664</td></row>
 		<row><td>ID_STRING2</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>1436375212</td></row>
 		<row><td>ID_STRING20</td><td>1033</td><td>GOOGLE~1.2|Google Services for SharePoint 3.0.0</td><td>0</td><td/><td>882913419</td></row>
 		<row><td>ID_STRING21</td><td>1033</td><td>VIEWLO~1|View Logs</td><td>0</td><td/><td>-325243855</td></row>
@@ -4248,7 +4248,7 @@
 		<row><td>ID_STRING66</td><td>1033</td><td>NewFeature1</td><td>0</td><td/><td>-451041106</td></row>
 		<row><td>ID_STRING67</td><td>1033</td><td>GSA Simulator for SharePoint</td><td>0</td><td/><td>1839030796</td></row>
 		<row><td>ID_STRING68</td><td>1033</td><td>Google Search Box Test Utility</td><td>0</td><td/><td>-451057426</td></row>
-		<row><td>ID_STRING69</td><td>1033</td><td>GSA Resource Kit for SharePoint 3.0.0</td><td>0</td><td/><td>882929835</td></row>
+		<row><td>ID_STRING69</td><td>1033</td><td>GSA Resource Kit for SharePoint 3.0.4</td><td>0</td><td/><td>-1063174640</td></row>
 		<row><td>ID_STRING7</td><td>1033</td><td>http://www.GoogleInc..com</td><td>0</td><td/><td>-601877810</td></row>
 		<row><td>ID_STRING70</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint</td><td>0</td><td/><td>-711088305</td></row>
 		<row><td>ID_STRING71</td><td>1033</td><td>GOOGLE~1.0|Google SAML Bridge for Windows 3.0.0</td><td>0</td><td/><td>882931851</td></row>
@@ -4303,14 +4303,14 @@
 		<row><td>NEW_STRING22</td><td>1033</td><td>fdfgfdgdf</td><td>0</td><td/><td>-711073267</td></row>
 		<row><td>NEW_STRING23</td><td>1033</td><td>Text</td><td>0</td><td/><td>-711103635</td></row>
 		<row><td>NEW_STRING24</td><td>1033</td><td>dssdfdsfsfs</td><td>0</td><td/><td>-711105619</td></row>
-		<row><td>NEW_STRING3</td><td>1033</td><td>GSA Resource Kit for SharePoint 3.0.0</td><td>0</td><td/><td>1302290768</td></row>
+		<row><td>NEW_STRING3</td><td>1033</td><td>GSA Resource Kit for SharePoint 3.0.4</td><td>0</td><td/><td>1302290768</td></row>
 		<row><td>NEW_STRING4</td><td>1033</td><td>&amp;OK</td><td>0</td><td/><td>1293784946</td></row>
 		<row><td>NEW_STRING5</td><td>1033</td><td>&amp;Cancel</td><td>0</td><td/><td>1293795347</td></row>
 		<row><td>NEW_STRING6</td><td>1033</td><td>Google SAML Bridge port number</td><td>0</td><td/><td>765307597</td></row>
 		<row><td>NEW_STRING7</td><td>1033</td><td>By installing the Google Search Box for SharePoint, the SharePoint search will be replaced by Google search for all the local SharePoint web applications</td><td>0</td><td/><td>-711085939</td></row>
 		<row><td>NEW_STRING8</td><td>1033</td><td>&amp;Next &gt;</td><td>0</td><td/><td>765317773</td></row>
 		<row><td>NEW_STRING9</td><td>1033</td><td>Cancel</td><td>0</td><td/><td>765317773</td></row>
-		<row><td>UNINST|Uninstall GSA Resource Kit for SharePoint</td><td>1033</td><td>UNINST~1.12|Uninstall GSA Resource Kit for SharePoint 3.0.0</td><td>0</td><td/><td>-2044738481</td></row>
+		<row><td>UNINST|Uninstall GSA Resource Kit for SharePoint</td><td>1033</td><td>UNINST~1.12|Uninstall GSA Resource Kit for SharePoint 3.0.4</td><td>0</td><td/><td>-2044738481</td></row>
 		<row><td>tempsource</td><td>1033</td><td>template:template</td><td>0</td><td>temp source</td><td>891127475</td></row>
 	</table>
 
