@@ -55,7 +55,6 @@ public class AdDbUtil {
     FIND_FOREIGN("FIND_FOREIGN"),
     MERGE_MEMBERSHIP("MERGE_MEMBERSHIP"),
     DELETE_MEMBERSHIPS("DELETE_MEMBERSHIPS"),
-    ADD_MEMBERSHIPS("ADD_MEMBERSHIPS"),
     SELECT_USER_BY_SAMACCOUNTNAME("SELECT_USER_BY_SAMACCOUNTNAME"),
     SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME
         ("SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME"),
@@ -397,13 +396,14 @@ public class AdDbUtil {
       if (e.getPrimaryGroupId() != null) {
         continue;
       }
+      Long groupId = getEntityId(Query.FIND_ENTITY, e.getSqlParams());
       Set<String> dbMemberships = new HashSet<String>();
       for (HashMap<String, Object> dbMembership: 
         select(Query.SELECT_MEMBERSHIPS_BY_DN, e.getSqlParams())) {
         dbMemberships.add((String) dbMembership.get(AdConstants.DB_MEMBERDN));
       }
       Set<AdMembership> adMemberships = e.getMembers();
-      
+
       if (LOGGER.isLoggable(Level.FINE)) {
         StringBuffer sb = new StringBuffer("For user [").append(e).append(
             "] identified "+ dbMemberships.size() +" memberships in Database:");
@@ -422,17 +422,19 @@ public class AdDbUtil {
       try {
         List<String> identifiers = new ArrayList<String>();
         insertStatement = connection.prepareStatement(
-            sortParams(Query.ADD_MEMBERSHIPS, identifiers));
-  
+            sortParams(Query.MERGE_MEMBERSHIP, identifiers));
+
         int batch = 0;
-        for (AdMembership m: adMemberships) {
+        for (AdMembership m : adMemberships) {
           if (!dbMemberships.contains(m.memberDn)) {
             LOGGER.finer(
-                "Adding [" + m.memberDn + "] as member to group [" + e + "]");
-            Map<String, Object> addParams = e.getSqlParams();
-            addParams.put(AdConstants.DB_MEMBERDN, m.memberDn);
-            addParams.put(AdConstants.DB_MEMBERID, m.memberId);
-            addParams(insertStatement, identifiers, addParams);
+                "Adding [" + m.memberDn + "] id [ " + m.memberId
+                + "] as member to group [" + e + "]");
+            Map<String, Object> insParams = new HashMap<String, Object>();
+            insParams.put(AdConstants.DB_GROUPID, groupId);
+            insParams.put(AdConstants.DB_MEMBERDN, m.memberDn);
+            insParams.put(AdConstants.DB_MEMBERID, m.memberId);
+            addParams(insertStatement, identifiers, insParams);
             insertStatement.addBatch();
             if (++batch == batchHint) {
               insertStatement.executeBatch();
