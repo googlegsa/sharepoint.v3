@@ -1,9 +1,52 @@
 Release Notes
 ==============
 
-This document contains the release notes for Google Search Box for SharePoint 3.0.0. The following sections describe the release in detail and provide information that supplements the main documentation.
+This document contains the release notes for Google Search Box for SharePoint 3.0.4. The following sections describe the release in detail and provide information that supplements the main documentation.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+
+Release 3.0.4, December 18, 2012
+===============================
+
+Introduction
+-------------
+This is a maintenance release that improves quality.  Users of previous releases are encouraged to upgrade.
+Users of previous releases should check the "Version Compatibility" section below.
+
+Summary of Changes
+------------------
+Issues fixed from last release:
+-------------------------------
+--Issue 7001042 Search Box doesn't correctly handle queries with hash ('#') character
+	
+For a SharePoint farm setup, the Google Search Box for SharePoint 3.0.4 must be installed on all the SharePoint front end web servers.
+
+Version Compatibility
+-----------------------
+SharePoint versions:
+
+SharePoint Server 2010
+SharePoint Foundation 2010
+Microsoft Office SharePoint Server 2007 (MOSS 2007)
+Windows SharePoint Services 3.0 (WSS 3.0)
+
+GSA Versions:
+
+Google Search Box for SharePoint 3.0.4 is only supported with GSA 7.0. 
+
+Browser Compatibility
+------------------------
+The Google Search Box for SharePoint 3.0.4 is certified on following browsers:
+* Microsoft Internet Explorer 8.0
+* Microsoft Internet Explorer 7.0
+* Mozilla Firefox 3.0.5
+
+Known Limitations
+---------------------
+[6513964] When a new SharePoint web application is added after Google Search Box for SharePoint is installed using the GSA Resource Kit for SharePoint installer, it shows destorted search results when search is configured with a local stylesheet.
+[7326295] Query Suggestions works only on search result page.
+[4274705] Google Search Box for SharePoint inserts garbage characters in the search text area after clicking on the Text Version link when GSA frontend stylesheet is used.
+
 
 Release 3.0.0, October 10, 2012
 ===============================
@@ -39,8 +82,6 @@ Windows SharePoint Services 3.0 (WSS 3.0)
 GSA Versions:
 
 Google Search Box for SharePoint 3.0.0 is only supported with GSA 7.0. 
-
-
 
 Browser Compatibility
 ------------------------
@@ -91,8 +132,6 @@ Known Limitations
 3. The Google Search Box for SharePoint will fail to work on machines with SharePoint Foundation 2010 installation.
 
 
-
-
 Release 2.6.10, 16 June, 2011
 =============================
 
@@ -107,7 +146,6 @@ Issues fixed:
 2. [Issue 4325126] - Default Search type changed form secure to public in latest GSA SearchBox for SharePoint 2.6.8
 3. [Issue 4343920] - Google Search Box for SharePoint front-end style-sheet does not have "Search Tips" link
 4. [Issue 4310682] - Effective space utilization of results displayed by GSA SharePoint SearchBox
-
 	
 For a farm setup, the Google Search Box for SharePoint 2.6.10 must be installed on all the SharePoint Installations (machines).
    
