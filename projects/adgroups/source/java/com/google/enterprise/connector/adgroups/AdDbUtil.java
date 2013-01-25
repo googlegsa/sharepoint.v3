@@ -59,12 +59,14 @@ public class AdDbUtil {
     SELECT_USER_BY_SAMACCOUNTNAME("SELECT_USER_BY_SAMACCOUNTNAME"),
     SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME
         ("SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME"),
+    SELECT_ENTITY_BY_DN_AND_NOT_GUID("SELECT_ENTITY_BY_DN_AND_NOT_GUID"),
     SELECT_WELLKNOWN_MEMBERSHIPS("SELECT_WELLKNOWN_MEMBERSHIPS"),
     SELECT_MEMBERSHIPS_BY_ENTITYID("SELECT_MEMBERSHIPS_BY_ENTITYID"),
     SELECT_MEMBERSHIPS_BY_DN("SELECT_MEMBERSHIPS_BY_DN"),
     DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN
         ("DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN"),
-    SELECT_ALL_ENTITIES_BY_SID("SELECT_ALL_ENTITIES_BY_SID");
+    SELECT_ALL_ENTITIES_BY_SID("SELECT_ALL_ENTITIES_BY_SID"),
+    DELETE_ENTITY("DELETE_ENTITY");
 
     private String query;
     Query(String query) {
@@ -240,7 +242,38 @@ public class AdDbUtil {
       }
     }
   }
-  
+
+  public String getSingleString(Query query, Map<String, Object> params,
+      String columnName) throws SQLException {
+    PreparedStatement statement = null;
+    ResultSet rs = null;
+    try {
+      List<String> identifiers = new ArrayList<String>();
+      // function sortParams fills identifiers variable
+      String sql = sortParams(query, identifiers);
+      statement = connection.prepareStatement(sql);
+      addParams(statement, identifiers, params);
+
+      rs = statement.executeQuery();
+      ResultSetMetaData rsmd = rs.getMetaData();
+      int column = 1;
+      while (rsmd.getColumnName(column).compareToIgnoreCase(columnName) != 0) {
+        column++;
+      }
+      if (!rs.next()) {
+        return null;
+      }
+      return rs.getString(column);
+    } finally {
+      if (rs != null) {
+        rs.close();
+      }
+      if (statement != null) {
+        statement.close();
+      }
+    }
+  }
+
   public Set<String> selectOne(Query query,
       Map<String, Object> params, String returnColumn) throws SQLException {
     Set<String> result = new HashSet<String>();

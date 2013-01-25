@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.adgroups;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.DocumentList;
@@ -244,19 +245,40 @@ public class AdGroupsTraversalManager implements TraversalManager {
         if (entities.size() > 0 || tombstones.size() > 0) {
           // Remove all tombstones from the database
           LOGGER.info(
-              server + "update 1/5 - Removing tombstones from database ("
+              server + "update 1/6 - Removing tombstones from database ("
               + tombstones.size() + ")");
           db.executeBatch(Query.DELETE_MEMBERSHIPS, tombstones);
 
+          // Check for each new/updated entity if it wasn't deleted and 
+          // recreated with the same name.
+          LOGGER.info(
+              server + "update 2/6 - Checking resurrected entities");
+          for (AdEntity e : entities) {
+            // Check for duplicates with different GUID than e.
+            Set<String> oldObjectGuids =
+                db.selectOne(Query.SELECT_ENTITY_BY_DN_AND_NOT_GUID,
+                    e.getSqlParams(), AdConstants.DB_OBJECTGUID);
+            if (oldObjectGuids.size() > 0) {
+              LOGGER.fine("Duplicate entity [" + e + "] discovered.");
+              db.execute(Query.DELETE_MEMBERSHIPS, e.getSqlParams());
+              for (final String oldObjectGuid : oldObjectGuids) {
+                LOGGER.fine("Deleting old version with objectguid ["
+                    + oldObjectGuid + "]");
+                db.execute(Query.DELETE_ENTITY, ImmutableMap.<String, Object>of(
+                    AdConstants.DB_OBJECTGUID, oldObjectGuid));
+              }
+            }
+          }
+
           // Merge entities discovered on current server into the database
           LOGGER.info(
-              server + "update 2/5 - Inserting AD Entities into database ("
+              server + "update 3/6 - Inserting AD Entities into database ("
               + entities.size() + ")");
           db.executeBatch(Query.MERGE_ENTITIES, entities);
 
           // Merge group memberships into the database
           LOGGER.info(
-              server + "update 3/5 - Inserting relationships into database.");
+              server + "update 4/6 - Inserting relationships into database.");
           for (AdEntity e : entities) {
             // If we are user merge the primary group
             if (e.getPrimaryGroupId() != null) {
@@ -291,10 +313,10 @@ public class AdGroupsTraversalManager implements TraversalManager {
           if (last == 0) {
             server.setLastFullSync(new Timestamp(new Date().getTime())); 
           }
-          LOGGER.info(server + "update 4/5 - Updating Domain controller info.");
+          LOGGER.info(server + "update 5/6 - Updating Domain controller info.");
           db.execute(Query.UPDATE_SERVER, server.getSqlParams());
 
-          LOGGER.info(server + "update 5/5 - Domain information updated.");
+          LOGGER.info(server + "update 6/6 - Domain information updated.");
         } else {
           LOGGER.info(server + "No updates found.");
           db.execute(Query.UPDATE_SERVER, server.getSqlParams());
