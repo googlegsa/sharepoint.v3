@@ -791,7 +791,10 @@ public class GssAclMonitor
                 }
                 catch (Exception e)
                 {
-                    result.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
+                    result.AddLogMessage("Problem while processing security policies. " +
+                        "ACL processing failed for [" + web.Url + "]. " +
+                        "Exception [" + e.Message + "]" + Environment.NewLine + 
+                        e.StackTrace);
                 }
 
                 try
@@ -800,7 +803,10 @@ public class GssAclMonitor
                 }
                 catch (Exception e)
                 {
-                    result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
+                    result.AddLogMessage("Problem while processing site collection admins. " +
+                        "ACL processing failed for [" + web.Url + "]. " + 
+                        "Exception [" + e.Message + "]" + Environment.NewLine + 
+                        e.StackTrace);
                 }
 
                 // Site Collection Url
@@ -841,7 +847,7 @@ public class GssAclMonitor
     public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls, Boolean bUseInheritance, Boolean bIncludePolicyAcls, int largeAclThreshold, Boolean bMetaUrlFeed)
     {
         SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
-        using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
+        using (SPSite site = new SPSite(SPContext.Current.Site.Url, systemUser))
         {
             using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
             {
@@ -856,7 +862,10 @@ public class GssAclMonitor
                     }
                     catch (Exception e)
                     {
-                        result.AddLogMessage("Problem while processing security policies. Exception [" + e.Message + " ] ");
+                        result.AddLogMessage("Problem while processing security policies. " +
+                            "ACL processing failed for [" + web.Url + "]. " +
+                            "Exception [" + e.Message + "]" + Environment.NewLine + 
+                            e.StackTrace);
                     }
 
                     try
@@ -865,7 +874,10 @@ public class GssAclMonitor
                     }
                     catch (Exception e)
                     {
-                        result.AddLogMessage("Problem while processing site collection admins. Exception [" + e.Message + " ] ");
+                        result.AddLogMessage("Problem while processing site collection admins. " +
+                            "ACL processing failed for [" + web.Url + "]. " +
+                            "Exception [" + e.Message + "]" + Environment.NewLine + 
+                            e.StackTrace);
                     }
                 }
                 
@@ -974,7 +986,10 @@ public class GssAclMonitor
                     catch (Exception e)
                     {
                         acl = new GssAcl(url, 0);
-                        acl.AddLogMessage("Problem while processing role assignments. Exception [" + e.Message + " ] ");
+                        acl.AddLogMessage("Problem while processing role assignments. " +
+                            "ACL processing failed for [" + url + "]. " +
+                            "Exception [" + e.Message + "]" + Environment.NewLine + 
+                            e.StackTrace);
                         allAcls.Add(acl);
                     }
                     finally
@@ -1061,7 +1076,9 @@ public class GssAclMonitor
                 // All the changes should be processed as one atomic operation. If any one fails, all should be ignored. This is in lieu of maintaining a single change token which will be used for executing change queries.
                 // Since, we are not progressing, use the same change token that was received
                 allChanges = new GssAclChangeCollection(changeTokenStart);
-                result.AddLogMessage("Exception occurred while change detection, Exception [ " + e.Message + " ] ");
+                result.AddLogMessage("Exception occurred while change detection. " +
+                    "Exception [" + e.Message + "]" + Environment.NewLine + 
+                    e.StackTrace);
             }
             finally
             {
@@ -1162,7 +1179,9 @@ public class GssAclMonitor
                              catch (Exception e)
                              {
                                  principal = new GssPrincipal(id, -2);
-                                 principal.AddLogMessage("Could not resolve Group Id [ " + id + " ]. Exception: " + e.Message);
+                                 principal.AddLogMessage("Could not resolve Group Id [ " + id + " ]. " +
+                                     "Exception [" + e.Message + "]" + Environment.NewLine + 
+                                     e.StackTrace);
                                  principal.Type = GssPrincipal.PrincipalType.NA;
                              }
                              prinicpals.Add(principal);
