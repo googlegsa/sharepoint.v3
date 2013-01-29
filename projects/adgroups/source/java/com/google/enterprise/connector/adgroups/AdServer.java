@@ -97,7 +97,10 @@ public class AdServer {
     // Use the built-in LDAP support.
     env.put(Context.INITIAL_CONTEXT_FACTORY,
         AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
-    env.put("com.sun.jndi.ldap.read.timeout", "3000");
+    // Connecting to configuration naming context is very slow for crawl users
+    // in large multidomain environment, which belong to thousands of groups
+    // TODO: make this configurable
+    env.put("com.sun.jndi.ldap.read.timeout", "30000");
     if (Strings.isNullOrEmpty(principal)) {
       env.put(Context.SECURITY_AUTHENTICATION, 
           AdConstants.AUTHN_TYPE_ANONYMOUS);

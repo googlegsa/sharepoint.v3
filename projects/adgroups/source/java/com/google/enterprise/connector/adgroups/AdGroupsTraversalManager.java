@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.adgroups;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.DocumentList;
@@ -23,6 +24,7 @@ import com.google.enterprise.connector.spi.TraversalManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -112,7 +114,8 @@ public class AdGroupsTraversalManager implements TraversalManager {
           (Timestamp) dbServer.get(AdConstants.DB_LASTFULLSYNC);
       server.setLastFullSync(lastFullSync);
       if ((new Date().getTime()) - lastFullSync.getTime()
-          > fullRecrawlThresholdInMillis) {
+          > fullRecrawlThresholdInMillis && Calendar.getInstance().get(
+              Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) { 
         LOGGER.info(
             server + "Full recrawl threshold reached. Performing full recrawl");
         return 0;
@@ -242,42 +245,78 @@ public class AdGroupsTraversalManager implements TraversalManager {
         if (entities.size() > 0 || tombstones.size() > 0) {
           // Remove all tombstones from the database
           LOGGER.info(
-              server + "update 1/8 - Removing tombstones from database.");
+              server + "update 1/6 - Removing tombstones from database ("
+              + tombstones.size() + ")");
           db.executeBatch(Query.DELETE_MEMBERSHIPS, tombstones);
+
+          // Check for each new/updated entity if it wasn't deleted and 
+          // recreated with the same name.
+          LOGGER.info(
+              server + "update 2/6 - Checking resurrected entities");
+          for (AdEntity e : entities) {
+            // Check for duplicates with different GUID than e.
+            Set<String> oldObjectGuids =
+                db.selectOne(Query.SELECT_ENTITY_BY_DN_AND_NOT_GUID,
+                    e.getSqlParams(), AdConstants.DB_OBJECTGUID);
+            if (oldObjectGuids.size() > 0) {
+              LOGGER.fine("Duplicate entity [" + e + "] discovered.");
+              db.execute(Query.DELETE_MEMBERSHIPS, e.getSqlParams());
+              for (final String oldObjectGuid : oldObjectGuids) {
+                LOGGER.fine("Deleting old version with objectguid ["
+                    + oldObjectGuid + "]");
+                db.execute(Query.DELETE_ENTITY, ImmutableMap.<String, Object>of(
+                    AdConstants.DB_OBJECTGUID, oldObjectGuid));
+              }
+            }
+          }
 
           // Merge entities discovered on current server into the database
           LOGGER.info(
-              server + "update 2/8 - Inserting AD Entities into database.");
+              server + "update 3/6 - Inserting AD Entities into database ("
+              + entities.size() + ")");
           db.executeBatch(Query.MERGE_ENTITIES, entities);
 
           // Merge group memberships into the database
           LOGGER.info(
-              server + "update 3/8 - Inserting relationships into database.");
+              server + "update 4/6 - Inserting relationships into database.");
+          for (AdEntity e : entities) {
+            // If we are user merge the primary group
+            if (e.getPrimaryGroupId() != null) {
+              Long groupId = db.getEntityId(
+                  Query.FIND_PRIMARY_GROUP, e.getSqlParams());
+              Long memberId = db.getEntityId(
+                  Query.FIND_ENTITY, e.getSqlParams());
+
+              // due to exception during last traversal primary group might
+              // not exist in the DB yet
+              if (groupId != null) {
+                Map<String, Object> map = new HashMap<String, Object>(3);
+                map.put(AdConstants.DB_GROUPID, groupId);
+                map.put(AdConstants.DB_MEMBERDN, e.getDn());
+                map.put(AdConstants.DB_MEMBERID, memberId);
+                db.execute(Query.MERGE_MEMBERSHIP, map);
+              }
+            }
+
+            for (AdMembership m : e.getMembers()) {
+              Map<String, Object> foreign = m.parseForeignSecurityPrincipal();
+              if (foreign != null) {
+                m.memberId = db.getEntityId(Query.FIND_FOREIGN, foreign);
+              } else {
+                m.memberId = db.getEntityId(Query.FIND_GROUP, m.getSqlParams());
+              }
+            }
+          }
           db.mergeMemberships(entities);
-
-          // Update the members table to include link to primary key of
-          // entities table for faster lookup during serve time
-          LOGGER.info(
-              server + "update 4/8 - Crossreferencing entity relationships.");
-          db.execute(Query.MATCH_ENTITIES, null);
-
-          // Resolve primary user's groups
-          LOGGER.info(server + "update 5/8 - Resolving user primary groups.");
-          db.execute(Query.RESOLVE_PRIMARY_GROUP, null);
-
-          // Resolve foreign security principals
-          LOGGER.info(
-              server + "update 6/8 - Resolving foreign security principals.");
-          db.execute(Query.RESOLVE_FOREIGN_SECURITY_PRINCIPALS, null);
 
           // Update the server information
           if (last == 0) {
             server.setLastFullSync(new Timestamp(new Date().getTime())); 
           }
-          LOGGER.info(server + "update 7/8 - Updating Domain controller info.");
+          LOGGER.info(server + "update 5/6 - Updating Domain controller info.");
           db.execute(Query.UPDATE_SERVER, server.getSqlParams());
 
-          LOGGER.info(server + "update 8/8 - Domain information updated.");
+          LOGGER.info(server + "update 6/6 - Domain information updated.");
         } else {
           LOGGER.info(server + "No updates found.");
           db.execute(Query.UPDATE_SERVER, server.getSqlParams());
@@ -303,7 +342,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
 
   @Override
   public void setBatchHint(int batchHint) throws RepositoryException {
-    db.setBatchHint(batchHint);
+    db.setBatchHint(batchHint / 10);
   }
 
   @Override

@@ -49,20 +49,23 @@ public class AdDbUtil {
     SELECT_SERVER("SELECT_SERVER"),
     UPDATE_SERVER("UPDATE_SERVER"),
     MERGE_ENTITIES("MERGE_ENTITIES"),
+    FIND_ENTITY("FIND_ENTITY"),
+    FIND_PRIMARY_GROUP("FIND_PRIMARY_GROUP"),
+    FIND_GROUP("FIND_GROUP"),
+    FIND_FOREIGN("FIND_FOREIGN"),
+    MERGE_MEMBERSHIP("MERGE_MEMBERSHIP"),
     DELETE_MEMBERSHIPS("DELETE_MEMBERSHIPS"),
-    ADD_MEMBERSHIPS("ADD_MEMBERSHIPS"),
-    MATCH_ENTITIES("MATCH_ENTITIES"),
-    RESOLVE_PRIMARY_GROUP("RESOLVE_PRIMARY_GROUPS"),
-    RESOLVE_FOREIGN_SECURITY_PRINCIPALS("RESOLVE_FOREIGN_SECURITY_PRINCIPALS"),
     SELECT_USER_BY_SAMACCOUNTNAME("SELECT_USER_BY_SAMACCOUNTNAME"),
     SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME
         ("SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME"),
+    SELECT_ENTITY_BY_DN_AND_NOT_GUID("SELECT_ENTITY_BY_DN_AND_NOT_GUID"),
     SELECT_WELLKNOWN_MEMBERSHIPS("SELECT_WELLKNOWN_MEMBERSHIPS"),
     SELECT_MEMBERSHIPS_BY_ENTITYID("SELECT_MEMBERSHIPS_BY_ENTITYID"),
     SELECT_MEMBERSHIPS_BY_DN("SELECT_MEMBERSHIPS_BY_DN"),
     DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN
         ("DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN"),
-    SELECT_ALL_ENTITIES_BY_SID("SELECT_ALL_ENTITIES_BY_SID");
+    SELECT_ALL_ENTITIES_BY_SID("SELECT_ALL_ENTITIES_BY_SID"),
+    DELETE_ENTITY("DELETE_ENTITY");
 
     private String query;
     Query(String query) {
@@ -76,7 +79,7 @@ public class AdDbUtil {
 
   private DataSource dataSource;
   private Connection connection;
-  private int batchHint = 1000;
+  private int batchHint = 50;
 
   //TODO: load table names from bean
   private Map<String, String> tables = new HashMap<String, String>() {{
@@ -205,6 +208,71 @@ public class AdDbUtil {
     }
   }
   
+  /**
+   * select statement in the database 
+   * @param query to be executed
+   * @param params parameter values
+   * @return entity id in the database
+   * @throws SQLException
+   */
+  public Long getEntityId(Query query, Map<String, Object> params)
+      throws SQLException {
+    PreparedStatement statement = null;
+    ResultSet rs = null;
+    try {
+      List<String> identifiers = new ArrayList<String>();
+      // function sortParams fills identifiers variable
+      String sql = sortParams(query, identifiers);
+      statement = connection.prepareStatement(sql);
+      addParams(statement, identifiers, params);
+
+      rs = statement.executeQuery();
+      if (!rs.next()) {
+        return null;
+      }
+      Long result = rs.getLong(1);    
+      return result;
+    } finally {
+      if (rs != null) {
+        rs.close();
+      }
+      if (statement != null) {
+        statement.close();
+      }
+    }
+  }
+
+  public String getSingleString(Query query, Map<String, Object> params,
+      String columnName) throws SQLException {
+    PreparedStatement statement = null;
+    ResultSet rs = null;
+    try {
+      List<String> identifiers = new ArrayList<String>();
+      // function sortParams fills identifiers variable
+      String sql = sortParams(query, identifiers);
+      statement = connection.prepareStatement(sql);
+      addParams(statement, identifiers, params);
+
+      rs = statement.executeQuery();
+      ResultSetMetaData rsmd = rs.getMetaData();
+      int column = 1;
+      while (rsmd.getColumnName(column).compareToIgnoreCase(columnName) != 0) {
+        column++;
+      }
+      if (!rs.next()) {
+        return null;
+      }
+      return rs.getString(column);
+    } finally {
+      if (rs != null) {
+        rs.close();
+      }
+      if (statement != null) {
+        statement.close();
+      }
+    }
+  }
+
   public Set<String> selectOne(Query query,
       Map<String, Object> params, String returnColumn) throws SQLException {
     Set<String> result = new HashSet<String>();
@@ -304,7 +372,7 @@ public class AdDbUtil {
       for (AdEntity e : entities) {
         addParams(statement, identifiers, e.getSqlParams());
         statement.addBatch();
-        if (++batch == batchHint) {
+        if (++batch >= batchHint) {
           statement.executeBatch();
           batch = 0;
         }
@@ -328,13 +396,14 @@ public class AdDbUtil {
       if (e.getPrimaryGroupId() != null) {
         continue;
       }
+      Long groupId = getEntityId(Query.FIND_ENTITY, e.getSqlParams());
       Set<String> dbMemberships = new HashSet<String>();
       for (HashMap<String, Object> dbMembership: 
         select(Query.SELECT_MEMBERSHIPS_BY_DN, e.getSqlParams())) {
         dbMemberships.add((String) dbMembership.get(AdConstants.DB_MEMBERDN));
       }
-      Set<String> adMemberships = e.getMembers();
-      
+      Set<AdMembership> adMemberships = e.getMembers();
+
       if (LOGGER.isLoggable(Level.FINE)) {
         StringBuffer sb = new StringBuffer("For user [").append(e).append(
             "] identified "+ dbMemberships.size() +" memberships in Database:");
@@ -343,8 +412,8 @@ public class AdDbUtil {
         }
         sb.append(" and " + adMemberships.size()
             + " memberships in Active Directory:");
-        for (String adMembership : adMemberships) {
-          sb.append("[").append(adMembership).append("] ");
+        for (AdMembership adMembership : adMemberships) {
+          sb.append("[").append(adMembership.memberDn).append("] ");
         }
         LOGGER.fine(sb.toString());
       }
@@ -353,22 +422,26 @@ public class AdDbUtil {
       try {
         List<String> identifiers = new ArrayList<String>();
         insertStatement = connection.prepareStatement(
-            sortParams(Query.ADD_MEMBERSHIPS, identifiers));
-  
+            sortParams(Query.MERGE_MEMBERSHIP, identifiers));
+
         int batch = 0;
-        for (String s: adMemberships) {
-          if (!dbMemberships.contains(s)) {
-            LOGGER.finer("Adding [" + s + "] as member to group [" + e + "]");
-            Map<String, Object> addParams = e.getSqlParams();
-            addParams.put(AdConstants.DB_MEMBERDN, s);
-            addParams(insertStatement, identifiers, addParams);
+        for (AdMembership m : adMemberships) {
+          if (!dbMemberships.contains(m.memberDn)) {
+            LOGGER.finer(
+                "Adding [" + m.memberDn + "] id [ " + m.memberId
+                + "] as member to group [" + e + "]");
+            Map<String, Object> insParams = new HashMap<String, Object>();
+            insParams.put(AdConstants.DB_GROUPID, groupId);
+            insParams.put(AdConstants.DB_MEMBERDN, m.memberDn);
+            insParams.put(AdConstants.DB_MEMBERID, m.memberId);
+            addParams(insertStatement, identifiers, insParams);
             insertStatement.addBatch();
             if (++batch == batchHint) {
               insertStatement.executeBatch();
               batch = 0;
             }
           }
-          dbMemberships.remove(s);
+          dbMemberships.remove(m.memberDn);
         }
         insertStatement.executeBatch();
       } finally {
@@ -407,6 +480,7 @@ public class AdDbUtil {
   }
 
   public void setBatchHint(int batchHint) {
+    LOGGER.info("Setting batch size to [" + batchHint + "]");
     this.batchHint = batchHint;
   }
 }
