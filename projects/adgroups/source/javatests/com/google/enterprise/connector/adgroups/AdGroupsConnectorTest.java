@@ -281,7 +281,7 @@ public class AdGroupsConnectorTest extends TestCase {
 
         for (AdTestEntity e : groupsCorrect) {
           String group = ad.getnETBIOSName() + AdConstants.BACKSLASH
-              + e.sAMAccountName;
+              + e.sAMAccountName.toLowerCase();
           assertTrue("Group [" + group + "] must be found in  [" + groups + "]",
               groups.contains(group));
         }
@@ -406,7 +406,8 @@ public class AdGroupsConnectorTest extends TestCase {
 
       assertFalse(
           "New user mustn't belong to the group he belonged to prior deletion",
-          response.getGroups().contains(new Principal(group.sAMAccountName)));
+          response.getGroups().contains(
+              new Principal(group.sAMAccountName.toLowerCase())));
 
       // add new user as member to the group
       ad.initialize();
@@ -427,7 +428,8 @@ public class AdGroupsConnectorTest extends TestCase {
           response.isValid());
 
       assertFalse("User must not belong to resurrected group",
-          response.getGroups().contains(new Principal(group.sAMAccountName)));
+          response.getGroups().contains(new Principal(
+              group.sAMAccountName.toLowerCase())));
     }
   }
 }

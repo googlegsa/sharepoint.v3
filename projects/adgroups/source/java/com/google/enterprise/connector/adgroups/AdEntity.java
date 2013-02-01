@@ -159,7 +159,7 @@ public class AdEntity {
   public Map<String, Object> getSqlParams() {
     HashMap<String, Object> map = new HashMap<String, Object>();
     map.put(AdConstants.DB_DN, dn);
-    map.put(AdConstants.DB_SAMACCOUNTNAME, sAMAccountName);
+    map.put(AdConstants.DB_SAMACCOUNTNAME, sAMAccountName.toLowerCase());
     map.put(AdConstants.DB_UPN, userPrincipalName);
     map.put(AdConstants.DB_PRIMARYGROUPID, primaryGroupId);
     if (sid != null) {
