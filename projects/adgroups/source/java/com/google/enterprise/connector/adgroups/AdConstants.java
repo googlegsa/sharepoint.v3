@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.adgroups;
 
+import java.util.regex.Pattern;
+
 public class AdConstants {
 
   // LDAP attributes
@@ -24,6 +26,9 @@ public class AdConstants {
   public static final String ATTR_PRIMARYGROUPID = "primaryGroupId";
   public static final String ATTR_UPN = "userPrincipalName";
   public static final String ATTR_MEMBER = "member";
+  public static final String ATTR_MEMBER_RANGE = "member;Range=%d-%d";
+  public static final Pattern ATTR_MEMBER_PATTERN =
+      Pattern.compile("member;range=[0-9]+-.*", Pattern.CASE_INSENSITIVE);
   public static final String ATTR_NETBIOSNAME = "nETBIOSName";
   public static final String ATTR_DNSROOT = "dnsRoot";
   public static final String ATTR_DEFAULTNAMINGCONTEXT =
