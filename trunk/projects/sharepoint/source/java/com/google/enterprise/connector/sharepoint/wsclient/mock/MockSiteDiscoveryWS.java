@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
@@ -28,6 +29,8 @@ import java.util.Set;
 public class MockSiteDiscoveryWS implements SiteDiscoveryWS {
   private static final Logger LOGGER = Logger.getLogger(MockSiteDiscoveryWS.class.getName());
   private final SharepointClientContext sharepointClientContext;
+  private String username;
+  private String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
@@ -41,13 +44,32 @@ public class MockSiteDiscoveryWS implements SiteDiscoveryWS {
     sharepointClientContext = ctx;
   }
 
+  /* @Override */
+  public String getUsername() {
+    return username;
+  }
+
+  /* @Override */
+  public void setUsername(final String username) {
+    this.username = username;
+  }
+
+  /* @Override */
+  public void setPassword(final String password) {
+    this.password = password;
+  }
+
+  /* @Override */
+  public void setTimeout(final int timeout) {
+  }
+
   /**
    * (@inheritDoc)
    *
    * This is a stub implementation.
    */
-  public Set<String> getMatchingSiteCollections() {
-    return Collections.emptySet();
+  public Object[] getAllSiteCollectionFromAllWebApps() {
+    return new Object[0];
   }
 
   /**
@@ -63,7 +85,7 @@ public class MockSiteDiscoveryWS implements SiteDiscoveryWS {
    *
    * This is a stub implementation.
    */
-  public WebCrawlInfo getCurrentWebCrawlInfo() {
+  public WebCrawlInfo getWebCrawlInfo() {
     return null;
   }
 
@@ -72,6 +94,24 @@ public class MockSiteDiscoveryWS implements SiteDiscoveryWS {
    *
    * This is a stub implementation.
    */
+  public WebCrawlInfo[] getWebCrawlInfoInBatch(String[] weburls) {
+    return new WebCrawlInfo[0];
+  }
+
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
   public void updateListCrawlInfo(Collection<ListState> listCollection) {
+  }
+
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  public ListCrawlInfo[] getListCrawlInfo(String[] listGuids) {
+    return new ListCrawlInfo[0];
   }
 }
