@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.enterprise.connector.sharepoint.client.AlertsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
@@ -22,7 +23,6 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
@@ -866,8 +866,8 @@ public class SharepointClient {
     List<SPDocument> listCollectionAlerts = null;
 
     try {
-      final AlertsWS alertsWS = clientFactory.getAlertsWS(tempCtx);
-      listCollectionAlerts = alertsWS.getAlerts(webState, dummyAlertListState);
+      final AlertsHelper alerts = new AlertsHelper(tempCtx);
+      listCollectionAlerts = alerts.getAlerts(webState, dummyAlertListState);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Problem while getting alerts. ", e);
     }
