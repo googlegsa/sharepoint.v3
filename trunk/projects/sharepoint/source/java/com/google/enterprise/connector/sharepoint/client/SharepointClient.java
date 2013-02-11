@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.client;
 import com.google.enterprise.connector.sharepoint.client.AlertsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.client.UserProfile2003Helper;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -25,7 +26,6 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
-import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
@@ -512,11 +512,11 @@ public class SharepointClient {
       LOGGER.log(Level.INFO, "Getting the initial list of MySites/Personal "
           + "sites for SharePoint type SP2003. Context URL [ "
           + sharepointClientContext.getSiteURL() + " ]");
-      final UserProfile2003WS userProfileWS =
-          clientFactory.getUserProfile2003WS(sharepointClientContext);
-      if (userProfileWS.isSPS()) {// Check if SPS2003 or WSS 2.0
+      final UserProfile2003Helper userProfile =
+          new UserProfile2003Helper(sharepointClientContext);
+      if (userProfile.isSPS()) {// Check if SPS2003 or WSS 2.0
         try {
-          final Set<String> personalSites = userProfileWS.getPersonalSiteList();
+          final Set<String> personalSites = userProfile.getPersonalSiteList();
           allSites.addAll(personalSites);
         } catch (final Exception e) {
           LOGGER.log(Level.WARNING, "Unable to get MySites for the Context URL [ "
