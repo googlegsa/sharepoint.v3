@@ -1,7 +1,7 @@
 package com.google.enterprise.connector.sharepoint.social;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
+import com.google.enterprise.connector.sharepoint.client.UserProfileChangeHelper;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
@@ -25,12 +25,12 @@ public class SharePointUserProfileClient {
     List<SharePointSocialUserProfileDocument> updatedDocuments =
         new ArrayList<SharePointSocialUserProfileDocument>();
     SharepointClientContext spContext =  ctxt.getSpClientContext();
-    UserProfileChangeWS userProfileChangeWS =
-        spContext.getClientFactory().getUserProfileChangeWS(spContext);
-    if (userProfileChangeWS != null) {
+    UserProfileChangeHelper userProfileChange =
+        new UserProfileChangeHelper(spContext);
+    if (userProfileChange != null) {
       try {
         Map<String, ActionType> updatedProfiles = 
-            userProfileChangeWS.getChangedUserProfiles(checkpoint);
+            userProfileChange.getChangedUserProfiles(checkpoint);
         if (updatedProfiles != null && updatedProfiles.size() > 0) {
           LOGGER.info("Number of Changed User Profiles = "
               + updatedProfiles.size());
@@ -71,13 +71,13 @@ public class SharePointUserProfileClient {
   
   public String getCurrentChangeTokenOnSharePoint() {
     SharepointClientContext spContext =  ctxt.getSpClientContext();
-    UserProfileChangeWS userProfileChangeWS =
-        spContext.getClientFactory().getUserProfileChangeWS(spContext);
-    if (userProfileChangeWS != null) {
+    UserProfileChangeHelper userProfileChange =
+        new UserProfileChangeHelper(spContext);
+    if (userProfileChange != null) {
       try {
         // If no updates then last change token and 
         // current change token is same
-        return userProfileChangeWS.getCurrentChangeToken();
+        return userProfileChange.getCurrentChangeToken();
       } catch (Exception e) {
         LOGGER.log(Level.WARNING, e.getMessage(), e);
         // In case of error. Return null to ensure connector attempts
