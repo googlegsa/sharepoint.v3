@@ -432,4 +432,66 @@ public class AdGroupsConnectorTest extends TestCase {
               group.sAMAccountName.toLowerCase())));
     }
   }
+
+  public void test10000Members() throws Exception {
+    boolean prepared = TestConfiguration.prepared;
+    for (String dbType : TestConfiguration.dbs.keySet()) {
+      // Initialize AD
+      AdTestServer ad = new AdTestServer(
+          Method.SSL,
+          TestConfiguration.d1hostname,
+          TestConfiguration.d1port,
+          TestConfiguration.d1principal,
+          TestConfiguration.d1password);
+
+      ad.initialize();
+      String ou = TestConfiguration.testOu + "_10000_members";
+      if (!prepared) {
+        ad.deleteOu(ou);
+        ad.createOu(ou);
+      }
+      Set<String> names = new HashSet<String>();
+      List<AdTestEntity> namespace = new ArrayList<AdTestEntity>();
+      Random random = new Random(TestConfiguration.seed + 4);
+
+      // create group with 10000 members
+      AdTestEntity group = new AdTestEntity(names, namespace, random, 1);
+      ad.createGroup(prepared, group, ou);
+      for (int i = 0; i < 10000; ++i) {
+        AdTestEntity user = new AdTestEntity(names, namespace, random);
+        ad.createUser(prepared, user, ou);
+        group.children.add(user);
+      }
+      ad.setMembers(prepared, group);
+
+      // crawl AD
+      AdGroupsConnector con = new AdGroupsConnector();
+      con.setMethod("SSL");
+      con.setHostname(TestConfiguration.d1hostname);
+      con.setPort(Integer.toString(TestConfiguration.d1port));
+      con.setPrincipal(TestConfiguration.d1principal);
+      con.setPassword(TestConfiguration.d1password);
+      con.setDataSource(dbType, TestConfiguration.dbs.get(dbType));
+      Session s = con.login();
+      s.getTraversalManager().startTraversal();
+      AuthenticationManager am = s.getAuthenticationManager();
+
+      // verify that each of 10000 members belongs to this group
+      String groupName = ad.getnETBIOSName() + AdConstants.BACKSLASH
+          + group.sAMAccountName.toLowerCase(); 
+      for (AdTestEntity user : group.children) {
+        AuthenticationResponse response = am.authenticate(
+            new SimpleAuthenticationIdentity(user.sAMAccountName));
+        Set<String> groups = new HashSet<String>();
+        @SuppressWarnings("unchecked") Collection<Principal> principals =
+            (Collection<Principal>) response.getGroups();
+        for (Principal p : principals) {
+          groups.add(p.getName());
+        }
+        assertTrue("Group [" + groupName + "] must be found",
+            groups.contains(groupName));
+      }
+      prepared = true;
+    }
+  }
 }

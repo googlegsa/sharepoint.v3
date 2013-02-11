@@ -259,6 +259,30 @@ public class AdServer {
           }
         }
       } while ((cookie != null) && (cookie.length != 0));
+
+      // if we received non complete attribute we need to use range based
+      // retrieval to get the rest of members
+      for (AdEntity g : results) {
+        if (!g.isGroup() || g.areAllMembershipsRetrieved()) {
+          continue;
+        }
+
+        int batch = g.getMembers().size();
+        int found = 0;
+        int start = g.getMembers().size();
+        do {
+          String memberRange = String.format(AdConstants.ATTR_MEMBER_RANGE, 
+              start, start + batch - 1);
+          LOGGER.finest(
+              "Retrieving additional groups for [" + g + "] " + memberRange);
+          searchCtls.setReturningAttributes(new String[] {memberRange});
+          NamingEnumeration<SearchResult> ldapResults = ldapContext.search(
+              dn, "(sAMAccountName=" + g.getSAMAccountName() +")", searchCtls);
+          SearchResult sr = ldapResults.next();
+          found = g.appendGroups(sr);
+          start += found;
+        } while (found == batch);
+      }
     } catch (InterruptedNamingException e) {
       throw e;
     } catch (NamingException e) {

@@ -281,7 +281,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
               server + "update 4/6 - Inserting relationships into database.");
           for (AdEntity e : entities) {
             // If we are user merge the primary group
-            if (e.getPrimaryGroupId() != null) {
+            if (!e.isGroup()) {
               Long groupId = db.getEntityId(
                   Query.FIND_PRIMARY_GROUP, e.getSqlParams());
               Long memberId = db.getEntityId(
