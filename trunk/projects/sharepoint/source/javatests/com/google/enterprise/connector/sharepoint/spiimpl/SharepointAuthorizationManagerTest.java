@@ -16,8 +16,8 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SiteDiscoveryHelper;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
-import com.google.enterprise.connector.sharepoint.wsclient.soap.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthorizationResponse;
 import com.google.enterprise.connector.spi.SimpleAuthenticationIdentity;
@@ -81,10 +81,11 @@ public class SharepointAuthorizationManagerTest extends TestCase {
   // Need to gather more details on the difference in the data so that we can create if for the tests.
 /*
   public void testAuthorizeDocids() throws Throwable {
+    SiteDiscoveryHelper siteDisc =
+        new SiteDiscoveryHelper(sharepointClientContext, null);
     SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
         clientFactory, this.sharepointClientContext,
-        new GSSiteDiscoveryWS(sharepointClientContext, null)
-        .getMatchingSiteCollections());
+        siteDisc.getMatchingSiteCollections());
     AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
         TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
 
@@ -111,10 +112,11 @@ public class SharepointAuthorizationManagerTest extends TestCase {
   */
 
   public void testAuthorizeDocidsForMandUFeeds() throws Throwable {
+    SiteDiscoveryHelper siteDisc =
+        new SiteDiscoveryHelper(sharepointClientContext, null);
     SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
         clientFactory, this.sharepointClientContext,
-        new GSSiteDiscoveryWS(sharepointClientContext, null)
-        .getMatchingSiteCollections());
+        siteDisc.getMatchingSiteCollections());
     AuthenticationIdentity authID = new SimpleAuthenticationIdentity(
         TestConfiguration.searchUserID, TestConfiguration.searchUserPwd);
 
