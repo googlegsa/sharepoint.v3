@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SiteDiscoveryHelper;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
@@ -28,7 +29,7 @@ import junit.framework.TestCase;
 public class GSSiteDiscoveryWSTest extends TestCase {
 
   SharepointClientContext sharepointClientContext;
-  GSSiteDiscoveryWS siteDisc;
+  SiteDiscoveryHelper siteDisc;
 
   protected void setUp() throws Exception {
     super.setUp();
@@ -37,7 +38,7 @@ public class GSSiteDiscoveryWSTest extends TestCase {
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    this.siteDisc = new GSSiteDiscoveryWS(this.sharepointClientContext,
+    this.siteDisc = new SiteDiscoveryHelper(this.sharepointClientContext,
         TestConfiguration.sharepointUrl);
   }
 
