@@ -85,6 +85,7 @@
           <s:element minOccurs="1" maxOccurs="1" name="NoCrawl" type="s:boolean" />
           <s:element minOccurs="1" maxOccurs="1" name="Status" type="s:boolean" />
           <s:element minOccurs="0" maxOccurs="1" name="Error" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="AnonymousAccess" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfListCrawlInfo">

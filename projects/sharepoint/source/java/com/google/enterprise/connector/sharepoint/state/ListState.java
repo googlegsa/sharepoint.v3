@@ -156,13 +156,16 @@ public class ListState implements StatefulObject {
 
   // Folders that are renamed/restored
   private List<Folder> changedFolders = new LinkedList<Folder>();
-  
+
   // Read Security for List State
   private boolean applyReadSecurity = false;
-  
-  // List Item Collection Position Next value for pagination
-  private String listItemCollectionPositionNext;  
 
+  // List Item Collection Position Next value for pagination
+  private String listItemCollectionPositionNext;
+
+  // Anonymous Access for List State
+  private boolean allowAnonymousAccess = false;
+  
   /**
    * @param inPrimaryKey
    * @param inTitle
@@ -176,7 +179,7 @@ public class ListState implements StatefulObject {
   public ListState(final String inPrimaryKey, final String inTitle,
       final String inType, final Calendar inLastMod,
       final String inBaseTemplate, final String inUrl, WebState inParentWeb)
-      throws SharepointException {
+          throws SharepointException {
 
     LOGGER.config("inInternalName[" + inPrimaryKey + "], inType[" + inType
         + "], inLastMod[" + inLastMod + "], inBaseTemplate[" + inBaseTemplate
@@ -633,7 +636,7 @@ public class ListState implements StatefulObject {
    */
   public boolean saveNextChangeTokenForWSCall(final String inChangeToken) {
     if (inChangeToken == null || inChangeToken.equals(currentChangeToken)
-    // An already saved token must first be committed
+        // An already saved token must first be committed
         || null != nextChangeToken) {
       return false;
     }
@@ -1041,6 +1044,15 @@ public class ListState implements StatefulObject {
       inheritedSecurity = inList.isInheritedSecurity();
       noCrawl = inList.isNoCrawl();
       applyReadSecurity = inList.isApplyReadSecurity();
+      if (allowAnonymousAccess != inList.isAllowAnonymousAccess()) {
+        LOGGER.log(Level.INFO, 
+            "Resetting List. Anonymous Access settings changed from "
+                + allowAnonymousAccess + " to " 
+                +  inList.isAllowAnonymousAccess()
+                + " for List [" + getListURL() + "]");
+        resetState();
+        allowAnonymousAccess = inList.isAllowAnonymousAccess();
+      }      
     }
   }
 
@@ -1218,6 +1230,7 @@ public class ListState implements StatefulObject {
     if (isAclChanged()) {
       atts.addAttribute("", "", SPConstants.STATE_LASTDOCIDCRAWLEDFORACL, SPConstants.STATE_ATTR_CDATA, String.valueOf(getLastDocIdCrawledForAcl()));
     }
+    atts.addAttribute("", "", SPConstants.STATE_ALLOW_ANONYMOUS_ACCESS, SPConstants.STATE_ATTR_CDATA, String.valueOf(isAllowAnonymousAccess()));   
     if (!SPConstants.ALERTS_TYPE.equalsIgnoreCase(getType())) {
       if (SPType.SP2007 == getParentWebState().getSharePointType()) {
         if (!isCurrentChangeTokenBlank()) {
@@ -1388,6 +1401,8 @@ public class ListState implements StatefulObject {
 
     list.setLastCrawledDateTime(atts.getValue(SPConstants.LAST_CRAWLED_DATETIME));
     list.setAclChanged(Boolean.getBoolean(atts.getValue(SPConstants.STATE_ISACLCHANGED)));
+    list.setAllowAnonymousAccess(Boolean.getBoolean(
+        atts.getValue(SPConstants.STATE_ALLOW_ANONYMOUS_ACCESS)));
     if (list.isAclChanged()) {
       try {
         list.setLastDocIdCrawledForAcl(Integer.getInteger(atts.getValue(SPConstants.STATE_LASTDOCIDCRAWLEDFORACL)));
@@ -1440,6 +1455,7 @@ public class ListState implements StatefulObject {
    */
   public void resetState() {
     currentChangeToken = nextChangeToken = null;
+    listItemCollectionPositionNext = null;
     setLastDocProcessed(null);
     setCrawlQueue(null);
     endAclCrawl();
@@ -1618,4 +1634,13 @@ public class ListState implements StatefulObject {
       String listItemCollectionPositionNext) {
     this.listItemCollectionPositionNext = listItemCollectionPositionNext;
   }
+
+  public boolean isAllowAnonymousAccess() {
+    return allowAnonymousAccess;
+  }
+
+  public void setAllowAnonymousAccess(boolean allowAnonymousAccess) {
+    this.allowAnonymousAccess = allowAnonymousAccess;
+  }
+
 }
