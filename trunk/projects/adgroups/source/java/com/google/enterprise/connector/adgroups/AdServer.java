@@ -122,7 +122,7 @@ public class AdServer {
         AdConstants.ATTR_DEFAULTNAMINGCONTEXT).get(0).toString();
     dsServiceName = attributes.get(
         AdConstants.ATTR_DSSERVICENAME).get(0).toString();
-    highestCommittedUSN = Integer.parseInt(attributes.get(
+    highestCommittedUSN = Long.parseLong(attributes.get(
         AdConstants.ATTR_HIGHESTCOMMITTEDUSN).get(0).toString());
     configurationNamingContext = attributes.get(
         AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
