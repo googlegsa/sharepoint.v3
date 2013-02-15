@@ -5,8 +5,20 @@
     class="com.google.enterprise.connector.adgroups.AdGroupsConnector"
     parent="Active_Directory_Groups_Defaults" singleton="false" init-method="init">
 
-    <!-- There are no advanced configuration properties for the
-         AD Groups connector. -->
+    <!-- Resolving entities from the BUILTIN container can grant unintentional privileges to users.
 
+         For example:
+         If the BUILTIN\administrators group contains user "userA" in the SharePoint frontend and
+         BUILTIN\administrators group contains user "userB" in the Domain controller, then if you
+         include the group BUILTIN\administrators in a SharePoint ACL, "userB" will be given access
+         via the GSA to this document because the AdGroups connector resolves the BUILTIN group
+         against domain controller and not the content server.
+
+         Only enable this setting if you are not manually restricting access to BUILTIN
+         groups on individual File System or Sharepoint servers and are using the 
+         Active Directory defaults. -->
+    <!-- By default, the AdGroups connector does not resolve BUILTIN groups. To Enable
+         the resolution of BUILTIN set the property returnBuiltin to YES. -->
+    <!-- <property name="returnBuiltin" value="YES"/> -->
   </bean>
 </beans>
