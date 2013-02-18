@@ -1,0 +1,214 @@
+﻿<%@Master language="C#"%>
+<%@ Register Tagprefix="SharePoint" Namespace="Microsoft.SharePoint.WebControls" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Register Tagprefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %> <%@ Import Namespace="Microsoft.SharePoint" %>
+<%@ Import Namespace="Microsoft.SharePoint.ApplicationPages" %>
+<%@ Register TagPrefix="wssuc" TagName="TopNavBar" src="~/_controltemplates/TopNavBar.ascx" %>
+<%@ Register TagPrefix="wssuc" TagName="Welcome" src="~/_controltemplates/Welcome.ascx" %>
+<%@ Register TagPrefix="wssuc" TagName="DesignModeConsole" src="~/_controltemplates/DesignModeConsole.ascx" %>
+<HTML dir="<%$Resources:wss,multipages_direction_dir_value%>" runat="server">
+<HEAD runat="server">
+	<META Name="GENERATOR" Content="Microsoft SharePoint">
+	<META Name="progid" Content="SharePoint.WebPartPage.Document">
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=utf-8">
+	<META HTTP-EQUIV="Expires" content="0">
+	<SharePoint:RobotsMetaTag runat="server"/>
+	<Title ID=onetidTitle><asp:ContentPlaceHolder id=PlaceHolderPageTitle runat="server"/></Title>
+	<SharePoint:CssLink runat="server"/>
+	<SharePoint:Theme runat="server"/>
+	<SharePoint:ScriptLink language="javascript" name="core.js" runat="server" />
+	<SharePoint:CustomJSUrl runat="server" />
+	<SharePoint:SoapDiscoveryLink runat="server" />
+	<asp:ContentPlaceHolder id="PlaceHolderAdditionalPageHead" runat="server"/>
+	<SharePoint:DelegateControl runat="server" ControlId="AdditionalPageHead" AllowMultipleControls="true"/>
+</HEAD>
+<BODY scroll="yes" onload="javascript:if (typeof(_spBodyOnLoadWrapper) != 'undefined') _spBodyOnLoadWrapper();">
+  <form runat="server" onsubmit="return _spFormOnSubmitWrapper();">
+  <TABLE class="ms-main" CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="100%" HEIGHT="100%">
+	<tr><td><asp:ContentPlaceHolder id="PlaceHolderGlobalNavigation" runat="server">
+	   <table CELLPADDING=0 CELLSPACING=0 BORDER=0 WIDTH="100%">
+		<tr>
+		 <td colspan=4 class="ms-globalbreadcrumb">
+			<span id="TurnOnAccessibility" style="display:none">
+			   <a href="#" class="ms-skip" onclick="SetIsAccessibilityFeatureEnabled(true);UpdateAccessibilityUI();return false;"><SharePoint:EncodedLiteral runat="server" text="<%$Resources:wss,master_turnonaccessibility%>" EncodeMethod="HtmlEncode"/></a>
+			</span>
+			<A href="javascript:;" onclick="javascript:this.href='#mainContent';" class="ms-skip" AccessKey="<%$Resources:wss,maincontent_accesskey%>" runat="server"><SharePoint:EncodedLiteral runat="server" text="<%$Resources:wss,mainContentLink%>" EncodeMethod="HtmlEncode"/></A>
+		 <table cellpadding=0 cellspacing=0 height=100% class="ms-globalleft">
+		   <tr>
+			<td class="ms-globallinks" style="padding-top: 2px;" height=100% valign=middle>
+			 <div>
+			  <span id="TurnOffAccessibility" style="display:none">
+				<a href="#" class="ms-acclink" onclick="SetIsAccessibilityFeatureEnabled(false);UpdateAccessibilityUI();return false;"><SharePoint:EncodedLiteral runat="server" text="<%$Resources:wss,master_turnoffaccessibility%>" EncodeMethod="HtmlEncode"/></a>
+			  </span>
+			  <asp:ContentPlaceHolder id="PlaceHolderGlobalNavigationSiteMap" runat="server">
+				<asp:SiteMapPath SiteMapProvider="SPSiteMapProvider" id="GlobalNavigationSiteMap" RenderCurrentNodeAsLink="true" SkipLinkText="" NodeStyle-CssClass="ms-sitemapdirectional" runat="server"/>
+			  </asp:ContentPlaceHolder>
+			  </div>
+			 </td>
+		   </tr>
+		 </table>
+		 <table cellpadding="0" cellspacing="0" height=100% class="ms-globalright">
+		  <tr>
+			  <td valign="middle" class="ms-globallinks" style="padding-left:3px; padding-right:6px;">
+			  </td>
+		  <td valign="middle" class="ms-globallinks">
+			<wssuc:Welcome id="IdWelcome" runat="server" EnableViewState="false">
+			</wssuc:Welcome>
+		  </td>
+		  <td style="padding-left:1px;padding-right:3px;" class="ms-globallinks">|</td>
+			  <td valign="middle" class="ms-globallinks">
+				<table cellspacing="0" cellpadding="0">
+				 <tr>
+				  <td class="ms-globallinks"><SharePoint:DelegateControl ControlId="GlobalSiteLink1" Scope="Farm" runat="server" /></td>
+				  <td class="ms-globallinks"><SharePoint:DelegateControl ControlId="GlobalSiteLink2" Scope="Farm" runat="server" /></td>
+				 </tr>
+				</table>
+			  </td>
+			  <td valign="middle" class="ms-globallinks">&nbsp;
+				<a href="javascript:TopHelpButtonClick('NavBarHelpHome')" AccessKey="<%$Resources:wss,multipages_helplink_accesskey%>" id="TopHelpLink" title="<%$Resources:wss,multipages_helplinkalt_text%>" runat="server"><img align='absmiddle' border=0 src="/_layouts/images/helpicon.gif" alt="<%$Resources:wss,multipages_helplinkalt_text%>" runat="server"></a>
+			  </td>
+			  </tr>
+			</table>
+			</td>
+		   </tr>
+	   </table>
+	  </asp:ContentPlaceHolder></td></tr>
+	<tr>
+	 <td class="ms-globalTitleArea">
+	  <table width=100% cellpadding=0 cellspacing=0 border=0>
+	   <tr>
+		<td id="GlobalTitleAreaImage" class="ms-titleimagearea"><SharePoint:SiteLogoImage id="onetidHeadbnnr0" LogoImageUrl="/_layouts/images/titlegraphic.gif" runat="server"/></td>
+		<td class="ms-sitetitle" width=100%>
+		  <asp:ContentPlaceHolder id="PlaceHolderSiteName" runat="server">
+		  <h1 class="ms-sitetitle">
+		   <SharePoint:SPLinkButton runat="server" NavigateUrl="~site/" id="onetidProjectPropertyTitle" >
+			 <SharePoint:ProjectProperty Property="Title" runat="server" />
+		   </SharePoint:SPLinkButton>
+		  </h1>
+		  </asp:ContentPlaceHolder>
+		</td>
+		<td style="padding-top:8px;" valign=top>
+		  <asp:ContentPlaceHolder id="PlaceHolderSearchArea" runat="server">
+		  </asp:ContentPlaceHolder>
+		</td>
+	   </tr>
+	  </table>
+	 </td>
+	</tr>
+	<TR>
+	 <TD id="onetIdTopNavBarContainer" WIDTH=100% class="ms-bannerContainer">
+		<asp:ContentPlaceHolder id="PlaceHolderTopNavBar" runat="server">
+			<wssuc:TopNavBar id="IdTopNavBar" runat="server" ShouldUseExtra="true"/>
+		</asp:ContentPlaceHolder>
+	 </TD>
+	</TR>
+	<asp:ContentPlaceHolder ID="WSSDesignConsole" runat="server">
+		<wssuc:DesignModeConsole id="IdDesignModeConsole" runat="server" />
+	</asp:ContentPlaceHolder>
+	<asp:ContentPlaceHolder ID="SPNavigation" runat="server">
+	</asp:ContentPlaceHolder>
+	<TR height="100%"><TD><TABLE width="100%" height="100%" cellspacing="0" cellpadding="0">
+	<tr>
+	 <td class="ms-titlearealeft" id="TitleAreaImageCell" valign="middle" nowrap><div style="height:100%" class="ms-titleareaframe"><asp:ContentPlaceHolder id="PlaceHolderPageImage" runat="server"/></div></td>
+	 <td class="ms-titleareaframe" id="TitleAreaFrameClass">
+	  <asp:ContentPlaceHolder id="PlaceHolderTitleLeftBorder" runat="server">
+	 <table cellpadding=0 height=100% width=100% cellspacing=0>
+	  <tr><td class="ms-areaseparatorleft"><IMG SRC="/_layouts/images/blank.gif" width=1 height=1 alt=""></td></tr>
+	 </table>
+	  </asp:ContentPlaceHolder>
+	 </td>
+	 <td valign=top  id="onetidPageTitleAreaFrame" class='<asp:ContentPlaceHolder id="PlaceHolderTitleAreaClass" runat="server">ms-areaseparator</asp:ContentPlaceHolder>' nowrap width="100%">
+	  <table id="onetidPageTitleAreaTable" cellpadding=0 cellspacing=0 width=100% border="0">
+	   <tr>
+		<td valign="top" class="ms-titlearea">
+		 <asp:ContentPlaceHolder id="PlaceHolderTitleBreadcrumb" runat="server">
+		  <asp:SiteMapPath SiteMapProvider="SPXmlContentMapProvider" id="ContentMap" SkipLinkText="" NodeStyle-CssClass="ms-sitemapdirectional" runat="server"/> &nbsp;
+		 </asp:ContentPlaceHolder>
+		</td>
+	   </tr>
+	   <tr>
+		<td height=100% valign=top ID=onetidPageTitle class="ms-pagetitle">
+		  <h2 class="ms-pagetitle">
+			<asp:ContentPlaceHolder id="PlaceHolderPageTitleInTitleArea" runat="server" />
+		  </h2>
+		</td>
+	   </tr>
+	  </table>
+	 </td>
+	 <td class="ms-titlearearight">
+		<asp:ContentPlaceHolder id="PlaceHolderMiniConsole" runat="server"/>
+		<asp:ContentPlaceHolder id="PlaceHolderTitleRightMargin" runat="server">
+<div class='ms-areaseparatorright'><IMG SRC="/_layouts/images/blank.gif" width=8 height=100% alt=""></div>
+</asp:ContentPlaceHolder></td>
+	</tr>
+<asp:ContentPlaceHolder id="PlaceHolderTitleAreaSeparator" runat="server"/>
+	<TR>
+	  <TD class="ms-leftareacell" valign=top height=100% id="LeftNavigationAreaCell">
+	   <table class=ms-nav width=100% height=100% cellpadding=0 cellspacing=0>
+		<tr>
+		 <td>
+		  <TABLE height="100%" class=ms-navframe CELLPADDING=0 CELLSPACING=0 border="0">
+		   <tr valign="top">
+			<td width="4px"><IMG SRC="/_layouts/images/blank.gif" width=4 height=1 alt=""></td>
+			<td valign="top" width="100%">
+			  <asp:ContentPlaceHolder id="PlaceHolderLeftNavBarDataSource" runat="server" />
+			  <asp:ContentPlaceHolder id="PlaceHolderCalendarNavigator" runat="server" />
+			  <asp:ContentPlaceHolder id="PlaceHolderLeftNavBarTop" runat="server"/>
+			  <asp:ContentPlaceHolder id="PlaceHolderLeftNavBar" runat="server">
+				&nbsp;
+			  </asp:ContentPlaceHolder>
+			  <asp:ContentPlaceHolder id="PlaceHolderLeftActions" runat="server"></asp:ContentPlaceHolder>
+			</td>
+		   </tr>
+		   <tr><td colspan=2><asp:ContentPlaceHolder id="PlaceHolderNavSpacer" runat="server"><IMG SRC="/_layouts/images/blank.gif" width=138 height=1 alt=""></asp:ContentPlaceholder></td></tr>
+		  </TABLE>
+		 </td>
+		 <td><asp:ContentPlaceHolder id="PlaceHolderLeftNavBarBorder" runat="server"></asp:ContentPlaceHolder></td>
+		</tr>
+	   </table>
+	  </TD>
+	  <td><asp:ContentPlaceHolder id="PlaceHolderBodyLeftBorder" runat="server">
+<div class='ms-areaseparatorleft'><IMG SRC="/_layouts/images/blank.gif" width=8 height=100% alt=""></div>
+</asp:ContentPlaceHolder></td>
+	  <td class='<asp:ContentPlaceHolder id="PlaceHolderBodyAreaClass" runat="server">ms-formareaframe</asp:ContentPlaceHolder>' valign="top">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="0" class="ms-propertysheet">
+		 <TR valign="top" <asp:ContentPlaceHolder id="PlaceHolderPageDescriptionRowAttr" runat="server"/> >
+			<TD class="ms-descriptiontext" width="100%">
+			  <asp:ContentPlaceHolder id="PlaceHolderPageDescription" runat="server"/>
+			</TD>
+			   <TD ID=onetidYPadding width="10px"><IMG SRC="/_layouts/images/blank.gif" width=10 height=1 alt=""></TD>
+		  </TR>
+		  <TR <asp:ContentPlaceHolder id="PlaceHolderPageDescriptionRowAttr2" runat="server"/>>
+		  <%--GSBS changes - code start--%>
+		  <%--Commenting out the td tag adding horizontal white space at the top of the search results. --%>
+		  <%--<TD ID=onetidMainBodyPadding height="8px"><IMG SRC="/_layouts/images/blank.gif" width=1 height=8 alt=""></TD>--%>
+		  <%--GSBS changes - code start--%>
+		  </TR>
+		  <tr>
+			 <td valign="top" height="100%">
+			   <A name="mainContent"></A>
+				<asp:ContentPlaceHolder id="PlaceHolderMain" runat="server">
+				</asp:ContentPlaceHolder>
+			 </td>
+		  </tr>
+		</table>
+	  </td>
+	  <td class="ms-rightareacell"><asp:ContentPlaceHolder id="PlaceHolderBodyRightMargin" runat="server">
+<div class='ms-areaseparatorright'><IMG SRC="/_layouts/images/blank.gif" width=8 height=100% alt=""></div>
+</asp:ContentPlaceHolder></td>
+	</TR>
+<tr>
+	<td class="ms-pagebottommarginleft"><IMG SRC="/_layouts/images/blank.gif" width=1 height=10 alt=""></td>
+	<td class="ms-pagebottommargin"><IMG SRC="/_layouts/images/blank.gif" width=1 height=10 alt=""></td>
+	<td class="ms-bodyareapagemargin"><IMG SRC="/_layouts/images/blank.gif" width=1 height=10 alt=""></td>
+	<td class="ms-pagebottommarginright"><IMG SRC="/_layouts/images/blank.gif" width=1 height=10 alt=""></td>
+</tr>
+	</TABLE></TD></TR>
+  </TABLE>
+  <asp:ContentPlaceHolder id="PlaceHolderFormDigest" runat="server">
+	  <SharePoint:FormDigest runat=server/>
+  </asp:ContentPlaceHolder>
+   <input type="text" name="__spDummyText1" style="display:none;" size=1/>
+   <input type="text" name="__spDummyText2" style="display:none;" size=1/>
+  </form>
+  <asp:ContentPlaceHolder id="PlaceHolderUtilityContent" runat="server"/>
+</BODY>
+</HTML>
