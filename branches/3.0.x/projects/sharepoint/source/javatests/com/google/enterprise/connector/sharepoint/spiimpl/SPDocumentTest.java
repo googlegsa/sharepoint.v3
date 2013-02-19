@@ -52,10 +52,13 @@ public class SPDocumentTest extends TestCase {
     this.doc.setSharepointClientContext(spContext);
     this.doc.setContentDwnldURL(doc.getUrl());
 
+    // TODO(jlacey): Replace this use of UrlUtil, which generates a
+    // warning on Java 7 when not using a bootclasspath. Also, this
+    // code is either pointless or it's a smoke test that belongs in a
+    // test method.
     String str = UrlUtil.encode(doc.getUrl(), "UTF-8");
     String charset = new GetMethod(str).getParams().getUriCharset();
     URI uri = new URI(doc.getUrl(), true, charset);
-    assertNotNull(uri);
   }
 
   public void testCompare() {
