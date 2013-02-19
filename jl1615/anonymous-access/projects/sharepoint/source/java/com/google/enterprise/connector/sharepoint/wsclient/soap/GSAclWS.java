@@ -267,6 +267,14 @@ public class GSAclWS implements AclWS{
         continue;
       }
       LOGGER.log(Level.CONFIG, "WsLog [ " + acl.getLogMessage() + " ] ");
+      boolean allowAnonymousAccess = Boolean.parseBoolean(
+          acl.getAnonymousAccess());
+      if (allowAnonymousAccess) {
+        LOGGER.log(Level.INFO, "Document [ " + document.getUrl()
+            + " ] is identified as Public Document");
+        document.setPublicDocument(allowAnonymousAccess);
+        continue;
+      }
       boolean largeAcl = Boolean.parseBoolean(acl.getLargeAcl());
       if (largeAcl) {
         boolean inheritPermissions =

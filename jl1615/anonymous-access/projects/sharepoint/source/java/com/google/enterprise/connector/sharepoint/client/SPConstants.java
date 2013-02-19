@@ -295,6 +295,8 @@ public class SPConstants {
   
   public static final String STATE_LISTITEMCOLLECTION_POSITION_NEXT =
       "ListItemCollectionPositionNext";
+  public static final String STATE_ALLOW_ANONYMOUS_ACCESS = 
+      "AllowAnonymousAccess";
 
   public static final String STATE_EXTRAIDS_FOLDERS = "FolderItemIDs";
   public static final String STATE_EXTRAIDS_ATTACHMENTS = "Attachments";
