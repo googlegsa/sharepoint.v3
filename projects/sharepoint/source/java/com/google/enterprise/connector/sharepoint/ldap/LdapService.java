@@ -68,7 +68,7 @@ public interface LdapService {
   /**
    * Returns all groups (AD groups + SP groups) for the search user by querying
    * LDAP directory server and User Data Store respectively. The class that
-   * implements this interface should deal with user group’s cache. I.e. If user
+   * implements this interface should deal with user groups cache. If user
    * groups cache is enabled on the connector configuration page, the
    * implementation should check for the groups in cache. If there is no entry
    * found for the search user, the implementation should query LDAP server to

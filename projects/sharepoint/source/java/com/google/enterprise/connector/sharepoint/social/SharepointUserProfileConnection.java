@@ -25,7 +25,9 @@ import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument.ColleagueData;
 import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spiimpl.DateValue;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -34,13 +36,14 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Gateway to the user profile service proxy for SharePoint This gateway uses a
  * factory to create the actual proxy to talk to The factory pattern helps us
  * test it with mock factory.
- * 
+ *
  * @author tapasnay
  */
 public class SharepointUserProfileConnection {
@@ -94,7 +97,7 @@ public class SharepointUserProfileConnection {
    * the service connection, we retry once by reopening the connection since the
    * connection could have been stale due to delay over fetching many profiles.
    * However, if it still does not work then we throw the exception up.
-   * 
+   *
    * @throws RepositoryException
    * @throws RemoteException
    */
@@ -103,38 +106,58 @@ public class SharepointUserProfileConnection {
     return buildSPUserProfile(service.getUserProfileByIndex(index), service);
   }
 
-  private SocialUserProfileDocument buildSPUserProfile(
-      GetUserProfileByIndexResult getUserProfileByIndexResult,
-      UserProfileServiceGenerator svc) throws RepositoryException {
+  public SocialUserProfileDocument getProfileByName(String accountName)
+      throws RepositoryException, RemoteException {
+    PropertyData[] props = null;
+    try {
+      props = service.getUserProfileByName(accountName);
+    } catch (RemoteException ex) {
+      LOGGER.log(Level.WARNING,
+          "Error Geting User Profile for " + accountName, ex);
+      // User profile service throws exception if profile
+      // with account name is not available.
+      // SharePoint 2010 : could not be found
+      // MOSS 2007 : User Not Found:
+      if (ex.getMessage() == null ||
+          (!ex.getMessage().contains("could not be found") &&
+              !ex.getMessage().contains("User Not Found:"))) {
+        throw new RepositoryException(ex);
+      } else {
+        LOGGER.log(Level.INFO, "User profile not available for " + accountName);
+      }
+    }
+    if (props == null) {
+      return null;
+    }
+    ContactData[] userColleagues = null;
+    try {
+      userColleagues = service.getUserColleagues(accountName);
+    } catch (RemoteException ex) {
+      LOGGER.log(Level.WARNING,
+          "Error Geting Colleagues for " + accountName, ex);
+      // Connector will ignore this error and proceed.
+    }
 
-    List<String> propertiesToIndex = config.getPropertiesToIndex();
-    boolean secure = config.isSecureSearch();
-
-    PropertyData[] props = getUserProfileByIndexResult.getUserProfile();
     SharePointSocialUserProfileDocument userProfile =
         new SharePointSocialUserProfileDocument(ctxt
-        .getUserProfileCollection());
-    
-    //This is a place holder property for ACL    
+            .getUserProfileCollection());
+
+    //This is a place holder property for ACL
     userProfile.setProperty(SpiConstants.PROPNAME_ACLGROUPS, "Secured");
     String globalNamespace =
         ctxt.getSpClientContext().getGoogleGlobalNamespace();
     // Default ACL for User profile document
     userProfile.AddAllowAclToDocument(
         globalNamespace, "NT AUTHORITY\\Authenticated Users");
-  
-    String nextValue = getUserProfileByIndexResult.getNextValue();
-    LOGGER.fine("Next User Profile Index : " + nextValue);
-    if (!Strings.isNullOrEmpty(nextValue)) {
-      userProfile.setNextValue(Integer.parseInt(nextValue));
-    }
-    if (props == null) {
-      // returning null as properties are empty.
-      // This is an indication that no more profiles are available
-      // at and beyond index value.
-      return null;
-    }
+    populateProfileProperties(userProfile, props, userColleagues);
+    return userProfile;
+  }
 
+  private void populateProfileProperties(
+      SharePointSocialUserProfileDocument userProfile, PropertyData[] props,
+      ContactData[] userColleagues)  throws RepositoryException {
+    List<String> propertiesToIndex = config.getPropertiesToIndex();
+    boolean secure = config.isSecureSearch();
     for (PropertyData propertyData : props) {
 
       if (propertyData.getName().equals(config.getSpPropertyUserKey())) {
@@ -197,15 +220,6 @@ public class SharepointUserProfileConnection {
         LOGGER.fine("Ignoring Property: " + propertyData.getName());
       }
     }
-    ContactData[] userColleagues = null;
-    try {
-      if (userProfile.getUserKey() != null) {
-        userColleagues = svc.getUserColleagues(userProfile.getUserKey()
-            .toString());
-      }
-    } catch (RemoteException ex) {
-      throw new RepositoryException(ex);
-    }
     if (userColleagues != null) {
       ArrayList<ColleagueData> socialColleagues = new ArrayList<ColleagueData>();
       for (ContactData contact : userColleagues) {
@@ -238,6 +252,38 @@ public class SharepointUserProfileConnection {
       userProfile.setProperty(SpiConstants.PROPNAME_MIMETYPE, "text/plain");
       userProfile.setProperty(SpiConstants.PROPNAME_DISPLAYURL, url);
     }
+  }
+
+  private SocialUserProfileDocument buildSPUserProfile(
+      GetUserProfileByIndexResult getUserProfileByIndexResult,
+      UserProfileServiceGenerator svc) throws RepositoryException {
+
+    PropertyData[] props = getUserProfileByIndexResult.getUserProfile();
+    SharePointSocialUserProfileDocument userProfile =
+        new SharePointSocialUserProfileDocument(ctxt
+        .getUserProfileCollection());
+
+    //This is a place holder property for ACL
+    userProfile.setProperty(SpiConstants.PROPNAME_ACLGROUPS, "Secured");
+    String globalNamespace =
+        ctxt.getSpClientContext().getGoogleGlobalNamespace();
+    // Default ACL for User profile document
+    userProfile.AddAllowAclToDocument(
+        globalNamespace, "NT AUTHORITY\\Authenticated Users");
+
+    String nextValue = getUserProfileByIndexResult.getNextValue();
+    LOGGER.fine("Next User Profile Index : " + nextValue);
+    if (!Strings.isNullOrEmpty(nextValue)) {
+      userProfile.setNextValue(Integer.parseInt(nextValue));
+    }
+    if (props == null) {
+      // returning null as properties are empty.
+      // This is an indication that no more profiles are available
+      // at and beyond index value.
+      return null;
+    }
+    populateProfileProperties(userProfile, props,
+        getUserProfileByIndexResult.getColleagues());
     LOGGER.fine("Processed user: " + userProfile.getUserKey());
     return userProfile;
 
@@ -252,7 +298,7 @@ public class SharepointUserProfileConnection {
   }
 
   private boolean isAll(List<String> propertiesToIndex) {
-    return ((propertiesToIndex == null) || (propertiesToIndex.size() == 0) || 
+    return ((propertiesToIndex == null) || (propertiesToIndex.size() == 0) ||
         propertiesToIndex.get(0).equals("*"));
   }
 

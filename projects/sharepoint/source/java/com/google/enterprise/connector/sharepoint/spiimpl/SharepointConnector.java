@@ -112,7 +112,7 @@ public class SharepointConnector implements Connector,
   private UserProfileServiceFactory userProfileServiceFactory;
   private AdGroupsConnector adGroupsConnector;
   private boolean oldLdapBehavior = false;
-  private int userProfileFullTraversalInterval = 7;
+  private int userProfileFullTraversalInterval = 1;
 
   /**
    * Describes whether user profiles are fetched.

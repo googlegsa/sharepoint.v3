@@ -17,13 +17,14 @@ package com.google.enterprise.connector.sharepoint.wsclient.soap;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -66,7 +67,7 @@ public class SPAlertsWSTest extends TestCase {
         SPConstants.ALERTS_TYPE, SPConstants.ALERTS_TYPE, cLastMod,
         SPConstants.ALERTS_TYPE, internalName, ws);
 
-    final ArrayList lstAlerts = (ArrayList) this.alertWS.getAlerts(ws, currentDummyAlertList);
+    List<SPDocument> lstAlerts = alertWS.getAlerts(ws, currentDummyAlertList);
     assertNotNull(lstAlerts);
     System.out.println("[ getAlerts() ] Test Passed");
   }

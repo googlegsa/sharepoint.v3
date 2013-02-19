@@ -2002,9 +2002,9 @@ public class SharepointConnectorType implements ConnectorType {
    * runtime in krb5.conf. - System properties required for the Kerberos AuthN
    * are set.
    */
-  private void kerberosSetUp(final Map configData) {
+  private void kerberosSetUp(Map<String, String> configData) {
     String kdcServer = configData.get(SPConstants.KDC_SERVER).toString();
-    String googleConnWorkDir = (String) configData.get(GOOGLE_CONN_WORK_DIR);
+    String googleConnWorkDir = configData.get(GOOGLE_CONN_WORK_DIR);
 
     if (!kdcServer.equalsIgnoreCase(SPConstants.BLANK_STRING)) {
       AuthPolicy.registerAuthScheme(SPConstants.NEGOTIATE, NegotiateScheme.class);
@@ -2053,9 +2053,9 @@ public class SharepointConnectorType implements ConnectorType {
     }
   }
 
-  private void unregisterKerberosSetUp(Map configData) {
+  private void unregisterKerberosSetUp(Map<String, String> configData) {
     AuthPolicy.unregisterAuthScheme(SPConstants.NEGOTIATE);
-    String googleConnWorkDir = (String) configData.get(GOOGLE_CONN_WORK_DIR);
+    String googleConnWorkDir = configData.get(GOOGLE_CONN_WORK_DIR);
     File fileKrb5 = new File(googleConnWorkDir, SPConstants.FILE_KRB5);
     if (fileKrb5 != null && fileKrb5.exists()) {
       fileKrb5.delete();

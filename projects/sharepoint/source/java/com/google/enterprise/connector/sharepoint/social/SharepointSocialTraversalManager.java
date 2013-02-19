@@ -135,11 +135,9 @@ public class SharepointSocialTraversalManager implements TraversalManager {
     }
     boolean needToProcessUpdates =
         needToProcessProfileUpdates(profileCheckpoint);
-    List<Document> updatedDocs = null;
+    List<SharePointSocialUserProfileDocument> updatedDocs = null;
     if (needToProcessUpdates) {
-      updatedDocs = userProfileClient.getUpdatedDocuments(profileCheckpoint);
-      LOGGER.info(
-          "Updated UserProfiles =" + updatedDocs);
+      updatedDocs = userProfileClient.getUpdatedDocuments(profileCheckpoint);    
     }
     if ((updatedDocs == null || updatedDocs.isEmpty()) 
         && checkpointAtEnd(profileCheckpoint, cxn)) {

@@ -113,9 +113,10 @@ public class SharepointClient {
       return null;
     }
     final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
-    for (final Iterator<SPDocument> iter = list.getCrawlQueue().iterator(); iter.hasNext();) {
-      final SPDocument doc = iter.next();
-      doc.setParentList(list);
+    for (SPDocument doc : list.getCrawlQueue()) {
+      if (doc.getParentList() == null) {
+        doc.setParentList(list);
+      }
       doc.setParentWeb(web);
       doc.setSharepointClientContext(sharepointClientContext);
       // Update necessary information required for downloading contents.
@@ -249,7 +250,7 @@ public class SharepointClient {
         break;
       }
     }
-    
+
     ListState listForWeb = webState.lookupList(webState.getPrimaryKey());
     if (listForWeb != null) {
       SPDocumentList resultsList =
@@ -262,7 +263,6 @@ public class SharepointClient {
         }        
       }
     }
-    
 
     // Fetch ACL for all the documents crawled from the current WebState
     if (!handleACLForDocuments(resultSet, webState, globalState, sendPendingDocs)) {
@@ -332,7 +332,7 @@ public class SharepointClient {
     }
     return aclRetrievalResult;
   }
-  
+
   /**
    * Resolves SharePoint Groups for WebState
    * @param webState for which SharePoint Groups needs to be resolved
@@ -382,7 +382,7 @@ public class SharepointClient {
       return false;
     }
 
-    LOGGER.log(Level.INFO, "Fetching ACls for #" + resultSet.size()
+    LOGGER.log(Level.INFO, "Fetching ACLs for #" + resultSet.size()
         + " documents crawled from web " + webState.getWebUrl());
     try {
       AclWS aclWs = clientFactory.getAclWS(sharepointClientContext,
@@ -575,9 +575,7 @@ public class SharepointClient {
     if ((null == allSites) || (allSites.size() == 0)) {
       return newWebs;
     }
-    final Iterator<String> itAllSites = allSites.iterator();
-    while ((itAllSites != null) && (itAllSites.hasNext())) {
-      final String url = itAllSites.next();
+    for (String url : allSites) {
       final WebState webState = updateGlobalState(globalState, url);
       if (null != webState) {
         newWebs.add(webState);
@@ -707,7 +705,7 @@ public class SharepointClient {
       nextWeb = updateGlobalState(globalState, sharepointClientContext.getSiteURL());
       if (null == nextWeb) {
         throw new SharepointException(
-            "Starting WebState for the current traversal can not be ddetermined.");
+            "Starting WebState for the current traversal can not be determined.");
       }
       if (null != webCrawlInfoFetcher) {
         nextWeb.setWebCrawlInfo(webCrawlInfoFetcher.getCurrentWebCrawlInfo());
@@ -954,7 +952,7 @@ public class SharepointClient {
     try {
       aclWs.fetchAclChangesSinceTokenAndUpdateState(webState);
     } catch (final Exception e) {
-      LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACl WS. web site [ "
+      LOGGER.log(Level.WARNING, "Problem Interacting with Custom ACL WS. web site [ "
           + webState.getWebUrl() + " ]. ", e);
     }
 
@@ -998,10 +996,6 @@ public class SharepointClient {
         webState.AddOrUpdateListStateInWebState(listState, listState.getLastMod());
         LOGGER.info("discovered new listState. List URL: "
             + listState.getListURL());
-        final SPDocument listDocToAdd = listState.getDocumentInstance(
-            sharepointClientContext.getFeedType());
-        listItems.add(listDocToAdd);
-
         if (SPType.SP2007 == webState.getSharePointType()) {
           if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
             // In case of content feed, we need to keep track of
@@ -1089,7 +1083,7 @@ public class SharepointClient {
           try {
             webState.AddOrUpdateListStateInWebState(listState, currentList.getLastMod());
 
-            // Any documents to be crawled because of ACl Changes
+            // Any documents to be crawled because of ACL Changes
             aclChangedItems = aclWs.getListItemsForAclChangeAndUpdateState(listState, listsHelper);
 
             if (null == aclChangedItems
@@ -1396,9 +1390,9 @@ public class SharepointClient {
       // need to check whether the site exist or not and is not null
       if (webState.isExisting() && null != webState) {
         document = siteDataWS.getSiteData(webState);
+        document.setParentList(dummySiteListState);
         // Site Home Page document will be added as last doc from
         // dummy list state. This is required for sending delete feed.
-       
       }
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Problem while getting site data. ", e);
@@ -1412,6 +1406,7 @@ public class SharepointClient {
         if (aclWs != null) {
           SPDocument webAppPolicy = aclWs.getWebApplicationPolicy(webState,
               sharepointClientContext.getFeedType().toString());
+          webAppPolicy.setParentList(dummySiteListState);
           if (webAppPolicy != null) {
             documentList.add(webAppPolicy);
           }
