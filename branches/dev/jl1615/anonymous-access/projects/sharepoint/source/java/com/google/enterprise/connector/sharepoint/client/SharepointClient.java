@@ -75,7 +75,7 @@ public class SharepointClient {
 
   public SharepointClient(final ClientFactory clientFactory,
       final SharepointClientContext inSharepointClientContext)
-      throws SharepointException {
+          throws SharepointException {
     this.clientFactory = clientFactory;
     sharepointClientContext = inSharepointClientContext;
 
@@ -354,7 +354,7 @@ public class SharepointClient {
       // Return false indicating that SharePoint Group Resolution is failed.
       LOGGER.log(Level.WARNING,
           "Problem while resolving groups under WebState [ "
-          + webState.getWebUrl() + " ].", ex);
+              + webState.getWebUrl() + " ].", ex);
       return false;
     }
   }
@@ -695,7 +695,7 @@ public class SharepointClient {
 
     if (null == nextWeb) {
       nextWeb = globalState.lookupWeb(sharepointClientContext.getSiteURL(),
-        sharepointClientContext);
+          sharepointClientContext);
     } else {
       sharepointClientContext.setSiteURL(nextWeb.getWebUrl());
     }
@@ -901,7 +901,7 @@ public class SharepointClient {
    */
   private void updateWebStateFromSite(final SharepointClientContext tempCtx,
       final WebState webState, ListState nextList, final Set<String> allWebs)
-      throws SharepointException {
+          throws SharepointException {
     List<SPDocument> listItems = new ArrayList<SPDocument>();
 
     // get all the lists for the given web // e.g. picture,wiki,document
@@ -915,15 +915,13 @@ public class SharepointClient {
     listCollection = new ArrayList<ListState>(new TreeSet<ListState>(
         listCollection));
 
-    if (tempCtx.isUseSPSearchVisibility()) {
-      try {
-        SiteDiscoveryWS gssd = clientFactory.getSiteDiscoveryWS(
-            tempCtx, webState.getWebUrl());
-        gssd.updateListCrawlInfo(listCollection);
-      } catch (Exception e) {
-        LOGGER.log(Level.WARNING, "Exception occurred when trying to to update the ListCrawlInfo for web [ "
-            + webState.getWebUrl() + " ] ", e);
-      }
+    try {
+      SiteDiscoveryWS gssd = clientFactory.getSiteDiscoveryWS(
+          tempCtx, webState.getWebUrl());
+      gssd.updateListCrawlInfo(listCollection);
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Exception occurred when trying to to update the ListCrawlInfo for web [ "
+          + webState.getWebUrl() + " ] ", e);
     }
 
     // Updating the latest metadata info for all list states. We may do this
@@ -1234,7 +1232,7 @@ public class SharepointClient {
   private WebState traverseSites(GlobalState globalState, Set<String> allSites,
       SharepointClientContext sharePointClientContext, WebState nextWeb,
       ListState nextList, ArrayList<String> lstLookupForWebs)
-      throws SharepointException {
+          throws SharepointException {
     globalState.setCurrentWeb(nextWeb);
     final Iterator<WebState> itWebs = globalState.getCircularIterator();
     while (itWebs.hasNext()) {
@@ -1376,7 +1374,7 @@ public class SharepointClient {
 
     // find the list in the Web state
     ListState dummySiteListState = 
-            webState.lookupList(currentDummySiteDataList.getPrimaryKey());
+        webState.lookupList(currentDummySiteDataList.getPrimaryKey());
     if (dummySiteListState == null) {
       dummySiteListState = currentDummySiteDataList;
     }
@@ -1390,7 +1388,7 @@ public class SharepointClient {
       // WebState URL. If not then SharePoint default page will point to
       // incorrect Web ID for Web State.
       SharepointClientContext ctxToPass = 
-              (SharepointClientContext) tempCtx.clone();
+          (SharepointClientContext) tempCtx.clone();
       ctxToPass.setSiteURL(webState.getWebUrl());
       final SiteDataWS siteDataWS = clientFactory.getSiteDataWS(ctxToPass);
       // need to check whether the site exist or not and is not null
@@ -1423,8 +1421,8 @@ public class SharepointClient {
       }
     }
     if ((dummySiteListState.isExisting() || 
-            webState.isWebApplicationPolicyChange())
-      && null != document) {
+        webState.isWebApplicationPolicyChange())
+        && null != document) {
       // Mark dummy list state to true in order to differentiate this list state
       // with
       // other lists in web state.

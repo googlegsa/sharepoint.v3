@@ -370,7 +370,20 @@ public class GSSiteDiscoveryWS implements SiteDiscoveryWS {
             + " ]. WS error -> " + info.getError());
         continue;
       }
-      listState.setNoCrawl(info.isNoCrawl());
+
+      // Set ListState.NoCrawl only if connector is configured
+      // to use SharePoint Search Visibility.
+      if (sharepointClientContext.isUseSPSearchVisibility()) {
+        listState.setNoCrawl(info.isNoCrawl());
+      }
+      boolean allowAnonymousAccess =
+          Boolean.parseBoolean(info.getAnonymousAccess());
+      if (allowAnonymousAccess != listState.isAllowAnonymousAccess()) {
+        LOGGER.log(Level.INFO, "Anonymous Access settings changed from "
+            + listState.isAllowAnonymousAccess() + " to " + allowAnonymousAccess
+            + " for List [" + listState.getListURL() + "]");
+      }
+      listState.setAllowAnonymousAccess(allowAnonymousAccess);
     }
   }
 
