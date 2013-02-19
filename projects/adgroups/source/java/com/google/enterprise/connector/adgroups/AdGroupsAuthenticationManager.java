@@ -84,7 +84,7 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
         + username + " ], domain [ " + domain + " ]. ");
 
     HashMap<String, Object> sqlIdentity = new HashMap<String, Object>();
-    sqlIdentity.put(AdConstants.DB_SAMACCOUNTNAME, username);
+    sqlIdentity.put(AdConstants.DB_SAMACCOUNTNAME, username.toLowerCase());
     Query query;
     if (Strings.isNullOrEmpty(domain)) {
       query = Query.SELECT_USER_BY_SAMACCOUNTNAME;

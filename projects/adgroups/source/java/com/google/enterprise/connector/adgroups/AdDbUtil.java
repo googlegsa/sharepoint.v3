@@ -392,8 +392,7 @@ public class AdDbUtil {
   public void mergeMemberships(final Set<AdEntity> entities)
       throws SQLException {
     for (AdEntity e : entities) {
-      // if entity is user we don't need to check memberships
-      if (e.getPrimaryGroupId() != null) {
+      if (!e.isGroup()) {
         continue;
       }
       Long groupId = getEntityId(Query.FIND_ENTITY, e.getSqlParams());
