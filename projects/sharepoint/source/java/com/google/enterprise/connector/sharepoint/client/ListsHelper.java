@@ -183,7 +183,6 @@ public class ListsHelper {
             baseList.getParentWebState().getTitle(),
             sharepointClientContext.getFeedType(),
             baseList.getParentWebState().getSharePointType());
-        attchmnt.setParentList(baseList);
         attchmnt.setAction(ActionType.DELETE);
         listAttachments.add(attchmnt);
       }
@@ -437,7 +436,7 @@ public class ListsHelper {
         if (null == token) {
           String lastDocID = "0";
           LOGGER.log(Level.INFO, "List Item Collection Position Next ["
-              + list.getListItemCollectionPositionNext() + "]");
+          + list.getListItemCollectionPositionNext() + "]");
           if (null != list.getLastDocForWSRefresh()
               && Strings.isNullOrEmpty(
                   list.getListItemCollectionPositionNext())) {
@@ -755,8 +754,7 @@ public class ListsHelper {
         || !SPConstants.GSSLISTITEMS.equals(wsElement.getNodeName())) {
       return listItems;
     }
-    Iterator<?> itChilds = wsElement.getChildElements();
-    while (itChilds.hasNext()) {
+    for (final Iterator itChilds = wsElement.getChildElements(); itChilds.hasNext();) {
       Object obj = itChilds.next();
       if (null == obj || !(obj instanceof MessageElement)) {
         continue;

@@ -518,7 +518,6 @@ public class WSContext
 {
     private readonly UserInfoHolder userInfoHolder;
     private SPSite site;
-    private SPWeb web;
 
     internal SPUser User
     {
@@ -536,20 +535,7 @@ public class WSContext
     }
 
     ~WSContext()
-    {
-        if (this.web != null)
-        {
-            try
-            {
-                web.Dispose();
-            }
-            catch (Exception ex)
-            {
-                // TODO Avoid this exception
-                ex = null;
-            }
-        }
-        
+    {     
         if (this.site != null)
         {
             try
@@ -583,19 +569,12 @@ public class WSContext
                 site = new SPSite(SwitchURLFormat(url));
             }
         });
-        if (this.web != null)
-        {
-            this.web.Dispose();
-        }
-        if (this.site != null)
+        if (null != this.site)
         {
             this.site.Dispose();
         }
         this.site = site;
-        // Reinitialize SPWeb Object since
-        // parent SPSite Object is reinitialized.
-        this.web = site.OpenWeb();
-        userInfoHolder.TryInit(this.site, this.web);
+        userInfoHolder.TryInit(this.site);
     }
 
     /// <summary>
@@ -834,86 +813,58 @@ internal class UserInfoHolder
     ///  Reconstruct SPUser object everytime SPSite for WSContext is reinitialized.  
     /// </summary>
     /// <param name="site"></param>
-    internal void TryInit(SPSite site, SPWeb web)
-    {
-        // Try with available username
-        user = findUserInWeb(username, web, true);
-        if (user != null)
+    internal void TryInit(SPSite site)
+    {  
+        SPWeb web = null;
+        try
         {
-            isResolved = true;
-            return;
+            web = site.OpenWeb();
+        }
+        catch (Exception e)
+        {
+            throw new Exception("Could not create SPUser for user [ " + username + " ] using site collection [ " + site.Url + " ]", e);
+        }
+        if (null == web || !web.Exists)
+        {
+            throw new Exception("Could not create SPUser for user [ " + username + " ] using site collection [ " + site.Url + " ] because root web is not existing.");
         }
 
         if (!isResolved)
         {
-            SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, username, SPPrincipalType.User, false);
+            SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, username, SPPrincipalType.All, false);
             if (null != userInfo)
             {
-                // Mark isResolved = true since userInfo object is not null.                
+                username = userInfo.LoginName;
                 isResolved = true;
-                
-                // SPUtility.ResolveWindowsPrincipal will
-                // resolve input username with login name for user. In most of the cases
-                // both values will be same.
-                // Try with resolved username only if input username is not same as resolved username.
-                if (String.Compare(username, userInfo.LoginName, true) != 0)
-                {
-                    username = userInfo.LoginName;
-                    user = findUserInWeb(username, web, true);
-                    if (user != null)
-                    {                       
-                        return;
-                    }
-                }               
             }
         }
-        
-        // Throwing user not found exception since SPUser with resolved username is not found
-        msg = "User " + username + " information not found in the parent site collection of web " + web.Url;
-        throwException();
-    }
 
-    internal SPUser findUserInWeb(String userName, SPWeb web, Boolean chkPermission)
-    {
-        SPUser userToReturn = null;
-        // With available username search user in web.AllUsers and web.SiteUsers
-        // Not checking web.Users since web.Users is a subset to web.AllUsers as well as web.SiteUsers 
+        // First ensure that the current user has rights to view pages or list items on the web. This will ensure that SPUser object can be constructed for this username.
+        bool web_auth = web.DoesUserHavePermissions(username, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
+
         try
-        {
-            userToReturn = web.AllUsers[username];
-           
+        {            
+            user = web.AllUsers[username];
         }
         catch (Exception e1)
         {
             try
             {
-                userToReturn = web.SiteUsers[username];
-               
+                user = web.SiteUsers[username];
             }
             catch (Exception e2)
             {
                 try
                 {
-                    if (chkPermission)
-                    {
-                        // If user with username is not available in AllUsers or SiteUsers then call web.DoesUserHavePermissions
-                        // This will create SPUser object for username and ensure user is available in AllUsers for SPWeb object.
-                        // Users will become part of AllUsers as well as SiteUsers collection when first time user access / login to
-                        // SharePoint site.
-                        // Since web.DoesUserHavePermissions is expensive call compare to checking username in usercollections,
-                        // web.DoesUserHavePermissions is used as a fallback mechanism.
-                        web.DoesUserHavePermissions(username, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
-                        // If username is valid this call should return user.
-                        userToReturn = findUserInWeb(userName, web, false);
-                    }                                       
+                    user = web.Users[username];
                 }
                 catch (Exception e3)
                 {
-                    e3 = null;
+                    msg = "User " + username + " information not found in the parent site collection of web " + web.Url;
+                    throwException();
                 }
             }
-        }       
-     return userToReturn;        
+        }
     }
 
     internal void throwException()

@@ -21,7 +21,6 @@
   <property name="classes" value="${build}/classes" />
   <property name="config" value="config" />
   <property name="config.tmp.dir" value="${build}/${config}" />
-  <property name="testconfig.tmp.dir" value="${build}/testconfig" />
   <property environment="env" />
   <property name="wsdl" value="wsdl" />
   <property name="tests.src" value="source/javatests" />
@@ -210,7 +209,7 @@
         <pathelement location="${config}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <pathelement location="${adgroups.jar}" />
-        <pathelement location="${json.jarfile}" />
+		<pathelement location="${json.jarfile}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
@@ -247,19 +246,6 @@
   </target>
 
   <target name="run_tests" depends="compile_tests,instrument">
-    <!-- Generate the Axis client-config.wsdd with the 'FileTransport'
-        needed by the tests. -->
-    <mkdir dir="${testconfig.tmp.dir}" />
-    <copy file="source/java/org/apache/axis/client/client-config.wsdd"
-        tofile="${testconfig.tmp.dir}/client-config.wsdd" overwrite="true">
-      <filterchain>
-        <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
-          <param type="token" name="test.transport"
-              value="&lt;transport name='FileTransport' pivot='java:com.google.enterprise.connector.sharepoint.wsclient.handlers.FileSender' /&gt;" />
-        </filterreader>
-      </filterchain>
-    </copy>
-
     <property name="test.suite" value="*" />
     <junit printsummary="yes" haltonfailure="no"
            failureproperty="${ant.project.name}.failure">
@@ -272,7 +258,6 @@
         <pathelement location="${spi.jar.dir}/connector.jar" />
         <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
-        <pathelement location="${testconfig.tmp.dir}" />
         <pathelement location="${jarfile}" />
         <pathelement location="${adgroups.jar}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
@@ -318,15 +303,6 @@
       </filterchain>
     </copy>
 
-    <copy file="source/java/org/apache/axis/client/client-config.wsdd"
-          tofile="${build}/client-config.wsdd" overwrite="true">
-      <filterchain>
-        <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
-          <param type="token" name="test.transport" value="" />
-        </filterreader>
-      </filterchain>
-    </copy>
-
     <tstamp />
     <jar jarfile="${jarfile}">
       <fileset dir="${classes}" />
@@ -343,8 +319,8 @@
         <include name="**/connectorDefaults.xml" />
       </fileset>
 
-      <fileset dir="${build}">
-        <include name="client-config.wsdd" />
+      <fileset dir="source/java/org/apache/axis/client">
+        <include name="**/*.wsdd" />
       </fileset>
       <!--creation of manifest file-->
       <manifest>
@@ -478,7 +454,6 @@
         <pathelement location="${config}" />
         <pathelement location="${adgroups.jar}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
-        <pathelement location="${json.jarfile}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
           <include name="**/*.properties" />

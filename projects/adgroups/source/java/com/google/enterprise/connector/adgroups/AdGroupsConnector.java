@@ -37,7 +37,6 @@ public class AdGroupsConnector
   private String port;
   private String principal;
   private String password;
-  private String returnBuiltin = "NO";
 
   private DataSource dataSource;
   private String dbType;
@@ -119,19 +118,5 @@ public class AdGroupsConnector
 
   public void setGoogleGlobalNamespace(String globalNamespace) {
     this.globalNamespace = globalNamespace;
-  }
-  
-  /**
-   * @return the returnBuiltin
-   */
-  public String getReturnBuiltin() {
-    return returnBuiltin;
-  }
-
-  /**
-   * @param returnBuiltin the returnBuiltin to set
-   */
-  public void setReturnBuiltin(String returnBuiltin) {
-    this.returnBuiltin = returnBuiltin;
   }
 }

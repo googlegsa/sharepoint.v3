@@ -190,12 +190,10 @@ public class SPListsWS implements ListsWS {
       if (me != null) {
         if (me.length > 0) {
           if (me[0] != null) {
-            Iterator<?> ita = me[0].getChildElements();
+            final Iterator ita = me[0].getChildElements();
             while ((ita != null) && (ita.hasNext())) {
               final MessageElement attachmentsOmElement = (MessageElement) ita.next();
-              Iterator<?> attachmentsIt =
-                  attachmentsOmElement.getChildElements();
-              while (attachmentsIt.hasNext()) {
+              for (final Iterator attachmentsIt = attachmentsOmElement.getChildElements(); attachmentsIt.hasNext();) {
                 final String url = attachmentsIt.next().toString();
                 LOGGER.config("Attachment URL: " + url);
 
@@ -215,7 +213,6 @@ public class SPListsWS implements ListsWS {
                       baseList.getParentWebState().getTitle(),
                       sharepointClientContext.getFeedType(),
                       listItem.getSPType());
-                  doc.setParentList(baseList);
 
                   listAttachments.add(doc);
                 } else {
@@ -280,12 +277,10 @@ public class SPListsWS implements ListsWS {
     if (res != null) {
       final MessageElement[] me = res.get_any();
       if ((me != null) && (me.length > 0)) {
-        Iterator<?> itChilds = me[0].getChildElements();
-        while (itChilds.hasNext()) {
+        for (final Iterator itChilds = me[0].getChildElements(); itChilds.hasNext();) {
           final MessageElement child = (MessageElement) itChilds.next();
           if (SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
-            Iterator<?> itrchild = child.getChildElements();
-            while (itrchild.hasNext()) {
+            for (final Iterator itrchild = child.getChildElements(); itrchild.hasNext();) {
               final MessageElement row = (MessageElement) itrchild.next();
               final SPDocument doc = ListsUtil.processListItemElement(
                   sharepointClientContext, row, list, allWebs);
@@ -374,14 +369,12 @@ public class SPListsWS implements ListsWS {
     if (res != null) {
       final MessageElement[] me = res.get_any();
       if ((me != null) && (me.length > 0)) {
-        Iterator<?> itChilds = me[0].getChildElements();
-        while (itChilds.hasNext()) {
+        for (final Iterator itChilds = me[0].getChildElements(); itChilds.hasNext();) {
           final MessageElement child = (MessageElement) itChilds.next();
           if (SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
             final String tmpNextPage = child.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
             String lastItemID = null;
-            Iterator<?> itrchild = child.getChildElements();
-            while (itrchild.hasNext()) {
+            for (final Iterator itrchild = child.getChildElements(); itrchild.hasNext();) {
               final MessageElement row = (MessageElement) itrchild.next();            
               final String fsObjType =
                   Util.normalizeMetadataValue(
@@ -512,8 +505,7 @@ public class SPListsWS implements ListsWS {
       if ((me != null) && (me.length > 0)) {
         // To ensure that Changes are accessed before documents
         boolean inSequence = false;
-        Iterator<?> itChilds = me[0].getChildElements();
-        while (itChilds.hasNext()) {
+        for (final Iterator itChilds = me[0].getChildElements(); itChilds.hasNext();) {
           final MessageElement child = (MessageElement) itChilds.next();
           if (SPConstants.CHANGES.equalsIgnoreCase(child.getLocalName())) {
             inSequence = true;
@@ -597,8 +589,7 @@ public class SPListsWS implements ListsWS {
      * ListItemCollectionPositionNext keeps recrawling the same set of document
      * again and again."
      */
-    Iterator<?> itrchild = dataElement.getChildElements();
-    while (itrchild.hasNext()) {
+    for (final Iterator itrchild = dataElement.getChildElements(); itrchild.hasNext();) {
       try {
         final MessageElement row = (MessageElement) itrchild.next();
         final String docId = row.getAttribute(SPConstants.ID);

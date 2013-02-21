@@ -28,15 +28,6 @@ http://www.google.com/support/enterprise/static/gsa/docs/admin/connector_30/shar
 
 This release contains fixes for the following issues:
 
---Issue 7554816 Support DENY with GSA 7.0 when inherited ACLs are disabled.
-                To workaround issue 6969557, Feeding inherited ACLs is
-                broken for distributed crawl and serve, you can disable
-                inherited ACLs using the feed.disable.inherited.acls
-                property in applicationContext.properties. With this
-                change, the SharePoint connector will still support DENY
-                permissions on the web application policy in that
-                configuration.
-
 --Issue 7503627 SharePoint connector generates 400 Bad Request error
                 messages in connector logs for linked sites with invalid
                 SharePoint URLs.
@@ -510,10 +501,8 @@ This patch contains fix for the following issues.
 --Issue 5549668 SharePoint connector should correctly resolve user's primary group
 --Issue 5596005 SharePoint connector should correctly resolve the user's special group 'NT AUTHORITY\authenticated users'
 --Issue 5883396 Direct user membership of SharePoint groups is not working
---Issue 5923376 SharePoint Connector goes into infinite loop and encounters StackOverflowError resolving groups with the same CN but different DNs
---Issue 5963073 Sharepoint connector doesn't differentiate between commonName, sAMAccountName and user userPrincipalName
+--Issue 5923376 SharePoint Connector goes into infinite loop and encounters StackOverflowError upon resolving parent groups during Group Resolution
 --Issue 6253811 List items with "ows__ModerationStatus" attribute is always marked as unpublished document and not properly fed.
---Issue 6341529 SharePoint Connector goes into infinite loop and encounters StackOverflowError with cyclically nested groups.
 
 Version Compatibility
 ---------------------

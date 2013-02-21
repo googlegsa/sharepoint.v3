@@ -20,7 +20,6 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
-import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
@@ -57,7 +56,7 @@ public class SPSiteDataWSTest extends TestCase {
     final WebState ws = state.makeWebState(sharepointClientContext,
         TestConfiguration.sharepointUrl);
     assertNotNull(ws);
-    List<ListState> items = this.siteDataWS.getNamedLists(ws);
+    final List items = this.siteDataWS.getNamedLists(ws);
     assertNotNull(items);
   }
 

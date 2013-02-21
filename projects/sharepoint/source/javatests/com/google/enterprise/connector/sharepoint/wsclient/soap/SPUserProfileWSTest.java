@@ -54,7 +54,7 @@ public class SPUserProfileWSTest extends TestCase {
   public void testGetPersonalSiteList() throws MalformedURLException,
       RepositoryException {
     System.out.println("Testing getPersonalSiteList()...");
-    Set<String> items = this.userProfileWS.getPersonalSiteList();
+    final Set items = this.userProfileWS.getPersonalSiteList();
     assertNotNull(items);
     System.out.println("[ getPersonalSiteList() ] Test Passed.");
   }
@@ -62,7 +62,7 @@ public class SPUserProfileWSTest extends TestCase {
   public void testGetMyLinks() throws MalformedURLException,
       RepositoryException {
     System.out.println("Testing getMyLinks()...");
-    Set<String> items = this.userProfileWS.getMyLinks();
+    final Set items = this.userProfileWS.getMyLinks();
     assertNotNull(items);
     System.out.println("[ getMyLinks() ] Test Passed.");
   }

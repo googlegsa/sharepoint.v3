@@ -48,13 +48,15 @@ public class SPDocumentListTest extends TestCase {
     WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
 
     final SPSiteDataWS siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
-    List<ListState> listCollection = siteDataWS.getNamedLists(ws);
+    final List listCollection = siteDataWS.getNamedLists(ws);
     assertNotNull(listCollection);
-    for (ListState baseList : listCollection) {
+    for (int i = 0; i < listCollection.size(); i++) {
+      final ListState baseList = (ListState) listCollection.get(i);
       ListsHelper listHelper = new ListsHelper(this.sharepointClientContext);
       List<SPDocument> listItems = listHelper.getListItems(baseList, null, null, null);
       if (listItems.size() > 0) {
-        for (SPDocument spdoc : listItems) {
+        for (Iterator itr = listItems.iterator(); itr.hasNext();) {
+          SPDocument spdoc = (SPDocument) itr.next();
           spdoc.setParentWeb(ws);
           spdoc.setParentList(baseList);
         }

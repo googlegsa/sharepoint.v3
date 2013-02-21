@@ -56,9 +56,8 @@ public class AdGroupsConnectorType implements ConnectorType {
       + "<td><input type='text' name='port' value='$port' /></td></tr>"
       + "<tr><td>Method:</td>"
       + "<td><select name='method'><option $standard value='STANDARD'>Standard</option><option $ssl value='SSL'>SSL</option></select></td></tr>"
-      + "<tr><td>Principal:</td>"
-      + "<td><input type='text' name='principal' value='$principal' />"
-      + " (examples: DOMAIN\\username, userPrincipalName)</td></tr>"
+      + "<tr><td>Principal (e.g. DOMAIN\\username, userPrincipalName):</td>"
+      + "<td><input type='text' name='principal' value='$principal' /></td></tr>"
       + "<tr><td>Password:</td>"
       + "<td><input type='password' name='password' value='$password' /></td></tr>";
 

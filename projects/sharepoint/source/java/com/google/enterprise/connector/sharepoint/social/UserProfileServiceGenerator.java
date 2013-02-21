@@ -14,7 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.social;
 
-import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.PropertyData;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.ContactData;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.GetUserProfileByIndexResult;
 
@@ -29,8 +28,6 @@ public interface UserProfileServiceGenerator {
   public long getUserProfileCount() throws RemoteException;
 
   public GetUserProfileByIndexResult getUserProfileByIndex(int index)
-      throws RemoteException;
-  public PropertyData[] getUserProfileByName(String accountName) 
       throws RemoteException;
 
   public ContactData[] getUserColleagues(String key) throws RemoteException;

@@ -18,7 +18,7 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 
 import java.rmi.RemoteException;
 
-public interface BulkAuthorizationWS extends BaseWS {
+public interface BulkAuthorizationWS {
   /**
    * To call the Authorize() Web Method of GSBulkAuthorization Web Service
    *
@@ -36,7 +36,6 @@ public interface BulkAuthorizationWS extends BaseWS {
    *
    * @return The connectivity status "success" if succeed or the reason for
    *         failure.
-   * @throws RemoteException
    */
-  public String checkConnectivity() throws RemoteException;
+  public String checkConnectivity();
 }

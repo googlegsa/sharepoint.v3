@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.AclHelper;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
@@ -29,6 +28,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.spi.SimpleTraversalContext;
@@ -48,7 +48,7 @@ public class GSAclWSTest extends TestCase {
 
   GlobalState globalState;
   SharepointClientContext sharepointClientContext;
-  AclHelper aclHelper;
+  GSAclWS aclWS;
   SPSiteDataWS siteDataWS;
 
   protected void setUp() throws Exception {
@@ -59,7 +59,7 @@ public class GSAclWSTest extends TestCase {
     sharepointClientContext.setPushAcls(true);
     sharepointClientContext.setBatchHint(2);
     siteDataWS = new SPSiteDataWS(sharepointClientContext);
-    aclHelper = new AclHelper(sharepointClientContext,
+    aclWS = new GSAclWS(sharepointClientContext,
         TestConfiguration.sharepointUrl);
     globalState = TestConfiguration.initState(sharepointClientContext);
   }
@@ -83,8 +83,8 @@ public class GSAclWSTest extends TestCase {
     SPDocumentList docList = new SPDocumentList(testDocs, globalState);
     assertNotNull(docList);
 
-    aclHelper = new AclHelper(sharepointClientContext, webState.getWebUrl());
-    aclHelper.fetchAclForDocuments(docList, webState);
+    aclWS = new GSAclWS(sharepointClientContext, webState.getWebUrl());
+    aclWS.fetchAclForDocuments(docList, webState);
     for (SPDocument document : docList.getDocuments()) {
       assertNotNull(document);
       assertNotNull(document.getUsersAclMap());
@@ -100,9 +100,12 @@ public class GSAclWSTest extends TestCase {
     context.setSupportsInheritedAcls(true);
     spContext.setTraversalContext(context);
 
-    AclHelper aclHelper = new AclHelper(spContext, webState.getWebUrl());
+    SPClientFactory clientFactory = new SPClientFactory();
+    AclWS aclWs = clientFactory.getAclWS(spContext, 
+        webState.getWebUrl());
+    assertNotNull(aclWs);
     SPDocument webApppolicy = null;
-    webApppolicy = aclHelper.getWebApplicationPolicy(webState,
+    webApppolicy = aclWs.getWebApplicationPolicy(webState,
         spContext.getFeedType().toString());
     assertNotNull(webApppolicy);
     assertEquals("Web app policy URL should be same as root site URL",
@@ -124,9 +127,12 @@ public class GSAclWSTest extends TestCase {
     context.setSupportsInheritedAcls(true);
     spContext.setTraversalContext(context);
     assertNotNull(webState);
+    SPClientFactory clientFactory = new SPClientFactory();
     List<SPDocument> docsToPass = new ArrayList<SPDocument>(); 
     //Get Web application policy document.
-    AclHelper aclHelper = new AclHelper(spContext, webState.getWebUrl());
+    AclWS aclWs = clientFactory.getAclWS(spContext, 
+        webState.getWebUrl());
+    assertNotNull(aclWs);
 
     // Load Document for Root Web Home Page.
     SPDocument webDoc = siteDataWS.getSiteData(webState);
@@ -153,7 +159,7 @@ public class GSAclWSTest extends TestCase {
     assertNotNull(docList);  
     System.out.println("\n...Processing doclist..." + docList);
 
-    aclHelper.fetchAclForDocuments(docList, webState);
+    aclWs.fetchAclForDocuments(docList, webState);
     for (SPDocument document : docList.getDocuments()) {
       assertNotNull(document);       
       if (document.getUrl().
@@ -246,9 +252,9 @@ public class GSAclWSTest extends TestCase {
     String changeToken = "1;1;1648c1de-0093-4fb8-a888-f032f5a2da4c;634103077352630000;2263";
     webstate.setNextAclChangeToken(changeToken);
     webstate.commitAclChangeToken();
-    aclHelper = new AclHelper(this.sharepointClientContext,
+    this.aclWS = new GSAclWS(this.sharepointClientContext,
         webstate.getWebUrl());
-    aclHelper.fetchAclChangesSinceTokenAndUpdateState(webstate);
+    aclWS.fetchAclChangesSinceTokenAndUpdateState(webstate);
     assertNotSame("Change Token is not updated", changeToken, webstate.getNextAclChangeToken());
   }
 
@@ -259,28 +265,27 @@ public class GSAclWSTest extends TestCase {
     listState.startAclCrawl();
     ListsHelper listHelper = new ListsHelper(sharepointClientContext);
     assertNotNull(listHelper);
-    aclHelper = new AclHelper(this.sharepointClientContext,
+    this.aclWS = new GSAclWS(this.sharepointClientContext,
         listState.getParentWebState().getWebUrl());
-    List<SPDocument> docs = aclHelper.getListItemsForAclChangeAndUpdateState(
-        listState, listHelper);
+    List<SPDocument> docs = aclWS.getListItemsForAclChangeAndUpdateState(listState, listHelper);
     assertNotNull(docs);
   }
 
   public void testResolveSPGroup() throws Exception {
     String[] groupIds = { "1", "[GSSiteCollectionAdministrator]", "5" };
-    aclHelper = new AclHelper(this.sharepointClientContext, 
+    this.aclWS = new GSAclWS(this.sharepointClientContext,
         TestConfiguration.sharepointUrl);
-    GssResolveSPGroupResult result = aclHelper.resolveSPGroup(groupIds);
+    GssResolveSPGroupResult result = aclWS.resolveSPGroup(groupIds);
     assertNotNull(result);
     assertNotNull(result.getPrinicpals());
     assertEquals(result.getPrinicpals().length, groupIds.length);
   }
 
   public void testCheckConnectivity() throws Exception {
-    aclHelper = new AclHelper(sharepointClientContext,
+    aclWS = new GSAclWS(sharepointClientContext,
         TestConfiguration.sharepointUrl);
     try {
-      aclHelper.checkConnectivity();
+      aclWS.checkConnectivity();
     } catch (Exception e) {
       fail();
     }
@@ -315,6 +320,6 @@ public class GSAclWSTest extends TestCase {
     GssPrincipal principal = new GssPrincipal();
     principal.setType(principalType);
     principal.setName(principalname);
-    assertEquals(expectedPrincipalname, aclHelper.getPrincipalName(principal));
+    assertEquals(expectedPrincipalname, aclWS.getPrincipalName(principal));
   }
 }

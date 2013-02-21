@@ -14,16 +14,16 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.WebsHelper;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
@@ -145,8 +145,8 @@ public class WebState implements StatefulObject {
 
     webId = webUrl = spURL;
     spContext.setSiteURL(webUrl);
-    final WebsHelper webs = new WebsHelper(spContext);
-    title = webs.getWebTitle(webUrl, spType);
+    final WebsWS websWS = clientFactory.getWebsWS(spContext);
+    title = websWS.getWebTitle(webUrl, spType);
     if (FeedType.CONTENT_FEED == spContext.getFeedType()
         && SPType.SP2003 == spType) {
       LOGGER.warning("excluding "
@@ -372,7 +372,6 @@ public class WebState implements StatefulObject {
                   SPConstants.OBJTYPE_LIST_ITEM, 
                   list.getParentWebState().getTitle(), FeedType.CONTENT_FEED, SPType.SP2007);
               doc.setAction(ActionType.DELETE);
-              doc.setParentList(list);
               deletedDocs.add(doc);
 
               // If this list can contain attachments, assume that
@@ -390,7 +389,6 @@ public class WebState implements StatefulObject {
                       list.getParentWebState().getTitle(),
                       FeedType.CONTENT_FEED, SPType.SP2007);
                   attchmnt.setAction(ActionType.DELETE);
-                  attchmnt.setParentList(list);
                   deletedDocs.add(attchmnt);
                 }
               }
@@ -421,7 +419,6 @@ public class WebState implements StatefulObject {
                   SPConstants.OBJTYPE_LIST_ITEM, list.getParentWebState()
                       .getTitle(), FeedType.CONTENT_FEED, SPType.SP2007);
               doc.setAction(ActionType.DELETE);
-              doc.setParentList(list);
               if (!list.isSendListAsDocument() || !isCrawlAspxPages()) {
                 // send the listState as a feed only if it was
                 // included (not excluded) in the URL pattern

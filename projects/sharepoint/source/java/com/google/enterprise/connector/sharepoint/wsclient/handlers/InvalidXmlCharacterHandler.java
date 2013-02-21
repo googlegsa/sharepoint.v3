@@ -135,7 +135,7 @@ public class InvalidXmlCharacterHandler extends BasicHandler {
     Object obj = null;
     String strPattern = "";
 
-    Iterator<?> props = messageContext.getAllPropertyNames();
+    Iterator props = messageContext.getAllPropertyNames();
     while (props.hasNext()) {
       obj = props.next();
       if (null == obj) {

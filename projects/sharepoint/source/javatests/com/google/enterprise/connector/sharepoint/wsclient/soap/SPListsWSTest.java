@@ -18,16 +18,15 @@ import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClient;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointTraversalManager;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
@@ -76,10 +75,11 @@ public class SPListsWSTest extends TestCase {
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.sharepointUrl);
 
-    List<ListState> listCollection = siteDataWS.getNamedLists(ws);
+    final List listCollection = siteDataWS.getNamedLists(ws);
     assertNotNull(listCollection);
 
-    for (ListState baseList : listCollection) {
+    for (int i = 0; i < listCollection.size(); i++) {
+      final ListState baseList = (ListState) listCollection.get(i);
       if (baseList.getPrimaryKey().equals(TestConfiguration.Site1_List1_GUID)) {
         this.testList = baseList;
       }
@@ -118,7 +118,7 @@ public class SPListsWSTest extends TestCase {
     final SPDocument doc = new SPDocument("1", "url1", new GregorianCalendar(
         2007, 1, 1), SPConstants.NO_AUTHOR, SPConstants.NO_OBJTYPE,
         SPConstants.PARENT_WEB_TITLE, FeedType.CONTENT_FEED, SPType.SP2007);
-    List<SPDocument> items = listsHelper.getAttachments(this.testList, doc);
+    final List items = listsHelper.getAttachments(this.testList, doc);
     assertNotNull(items);
     System.out.println("[ getAttachments() ] Test Passed.");
   }
@@ -126,8 +126,7 @@ public class SPListsWSTest extends TestCase {
   public void testGetFolderHierarchy() throws MalformedURLException,
       RepositoryException {
     System.out.println("Testing getFolderHierarchy()...");
-    List<Folder> items =
-        listsHelper.getSubFoldersRecursively(this.testList, null, null);
+    final List items = listsHelper.getSubFoldersRecursively(this.testList, null, null);
     assertNotNull(items);
     System.out.println("[ getFolderHierarchy() ] Test Passed.");
   }
@@ -135,8 +134,7 @@ public class SPListsWSTest extends TestCase {
   public void testGetListItemsAtFolderLevel() throws MalformedURLException,
       RepositoryException {
     System.out.println("Testing getListItemsAtFolderLevel()...");
-    List<SPDocument> items =
-        listsHelper.getListItemsAtFolderLevel(this.testList, null, null, null);
+    final List items = listsHelper.getListItemsAtFolderLevel(this.testList, null, null, null);
     assertNotNull(items);
     System.out.println("[ getListItemsAtFolderLevel() ] Test Passed.");
   }
@@ -144,8 +142,7 @@ public class SPListsWSTest extends TestCase {
   public void testGetListItems() throws MalformedURLException,
       RepositoryException {
     System.out.println("Testing getListItems()...");
-    List<SPDocument> items =
-        listsHelper.getListItems(this.testList, null, null, null);
+    final List items = listsHelper.getListItems(this.testList, null, null, null);
     assertNotNull(items);
     System.out.println("[ getListItems() ] Test Passed.");
   }
@@ -204,8 +201,7 @@ public class SPListsWSTest extends TestCase {
       RepositoryException {
     testList.saveNextChangeTokenForWSCall(TestConfiguration.validChangeToken);
     testList.commitChangeTokenForWSCall();
-    List<SPDocument> items =
-        listsHelper.getListItemChangesSinceToken(this.testList, null);
+    final List items = listsHelper.getListItemChangesSinceToken(this.testList, null);
     assertNotNull(items);
     assertEquals(TestConfiguration.changesSinceToken, items.size());
   }
@@ -216,9 +212,9 @@ public class SPListsWSTest extends TestCase {
     testList.saveNextChangeTokenForWSCall("1;3;ca894ebb-41ed-44ee-9f09-0e8cb578bab6;1;1");
     testList.commitChangeTokenForWSCall();
     try {
-      List<SPDocument> items =
-          listsHelper.getListItemChangesSinceToken(this.testList, null);
-    } catch (SharepointException e) {
+      final List items = listsHelper.getListItemChangesSinceToken(this.testList, null);
+    } catch (Exception e) {
+      assertTrue(e instanceof SharepointException);
       assertNull(testList.getNextChangeTokenForSubsequectWSCalls());
       assertNull(testList.getChangeTokenForWSCall());
       assertNull(testList.getLastDocForWSRefresh());
@@ -226,8 +222,7 @@ public class SPListsWSTest extends TestCase {
       assertFalse(testList.isAclChanged());
       assertEquals(0, testList.getLastDocIdCrawledForAcl());
       assertTrue(this.testList.isNewList());
-      List<SPDocument> items =
-          listsHelper.getListItemChangesSinceToken(this.testList, null);
+      final List items = listsHelper.getListItemChangesSinceToken(this.testList, null);
       assertNotNull(items);
     }
   }
@@ -237,8 +232,7 @@ public class SPListsWSTest extends TestCase {
     System.out.println("Testing getListItems() by setting FeedUnPublishedDocuments to false.");
     this.sharepointClientContext.setFeedUnPublishedDocuments(false);
     listsHelper = new ListsHelper(this.sharepointClientContext);
-    List<SPDocument> items =
-        listsHelper.getListItems(this.testList, null, null, null);
+    final List items = listsHelper.getListItems(this.testList, null, null, null);
     assertNotNull(items);
     assertEquals(3, items.size());
     System.out.println("[ getListItems() ] test passed.");
@@ -249,8 +243,7 @@ public class SPListsWSTest extends TestCase {
     System.out.println("Testing getListItems() by setting FeedUnPublishedDocuments true");
     this.sharepointClientContext.setFeedUnPublishedDocuments(true);
     listsHelper = new ListsHelper(this.sharepointClientContext);
-    List<SPDocument> items =
-        listsHelper.getListItems(this.testList, null, null, null);
+    final List items = listsHelper.getListItems(this.testList, null, null, null);
     assertNotNull(items);
     assertEquals(3, items.size());
     System.out.println("[ getListItems() ] test passed");
@@ -264,7 +257,7 @@ public class SPListsWSTest extends TestCase {
     FileTransport.setResponseFileName("source/javatests/data/duplicate-attributes.xml");
 
     WsUtil.UnregisterSaxClientFactory();
-    List<SPDocument> items = getSite1TestListChangesSinceToken();
+    List items = getSite1TestListChangesSinceToken();
     assertNotNull(items);
     assertEquals(0, items.size());
 

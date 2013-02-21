@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -32,10 +31,9 @@ public class AdEntity {
   private String primaryGroupId;
   private String sid;
   private String objectGUID;
-  private Set<AdMembership> members;
+  private Set<String> members;
   private long uSNChanged;
   private boolean wellKnown;
-  private boolean allMembershipsRetrieved;
 
   private Object getAttribute(Attributes attributes, String name)
       throws NamingException {
@@ -45,25 +43,6 @@ public class AdEntity {
     } else {
       return null;
     }
-  }
-
-  private Attribute getMemberAttr(Attributes attrs) throws NamingException {
-    allMembershipsRetrieved = true;
-    Attribute member = attrs.get(AdConstants.ATTR_MEMBER);
-    if (member != null && member.size() != 0) {
-      return member;
-    }
-
-    NamingEnumeration<String> ids = attrs.getIDs();
-    while (ids.hasMore()) {
-      String id = ids.next();
-      if (AdConstants.ATTR_MEMBER_PATTERN.matcher(id).matches()) {
-        allMembershipsRetrieved = false;
-        return attrs.get(id);
-      }
-    }
-
-    return null;
   }
 
   /**
@@ -89,13 +68,12 @@ public class AdEntity {
         (String) getAttribute(attrs, AdConstants.ATTR_PRIMARYGROUPID);
     userPrincipalName = (String) getAttribute(attrs, AdConstants.ATTR_UPN);
 
-    members = new HashSet<AdMembership>();
-    if (isGroup()) {
-      Attribute member = getMemberAttr(attrs);
-      if (member != null) {
-        for (int i = 0; i < member.size(); ++i) {
-          members.add(new AdMembership(member.get(i).toString()));
-        }
+    members = new HashSet<String>();
+
+    Attribute member = attrs.get(AdConstants.ATTR_MEMBER);
+    if (member != null) {
+      for (int i = 0; i < member.size(); ++i) {
+        members.add(member.get(i).toString());
       }
     }
   }
@@ -112,25 +90,6 @@ public class AdEntity {
     objectGUID = sid;
     sAMAccountName = getCommonName();
     wellKnown = true;
-  }
-
-  /**
-   * Appends additional memberships from search result 
-   * @param searchResult which contains additional groups
-   * @return number of groups found
-   * @throws NamingException
-   */
-  public int appendGroups(SearchResult searchResult)
-      throws NamingException {
-    Attribute member = getMemberAttr(searchResult.getAttributes()); 
-    if (member != null) {
-      for (int i = 0; i < member.size(); ++i) {
-        members.add(new AdMembership(member.get(i).toString()));
-      }
-      return member.size(); 
-    } else {
-      return 0;
-    }
   }
 
   /**
@@ -200,7 +159,7 @@ public class AdEntity {
   public Map<String, Object> getSqlParams() {
     HashMap<String, Object> map = new HashMap<String, Object>();
     map.put(AdConstants.DB_DN, dn);
-    map.put(AdConstants.DB_SAMACCOUNTNAME, sAMAccountName.toLowerCase());
+    map.put(AdConstants.DB_SAMACCOUNTNAME, sAMAccountName);
     map.put(AdConstants.DB_UPN, userPrincipalName);
     map.put(AdConstants.DB_PRIMARYGROUPID, primaryGroupId);
     if (sid != null) {
@@ -233,7 +192,7 @@ public class AdEntity {
   /**
    * @return the members
    */
-  public Set<AdMembership> getMembers() {
+  public Set<String> getMembers() {
     return members;
   }
 
@@ -250,23 +209,9 @@ public class AdEntity {
   }
 
   /**
-   * @return sAMAccountName
+   * @return the primaryGroupId
    */
-  public String getSAMAccountName() {
-    return sAMAccountName;
-  }
-
-  /**
-  * @return if current entity is group
-  */
-  public boolean isGroup() {
-    return primaryGroupId == null;
-  }
-
-  /**
-   * @return if we need to retrieve further memberships for this group
-   */
-  public boolean areAllMembershipsRetrieved() {
-    return allMembershipsRetrieved;
+  public String getPrimaryGroupId() {
+    return primaryGroupId;
   }
 }

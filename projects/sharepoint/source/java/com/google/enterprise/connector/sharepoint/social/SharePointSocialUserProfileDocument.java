@@ -26,7 +26,6 @@ import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.spi.SpiConstants;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType;
 import com.google.enterprise.connector.spi.SpiConstants.RoleType;
@@ -41,8 +40,6 @@ public class SharePointSocialUserProfileDocument
 
   //List of users and their denied permissions to be sent in document's ACL
   private Map<Principal, Set<RoleType>> denyAclMap;
-  
-  private ActionType actionType;
 
   public SharePointSocialUserProfileDocument(String collectionName) {
     super(collectionName);    
@@ -85,13 +82,5 @@ public class SharePointSocialUserProfileDocument
    allowAclMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
        globalNamespace, principalName,
        CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);    
-  }
-
-  public ActionType getActionType() {
-    return actionType;
-  }
-
-  public void setActionType(ActionType actionType) {
-    this.actionType = actionType;
   }
 }

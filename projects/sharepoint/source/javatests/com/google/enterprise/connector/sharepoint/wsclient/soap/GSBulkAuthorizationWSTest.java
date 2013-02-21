@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.BulkAuthorizationHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 
 import junit.framework.TestCase;
@@ -23,7 +22,7 @@ import junit.framework.TestCase;
 public class GSBulkAuthorizationWSTest extends TestCase {
 
   SharepointClientContext sharepointClientContext;
-  BulkAuthorizationHelper bulkAuth;
+  GSBulkAuthorizationWS bulkAuth;
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -33,16 +32,16 @@ public class GSBulkAuthorizationWSTest extends TestCase {
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    System.out.println("Initializing BulkAuthorizationHelper ...");
-    this.bulkAuth = new BulkAuthorizationHelper(this.sharepointClientContext);
+    System.out.println("Initializing GSBulkAuthorizationWS ...");
+    this.bulkAuth = new GSBulkAuthorizationWS(this.sharepointClientContext);
   }
 
-  public final void testBulkAuthorization() throws Throwable {
-    System.out.println("Testing BulkAuthorizationHelper(SharepointClientContext, siteName)...");
+  public final void testGSBulkAuthorizationWS() throws Throwable {
+    System.out.println("Testing GSBulkAuthorizationWS(SharepointClientContext, siteName)...");
     sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
-    this.bulkAuth = new BulkAuthorizationHelper(this.sharepointClientContext);
+    this.bulkAuth = new GSBulkAuthorizationWS(this.sharepointClientContext);
     assertNotNull(this.bulkAuth);
-    System.out.println("[ BulkAuthorizationHelper(SharepointClientContext, siteName) ] Test Passed");
+    System.out.println("[ GSBulkAuthorizationWS(SharepointClientContext, siteName) ] Test Passed");
   }
 
   public void testCheckConnectivity() throws Throwable {

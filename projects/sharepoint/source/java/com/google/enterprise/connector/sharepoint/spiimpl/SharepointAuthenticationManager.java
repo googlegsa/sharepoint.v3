@@ -18,7 +18,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.adgroups.AdGroupsAuthenticationManager;
 import com.google.enterprise.connector.adgroups.MutableIdentity;
-import com.google.enterprise.connector.sharepoint.client.BulkAuthorizationHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -26,6 +25,7 @@ import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.ldap.LdapService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthenticationManager;
@@ -173,6 +173,8 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
       return null;
     }
 
+    BulkAuthorizationWS bulkAuth = null;
+
     final String user = identity.getUsername();
     final String password = identity.getPassword();
     String domain = identity.getDomain();
@@ -194,8 +196,11 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
       LOGGER.log(Level.INFO, "Authenticating User: " + userName);
       sharepointClientContext.setUsername(userName);
       sharepointClientContext.setPassword(password);
-      BulkAuthorizationHelper bulkAuth = new BulkAuthorizationHelper(
-          sharepointClientContext);
+      bulkAuth = clientFactory.getBulkAuthorizationWS(sharepointClientContext);
+      if (null == bulkAuth) {
+        LOGGER.log(Level.SEVERE, "Failed to initialize BulkAuthorizationWS.");
+        return null;
+      }
 
       /*
        * If you can make a call to Web Service with the given credential, the

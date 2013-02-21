@@ -16,7 +16,6 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.adgroups.AdGroupsConnector;
-import com.google.enterprise.connector.sharepoint.client.AclHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -30,6 +29,7 @@ import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialConnector;
 import com.google.enterprise.connector.sharepoint.social.UserProfileServiceFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
@@ -112,7 +112,7 @@ public class SharepointConnector implements Connector,
   private UserProfileServiceFactory userProfileServiceFactory;
   private AdGroupsConnector adGroupsConnector;
   private boolean oldLdapBehavior = false;
-  private int userProfileFullTraversalInterval = 1;
+  private int userProfileFullTraversalInterval = 7;
 
   /**
    * Describes whether user profiles are fetched.
@@ -183,7 +183,7 @@ public class SharepointConnector implements Connector,
             .getDataSource(), queryProvider);
         // Add current connector instance name to the database table.
         connectorNamesDAO.addConnectorInstanceName(connectorName);
-        new AclHelper(sharepointClientContext, null).checkConnectivity();
+        clientFactory.getAclWS(sharepointClientContext, null).checkConnectivity();
       } catch (Exception e) {
         throw new RepositoryException(
             "Crawling cannot proceed because ACL web service cannot be contacted and hence, "

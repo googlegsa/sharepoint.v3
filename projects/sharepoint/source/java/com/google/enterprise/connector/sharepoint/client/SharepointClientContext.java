@@ -107,7 +107,7 @@ public class SharepointClientContext implements Cloneable {
   /** Batch Size for SP Group Resolution. **/
   private int groupResolutionBatchSize = 5000;
 
-  private int userProfileFullTraversalInterval = 1;
+  private int userProfileFullTraversalInterval = 7;
 
   private int webServiceTimeOut = 300000;
   private int initialCacheSize;
@@ -752,7 +752,12 @@ public class SharepointClientContext implements Cloneable {
       return null;
     }
 
-    /* Fix Details: ------------ SharePoint connector requires to know the
+    /*
+     * Adding support for SharePoint 2010. For SP2010, version starts with
+     * 14.x.x.x Since SP2010 supports all web services of SP2007 return SP2007
+     * as version
+     *
+     * Fix Details: ------------ SharePoint connector requires to know the
      * version of the SharePoint repository<br/> for following a)
      * MySite\Personal Site handling which is different in SP2003 & SP2007 Note:
      * current mysite handling fails for SP2010.<br/> However mysite URLs can be
@@ -761,12 +766,14 @@ public class SharepointClientContext implements Cloneable {
      * SP2007 Note: Checked that same web services work for SP2010 as well
      */
 
-    if (version.trim().startsWith("6") || version.trim().startsWith("11")) {
+    if ((version.trim().startsWith("12")) || (version.trim().startsWith("14"))) {
+      return SPType.SP2007;
+    } else if (version.trim().startsWith("6")) {
       return SPType.SP2003;
     } else {
-      // Return type as SP2007 for all SharePoint Versions starting
-      // from MOSS 2007 and WSS 3.
-      return SPType.SP2007;
+      LOGGER.warning("Unknown sharepoint version found for the site [ "
+          + strURL + " ]");
+      return null;
     }
   }
 

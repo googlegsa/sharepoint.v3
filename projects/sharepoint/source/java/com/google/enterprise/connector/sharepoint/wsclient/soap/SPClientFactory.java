@@ -164,7 +164,7 @@ public class SPClientFactory implements ClientFactory {
    */
   public AclWS getAclWS(final SharepointClientContext ctx, String webUrl) {
     try {
-      return new GSAclWS(webUrl);
+      return new GSAclWS(ctx, webUrl);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create ACLs web service instance.", e);

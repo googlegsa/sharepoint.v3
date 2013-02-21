@@ -97,10 +97,7 @@ public class AdServer {
     // Use the built-in LDAP support.
     env.put(Context.INITIAL_CONTEXT_FACTORY,
         AdConstants.COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY);
-    // Connecting to configuration naming context is very slow for crawl users
-    // in large multidomain environment, which belong to thousands of groups
-    // TODO: make this configurable
-    env.put("com.sun.jndi.ldap.read.timeout", "30000");
+    env.put("com.sun.jndi.ldap.read.timeout", "3000");
     if (Strings.isNullOrEmpty(principal)) {
       env.put(Context.SECURITY_AUTHENTICATION, 
           AdConstants.AUTHN_TYPE_ANONYMOUS);
@@ -122,7 +119,7 @@ public class AdServer {
         AdConstants.ATTR_DEFAULTNAMINGCONTEXT).get(0).toString();
     dsServiceName = attributes.get(
         AdConstants.ATTR_DSSERVICENAME).get(0).toString();
-    highestCommittedUSN = Long.parseLong(attributes.get(
+    highestCommittedUSN = Integer.parseInt(attributes.get(
         AdConstants.ATTR_HIGHESTCOMMITTEDUSN).get(0).toString());
     configurationNamingContext = attributes.get(
         AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
@@ -259,30 +256,6 @@ public class AdServer {
           }
         }
       } while ((cookie != null) && (cookie.length != 0));
-
-      // if we received non complete attribute we need to use range based
-      // retrieval to get the rest of members
-      for (AdEntity g : results) {
-        if (!g.isGroup() || g.areAllMembershipsRetrieved()) {
-          continue;
-        }
-
-        int batch = g.getMembers().size();
-        int found = 0;
-        int start = g.getMembers().size();
-        do {
-          String memberRange = String.format(AdConstants.ATTR_MEMBER_RANGE, 
-              start, start + batch - 1);
-          LOGGER.finest(
-              "Retrieving additional groups for [" + g + "] " + memberRange);
-          searchCtls.setReturningAttributes(new String[] {memberRange});
-          NamingEnumeration<SearchResult> ldapResults = ldapContext.search(
-              dn, "(sAMAccountName=" + g.getSAMAccountName() +")", searchCtls);
-          SearchResult sr = ldapResults.next();
-          found = g.appendGroups(sr);
-          start += found;
-        } while (found == batch);
-      }
     } catch (InterruptedNamingException e) {
       throw e;
     } catch (NamingException e) {

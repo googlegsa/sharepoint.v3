@@ -63,14 +63,15 @@ public class MockListsWSTest extends TestCase {
     final WebState ws =
         state.makeWebState(sharepointClientContext, "http://example.com");
 
-    List<ListState> listCollection = siteDataWS.getNamedLists(ws);
+    final List listCollection = siteDataWS.getNamedLists(ws);
     assertNotNull(listCollection);
 
     testListUrl = "http://example.com/Web1/List1";
     testListUsernameAtUrl = "http://example.com/WebAuth/ListAt";
     testListUsernameSlashUrl = "http://example.com/WebAuth/ListSlash";
 
-    for (ListState baseList : listCollection) {
+    for (int i = 0; i < listCollection.size(); i++) {
+      final ListState baseList = (ListState) listCollection.get(i);
       if (testListUrl.equals(baseList.getListURL())) {
         testList = baseList;
       } else if (testListUsernameAtUrl.equals(baseList.getListURL())) {
@@ -88,12 +89,11 @@ public class MockListsWSTest extends TestCase {
    * A simple test for getListItems using the mock interface.
    */
   public void testGetListItems() {
-    List<SPDocument> items =
-        listsHelper.getListItems(testList, null, null, null);
+    final List items = listsHelper.getListItems(testList, null, null, null);
     assertNotNull(items);
     assertTrue(1 == items.size());
 
-    SPDocument doc = items.get(0);
+    SPDocument doc = (SPDocument) items.get(0);
     assertTrue((testListUrl + "/Doc1").equals(doc.getUrl()));
   }
 
@@ -101,12 +101,12 @@ public class MockListsWSTest extends TestCase {
    * Tests that the connector returns the correct folder hierarchy.
    */
   public void testGetFolderHierarchy() {
-    List<Folder> items =
-        listsHelper.getSubFoldersRecursively(testList, null, null);
+    final List items = listsHelper.getSubFoldersRecursively(testList,
+        null, null);
     assertNotNull(items);
     assertEquals(1, items.size());
 
-    Folder folder = items.get(0);
+    Folder folder = (Folder) items.get(0);
     assertEquals(testListUrl + "/Folder1", folder.getPath());
   }
 
@@ -146,11 +146,11 @@ public class MockListsWSTest extends TestCase {
   private void verifyGetListItemsAccessSuccess(ListState list, 
       String username, String expectedUrl) {
     listsHelper.setUsername(username);
-    List<SPDocument> items = listsHelper.getListItems(list, null, null, null);
+    final List items = listsHelper.getListItems(list, null, null, null);
     assertNotNull(items);
     assertEquals(1, items.size());
 
-    SPDocument doc = items.get(0);
+    SPDocument doc = (SPDocument) items.get(0);
     assertEquals(expectedUrl, doc.getUrl());
   }
 
@@ -160,7 +160,7 @@ public class MockListsWSTest extends TestCase {
   private void verifyGetListItemsAccessFailure(ListState list, 
       String username, String expectedUrl) {
     listsHelper.setUsername(username);
-    List<SPDocument> items = listsHelper.getListItems(list, null, null, null);
+    final List items = listsHelper.getListItems(list, null, null, null);
     assertNotNull(items);
     assertEquals(0, items.size());
   }

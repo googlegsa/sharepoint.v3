@@ -1,13 +1,11 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.social.SharePointSocialCheckpoint;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 public class MockUserProfileChangeWS implements UserProfileChangeWS {
   private static final Logger LOGGER = Logger.getLogger(
@@ -19,7 +17,7 @@ public class MockUserProfileChangeWS implements UserProfileChangeWS {
   }
 
   @Override
-  public Map<String, ActionType> getChangedUserProfiles(
+  public List<String> getDeletedUserProfiles(
       SharePointSocialCheckpoint checkpoint) { 
     return null;
   }

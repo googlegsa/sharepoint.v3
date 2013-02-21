@@ -53,7 +53,7 @@ public class SPWebWSTest extends TestCase {
 
   public final void testGetDirectChildsites() throws Throwable {
     System.out.println("Testing getDirectChildsites()...");
-    Set<String> sites = this.websWS.getDirectChildsites();
+    final Set sites = this.websWS.getDirectChildsites();
     assertNotNull(sites);
     System.out.println("[ getDirectChildsites() ] Test Passed");
   }

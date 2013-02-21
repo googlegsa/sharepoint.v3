@@ -92,9 +92,7 @@ public class SharePointSocialCheckpoint {
   }
 
   /**
-   * Gets the checkpoint as a string.
-   *
-   * @return the checkpoint as a string, or null if a JSON error occurs
+   * @returns the Checkpoint as a String.
    */
   public String toString() {
     try {

@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -154,9 +153,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   // Document Type  for Document.
   private DocumentType documentType;
-  
-  // flag to indicate if document is public
-  private boolean publicDocument;
 
   /**
    * @return the toBeFed
@@ -578,7 +574,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (strPropertyName.equals(SPConstants.OBJECT_TYPE)) {
       return new SimpleProperty(new StringValue(getObjType()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ISPUBLIC)) {
-      return new SimpleProperty(BooleanValue.makeBooleanValue(publicDocument));
+      return new SimpleProperty(BooleanValue.makeBooleanValue(false));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
       return new SimpleProperty(new StringValue(getAction().toString()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYUSERS)) {
@@ -713,7 +709,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
     }
     if (sharepointClientContext.isPushAcls()) {
-      names.add(SpiConstants.PROPNAME_ISPUBLIC);
       if (!isWebAppPolicyDoc()) {
         // For regular document parent Url should not be null.
         // empty parentUrl indicates error in ACL processing.
@@ -1128,13 +1123,5 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    */
   public void setDocumentType(DocumentType documentType) {
     this.documentType = documentType;
-  }
-
-  public boolean isPublicDocument() {
-    return publicDocument;
-  }
-
-  public void setPublicDocument(boolean publicDocument) {
-    this.publicDocument = publicDocument;
   }
 }

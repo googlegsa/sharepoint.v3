@@ -1,15 +1,12 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
 
-import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -25,7 +22,6 @@ import com.google.enterprise.connector.sharepoint.generated.userprofileservice.U
 import com.google.enterprise.connector.sharepoint.social.SharePointSocialCheckpoint;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 public class SPUserProfileChangeWS implements UserProfileChangeWS {
   private final Logger LOGGER = Logger.getLogger(
@@ -35,7 +31,7 @@ public class SPUserProfileChangeWS implements UserProfileChangeWS {
   private String endpoint;
 
   @Override
-  public Map<String, ActionType> getChangedUserProfiles(
+  public List<String> getDeletedUserProfiles(
       SharePointSocialCheckpoint checkpoint) {
     try {
       if (stub == null) {
@@ -43,37 +39,29 @@ public class SPUserProfileChangeWS implements UserProfileChangeWS {
             "Unable to get the list collection because stub is null");
         return null;
       }
-      Map<String, ActionType> updatedProfiles = new HashMap<String, ActionType>();
+      List<String> deletedUserProfiles = new ArrayList<String>();
       UserProfileChangeQuery changeQuery = new UserProfileChangeQuery();
       changeQuery.setDelete(true);
       changeQuery.setUserProfile(true);
-      changeQuery.setUpdate(true);
-      changeQuery.setUpdateMetadata(true);
-      changeQuery.setSingleValueProperty(true);
-      changeQuery.setMultiValueProperty(true);
-      changeQuery.setColleague(true);
       UserProfileChangeDataContainer changeContainer= stub.getChanges(
           checkpoint.getUserProfileChangeToken(), changeQuery);
       if (changeContainer != null) {
         UserProfileChangeData[] changes = changeContainer.getChanges();
-        if (changes != null && changes.length > 0) {
+        if (changes != null && changes.length > 0) {         
           for(UserProfileChangeData change : changes) {
-            String userAccountName = change.getUserAccountName();
-            if (Strings.isNullOrEmpty(userAccountName)) {
-              continue;
-            }
+            // Since query specified above looks for user profile deletes
+            // expected change type is 'Delete'.          
             for(String changeType : change.getChangeType()) {
               LOGGER.log(Level.INFO,
                   "User Profile Change Type Recevied = "+ changeType);
               if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
                 LOGGER.log(Level.INFO,"User Profile Deleted for user = "
                     + change.getUserAccountName());
-                updatedProfiles.put(userAccountName, ActionType.DELETE);
-              } else {
-                updatedProfiles.put(userAccountName, ActionType.ADD);
+                deletedUserProfiles.add(change.getUserAccountName());
+                break;
               }
-            }
-          }
+            }            
+          }          
         }
         LOGGER.log(Level.INFO, "User Profile Change Token Recevied = "
             + changeContainer.getChangeToken());
@@ -82,9 +70,9 @@ public class SPUserProfileChangeWS implements UserProfileChangeWS {
               changeContainer.getChangeToken());
         } else {
           checkpoint.setUserProfileChangeToken(getCurrentChangeToken());
-        }
+        }        
       }
-      return updatedProfiles;
+      return deletedUserProfiles;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to get Updates for SharePoint user Profiles", e);
@@ -125,7 +113,7 @@ public class SPUserProfileChangeWS implements UserProfileChangeWS {
         // The web service time-out value
         stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
         LOGGER.fine("Set time-out of : "
-            + sharepointClientContext.getWebServiceTimeOut()
+            + sharepointClientContext.getWebServiceTimeOut() 
             + " milliseconds");
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING,
