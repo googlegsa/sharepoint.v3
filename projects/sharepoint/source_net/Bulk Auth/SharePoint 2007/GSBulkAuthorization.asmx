@@ -106,6 +106,7 @@ public class BulkAuthorization : System.Web.Services.WebService
                 }
 
                 DateTime authDataStartTime = System.DateTime.Now;
+                String webUrl = String.Empty;
                 try
                 {                  
                     using(SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA))
@@ -113,6 +114,7 @@ public class BulkAuthorization : System.Web.Services.WebService
                         if (web != null && web.Exists)
                         {
                             SPUser user = wsContext.User;
+                            webUrl = web.Url;
                             Authorize(authData, web, user);
                         }
                         else
@@ -124,6 +126,7 @@ public class BulkAuthorization : System.Web.Services.WebService
                 catch (Exception e)
                 {
                     authData.Message = "Authorization failure! " + GetFullMessage(e);
+                    authData.Message += String.Format("\nauthData.Type {0}, authData.Container {1}, webUrl {2}", authData.Type, authData.Container.Url, webUrl);
                     authData.Message += " \nAuthorization of this document took " + System.DateTime.Now.Subtract(authDataStartTime).TotalSeconds + " seconds";
                     continue;
                 }
@@ -250,7 +253,7 @@ public class BulkAuthorization : System.Web.Services.WebService
             }
             catch (Exception e)
             {
-                throw new Exception("Error Authorizing Url :" + url, e);
+                throw new Exception("Error Authorizing Url: " + url, e);
             }
         }
     }
@@ -294,6 +297,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         while (null != e)
         {
             message.Append(e.Message);
+            message.AppendLine(e.StackTrace);
             e = e.InnerException;
         }
         return message.ToString();
@@ -837,7 +841,8 @@ internal class UserInfoHolder
     internal void TryInit(SPSite site, SPWeb web)
     {
         // Try with available username
-        user = findUserInWeb(username, web, true);
+        username = GssAuthzUtility.getUserNameWithDomain(username);
+        user = GssAuthzUtility.findUserInWeb(username, web, true);
         if (user != null)
         {
             isResolved = true;
@@ -846,7 +851,7 @@ internal class UserInfoHolder
 
         if (!isResolved)
         {
-            SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, username, SPPrincipalType.User, false);
+            SPPrincipalInfo userInfo = GssAuthzUtility.ResolveWindowsPrincipal(username);
             if (null != userInfo)
             {
                 // Mark isResolved = true since userInfo object is not null.                
@@ -859,36 +864,63 @@ internal class UserInfoHolder
                 if (String.Compare(username, userInfo.LoginName, true) != 0)
                 {
                     username = userInfo.LoginName;
-                    user = findUserInWeb(username, web, true);
+                    user = GssAuthzUtility.findUserInWeb(username, web, true);
                     if (user != null)
                     {                       
                         return;
                     }
-                }               
+                }
             }
+        
         }
         
         // Throwing user not found exception since SPUser with resolved username is not found
         msg = "User " + username + " information not found in the parent site collection of web " + web.Url;
         throwException();
+    }    
+
+    internal void throwException()
+    {
+        if (!isResolved)
+        {
+            throw new Exception(msg, new Exception("User " + username + " can not be resolved into a valid SharePoint user."));
+        }
+        else
+        {
+            throw new Exception(msg);
+        }
+    }
+}
+
+/// <summary>
+/// Provides general purpose utility methods.
+/// This class must be stateless because it is a member instance of the web service
+/// </summary>
+public sealed class GssAuthzUtility
+{
+
+    private static Dictionary<string, string> domainMapping = new Dictionary<string, string>();
+
+    private GssAuthzUtility()
+    {
+        throw new Exception("Operation not allowed! ");
     }
 
-    internal SPUser findUserInWeb(String userName, SPWeb web, Boolean chkPermission)
+    public static SPUser findUserInWeb(String userName, SPWeb web, Boolean chkPermission)
     {
         SPUser userToReturn = null;
+
         // With available username search user in web.AllUsers and web.SiteUsers
         // Not checking web.Users since web.Users is a subset to web.AllUsers as well as web.SiteUsers 
         try
         {
-            userToReturn = web.AllUsers[username];
-           
+            userToReturn = web.AllUsers[userName];
         }
         catch (Exception e1)
         {
             try
             {
-                userToReturn = web.SiteUsers[username];
-               
+                userToReturn = web.SiteUsers[userName];
             }
             catch (Exception e2)
             {
@@ -902,29 +934,52 @@ internal class UserInfoHolder
                         // SharePoint site.
                         // Since web.DoesUserHavePermissions is expensive call compare to checking username in usercollections,
                         // web.DoesUserHavePermissions is used as a fallback mechanism.
-                        web.DoesUserHavePermissions(username, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
+                        web.DoesUserHavePermissions(userName, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
                         // If username is valid this call should return user.
                         userToReturn = findUserInWeb(userName, web, false);
-                    }                                       
+                    }
                 }
                 catch (Exception e3)
                 {
                     e3 = null;
                 }
             }
-        }       
-     return userToReturn;        
+        }
+        return userToReturn;
     }
 
-    internal void throwException()
+    public static SPPrincipalInfo ResolveWindowsPrincipal(String userName)
     {
-        if (!isResolved)
+        
+        SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(SPContext.Current.Site.WebApplication, userName, SPPrincipalType.User, false);
+        if (userInfo != null)
         {
-            throw new Exception(msg, new Exception("User " + username + " can not be resolved into a valid SharePoint user."));
+            String[] userNameResolved = userInfo.LoginName.Split(new String[] {"\\"}, StringSplitOptions.RemoveEmptyEntries);
+            String[] userNameSplit = userName.Split(new String[] { "\\" }, StringSplitOptions.RemoveEmptyEntries);
+            if (userNameSplit.Length == 2 && userNameResolved.Length == 2)
+            {
+                // Add to cache only if resolved domain is diffrent than input domain.
+                if (String.Compare(userNameSplit[0], userNameResolved[0], true) != 0)
+                {
+                    domainMapping[userNameSplit[0].ToLower()] = userNameResolved[0];
+                }
+            }
+        }
+        return userInfo;
+    }
+
+    public static String getUserNameWithDomain(String userName)
+    {
+        // Considering only "\\" since connector is always using username format as domain\\username 
+        String[] userNameSplit = userName.Split(new String[] { "\\" }, StringSplitOptions.RemoveEmptyEntries);
+        if (userNameSplit.Length == 2 && domainMapping.ContainsKey(userNameSplit[0].ToLower()))
+        {
+            String userDomain = domainMapping[userNameSplit[0].ToLower()];
+            return userDomain + "\\" + userNameSplit[1];
         }
         else
         {
-            throw new Exception(msg);
+            return userName;
         }
     }
 }
