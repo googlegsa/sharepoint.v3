@@ -34,8 +34,9 @@ using Microsoft.SharePoint.Utilities;
 [Serializable]
 public class GssPrincipal
 {
-    // Site Collection specific ID. This is very useful to track such users/groups which have been deleted
-    // A -1 value is used for the hypoyhetical site collection group and anything smaller than -1 is considered to be unknown
+    // Site Collection specific ID. This is very useful to track such users/groups which have been
+    // deleted. A -1 value (GssAclMonitor.GSSITEADMINGROUPID) is used for the hypothetical site
+    // collection group and anything smaller than -1 value is considered to be unknown
     private int id;
 
     // Name of the prinicpal
@@ -717,7 +718,7 @@ public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
 // TODO It's better to use in-out (holders in java) parameters instead of separate objects for returning responses from every web methods
 
 /// <summary>
-/// Provides alll the necessary web methods exposed by the Web Service
+/// Provides all the necessary web methods exposed by the Web Service
 /// </summary>
 [WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
@@ -732,6 +733,7 @@ public class GssAclMonitor
     // administrator requires re-crawling all the documents in the site collection. Having a common group for the administrator will
     // just require updating the group membership info and no re-crawl will be required.
     public const string GSSITEADMINGROUP = "[GSSiteCollectionAdministrator]";
+    public const int GSSITEADMINGROUPID = -1;
 
     void init(out SPSite site, out SPWeb web)
     {
@@ -1168,9 +1170,9 @@ public class GssAclMonitor
                              GssPrincipal principal = null;
                              try
                              {
-                                 if (GSSITEADMINGROUP.Equals(id))
+                                 if (GSSITEADMINGROUPID.ToString().Equals(id))
                                  {
-                                     principal = new GssPrincipal(GSSITEADMINGROUP, -1);
+                                     principal = new GssPrincipal(GSSITEADMINGROUP, GSSITEADMINGROUPID);
                                      // Get all the administrator users as member of the GSSITEADMINGROUP.
                                      List<GssPrincipal> admins = new List<GssPrincipal>();
                                      foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
@@ -1515,7 +1517,7 @@ public sealed class GssAclUtility
     /// <param name="userAceMap"> ACE Map to be updated </param>
     public static void FetchSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
-        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP, -1);
+        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP, GssAclMonitor.GSSITEADMINGROUPID);
         principal.Type = GssPrincipal.PrincipalType.SPGROUP;
         GssSharepointPermission permission = new GssSharepointPermission();
         // Administrators have Full Rights in the site collection.
