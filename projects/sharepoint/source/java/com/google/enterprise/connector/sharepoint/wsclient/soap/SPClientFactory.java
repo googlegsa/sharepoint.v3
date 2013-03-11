@@ -14,6 +14,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
@@ -36,6 +37,10 @@ import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -46,6 +51,7 @@ import java.util.logging.Logger;
 public class SPClientFactory implements ClientFactory {
   private static final Logger LOGGER = Logger.getLogger(SPClientFactory.class.getName());
   private HttpClient httpClient = null;
+  private Set<String> webAppsVisited;
 
   /**
    * Gets the instance of the alerts web service.
@@ -191,15 +197,30 @@ public class SPClientFactory implements ClientFactory {
   public int checkConnectivity(HttpMethodBase method,
       Credentials credentials) throws IOException {
     if (httpClient == null) {
-      httpClient = GetHttpClient(credentials);
+      resetHttpClient(credentials);
     }
     try {
       int responseCode = httpClient.executeMethod(method);
-      if (responseCode != 200 && responseCode != 404) {
+      String currentWebApp = Util.getWebApp(method.getURI().getURI());
+      if (responseCode == 200) {
+        // Add web app entry when response code is 200
+        webAppsVisited.add(currentWebApp);
+      }
+      if (responseCode != 200 && responseCode != 404 && responseCode != 400) {
         LOGGER.log(Level.WARNING,
             "Http Response Code = "+ responseCode + " for Url [ "
-                + method.getURI() + " ]. Reinitializing HttpClient.");     
-        httpClient = GetHttpClient(credentials);
+                + method.getURI() + " ].");
+        
+        if (responseCode == 401 && webAppsVisited.contains(currentWebApp)) {
+          LOGGER.log(Level.WARNING, "Do not reinitialize HTTP Client as " 
+              + "connection to Web Application [ " + currentWebApp 
+              + "] was earlier successfull with existing HTTP Client Object.");
+          return responseCode;
+        }
+
+        LOGGER.log(Level.WARNING, "Reinitializing HTTP Client as [ "
+            + responseCode + "] response received.");
+        resetHttpClient(credentials);
         responseCode = httpClient.executeMethod(method);
       }
       return responseCode;      
@@ -207,12 +228,12 @@ public class SPClientFactory implements ClientFactory {
       LOGGER.log(Level.WARNING,
           "Error Connecting Server for Url [ "
               + method.getURI() + " ]. Reinitializing HttpClient.", ex);
-      httpClient = GetHttpClient(credentials);
+      resetHttpClient(credentials);
       return httpClient.executeMethod(method);
-    }  
+    }
   }
 
-  private HttpClient GetHttpClient(Credentials credentials) {
+  private HttpClient getHttpClient(Credentials credentials) {
     HttpClient httpClientToUse = new HttpClient();
 
     HttpClientParams params = httpClientToUse.getParams();
@@ -227,6 +248,11 @@ public class SPClientFactory implements ClientFactory {
 
     httpClientToUse.getState().setCredentials(AuthScope.ANY, credentials);
     return httpClientToUse;
+  }
+  
+  private void resetHttpClient(Credentials credentials) {
+    httpClient = getHttpClient(credentials);
+    webAppsVisited = new TreeSet<String>();
   }
 
   public String getResponseHeader(HttpMethodBase method, String headerName) {
