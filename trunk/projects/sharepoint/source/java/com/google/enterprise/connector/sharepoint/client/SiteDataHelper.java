@@ -361,8 +361,8 @@ public class SiteDataHelper {
         sWebMetadata.value.getAuthor(), SPConstants.SITE, webState.getTitle(),
         sharepointClientContext.getFeedType(), webState.getSharePointType());
     String strUrl = Util.encodeURL(siteDataDocument.getUrl());
+    HttpMethodBase method = new HeadMethod(strUrl);
     try {
-      HttpMethodBase method = new HeadMethod(strUrl);
       int responseCode =
           sharepointClientContext.checkConnectivity(strUrl, method);
       if (responseCode != 200) {
@@ -374,6 +374,8 @@ public class SiteDataHelper {
       LOGGER.log(Level.WARNING, "Unable to connect [ " + strUrl
           + " ] marking site home page as ACL document", e);
       siteDataDocument.setDocumentType(DocumentType.ACL);
+    } finally {
+      method.releaseConnection();
     }
 
     return siteDataDocument;
