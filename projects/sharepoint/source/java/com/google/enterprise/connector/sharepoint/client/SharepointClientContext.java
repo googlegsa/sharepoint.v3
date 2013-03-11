@@ -679,9 +679,8 @@ public class SharepointClientContext implements Cloneable {
    * @return the HTTP response code
    */
   public int checkConnectivity(final String strURL, HttpMethodBase method)
-      throws Exception {
+      throws IOException {
     LOGGER.log(Level.CONFIG, "Connecting [ " + strURL + " ] ....");
-    int responseCode = 0;
     String username = this.username;
     final String host = Util.getHost(strURL);
     Credentials credentials = null;
@@ -699,22 +698,31 @@ public class SharepointClientContext implements Cloneable {
       ntlm = false;
     }
 
-    if (null == method) {
-      method = new HeadMethod(strURL);
+    boolean isInputMethodNull = (null == method);
+    if (isInputMethodNull) {
+      method = new HeadMethod(strURL);      
     }
-
-    responseCode = clientFactory.checkConnectivity(method, credentials);
-
-    if (responseCode == 401 && ntlm && !kerberos) {
-      LOGGER.log(Level.FINE, "Trying with HTTP Basic.");
-      username = Util.getUserNameWithDomain(this.username, domain);
-      credentials = new UsernamePasswordCredentials(username, password);
-      responseCode = clientFactory.checkConnectivity(method, credentials);
+    
+    try {
+      int responseCode = clientFactory.checkConnectivity(method, credentials);
+      if (responseCode == 401 && ntlm && !kerberos) {
+        LOGGER.log(Level.FINE, "Trying with HTTP Basic.");
+        username = Util.getUserNameWithDomain(this.username, domain);
+        credentials = new UsernamePasswordCredentials(username, password);
+        responseCode = clientFactory.checkConnectivity(method, credentials);
+      }
+      if (responseCode != 200) {
+        LOGGER.log(Level.WARNING, "responseCode: " + responseCode);
+      }
+      return responseCode;
     }
-    if (responseCode != 200) {
-      LOGGER.log(Level.WARNING, "responseCode: " + responseCode);
-    }
-    return responseCode;
+    finally {
+      if (isInputMethodNull) {
+        // Since method variable was local to this method
+        // releasing connection here.
+        method.releaseConnection();    
+      }
+    } 
   }
 
   /**
@@ -729,23 +737,22 @@ public class SharepointClientContext implements Cloneable {
 
     strURL = Util.encodeURL(strURL);
     HttpMethodBase method = null;
+    String version;
     try {
       method = new HeadMethod(strURL);
       checkConnectivity(strURL, method);
-      if (null == method) {
-        return null;
-      }
+      version = clientFactory.getResponseHeader(method,
+          "MicrosoftSharePointTeamServices");
+      LOGGER.info("SharePoint Version: " + version);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Unable to connect " + strURL, e);
       return null;
     }
-    if (null == method) {
-      return null;
+    finally {
+      if (method != null) {
+        method.releaseConnection();
+      }      
     }
-
-    String version = clientFactory.getResponseHeader(method,
-        "MicrosoftSharePointTeamServices");
-    LOGGER.info("SharePoint Version: " + version);
     if (version == null) {
       LOGGER.warning("Sharepoint version not found for the site [ " + strURL
           + " ]");
