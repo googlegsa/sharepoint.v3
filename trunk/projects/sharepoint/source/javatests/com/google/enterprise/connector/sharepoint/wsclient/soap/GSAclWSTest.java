@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.wsclient.soap;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.AclHelper;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
+import com.google.enterprise.connector.sharepoint.client.SiteDataHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -29,7 +30,6 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
-import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.spi.SimpleTraversalContext;
 import com.google.enterprise.connector.spi.TraversalContext;
@@ -49,7 +49,7 @@ public class GSAclWSTest extends TestCase {
   GlobalState globalState;
   SharepointClientContext sharepointClientContext;
   AclHelper aclHelper;
-  SPSiteDataWS siteDataWS;
+  SiteDataHelper siteData;
 
   protected void setUp() throws Exception {
     System.out.println("\n...Setting Up...");
@@ -58,7 +58,7 @@ public class GSAclWSTest extends TestCase {
     assertNotNull(this.sharepointClientContext);
     sharepointClientContext.setPushAcls(true);
     sharepointClientContext.setBatchHint(2);
-    siteDataWS = new SPSiteDataWS(sharepointClientContext);
+    siteData = new SiteDataHelper(sharepointClientContext);
     aclHelper = new AclHelper(sharepointClientContext,
         TestConfiguration.sharepointUrl);
     globalState = TestConfiguration.initState(sharepointClientContext);
@@ -77,7 +77,7 @@ public class GSAclWSTest extends TestCase {
     testDocs.add(spdocument);
 
     // SharePoint document representing site landing page(site)
-    final SPDocument spdocument2 = siteDataWS.getSiteData(webState);
+    final SPDocument spdocument2 = siteData.getSiteData(webState);
     testDocs.add(spdocument2);
 
     SPDocumentList docList = new SPDocumentList(testDocs, globalState);
@@ -129,7 +129,7 @@ public class GSAclWSTest extends TestCase {
     AclHelper aclHelper = new AclHelper(spContext, webState.getWebUrl());
 
     // Load Document for Root Web Home Page.
-    SPDocument webDoc = siteDataWS.getSiteData(webState);
+    SPDocument webDoc = siteData.getSiteData(webState);
     assertNotNull(webDoc);
     docsToPass.add(webDoc);
 
