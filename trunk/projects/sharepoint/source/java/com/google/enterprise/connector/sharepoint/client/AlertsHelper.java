@@ -14,24 +14,17 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.generated.alerts.Alert;
 import com.google.enterprise.connector.sharepoint.generated.alerts.AlertInfo;
-import com.google.enterprise.connector.sharepoint.generated.alerts.Alerts;
-import com.google.enterprise.connector.sharepoint.generated.alerts.AlertsLocator;
-import com.google.enterprise.connector.sharepoint.generated.alerts.AlertsSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-
-import org.apache.axis.AxisFault;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,8 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling Alerts.asmx Provides a layer to talk to the Alerts
@@ -55,8 +46,7 @@ public class AlertsHelper {
   private static final Logger LOGGER =
       Logger.getLogger(AlertsHelper.class.getName());
   private SharepointClientContext sharepointClientContext;
-  private String endpoint;
-  private AlertsSoap_BindingStub stub;
+  private AlertsWS alertsWS;
 
   /**
    * @param inSharepointClientContext The Context is passed so that necessary
@@ -67,40 +57,23 @@ public class AlertsHelper {
    */
   public AlertsHelper(final SharepointClientContext inSharepointClientContext)
       throws RepositoryException {
-    if (inSharepointClientContext != null) {
-      sharepointClientContext = inSharepointClientContext;
-      endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
-          + SPConstants.ALERTSENDPOINT;
-      LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
-
-      try {
-        final AlertsLocator loc = new AlertsLocator();
-        loc.setAlertsSoapEndpointAddress(endpoint);
-        final Alerts alertsService = loc;
-
-        try {
-          stub = (AlertsSoap_BindingStub) alertsService.getAlertsSoap();
-        } catch (final ServiceException e) {
-          LOGGER.log(Level.WARNING, e.getMessage());
-          throw e;
-        }
-
-        final String strDomain = sharepointClientContext.getDomain();
-        String strUser = sharepointClientContext.getUsername();
-        final String strPassword = sharepointClientContext.getPassword();
-
-        strUser = Util.getUserNameWithDomain(strUser, strDomain);
-        stub.setUsername(strUser);
-        stub.setPassword(strPassword);
-        // The web service time-out value
-        stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
-        LOGGER.fine("Set time-out of : "
-            + sharepointClientContext.getWebServiceTimeOut() + " milliseconds");
-      } catch (final Throwable e) {
-        LOGGER.log(Level.WARNING, "Unable to connect to alerts service stub.", e);
-        throw new SharepointException(e.toString());
-      }
+    if (null == inSharepointClientContext) {
+      throw new SharepointException("SharePointClient context cannot be null.");
     }
+    sharepointClientContext = inSharepointClientContext;
+    alertsWS = sharepointClientContext.getClientFactory().getAlertsWS(
+        sharepointClientContext);
+
+    final String strDomain = sharepointClientContext.getDomain();
+    String strUser = sharepointClientContext.getUsername();
+    final String strPassword = sharepointClientContext.getPassword();
+    final int timeout = sharepointClientContext.getWebServiceTimeOut();
+    LOGGER.fine("Setting time-out to " + timeout + " milliseconds.");
+
+    strUser = Util.getUserNameWithDomain(strUser, strDomain);
+    alertsWS.setUsername(strUser);
+    alertsWS.setPassword(strPassword);
+    alertsWS.setTimeout(timeout);
   }
 
   /**
@@ -114,47 +87,28 @@ public class AlertsHelper {
   public List<SPDocument> getAlerts(final WebState parentWeb,
       final ListState alertListState) {
     final ArrayList<SPDocument> lstAllAlerts = new ArrayList<SPDocument>();
-    if (stub == null) {
-      LOGGER.log(Level.WARNING, "Unable to get the alerts. stub is nulll.");
-      return lstAllAlerts;
-    }
     if (alertListState == null) {
-      LOGGER.log(Level.WARNING, "Unable to get the alerts. alertListState is nulll.");
+      LOGGER.warning("Unable to get the alerts. alertListState is null.");
       return lstAllAlerts;
     }
 
-    // To keep track of those IDs which are deleted
-    final StringBuffer knownAlerts = alertListState.getIDs();
-    final StringBuffer currentAlerts = new StringBuffer();
-
-    AlertInfo alertsInfo = null;
-    try {
-      try {
-        alertsInfo = stub.getAlerts();
-      } catch (final AxisFault af) { // Handling of username formats for
-        // different authentication models.
-        if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
-            && (sharepointClientContext.getDomain() != null)) {
-          final String username = Util.switchUserNameFormat(stub.getUsername());
-          LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-              + stub.getUsername() + " ]. Trying with " + username);
-          stub.setUsername(username);
-          try {
-            alertsInfo = stub.getAlerts();
-          } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Unable to get alerts. endpoint [ "
-                + endpoint + " ]", e);
-          }
-        } else {
-          LOGGER.log(Level.WARNING, "Unable to get alerts. endpoint [ "
-              + endpoint + " ]", af);
-        }
-      } catch (final Throwable e) {
-        LOGGER.log(Level.WARNING, "Unable to get alerts. endpoint [ "
-            + endpoint + " ]", e);
+    final AlertInfo alertsInfo = Util.makeWSRequest(sharepointClientContext,
+        alertsWS, new Util.RequestExecutor<AlertInfo>() {
+      public AlertInfo onRequest(final BaseWS ws) throws Throwable {
+        return ((AlertsWS) ws).getAlerts();
       }
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING, "Unable to get alerts.", e);
+      }
+    });
 
-      if (alertsInfo != null) {
+    if (alertsInfo != null) {
+      try {
+        // To keep track of those IDs which are deleted
+        final StringBuffer knownAlerts = alertListState.getIDs();
+        final StringBuffer currentAlerts = new StringBuffer();
+
         final Alert[] alerts = alertsInfo.getAlerts();
         if ((alerts == null) || (alerts.length == 0)) {
           alertListState.setExisting(false);
@@ -221,12 +175,13 @@ public class AlertsHelper {
           }
         }
         alertListState.setIDs(currentAlerts);
-      } else {
-        alertListState.setExisting(false);
+      } catch (final Exception e) {
+        LOGGER.log(Level.WARNING, "Problem while getting alerts.", e);
       }
-    } catch (final Exception e) {
-      LOGGER.log(Level.WARNING, "Problem while getting alerts", e);
+    } else {
+      alertListState.setExisting(false);
     }
+
     return lstAllAlerts;
   }
 }

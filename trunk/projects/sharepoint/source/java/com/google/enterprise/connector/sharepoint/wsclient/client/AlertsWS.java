@@ -14,21 +14,16 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.generated.alerts.AlertInfo;
 
-import java.util.List;
+import java.rmi.RemoteException;
 
-public interface AlertsWS {
+public interface AlertsWS extends BaseWS {
   /**
-   * Get the list of alerts that the current user has access to on the web
-   * represeted by WebState
+   * Gets information about the alerts defined within the current web site.
    *
-   * @param parentWeb From which the laerts are to be accessed
-   * @param alertListState represents the list that is created for alerts
-   * @return list of {@link SPDocument}
+   * @return a AlertInfo
+   * @throws RemoteException
    */
-  public List<SPDocument> getAlerts(WebState parentWeb,
-      ListState alertListState);
+  public AlertInfo getAlerts() throws RemoteException;
 }

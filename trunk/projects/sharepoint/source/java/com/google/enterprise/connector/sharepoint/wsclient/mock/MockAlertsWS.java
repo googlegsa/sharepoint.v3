@@ -15,9 +15,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
-import com.google.enterprise.connector.sharepoint.state.ListState;
-import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.generated.alerts.AlertInfo;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
 
 import java.util.logging.Logger;
@@ -26,6 +24,8 @@ import java.util.List;
 public class MockAlertsWS implements AlertsWS {
   private static final Logger LOGGER = Logger.getLogger(MockAlertsWS.class.getName());
   private final SharepointClientContext sharepointClientContext;
+  private String username;
+  private String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
@@ -38,13 +38,31 @@ public class MockAlertsWS implements AlertsWS {
     sharepointClientContext = ctx;
   }
 
+  /* @Override */
+  public String getUsername() {
+    return username;
+  }
+
+  /* @Override */
+  public void setUsername(final String username) {
+    this.username = username;
+  }
+
+  /* @Override */
+  public void setPassword(final String password) {
+    this.password = password;
+  }
+
+  /* @Override */
+  public void setTimeout(final int timeout) {
+  }
+
   /**
    * (@inheritDoc)
    *
    * This is a stub implementation.
    */
-  public List<SPDocument> getAlerts(final WebState parentWeb,
-      final ListState alertListState) {
+  public AlertInfo getAlerts() {
     return null;
   }
 }
