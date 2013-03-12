@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.wsclient.soap;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
+import com.google.enterprise.connector.sharepoint.client.SiteDataHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -70,13 +71,13 @@ public class SPListsWSTest extends TestCase {
     listsHelper = new ListsHelper(this.sharepointClientContext);
 
     System.out.println("Creating test List ...");
-    final SPSiteDataWS siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
+    final SiteDataHelper siteData = new SiteDataHelper(this.sharepointClientContext);
 
     final GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.sharepointUrl);
 
-    List<ListState> listCollection = siteDataWS.getNamedLists(ws);
+    List<ListState> listCollection = siteData.getNamedLists(ws);
     assertNotNull(listCollection);
 
     for (ListState baseList : listCollection) {

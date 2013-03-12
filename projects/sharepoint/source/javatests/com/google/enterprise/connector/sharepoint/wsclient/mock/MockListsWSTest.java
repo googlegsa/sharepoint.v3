@@ -16,12 +16,12 @@ package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
+import com.google.enterprise.connector.sharepoint.client.SiteDataHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
-import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.mock.XmlClientFactory;
 import com.google.enterprise.connector.sharepoint.state.Folder;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
@@ -55,15 +55,15 @@ public class MockListsWSTest extends TestCase {
 
     listsHelper = new ListsHelper(sharepointClientContext);
 
-    final SiteDataWS siteDataWS =
-        clientFactory.getSiteDataWS(sharepointClientContext);
+    final SiteDataHelper siteData =
+        new SiteDataHelper(sharepointClientContext);
 
     final GlobalState state = new GlobalState(clientFactory,
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     final WebState ws =
         state.makeWebState(sharepointClientContext, "http://example.com");
 
-    List<ListState> listCollection = siteDataWS.getNamedLists(ws);
+    List<ListState> listCollection = siteData.getNamedLists(ws);
     assertNotNull(listCollection);
 
     testListUrl = "http://example.com/Web1/List1";
