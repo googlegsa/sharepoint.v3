@@ -210,16 +210,17 @@ public class SPClientFactory implements ClientFactory {
         LOGGER.log(Level.WARNING,
             "Http Response Code = "+ responseCode + " for Url [ "
                 + method.getURI() + " ].");
-        
+
         if (responseCode == 401 && webAppsVisited.contains(currentWebApp)) {
-          LOGGER.log(Level.WARNING, "Do not reinitialize HTTP Client as " 
-              + "connection to Web Application [ " + currentWebApp 
-              + "] was earlier successfull with existing HTTP Client Object.");
+          LOGGER.log(Level.WARNING, "Not reinitializing HTTP Client after "
+              + "[ 401 ] response as connection to Web Application [ "
+              + currentWebApp
+              + " ] was successful earlier with existing HTTP Client Object.");
           return responseCode;
         }
 
         LOGGER.log(Level.WARNING, "Reinitializing HTTP Client as [ "
-            + responseCode + "] response received.");
+            + responseCode + " ] response received.");
         resetHttpClient(credentials);
         responseCode = httpClient.executeMethod(method);
       }
@@ -249,8 +250,8 @@ public class SPClientFactory implements ClientFactory {
     httpClientToUse.getState().setCredentials(AuthScope.ANY, credentials);
     return httpClientToUse;
   }
-  
-  private void resetHttpClient(Credentials credentials) {
+
+  private synchronized void resetHttpClient(Credentials credentials) {
     httpClient = getHttpClient(credentials);
     webAppsVisited = new TreeSet<String>();
   }
