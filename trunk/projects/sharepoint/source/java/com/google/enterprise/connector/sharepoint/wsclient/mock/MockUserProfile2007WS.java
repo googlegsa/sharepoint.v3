@@ -15,15 +15,18 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.generated.userprofileservice.GetUserProfileByIndexResult;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 
 import java.util.logging.Logger;
 import java.util.Set;
 
 public class MockUserProfile2007WS implements UserProfile2007WS {
-  private static final Logger LOGGER = Logger.getLogger(MockUserProfile2007WS.class.getName());
+  private static final Logger LOGGER =
+      Logger.getLogger(MockUserProfile2007WS.class.getName());
   private final SharepointClientContext sharepointClientContext;
+  private String username;
+  private String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
@@ -36,30 +39,27 @@ public class MockUserProfile2007WS implements UserProfile2007WS {
     sharepointClientContext = ctx;
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public boolean isSPS() throws SharepointException {
-    return true;
+  @Override
+  public String getUsername() {
+    return username;
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public Set<String> getMyLinks() throws SharepointException {
-    return null;
+  @Override
+  public void setUsername(final String username) {
+    this.username = username;
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public Set<String> getPersonalSiteList() throws SharepointException {
-    return null;
+  @Override
+  public void setPassword(final String password) {
+    this.password = password;
+  }
+
+  @Override
+  public void setTimeout(final int timeout) {
+  }
+
+  @Override
+  public GetUserProfileByIndexResult getUserProfileByIndex(int index) {
+    return new GetUserProfileByIndexResult();
   }
 }

@@ -18,6 +18,7 @@ import com.google.enterprise.connector.sharepoint.client.AlertsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.client.UserProfile2003Helper;
+import com.google.enterprise.connector.sharepoint.client.UserProfile2007Helper;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -26,7 +27,6 @@ import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
-import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.apache.axis.utils.XMLUtils;
@@ -528,11 +528,11 @@ public class SharepointClient {
       if ((strMySiteURL != null) && (!strMySiteURL.trim().equals(""))) {
         LOGGER.log(Level.INFO, "Getting the initial list of MySites for SharePoint type SP2007 from MySiteBaseURL [ "
             + strMySiteURL + " ]");
-        final UserProfile2007WS userProfileWS =
-            clientFactory.getUserProfile2007WS(sharepointClientContext);
-        if (userProfileWS.isSPS()) {
+        final UserProfile2007Helper userProfile =
+            new UserProfile2007Helper(sharepointClientContext);
+        if (userProfile.isSPS()) {
           try {
-            final Set<String> lstMyLinks = userProfileWS.getMyLinks();
+            final Set<String> lstMyLinks = userProfile.getMyLinks();
             allSites.addAll(lstMyLinks);// remove duplicates
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Unable to get MySites from MySiteBaseURL [ "
@@ -540,7 +540,7 @@ public class SharepointClient {
           }
 
           try {
-            final Set<String> personalSites = userProfileWS.getPersonalSiteList();
+            final Set<String> personalSites = userProfile.getPersonalSiteList();
             allSites.addAll(personalSites);
           } catch (final Exception e) {
             LOGGER.log(Level.WARNING, "Unable to get Personal Sites for Context URL [ "
