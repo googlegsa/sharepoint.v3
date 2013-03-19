@@ -18,8 +18,25 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import java.util.Set;
 
-public interface UserProfile2007WS extends UserProfile2003WS {
+public interface UserProfile2007WS {
   /**
+   * Checks to see if the current web to which the web service endpioint 
+   * is set is an SPS site.
+   *
+   * @return if the endpoint being used is an SPS site
+   * @throws SharepointException
+   */
+  public boolean isSPS() throws SharepointException;
+
+  /**
+   * To get all the personal sites from the current web.
+   *
+   * @return the list of personal sites
+   * @throws SharepointException
+   */
+  public Set<String> getPersonalSiteList() throws SharepointException;
+  
+    /**
    * To get all the My Sites from the specified MySite BAse URL on configuration
    * page.
    *
