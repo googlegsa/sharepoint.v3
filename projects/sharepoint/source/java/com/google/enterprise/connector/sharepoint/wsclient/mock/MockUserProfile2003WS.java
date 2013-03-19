@@ -15,7 +15,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.GetUserProfileByIndexResult;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 
 import java.util.logging.Logger;
@@ -24,6 +24,8 @@ import java.util.Set;
 public class MockUserProfile2003WS implements UserProfile2003WS {
   private static final Logger LOGGER = Logger.getLogger(MockUserProfile2003WS.class.getName());
   private final SharepointClientContext sharepointClientContext;
+  private String username;
+  private String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
@@ -36,21 +38,27 @@ public class MockUserProfile2003WS implements UserProfile2003WS {
     sharepointClientContext = ctx;
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public boolean isSPS() throws SharepointException {
-    return true;
+  @Override
+  public String getUsername() {
+    return username;
   }
 
-  /**
-   * (@inheritDoc)
-   *
-   * This is a stub implementation.
-   */
-  public Set<String> getPersonalSiteList() throws SharepointException {
-    return null;
+  @Override
+  public void setUsername(final String username) {
+    this.username = username;
+  }
+
+  @Override
+  public void setPassword(final String password) {
+    this.password = password;
+  }
+
+  @Override
+  public void setTimeout(final int timeout) {
+  }
+
+  @Override
+  public GetUserProfileByIndexResult getUserProfileByIndex(int index) {
+    return new GetUserProfileByIndexResult();
   }
 }

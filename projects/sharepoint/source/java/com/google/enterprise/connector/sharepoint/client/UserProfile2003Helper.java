@@ -14,25 +14,18 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.GetUserProfileByIndexResult;
 import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.PropertyData;
-import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileService;
-import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileServiceLocator;
-import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.UserProfileServiceSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-
-import org.apache.axis.AxisFault;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 
 import java.text.Collator;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
 
 /**
  * Java Client for calling UserProfile.asmx for SharePoint 2003 Provides a layer
@@ -42,12 +35,10 @@ import javax.xml.rpc.ServiceException;
  * @author nitendra_thakur
  */
 public class UserProfile2003Helper {
-  private final Logger LOGGER =
+  private static Logger LOGGER =
       Logger.getLogger(UserProfile2003Helper.class.getName());
   private SharepointClientContext sharepointClientContext;
-  private UserProfileServiceSoap_BindingStub stub;
-  String endpoint;
-
+  private UserProfile2003WS userProfileWS;
   private final String personalSpaceTag = "PersonalSpace";
 
   /**
@@ -59,31 +50,24 @@ public class UserProfile2003Helper {
    */
   public UserProfile2003Helper(final SharepointClientContext 
       inSharepointClientContext) throws SharepointException {
-    if (inSharepointClientContext != null) {
-      sharepointClientContext = inSharepointClientContext;
-      endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
-          + SPConstants.USERPROFILEENDPOINT;
-      LOGGER.log(Level.CONFIG, "Endpoint set to: " + endpoint);
-
-      final UserProfileServiceLocator loc = new UserProfileServiceLocator();
-      loc.setUserProfileServiceSoapEndpointAddress(endpoint);
-
-      final UserProfileService service = loc;
-      try {
-        stub = (UserProfileServiceSoap_BindingStub) service.getUserProfileServiceSoap();
-      } catch (final ServiceException e) {
-        LOGGER.log(Level.WARNING, e.getMessage(), e);
-        throw new SharepointException("Unable to create the userprofile stub");
-      }
-
-      final String strDomain = inSharepointClientContext.getDomain();
-      String strUserName = inSharepointClientContext.getUsername();
-      final String strPassword = inSharepointClientContext.getPassword();
-
-      strUserName = Util.getUserNameWithDomain(strUserName, strDomain);
-      stub.setUsername(strUserName);
-      stub.setPassword(strPassword);
+    if (null == inSharepointClientContext) {
+      throw new SharepointException("SharePointClient context cannot be null.");
     }
+
+    sharepointClientContext = inSharepointClientContext;
+    userProfileWS = sharepointClientContext.getClientFactory()
+        .getUserProfile2003WS(sharepointClientContext);
+
+    final String strDomain = sharepointClientContext.getDomain();
+    String strUser = sharepointClientContext.getUsername();
+    final String strPassword = sharepointClientContext.getPassword();
+    final int timeout = sharepointClientContext.getWebServiceTimeOut();
+    LOGGER.fine("Setting time-out to " + timeout + " milliseconds.");
+
+    strUser = Util.getUserNameWithDomain(strUser, strDomain);
+    userProfileWS.setUsername(strUser);
+    userProfileWS.setPassword(strPassword);
+    userProfileWS.setTimeout(timeout);
   }
 
   /**
@@ -94,37 +78,8 @@ public class UserProfile2003Helper {
    * @throws SharepointException
    */
   public boolean isSPS() throws SharepointException {
-    if (stub == null) {
-      throw new SharepointException("UserProfile stub not found");
-    }
-    try {
-      stub.getUserProfileByIndex(0);
-      LOGGER.config("SPS site. Using endpoint " + endpoint);
-      return true;
-    } catch (final AxisFault fault) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(fault.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          stub.getUserProfileByIndex(0);
-          LOGGER.config("SPS site. Using endpoint " + endpoint);
-          return true;
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Unable to call getUserProfileByIndex(0). endpoint [ "
-              + endpoint + " ].", e);
-          return false;
-        }
-      } else {
-        LOGGER.info("WSS site");
-        return false;
-      }
-    } catch (final Exception e) {
-      LOGGER.config("WSS site. Using endpoint " + endpoint);
-      return false;
-    }
+    final GetUserProfileByIndexResult result = getUserProfileByIndex(0);
+    return result != null;
   }
 
   /**
@@ -137,37 +92,10 @@ public class UserProfile2003Helper {
     // list of personal sites and subsites
     final Set<String> personalSitesSet = new TreeSet<String>();
     final Collator collator = Util.getCollator();
-    if (stub == null) {
-      LOGGER.warning("Unable to get personal sites because userprofile stub is null");
-      return personalSitesSet;
-    }
+
     int index = 0;
     while (index >= 0) {
-
-      GetUserProfileByIndexResult result = null;
-      try {
-        result = stub.getUserProfileByIndex(index);
-      } catch (final AxisFault fault) {
-        if ((SPConstants.UNAUTHORIZED.indexOf(fault.getFaultString()) != -1)
-            && (sharepointClientContext.getDomain() != null)) {
-          final String username = Util.switchUserNameFormat(stub.getUsername());
-          LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-              + stub.getUsername() + " ]. Trying with " + username);
-          stub.setUsername(username);
-          try {
-            result = stub.getUserProfileByIndex(index);
-          } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Unable to get Personal sites as call to getUserProfileByIndex("
-                + index + ") has failed. endpoint [ " + endpoint + " ].", e);
-          }
-        } else {
-          LOGGER.log(Level.WARNING, "Unable to get Personal sites as call to getUserProfileByIndex("
-              + index + ") has failed. endpoint [ " + endpoint + " ].", fault);
-        }
-      } catch (final Exception e) {
-        LOGGER.log(Level.WARNING, "Unable to get Personal sites as call to getUserProfileByIndex("
-            + index + ") has failed. endpoint [ " + endpoint + " ].", e);
-      }
+      final GetUserProfileByIndexResult result = getUserProfileByIndex(index);
 
       if ((result == null) || (result.getUserProfile() == null)) {
         break;
@@ -205,11 +133,30 @@ public class UserProfile2003Helper {
     }
     if (personalSitesSet.size() > 0) {
       LOGGER.info("Discovered " + personalSitesSet.size()
-          + " personal sites to crawl. Using endpoint " + endpoint);
+          + " personal sites to crawl.");
     } else {
-      LOGGER.config("No personal sites to crawl. Using endpoint " + endpoint);
+      LOGGER.info("No personal sites to crawl.");
     }
     return personalSitesSet;
   }
 
+  /**
+   * Calls UserProfileWS.getUserProfileByIndex to get a user profile.
+   *
+   * @param index The index of the user profile to be retrieved
+   * @return a GetUserProfileByIndexResult
+   */
+  private GetUserProfileByIndexResult getUserProfileByIndex(final int index) {
+    return Util.makeWSRequest(sharepointClientContext, userProfileWS,
+        new Util.RequestExecutor<GetUserProfileByIndexResult>() {
+      public GetUserProfileByIndexResult onRequest(final BaseWS ws)
+          throws Throwable {
+        return ((UserProfile2003WS) ws).getUserProfileByIndex(index);
+      }
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING, "Call to getUserProfileByIndex failed.", e);
+      }
+    });
+  }
 }

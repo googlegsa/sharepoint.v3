@@ -27,6 +27,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile200
 
 import org.apache.axis.AxisFault;
 
+import java.rmi.RemoteException;
 import java.text.Collator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -87,129 +88,42 @@ public class SPUserProfileWS implements UserProfile2003WS {
   }
 
   /**
-   * Checks to see if the current web to which the web service endpioint is set
-   * is an SPS site.
-   *
-   * @return if the endpoint being used is an SPS site
-   * @throws SharepointException
+   * (@inheritDoc)
    */
-  public boolean isSPS() throws SharepointException {
-    if (stub == null) {
-      throw new SharepointException("UserProfile stub not found");
-    }
-    try {
-      stub.getUserProfileByIndex(0);
-      LOGGER.config("SPS site. Using endpoint " + endpoint);
-      return true;
-    } catch (final AxisFault fault) {
-      if ((SPConstants.UNAUTHORIZED.indexOf(fault.getFaultString()) != -1)
-          && (sharepointClientContext.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(stub.getUsername());
-        LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-            + stub.getUsername() + " ]. Trying with " + username);
-        stub.setUsername(username);
-        try {
-          stub.getUserProfileByIndex(0);
-          LOGGER.config("SPS site. Using endpoint " + endpoint);
-          return true;
-        } catch (final Exception e) {
-          LOGGER.log(Level.WARNING, "Unable to call getUserProfileByIndex(0). endpoint [ "
-              + endpoint + " ].", e);
-          return false;
-        }
-      } else {
-        LOGGER.info("WSS site");
-        return false;
-      }
-    } catch (final Exception e) {
-      LOGGER.config("WSS site. Using endpoint " + endpoint);
-      return false;
-    }
+  public String getUsername() {
+    return stub.getUsername();
   }
 
   /**
-   * To get all the personal sites from the current web.
-   *
-   * @return the list of personal sites
-   * @throws SharepointException
+   * (@inheritDoc)
    */
-  public Set<String> getPersonalSiteList() throws SharepointException {
-    // list of personal sites and subsites
-    final Set<String> personalSitesSet = new TreeSet<String>();
-    final Collator collator = Util.getCollator();
-    if (stub == null) {
-      LOGGER.warning("Unable to get personal sites because userprofile stub is null");
-      return personalSitesSet;
-    }
-    int index = 0;
-    while (index >= 0) {
-
-      GetUserProfileByIndexResult result = null;
-      try {
-        result = stub.getUserProfileByIndex(index);
-      } catch (final AxisFault fault) {
-        if ((SPConstants.UNAUTHORIZED.indexOf(fault.getFaultString()) != -1)
-            && (sharepointClientContext.getDomain() != null)) {
-          final String username = Util.switchUserNameFormat(stub.getUsername());
-          LOGGER.log(Level.CONFIG, "Web Service call failed for username [ "
-              + stub.getUsername() + " ]. Trying with " + username);
-          stub.setUsername(username);
-          try {
-            result = stub.getUserProfileByIndex(index);
-          } catch (final Exception e) {
-            LOGGER.log(Level.WARNING, "Unable to get Personal sites as call to getUserProfileByIndex("
-                + index + ") has failed. endpoint [ " + endpoint + " ].", e);
-          }
-        } else {
-          LOGGER.log(Level.WARNING, "Unable to get Personal sites as call to getUserProfileByIndex("
-              + index + ") has failed. endpoint [ " + endpoint + " ].", fault);
-        }
-      } catch (final Exception e) {
-        LOGGER.log(Level.WARNING, "Unable to get Personal sites as call to getUserProfileByIndex("
-            + index + ") has failed. endpoint [ " + endpoint + " ].", e);
-      }
-
-      if ((result == null) || (result.getUserProfile() == null)) {
-        break;
-      }
-
-      final PropertyData[] data = result.getUserProfile();
-      if (data == null) {
-        break;
-      }
-
-      for (PropertyData element : data) {
-        final String name = element.getName();
-        if (collator.equals(personalSpaceTag, name)) {
-          final String propVal = element.getValue();// e.g.
-          // /personal/administrator/
-          if (propVal == null) {
-            continue;
-          }
-          String strURL = Util.getWebApp(sharepointClientContext.getSiteURL())
-              + propVal;
-
-          if (strURL.endsWith(SPConstants.SLASH)) {
-            strURL = strURL.substring(0, strURL.lastIndexOf(SPConstants.SLASH));
-          }
-          if (sharepointClientContext.isIncludedUrl(strURL)) {
-            personalSitesSet.add(strURL);
-            LOGGER.log(Level.CONFIG, "Personal Site: " + strURL);
-          } else {
-            LOGGER.log(Level.WARNING, "excluding " + strURL);
-          }
-        }
-      }
-      final String next = result.getNextValue();
-      index = Integer.parseInt(next);
-    }
-    if (personalSitesSet.size() > 0) {
-      LOGGER.info("Discovered " + personalSitesSet.size()
-          + " personal sites to crawl. Using endpoint " + endpoint);
-    } else {
-      LOGGER.config("No personal sites to crawl. Using endpoint " + endpoint);
-    }
-    return personalSitesSet;
+  public void setUsername(final String username) {
+    stub.setUsername(username);
   }
 
+  /**
+   * (@inheritDoc)
+   */
+  public void setPassword(final String password) {
+    stub.setPassword(password);
+  }
+
+  /**
+   * (@inheritDoc)
+   */
+  public void setTimeout(final int timeout) {
+    stub.setTimeout(timeout);
+  }
+
+  /**
+   * This method returns the information about the user profile by the specified index.
+   *
+   * @param index The index of the user profile to be retrieved
+   * @return a GetUserProfileByIndexResult
+   * @throws RemoteException
+   */
+  public GetUserProfileByIndexResult getUserProfileByIndex(int index)
+      throws RemoteException {
+    return stub.getUserProfileByIndex(index);
+  }
 }
