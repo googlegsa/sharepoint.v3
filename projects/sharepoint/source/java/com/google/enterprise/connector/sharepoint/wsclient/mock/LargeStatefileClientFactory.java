@@ -33,7 +33,6 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
-import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
 import java.net.MalformedURLException;
