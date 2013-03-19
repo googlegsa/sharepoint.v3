@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.AlertsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
@@ -30,7 +31,7 @@ import junit.framework.TestCase;
 
 public class SPAlertsWSTest extends TestCase {
   SharepointClientContext sharepointClientContext;
-  SPAlertsWS alertWS;
+  AlertsHelper alerts;
   SPClientFactory clientFactory = new SPClientFactory();
 
   protected void setUp() throws Exception {
@@ -39,23 +40,19 @@ public class SPAlertsWSTest extends TestCase {
     this.sharepointClientContext = TestConfiguration.initContext();
 
     assertNotNull(this.sharepointClientContext);
-    System.out.println("Initializing SPAlertsWS ...");
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    this.alertWS = new SPAlertsWS(this.sharepointClientContext);
+    alerts = new AlertsHelper(this.sharepointClientContext);
   }
 
   public final void testAlertsWS() throws Throwable {
-    System.out.println("Testing SPAlertsWS(SharepointClientContext, siteName)...");
     sharepointClientContext.setSiteURL(TestConfiguration.Site1_URL);
-    this.alertWS = new SPAlertsWS(this.sharepointClientContext);
-    assertNotNull(this.alertWS);
-    System.out.println("[ SPAlertsWS(SharepointClientContext, siteName) ] Test Passed");
+    alerts = new AlertsHelper(this.sharepointClientContext);
+    assertNotNull(alerts);
   }
 
   public final void testAlerts() throws Throwable {
-    System.out.println("Testing getAlerts()...");
     final String internalName = this.sharepointClientContext.getSiteURL();
     final Calendar cLastMod = Calendar.getInstance();
     cLastMod.setTime(new Date());
@@ -67,8 +64,7 @@ public class SPAlertsWSTest extends TestCase {
         SPConstants.ALERTS_TYPE, SPConstants.ALERTS_TYPE, cLastMod,
         SPConstants.ALERTS_TYPE, internalName, ws);
 
-    List<SPDocument> lstAlerts = alertWS.getAlerts(ws, currentDummyAlertList);
+    List<SPDocument> lstAlerts = alerts.getAlerts(ws, currentDummyAlertList);
     assertNotNull(lstAlerts);
-    System.out.println("[ getAlerts() ] Test Passed");
   }
 }
