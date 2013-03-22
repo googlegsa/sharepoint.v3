@@ -84,17 +84,17 @@ public interface ClientFactory {
   public AclWS getAclWS(SharepointClientContext ctx, String webUrl);
 
   /**
-   * Gets the instance of the ACL web service.
+   * Gets the instance of the site discovery web service.
    *
-   * @return a new ACL service instance.
+   * @return a new site discovery service instance.
    */
   public SiteDiscoveryWS getSiteDiscoveryWS(SharepointClientContext ctx,
       String webUrl);
-  
+
   /**
-   * Gets the instance of User Profile Change Web Service
-   * @param ctx
-   * @return
+   * Gets the instance of the User Profile Change Web Service.
+   *
+   * @return a new user profile change service instance.
    */
   public UserProfileChangeWS getUserProfileChangeWS(
       SharepointClientContext ctx);

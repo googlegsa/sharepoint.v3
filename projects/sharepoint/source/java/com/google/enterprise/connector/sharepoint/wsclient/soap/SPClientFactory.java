@@ -188,7 +188,7 @@ public class SPClientFactory implements ClientFactory {
     }
   }
 
-  public int checkConnectivity(HttpMethodBase method,
+  public synchronized int checkConnectivity(HttpMethodBase method,
       Credentials credentials) throws IOException {
     if (httpClient == null) {
       httpClient = GetHttpClient(credentials);
