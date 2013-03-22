@@ -242,6 +242,7 @@ public class SPConstants {
   public static final String SPAUTHOR = "sharepoint:author";
   public static final String LIST_GUID = "sharepoint:listguid";
   public static final String PARENT_WEB_TITLE = "sharepoint:parentwebtitle";
+  public static final String HTTP_STATUS_CODE = "sharepoint:httpstatuscode";
   public static final String OBJECT_TYPE = "google:objecttype";
   public static final String NO_OBJTYPE = "No Object Type";
   public static final String OBJTYPE_WEB = "Web";
