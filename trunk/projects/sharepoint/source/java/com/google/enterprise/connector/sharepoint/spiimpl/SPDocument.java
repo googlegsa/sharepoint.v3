@@ -79,6 +79,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   private FeedType feedType;
   private SPType spType;
   private ActionType action = ActionType.ADD;
+  private int httpStatusCode = 0;
 
   private Folder parentFolder;
   // When a folder is renamed/restored and the current document is being sent
@@ -665,6 +666,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       } else {
         return null;
       }
+    } else if (collator.equals(strPropertyName,
+          SPConstants.HTTP_STATUS_CODE)) {
+      if (httpStatusCode != 0) {
+        return new SimpleProperty(Value.getLongValue(httpStatusCode));
+      } else {
+        return null;
+      }
     } else {
       // FIXME: We can get rid of this if-else-if ladder here by setting all
       // the relevant properties (in appropriate type) right at the time of
@@ -855,6 +863,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       try {
         method = new GetMethod(docURL);
         responseCode = sharepointClientContext.checkConnectivity(docURL, method);
+        httpStatusCode = responseCode;
         if (null == method || responseCode != 200) {
           return SPConstants.CONNECTIVITY_FAIL;
         }
@@ -866,8 +875,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             } finally {
               method.releaseConnection();
             }
-          }          
-        };       
+          }
+        };
       } catch (Throwable t) {
         String msg = new StringBuffer("Unable to fetch contents from URL: ").append(url).toString();
         LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: " + url, t);
