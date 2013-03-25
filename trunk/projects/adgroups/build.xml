@@ -184,7 +184,13 @@
     <fail if="${ant.project.name}.failure" message="Test failure"/>
   </target>
 
-  <target name="jar" depends="compile,svn.svn-branch-version"
+  <target name="init-package" depends="svn.svn-branch-version">
+    <property name="downloads.prefix"
+              value="connector-adgroups-${svn.branch}" />
+    <property name="repackage.prefix" value="connector-adgroups-${version}" />
+  </target>
+
+  <target name="jar" depends="compile,init-package"
           description="Create connector-adgroups.jar">
     <tstamp />
     <jar jarfile="${jarfile}">
@@ -213,9 +219,6 @@
   </target>
 
   <target name="download-adgroups-connector" depends="jar,javadoc">
-    <property name="downloads.prefix"
-              value="connector-adgroups-${svn.branch}" />
-
     <zip destfile="${downloads.dir}/${downloads.prefix}-src.zip">
       <zipfileset dir="." prefix="${downloads.prefix}">
         <include name="javadoc/**" />
@@ -243,6 +246,13 @@
     </zip>
     <checksum algorithm="SHA-1"
               file="${downloads.dir}/${downloads.prefix}.zip" />
+  </target>
+
+  <target name="repackage" depends="init-package"
+          description="Repackage release candidate files for release.">
+    <repackage-downloads downloads.dir="${downloads.dir}"
+                         downloads.prefix="${downloads.prefix}"
+                         repackage.prefix="${repackage.prefix}" />
   </target>
 
   <target name="clean" depends="clean_code_coverage" description="Deletes files produced by compile and test.">
