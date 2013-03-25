@@ -789,8 +789,7 @@ public class GssAclMonitor
      [WebMethod]
     public GssGetAclForUrlsResult GetAclForWebApplicationPolicy()
     {
-        SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
-        using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
+        using (SPSite site = new SPSite(SPContext.Current.Site.ID, SPUtility.GetAdminToken()))
         {
             using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
             {
@@ -858,8 +857,7 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls, Boolean bUseInheritance, Boolean bIncludePolicyAcls, int largeAclThreshold, Boolean bMetaUrlFeed)
     {
-        SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
-        using (SPSite site = new SPSite(SPContext.Current.Site.Url, systemUser))
+        using (SPSite site = new SPSite(SPContext.Current.Site.Url, SPUtility.GetAdminToken()))
         {
             using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
             {
@@ -1154,8 +1152,7 @@ public class GssAclMonitor
     [WebMethod]
     public GssResolveSPGroupResult ResolveSPGroupInBatch(string[] groupId, int batchSize)
     {
-         SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
-         using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
+         using (SPSite site = new SPSite(SPContext.Current.Site.ID, SPUtility.GetAdminToken()))
          {
              using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
              {
@@ -2120,5 +2117,20 @@ public sealed class GssAclUtility
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// Get admin token, in case of failure return null, which will use current user's token
+    /// </summary>
+    public static GetAdminToken()
+    {
+        SPUserToken user = null;
+        try {
+            user = SPContext.Current.Site.SystemAccount.UserToken;
+        } catch (Exception) {
+            // this can happen if site collection is readonly, we can't obtain
+            // SystemAccount's token, so we return current user's (null)
+        }
+        return user;
     }
 }
