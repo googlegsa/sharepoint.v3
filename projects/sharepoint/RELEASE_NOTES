@@ -9,8 +9,106 @@ The following sections describe the release in detail and provide information th
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
 
+Release 3.0.6, March 27, 2013
+=============================
+
+Introduction
+------------
+This is a maintenance release that improves quality without adding any
+new functionality. Users of previous releases are encouraged to
+upgrade. Users of previous releases should check the "Version
+Compatibility" section below for instructions on how to use existing
+data with this new release.
+
+Summary of Changes
+------------------
+For a summary of the new features, see the Guide to Release 3.0:
+
+http://www.google.com/support/enterprise/static/gsa/docs/admin/connector_30/sharepoint_guide/
+
+This release contains fixes for the following issues:
+
+--Issue 7971098 SharePoint connector corrupts HTTP header responses,
+                causing the connector version lookup to fail.
+
+--Issue 7922694 After a permission change on a SharePoint list, the
+                connector gets stuck in a loop when the number of
+                inheriting permission list items is greater than the
+                batch size.
+                
+--Issue 7899343 SharePoint user profile connector does not perform
+                change detection during incremental crawl.
+                
+--Issue 7687492 Default SharePoint user profile full traversal
+                interval should be one day.
+
+--Issue 7531007 When the alternate access mapping has an entry without
+                a fully-qualified hostname, the SharePoint connector
+                may send a feed with empty ACLs for lists, causing
+                inheritance chains to break.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager version 3.0.4 and above. Versions
+lower than 3.0.4 of the Connector Manager will not work correctly with this
+version of the connector. Connectors with version 2.4.0 and above can be
+safely upgraded using the steps given below.
+
+This version works with Google Services for SharePoint 3.0.6. Versions
+lower than 3.0.6 of Google Services for SharePoint will not work
+correctly with this version of the connector.
+
+Google strongly recommends reindexing your SharePoint content when
+upgrading to 3.0, due to changes in the ACL structures in the connector,
+feeds, and GSA index, and corresponding changes in user identity and group
+resolution in the authentication mechanisms.
+
+SharePoint local group resolution support with GSA 6.10.4.G.22 is limited
+to HTTP Based NTLM and Connector authentication. All authentication
+mechanisms work with GSA 6.12 and higher. Flex AuthZ support in the
+connector works only with GSA 6.14 and higher. ACL inheritance and Deny
+permission, and crawling user profiles for Expert Search work only with GSA
+7.0 and higher. All the other connector features will continue to work on
+GSA 7.0.14.G.114, 7.0.14.G.84, 6.14.0.G.28, 6.12.0.G.30, and 6.10.4.G.22.
+
+Manually upgrade an existing connector and Google Services for SharePoint
+------------------------------------------------------------------------
+The steps to manually upgrade an existing connector or a Google Services for SharePoint can be found at http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/ManualInstallation.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit and 64-bit Windows and Linux environments.
+
+Certified Against
+-------------------
+32-bit:
+-------
+Microsoft Windows Server 2003
+Enterprise Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Red Hat Linux 5 (32-bit)
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+64-bit:
+--------
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel(R) Xeon(R) CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+Note: This release has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
+
+GSA Support:
+---------------------
+This connector version has been certified against 6.10.4.G.22, 6.12.0.G.30,
+6.14.0.G.28, and 7.0.14.G.114.
+
+
 Release 3.0.4, November 19, 2012
-===============================
+================================
 
 Introduction
 ------------
