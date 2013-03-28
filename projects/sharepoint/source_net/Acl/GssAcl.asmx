@@ -2122,7 +2122,7 @@ public sealed class GssAclUtility
     /// <summary>
     /// Get admin token, in case of failure return null, which will use current user's token
     /// </summary>
-    public static GetAdminToken()
+    public static SPUserToken GetAdminToken()
     {
         SPUserToken user = null;
         try {
