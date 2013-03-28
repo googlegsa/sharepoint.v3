@@ -93,7 +93,6 @@
           <s:element minOccurs="0" maxOccurs="1" name="ParentUrl" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="ParentId" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="LargeAcl" type="s:string" />
-          <s:element minOccurs="0" maxOccurs="1" name="AnonymousAccess" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:complexType name="ArrayOfGssAce">

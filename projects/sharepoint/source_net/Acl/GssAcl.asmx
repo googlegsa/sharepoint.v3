@@ -34,9 +34,8 @@ using Microsoft.SharePoint.Utilities;
 [Serializable]
 public class GssPrincipal
 {
-    // Site Collection specific ID. This is very useful to track such users/groups which have been
-    // deleted. A -1 value (GssAclMonitor.GSSITEADMINGROUPID) is used for the hypothetical site
-    // collection group and anything smaller than -1 value is considered to be unknown
+    // Site Collection specific ID. This is very useful to track such users/groups which have been deleted
+    // A -1 value is used for the hypoyhetical site collection group and anything smaller than -1 is considered to be unknown
     private int id;
 
     // Name of the prinicpal
@@ -292,16 +291,6 @@ public class GssAcl
     {
         get { return largeAcl; }
         set { largeAcl = value; }
-    }
-
-    // This field is typed as String instead of Boolean to ensure
-    // SOAP compatiblity with earlier versions of SharePoint Connectors.
-    private string anonymousAccess;
-
-    public String AnonymousAccess
-    {
-        get { return anonymousAccess; }
-        set { anonymousAccess = value; }
     }
   
     public string EntityUrl
@@ -718,7 +707,7 @@ public class GssGetListItemsWithInheritingRoleAssignments : GssAclBaseResult
 // TODO It's better to use in-out (holders in java) parameters instead of separate objects for returning responses from every web methods
 
 /// <summary>
-/// Provides all the necessary web methods exposed by the Web Service
+/// Provides alll the necessary web methods exposed by the Web Service
 /// </summary>
 [WebService(Namespace = "gssAcl.generated.sharepoint.connector.enterprise.google.com")]
 [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
@@ -733,7 +722,6 @@ public class GssAclMonitor
     // administrator requires re-crawling all the documents in the site collection. Having a common group for the administrator will
     // just require updating the group membership info and no re-crawl will be required.
     public const string GSSITEADMINGROUP = "[GSSiteCollectionAdministrator]";
-    public const int GSSITEADMINGROUPID = -1;
 
     void init(out SPSite site, out SPWeb web)
     {
@@ -789,7 +777,8 @@ public class GssAclMonitor
      [WebMethod]
     public GssGetAclForUrlsResult GetAclForWebApplicationPolicy()
     {
-        using (SPSite site = new SPSite(SPContext.Current.Site.ID, SPUtility.GetAdminToken()))
+        SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
+        using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
         {
             using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
             {
@@ -857,20 +846,14 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls, Boolean bUseInheritance, Boolean bIncludePolicyAcls, int largeAclThreshold, Boolean bMetaUrlFeed)
     {
-        using (SPSite site = new SPSite(SPContext.Current.Site.Url, SPUtility.GetAdminToken()))
+        SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
+        using (SPSite site = new SPSite(SPContext.Current.Site.Url, systemUser))
         {
             using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
             {
                 GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
                 List<GssAcl> allAcls = new List<GssAcl>();
                 Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
-                Boolean checkForAnonymousAccess = (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll);
-                // Check for deny policy only if anonymous access is enabled.
-                if (checkForAnonymousAccess)
-                {
-                    // If DENY policy is specified, anonymous access will not work in SharePoint.
-                    checkForAnonymousAccess = !(GssAclUtility.DenyReadPolicyAvailable(site.WebApplication, site.Zone));
-                }
                 if (bIncludePolicyAcls)
                 {
                     try
@@ -918,19 +901,10 @@ public class GssAclMonitor
                     {
                         Dictionary<GssPrincipal, GssSharepointPermission> aceMap = new Dictionary<GssPrincipal, GssSharepointPermission>(commonAceMap);
                         secobj = GssAclUtility.IdentifyObject(url, web);
-
-                        if (checkForAnonymousAccess && (web.AnonymousState != SPWeb.WebAnonymousState.Disabled) && GssAclUtility.IsAnonymousAccessAllowed(secobj))
-                        {
-                            acl = new GssAcl(url, 0);
-                            acl.AnonymousAccess = true.ToString();
-                            acl.AddLogMessage(String.Format("Anonymous access allowed for {0}", url));
-                            allAcls.Add(acl);
-                            continue;
-                        }
                         Boolean readSecurityApplicable = false;
                         if (secobj is SPListItem)
                         {
-                            SPList parentList = ((SPListItem)secobj).ParentList;
+                            SPList parentList = ((SPListItem) secobj).ParentList;
                             readSecurityApplicable = (parentList.ReadSecurity == 2);
                         }
                         if (secobj != null)
@@ -950,8 +924,8 @@ public class GssAclMonitor
                                             acl.ParentUrl = GssAclUtility.GetUrl(secobj.FirstUniqueAncestor, strWebappUrl);
                                             acl.InheritPermissions = true.ToString();
                                         }
-                                    }
-                                    acl.AddLogMessage(String.Format("Large ACL for URL {0} with {1} role assignments with readsecurity as {2}", url, secobj.RoleAssignments.Count, readSecurityApplicable));
+                                    }                                                         
+                                    acl.AddLogMessage(String.Format("Large ACL for URL {0} with {1} role assignments with readsecurity as {2}", url, secobj.RoleAssignments.Count, readSecurityApplicable));                                   
                                 }
                                 else
                                 {
@@ -959,7 +933,7 @@ public class GssAclMonitor
                                     String strGetOwnerException = null;
                                     try
                                     {
-                                        owner = GssAclUtility.GetOwner(secobj);
+                                        owner = GssAclUtility.GetOwner(secobj);                                        
                                     }
                                     catch (Exception e)
                                     {
@@ -970,14 +944,14 @@ public class GssAclMonitor
                                     GssAclUtility.FetchRoleAssignmentsForAcl(secobj.RoleAssignments, aceMap, readSecurityApplicable, largeAclThreshold > 0);
                                     if (readSecurityApplicable)
                                     {
-                                        GssAclUtility.AddOwnerToAcl(aceMap, owner, secobj);
+                                        GssAclUtility.AddOwnerToAcl(aceMap, owner, secobj);                                       
                                     }
-
-                                    acl = new GssAcl(url, aceMap.Count);
+                                    
+                                    acl = new GssAcl(url, aceMap.Count);                                  
                                     if (!String.IsNullOrEmpty(strGetOwnerException))
                                     {
                                         acl.AddLogMessage(strGetOwnerException);
-                                    }
+                                    }                                    
                                     if (owner != null)
                                     {
                                         acl.Owner = GssAclUtility.DecodeIdentity(owner.LoginName);
@@ -992,7 +966,7 @@ public class GssAclMonitor
                                         acl.ParentUrl = SPContext.Current.Site.RootWeb.Url;
                                         acl.ParentId = String.Format("{{{0}}}", SPContext.Current.Site.WebApplication.Id.ToString());
                                     }
-                                }
+                                }                                
                             }
                             else
                             {
@@ -1152,7 +1126,8 @@ public class GssAclMonitor
     [WebMethod]
     public GssResolveSPGroupResult ResolveSPGroupInBatch(string[] groupId, int batchSize)
     {
-         using (SPSite site = new SPSite(SPContext.Current.Site.ID, SPUtility.GetAdminToken()))
+         SPUserToken systemUser = SPContext.Current.Site.SystemAccount.UserToken;
+         using (SPSite site = new SPSite(SPContext.Current.Site.ID, systemUser))
          {
              using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
              {
@@ -1167,9 +1142,9 @@ public class GssAclMonitor
                              GssPrincipal principal = null;
                              try
                              {
-                                 if (GSSITEADMINGROUPID.ToString().Equals(id))
+                                 if (GSSITEADMINGROUP.Equals(id))
                                  {
-                                     principal = new GssPrincipal(GSSITEADMINGROUP, GSSITEADMINGROUPID);
+                                     principal = new GssPrincipal(GSSITEADMINGROUP, -1);
                                      // Get all the administrator users as member of the GSSITEADMINGROUP.
                                      List<GssPrincipal> admins = new List<GssPrincipal>();
                                      foreach (SPPrincipal spPrincipal in web.SiteAdministrators)
@@ -1475,38 +1450,6 @@ public sealed class GssAclUtility
     }
 
     /// <summary>
-    /// Method to check if deny read policy is specified.
-    /// </summary>
-    /// <param name="webApp"></param>
-    /// <param name="currentZone"></param>
-    /// <returns></returns>
-    public static Boolean DenyReadPolicyAvailable(SPWebApplication webApp, SPUrlZone currentZone)
-    {
-        foreach (SPPolicy policy in webApp.Policies)
-        {
-            foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
-            {
-                if (SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & policyRole.DenyRightsMask))
-                {
-                    return true;
-                }
-            }
-        }
-
-        foreach (SPPolicy policy in webApp.ZonePolicies(currentZone))
-        {
-            foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
-            {
-                if (SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & policyRole.DenyRightsMask))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /// <summary>
     /// Update the incoming ACE Map with the users,permissions identified from the site collection administrators list.
     /// Site Collection Administrator is treated as another site collection group. All the users/groups are sent as members of this group
     /// </summary>
@@ -1514,7 +1457,7 @@ public sealed class GssAclUtility
     /// <param name="userAceMap"> ACE Map to be updated </param>
     public static void FetchSiteAdminsForAcl(SPWeb web, Dictionary<GssPrincipal, GssSharepointPermission> aceMap)
     {
-        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP, GssAclMonitor.GSSITEADMINGROUPID);
+        GssPrincipal principal = new GssPrincipal(GssAclMonitor.GSSITEADMINGROUP, -1);
         principal.Type = GssPrincipal.PrincipalType.SPGROUP;
         GssSharepointPermission permission = new GssSharepointPermission();
         // Administrators have Full Rights in the site collection.
@@ -1600,45 +1543,6 @@ public sealed class GssAclUtility
                 }
             }
         }
-    }
-    
-    /// <summary>
-    /// Identifies if anonymous access is allowed for SharePoint securable object
-    /// </summary>
-    /// <param name="secObj"> Secured Object to check for anonymous access</param>
-    /// <returns> returns true if anonymous access is allowed else returns false</returns>
-    public static Boolean IsAnonymousAccessAllowed(ISecurableObject secObj)
-    {
-        if (secObj is SPWeb)
-        {
-            return SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & ((SPWeb)secObj).AnonymousPermMask64);
-            
-        }
-
-        if (secObj is SPList)
-        {
-            return ((SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & ((SPList)secObj).AnonymousPermMask64)) 
-                && ((SPList)secObj).ReadSecurity != 2);
-                
-        }
-
-        if (secObj is SPListItem)
-        {
-            SPListItem oChildItem = (SPListItem)secObj;
-            if (oChildItem.HasUniqueRoleAssignments) 
-            {
-                return false;
-            }
-            SPList oList = oChildItem.ParentList;
-            Boolean bAnonymousAccessEnabledOnList =
-               (SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & oList.AnonymousPermMask64)) && (oList.ReadSecurity != 2);
-              
-            ISecurableObject firstUniqueAncestor = oChildItem.FirstUniqueAncestor;
-            // if firstUniqueAncestor is of type SPListItem then oChildItem is part of folder structure
-            // with broken inheritance chain from parent list. 
-            return bAnonymousAccessEnabledOnList && !(firstUniqueAncestor is SPListItem);           
-        }
-        return false;
     }
        
     /// <summary>
@@ -2117,20 +2021,5 @@ public sealed class GssAclUtility
             }
         }
         return false;
-    }
-
-    /// <summary>
-    /// Get admin token, in case of failure return null, which will use current user's token
-    /// </summary>
-    public static GetAdminToken()
-    {
-        SPUserToken user = null;
-        try {
-            user = SPContext.Current.Site.SystemAccount.UserToken;
-        } catch (Exception) {
-            // this can happen if site collection is readonly, we can't obtain
-            // SystemAccount's token, so we return current user's (null)
-        }
-        return user;
     }
 }

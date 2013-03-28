@@ -246,8 +246,6 @@ public class SiteDiscovery : System.Web.Services.WebService
         private bool status;
         private string error;
 
-        private string anonymousAccess;
-
         public string ListGuid
         {
             get { return listGuid; }
@@ -271,13 +269,6 @@ public class SiteDiscovery : System.Web.Services.WebService
             get { return error; }
             set { error = value; }
         }
-
-        public string AnonymousAccess
-        {
-            get { return anonymousAccess; }
-            set { anonymousAccess = value; }
-        }        
-        
     }
 
     /// <summary>
@@ -300,8 +291,6 @@ public class SiteDiscovery : System.Web.Services.WebService
         // To force connector to use authentication in case anonymous acess is enabled
         SPContext.Current.Web.ToString();
         List<ListCrawlInfo> listCrawlInfo = new List<ListCrawlInfo>();
-
-        Boolean denyPolicyAvailable = DenyReadPolicyAvailable(SPContext.Current.Site.WebApplication, SPContext.Current.Site.Zone);
         foreach (string guid in listGuids)
         {
             ListCrawlInfo info = new ListCrawlInfo();
@@ -314,13 +303,6 @@ public class SiteDiscovery : System.Web.Services.WebService
                     SPList list = SPContext.Current.Web.Lists[key];
                     info.NoCrawl = list.NoCrawl;
                     info.Status = true;
-                    if (!denyPolicyAvailable)
-                    {
-                        Boolean anonymousAccessApplicable = (SPContext.Current.Web.AnonymousState != SPWeb.WebAnonymousState.Disabled);
-                        Boolean anonymousAccess = anonymousAccessApplicable && (SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & list.AnonymousPermMask64))
-                            && list.ReadSecurity != 2;
-                        info.AnonymousAccess = anonymousAccess.ToString();
-                    }               
                 }
                 catch (Exception e)
                 {
@@ -371,47 +353,6 @@ public class SiteDiscovery : System.Web.Services.WebService
         {
             throw new Exception("Invalid List GUID!", e);
         }
-    }
-
-    /// <summary>
-    /// Method to check if deny read policy is specified.
-    /// </summary>
-    /// <param name="webApp"></param>
-    /// <param name="currentZone"></param>
-    /// <returns></returns>
-    public Boolean DenyReadPolicyAvailable(SPWebApplication webApp, SPUrlZone currentZone)
-    {
-        try
-        {
-            foreach (SPPolicy policy in webApp.Policies)
-            {
-                foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
-                {
-                    if (SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & policyRole.DenyRightsMask))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            foreach (SPPolicy policy in webApp.ZonePolicies(currentZone))
-            {
-                foreach (SPPolicyRole policyRole in policy.PolicyRoleBindings)
-                {
-                    if (SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & policyRole.DenyRightsMask))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Ignoring exception during check for Deny Read.
-            ex = null;
-        }
-        return false;
-    }
-            
+    }        
 }
 
