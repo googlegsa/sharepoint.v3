@@ -15,10 +15,12 @@
 <%@ WebService Language="C#" Class="BulkAuthorization" %>
 using System;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Web.Services;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
+using Microsoft.SharePoint.Administration;
 using System.Collections.Generic;
 
 /// <summary>
@@ -840,43 +842,47 @@ internal class UserInfoHolder
     /// <param name="site"></param>
     internal void TryInit(SPSite site, SPWeb web)
     {
-        // Try with available username
-        username = GssAuthzUtility.getUserNameWithDomain(username);
-        user = GssAuthzUtility.findUserInWeb(username, web, true);
-        if (user != null)
+        try
         {
-            isResolved = true;
-            return;
-        }
-
-        if (!isResolved)
-        {
-            SPPrincipalInfo userInfo = GssAuthzUtility.ResolveWindowsPrincipal(username);
-            if (null != userInfo)
+            // Try with available username
+            username = GssAuthzUtility.GetUserNameWithDomain(username);
+            user = GssAuthzUtility.GetUserFromWeb(username, web, site.WebApplication);
+            if (user != null)
             {
-                // Mark isResolved = true since userInfo object is not null.                
                 isResolved = true;
-                
-                // SPUtility.ResolveWindowsPrincipal will
-                // resolve input username with login name for user. In most of the cases
-                // both values will be same.
-                // Try with resolved username only if input username is not same as resolved username.
-                if (String.Compare(username, userInfo.LoginName, true) != 0)
+            }
+
+            if (!isResolved)
+            {
+                SPPrincipalInfo userInfo = GssAuthzUtility.ResolveWindowsPrincipal(username);
+                if (null != userInfo)
                 {
-                    username = userInfo.LoginName;
-                    user = GssAuthzUtility.findUserInWeb(username, web, true);
-                    if (user != null)
-                    {                       
-                        return;
+                    // Mark isResolved = true since userInfo object is not null.                
+                    isResolved = true;
+                
+                    // SPUtility.ResolveWindowsPrincipal will
+                    // resolve input username with login name for user. In most of the cases
+                    // both values will be same.
+                    // Try with resolved username only if input username is not same as resolved username.
+                    if (String.Compare(username, userInfo.LoginName, true) != 0)
+                    {
+                        username = userInfo.LoginName;
+                        user = GssAuthzUtility.GetUserFromWeb(username, web, site.WebApplication);                        
                     }
                 }
             }
-        
         }
-        
-        // Throwing user not found exception since SPUser with resolved username is not found
-        msg = "User " + username + " information not found in the parent site collection of web " + web.Url;
-        throwException();
+        catch (Exception exUser)
+        {
+            throw new Exception(String.Format("Error initializing User [{0}] for web [{1}] due to Exception {2}", username, web.Url, exUser.Message), exUser);
+        }
+
+        if (user == null)
+        {
+            // Throwing user not found exception since SPUser with resolved username is not found
+            msg = "User " + username + " information not found in the parent site collection of web " + web.Url;
+            throwException();
+        }
     }    
 
     internal void throwException()
@@ -900,15 +906,51 @@ public sealed class GssAuthzUtility
 {
 
     private static Dictionary<string, string> domainMapping = new Dictionary<string, string>();
+    private static Dictionary<Guid, Boolean> webAppClaimsSetting = new Dictionary<Guid, bool>();
+    private static Dictionary<String, Type> reflectionTypes = new Dictionary<String, Type>();
+    private static Dictionary<String, MethodInfo> reflectionMethods = new Dictionary<String, MethodInfo>();
 
     private GssAuthzUtility()
     {
         throw new Exception("Operation not allowed! ");
     }
 
-    public static SPUser findUserInWeb(String userName, SPWeb web, Boolean chkPermission)
+    public static SPUser GetUserFromWeb(String userName, SPWeb web, SPWebApplication webApp)
     {
-        SPUser userToReturn = null;
+        Boolean isClaimsApplicable = IsClaimsAuthenticationApplicable(webApp);
+        if (isClaimsApplicable)
+        {
+            userName = GetClaimsUserName(userName);
+          
+        }
+        SPUser userToReturn = FindUserInWeb(userName, web);        
+        if (userToReturn == null)
+        {
+           
+            try
+            {
+                // If user with username is not available in AllUsers or SiteUsers then call web.DoesUserHavePermissions
+                // This will create SPUser object for username and ensure user is available in AllUsers for SPWeb object.
+                // Users will become part of AllUsers as well as SiteUsers collection when first time user access / login to
+                // SharePoint site.
+                // Since web.DoesUserHavePermissions is expensive call compare to checking username in usercollections,
+                // web.DoesUserHavePermissions is used as a fallback mechanism.
+                web.DoesUserHavePermissions(userName, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
+                userToReturn = FindUserInWeb(userName, web);              
+            }
+            catch (Exception exUserPerm)
+            {
+                // ignore this exception
+                exUserPerm = null;
+            }                     
+        }
+        return userToReturn;
+        
+    }
+
+    private static SPUser FindUserInWeb(String userName, SPWeb web)
+    {
+        SPUser userToReturn = null;       
 
         // With available username search user in web.AllUsers and web.SiteUsers
         // Not checking web.Users since web.Users is a subset to web.AllUsers as well as web.SiteUsers 
@@ -924,25 +966,7 @@ public sealed class GssAuthzUtility
             }
             catch (Exception e2)
             {
-                try
-                {
-                    if (chkPermission)
-                    {
-                        // If user with username is not available in AllUsers or SiteUsers then call web.DoesUserHavePermissions
-                        // This will create SPUser object for username and ensure user is available in AllUsers for SPWeb object.
-                        // Users will become part of AllUsers as well as SiteUsers collection when first time user access / login to
-                        // SharePoint site.
-                        // Since web.DoesUserHavePermissions is expensive call compare to checking username in usercollections,
-                        // web.DoesUserHavePermissions is used as a fallback mechanism.
-                        web.DoesUserHavePermissions(userName, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
-                        // If username is valid this call should return user.
-                        userToReturn = findUserInWeb(userName, web, false);
-                    }
-                }
-                catch (Exception e3)
-                {
-                    e3 = null;
-                }
+                
             }
         }
         return userToReturn;
@@ -968,7 +992,7 @@ public sealed class GssAuthzUtility
         return userInfo;
     }
 
-    public static String getUserNameWithDomain(String userName)
+    public static String GetUserNameWithDomain(String userName)
     {
         // Considering only "\\" since connector is always using username format as domain\\username 
         String[] userNameSplit = userName.Split(new String[] { "\\" }, StringSplitOptions.RemoveEmptyEntries);
@@ -981,5 +1005,85 @@ public sealed class GssAuthzUtility
         {
             return userName;
         }
+    }
+
+    public static String GetClaimsUserName(String userName)
+    {
+        Type managerType = GetTypeForObject(Assembly.GetAssembly(typeof(SPUser)), "Microsoft.SharePoint.Administration.Claims.SPClaimProviderManager");
+        if (managerType == null)
+        {
+            return userName;
+        }
+
+        Object manager = managerType.GetProperty("Local").GetValue(null, null);
+        if (manager == null)
+        {
+            return userName;
+        }
+
+        Type spIdentifierTypesEnumType = GetTypeForObject(Assembly.GetAssembly(typeof(SPUser)), "Microsoft.SharePoint.Administration.Claims.SPIdentifierTypes");
+        if (spIdentifierTypesEnumType == null)
+        {
+            return userName;
+        }
+        MethodInfo methodConvertIdentifierToClaim = GetMethodFromType(managerType, "ConvertIdentifierToClaim");
+        if (methodConvertIdentifierToClaim == null)
+        {
+            return null;
+        }
+        Object claim = methodConvertIdentifierToClaim.Invoke(manager, new object[] { userName, Enum.Parse(spIdentifierTypesEnumType, "WindowsSamAccountName") });
+        if (claim == null)
+        {
+            return userName;
+        }
+        MethodInfo methodEncodeClaim = GetMethodFromType(managerType, "EncodeClaim");
+        if (methodEncodeClaim == null)
+        {
+            return null;
+        }
+        Object encodedClaim = methodEncodeClaim.Invoke(manager, new object[] { claim });
+        return encodedClaim.ToString();
+    }
+       
+    
+
+    private static Boolean IsClaimsAuthenticationApplicable(SPWebApplication webApp)
+    {
+        if (webAppClaimsSetting.ContainsKey(webApp.Id))
+        {
+            return webAppClaimsSetting[webApp.Id];
+        }
+        
+        Type spWebAppType = webApp.GetType();
+        PropertyInfo useClaimsAuthentication = spWebAppType.GetProperty("UseClaimsAuthentication");
+        Boolean bClaimsApplicable = useClaimsAuthentication != null ? (bool)useClaimsAuthentication.GetValue(webApp, null) : false;
+        webAppClaimsSetting[webApp.Id] = bClaimsApplicable;
+        return bClaimsApplicable;
+    }
+
+    private static Type GetTypeForObject(Assembly assemblyToLookUp, String classPath)
+    {
+        if (reflectionTypes.ContainsKey(classPath))
+        {
+            return reflectionTypes[classPath];
+        }
+
+        Type typeToReturn = assemblyToLookUp.GetType(classPath);
+        reflectionTypes[classPath] = typeToReturn;
+        return typeToReturn;           
+        
+    }
+
+    private static MethodInfo GetMethodFromType(Type fromType, String methodName)
+    {
+        String key = String.Format("{0}.{1}", fromType.FullName, methodName);
+        if (reflectionMethods.ContainsKey(key))
+        {
+            return reflectionMethods[key];
+        }
+
+        MethodInfo methodToReturn = fromType.GetMethod(methodName);
+        reflectionMethods[key] = methodToReturn;
+        return methodToReturn;
     }
 }
