@@ -930,6 +930,7 @@ public class AclHelper {
       }
 
       if (isWebReset) {
+        webstate.setWebApplicationPolicyChange(true);
         break;
       }
     }
