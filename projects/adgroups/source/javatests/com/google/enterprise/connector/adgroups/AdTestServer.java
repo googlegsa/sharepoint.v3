@@ -151,7 +151,7 @@ public class AdTestServer extends AdServer {
     
     users = new ArrayList<AdTestEntity>(userCount);
     for (int i = 0; i < userCount; ++i) {
-      AdTestEntity user = new AdTestEntity(names, users, random);
+      AdTestEntity user = new AdTestEntity(names, users, random, "");
       int maxGroups = random.nextInt(100);
       for (int g = 0; g < maxGroups; ++g) {
         AdTestEntity group = groups.get(random.nextInt(groups.size()));
