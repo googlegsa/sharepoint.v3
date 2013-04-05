@@ -14,7 +14,6 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
@@ -37,13 +36,6 @@ import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,20 +45,7 @@ import java.util.logging.Logger;
  */
 public class SPClientFactory implements ClientFactory {
   private static final Logger LOGGER = Logger.getLogger(SPClientFactory.class.getName());
-  private static final int HTTP_CLIENT_TIMEOUT_SECONDS = 300;
-  
-  private static class Resource {
-    private final HttpClient httpClient;
-    private final Set<String> webAppsVisited;
-    
-    public Resource (HttpClient inHttpClient) {
-      httpClient = inHttpClient;
-      webAppsVisited = new TreeSet<String>();
-    }
-  }
-  
-  private final BlockingQueue<Resource> resources =
-      new ArrayBlockingQueue<Resource>(4);
+  private HttpClient httpClient = null;
 
   /**
    * Gets the instance of the alerts web service.
@@ -185,7 +164,7 @@ public class SPClientFactory implements ClientFactory {
    */
   public AclWS getAclWS(final SharepointClientContext ctx, String webUrl) {
     try {
-      return new GSAclWS(webUrl);
+      return new GSAclWS(ctx, webUrl);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create ACLs web service instance.", e);
@@ -209,57 +188,31 @@ public class SPClientFactory implements ClientFactory {
     }
   }
 
-  public int checkConnectivity(HttpMethodBase method,
+  public synchronized int checkConnectivity(HttpMethodBase method,
       Credentials credentials) throws IOException {
-    Resource resource = reserveResource(credentials);
-    String currentWebApp = Util.getWebApp(method.getURI().getURI());
+    if (httpClient == null) {
+      httpClient = GetHttpClient(credentials);
+    }
     try {
-      int responseCode = resource.httpClient.executeMethod(method);
-      if (responseCode == 200) {
-        // Add web app entry when response code is 200
-        resource.webAppsVisited.add(currentWebApp);
-      }
-      if (responseCode != 200 && responseCode != 404 && responseCode != 400) {
+      int responseCode = httpClient.executeMethod(method);
+      if (responseCode != 200 && responseCode != 404) {
         LOGGER.log(Level.WARNING,
             "Http Response Code = "+ responseCode + " for Url [ "
-                + method.getURI() + " ].");
-
-        if (responseCode == 401 &&
-            resource.webAppsVisited.contains(currentWebApp)) {
-          LOGGER.log(Level.WARNING, "Not reinitializing HTTP Client after "
-              + "[ 401 ] response as connection to Web Application [ "
-              + currentWebApp
-              + " ] was successful earlier with existing HTTP Client Object.");
-          return responseCode;
-        }
-
-        LOGGER.log(Level.WARNING, "Reinitializing HTTP Client as [ "
-            + responseCode + " ] response received.");
-        resource = new Resource(createHttpClient(credentials));        
-        responseCode = resource.httpClient.executeMethod(method);
-        if (responseCode == 200) {
-          // Add web app entry when response code is 200
-          resource.webAppsVisited.add(currentWebApp);
-        }
+                + method.getURI() + " ]. Reinitializing HttpClient.");     
+        httpClient = GetHttpClient(credentials);
+        responseCode = httpClient.executeMethod(method);
       }
-      returnResource(resource);
       return responseCode;      
     } catch(Exception ex) {    
       LOGGER.log(Level.WARNING,
           "Error Connecting Server for Url [ "
               + method.getURI() + " ]. Reinitializing HttpClient.", ex);
-      resource = new Resource(createHttpClient(credentials));      
-      int responseCode = resource.httpClient.executeMethod(method);
-      if (responseCode == 200) {
-        // Add web app entry when response code is 200
-        resource.webAppsVisited.add(currentWebApp);       
-      }
-      returnResource(resource);
-      return responseCode;
-    }
+      httpClient = GetHttpClient(credentials);
+      return httpClient.executeMethod(method);
+    }  
   }
-  
-  private HttpClient createHttpClient(Credentials credentials) {
+
+  private HttpClient GetHttpClient(Credentials credentials) {
     HttpClient httpClientToUse = new HttpClient();
 
     HttpClientParams params = httpClientToUse.getParams();
@@ -271,37 +224,11 @@ public class SPClientFactory implements ClientFactory {
     // once. MAX_REDIRECTS allows you to specify a maximum number of redirects
     // to follow.
     params.setIntParameter(HttpClientParams.MAX_REDIRECTS, 10);
-    
-    params.setLongParameter(HttpClientParams.CONNECTION_MANAGER_TIMEOUT,
-        HTTP_CLIENT_TIMEOUT_SECONDS * 1000);
-    params.setIntParameter(HttpClientParams.SO_TIMEOUT,
-        HTTP_CLIENT_TIMEOUT_SECONDS * 1000);
+
     httpClientToUse.getState().setCredentials(AuthScope.ANY, credentials);
     return httpClientToUse;
   }
-  
-  private Resource reserveResource(Credentials credentials) {
-    Resource resource = null;
-    try {
-      LOGGER.log(Level.FINEST,
-          "Number of resources in resource pool = " + resources.size());
-      resource = resources.poll(0, TimeUnit.SECONDS);      
-    } catch (InterruptedException e) {      
-      LOGGER.log(Level.WARNING,
-          "Unable to reserve resource.", e);
-      Thread.currentThread().interrupt();
-    }
-    // Create new resource.
-    if (resource == null) {
-      resource = new Resource(createHttpClient(credentials));
-    }
-    return resource;
-  }
-  
-  private void returnResource(Resource resource) {
-    resources.offer(resource);
-  }
-  
+
   public String getResponseHeader(HttpMethodBase method, String headerName) {
     String headerValue = null;
     final Header header = method.getResponseHeader(headerName);

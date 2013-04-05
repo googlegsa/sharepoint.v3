@@ -18,19 +18,19 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
-import com.google.enterprise.connector.sharepoint.client.BulkAuthorizationHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.client.WebsHelper;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.AuthType;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.LdapConnectionError;
 import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnection;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 import com.google.enterprise.connector.spi.ConfigureResponse;
 import com.google.enterprise.connector.spi.ConnectorFactory;
 import com.google.enterprise.connector.spi.ConnectorType;
@@ -1848,8 +1848,8 @@ public class SharepointConnectorType implements ConnectorType {
 
     try {
       sharepointClientContext.setSiteURL(endpoint);
-      final WebsHelper webs = new WebsHelper(sharepointClientContext);
-      return webs.checkConnectivity();
+      final WebsWS websWS = clientFactory.getWebsWS(sharepointClientContext);
+      return websWS.checkConnectivity();
     } catch (final Exception e) {
       final String logMessage = "Problem while connecting.";
       LOGGER.log(Level.WARNING, logMessage, e);
@@ -1874,8 +1874,8 @@ public class SharepointConnectorType implements ConnectorType {
 
     try {
       sharepointClientContext.setSiteURL(endpoint);
-      final BulkAuthorizationHelper testBulkAuth =
-          new BulkAuthorizationHelper(sharepointClientContext);
+      final BulkAuthorizationWS testBulkAuth =
+          clientFactory.getBulkAuthorizationWS(sharepointClientContext);
       return testBulkAuth.checkConnectivity();
     } catch (final Exception e) {
       final String logMessage = "Problem while connecting.";

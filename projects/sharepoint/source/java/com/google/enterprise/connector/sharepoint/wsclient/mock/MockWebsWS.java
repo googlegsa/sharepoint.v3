@@ -18,8 +18,6 @@ import com.google.enterprise.connector.sharepoint.client.SharepointClientContext
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.webs.GetWebCollectionResponseGetWebCollectionResult;
-import com.google.enterprise.connector.sharepoint.generated.webs.GetWebResponseGetWebResult;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
 import java.util.logging.Logger;
@@ -29,8 +27,6 @@ import java.util.Set;
 public class MockWebsWS implements WebsWS {
   private static final Logger LOGGER = Logger.getLogger(MockWebsWS.class.getName());
   private final SharepointClientContext sharepointClientContext;
-  private String username;
-  private String password;
 
   /**
    * @param ctx The Sharepoint context is passed so that necessary
@@ -43,23 +39,13 @@ public class MockWebsWS implements WebsWS {
     sharepointClientContext = ctx;
   }
 
-  @Override
-  public String getUsername() {
-    return username;
-  }
-
-  @Override
-  public void setUsername(final String username) {
-    this.username = username;
-  }
-
-  @Override
-  public void setPassword(final String password) {
-    this.password = password;
-  }
-
-  @Override
-  public void setTimeout(final int timeout) {
+  /**
+   * (@inheritDoc)
+   *
+   * This is a stub implementation.
+   */
+  public String getWebURLFromPageURL(final String pageURL) {
+    return Util.getWebURLForWSCall(pageURL);
   }
 
   /**
@@ -67,9 +53,8 @@ public class MockWebsWS implements WebsWS {
    *
    * This is a stub implementation.
    */
-  @Override
-  public GetWebCollectionResponseGetWebCollectionResult getWebCollection() {
-    return null;
+  public Set<String> getDirectChildsites() {
+    return Collections.emptySet();
   }
 
   /**
@@ -77,18 +62,17 @@ public class MockWebsWS implements WebsWS {
    *
    * This is a stub implementation.
    */
-  @Override
-  public String webUrlFromPageUrl(String pageUrl) {
-    return Util.getWebURLForWSCall(pageUrl);
+  public String getWebTitle(final String webURL, final SPType spType) {
+    return "";
   }
 
   /**
    * (@inheritDoc)
    *
-   * This is a stub implementation.
+   * This simply returns SPConstants.CONNECTIVITY_SUCCESS. The connector
+   * code checks for this result.
    */
-  @Override
-  public GetWebResponseGetWebResult getWeb(final String webURL) {
-    return new GetWebResponseGetWebResult();
+  public String checkConnectivity() {
+    return SPConstants.CONNECTIVITY_SUCCESS;
   }
 }

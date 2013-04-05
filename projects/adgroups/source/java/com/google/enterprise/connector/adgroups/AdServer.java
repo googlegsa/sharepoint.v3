@@ -268,6 +268,7 @@ public class AdServer {
         }
 
         int batch = g.getMembers().size();
+        int found = 0;
         int start = g.getMembers().size();
         do {
           String memberRange = String.format(AdConstants.ATTR_MEMBER_RANGE, 
@@ -278,9 +279,9 @@ public class AdServer {
           NamingEnumeration<SearchResult> ldapResults = ldapContext.search(
               dn, "(sAMAccountName=" + g.getSAMAccountName() +")", searchCtls);
           SearchResult sr = ldapResults.next();
-          int found = g.appendGroups(sr);
+          found = g.appendGroups(sr);
           start += found;
-        } while (!g.areAllMembershipsRetrieved());
+        } while (found == batch);
       }
     } catch (InterruptedNamingException e) {
       throw e;

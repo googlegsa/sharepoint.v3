@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -46,8 +45,6 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.GetMethod;
 
-import java.io.FilterInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.text.Collator;
@@ -101,7 +98,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   // call.
   // No assumptions should be made based on these attributes very early during
   // traversal.
-  private FilterInputStream content = null;
+  private InputStream content = null;
   private String content_type = null;
   private int fileSize = -1;
 
@@ -157,9 +154,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   // Document Type  for Document.
   private DocumentType documentType;
-  
-  // flag to indicate if document is public
-  private boolean publicDocument;
 
   /**
    * @return the toBeFed
@@ -581,7 +575,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (strPropertyName.equals(SPConstants.OBJECT_TYPE)) {
       return new SimpleProperty(new StringValue(getObjType()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ISPUBLIC)) {
-      return new SimpleProperty(BooleanValue.makeBooleanValue(publicDocument));
+      return new SimpleProperty(BooleanValue.makeBooleanValue(false));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
       return new SimpleProperty(new StringValue(getAction().toString()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYUSERS)) {
@@ -723,7 +717,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
     }
     if (sharepointClientContext.isPushAcls()) {
-      names.add(SpiConstants.PROPNAME_ISPUBLIC);
       if (!isWebAppPolicyDoc()) {
         // For regular document parent Url should not be null.
         // empty parentUrl indicates error in ACL processing.
@@ -859,7 +852,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     }
     if (downloadContent) {
       final String docURL = Util.encodeURL(contentDwnldURL);
-      final HttpMethodBase method;     
+      HttpMethodBase method = null;
       try {
         method = new GetMethod(docURL);
         responseCode = sharepointClientContext.checkConnectivity(docURL, method);
@@ -867,16 +860,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         if (null == method || responseCode != 200) {
           return SPConstants.CONNECTIVITY_FAIL;
         }
-        content = new FilterInputStream(method.getResponseBodyAsStream()) {
-          @Override
-          public void close() throws IOException {
-            try {
-              super.close();
-            } finally {
-              method.releaseConnection();
-            }
-          }
-        };
+        content = method.getResponseBodyAsStream();
       } catch (Throwable t) {
         String msg = new StringBuffer("Unable to fetch contents from URL: ").append(url).toString();
         LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: " + url, t);
@@ -1148,13 +1132,5 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    */
   public void setDocumentType(DocumentType documentType) {
     this.documentType = documentType;
-  }
-
-  public boolean isPublicDocument() {
-    return publicDocument;
-  }
-
-  public void setPublicDocument(boolean publicDocument) {
-    this.publicDocument = publicDocument;
   }
 }

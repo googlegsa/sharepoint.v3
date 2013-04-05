@@ -14,18 +14,25 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
-import com.google.enterprise.connector.sharepoint.generated.sp2003.userprofileservice.GetUserProfileByIndexResult;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
-import java.rmi.RemoteException;
+import java.util.Set;
 
-public interface UserProfile2003WS extends BaseWS {
+public interface UserProfile2003WS {
   /**
-   * This method returns the information about the user profile by the specified index.
+   * Checks to see if the current web to which the web service endpioint 
+   * is set is an SPS site.
    *
-   * @param index The index of the user profile to be retrieved
-   * @return a GetUserProfileByIndexResult
-   * @throws RemoteException
+   * @return if the endpoint being used is an SPS site
+   * @throws SharepointException
    */
-  public GetUserProfileByIndexResult getUserProfileByIndex(int index)
-      throws RemoteException;
+  public boolean isSPS() throws SharepointException;
+
+  /**
+   * To get all the personal sites from the current web.
+   *
+   * @return the list of personal sites
+   * @throws SharepointException
+   */
+  public Set<String> getPersonalSiteList() throws SharepointException;
 }

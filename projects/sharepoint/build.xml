@@ -21,7 +21,6 @@
   <property name="classes" value="${build}/classes" />
   <property name="config" value="config" />
   <property name="config.tmp.dir" value="${build}/${config}" />
-  <property name="testconfig.tmp.dir" value="${build}/testconfig" />
   <property environment="env" />
   <property name="wsdl" value="wsdl" />
   <property name="tests.src" value="source/javatests" />
@@ -247,19 +246,6 @@
   </target>
 
   <target name="run_tests" depends="compile_tests,instrument">
-    <!-- Generate the Axis client-config.wsdd with the 'FileTransport'
-        needed by the tests. -->
-    <mkdir dir="${testconfig.tmp.dir}" />
-    <copy file="source/java/org/apache/axis/client/client-config.wsdd"
-        tofile="${testconfig.tmp.dir}/client-config.wsdd" overwrite="true">
-      <filterchain>
-        <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
-          <param type="token" name="test.transport"
-              value="&lt;transport name='FileTransport' pivot='java:com.google.enterprise.connector.sharepoint.wsclient.handlers.FileSender' /&gt;" />
-        </filterreader>
-      </filterchain>
-    </copy>
-
     <property name="test.suite" value="*" />
     <junit printsummary="yes" haltonfailure="no"
            failureproperty="${ant.project.name}.failure">
@@ -272,7 +258,6 @@
         <pathelement location="${spi.jar.dir}/connector.jar" />
         <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
-        <pathelement location="${testconfig.tmp.dir}" />
         <pathelement location="${jarfile}" />
         <pathelement location="${adgroups.jar}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
@@ -304,19 +289,7 @@
     <fail if="${ant.project.name}.failure" message="Test failure"/>
   </target>
 
-  <target name="init-package" depends="svn.svn-branch-version">
-    <property name="downloads.prefix"
-              value="connector-sharepoint-${svn.branch}" />
-    <property name="repackage.prefix" value="connector-sharepoint-${version}"/>
-
-    <!-- Preserve the existing file name from the documentation. -->
-    <property name="gss.prefix"
-              value="Google_Services_for_SharePoint_${svn.branch}" />
-    <property name="repackage.gss.prefix"
-              value="Google_Services_for_SharePoint_${version}" />
-  </target>
-
-  <target name="jar" depends="compile,init-package"
+  <target name="jar" depends="compile,svn.svn-branch-version"
           description="sharepoint-connector">
     <copy todir="${config.tmp.dir}" overwrite="true">
       <fileset dir="${config}">
@@ -326,15 +299,6 @@
       <filterchain>
         <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
           <param type="token" name="client.factory" value="${client.factory}" />
-        </filterreader>
-      </filterchain>
-    </copy>
-
-    <copy file="source/java/org/apache/axis/client/client-config.wsdd"
-          tofile="${build}/client-config.wsdd" overwrite="true">
-      <filterchain>
-        <filterreader classname="org.apache.tools.ant.filters.ReplaceTokens">
-          <param type="token" name="test.transport" value="" />
         </filterreader>
       </filterchain>
     </copy>
@@ -355,8 +319,8 @@
         <include name="**/connectorDefaults.xml" />
       </fileset>
 
-      <fileset dir="${build}">
-        <include name="client-config.wsdd" />
+      <fileset dir="source/java/org/apache/axis/client">
+        <include name="**/*.wsdd" />
       </fileset>
       <!--creation of manifest file-->
       <manifest>
@@ -373,6 +337,9 @@
   </target>
 
   <target name="download-sharepoint-connector" depends="jar,javadoc">
+    <property name="downloads.prefix"
+              value="connector-sharepoint-${svn.branch}" />
+
     <zip destfile="${downloads.dir}/${downloads.prefix}-src.zip">
       <zipfileset dir="." prefix="${downloads.prefix}">
         <include name="javadoc/**" />
@@ -412,25 +379,16 @@
     <checksum algorithm="SHA-1"
               file="${downloads.dir}/${downloads.prefix}.zip" />
 
+    <!-- Preserve the existing file name and directory layout. -->
+    <property name="gss.prefix"
+              value="Google_Services_for_SharePoint_${svn.branch}" />
     <zip destfile="${downloads.dir}/${gss.prefix}.zip">
       <zipfileset dir="" prefix="${gss.prefix}">
-        <!-- Preserve the existing directory layout from the documentation. -->
         <include name="source_net/**" />
       </zipfileset>
     </zip>
     <checksum algorithm="SHA-1"
               file="${downloads.dir}/${gss.prefix}.zip" />
-  </target>
-
-  <target name="repackage" depends="init-package"
-          description="Repackage release candidate files for release.">
-    <repackage-downloads downloads.dir="${downloads.dir}"
-                         downloads.prefix="${downloads.prefix}"
-                         repackage.prefix="${repackage.prefix}" />
-    <repackage-zip destfile="${downloads.dir}/${repackage.gss.prefix}.zip"
-                   src="${downloads.dir}/${gss.prefix}.zip"
-                   downloads.prefix="${gss.prefix}"
-                   repackage.prefix="${repackage.gss.prefix}" />
   </target>
 
   <target name="clean" depends="clean_code_coverage" description="Deletes files produced by compile and test.">

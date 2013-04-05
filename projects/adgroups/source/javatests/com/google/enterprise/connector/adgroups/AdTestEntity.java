@@ -41,14 +41,14 @@ public class AdTestEntity {
   }
 
   public AdTestEntity(Set<String> names, List<AdTestEntity> namespace,
-      Random random, String prefix) {
+      Random random) {
     namespace.add(this);
     children = null;
-    sAMAccountName = prefix + getName(names, random,
-        TestConfiguration.sAMAccountUsernameAlphabet, 1, 20 - prefix.length());
-    commonName = prefix + getName(names, random,
-        TestConfiguration.sAMAccountUsernameAlphabet, 1, 61 - prefix.length());
-    upn = prefix + getName(
+    sAMAccountName = getName(names, random,
+        TestConfiguration.sAMAccountUsernameAlphabet, 1, 20);
+    commonName = getName(names, random,
+        TestConfiguration.sAMAccountUsernameAlphabet, 1, 61);
+    upn = getName(
         names, random, TestConfiguration.sAMAccountUsernameAlphabet, 1, 50)
         + "@" + getName(
             names, random, TestConfiguration.sAMAccountUsernameAlphabet, 1, 20);

@@ -50,7 +50,6 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
 
   private final AdDbUtil db;
   private final String globalNamespace;
-  private final boolean returnBuiltin;
 
   /**
    * @param connector an instance of an {@link AdGroupsConnector}
@@ -59,7 +58,6 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
       throws RepositoryException {
     db = new AdDbUtil(connector.getDataSource(), connector.getDatabaseType());
     globalNamespace = connector.getGoogleGlobalNamespace();
-    returnBuiltin = connector.getReturnBuiltin().equalsIgnoreCase("YES");
   }
 
   /**
@@ -226,10 +224,7 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
       for (HashMap<String, Object> result : results) {
         Number groupId = (Number) result.get(AdConstants.DB_ENTITYID);
         if (!entities.contains(groupId)) {
-          String netbiosName = (String) result.get(AdConstants.DB_NETBIOSNAME);
-          if (returnBuiltin || !netbiosName.equalsIgnoreCase("BUILTIN")) {
-            groups.add(formatGroup(result));
-          }
+          groups.add(formatGroup(result));
           entities.add(groupId);
         }
       }
