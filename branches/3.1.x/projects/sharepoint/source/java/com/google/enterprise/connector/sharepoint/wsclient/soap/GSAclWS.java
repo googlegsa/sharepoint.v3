@@ -960,6 +960,7 @@ public class GSAclWS implements AclWS{
       }
 
       if (isWebReset) {
+        webstate.setWebApplicationPolicyChange(true);
         break;
       }
     }
