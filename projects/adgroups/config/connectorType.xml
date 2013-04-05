@@ -10,7 +10,6 @@
         <value>port</value>
         <value>principal</value>
         <value>password</value>
-        <value>returnBuiltin</value>
       </list>
     </property>
   </bean>

@@ -14,7 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import com.google.enterprise.connector.sharepoint.client.BulkAuthorizationHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
@@ -25,6 +24,7 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.ContainerType;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.EntityType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthorizationManager;
@@ -316,9 +316,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
       try {
         sharepointClientContext.setSiteURL(webapp);
-        BulkAuthorizationHelper bulkAuth =
-            new BulkAuthorizationHelper(sharepointClientContext);
-        authDataPacketArray = bulkAuth.authorize(authDataPacketArray, userName);
+        BulkAuthorizationWS bulkAuthWS =
+            clientFactory.getBulkAuthorizationWS(sharepointClientContext);
+        authDataPacketArray = bulkAuthWS.authorize(authDataPacketArray, userName);
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "WS call failed for GSBulkAuthorization using webapp [ "
             + webapp + " ] ", e);

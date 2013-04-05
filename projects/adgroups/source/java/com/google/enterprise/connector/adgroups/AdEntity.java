@@ -58,7 +58,7 @@ public class AdEntity {
     while (ids.hasMore()) {
       String id = ids.next();
       if (AdConstants.ATTR_MEMBER_PATTERN.matcher(id).matches()) {
-        allMembershipsRetrieved = id.endsWith("*");
+        allMembershipsRetrieved = false;
         return attrs.get(id);
       }
     }
