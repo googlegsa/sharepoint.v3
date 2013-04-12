@@ -14,146 +14,127 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.rpc.ServiceException;
-
 import com.google.common.base.Strings;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.generated.userprofilechangeservice.UserProfileChangeData;
 import com.google.enterprise.connector.sharepoint.generated.userprofilechangeservice.UserProfileChangeDataContainer;
 import com.google.enterprise.connector.sharepoint.generated.userprofilechangeservice.UserProfileChangeQuery;
-import com.google.enterprise.connector.sharepoint.generated.userprofilechangeservice.UserProfileChangeService;
-import com.google.enterprise.connector.sharepoint.generated.userprofilechangeservice.UserProfileChangeServiceLocator;
-import com.google.enterprise.connector.sharepoint.generated.userprofilechangeservice.UserProfileChangeServiceSoap_BindingStub;
-import com.google.enterprise.connector.sharepoint.generated.userprofileservice.UserProfileService;
-import com.google.enterprise.connector.sharepoint.generated.userprofileservice.UserProfileServiceLocator;
-import com.google.enterprise.connector.sharepoint.generated.userprofileservice.UserProfileServiceSoap_BindingStub;
 import com.google.enterprise.connector.sharepoint.social.SharePointSocialCheckpoint;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.Map;
 
 public class UserProfileChangeHelper {
   private final Logger LOGGER = Logger.getLogger(
       UserProfileChangeHelper.class.getName());
   private SharepointClientContext sharepointClientContext;
-  private UserProfileChangeServiceSoap_BindingStub stub;
-  private String endpoint;
+  private UserProfileChangeWS changeWS;
 
   public Map<String, ActionType> getChangedUserProfiles(
       SharePointSocialCheckpoint checkpoint) {
-    try {
-      if (stub == null) {
-        LOGGER.warning(
-            "Unable to get the list collection because stub is null");
-        return null;
-      }
-      Map<String, ActionType> updatedProfiles = new HashMap<String, ActionType>();
-      UserProfileChangeQuery changeQuery = new UserProfileChangeQuery();
-      changeQuery.setDelete(true);
-      changeQuery.setUserProfile(true);
-      changeQuery.setUpdate(true);
-      changeQuery.setUpdateMetadata(true);
-      changeQuery.setSingleValueProperty(true);
-      changeQuery.setMultiValueProperty(true);
-      changeQuery.setColleague(true);
-      UserProfileChangeDataContainer changeContainer= stub.getChanges(
-          checkpoint.getUserProfileChangeToken(), changeQuery);
-      if (changeContainer != null) {
-        UserProfileChangeData[] changes = changeContainer.getChanges();
-        if (changes != null && changes.length > 0) {
-          for(UserProfileChangeData change : changes) {
-            String userAccountName = change.getUserAccountName();
-            if (Strings.isNullOrEmpty(userAccountName)) {
-              continue;
-            }
-            for(String changeType : change.getChangeType()) {
-              LOGGER.log(Level.INFO,
-                  "User Profile Change Type Recevied = "+ changeType);
-              if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
-                LOGGER.log(Level.INFO,"User Profile Deleted for user = "
-                    + change.getUserAccountName());
-                updatedProfiles.put(userAccountName, ActionType.DELETE);
-              } else {
-                updatedProfiles.put(userAccountName, ActionType.ADD);
-              }
+    Map<String, ActionType> updatedProfiles =
+        new HashMap<String, ActionType>();
+    final UserProfileChangeQuery changeQuery = new UserProfileChangeQuery();
+    changeQuery.setDelete(true);
+    changeQuery.setUserProfile(true);
+    changeQuery.setUpdate(true);
+    changeQuery.setUpdateMetadata(true);
+    changeQuery.setSingleValueProperty(true);
+    changeQuery.setMultiValueProperty(true);
+    changeQuery.setColleague(true);
+
+    final String changeToken = checkpoint.getUserProfileChangeToken();
+    final UserProfileChangeDataContainer changeContainer = 
+        Util.makeWSRequest(sharepointClientContext, changeWS,
+            new Util.RequestExecutor<UserProfileChangeDataContainer>() {
+          public UserProfileChangeDataContainer onRequest(final BaseWS ws)
+              throws Throwable {
+            return ((UserProfileChangeWS) ws).getChanges(changeToken,
+                changeQuery);
+          }
+
+          public void onError(final Throwable e) {
+            LOGGER.log(Level.WARNING, "Call to getChanges failed.", e);
+          }
+        });
+
+    if (changeContainer != null) {
+      UserProfileChangeData[] changes = changeContainer.getChanges();
+      if (changes != null && changes.length > 0) {
+        for(UserProfileChangeData change : changes) {
+          String userAccountName = change.getUserAccountName();
+          if (Strings.isNullOrEmpty(userAccountName)) {
+            continue;
+          }
+          for(String changeType : change.getChangeType()) {
+            LOGGER.log(Level.INFO,
+                "User Profile Change Type Recevied = "+ changeType);
+            if (SPConstants.DELETE.equalsIgnoreCase(changeType)) {
+              LOGGER.log(Level.INFO,"User Profile Deleted for user = "
+                  + change.getUserAccountName());
+              updatedProfiles.put(userAccountName, ActionType.DELETE);
+            } else {
+              updatedProfiles.put(userAccountName, ActionType.ADD);
             }
           }
         }
-        LOGGER.log(Level.INFO, "User Profile Change Token Recevied = "
-            + changeContainer.getChangeToken());
-        if (changeContainer.isHasExceededCountLimit()) {
-          checkpoint.setUserProfileChangeToken(
-              changeContainer.getChangeToken());
-        } else {
-          checkpoint.setUserProfileChangeToken(getCurrentChangeToken());
-        }
       }
-      return updatedProfiles;
-    } catch (final Exception e) {
-      LOGGER.log(Level.WARNING,
-          "Unable to get Updates for SharePoint user Profiles", e);
-      return null;
-    }
-  }
-
-  public UserProfileChangeHelper(
-      SharepointClientContext inSharepointClientContext) {
-    if (inSharepointClientContext != null) {
-      sharepointClientContext = inSharepointClientContext;
-      endpoint = Util.encodeURL(sharepointClientContext.getSiteURL())
-          + SPConstants.USERPROFILECHANGEENDPOINT;
-      LOGGER.log(Level.CONFIG,
-          "UserProfileChangeWS Endpoint set to: " + endpoint);
-      try {
-        final UserProfileChangeServiceLocator loc =
-            new UserProfileChangeServiceLocator();
-        loc.setUserProfileChangeServiceSoapEndpointAddress(endpoint);
-
-        final UserProfileChangeService service = loc;
+      LOGGER.log(Level.INFO, "User Profile Change Token Recevied = "
+          + changeContainer.getChangeToken());
+      if (changeContainer.isHasExceededCountLimit()) {
+        checkpoint.setUserProfileChangeToken(
+            changeContainer.getChangeToken());
+      } else {
         try {
-          stub = (UserProfileChangeServiceSoap_BindingStub)
-              service.getUserProfileChangeServiceSoap();
-        } catch (final ServiceException e) {
-          LOGGER.log(Level.WARNING, e.getMessage(), e);
-          throw new SharepointException(
-              "Unable to create the userprofile stub");
+          checkpoint.setUserProfileChangeToken(getCurrentChangeToken());
+        } catch (final Exception e) {
+          LOGGER.log(Level.WARNING,
+              "Unable to update checkpoint with user profile change token.",
+              e);
+          return null;
         }
-
-        final String strDomain = inSharepointClientContext.getDomain();
-        String strUserName = inSharepointClientContext.getUsername();
-        final String strPassword = inSharepointClientContext.getPassword();
-
-        strUserName = Util.getUserNameWithDomain(strUserName, strDomain);
-        stub.setUsername(strUserName);
-        stub.setPassword(strPassword);
-        // The web service time-out value
-        stub.setTimeout(sharepointClientContext.getWebServiceTimeOut());
-        LOGGER.fine("Set time-out of : "
-            + sharepointClientContext.getWebServiceTimeOut()
-            + " milliseconds");
-      } catch (final Exception e) {
-        LOGGER.log(Level.WARNING,
-            "Problem while creating the stub for UserProfile WS", e);
       }
     }
+    return updatedProfiles;
   }
 
-  public String getCurrentChangeToken() throws Exception{
-    try {
-      return stub.getCurrentChangeToken();
-    } catch (final Exception e) {
-      LOGGER.log(Level.WARNING, e.getMessage(), e);
-      throw new SharepointException("Unable to get Current Change Token");
+  public UserProfileChangeHelper(SharepointClientContext 
+      inSharepointClientContext) throws SharepointException {
+    if (null == inSharepointClientContext) {
+      throw new SharepointException(
+          "SharePointClient context cannot be null.");
     }
+    sharepointClientContext = inSharepointClientContext;
+    changeWS = sharepointClientContext.getClientFactory()
+        .getUserProfileChangeWS(sharepointClientContext);
+
+    final String strDomain = sharepointClientContext.getDomain();
+    String strUser = sharepointClientContext.getUsername();
+    final String strPassword = sharepointClientContext.getPassword();
+    final int timeout = sharepointClientContext.getWebServiceTimeOut();
+    LOGGER.fine("Setting time-out to " + timeout + " milliseconds.");
+
+    strUser = Util.getUserNameWithDomain(strUser, strDomain);
+    changeWS.setUsername(strUser);
+    changeWS.setPassword(strPassword);
+    changeWS.setTimeout(timeout);
   }
 
+  public String getCurrentChangeToken() throws Exception {
+    return Util.makeWSRequest(sharepointClientContext, changeWS,
+        new Util.RequestExecutor<String>() {
+      public String onRequest(final BaseWS ws) throws Throwable {
+        return ((UserProfileChangeWS) ws).getCurrentChangeToken();
+      }
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING, "Call to getCurrentChangeToken failed.", e);
+      }
+    });
+  }
 }
