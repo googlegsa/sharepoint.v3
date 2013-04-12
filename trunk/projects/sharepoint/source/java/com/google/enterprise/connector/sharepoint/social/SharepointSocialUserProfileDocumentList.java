@@ -16,7 +16,6 @@ package com.google.enterprise.connector.sharepoint.social;
 
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.Property;
