@@ -215,16 +215,21 @@ public class SPDocumentList implements DocumentList {
    * </p>
    */
   public String checkpoint() throws RepositoryException {
-    LOGGER.log(Level.INFO, "checkpoint called. docsFedIndexPosition [ "
-        + docsFedIndexPosition + " ] ");
-    for (int i = 0; i < docsFedIndexPosition; i++) {
-      // Process the liststate and its crawl queue for the given doc which
-      // has been sent to CM and fed to GSA successfully
-      processListStateforCheckPoint(documents.get(i));
-    }
-    doCheckPoint();
-    globalState.saveState(); // snapshot it all to disk
+    try {
+      LOGGER.log(Level.INFO, "checkpoint called. docsFedIndexPosition [ "
+          + docsFedIndexPosition + " ], size: " + size());
 
+      for (int i = 0; i < docsFedIndexPosition; i++) {
+        // Process the liststate and its crawl queue for the given doc which
+        // has been sent to CM and fed to GSA successfully
+        processListStateforCheckPoint(documents.get(i));
+      }
+      doCheckPoint();
+      globalState.saveState(); // snapshot it all to disk
+    } catch (Exception e) {
+      LOGGER.log(Level.SEVERE, "Unable to update checkpoint.", e);
+      throw new RepositoryException(e);
+    }
     return SPConstants.CHECKPOINT_VALUE;
   }
 
@@ -283,6 +288,11 @@ public class SPDocumentList implements DocumentList {
    *          individual lists
    */
   private void processListStateforCheckPoint(SPDocument spDocument) {
+    if (LOGGER.isLoggable(Level.FINER)) {
+      LOGGER.log(Level.FINER, "Processing document: " + spDocument +
+          "; Action: " + spDocument.getAction());
+    }
+
     final ListState listState = spDocument.getParentList();
     final String currentID = Util.getOriginalDocId(spDocument.getDocId(), spDocument.getFeedType());
 
