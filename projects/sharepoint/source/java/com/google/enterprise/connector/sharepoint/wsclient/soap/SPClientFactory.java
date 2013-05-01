@@ -280,16 +280,14 @@ public class SPClientFactory implements ClientFactory {
     return httpClientToUse;
   }
   
-  private Resource reserveResource(Credentials credentials) {
+  private Resource reserveResource(Credentials credentials) throws IOException {
     Resource resource = null;
     try {
       LOGGER.log(Level.FINEST,
           "Number of resources in resource pool = " + resources.size());
       resource = resources.poll(0, TimeUnit.SECONDS);      
     } catch (InterruptedException e) {      
-      LOGGER.log(Level.WARNING,
-          "Unable to reserve resource.", e);
-      Thread.currentThread().interrupt();
+      throw new IOException("Unable to reserve resource", e);      
     }
     // Create new resource.
     if (resource == null) {
