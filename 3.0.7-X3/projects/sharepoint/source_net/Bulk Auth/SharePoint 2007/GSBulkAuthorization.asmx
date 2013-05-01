@@ -14,8 +14,10 @@
 
 <%@ WebService Language="C#" Class="BulkAuthorization" %>
 using System;
+using System.Configuration;
 using System.Net;
 using System.Text;
+using System.Web.Security;
 using System.Web.Services;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
@@ -51,7 +53,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         // To force connector to use authentication in case anonymous acess is enabled
         SPContext.Current.Web.ToString();
-        return "3.0.6";
+        return "3.0.7-X3";
     }
 
     /// <summary>
@@ -71,6 +73,28 @@ public class BulkAuthorization : System.Web.Services.WebService
         ///////
         // To force connector to use authentication in case anonymous acess is enabled
         SPContext.Current.Web.ToString();
+
+        // Default membership provider is AspNetSqlMembershipProvider
+        // even if none is configured.
+        // Authz web service will perform username conversion only
+        // if different membership provider is configured.
+        String membershipProvider = ConfigurationManager.AppSettings["FBAMembershipProviderName"];
+        if (String.IsNullOrEmpty(membershipProvider))
+        {
+            if (Membership.Provider != null 
+                && String.Compare(Membership.Provider.Name, "AspNetSqlMembershipProvider", true) != 0)
+            {
+                membershipProvider = Membership.Provider.Name;
+            } 
+        }
+        if (membershipProvider != null && !username.Contains(":"))
+        {
+            String[] userInfo =
+                username.Split(new String[] { "\\" }, StringSplitOptions.RemoveEmptyEntries);
+            String userNamePart = (userInfo.Length > 1) ? userInfo[1] : userInfo[0];
+            username = String.Format("{0}:{1}", membershipProvider, userNamePart);
+            
+        }
         WSContext wsContext = new WSContext(username);
         foreach (AuthDataPacket authDataPacket in authDataPacketArray)
         {
@@ -94,7 +118,8 @@ public class BulkAuthorization : System.Web.Services.WebService
                 }
                 catch (Exception e)
                 {
-                    authDataPacket.Message = GetFullMessage(e);
+                    authDataPacket.Message =
+                        String.Format("Error Creating Context for User {0} with error {1}", username, GetFullMessage(e));
                     continue;
                 }
             }
@@ -106,12 +131,14 @@ public class BulkAuthorization : System.Web.Services.WebService
                 }
 
                 DateTime authDataStartTime = System.DateTime.Now;
+                String webUrl = String.Empty;
                 try
                 {                  
                     using(SPWeb web = wsContext.OpenWeb(authData.Container, authDataPacket.Container.Type == global::Container.ContainerType.NA))
                     {
                         if (web != null && web.Exists)
                         {
+                            webUrl = web.Url;
                             SPUser user = wsContext.User;
                             Authorize(authData, web, user);
                         }
@@ -124,6 +151,7 @@ public class BulkAuthorization : System.Web.Services.WebService
                 catch (Exception e)
                 {
                     authData.Message = "Authorization failure! " + GetFullMessage(e);
+                    authData.Message += String.Format("\nauthData.Type {0}, authData.Container {1}, webUrl {2}", authData.Type, authData.Container.Url, webUrl);
                     authData.Message += " \nAuthorization of this document took " + System.DateTime.Now.Subtract(authDataStartTime).TotalSeconds + " seconds";
                     continue;
                 }
@@ -150,6 +178,8 @@ public class BulkAuthorization : System.Web.Services.WebService
     private void Authorize(AuthData authData, SPWeb web, SPUser user)
     {
         String url = authData.Container.Url;
+        StringBuilder sbMessage = new StringBuilder();
+        sbMessage.AppendLine(String.Format("Authorizing user [{0}] for url [{1}] under web [{2}]", user.LoginName, url, web.Url));
         if (authData.Type == AuthData.EntityType.ALERT)
         {
             Guid alert_guid = new Guid(authData.ItemId);
@@ -166,6 +196,7 @@ public class BulkAuthorization : System.Web.Services.WebService
         else if (authData.Type == AuthData.EntityType.SITE)
         {
             bool isAllowd = web.DoesUserHavePermissions(user.LoginName,SPBasePermissions.ViewPages);
+            sbMessage.AppendLine(String.Format("Site Authorization is result [{3}] for user [{0}] for url [{1}] under web [{2}]", user.LoginName, url, web.Url, isAllowd));
             authData.IsAllowed = isAllowd;
         }
         else
@@ -198,6 +229,7 @@ public class BulkAuthorization : System.Web.Services.WebService
                 if (authData.Type == AuthData.EntityType.LIST)
                 {
                     bool isAllowed = list.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                    sbMessage.AppendLine(String.Format("List Authorization is result [{3}] for user [{0}] for url [{1}] under web [{2}]", user.LoginName, url, web.Url, isAllowed));
                     authData.IsAllowed = isAllowed;
                 }
                 else if (authData.Type == AuthData.EntityType.LISTITEM)
@@ -215,10 +247,12 @@ public class BulkAuthorization : System.Web.Services.WebService
                                 if (list.ReadSecurity == 2)
                                 {
                                     authData.IsAllowed = VerifyReadSecurity(item, user);
+                                    sbMessage.AppendLine(String.Format("ListItem With read security Authorization is result [{3}] for user [{0}] for url [{1}] under web [{2}]", user.LoginName, url, web.Url, authData.IsAllowed));
                                 }
                                 else
                                 {
                                     authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                                    sbMessage.AppendLine(String.Format("ListItem No read Security Authorization is result[{3}] for user [{0}] for url [{1}] under web [{2}]", user.LoginName, url, web.Url, authData.IsAllowed));
                                 }
                               
                                 bItemFound = true;
@@ -239,12 +273,18 @@ public class BulkAuthorization : System.Web.Services.WebService
                             if (item.ParentList.ReadSecurity == 2)
                             {
                                 authData.IsAllowed = VerifyReadSecurity(item, user);
+                                 sbMessage.AppendLine(String.Format("Document With read security Authorization is result[{3}] for user [{0}] for url [{1}] under web [{2}]", user.LoginName, url, web.Url, authData.IsAllowed));
                             }
                             else
                             {
                                 authData.IsAllowed = item.DoesUserHavePermissions(user, SPBasePermissions.ViewListItems);
+                                sbMessage.AppendLine(String.Format("Document No read Security Authorization is result[{3}] for user [{0}] for url [{1}] under web [{2}]", user.LoginName, url, web.Url, authData.IsAllowed));
                             }
-                        }                       
+                        }
+                        else
+                        {
+                            sbMessage.AppendLine(String.Format("Document [{1}] not found for user [{0}] for under web [{2}]", user.LoginName, url, web.Url));
+                        }                      
                     }
                 }
             }
@@ -253,6 +293,7 @@ public class BulkAuthorization : System.Web.Services.WebService
                 throw new Exception("Error Authorizing Url :" + url, e);
             }
         }
+        authData.Message += sbMessage.ToString();
     }
 
     private Boolean VerifyReadSecurity(SPListItem item, SPUser user)
@@ -822,49 +863,89 @@ internal class UserInfoHolder
         }
         catch (Exception e)
         {
-            throw new Exception("Could not create SPUser for user [ " + username + " ] using site collection [ " + site.Url + " ]", e);
+            throw new Exception("Could not create SPUser for user [ " 
+                + username + " ] using site collection [ " + site.Url + " ]", e);
         }
         if (null == web || !web.Exists)
         {
-            throw new Exception("Could not create SPUser for user [ " + username + " ] using site collection [ " + site.Url + " ] because root web is not existing.");
+            throw new Exception("Could not create SPUser for user [ " 
+                + username + " ] using site collection [ " 
+                + site.Url + " ] because root web is not existing.");
         }
 
-        if (!isResolved)
+        // Try to get user with available username as EnsureUser and ResolveWindowsPrincipal are expensive operations.
+        user = FindUserInWeb(web, username);
+
+        if (user == null)
         {
-            SPPrincipalInfo userInfo = SPUtility.ResolveWindowsPrincipal(site.WebApplication, username, SPPrincipalType.All, false);
-            if (null != userInfo)
+            // This is Forms authentication scenario
+            if (username.Contains(":"))
             {
-                username = userInfo.LoginName;
-                isResolved = true;
+                try
+                {
+                    user = web.EnsureUser(username);         
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+            else
+            {                
+                if (!isResolved)
+                {
+                    SPPrincipalInfo userInfo = 
+                        SPUtility.ResolveWindowsPrincipal(site.WebApplication, username, SPPrincipalType.All, false);
+                    if (null != userInfo)
+                    {
+                        username = userInfo.LoginName;
+                        isResolved = true;
+                    }
+                }
+                web.DoesUserHavePermissions(username, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
+                user = FindUserInWeb(web, username);
             }
         }
 
-        // First ensure that the current user has rights to view pages or list items on the web. This will ensure that SPUser object can be constructed for this username.
-        bool web_auth = web.DoesUserHavePermissions(username, SPBasePermissions.ViewPages | SPBasePermissions.ViewListItems);
+        if (user == null)
+        {
+            msg = "User " + username + " information not found in the parent site collection of web " + web.Url;
+            throwException();
+        }
+        else
+        {
+            isResolved = true;
+            return; 
+        }
+    }
+
+    internal SPUser FindUserInWeb(SPWeb web, String username)
+    {
+        SPUser userToReturn;
 
         try
-        {            
-            user = web.AllUsers[username];
+        {
+            userToReturn = web.AllUsers[username];
         }
         catch (Exception e1)
         {
             try
             {
-                user = web.SiteUsers[username];
+                userToReturn = web.SiteUsers[username];
             }
             catch (Exception e2)
             {
                 try
                 {
-                    user = web.Users[username];
+                    userToReturn = web.Users[username];
                 }
                 catch (Exception e3)
                 {
-                    msg = "User " + username + " information not found in the parent site collection of web " + web.Url;
-                    throwException();
+                    userToReturn = null;
                 }
             }
         }
+        
+        return userToReturn;
     }
 
     internal void throwException()
