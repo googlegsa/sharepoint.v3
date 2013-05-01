@@ -332,36 +332,112 @@ public class SPListsWS implements ListsWS {
       tmpfolderLevel = null;
     }
     final String folderLevel = tmpfolderLevel;
+    String tmpNextPage = null;
+    do {
+      final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res =
+          getChildFolders(folderLevel, list, tmpNextPage);
 
+      if (res == null) {
+        LOGGER.log(Level.INFO, "No child items found @ ["
+            + folderLevel + "] with next page as [" + tmpNextPage + "]");      
+        break;
+      }
+      tmpNextPage = null;
+      final MessageElement[] me = res.get_any();
+      if ((me != null) && (me.length > 0)) {
+        Iterator<?> itChilds = me[0].getChildElements();
+        while (itChilds.hasNext()) {
+          final MessageElement child = (MessageElement) itChilds.next();
+          if (!SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
+            continue;
+          }
+          tmpNextPage = child.getAttribute(
+              SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);          
+          Iterator<?> itrchild = child.getChildElements();
+          while (itrchild.hasNext()) {
+            final MessageElement row = (MessageElement) itrchild.next();            
+            final String fsObjType =
+                Util.normalizeMetadataValue(
+                    row.getAttribute(SPConstants.OWS_FSOBJTYPE));
+            String relativeURL = row.getAttribute(SPConstants.FILEREF);
+            final String docId = row.getAttribute(SPConstants.ID);
+            if ((fsObjType == null) || (relativeURL == null)
+                || (docId == null)) {
+              continue;
+            } 
+            relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
+            String folderPath = null;
+            if (fsObjType.equals("1")) {
+              if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                  LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
+                      + relativeURL + " ], listURL [ " + list.getListURL()
+                      + " ]. Perhaps a folder or list was renamed.");
+                }
+              }
+              folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
+              if (folderPath == null) {
+                continue;
+              }
+              if ((folderLevel != null) && (folderLevel.trim().length() != 0)) {
+                if (folderPath.startsWith(folderLevel)) {
+                  folders.add(new Folder(folderPath, docId));
+                }
+              } else {
+                folders.add(new Folder(folderPath, docId));
+              }
+            }
+          }
+        }
+      }
+    } while (tmpNextPage != null);
+
+    // removing duplicate entries
+    folders = new ArrayList<Folder>(new HashSet<Folder>(folders));
+
+    Collections.sort(folders);
+    return folders;
+  }
+
+  private GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult getChildFolders(
+      final String folderLevel,
+      final ListState list, String nextPage ) {
+    
     final String listName = list.getPrimaryKey();
     final String viewName = "";
-    final GetListItemChangesSinceTokenQuery query = new GetListItemChangesSinceTokenQuery();
-    final GetListItemChangesSinceTokenViewFields viewFields = new GetListItemChangesSinceTokenViewFields();
-    final GetListItemChangesSinceTokenQueryOptions queryOptions = new GetListItemChangesSinceTokenQueryOptions();
+    final GetListItemChangesSinceTokenQuery query =
+        new GetListItemChangesSinceTokenQuery();
+    final GetListItemChangesSinceTokenViewFields viewFields =
+        new GetListItemChangesSinceTokenViewFields();
+    final GetListItemChangesSinceTokenQueryOptions queryOptions =
+        new GetListItemChangesSinceTokenQueryOptions();
     final String token = null;
     final GetListItemChangesSinceTokenContains contains = null;
 
     try {
-      query.set_any(ListsUtil.createQuery1(lastID));
+      if (folderLevel == null) {
+        query.set_any(ListsUtil.createQuery1("0"));
+      } else {
+        query.set_any(ListsUtil.createQuerySubFolders(folderLevel));
+      }
       viewFields.set_any(ListsUtil.createViewFields());
-      queryOptions.set_any(ListsUtil.createQueryOptions(true, null, null));
+      queryOptions.set_any(ListsUtil.createQueryOptions(true, folderLevel, nextPage));
       LOGGER.config("Making web service request with the following "
-          + "parameters: query [ " + query.get_any()[0] 
+          + "parameters: query [ " + query.get_any()[0]
           + " ], queryoptions [ " + queryOptions.get_any()[0]
           + " ], viewFields [ " + viewFields.get_any()[0] + "] ");
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "Unable to get folder hierarchy at folderLevel [ "
           + folderLevel + " ], list [ " + list.getListURL() + " ].", e);
-      return folders;
+      return null;
     }
-
     // Make the getListItemChangesSinceToken request.
-    final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res = 
+    final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res =
         Util.makeWSRequest(sharepointClientContext, this, new Util.RequestExecutor<
         GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult>() {
           public GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult
               onRequest(final BaseWS ws) throws Throwable {
-            return stub.getListItemChangesSinceToken(listName, viewName, 
+            return stub.getListItemChangesSinceToken(listName, viewName,
                 query, viewFields, rowLimit, queryOptions, token, contains);
           }
 
@@ -370,65 +446,7 @@ public class SPListsWS implements ListsWS {
                 + folderLevel + " ], list [ " + list.getListURL() + " ].", e);
           }
         });
-
-    if (res != null) {
-      final MessageElement[] me = res.get_any();
-      if ((me != null) && (me.length > 0)) {
-        Iterator<?> itChilds = me[0].getChildElements();
-        while (itChilds.hasNext()) {
-          final MessageElement child = (MessageElement) itChilds.next();
-          if (SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
-            final String tmpNextPage = child.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
-            String lastItemID = null;
-            Iterator<?> itrchild = child.getChildElements();
-            while (itrchild.hasNext()) {
-              final MessageElement row = (MessageElement) itrchild.next();            
-              final String fsObjType =
-                  Util.normalizeMetadataValue(
-                      row.getAttribute(SPConstants.OWS_FSOBJTYPE));
-              String relativeURL = row.getAttribute(SPConstants.FILEREF);
-              final String docId = row.getAttribute(SPConstants.ID);
-              if ((fsObjType == null) || (relativeURL == null)
-                  || (docId == null)) {
-                continue;
-              }
-              lastItemID = docId;
-              relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
-              String folderPath = null;
-              if (fsObjType.equals("1")) {
-                if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-                  if (!list.updateExtraIDs(relativeURL, docId, true)) {
-                    LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
-                        + relativeURL + " ], listURL [ " + list.getListURL()
-                        + " ]. Perhaps a folder or list was renamed.");
-                  }
-                }
-                folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
-                if (folderPath == null) {
-                  continue;
-                }
-                if ((folderLevel != null) && (folderLevel.trim().length() != 0)) {
-                  if (folderPath.startsWith(folderLevel)) {
-                    folders.add(new Folder(folderPath, docId));
-                  }
-                } else {
-                  folders.add(new Folder(folderPath, docId));
-                }
-              }
-            }
-            if (tmpNextPage != null) {
-              folders.addAll(getSubFoldersRecursively(list, folder, lastItemID));
-            }
-          }
-        }
-      }
-    }
-
-    // removing duplicate entries
-    folders = new ArrayList<Folder>(new HashSet<Folder>(folders));
-
-    Collections.sort(folders);
-    return folders;
+    return res;
   }
 
   /**
@@ -549,6 +567,102 @@ public class SPListsWS implements ListsWS {
       }
     }
 
+    return listItems;
+  }
+
+  /**
+   * Method to get list items under folder hierarchy including
+   * sub folders and child list items.
+   * @param list SharePoint list to query for child items
+   * @param currentFolder Folder to get child list items from
+   * @return list of SPDocuments for child items.
+   */
+  public List<SPDocument>getListItemsUnderFolderHeirarchy(
+      ListState list, Folder currentFolder) {
+    final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
+    if (null == currentFolder) {
+      return listItems;
+    }
+    final String folderPath = currentFolder.getPath();
+    final String listName = list.getPrimaryKey();
+    final String listUrl = list.getListURL();
+    final String viewName = "";
+    final GetListItemChangesSinceTokenQuery query =
+        new GetListItemChangesSinceTokenQuery();
+    final GetListItemChangesSinceTokenViewFields viewFields =
+        new GetListItemChangesSinceTokenViewFields();
+    final GetListItemChangesSinceTokenQueryOptions queryOptions =
+        new GetListItemChangesSinceTokenQueryOptions();
+    final String token = null;
+    final GetListItemChangesSinceTokenContains contains = null;
+
+
+    try {
+      if (folderPath == null) {
+        query.set_any(ListsUtil.createQuery1("0"));
+      } else {
+        query.set_any(ListsUtil.createQueryInsideFolder(folderPath));
+      }
+      viewFields.set_any(ListsUtil.createViewFields());
+      queryOptions.set_any(ListsUtil.createQueryOptions(
+          true, folderPath, currentFolder.getNextPage()));
+      LOGGER.config("Making web service request with the following "
+          + "parameters: query [ " + query.get_any()[0]
+              + " ], queryoptions [ " + queryOptions.get_any()[0]
+                  + " ], viewFields [ " + viewFields.get_any()[0] + "] ");
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING,
+          "Unable to get folder hierarchy at folderLevel [ "
+              + folderPath + " ], list [ " + list.getListURL() + " ].", e);
+      currentFolder.setNextPage(null);
+      return listItems;
+    }
+
+    final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res =
+        Util.makeWSRequest(sharepointClientContext, this, new Util.RequestExecutor<
+            GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult>() {
+          public GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult
+          onRequest(final BaseWS ws) throws Throwable {
+            return stub.getListItemChangesSinceToken(listName, viewName,
+                query, viewFields, rowLimit, queryOptions, token, contains);
+          }
+
+          public void onError(final Throwable e) {
+            LOGGER.log(Level.WARNING, "Unable to get folder hierarchy at folderLevel [ "
+                + folderPath + " ], list [ " + listUrl + " ].", e);
+          }
+        });
+
+    if (res == null) {
+      LOGGER.log(Level.INFO, "No child items found @ ["
+          + folderPath + "] from folder [" + currentFolder + "]");
+      currentFolder.setNextPage(null);
+      return listItems;
+    }
+    
+    String nextPage = null;
+    final MessageElement[] me = res.get_any();
+    if ((me != null) && (me.length > 0)) {
+      Iterator<?> itChilds = me[0].getChildElements();
+      while (itChilds.hasNext()) {
+        final MessageElement child = (MessageElement) itChilds.next();
+        if (!SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
+          continue;
+        }
+        nextPage = 
+            child.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
+        Iterator<?> itrchild = child.getChildElements();
+        while (itrchild.hasNext()) {
+          final MessageElement row = (MessageElement) itrchild.next();
+          final SPDocument doc = ListsUtil.processListItemElement(
+              sharepointClientContext, row, list, null);
+          if (doc != null) {
+            listItems.add(doc);
+          }
+        }        
+      }
+    }    
+    currentFolder.setNextPage(nextPage);
     return listItems;
   }
 

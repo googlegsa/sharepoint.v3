@@ -92,4 +92,10 @@ public class MockListsWS implements ListsWS {
       final SPDocument listItem, List<String> knownAttachments) {
     return Collections.emptyList();
   }
+
+  @Override
+  public List<SPDocument> getListItemsUnderFolderHeirarchy(ListState list,
+      Folder currentFolder) {
+    return Collections.emptyList();
+  }
 }
