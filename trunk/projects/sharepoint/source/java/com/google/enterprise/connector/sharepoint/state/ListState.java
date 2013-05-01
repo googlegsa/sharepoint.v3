@@ -1358,6 +1358,9 @@ public class ListState implements StatefulObject {
         AttributesImpl atts = new AttributesImpl();
         atts.addAttribute("", "", SPConstants.STATE_ID, SPConstants.STATE_ATTR_ID, renamedFolder.getId());
         atts.addAttribute("", "", SPConstants.STATE_RENAMED_FOLDERPATH, SPConstants.STATE_ATTR_CDATA, renamedFolder.getPath());
+        atts.addAttribute("", "",
+            SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT,
+            SPConstants.STATE_ATTR_CDATA, renamedFolder.getNextPage());
         handler.startElement("", "", SPConstants.STATE_RENAMED_FOLDER_NODE, atts);
         handler.endElement("", "", SPConstants.STATE_RENAMED_FOLDER_NODE);
       }
@@ -1375,6 +1378,8 @@ public class ListState implements StatefulObject {
     Folder renamedFolder = new Folder(
         atts.getValue(SPConstants.STATE_RENAMED_FOLDERPATH),
         atts.getValue(SPConstants.STATE_ID));
+    renamedFolder.setNextPage(atts.getValue(
+        SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT));
     changedFolders.add(renamedFolder);
   }
 

@@ -161,7 +161,7 @@ public class SPConstants {
   public static final String QUERYOPTIONS = "QueryOptions";
   public static final String VIEWATTRIBUTES = "ViewAttributes";
   public static final String SCOPE = "Scope";
-  public static final String RECURSIVE = "Recursive";
+  public static final String RECURSIVE = "RecursiveAll";
   public static final String QUERY = "Query";
   public static final String ORDERBY = "OrderBy";
   public static final String DISPFORM = "DispForm.aspx?ID=";

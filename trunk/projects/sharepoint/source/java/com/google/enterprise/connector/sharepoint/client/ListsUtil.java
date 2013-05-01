@@ -196,6 +196,35 @@ public abstract class ListsUtil {
     final MessageElement[] meArray = { getMeFromString(strMyString) };
     return meArray;
   }
+  
+  
+ 
+  public static MessageElement[] createQuerySubFolders(String parentFolderPath)
+      throws ParserConfigurationException, IOException, SAXException {
+   
+    final String query = "<Query><Where><And><BeginsWith>"
+        + "<FieldRef Name=\"FileRef\"/><Value Type=\"Lookup\">" + parentFolderPath
+        + "</Value></BeginsWith><Eq><FieldRef Name=\"FSObjType\"/>"
+        + "<Value Type=\"Lookup\">1</Value></Eq></And></Where>"
+        + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy></Query>";
+
+    final MessageElement[] meArray = { getMeFromString(query) };
+    return meArray;
+  }
+  
+  public static MessageElement[] createQueryInsideFolder(String parentFolderPath)
+      throws ParserConfigurationException, IOException, SAXException {
+   
+    final String query = "<Query><Where><BeginsWith>"
+        + "<FieldRef Name=\"FileDirRef\"/><Value Type=\"Lookup\">" + parentFolderPath
+        + "</Value></BeginsWith></Where>"
+        + "<OrderBy><FieldRef Name=\"ID\" Ascending=\"TRUE\" /></OrderBy></Query>";
+
+    final MessageElement[] meArray = { getMeFromString(query) };
+    return meArray;
+  }
+  
+  
 
   /**
    * For getting the documents starting from a given lastItemID, but we also
@@ -283,7 +312,8 @@ public abstract class ListsUtil {
         // folder information are by deafult returned by
         // getListItemChangesSinceToken, when folder scope is given.
         // Hence, no need to use "OptimizeFor" in this case.
-      } else if (recursion) {
+      } 
+      if (recursion) {
         me.addChildElement(new MessageElement(new QName("ViewAttributes"))).addAttribute(
             SOAPFactory.newInstance().createName("Scope"), SPConstants.RECURSIVE);
 
