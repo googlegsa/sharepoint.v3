@@ -125,7 +125,8 @@ public class SPConstants {
   public static final String INVALID_TOKEN = "ERROR";
 
   public static final String ATTACHMENT_SUFFIX_IN_DOCID = "[ATTACHMENT]";
-  public static final Pattern ATTACHMENT_SUFFIX_PATTERN = Pattern.compile("^\\[ATTACHMENT\\]\\[.+\\]");
+  public static final Pattern ATTACHMENT_SUFFIX_PATTERN =
+      Pattern.compile("^\\[ATTACHMENT\\]\\[.+\\]", Pattern.CASE_INSENSITIVE);
   public static final String ALERT_SUFFIX_IN_DOCID = "[ALERT]";
 
   // End Point constants
