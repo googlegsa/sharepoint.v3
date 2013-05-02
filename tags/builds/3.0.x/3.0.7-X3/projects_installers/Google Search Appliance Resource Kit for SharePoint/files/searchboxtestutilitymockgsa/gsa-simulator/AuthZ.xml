@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope
+  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soapenv:Body>
+    <samlp:AuthzDecisionQuery
+      ID="%ID"
+      IssueInstant="%INSTANT"
+      Version="2.0"
+      Resource="%RESOURCE"
+      xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+      xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+      <saml:Subject>
+        <saml:NameID>%SUBJECT</saml:NameID>
+      </saml:Subject>
+      <saml:Action
+        Namespace="urn:oasis:names:tc:SAML:1.0:action:ghpp">
+        GET
+      </saml:Action>
+    </samlp:AuthzDecisionQuery>
+  </soapenv:Body>
+</soapenv:Envelope>
+
