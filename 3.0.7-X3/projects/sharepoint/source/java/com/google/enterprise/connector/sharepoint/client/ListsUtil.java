@@ -23,6 +23,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.wsclient.util.DateUtil;
+import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 
 import org.apache.axis.message.MessageElement;
 import org.w3c.dom.Document;
@@ -458,7 +459,16 @@ public abstract class ListsUtil {
       final SharepointClientContext sharepointClientContext,
       final MessageElement listItem, final ListState list, 
       final Set<String> allWebs) {
-    if (!isFeedableListItem(sharepointClientContext, listItem, list)) {
+    
+    String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
+    fsObjType = Util.normalizeMetadataValue(fsObjType);
+    LOGGER.log(Level.FINEST, "fsObjType [ " + fsObjType
+        + " ]. ");
+    boolean isFolder = (fsObjType!= null) && fsObjType.equals("1");
+    boolean isFeedable = 
+        isFeedableListItem(sharepointClientContext, listItem, list);
+    boolean pushAcls = sharepointClientContext.isPushAcls();
+    if (!isFeedable && (!isFolder || !pushAcls)) {
       LOGGER.warning(
           "List Item or Document is not yet published on SharePoint site, "
           + "hence discarding the ID [" + listItem.getAttribute(SPConstants.ID)
@@ -527,10 +537,6 @@ public abstract class ListsUtil {
     String displayUrl = null;
     final String urlPrefix = 
             Util.getWebApp(sharepointClientContext.getSiteURL());
-    String fsObjType = listItem.getAttribute(SPConstants.OWS_FSOBJTYPE);
-    fsObjType = Util.normalizeMetadataValue(fsObjType);
-    LOGGER.log(Level.FINE, "fsObjType [ " + fsObjType
-             + " ]. ");
     // fsobjtype = 1 indicates this is a folder.
     // (Applicable for Default Folder content Type as well as for
     // Custom folder content type).
@@ -538,7 +544,7 @@ public abstract class ListsUtil {
     // as there is a possibility of custom folder content type
     // TODO Check all the CAML queries checking 
     // for Content Type = folder and change it to FSObjType = 1. 
-    if (fsObjType.equals("1")) {    
+    if (isFolder) {
       // This is a Folder Item.
       // For folder item URL will be calculated as Web Url + filref for folder
       url.setLength(0);
@@ -644,6 +650,17 @@ public abstract class ListsUtil {
     doc.setFileref(fileref);
     doc.setDisplayUrl(displayUrl);
     doc.setParentList(list);
+    boolean skipAttributes = isFolder && !isFeedable;
+    doc.setEmptyDocument(skipAttributes);
+    if (skipAttributes) {
+      LOGGER.log(Level.FINE, "FeedType = [" 
+          + sharepointClientContext.getFeedType() + "] isInitialTraversal = ["
+          + sharepointClientContext.isInitialTraversal() + "]");
+      if ((sharepointClientContext.getFeedType() == FeedType.METADATA_URL_FEED)
+          || sharepointClientContext.isInitialTraversal()) {        
+        doc.setDocumentType(DocumentType.ACL);
+      }
+    }
 
     if (fileSize != null && !fileSize.equals("")) {
       try {
@@ -662,7 +679,7 @@ public abstract class ListsUtil {
     }
 
     // iterate through all the attributes get the atribute name and value
-    if (itAttrs != null) {
+    if (itAttrs != null && !skipAttributes) {
       while (itAttrs.hasNext()) {
         final Object oneAttr = itAttrs.next();
         if (oneAttr != null) {

@@ -155,6 +155,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   // Document Type  for Document.
   private DocumentType documentType;
+  // flag to indicate if it is empty document
+  private boolean emptyDocument;
 
   /**
    * @return the toBeFed
@@ -701,10 +703,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   public Set<String> getPropertyNames() throws RepositoryException {
     final Set<String> names = new HashSet<String>();
     ArrayList<String> candidates = new ArrayList<String>();
-    candidates.add(SPConstants.OBJECT_TYPE);
-    candidates.add(SPConstants.LIST_GUID);
-    candidates.add(SPConstants.SPAUTHOR);
-    candidates.add(SPConstants.PARENT_WEB_TITLE);
+    if (!isEmptyDocument()) {
+      candidates.add(SPConstants.OBJECT_TYPE);
+      candidates.add(SPConstants.LIST_GUID);
+      candidates.add(SPConstants.SPAUTHOR);
+      candidates.add(SPConstants.PARENT_WEB_TITLE);
+    }
     if (null != documentType) {
       names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
     }
@@ -750,14 +754,16 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         names.add(SpiConstants.PROPNAME_ACLDENYGROUPS);
       }
     }
-    // Add "extra" metadata fields, including those added by user to the
-    // documentMetadata List for matching against patterns
-    for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
-      final Attribute attr = iter.next();
-      candidates.add(attr.getName().toString());
-    }
-    if (null != title) {
-      names.add(SpiConstants.PROPNAME_TITLE);
+    if (!isEmptyDocument()) {
+      // Add "extra" metadata fields, including those added by user to the
+      // documentMetadata List for matching against patterns
+      for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
+        final Attribute attr = iter.next();
+        candidates.add(attr.getName().toString());
+      }
+      if (null != title) {
+        names.add(SpiConstants.PROPNAME_TITLE);
+      }
     }
     ArrayList<Pattern> excludedMetadataPatterns = sharepointClientContext.getExcluded_metadata();
     // Add only those metadata attributes which do not come under excluded
@@ -830,6 +836,12 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     }
     LOGGER.config("Document URL [ " + contentDwnldURL
         + " is getting processed for contents");
+    if (isEmptyDocument()) {
+      LOGGER.config("Document URL [" + contentDwnldURL
+          + "] is empty document");
+      return new SPContent("empty",
+          docContentType, docContentStream); 
+    }
     int responseCode = 0;
     boolean downloadContent = true;
     if (getFileSize() > 0
@@ -1141,6 +1153,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     this.documentType = documentType;
   }
 
+  public boolean isEmptyDocument() {
+    return emptyDocument;
+  }
+
+  public void setEmptyDocument(boolean emptyDocument) {
+    this.emptyDocument = emptyDocument;
+  }
   @VisibleForTesting
   class SPContent {
     private final String status;

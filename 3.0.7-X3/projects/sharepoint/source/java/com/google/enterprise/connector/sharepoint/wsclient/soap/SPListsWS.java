@@ -607,72 +607,75 @@ public class SPListsWS implements ListsWS {
               + list.getListURL() + " ]. ");
           continue;
         }
-        if (list.canContainFolders()) {
-          String fsObjType =
-              Util.normalizeMetadataValue(
-                  row.getAttribute(SPConstants.OWS_FSOBJTYPE));
-          if (fsObjType == null) {
-            fsObjType =
-                Util.normalizeMetadataValue(
-                    row.getAttribute(SPConstants.OWS_FSOBJTYPE_INMETA));
-          }
-          String relativeURL = row.getAttribute(SPConstants.FILEREF);
+        
+        String fsObjType = Util.normalizeMetadataValue(
+            row.getAttribute(SPConstants.OWS_FSOBJTYPE));
+        if (fsObjType == null) {
+          fsObjType = Util.normalizeMetadataValue(
+              row.getAttribute(SPConstants.OWS_FSOBJTYPE_INMETA));
+        }
+        
+        boolean isFolder = (fsObjType != null && fsObjType.equals("1"));        
+        
+        String relativeURL = row.getAttribute(SPConstants.FILEREF);
 
-          LOGGER.log(Level.CONFIG, "docID [ " + docId + " ], relativeURL [ "
-              + relativeURL + " ], fsObjType [ " + fsObjType + " ]. ");
+        LOGGER.log(Level.CONFIG, "docID [ " + docId + " ], relativeURL [ "
+            + relativeURL + " ], fsObjType [ " + fsObjType + " ]. ");
 
-          if (null == relativeURL) {
-            LOGGER.log(Level.WARNING, "No relativeURL (FILEREF) attribute found for the document, docID [ "
-                + docId + " ], listURL [ " + list.getListURL() + " ]. ");
-          } else if (null == fsObjType) {
-            LOGGER.log(Level.WARNING, "No fsObjType found for the document, relativeURL [ "
-                + relativeURL + " ], listURL [ " + list.getListURL() + " ]. ");
-          } else {           
-            relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
-            if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-              /*
-               * Since we have got an entry for this item, this item can never
-               * be considered as deleted. Remember,
-               * getListItemChangesSinceToken always return the changes,
-               * irrespective of any conditions specified in the CAML query.
-               * And, if for any change the conditions becomes false, the change
-               * details returned for this item may be misleading. For Example,
-               * if item 1 is renamed, and in query we have asked to return only
-               * those items whose ID is greater then 1; Then in that case, the
-               * WS may return change info as delete along with rename for item
-               * 1.
-               */
-              deletedIDs.remove(docId);
-              list.removeFromDeleteCache(docId);
+        if (null == relativeURL) {
+          LOGGER.log(Level.WARNING, "No relativeURL (FILEREF) attribute"
+              + " found for the document, docID [ "
+              + docId + " ], listURL [ " + list.getListURL() + " ]. ");
+        } else if (null == fsObjType) {
+          LOGGER.log(Level.WARNING,
+              "No fsObjType found for the document, relativeURL [ "
+              + relativeURL + " ], listURL [ " + list.getListURL() + " ]. ");
+        } else {           
+          relativeURL = 
+              relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
+          if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+            /*
+             * Since we have got an entry for this item, this item can never
+             * be considered as deleted. Remember,
+             * getListItemChangesSinceToken always return the changes,
+             * irrespective of any conditions specified in the CAML query.
+             * And, if for any change the conditions becomes false, the change
+             * details returned for this item may be misleading. For Example,
+             * if item 1 is renamed, and in query we have asked to return only
+             * those items whose ID is greater then 1; Then in that case, the
+             * WS may return change info as delete along with rename for item
+             * 1.
+             */
+            deletedIDs.remove(docId);
+            list.removeFromDeleteCache(docId);
 
-              if (fsObjType.equals("1")) {
+            if (isFolder) {
+              if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                // Try again after updating the folders
+                // info.
+                // Because, the folder might have been renamed.
+                LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
+                    + relativeURL + " ], listURL [ " + list.getListURL()
+                    + " ]. Retrying after updating the folders info.. ");
+                getSubFoldersRecursively(list, null, null);
+
                 if (!list.updateExtraIDs(relativeURL, docId, true)) {
-                  // Try again after updating the folders
-                  // info.
-                  // Because, the folder might have been renamed.
                   LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
                       + relativeURL + " ], listURL [ " + list.getListURL()
-                      + " ]. Retrying after updating the folders info.. ");
-                  getSubFoldersRecursively(list, null, null);
-
-                  if (!list.updateExtraIDs(relativeURL, docId, true)) {
-                    LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
-                        + relativeURL + " ], listURL [ " + list.getListURL()
-                        + " ]. Perhaps a folder or list was renamed.");
-                  }
+                      + " ]. Perhaps a folder or list was renamed.");
                 }
               }
             }
+          }
 
-            if (fsObjType.equals("1")) {
-              if (restoredIDs.contains(docId) || renamedIDs.contains(docId)) {
-                list.addToChangedFolders(new Folder(
-                    Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
-                    docId));
-              }
+          if (isFolder) {
+            if (restoredIDs.contains(docId) || renamedIDs.contains(docId)) {
+              list.addToChangedFolders(new Folder(
+                  Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
+                  docId));
             }
           }
-        } // End -> if(list.isDocumentLibrary())
+        }
 
         /*
          * Do not process list items i.e, rs:rows here. This is because, we need
@@ -680,8 +683,12 @@ public class SPListsWS implements ListsWS {
          * reach the batch hint with such documents then only we'll process the
          * updated items.
          */
+        
+        boolean isFeedable = 
+            ListsUtil.isFeedableListItem(sharepointClientContext, row, list);
+        boolean pushAcls = sharepointClientContext.isPushAcls();
 
-        if (ListsUtil.isFeedableListItem(sharepointClientContext, row, list)) {
+        if (isFeedable || (isFolder && pushAcls)) {
           updatedListItems.add(row);
         } else if (!sharepointClientContext.isInitialTraversal()) {
           // Added unpublished documents to delete list if
