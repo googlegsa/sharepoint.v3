@@ -562,7 +562,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
         addToResponse(response, authData.getComplexDocId(), authData.isIsAllowed());
 
-        if (authData.getComplexDocId().startsWith(SPConstants.ATTACHMENT_SUFFIX_IN_DOCID)) {
+        final Matcher match = SPConstants.ATTACHMENT_SUFFIX_PATTERN.matcher(
+            authData.getComplexDocId());
+        if (match.find()) {
           AttachmentKey attachmentKey = new AttachmentKey(
               authData.getContainer().getUrl(), authData.getItemId());
           List<String> dependentDocIds = attachments.get(attachmentKey);
@@ -613,7 +615,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
           + " ] because the current AuthDataPacket packet was discarded due to following WS error -> "
           + authDataPacket.getMessage());
 
-      if (authData.getComplexDocId().startsWith(SPConstants.ATTACHMENT_SUFFIX_IN_DOCID)) {
+      final Matcher match = SPConstants.ATTACHMENT_SUFFIX_PATTERN.matcher(
+          authData.getComplexDocId());
+      if (match.find()) {
         AttachmentKey attachmentKey = new AttachmentKey(
             authData.getContainer().getUrl(), authData.getItemId());
         List<String> dependentDocIds = attachments.get(attachmentKey);
@@ -653,7 +657,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         + " ] because web service encountered following error -> "
         + authData.getMessage());
 
-    if (authData.getComplexDocId().startsWith(SPConstants.ATTACHMENT_SUFFIX_IN_DOCID)) {
+    final Matcher match = SPConstants.ATTACHMENT_SUFFIX_PATTERN.matcher(
+        authData.getComplexDocId());
+    if (match.find()) {
       AttachmentKey attachmentKey = new AttachmentKey(
           authData.getContainer().getUrl(), authData.getItemId());
       List<String> dependentDocIds = attachments.get(attachmentKey);
