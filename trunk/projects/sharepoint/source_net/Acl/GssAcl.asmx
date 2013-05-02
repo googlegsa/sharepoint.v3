@@ -789,7 +789,7 @@ public class GssAclMonitor
      [WebMethod]
     public GssGetAclForUrlsResult GetAclForWebApplicationPolicy()
     {
-        using (SPSite site = new SPSite(SPContext.Current.Site.ID, SPUtility.GetAdminToken()))
+        using (SPSite site = new SPSite(SPContext.Current.Site.ID, GssAclUtility.GetAdminToken()))
         {
             using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
             {
@@ -857,7 +857,7 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclForUrlsResult GetAclForUrlsUsingInheritance(string[] urls, Boolean bUseInheritance, Boolean bIncludePolicyAcls, int largeAclThreshold, Boolean bMetaUrlFeed)
     {
-        using (SPSite site = new SPSite(SPContext.Current.Site.Url, SPUtility.GetAdminToken()))
+        using (SPSite site = new SPSite(SPContext.Current.Site.Url, GssAclUtility.GetAdminToken()))
         {
             using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
             {
@@ -1152,7 +1152,7 @@ public class GssAclMonitor
     [WebMethod]
     public GssResolveSPGroupResult ResolveSPGroupInBatch(string[] groupId, int batchSize)
     {
-         using (SPSite site = new SPSite(SPContext.Current.Site.ID, SPUtility.GetAdminToken()))
+         using (SPSite site = new SPSite(SPContext.Current.Site.ID, GssAclUtility.GetAdminToken()))
          {
              using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
              {
