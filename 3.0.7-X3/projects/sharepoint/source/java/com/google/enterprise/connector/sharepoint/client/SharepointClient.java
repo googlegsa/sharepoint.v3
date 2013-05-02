@@ -877,6 +877,9 @@ public class SharepointClient {
     if (dummyAlertListState.isExisting()) {
       webState.AddOrUpdateListStateInWebState(dummyAlertListState, currentDummyAlertList.getLastMod());
       dummyAlertListState.setCrawlQueue(listCollectionAlerts);
+      if (listCollectionAlerts != null) {
+        nDocuments += listCollectionAlerts.size();
+      }
     }
   }
 
@@ -1284,10 +1287,23 @@ public class SharepointClient {
           LOGGER.fine("Getting alerts under site [ " + webURL + " ]");
           processAlerts(ws, sharePointClientContext);       
         }        
-        // Get site data for the web and update webState.        
-        LOGGER.fine("Getting landing page data for the site [ " + webURL
-            + " ]");
-        processSiteData(ws, sharepointClientContext);
+        ListState listForWeb = ws.lookupList(ws.getPrimaryKey());
+        if (listForWeb != null) {
+          LOGGER.fine("List State for web [ " + listForWeb.getListURL()
+              + " ] is not null. Last Doc from List State is "
+              + listForWeb.getLastDocProcessed());
+        }
+        boolean isFirstBatch = ((listForWeb == null) 
+            || (listForWeb.getLastDocProcessed() == null));
+        // Crawl the site home page and web application policy in the 
+        // first batch and when a web application policy change is detected.
+        if (ws.isWebApplicationPolicyChange()
+            || isFirstBatch) {                        
+          // Get site data for the web and update webState.        
+          LOGGER.fine("Getting landing page data for the site [ " + webURL
+              + " ]");
+          processSiteData(ws, sharepointClientContext);
+        }
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "Following exception occured while traversing/updating web state URL [ "
             + webURL + " ]. ", e);
@@ -1433,5 +1449,6 @@ public class SharepointClient {
       // for web application policy change.
       webState.setWebApplicationPolicyChange(false);
     }
+    nDocuments += documentList.size();
   }
 }
