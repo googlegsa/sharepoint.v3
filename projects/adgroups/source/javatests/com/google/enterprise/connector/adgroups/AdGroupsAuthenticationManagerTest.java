@@ -36,7 +36,7 @@ public class AdGroupsAuthenticationManagerTest extends TestCase {
     con.setPrincipal(TestConfiguration.d1principal);
     con.setPassword(TestConfiguration.d1password);
     con.setDataSource(dbType, TestConfiguration.dbs.get(dbType));
-    con.setReturnBuiltin("YES");
+    con.setIncludeBuiltinGroups(true);
 
     Session s = con.login();
     s.getTraversalManager().startTraversal();
@@ -64,7 +64,7 @@ public class AdGroupsAuthenticationManagerTest extends TestCase {
     assertTrue(foundCount > 0);
 
     // Run the traversal again, this time excluding builtin groups.
-    con.setReturnBuiltin("NO");
+    con.setIncludeBuiltinGroups(false);
     am = s.getAuthenticationManager();
     response = am.authenticate(new SimpleAuthenticationIdentity(username));
 

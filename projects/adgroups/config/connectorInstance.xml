@@ -18,7 +18,7 @@
          groups on individual File System or Sharepoint servers and are using the 
          Active Directory defaults. -->
     <!-- By default, the AdGroups connector does not resolve BUILTIN groups. To Enable
-         the resolution of BUILTIN set the property returnBuiltin to YES. -->
-    <!-- <property name="returnBuiltin" value="YES"/> -->
+         the resolution of BUILTIN set the property includeBuiltinGroups to "true". -->
+    <!-- <property name="includeBuiltinGroups" value="false"/> -->
   </bean>
 </beans>
