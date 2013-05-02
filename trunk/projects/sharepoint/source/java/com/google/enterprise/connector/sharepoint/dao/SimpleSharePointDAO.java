@@ -39,9 +39,8 @@ import javax.sql.DataSource;
  * update queries in batch and also ensures that no loss should occur to other
  * queries when any one of them fails. This is achieved by falling back to
  * individual query execution when the batch execution stops at any index due to
- * the failure. Refer to <a href="http://download.oracle.com/docs/cd/E17476_01/javase1.5.0/docs/api/java/sql/Statement.html#executeBatch%28%29"
- * > http://download.oracle.com/docs/cd/E17476_01/javase1.5.0/docs/api/java/sql/
- * Statement.html#executeBatch%28%29</a> for more details.
+ * the failure. Refer to <a href="http://docs.oracle.com/javase/6/docs/api/java/sql/Statement.html#executeBatch%28%29"
+ * >java.sql.Statement.executeBatch()</a> for more details.
  *
  * @author nitendra_thakur
  */

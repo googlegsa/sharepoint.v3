@@ -2,7 +2,7 @@
 # eg: CONNECTOR_MANAGER_DIR=../../../CM/trunk/connector-manager
 CONNECTOR_MANAGER_DIR=
 
-# JDK 1.5 bootclasspath.
+# JDK 1.6 bootclasspath.
 build.bootclasspath=
 
 # Set the client factory to use for mock testing.
