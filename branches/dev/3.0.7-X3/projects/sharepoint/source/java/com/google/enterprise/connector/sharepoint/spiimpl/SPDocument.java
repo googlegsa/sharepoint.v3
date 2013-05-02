@@ -45,7 +45,10 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.GetMethod;
 
+import java.io.FilterInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.lang.IllegalStateException;
 import java.net.URLDecoder;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -97,8 +100,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   // call.
   // No assumptions should be made based on these attributes very early during
   // traversal.
-  private InputStream content = null;
-  private String content_type = null;
+  private SPContent content = null;
   private int fileSize = -1;
 
   private final Logger LOGGER = Logger.getLogger(SPDocument.class.getName());
@@ -496,28 +498,26 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
       if (FeedType.CONTENT_FEED == getFeedType()
           && ActionType.ADD.equals(getAction())) {
-        if (null == content && null == content_type) {
-          String status = downloadContents();
-          if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-            LOGGER.log(Level.WARNING, "Following response received while downloading contents (for getting contents): "
-                + status);
+        synchronized (this) {
+          if (content == null || content.isConsumed()) {
+            content = downloadContents();
           }
+          InputStream contentStream = content.getContentStream();
+          return (contentStream == null) ? null : new SimpleProperty(
+              Value.getBinaryValue(contentStream));
         }
-        return (null == content) ? null : new SimpleProperty(
-            new BinaryValue(content));
       }
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_MIMETYPE)) {
       if (FeedType.CONTENT_FEED == getFeedType()
           && ActionType.ADD.equals(getAction())) {
-        if (null == content && null == content_type) {
-          String status = downloadContents();
-          if (!SPConstants.CONNECTIVITY_SUCCESS.equalsIgnoreCase(status)) {
-            LOGGER.log(Level.WARNING, "Following response received while downloading contents (for getting content type): "
-                + status);
+        synchronized (this) {
+          if (content == null || content.getContentType() == null) {
+            content = downloadContents();
           }
+          String contentType = content.getContentType();
+          return (contentType == null) ? null : new SimpleProperty(
+              new StringValue(contentType));
         }
-        return (null == content_type) ? null : new SimpleProperty(
-            new StringValue(content_type));
       }
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
       if (FeedType.CONTENT_FEED != getFeedType()) {
@@ -818,13 +818,15 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    * @return the status of download
    * @throws RepositoryException
    */
-  /*
-   * public for testing purpose
-   */
-  public String downloadContents() throws RepositoryException {
+  @VisibleForTesting
+  SPContent downloadContents() throws RepositoryException {
+    InputStream docContentStream = null;
+    String docContentType = null;
+
     if (null == sharepointClientContext) {
       LOGGER.log(Level.SEVERE, "Failed to download document content because the connector context is not found!");
-      return SPConstants.CONNECTIVITY_FAIL;
+      return new SPContent(SPConstants.CONNECTIVITY_FAIL,
+          docContentType, docContentStream);
     }
     LOGGER.config("Document URL [ " + contentDwnldURL
         + " is getting processed for contents");
@@ -844,14 +846,29 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     }
     if (downloadContent) {
       final String docURL = Util.encodeURL(contentDwnldURL);
-      HttpMethodBase method = null;
+      final HttpMethodBase method;
       try {
         method = new GetMethod(docURL);
         responseCode = sharepointClientContext.checkConnectivity(docURL, method);
         if (null == method || responseCode != 200) {
-          return SPConstants.CONNECTIVITY_FAIL;
+          return new SPContent(Integer.toString(responseCode),
+              docContentType, docContentStream);
         }
-        content = method.getResponseBodyAsStream();
+
+        InputStream contentStream = method.getResponseBodyAsStream();
+        if (contentStream != null) {
+          docContentStream =
+              new FilterInputStream(contentStream) {
+                @Override
+                public void close() throws IOException {
+                  try {
+                    super.close();
+                  } finally {
+                    method.releaseConnection();
+                  }
+                }
+              };
+          }
       } catch (Throwable t) {
         String msg = new StringBuffer("Unable to fetch contents from URL: ").append(url).toString();
         LOGGER.log(Level.WARNING, "Unable to fetch contents from URL: " + url, t);
@@ -863,31 +880,32 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       if (!contentDwnldURL.endsWith(MSG_FILE_EXTENSION)) {
         final Header contentType = method.getResponseHeader(SPConstants.CONTENT_TYPE_HEADER);
         if (contentType != null) {
-          content_type = contentType.getValue();
+          docContentType = contentType.getValue();
         } else {
           LOGGER.info("The content type returned for doc : " + toString()
               + " is : null ");
         }
       } else {
-        content_type = MSG_FILE_MIMETYPE;
+        docContentType = MSG_FILE_MIMETYPE;
       }
 
       if (LOGGER.isLoggable(Level.FINEST)) {
         LOGGER.fine("The content type for doc : " + toString() + " is : "
-            + content_type);
+            + docContentType);
       }
 
       if (sharepointClientContext.getTraversalContext() != null
-          && content_type != null) {
+          && docContentType != null) {
         // TODO : This is to be revisited later where a better
         // approach to skip documents or only content is
         // available
-        int mimeTypeSupport = sharepointClientContext.getTraversalContext().mimeTypeSupportLevel(content_type);
+        int mimeTypeSupport = sharepointClientContext.getTraversalContext()
+            .mimeTypeSupportLevel(docContentType);
         if (mimeTypeSupport == 0) {
-          content = null;
+          docContentStream = null;
           LOGGER.log(Level.WARNING, "Dropping content of document : "
               + getUrl() + " with docId : " + docId + " as the mimetype : "
-              + content_type + " is not supported");
+              + docContentType + " is not supported");
         } else if (mimeTypeSupport < 0) {
           // Since the mimetype is in list of 'ignored' mimetype
           // list, mark it to be skipped from sending
@@ -899,25 +917,23 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       }
     }
 
+    String status;
     if (responseCode == 200) {
-      return SPConstants.CONNECTIVITY_SUCCESS;
+      status = SPConstants.CONNECTIVITY_SUCCESS;
     } else {
-      return "" + responseCode;
+      LOGGER.warning("Unable to get contents for document '" + getUrl() +
+          "'. Received the response code: " + responseCode);
+      status = Integer.toString(responseCode);
     }
+    return new SPContent(status, docContentType, docContentStream);
   }
 
   /**
-   * @return the content_type
+   * @return the content type
    */
-  public String getContent_type() {
-    return content_type;
-  }
-
-  /**
-   * @param content_type the content_type to set
-   */
-  public void setContent_type(final String content_type) {
-    this.content_type = content_type;
+  @VisibleForTesting
+  String getContentType() {
+    return content == null ? null : content.getContentType();
   }
 
   /**
@@ -1123,5 +1139,42 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    */
   public void setDocumentType(DocumentType documentType) {
     this.documentType = documentType;
+  }
+
+  @VisibleForTesting
+  class SPContent {
+    private final String status;
+    private final InputStream contentStream;
+    private final String contentType;
+    private boolean isConsumed;
+
+    public SPContent(String status, String contentType,
+        InputStream contentStream) {
+      this.status = status;
+      this.contentType = contentType;
+      this.contentStream = contentStream;
+      this.isConsumed = false;
+    }
+
+    String getStatus() {
+      return status;
+    }
+
+    String getContentType() {
+      return contentType;
+    }
+
+    boolean isConsumed() {
+      return isConsumed;
+    }
+
+    InputStream getContentStream() throws IllegalStateException {
+      if (isConsumed) {
+        throw new IllegalStateException(
+            "The document stream has already been consumed.");
+      }
+      isConsumed = true;
+      return contentStream;
+    }
   }
 }
