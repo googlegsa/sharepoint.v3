@@ -37,6 +37,7 @@ public class AdGroupsConnector
   private String port;
   private String principal;
   private String password;
+  private boolean includeBuiltinGroups;
 
   private DataSource dataSource;
   private String dbType;
@@ -118,5 +119,15 @@ public class AdGroupsConnector
 
   public void setGoogleGlobalNamespace(String globalNamespace) {
     this.globalNamespace = globalNamespace;
+  }
+
+  /** Gets whether BUILTIN groups should be included in group lookup. */
+  public boolean isIncludeBuiltinGroups() {
+    return includeBuiltinGroups;
+  }
+
+  /** Sets whether BUILTIN groups should be included in group lookup. */
+  public void setIncludeBuiltinGroups(boolean includeBuiltinGroups) {
+    this.includeBuiltinGroups = includeBuiltinGroups;
   }
 }
