@@ -145,7 +145,7 @@ public class AdGroupsConnectorTest extends TestCase {
       List<AdTestEntity> namespace = new ArrayList<AdTestEntity>();
       Random random = new Random(TestConfiguration.seed + 1);
       AdTestEntity group = new AdTestEntity(names, namespace, random, 1);
-      AdTestEntity user = new AdTestEntity(names, namespace, random);
+      AdTestEntity user = new AdTestEntity(names, namespace, random, "del");
       ad.createGroup(false, group, ou);
       ad.createUser(false, user, ou);
       user.memberOf.add(group);
@@ -203,7 +203,7 @@ public class AdGroupsConnectorTest extends TestCase {
       Set<String> names = new HashSet<String>();
       List<AdTestEntity> namespace = new ArrayList<AdTestEntity>();
       Random random = new Random(TestConfiguration.seed + 2);
-      AdTestEntity user = new AdTestEntity(names, namespace, random);
+      AdTestEntity user = new AdTestEntity(names, namespace, random, "ren");
       // create the user
       ad.createUser(false, user, ou);
 
@@ -369,7 +369,7 @@ public class AdGroupsConnectorTest extends TestCase {
       Random random = new Random(TestConfiguration.seed + 3);
 
       // create user
-      AdTestEntity user = new AdTestEntity(names, namespace, random);
+      AdTestEntity user = new AdTestEntity(names, namespace, random, "sur");
       ad.createUser(false, user, ou);
 
       // create group
@@ -432,8 +432,8 @@ public class AdGroupsConnectorTest extends TestCase {
               group.sAMAccountName.toLowerCase())));
     }
   }
-
-  public void test10000Members() throws Exception {
+  
+  private void testXMembers(int x) throws Exception {
     boolean prepared = TestConfiguration.prepared;
     for (String dbType : TestConfiguration.dbs.keySet()) {
       // Initialize AD
@@ -445,20 +445,20 @@ public class AdGroupsConnectorTest extends TestCase {
           TestConfiguration.d1password);
 
       ad.initialize();
-      String ou = TestConfiguration.testOu + "_10000_members";
+      String ou = TestConfiguration.testOu + "_" + x + "_members";
       if (!prepared) {
         ad.deleteOu(ou);
         ad.createOu(ou);
       }
       Set<String> names = new HashSet<String>();
       List<AdTestEntity> namespace = new ArrayList<AdTestEntity>();
-      Random random = new Random(TestConfiguration.seed + 4);
+      Random random = new Random(TestConfiguration.seed + x);
 
-      // create group with 10000 members
+      // create group with x members
       AdTestEntity group = new AdTestEntity(names, namespace, random, 1);
       ad.createGroup(prepared, group, ou);
-      for (int i = 0; i < 10000; ++i) {
-        AdTestEntity user = new AdTestEntity(names, namespace, random);
+      for (int i = 0; i < x; ++i) {
+        AdTestEntity user = new AdTestEntity(names, namespace, random, "x" + x);
         ad.createUser(prepared, user, ou);
         group.children.add(user);
       }
@@ -476,7 +476,7 @@ public class AdGroupsConnectorTest extends TestCase {
       s.getTraversalManager().startTraversal();
       AuthenticationManager am = s.getAuthenticationManager();
 
-      // verify that each of 10000 members belongs to this group
+      // verify that each of x members belongs to this group
       String groupName = ad.getnETBIOSName() + AdConstants.BACKSLASH
           + group.sAMAccountName.toLowerCase(); 
       for (AdTestEntity user : group.children) {
@@ -493,5 +493,13 @@ public class AdGroupsConnectorTest extends TestCase {
       }
       prepared = true;
     }
+  }
+  
+  public void test4500Members() throws Exception {
+    testXMembers(4500);
+  }
+
+  public void test10000Members() throws Exception {
+    testXMembers(10000);
   }
 }
