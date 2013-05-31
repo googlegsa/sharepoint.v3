@@ -102,6 +102,7 @@ public class TestConfiguration {
   public static String SearchDocID3;
   public static String SearchDocID4;
   public static String SearchDocID5;
+  public static String SearchDocID6;
   public static String SearchDocID113;
   public static String SearchDocID114;
   public static String SearchDocID115;
@@ -272,6 +273,7 @@ public class TestConfiguration {
     SearchDocID26 = properties.getProperty("SearchDocID26");
     SearchDocID4 = properties.getProperty("SearchDocID4");
     SearchDocID5 = properties.getProperty("SearchDocID5");
+    SearchDocID6 = properties.getProperty("SearchDocID6");
     SearchDocID113 = properties.getProperty("SearchDocID113");
     SearchDocID114 = properties.getProperty("SearchDocID114");
     SearchDocID115 = properties.getProperty("SearchDocID115");
