@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.GSSiteDiscoveryWS;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
@@ -79,7 +80,6 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 
   // TODO: What is the difference between testAuthorizeDocids and testAuthorizeDocidsForMandUFeeds.
   // Need to gather more details on the difference in the data so that we can create if for the tests.
-/*
   public void testAuthorizeDocids() throws Throwable {
     SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
         clientFactory, this.sharepointClientContext,
@@ -92,25 +92,19 @@ public class SharepointAuthorizationManagerTest extends TestCase {
     docids.add(TestConfiguration.SearchDocID1);
     docids.add(TestConfiguration.SearchDocID2);
     docids.add(TestConfiguration.SearchDocID3);
-    // docids.add(TestConfiguration.SearchDocID4);
-    // docids.add(TestConfiguration.SearchDocID115);
-    // docids.add(TestConfiguration.SearchDocID114);
-    docids.add("[ATTACHMENT][http://gdc04.gdc-psl.net:6666/site888/Lists/list888/Attachments/7/createAuthData.java]http://gdc04.gdc-psl.net:6666/site888/Lists/list888/AllItems.aspx|7");
-    docids.add("[ALERT]http://gdc04.gdc-psl.net:6666/site888/_Alerts|{E3403503-E08E-4DAF-8CC7-4706EA7741C9}");
-
-    docids.add("http://gdc04.gdc-psl.net:6666/site888/default.aspx|{12345}");
-    docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Team Discussion/AllItems.aspx|{12345}");
-    docids.add("http://gdc04.gdc-psl.net:6666/site888/Lists/Announcements/AllItems.aspx|{12345}");
+    docids.add(TestConfiguration.SearchDocID5);
+    docids.add(TestConfiguration.SearchDocID5.toLowerCase());
+    docids.add(TestConfiguration.SearchDocID5.toUpperCase());
 
     final Collection<AuthorizationResponse> authZResponses = authMan.authorizeDocids(docids, authID);
-    assertEquals(1, authZResponses.size());
+    assertEquals(3, authZResponses.size());
     for (AuthorizationResponse authZResponse : authZResponses) {
       assertNotSame(authZResponse.getStatus(), AuthorizationResponse.Status.INDETERMINATE);
     }
   }
-  */
 
   public void testAuthorizeDocidsForMandUFeeds() throws Throwable {
+    sharepointClientContext.setFeedType(FeedType.METADATA_URL_FEED);
     SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
         clientFactory, this.sharepointClientContext,
         new GSSiteDiscoveryWS(sharepointClientContext, null)
@@ -120,6 +114,9 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 
     Set<String> docids = new HashSet<String>();
     docids.add(TestConfiguration.SearchDocID4);
+    docids.add(TestConfiguration.SearchDocID6);
+    docids.add(TestConfiguration.SearchDocID6.toLowerCase());
+    docids.add(TestConfiguration.SearchDocID6.toUpperCase());
     docids.add(TestConfiguration.SearchDocID114);
     docids.add(TestConfiguration.SearchDocID115);
     docids.add(TestConfiguration.SearchDocID116);

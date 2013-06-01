@@ -81,15 +81,16 @@ public class SPDocumentTest extends TestCase {
   }
 
   public final void testDownloadContents() throws Exception {
-    final String responseCode = this.doc.downloadContents();
-    assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
+    final SPDocument.SPContent content = this.doc.downloadContents();
+    assertEquals(content.getStatus(), SPConstants.CONNECTIVITY_SUCCESS);
   }
 
   public final void testDownloadContentsForMsgFile() throws Exception {
     this.doc.setContentDwnldURL(TestConfiguration.Site1_List_Item_MSG_File_URL);
-    String responseCode = this.doc.downloadContents();
-    assertEquals(responseCode, SPConstants.CONNECTIVITY_SUCCESS);
-    assertEquals("application/vnd.ms-outlook", this.doc.getContent_type());
+    final SPDocument.SPContent content = this.doc.downloadContents();
+    assertEquals(content.getStatus(), SPConstants.CONNECTIVITY_SUCCESS);
+    assertEquals("application/vnd.ms-outlook", this.doc.getContentType());
+    assertEquals("application/vnd.ms-outlook", content.getContentType());
   }
 
   public void testGetPropertyNamesWithoutExcludedMetadata() throws Exception {

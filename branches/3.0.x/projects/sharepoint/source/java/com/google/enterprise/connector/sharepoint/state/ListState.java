@@ -820,31 +820,35 @@ public class ListState implements StatefulObject {
       return depIds;
     }
 
-    int startPos = -1;
-    int endPos = -1;
-
     final String idPattern = "\\#" + docID + "[\\#|\\~|/]";
     Pattern pat = Pattern.compile(idPattern);
     Matcher match = pat.matcher(extraIDs);
     if (match.find()) {
       String idPart = match.group();
-      startPos = match.start();
       if (idPart.endsWith("~")) {
-        // Case of folder
-        endPos = extraIDs.indexOf("/#" + docID);
-        endPos += 2 + docID.length();
-        idPart = extraIDs.substring(startPos, endPos);
+        // Since the match ends with a '~' we need to find
+        // the doc title and ending #<docID>.
+        // The expected format is:
+        // #<docID>~<docTitle>#<docID>~<docTitle>/#<docID>#<id>#<id>/#<docID>
+        // Where there can be zero or more #<id>.
 
-        pat = Pattern.compile("\\#\\d+");
-        match = pat.matcher(idPart);
-        while (match.find()) {
-          String id = match.group();
-          startPos = match.start();
-          endPos = match.end();
-          id = id.substring(1);
-          if (Util.isNumeric(id)) {
-            depIds.add(id);
+        // We've already matched "#<docID>~" so find the trailing '/#<docID>'.
+        final String endPart = extraIDs.substring(match.end());
+        final String endPattern = "/\\#" + docID + "\\b";
+        Pattern patEnd = Pattern.compile(endPattern);
+        Matcher matchEnd = patEnd.matcher(endPart);
+        if (matchEnd.find()) {
+          idPart += endPart.substring(0, matchEnd.end());
+
+          // Now read each of the #<id> parts.
+          Matcher idMatcher = Pattern.compile("\\#(\\d+)").matcher(idPart);
+          while (idMatcher.find()) {
+            depIds.add(idMatcher.group(1));
           }
+        } else {
+          LOGGER.warning("Invalid extraids: '" + extraIDs
+              + "', could not find closing docID with the pattern '"
+              + endPattern + "' found only leading id '" + idPart + "'.");
         }
       } else if (Util.isNumeric(docID)) {
         // This is an item inside some folder.
