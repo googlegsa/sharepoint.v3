@@ -327,7 +327,7 @@ div.ms-areaseparatorright{
                     }
                     
                     Cookie c = new Cookie();//add cookies available in current request to the GSA request
-                    for (int i = 0; i < CookieCollection.Count - 1; i++)
+                    for (int i = 0; i < CookieCollection.Count; i++)
                     {
                         string tempCookieName = CookieCollection[i].Name;
                         c.Name = tempCookieName;
@@ -448,7 +448,7 @@ div.ms-areaseparatorright{
                     requestHeaderKeys = HttpContext.Current.Request.Headers.AllKeys;//add headers available in current request to the GSA request
                 }
 
-                for (int i = 0; i < requestHeaderKeys.Length - 1; i++)
+                for (int i = 0; i < requestHeaderKeys.Length; i++)
                 {
                     try
                     {
@@ -1165,7 +1165,7 @@ else if(document.attachEvent)
                             HttpCookie responseCookies;//add cookies in GSA response to current response
 
                             //set the cookies in the current response
-                            for (int j = 0; j < objResp.Cookies.Count - 1; j++)
+                            for (int j = 0; j < objResp.Cookies.Count; j++)
                             {
                                 responseCookies = new HttpCookie(objResp.Cookies[j].Name);
                                 responseCookies.Value = objResp.Cookies[j].Value;
