@@ -278,7 +278,6 @@
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <pathelement location="${cm-third-paty.jar}/h2.jar" />
         <pathelement location="${cm-third-paty_jcr.jar}/jcr-1.0.jar" />
-        <pathelement location="${sql.properties}/*.properties" />
         <pathelement location="${config}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
@@ -346,9 +345,6 @@
         <exclude name="**/logging.properties" />
         <exclude name="**/connectorType.xml" />
         <exclude name="**/connectorDefaults.xml" />
-      </fileset>
-      <fileset dir="${src}">
-        <include name="**/*.properties" />
       </fileset>
       <fileset dir="${config.tmp.dir}">
         <include name="**/connectorType.xml" />

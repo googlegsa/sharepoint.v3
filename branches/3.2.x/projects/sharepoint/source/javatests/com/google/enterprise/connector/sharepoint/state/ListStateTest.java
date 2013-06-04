@@ -135,7 +135,61 @@ public class ListStateTest extends TestCase {
     assertExtraIds(state.getExtraIDs("3"), "3");
     assertExtraIds(state.getExtraIDs("30"), "30");
   }
-  
+
+  public void testExtraIDs2() throws SharepointException {
+    assertExtraIds(
+        "#4~#41#5/#4",
+        "4", "4", "5", "41");
+  }
+
+  public void testExtraIDs3() throws SharepointException {
+    // Note: #1 was added here between #1~ and /#1 to validate the parser.
+    // This is not an extra IDs string that can be generated.
+    assertExtraIds(
+        "#1~docs#139~2010 NA#141~2010 CA/#141#1#555/#139/#1#3~ppts/#3#4~pdfs/#4",
+        "1", "1", "139", "141", "555");
+  }
+
+  public void testExtraIDs4() throws SharepointException {
+    assertExtraIds(
+        "#1~xls#21#20/#1#2~docs#170#165#104#103#12#7/#2#3~pdfs#191#190#189"
+        + "#188#187#186#185#184#183#182#181#174#173#172#169#168#164#163#160"
+        + "#148#147#142#141#102#83#82#81#34#33#32#31#30#29#28#27#26#25#24#23"
+        + "#22#19#18#17#16#15#14#13#11#10#9#8#6#5#115~travel#144#143#138#134"
+        + "#133#132#131#130#129#128#127#126#125#124#123#122#121#120#119#118"
+        + "#117#116/#115#91~SPFC#100#99#98#95#94#93#92/#91#85~events#192#180"
+        + "#179#178#177#176#175#171#167#162#157#156#154/#85#47~menu#193#84#71"
+        + "#69#67#65#63#61#59#57#55#53#51#49/#47/#3#4~ppts#149~ParkingLot#151"
+        + "#150/#149/#4",
+        "4", "151", "150", "149", "4");
+  }
+
+  public void testExtraIDs5() throws SharepointException {
+    assertExtraIds(
+        "#1~leader#414/#1#2~org#242#241#240#236#235#234#226#225#115#421"
+        + "~SITE#431#422/#421#283~EP#430#309#294#285/#283#237~SEP#239#238/"
+        + "#237#227~SE#384#383#382#381#380#233#232#231#230#229#228/#227/#2"
+        + "#3~pdfs#404#387#327#317#220#160#131#114#113/#3#4~ppts#449#406"
+        + "#396#282#125#119#450~IC#458#456#455#454#453#452#451/#450/#4",
+        "4", "449", "406", "396", "282", "125", "119", "458", "456", "455",
+        "454", "453", "452", "451", "450", "4");
+  }
+
+  public void testExtraIDs6() throws SharepointException {
+    assertExtraIds(
+        "#1~IP#610~ST/#610#61~Proposals/#61#53~PP/#53#23~RP/#23/#1",
+        "61", "61");
+  }
+
+  private void assertExtraIds(String ids, String id, String... expectedIds)
+      throws SharepointException {
+    final ListState state = new ListState("", "", "", null, "", "", null);
+    state.setType(SPConstants.DOC_LIB);
+    state.setUrl(TestConfiguration.sharepointUrl);
+    state.setIDs(new StringBuffer(ids));
+    assertExtraIds(state.getExtraIDs(id), expectedIds);
+  }
+
   /**
    * Asserts that the set of extraIds contains the expected values.
    */

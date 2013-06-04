@@ -126,7 +126,11 @@ public class SPConstants {
 
   public static final String ATTACHMENT_SUFFIX_IN_DOCID = "[ATTACHMENT]";
   public static final Pattern ATTACHMENT_SUFFIX_PATTERN =
-      Pattern.compile("^\\[ATTACHMENT\\]\\[.+\\]", Pattern.CASE_INSENSITIVE);
+      Pattern.compile("^\\[ATTACHMENT\\]\\[(.+)\\](.+)",
+      Pattern.CASE_INSENSITIVE);
+  public static final Pattern ATTACHMENT_URL_PATTERN =
+      Pattern.compile("^(.+)/Attachments/([0-9]+)/", Pattern.CASE_INSENSITIVE);
+      
   public static final String ALERT_SUFFIX_IN_DOCID = "[ALERT]";
 
   // End Point constants
@@ -569,7 +573,6 @@ public class SPConstants {
   public static final String FEED_UNPUBLISHED_CONTENT = "feedUnPublishedDocuments";
   public static final String FEED_UNPUBLISHED_CONTENT_LABEL = "feed_Un_Published_Documents";
   public static final String META_URL_FEED_DOC_TOKEN = "?";
-  public static final String ATTACHMENTS = "Attachments";
   public static final CharSequence ALERTS_EQUALTO = "Alert=";
   public static final String GSAADMINUSER = "gsaAdminUser";
   public static final String GSAADMINPASSWORD = "gsaAdminPassword";
