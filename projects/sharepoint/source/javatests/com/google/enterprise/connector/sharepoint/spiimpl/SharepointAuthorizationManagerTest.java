@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SiteDiscoveryHelper;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.AuthenticationIdentity;
 import com.google.enterprise.connector.spi.AuthorizationResponse;
@@ -104,6 +105,7 @@ public class SharepointAuthorizationManagerTest extends TestCase {
   }
 
   public void testAuthorizeDocidsForMandUFeeds() throws Throwable {
+    sharepointClientContext.setFeedType(FeedType.METADATA_URL_FEED);
     SiteDiscoveryHelper siteDisc =
         new SiteDiscoveryHelper(sharepointClientContext, null);
     SharepointAuthorizationManager authMan = new SharepointAuthorizationManager(
@@ -114,6 +116,9 @@ public class SharepointAuthorizationManagerTest extends TestCase {
 
     Set<String> docids = new HashSet<String>();
     docids.add(TestConfiguration.SearchDocID4);
+    docids.add(TestConfiguration.SearchDocID6);
+    docids.add(TestConfiguration.SearchDocID6.toLowerCase());
+    docids.add(TestConfiguration.SearchDocID6.toUpperCase());
     docids.add(TestConfiguration.SearchDocID114);
     docids.add(TestConfiguration.SearchDocID115);
     docids.add(TestConfiguration.SearchDocID116);

@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.BulkAuthorizationHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -363,6 +364,9 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
 
     for (Object docId : docIDs) {
       final String complexDocId = (String) docId;
+      if (Strings.isNullOrEmpty(complexDocId)) {
+        continue;
+      }
       AuthData authData = null;
       try {
         authData = createAuthDataFromComplexDocId(complexDocId);
@@ -472,8 +476,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
       final Matcher match = SPConstants.ATTACHMENT_SUFFIX_PATTERN.matcher(URL);
       if (match.find()) {
-        final int index = match.end();
-        URL = URL.substring(index);
+        URL = match.group(2);
         isAttachment = true;
       } else if (URL.startsWith(SPConstants.ALERT_SUFFIX_IN_DOCID)) {
         URL = URL.substring(SPConstants.ALERT_SUFFIX_IN_DOCID.length());
@@ -485,12 +488,11 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
         authData.setType(EntityType.ALERT);
       }
     } else {
-      Pattern pattern = Pattern.compile(SPConstants.ATTACHMENTS);
-      Matcher match = pattern.matcher(URL);
+      Matcher match = SPConstants.ATTACHMENT_URL_PATTERN.matcher(URL);
       if (match.find()) {
         isAttachment = true;
-        DocID = getDocIDFromAttachmentURLInMetaUrlFeedMode(URL);
-        URL = getAttachmentUrlInMetaUrlFeedMode(URL);
+        DocID = match.group(2);
+        URL = match.group(1) + "/AllItems.aspx";
         container.setType(ContainerType.LIST);
         authData.setType(EntityType.LISTITEM);
       } else if (complexDocId.contains(SPConstants.ALERTS_EQUALTO)) {
@@ -516,27 +518,6 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
     authData.setComplexDocId(originalComplexDocId);
 
     return authData;
-  }
-
-  /**
-   * @param URL Attachments record URL in case of Meta and URL feed mode.
-   * @return document ID
-   */
-  private String getDocIDFromAttachmentURLInMetaUrlFeedMode(String URL) {
-    String tempDocID = URL.substring(URL.indexOf("Attachments") + 12);
-    return tempDocID.substring(0, tempDocID.indexOf("/"));
-  }
-
-  /**
-   * @param URL Attachments record URL in case of META and URL feed mode.
-   * @return valid attachment URL to authorize in case of Meta and URL feed
-   *         mode.
-   */
-  private String getAttachmentUrlInMetaUrlFeedMode(String URL) {
-    String tempUrl = URL.substring(0, URL.indexOf("Attachments"));
-    tempUrl += "AllItems.aspx";
-    // tempUrl.substring(tempUrl.indexOf("[", 2) + 1);
-    return tempUrl;
   }
 
   /**

@@ -326,7 +326,7 @@
                     }
 
                     Cookie c = new Cookie();//add cookies available in current request to the GSA request
-                    for (int i = 0; i < CookieCollection.Count - 1; i++)
+                    for (int i = 0; i < CookieCollection.Count; i++)
                     {
                         string tempCookieName = CookieCollection[i].Name;
                         c.Name = tempCookieName;
@@ -447,7 +447,7 @@
                     requestHeaderKeys = HttpContext.Current.Request.Headers.AllKeys;//add headers available in current request to the GSA request
                 }
 
-                for (int i = 0; i < requestHeaderKeys.Length - 1; i++)
+                for (int i = 0; i < requestHeaderKeys.Length; i++)
                 {
                     try
                     {
@@ -1014,7 +1014,7 @@ else if(document.attachEvent)
                                 gProps.log("The Response is being redirected to location " + newURL, LOG_LEVEL.INFO);
                                 Cookie responseCookies = new Cookie(); ;//add cookies in GSA response to current response
                                 int j;
-                                for (j = 0; j < objResp.Cookies.Count - 1; j++)
+                                for (j = 0; j < objResp.Cookies.Count; j++)
                                 {
                                     responseCookies.Name = objResp.Cookies[j].Name;
                                     Encoding utf8 = Encoding.GetEncoding("utf-8");
@@ -1173,7 +1173,7 @@ else if(document.attachEvent)
                                 HttpCookie responseCookies;//add cookies in GSA response to current response
 
                                 //set the cookies in the current response
-                                for (int j = 0; j < objResp.Cookies.Count - 1; j++)
+                                for (int j = 0; j < objResp.Cookies.Count; j++)
                                 {
                                     responseCookies = new HttpCookie(objResp.Cookies[j].Name);
                                     responseCookies.Value = objResp.Cookies[j].Value;
