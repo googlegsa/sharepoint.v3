@@ -49,6 +49,9 @@ public class AdDbUtil {
     SELECT_SERVER("SELECT_SERVER"),
     UPDATE_SERVER("UPDATE_SERVER"),
     MERGE_ENTITIES("MERGE_ENTITIES"),
+    ADD_ENTITIES("ADD_ENTITIES"),
+    MATCH_ENTITIES("MATCH_ENTITIES"),
+    RESOLVE_PRIMARY_GROUPS("RESOLVE_PRIMARY_GROUPS"),
     FIND_ENTITY("FIND_ENTITY"),
     FIND_PRIMARY_GROUP("FIND_PRIMARY_GROUP"),
     FIND_GROUP("FIND_GROUP"),
@@ -374,6 +377,8 @@ public class AdDbUtil {
         statement.addBatch();
         if (++batch >= batchHint) {
           statement.executeBatch();
+          LOGGER.log(
+              Level.FINE, "Batch execution done for SQL [" + sql + "]");
           batch = 0;
         }
       }
@@ -389,7 +394,8 @@ public class AdDbUtil {
    * Merges memberships from Active Directory to the database
    * @param entities list of entities whose memberships we should update
    */
-  public void mergeMemberships(final Set<AdEntity> entities)
+  public void mergeMemberships(final Set<AdEntity> entities,
+      boolean resolveMemberId)
       throws SQLException {
     for (AdEntity e : entities) {
       if (!e.isGroup()) {
@@ -425,6 +431,12 @@ public class AdDbUtil {
 
         int batch = 0;
         for (AdMembership m : adMemberships) {
+          Map<String, Object> foreign = m.parseForeignSecurityPrincipal();
+          if (foreign != null) {
+            m.memberId = getEntityId(Query.FIND_FOREIGN, foreign);
+          } else if (resolveMemberId){
+            m.memberId = getEntityId(Query.FIND_GROUP, m.getSqlParams());
+          }
           if (!dbMemberships.contains(m.memberDn)) {
             LOGGER.finer(
                 "Adding [" + m.memberDn + "] id [ " + m.memberId
