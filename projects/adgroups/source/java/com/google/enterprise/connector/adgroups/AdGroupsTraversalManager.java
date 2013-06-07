@@ -46,17 +46,13 @@ public class AdGroupsTraversalManager implements TraversalManager {
   private Set<AdEntity> wellKnownEntities;
   private AdDbUtil db;
   private long fullRecrawlThresholdInMillis = 24 * 60 * 60 * 1000;
-  private final String databaseType;
 
   public AdGroupsTraversalManager(AdGroupsConnector connector) 
       throws RepositoryException {
     servers = new ArrayList<AdServer>();
     wellKnownEntities = new HashSet<AdEntity>();
-    
-    databaseType = connector.getDatabaseType();
-    LOGGER.info("Connector Database Type = " + connector.getDatabaseType());
 
-    db = new AdDbUtil(connector.getDataSource(), databaseType);
+    db = new AdDbUtil(connector.getDataSource(), connector.getDatabaseType());
 
     ResourceBundle rb = ResourceBundle.getBundle(
         getClass().getPackage().getName() + ".wellknowidentifiers");
@@ -218,7 +214,6 @@ public class AdGroupsTraversalManager implements TraversalManager {
 
         // list of DNs to delete from database
         Set<AdEntity> tombstones;
-        boolean firstTimeForDomain = false;
 
         // when performing full recrawl we retrieve all entities from DB
         // and delete everything that was not rediscovered in AD
@@ -228,14 +223,11 @@ public class AdGroupsTraversalManager implements TraversalManager {
           Set<String> dns = db.selectOne(
               Query.SELECT_ALL_ENTITIES_BY_SID, server.getSqlParams(),
               AdConstants.DB_DN);
-          firstTimeForDomain = dns.isEmpty();
-          if (!firstTimeForDomain) {
-            for (AdEntity e : entities) {
-              dns.remove(e.getDn());
-            }
-            for (String dn : dns) {
-              tombstones.add(new AdEntity(null, dn));
-            }
+          for (AdEntity e : entities) {
+            dns.remove(e.getDn());
+          }
+          for (String dn : dns) {
+            tombstones.add(new AdEntity(null, dn));
           }
         } else {
           // when performing partial crawl we ask the LDAP to list removed
@@ -261,22 +253,19 @@ public class AdGroupsTraversalManager implements TraversalManager {
           // recreated with the same name.
           LOGGER.info(
               server + "update 2/6 - Checking resurrected entities");
-          if (!firstTimeForDomain) {
-            for (AdEntity e : entities) {
-              // Check for duplicates with different GUID than e.
-              Set<String> oldObjectGuids =
-                  db.selectOne(Query.SELECT_ENTITY_BY_DN_AND_NOT_GUID,
-                      e.getSqlParams(), AdConstants.DB_OBJECTGUID);
-              if (oldObjectGuids.size() > 0) {
-                LOGGER.fine("Duplicate entity [" + e + "] discovered.");
-                db.execute(Query.DELETE_MEMBERSHIPS, e.getSqlParams());
-                for (final String oldObjectGuid : oldObjectGuids) {
-                  LOGGER.fine("Deleting old version with objectguid ["
-                      + oldObjectGuid + "]");
-                  db.execute(
-                      Query.DELETE_ENTITY, ImmutableMap.<String, Object>of(
-                          AdConstants.DB_OBJECTGUID, oldObjectGuid));
-                }
+          for (AdEntity e : entities) {
+            // Check for duplicates with different GUID than e.
+            Set<String> oldObjectGuids =
+                db.selectOne(Query.SELECT_ENTITY_BY_DN_AND_NOT_GUID,
+                    e.getSqlParams(), AdConstants.DB_OBJECTGUID);
+            if (oldObjectGuids.size() > 0) {
+              LOGGER.fine("Duplicate entity [" + e + "] discovered.");
+              db.execute(Query.DELETE_MEMBERSHIPS, e.getSqlParams());
+              for (final String oldObjectGuid : oldObjectGuids) {
+                LOGGER.fine("Deleting old version with objectguid ["
+                    + oldObjectGuid + "]");
+                db.execute(Query.DELETE_ENTITY, ImmutableMap.<String, Object>of(
+                    AdConstants.DB_OBJECTGUID, oldObjectGuid));
               }
             }
           }
@@ -285,54 +274,40 @@ public class AdGroupsTraversalManager implements TraversalManager {
           LOGGER.info(
               server + "update 3/6 - Inserting AD Entities into database ("
               + entities.size() + ")");
-          Query entityQuery =
-              firstTimeForDomain ? Query.ADD_ENTITIES : Query.MERGE_ENTITIES;
-          db.executeBatch(entityQuery, entities);
+          db.executeBatch(Query.MERGE_ENTITIES, entities);
 
-          // Perform bulk processing only if its full traversal.
-          boolean bulkProcessing = 
-              databaseType.equalsIgnoreCase("SQLSERVER") && (last == 0); 
-          if (bulkProcessing) {
-            // Merge group memberships into the database
-            LOGGER.info(server 
-                + "update 4A/6 - Inserting relationships into database.");
-            // Merge group memberships into the database
-            db.mergeMemberships(entities, !bulkProcessing);   
-            LOGGER.info(
-                server + "update 4B/6 - Match entities.");
-            db.execute(Query.MATCH_ENTITIES, null);
-            LOGGER.info(server 
-                + "update 4C/6 - Resolving primary groups for entities.");
-            db.execute(Query.RESOLVE_PRIMARY_GROUPS, null);
-          } else {
-            // Merge group memberships into the database
-            LOGGER.info(server 
-                + "update 4/6 - Inserting relationships into database.");
-            // Merge group memberships into the database
-            db.mergeMemberships(entities, !bulkProcessing);
-            // Since H2 database is single threaded, resolve
-            // primary groups one at a time to avoid blocking
-            // authentication and group resolution calls during traversal.
-            for (AdEntity e : entities) {
-              // If we are user merge the primary group
-              if (!e.isGroup()) {
-                Long groupId = db.getEntityId(
-                    Query.FIND_PRIMARY_GROUP, e.getSqlParams());
-                Long memberId = db.getEntityId(
-                    Query.FIND_ENTITY, e.getSqlParams());
+          // Merge group memberships into the database
+          LOGGER.info(
+              server + "update 4/6 - Inserting relationships into database.");
+          for (AdEntity e : entities) {
+            // If we are user merge the primary group
+            if (!e.isGroup()) {
+              Long groupId = db.getEntityId(
+                  Query.FIND_PRIMARY_GROUP, e.getSqlParams());
+              Long memberId = db.getEntityId(
+                  Query.FIND_ENTITY, e.getSqlParams());
 
-                // due to exception during last traversal primary group might
-                // not exist in the DB yet
-                if (groupId != null) {
-                  Map<String, Object> map = new HashMap<String, Object>(3);
-                  map.put(AdConstants.DB_GROUPID, groupId);
-                  map.put(AdConstants.DB_MEMBERDN, e.getDn());
-                  map.put(AdConstants.DB_MEMBERID, memberId);
-                  db.execute(Query.MERGE_MEMBERSHIP, map);
-                }
+              // due to exception during last traversal primary group might
+              // not exist in the DB yet
+              if (groupId != null) {
+                Map<String, Object> map = new HashMap<String, Object>(3);
+                map.put(AdConstants.DB_GROUPID, groupId);
+                map.put(AdConstants.DB_MEMBERDN, e.getDn());
+                map.put(AdConstants.DB_MEMBERID, memberId);
+                db.execute(Query.MERGE_MEMBERSHIP, map);
+              }
+            }
+
+            for (AdMembership m : e.getMembers()) {
+              Map<String, Object> foreign = m.parseForeignSecurityPrincipal();
+              if (foreign != null) {
+                m.memberId = db.getEntityId(Query.FIND_FOREIGN, foreign);
+              } else {
+                m.memberId = db.getEntityId(Query.FIND_GROUP, m.getSqlParams());
               }
             }
           }
+          db.mergeMemberships(entities);
 
           // Update the server information
           if (last == 0) {
