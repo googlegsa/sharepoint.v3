@@ -292,6 +292,10 @@ public class SPClientFactory implements ClientFactory {
     // Create new resource.
     if (resource == null) {
       resource = new Resource(createHttpClient(credentials));
+    } else {
+      // Clear cookies if reusing http client from
+      // resource pool.
+      resource.httpClient.getState().clearCookies();
     }
     return resource;
   }
