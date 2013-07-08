@@ -1,0 +1,108 @@
+gsa: enter page_load
+gsa: inside BuildSamlRequest
+gsa: request before encoding=<?xml version="1.0"?>
+<samlp:AuthnRequest AssertionConsumerServiceURL="/gsa-simulator/SamlArtifactConsumer.aspx" Destination="/saml-bridge/Login.aspx" ID="5c592364559549e8bd2a98ca74f2afe5" IsPassive="false" IssueInstant="2011-09-26T18:46:54Z" ProviderName="GSA Simulator" Version="2.0" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+  <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">http://google.com/enterprise/gsa-simulator/SAML-W2K3-32</saml:Issuer>
+</samlp:AuthnRequest>
+gsa: before deflate length=498
+gsa: base64 encoded string: 7b0HYBxJliUmL23Ke39K9UrX4HShCIBgEyTYkEAQ7MGIzeaS7B1pRyMpqyqBymVWZV1mFkDM7Z28995777333nvvvfe6O51OJ/ff/z9cZmQBbPbOStrJniGAqsgfP358Hz8i/se/9x98/Hu8W5TpZV43RbX87KPd8c5Hv8fRb5w8brJFuXp0vG7ny1f5L1rnTZseN01et9TspFo260Vev87ry2Kaf/Xq+Wcf3b1osu2mWKzLrK3qu6/p9WNqfJ5NW9N8nDWrdx+lTwlWscxa7u8u+tme1MXsIr/7vLooltrq7OlnH92f3n+4d+/T/fv3H97ff5gfTGZ72cODafZg/3wvO8/vU6vmZdY0xWX+2UfnWdnk+KRZ52fLps2W7Wcf7e3s7m7vPNze+/TN7sGj/U8f3d//qY/Sl3V1Wczy+kW2oBc/f32cvjaIf5T+pCHFHpEiJeIsm0dMjM8+WtfLR1XWFM2jJb3ZPGqnj14ff/H8EbV8tKqrtppW5UdEvDRl8j1iXGoPxmYQmaHvR0fztl09unv3oqouynw8rRZ382Wb16u6aPIupen17e/u/V73tu/tPb7r9YtZvNufxqP/Bw==
+gsa: SamlRequest=7b0HYBxJliUmL23Ke39K9UrX4HShCIBgEyTYkEAQ7MGIzeaS7B1pRyMpqyqBymVWZV1mFkDM7Z28995777333nvvvfe6O51OJ%2fff%2fz9cZmQBbPbOStrJniGAqsgfP358Hz8i%2fse%2f9x98%2fHu8W5TpZV43RbX87KPd8c5Hv8fRb5w8brJFuXp0vG7ny1f5L1rnTZseN01et9TspFo260Vev87ry2Kaf%2fXq%2bWcf3b1osu2mWKzLrK3qu6%2fp9WNqfJ5NW9N8nDWrdx%2blTwlWscxa7u8u%2btme1MXsIr%2f7vLooltrq7OlnH92f3n%2b4d%2b%2fT%2ffv3H97ff5gfTGZ72cODafZg%2f3wvO8%2fvU6vmZdY0xWX%2b2UfnWdnk%2bKRZ52fLps2W7Wcf7e3s7m7vPNze%2b%2fTN7sGj%2fU8f3d%2f%2fqY%2fSl3V1Wczy%2bkW2oBc%2ff32cvjaIf5T%2bpCHFHpEiJeIsm0dMjM8%2bWtfLR1XWFM2jJb3ZPGqnj14ff%2fH8EbV8tKqrtppW5UdEvDRl8j1iXGoPxmYQmaHvR0fztl09unv3oqouynw8rRZ382Wb16u6aPIupen17e%2fu%2fV73tu%2ftPb7r9YtZvNufxqP%2fBw%3d%3d&RelayState=http%3a%2f%2flocalhost%3a1970%2fgsa-simulator%2fSearch.aspx%3f__VIEWSTATE%3d%252FwEPDwULLTE1MTQxNDcyNDZkZL6Ld6WefCWfm9hTaZrB%252FXab0SEk%26q%3dabc%26Resource%3dhttp%253A%252F%252Fw2k2r2-sp07-2%253A8000%252Fsites%252Fkerb1%252Fblog1%252Fdefault.aspx%26Button1%3dSubmit%26__EVENTVALIDATION%3d%252FwEWAwKu7I7dBAKr8N%252FfDAKM54rGBhU%252BzrieY3gIeKMFY6OZ1iopspHc
+gsa: URL to test: http://w2k2r2-sp07-2:8000/sites/kerb1/blog1/default.aspx
+gsa: getAC:: http://localhost:1970/saml-bridge/
+gsa: enter page_load
+gsa: inside BuildSamlRequest
+gsa: request before encoding=<?xml version="1.0"?>
+<samlp:AuthnRequest AssertionConsumerServiceURL="/gsa-simulator/SamlArtifactConsumer.aspx" Destination="/saml-bridge/Login.aspx" ID="f63755ebfe2d4c71a87dac14a2c5c3e1" IsPassive="false" IssueInstant="2011-09-26T18:47:22Z" ProviderName="GSA Simulator" Version="2.0" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+  <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">http://google.com/enterprise/gsa-simulator/SAML-W2K3-32</saml:Issuer>
+</samlp:AuthnRequest>
+gsa: before deflate length=498
+gsa: base64 encoded string: 7b0HYBxJliUmL23Ke39K9UrX4HShCIBgEyTYkEAQ7MGIzeaS7B1pRyMpqyqBymVWZV1mFkDM7Z28995777333nvvvfe6O51OJ/ff/z9cZmQBbPbOStrJniGAqsgfP358Hz8i/se/9x98/Hu8W5TpZV43RbX87KPd8c5Hv8fRb5w8brJFuXp0vG7ny1f5L1rnTZseN01et9TspFo260Vev87ry2Kaf/Xq+Wcf3b1osu2mWKzLrK3qu6/p9WNqfJ5NW9N8nDWrdx+lTwlWscxa7u8u+tme1MXsIr/7vLooltrq7OlnH51/eu/B/fv55Dzfm+1PH+xmBw9m2XR3P9ub3p/ey3epVfMya5riMqfGWdnk+KRZ52fLps2W7Wcf7e3s7m7vPNze+/TN7sGj/QeP9vZ+6qP0ZV1dFrO8fpEt6MXPXx+nrw3iH6U/aUixR6RIiTjL5hET47OP1vXyUZU1RfNoSW82j9rpo9fHXzx/RC0freqqraZV+RERL02ZfI8Yl9qDsRlEZuj70dG8bVeP7t69qKqLMh9Pq8XdfNnm9aoumrxLaXp9+7t7v9e97Xt7j+96/WIW7/an8ej/AQ==
+gsa: SamlRequest=7b0HYBxJliUmL23Ke39K9UrX4HShCIBgEyTYkEAQ7MGIzeaS7B1pRyMpqyqBymVWZV1mFkDM7Z28995777333nvvvfe6O51OJ%2fff%2fz9cZmQBbPbOStrJniGAqsgfP358Hz8i%2fse%2f9x98%2fHu8W5TpZV43RbX87KPd8c5Hv8fRb5w8brJFuXp0vG7ny1f5L1rnTZseN01et9TspFo260Vev87ry2Kaf%2fXq%2bWcf3b1osu2mWKzLrK3qu6%2fp9WNqfJ5NW9N8nDWrdx%2blTwlWscxa7u8u%2btme1MXsIr%2f7vLooltrq7OlnH51%2feu%2fB%2ffv55Dzfm%2b1PH%2bxmBw9m2XR3P9ub3p%2fey3epVfMya5riMqfGWdnk%2bKRZ52fLps2W7Wcf7e3s7m7vPNze%2b%2fTN7sGj%2fQeP9vZ%2b6qP0ZV1dFrO8fpEt6MXPXx%2bnrw3iH6U%2faUixR6RIiTjL5hET47OP1vXyUZU1RfNoSW82j9rpo9fHXzx%2fRC0freqqraZV%2bRERL02ZfI8Yl9qDsRlEZuj70dG8bVeP7t69qKqLMh9Pq8XdfNnm9aoumrxLaXp9%2b7t7v9e97Xt7j%2b96%2fWIW7%2fan8ej%2fAQ%3d%3d&RelayState=http%3a%2f%2flocalhost%3a1970%2fgsa-simulator%2fSearch.aspx%3f__VIEWSTATE%3d%252FwEPDwULLTE1MTQxNDcyNDZkZL6Ld6WefCWfm9hTaZrB%252FXab0SEk%26q%3dabc%26Resource%3dhttp%253A%252F%252Fw2k2r2-sp07-2%253A8000%252Fsites%252Fkerb1%252Fblog1%252Fdefault.aspx%26Button1%3dSubmit%26__EVENTVALIDATION%3d%252FwEWAwKu7I7dBAKr8N%252FfDAKM54rGBhU%252BzrieY3gIeKMFY6OZ1iopspHc
+gsa: URL to test: http://w2k2r2-sp07-2:8000/sites/kerb1/blog1/default.aspx
+gsa: getAC:: http://localhost:1970/saml-bridge/
+gsa: gsa::SamArtifactConsumer_Page_Load
+gsa: gsa::SamArtifactConsumer:getSubject
+gsa: getAC:: http://localhost:1970/saml-bridge/
+gsa: post to url: http://localhost:1970/saml-bridge/Resolve.aspx
+gsa: request = <?xml version="1.0" ?>
+<soap11:Envelope xmlns:soap11="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap11:Body>
+    <samlp:ArtifactResolve 
+      ID="e793e69c50be47d1af37e6a08d3171f2" 
+      IssueInstant="2011-09-26T18:47:23Z" 
+      Version="2.0" 
+      xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+      <saml:Issuer xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion">http://google.com/enterprise/gsa-simulator/SAML-W2K3-32</saml:Issuer>
+      <samlp:Artifact>a5d37c8d65e8948548ab316feabf04242</samlp:Artifact>
+    </samlp:ArtifactResolve>
+  </soap11:Body>
+</soap11:Envelope>
+
+
+gsa: response from saml authz is: <?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Body><samlp:ArtifactResponse xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns="urn:oasis:names:tc:SAML:2.0:assertion" ID="a749eb1ea34b34059b77730ec9427cfb0" Version="2.0" InResponseTo="e793e69c50be47d1af37e6a08d3171f2" IssueInstant="2011-09-26T18:46:23Z"><Issuer>saml-bridge</Issuer><samlp:Status><samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success" /></samlp:Status><samlp:Response ID="e793e69c50be47d1af37e6a08d3171f2" Version="2.0" IssueInstant="2011-09-26T18:46:23Z"><samlp:Status><samlp:StatusCode Value="urn:oasis:names:tc:SAML:2.0:status:Success" /></samlp:Status><Assertion Version="2.0" ID="a662c9750bd3b4f69bb4d7a11ba15e0b4" IssueInstant="2011-09-26T18:46:23Z"><Issuer>saml-bridge</Issuer><Subject><NameID>administrator@GDC-PSL</NameID><SubjectConfirmation Method="urn:oasis:names:tc:SAML:2.0:cm:bearer"><SubjectConfirmationData InResponseTo="f63755ebfe2d4c71a87dac14a2c5c3e1" Recipient="http://localhost:1970/gsa-simulator/SamlArtifactConsumer.aspx" NotOnOrAfter="2011-09-26T18:52:23Z" /></SubjectConfirmation></Subject><Conditions NotBefore="2011-09-26T18:46:23Z" NotOnOrAfter="2011-09-26T18:52:23Z"><AudienceRestriction><Audience>http://google.com/enterprise/gsa-simulator/SAML-W2K3-32</Audience></AudienceRestriction></Conditions><AuthnStatement AuthnInstant="2011-09-26T18:46:23Z" SessionIndex="a20d50749354245c2afb15c7046e3c947"><AuthnContext><AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:InternetProtocol</AuthnContextClassRef></AuthnContext></AuthnStatement></Assertion></samlp:Response></samlp:ArtifactResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>
+gsa: The Subject element count: 1
+gsa: The Subject is: administrator@GDC-PSL
+gsa: URL to authorize: http://w2k2r2-sp07-2:8000/sites/kerb1/blog1/default.aspx
+gsa: gsa::SamArtifactConsumer:Authz
+gsa: getAC:: http://localhost:1970/saml-bridge/
+gsa: post to url: http://localhost:1970/saml-bridge/Authz.aspx
+gsa: request = <?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope
+  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soapenv:Body>
+    <samlp:AuthzDecisionQuery
+      ID="897d980a71b743039dd0c2562e7c3a48"
+      IssueInstant="2011-09-26T18:47:23Z"
+      Version="2.0"
+      Resource="http://w2k2r2-sp07-2:8000/sites/kerb1/blog1/default.aspx"
+      xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+      xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
+      <saml:Subject>
+        <saml:NameID>administrator@GDC-PSL</saml:NameID>
+      </saml:Subject>
+      <saml:Action
+        Namespace="urn:oasis:names:tc:SAML:1.0:action:ghpp">
+        GET
+      </saml:Action>
+    </samlp:AuthzDecisionQuery>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+gsa: response from saml authz is: <soapenv:Envelope
+  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Body>
+    <samlp:Response
+      xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+      xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+      ID="a6fabe41f11c0437a944ce4825075b651"
+      Version="2.0"
+      IssueInstant="2011-09-26T18:47:23Z">
+      <samlp:Status>
+        <samlp:StatusCode
+          Value="urn:oasis:names:tc:SAML:2.0:status:Success"/>
+      </samlp:Status>
+      <saml:Assertion
+        Version="2.0"
+        ID="abc0d78a50c9540ebbf6cefc250e22e30"
+        IssueInstant="2011-09-26T18:47:23Z">
+        <saml:Issuer>SAML-W2K3-32</saml:Issuer>
+        <saml:Subject>
+          <saml:NameID>administrator@GDC-PSL</saml:NameID>
+        </saml:Subject>
+        <saml:AuthzDecisionStatement
+          Resource="http://w2k2r2-sp07-2:8000/sites/kerb1/blog1/default.aspx"
+          Decision="Permit">
+          <saml:Action
+            Namespace="urn:oasis:names:tc:SAML:1.0:action:ghpp">
+            GET
+          </saml:Action>
+        </saml:AuthzDecisionStatement>
+      </saml:Assertion>
+    </samlp:Response>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
