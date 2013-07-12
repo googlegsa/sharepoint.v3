@@ -2019,6 +2019,11 @@ public sealed class GssAclUtility
             if (user.IsDomainGroup)
             {
                 gssPrincipal.Type = GssPrincipal.PrincipalType.DOMAINGROUP;
+                // in claims mode the resolved groupname will be only sid, get the Name instead
+                if (gssPrincipal.Name.ToLower().StartsWith("s-1-5"))
+                {
+                    gssPrincipal.Name = user.Name;
+                }
             }
             else
             {
