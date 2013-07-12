@@ -509,6 +509,7 @@ public class SharepointConnector implements Connector,
       adGroupsConnector.setPrincipal(username + SPConstants.AT + domain);
       adGroupsConnector.setPassword(password);
       adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
+      adGroupsConnector.setConnectorName(connectorName);
       adGroupsConnector.init();
     }
     sharepointClientContext.setUserProfileFullTraversalInterval(
@@ -916,6 +917,9 @@ public class SharepointConnector implements Connector,
   public void shutdown() throws RepositoryException {
     LOGGER.info("Shutting down the connector with the name [" + connectorName
         + "]");
+    if (adGroupsConnector != null) {
+        adGroupsConnector.shutdown();
+    }
   }
 
   /*
@@ -951,6 +955,10 @@ public class SharepointConnector implements Connector,
             "Dropping the connector names table from the data base.");
         connectorNamesDAO.dropConnectorNamesTable();
       }
+    }
+
+    if (adGroupsConnector != null) {
+        adGroupsConnector.delete();
     }
   }
 

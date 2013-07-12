@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.adgroups;
 
+import com.google.enterprise.connector.spi.RepositoryException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,12 +42,15 @@ public class AdDbUtil {
     TEST_SERVERS("TEST_SERVERS"),
     CREATE_SERVERS_SEQUENCE("CREATE_SERVERS_SEQUENCE"),
     CREATE_SERVERS("CREATE_SERVERS"),
+    DROP_SERVERS_TABLE("DROP_SERVERS_TABLE"),
     TEST_ENTITIES("TEST_ENTITIES"),
     CREATE_ENTITIES_SEQUENCE("CREATE_ENTITIES_SEQUENCE"),
     CREATE_ENTITIES("CREATE_ENTITIES"),
+    DROP_ENTITIES_TABLE("DROP_ENTITIES_TABLE"),
     TEST_MEMBERS("TEST_MEMBERS"),
     CREATE_MEMBERS_SEQUENCE("CREATE_MEMBERS_SEQUENCE"),
     CREATE_MEMBERS("CREATE_MEMBERS"),
+    DROP_MEMBERS_TABLE("DROP_MEMBERS_TABLE"),
     SELECT_SERVER("SELECT_SERVER"),
     UPDATE_SERVER("UPDATE_SERVER"),
     MERGE_ENTITIES("MERGE_ENTITIES"),
@@ -68,7 +73,13 @@ public class AdDbUtil {
     DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN
         ("DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN"),
     SELECT_ALL_ENTITIES_BY_SID("SELECT_ALL_ENTITIES_BY_SID"),
-    DELETE_ENTITY("DELETE_ENTITY");
+    DELETE_ENTITY("DELETE_ENTITY"),
+    TEST_CONNECTORNAME("TEST_CONNECTORNAME"),
+    CREATE_CONNECTORNAME("CREATE_CONNECTORNAME"),
+    DROP_CONNECTORNAME_TABLE("DROP_CONNECTORNAME_TABLE"),
+    ADD_CONNECTORNAME("ADD_CONNECTORNAME"),
+    SELECT_CONNECTORNAME("SELECT_CONNECTORNAME"),
+    DELETE_CONNECTORNAME("DELETE_CONNECTORNAME");
 
     private String query;
     Query(String query) {
@@ -89,6 +100,7 @@ public class AdDbUtil {
     put("servers", "servers");
     put("entities", "entities");
     put("members", "members");
+    put("connectornames", "Connector_Names");
     put("sequence", "_sequence");
     put("index", "_index");
   }};
@@ -103,6 +115,11 @@ public class AdDbUtil {
     this.dataSource = dataSource;
     try {
       connection = dataSource.getConnection();
+      try {
+        select(Query.TEST_CONNECTORNAME, null);
+      } catch (SQLException e) {
+        execute(Query.CREATE_CONNECTORNAME, null);
+      }
       try {
         select(Query.TEST_SERVERS, null);
       } catch (SQLException e) {
@@ -493,5 +510,108 @@ public class AdDbUtil {
   public void setBatchHint(int batchHint) {
     LOGGER.info("Setting batch size to [" + batchHint + "]");
     this.batchHint = batchHint;
+  }
+
+  /**
+   * Checks if the connector names tables has any rows.
+   */
+  public void deleteConnectorNameInstance(String connectorName)
+      throws RepositoryException {
+    removeConnectorNameInstance(connectorName);
+
+    if (isConnectorNamesTableEmpty()) {
+      dropTable(Query.DROP_MEMBERS_TABLE);
+      dropTable(Query.DROP_ENTITIES_TABLE);
+      dropTable(Query.DROP_SERVERS_TABLE);
+      dropTable(Query.DROP_CONNECTORNAME_TABLE);
+    }
+  }
+
+  /**
+   * Checks if the connector names tables has any rows.
+   */
+  public void ensureConnectorNameInstanceExists(String connectorName) {
+    if (!hasConnectorNameInstance(connectorName)) {
+      addConnectorNameInstance(connectorName);
+    }
+  }
+
+  /**
+   * Checks if the connector names tables has any rows.
+   */
+  private boolean isConnectorNamesTableEmpty() {
+    boolean isEmpty;
+    try {
+      List<HashMap<String, Object>> names =
+          select(Query.SELECT_CONNECTORNAME, null);
+      isEmpty = (names.size() == 0);
+    } catch (Exception e) {
+      isEmpty = true;
+    }
+    return isEmpty;
+  }
+
+  /**
+   * Adds a connector name to the connector names tables.
+   */
+  private void addConnectorNameInstance(String connectorName) {
+    try {
+      HashMap<String, Object> params = new HashMap<String, Object>();
+      params.put(AdConstants.DB_CONNECTORNAME, connectorName);
+      execute(Query.ADD_CONNECTORNAME, params);
+    } catch (Throwable e) {
+      LOGGER.log(Level.WARNING,
+          "Failed to add connector name to connector names table "
+          + "with the query [" + Query.ADD_CONNECTORNAME + "]", e);
+    }
+  }
+
+  /**
+   * Checks if a connector name is in the connector names tables.
+   */
+  private boolean hasConnectorNameInstance(String connectorName) {
+    try {
+      List<HashMap<String, Object>> names =
+          select(Query.SELECT_CONNECTORNAME, null);
+      for (HashMap<String, Object> row : names) {
+        if (row.get(AdConstants.DB_CONNECTORNAME).equals(connectorName)) {
+          return true;
+        }
+      }
+    } catch (SQLException e) {
+      LOGGER.log(Level.WARNING, "Unable to query connector names table "
+          + "with the query [" + Query.SELECT_CONNECTORNAME + "]", e);
+    }
+    return false;
+  }
+
+  /**
+   * Removes the connector name from the connector names tables.
+   */
+  private void removeConnectorNameInstance(String connectorName) {
+    try {
+      HashMap<String, Object> params = new HashMap<String, Object>();
+      params.put(AdConstants.DB_CONNECTORNAME, connectorName);
+      execute(Query.DELETE_CONNECTORNAME, params);
+    } catch (Throwable e) {
+      LOGGER.log(Level.WARNING,
+          "Failed to remove connector name from connector names table "
+          + "with the query [" + Query.DELETE_CONNECTORNAME + "]", e);
+    }
+  }
+
+  /**
+   * Removes a table from the database.
+   */
+  private void dropTable(Query query) throws RepositoryException {
+    try {
+      execute(query, null);
+    } catch (Throwable e) {
+      throw new RepositoryException(
+          "Failed to remove the table with the query [" + query + "]", e);
+    }
+    LOGGER.info(
+        "Sucessfully removed the table from the database using the query ["
+        + query + "]");
   }
 }
