@@ -325,10 +325,15 @@
                         cc = new CookieContainer();
                     }
 
-                    Cookie c = new Cookie();//add cookies available in current request to the GSA request
+                    //add cookies available in current request to the GSA request
                     for (int i = 0; i < CookieCollection.Count; i++)
                     {
+                        Cookie c = new Cookie();
                         string tempCookieName = CookieCollection[i].Name;
+                        if (tempCookieName == "GSBS_GSA_SESSION_ID")
+                        {
+                            tempCookieName = "GSA_SESSION_ID";
+                        }
                         c.Name = tempCookieName;
                         Encoding utf8 = Encoding.GetEncoding("utf-8");
                         String value = CookieCollection[i].Value;
