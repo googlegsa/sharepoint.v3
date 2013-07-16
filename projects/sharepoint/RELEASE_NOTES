@@ -9,6 +9,93 @@ The following sections describe the release in detail and provide information th
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
 
+Release 3.2.0-M3, June 27, 2013
+===============================
+
+Introduction
+------------
+This is a minor release with new features. Users of
+previous releases are encouraged to upgrade. Users of previous
+releases should check the "Version Compatibility" section below
+for instructions on how to use existing data with this new
+release.
+
+Summary of Changes
+------------------
+For a summary of the new features, see the Guide to Release 3.0:
+
+http://www.google.com/support/enterprise/static/gsa/docs/admin/connector_30/sharepoint_guide/
+
+Java SE 5.0 is no longer supported. Java 6 or later is required.
+
+This release contains fixes for the following issues:
+
+--Issue 9417474 IIS returns 400 errors when sending too large HTTP headers.
+
+--Issue 8538403 By sending delete record for unpublished documents,
+                connector broke the ACL chain for child items.
+
+--Issue 8467118 Performance issue when renaming sharepoint folders prevents
+                the connector from completing traversal.
+
+--Issue 8357746 If the SystemAccount is not available when retrieving ACLs,
+                use the current user's token instead.
+
+--Issue 8325341 If site collection administrators group cannot be resolved
+                in GetAcl request the connector will get stuck in a loop.
+
+--Issue 6732717 Add support for Sharepoint anonymous content.
+
+--Issue 6395086 Sharepoint connector late binding does not work with
+                claims-based authentication. The connector only supports
+                claims-based authentication with Windows authentication.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager version 3.0.4 and above. Versions
+lower than 3.0.4 of the Connector Manager will not work correctly with this
+version of the connector. Connectors with version 2.4.0 and above can be
+safely upgraded using the steps given below.
+
+This version works with Google Services for SharePoint 3.2.0. Versions
+lower than 3.2.0 of Google Services for SharePoint will not work
+correctly with this version of the connector.
+
+Google strongly recommends reindexing your SharePoint content when
+upgrading to 3.0, due to changes in the ACL structures in the connector,
+feeds, and GSA index, and corresponding changes in user identity and group
+resolution in the authentication mechanisms.
+
+SharePoint local group resolution support with GSA 6.10.4.G.22 is limited
+to HTTP Based NTLM and Connector authentication. All authentication
+mechanisms work with GSA 6.12 and higher. Flex AuthZ support in the
+connector works only with GSA 6.14 and higher. ACL inheritance and Deny
+permission, and crawling user profiles for Expert Search work only with GSA
+7.0 and higher. All the other connector features will continue to work on
+GSA 7.0.14.G.114, 7.0.14.G.84, 6.14.0.G.28, and 6.12.0.G.30.
+
+Manually upgrade an existing connector and Google Services for SharePoint
+------------------------------------------------------------------------
+The steps to manually upgrade an existing connector or a Google Services for SharePoint can be found at http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/ManualInstallation.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit and 64-bit Windows
+and Linux environments.
+
+--Microsoft Windows Server 2008 R2
+--Microsoft Windows Server 2008
+--Microsoft Windows Server 2003
+--Red Hat Enterprise Linux 5
+
+Note: This release has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007.
+
+GSA Support:
+---------------------
+This connector version has been certified against 6.12.0.G.30, 6.14.0.G.28,
+and 7.0.14.G.114.
+
+
 Release 3.0.8, May 31, 2013
 ===========================
 
