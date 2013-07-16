@@ -113,6 +113,7 @@ public class SharepointConnector implements Connector,
   private AdGroupsConnector adGroupsConnector;
   private boolean oldLdapBehavior = false;
   private int userProfileFullTraversalInterval = 1;
+  private boolean resolveFormsAuthenticationRoles = false;
 
   /**
    * Describes whether user profiles are fetched.
@@ -500,6 +501,9 @@ public class SharepointConnector implements Connector,
     sharepointClientContext.setLargeACLThreshold(this.largeACLThreshold);
     sharepointClientContext.setGroupResolutionBatchSize(
         this.groupResolutionBatchSize);
+    
+    sharepointClientContext.setResolveFormsAuthenticationRoles(
+        this.resolveFormsAuthenticationRoles);
 
     if (!oldLdapBehavior) {
       adGroupsConnector = new AdGroupsConnector();
@@ -1017,5 +1021,14 @@ public class SharepointConnector implements Connector,
   public void setUserProfileFullTraversalInterval(
       int userProfileFullTraversalInterval) {
     this.userProfileFullTraversalInterval = userProfileFullTraversalInterval;
+  }
+
+  public boolean isResolveFormsAuthenticationRoles() {
+    return resolveFormsAuthenticationRoles;
+  }
+
+  public void setResolveFormsAuthenticationRoles(
+      boolean resolveFormsAuthenticationRoles) {
+    this.resolveFormsAuthenticationRoles = resolveFormsAuthenticationRoles;
   }
 }

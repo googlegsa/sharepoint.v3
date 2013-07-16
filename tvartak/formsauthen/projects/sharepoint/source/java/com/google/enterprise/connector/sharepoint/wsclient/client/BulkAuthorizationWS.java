@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.UserRoleMembership;
 
 import java.rmi.RemoteException;
 
@@ -39,4 +40,7 @@ public interface BulkAuthorizationWS extends BaseWS {
    * @throws RemoteException
    */
   public String checkConnectivity() throws RemoteException;
+  
+  public UserRoleMembership getUserRoleMembership(String membership,
+      String userName, String password) throws RemoteException;
 }

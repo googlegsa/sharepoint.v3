@@ -17,11 +17,13 @@ using System;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Web.Security;
 using System.Web.Services;
 using Microsoft.SharePoint;
 using Microsoft.SharePoint.Utilities;
 using Microsoft.SharePoint.Administration;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 
 /// <summary>
 /// Google Search Appliance Connector for Microsoft SharePoint uses this web service to authorize documents at serve time.
@@ -53,9 +55,89 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         // To force connector to use authentication in case anonymous acess is enabled
         SPContext.Current.Web.ToString();
-        return "3.2.0-M2";
+        return "3.2.0-X1";
     }
 
+    [WebMethod]
+    public UserRoleMembership GetUserRoleMembership(String membership, String userName, String password)
+    {
+        UserRoleMembership userRoles = new UserRoleMembership();
+        MembershipProvider membershipProvider;
+        if (!String.IsNullOrEmpty(membership))
+        {
+            membershipProvider = Membership.Providers[membership];
+            
+        }
+        else
+        {
+            membershipProvider = Membership.Provider;
+        }
+
+        if (membershipProvider == null)
+        {
+            userRoles.ValidUser = String.IsNullOrEmpty(password);
+            userRoles.AddLogs(String.Format("Membership provider {0} is not available!!", membership));
+            return userRoles;
+        }
+
+        if (!String.IsNullOrEmpty(password))
+        {
+            try
+            {  
+                userRoles.ValidUser = membershipProvider.ValidateUser(userName, password);
+                if (!userRoles.ValidUser)
+                {                    
+                    userRoles.AddLogs(String.Format("User {0} is not a valid user under Membership provider {1}", userName, membershipProvider.Name));
+                    return userRoles;
+                }
+                
+            }
+            catch (Exception exUserValidation)
+            {
+                userRoles.ValidUser = false;           
+                userRoles.AddLogs(exUserValidation.Message);
+                userRoles.AddLogs(exUserValidation.StackTrace);
+                return userRoles;
+            }
+        }
+        else
+        {
+            userRoles.ValidUser = true;
+        }
+
+        // Forms authenticated user name will be resolved as one of the roles for user.
+        // ACLs will treat forms authenticated users as domain groups.
+        userRoles.UserName = String.Format("{0}:{1}", membershipProvider.Name, userName);
+        List<String> scRoles = new List<String>();
+        scRoles.Add(userRoles.UserName);
+
+        if (Roles.Enabled)
+        {
+            try
+            {
+                userRoles.RoleProvider = Roles.Provider.Name;
+
+                foreach (String role in Roles.GetRolesForUser(userName))
+                {
+                    scRoles.Add(String.Format("{0}:{1}", userRoles.RoleProvider, role));
+                }
+               
+            }
+            catch (Exception ex)
+            {
+                userRoles.AddLogs(String.Format("Error resolving roles for User [{0}] with Error [{1}]", userName, ex.Message));
+                userRoles.AddLogs(String.Format("Error Stack Trace [{0}]", ex.StackTrace));
+
+            }
+        }
+        else
+        {
+            userRoles.AddLogs("Roles are not enabled on this SharePoint web application.");
+        }
+        userRoles.Roles = scRoles.ToArray();
+        return userRoles;
+    }
+    
     /// <summary>
     /// Authorizes a user against a batch of documents. This method gives a high level view of the way authorization progresses.
     /// It iterates over each AuthData object of every AuthDataPacket and attempts authorization. For the internal housekeeping,
@@ -351,6 +433,53 @@ public class BulkAuthorization : System.Web.Services.WebService
         }
         return owner;
     }
+}
+
+[WebService(Namespace = "BulkAuthorization.generated.sharepoint.connector.enterprise.google.com")]
+[WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
+[Serializable]
+public class UserRoleMembership
+{
+    private string[] userRoles;
+
+    public string[] Roles
+    {
+        get { return userRoles; }
+        set { userRoles = value; }
+    }
+    private string roleProvider;
+
+    public string RoleProvider
+    {
+        get { return roleProvider; }
+        set { roleProvider = value; }
+    }
+    private string userName;
+
+    public string UserName
+    {
+        get { return userName; }
+        set { userName = value; }
+    }
+    private StringBuilder logMessage = new StringBuilder();
+    public String LogMessage
+    {
+        get { return logMessage.ToString(); }
+        set { logMessage = new StringBuilder(value); }
+    }
+
+    private Boolean validUser;
+    public Boolean ValidUser
+    {
+        get { return validUser; }
+        set { validUser = value; }
+    }
+    
+    public void AddLogs(String log)
+    {
+        logMessage.AppendLine(log);
+    }
+
 }
 
 /// <summary>
