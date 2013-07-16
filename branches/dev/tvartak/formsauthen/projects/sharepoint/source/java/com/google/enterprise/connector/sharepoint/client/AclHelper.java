@@ -462,9 +462,17 @@ public class AclHelper {
     String globalNamespace = sharepointClientContext.getGoogleGlobalNamespace();
     String localNamespace = sharepointClientContext.getGoogleLocalNamespace();
     if (PrincipalType.USER.equals(principal.getType())) {
-      userPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
-              globalNamespace, principalName,
-              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+      if (principalName.contains(":")) {
+        // Forms authenticated user names will be treated as Group principal and it
+        // will be resolved as one of the group during authentication.
+        groupPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+            globalNamespace, principalName,
+            CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+      } else {
+        userPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+            globalNamespace, principalName,
+            CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+      }
     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())) {
       groupPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
               globalNamespace, principalName,

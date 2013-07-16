@@ -17,11 +17,17 @@ package com.google.enterprise.connector.sharepoint.client;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.UserRoleMembership;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
+import com.google.enterprise.connector.spi.Principal;
+import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -114,5 +120,22 @@ public class BulkAuthorizationHelper {
     });
     LOGGER.info("GS Connectivity status: " + status);
     return status;
+  }
+  
+  public UserRoleMembership getUserRoleMembership(
+      final String roleProvider, final String userName, final String password) {   
+    UserRoleMembership userRoles = Util.makeWSRequest(sharepointClientContext,
+        bulkAuthWS, new Util.RequestExecutor<UserRoleMembership>() {
+      public UserRoleMembership onRequest(final BaseWS ws) throws Throwable {
+        return ((BulkAuthorizationWS) ws).getUserRoleMembership(
+            roleProvider, userName, password);
+      }
+      
+      public void onError(final Throwable e) {
+        LOGGER.log(Level.WARNING, "Call to resolve user roles failed.", e);
+      }
+    });
+    return userRoles;
+       
   }
 }

@@ -120,6 +120,8 @@ public class SharepointClientContext implements Cloneable {
   private UserProfileServiceFactory userProfileServiceFactory;
 
   private final ClientFactory clientFactory;
+  
+  private boolean resolveFormsAuthenticationRoles = false;
 
   public boolean isFeedUnPublishedDocuments() {
     return feedUnPublishedDocuments;
@@ -253,6 +255,8 @@ public class SharepointClientContext implements Cloneable {
       spCl.setSocialOption(this.getSocialOption());
       spCl.setUserProfileServiceFactory(this.userProfileServiceFactory);
       spCl.setInitialTraversal(this.initialTraversal);
+      spCl.setResolveFormsAuthenticationRoles(
+          this.resolveFormsAuthenticationRoles);
 
       return spCl;
     } catch (final Throwable e) {
@@ -1188,5 +1192,14 @@ public class SharepointClientContext implements Cloneable {
   public void setUserProfileFullTraversalInterval(
       int userProfileFullTraversalInterval) {
     this.userProfileFullTraversalInterval = userProfileFullTraversalInterval;
+  }
+
+  public boolean isResolveFormsAuthenticationRoles() {
+    return resolveFormsAuthenticationRoles;
+  }
+
+  public void setResolveFormsAuthenticationRoles(
+      boolean resolveFormsAuthenticationRoles) {
+    this.resolveFormsAuthenticationRoles = resolveFormsAuthenticationRoles;
   }
 }

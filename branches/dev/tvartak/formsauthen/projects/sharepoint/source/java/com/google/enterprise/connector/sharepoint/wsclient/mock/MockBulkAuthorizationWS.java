@@ -17,6 +17,7 @@ package com.google.enterprise.connector.sharepoint.wsclient.mock;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.AuthDataPacket;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.UserRoleMembership;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 
 import java.util.logging.Logger;
@@ -76,5 +77,11 @@ public class MockBulkAuthorizationWS implements BulkAuthorizationWS {
    */
   public String checkConnectivity() {
     return SPConstants.CONNECTIVITY_SUCCESS;
+  }
+
+  @Override
+  public UserRoleMembership getUserRoleMembership(String membership,
+      String userName, String password) throws RemoteException {
+    return null;
   }
 }

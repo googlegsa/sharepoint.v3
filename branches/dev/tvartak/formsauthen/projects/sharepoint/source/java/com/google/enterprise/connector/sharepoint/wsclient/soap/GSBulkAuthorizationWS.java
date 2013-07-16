@@ -21,6 +21,7 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorization;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationLocator;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.BulkAuthorizationSoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.UserRoleMembership;
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.holders.ArrayOfAuthDataPacketHolder;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
@@ -125,5 +126,11 @@ public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
    */
   public String checkConnectivity() throws RemoteException {
     return stub.checkConnectivity();
+  }
+
+  @Override
+  public UserRoleMembership getUserRoleMembership(String membership,
+      String userName, String password) throws RemoteException {
+    return stub.getUserRoleMembership(membership, userName, password);
   }
 }

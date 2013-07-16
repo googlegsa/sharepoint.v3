@@ -23,6 +23,7 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
+import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.UserRoleMembership;
 import com.google.enterprise.connector.sharepoint.ldap.LdapService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
@@ -33,6 +34,8 @@ import com.google.enterprise.connector.spi.AuthenticationResponse;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
+import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType;
 import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -63,6 +66,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
   @VisibleForTesting
   final LdapService ldapService;
   private final AdGroupsAuthenticationManager adGroupsAuthenticationManager;
+  private final boolean resolveFormsAuthenticationRoles; 
 
   /**
    * @param inSharepointClientContext Context Information is required to create
@@ -75,6 +79,8 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     if (inSharepointClientContext == null) {
       throw new SharepointException("SharePointClientContext can not be null");
     }
+    resolveFormsAuthenticationRoles = 
+        inSharepointClientContext.isResolveFormsAuthenticationRoles();
     adGroupsAuthenticationManager = inAdGroupsAuthenticationManager;
     this.clientFactory = clientFactory;
     sharepointClientContext = (SharepointClientContext) inSharepointClientContext.clone();
@@ -94,7 +100,7 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
   public AuthenticationResponse authenticate(
       final AuthenticationIdentity identity) throws RepositoryLoginException,
       RepositoryException {
-    if (adGroupsAuthenticationManager != null) {
+    if (adGroupsAuthenticationManager != null || resolveFormsAuthenticationRoles) {
       return authenticateAgainstActiveDirectory(new MutableIdentity(identity));
     } else {
       return authenticateAgainstSharepoint(identity);
@@ -131,29 +137,82 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
   private AuthenticationResponse authenticateAgainstActiveDirectory(
       final AuthenticationIdentity identity) throws RepositoryLoginException,
       RepositoryException {
-    AuthenticationResponse adAuthResult =
-        adGroupsAuthenticationManager.authenticate(identity);
-    if (!adAuthResult.isValid()) {
-      return adAuthResult;
+
+    Collection<Principal> adGroupsResolved = null;
+    AuthenticationResponse adAuthResult = null;
+    if (adGroupsAuthenticationManager != null) {
+      adAuthResult = adGroupsAuthenticationManager.authenticate(identity);
+      if (!adAuthResult.isValid() && !resolveFormsAuthenticationRoles) {
+        return adAuthResult;
+      }
+
+      @SuppressWarnings("unchecked")
+      Collection<Principal> adGroups =
+          (Collection<Principal>) adAuthResult.getGroups();
+      adGroupsResolved = adGroups;
     }
 
-    @SuppressWarnings("unchecked")
-    Collection<Principal> adGroups =
-        (Collection<Principal>) adAuthResult.getGroups();
+    if (resolveFormsAuthenticationRoles) {    
+      BulkAuthorizationHelper bulkAuth = 
+          new BulkAuthorizationHelper(sharepointClientContext);
+      String[] userNameSplit = identity.getUsername().split(":");
+      String membership = userNameSplit.length == 1? "" : userNameSplit[0];
+      String userName = 
+          userNameSplit.length == 1 ? userNameSplit[0] : userNameSplit[1];
+
+      // Send blank password if user is already authenticated 
+      // with AD connector.    
+      String passwordToValidate = 
+          (adAuthResult != null && adAuthResult.isValid())
+          ? "" : identity.getPassword();
+
+      UserRoleMembership userRoleMembership = bulkAuth.getUserRoleMembership(
+          membership, userName, passwordToValidate);
+
+      LOGGER.log(Level.INFO, "Logs for Role Resolution for User[" + userName
+          + "] : " + userRoleMembership.getLogMessage());
+
+      if (!userRoleMembership.isValidUser()) {
+        LOGGER.log(Level.WARNING, "User [" + userName 
+            + "] is invalid user or wrong user credentials!!!");
+        return new AuthenticationResponse(false, "", null);
+      }
+
+      List<Principal> roles = new ArrayList<Principal>();
+      String globalNamespace = 
+          sharepointClientContext.getGoogleGlobalNamespace();   
+      for(String userTole : userRoleMembership.getRoles()) {
+        LOGGER.log(Level.INFO,
+            "Adding Role[" + userTole + "] for UserName [" + userName + "]");
+        roles.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+            globalNamespace, userTole,
+            CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
+      }
+
+      if (adGroupsResolved == null) {
+        adGroupsResolved = roles;
+      } else {
+        adGroupsResolved.addAll(roles);
+      }
+    }
+
+
     String strUserName =
-        addUserNameFormatForTheSearchUser(identity.getUsername(), identity.getDomain());
+        addUserNameFormatForTheSearchUser(identity.getUsername(),
+            identity.getDomain());
     Set<Principal> spGroups = sharepointClientContext
         .getUserDataStoreDAO().getSharePointGroupsForSearchUserAndLdapGroups(
-            sharepointClientContext.getGoogleLocalNamespace(), adGroups,
-            strUserName);
+            sharepointClientContext.getGoogleLocalNamespace(),
+            adGroupsResolved, strUserName);
 
     Collection<Principal> groups = new ArrayList<Principal>();
-    groups.addAll(adGroups);
+    groups.addAll(adGroupsResolved);
     groups.addAll(spGroups);
 
-    return new AuthenticationResponse(
-        adAuthResult.isValid(), adAuthResult.getData(), groups);
+    return new AuthenticationResponse(true, "", groups);
   }
+  
+  
 
   /**
    * Authenticates the user against the SharePoint server where Crawl URL

@@ -120,6 +120,9 @@
 
   <!-- Use old AD/LDAP behavior (pre 3.0) -->
   <!-- <property name="oldLdapBehavior"><value>false</value></property> -->
+  
+  <!-- resolve forms authentication roles -->
+  <!-- <property name="resolveFormsAuthenticationRoles"><value>false</value></property> -->
 
   </bean>
 </beans>
