@@ -9,6 +9,47 @@ main documentation.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
+Release 3.2.0, July 15, 2013
+============================
+
+Introduction
+------------
+This is a minor release with new features. Users of previous releases
+are encouraged to upgrade.
+
+This connector replaces functionality previously provided by the
+SharePoint connector. This connector can be used automatically in
+conjunction with the SharePoint connector as a drop-in replacement for
+the previous functionality, or used separately with other connectors
+or content sources.
+
+Summary of Changes
+------------------
+This release contains fixes for the following issues:
+
+--Issue 9900497 Enable Bulk processing of AD membership information when
+                connector is configured to use SQL server as datastore.
+
+--Issue 7121121 Flush AD entries in the user datastore when the last connector
+                instance gets deleted from the Connector Manager.
+				
+
+
+Version Compatibility
+---------------------
+Connector instances created using versions 3.0.0 through 3.0.8 may be
+used with this version. This version works with Connector Manager
+version 3.0.0 and above. Versions lower than 3.0.0 of the Connector
+Manager will not work correctly with this version of the connector.
+
+For optimal performance, if you are upgrading from a previous 3.0.x
+version, Google recommends dropping the database tables and resetting the
+traversal for your connector instances after the upgrade. When using the
+default H2 database, you can simply delete the connector_manager.h2.db
+file under Tomcat/webapps/connector-manager/WEB-INF/connector_manager.db
+while Tomcat is stopped.
+
+
 
 Release 3.0.8, May 31, 2013
 ===========================
