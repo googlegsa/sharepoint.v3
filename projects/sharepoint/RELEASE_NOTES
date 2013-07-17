@@ -82,8 +82,8 @@ lower than 3.0.4 of the Connector Manager will not work correctly with this
 version of the connector. Connectors with version 2.4.0 and above can be
 safely upgraded using the steps given below.
 
-This version works with Google Services for SharePoint 3.2.0. Versions
-lower than 3.2.0 of Google Services for SharePoint will not work
+This version works with Connector Services for SharePoint 3.2.0. Versions
+lower than 3.2.0 of Connector Services for SharePoint will not work
 correctly with this version of the connector.
 
 Google strongly recommends reindexing your SharePoint content when
