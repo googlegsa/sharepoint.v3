@@ -53,7 +53,7 @@ public class BulkAuthorization : System.Web.Services.WebService
     {
         // To force connector to use authentication in case anonymous acess is enabled
         SPContext.Current.Web.ToString();
-        return "3.2.0-M2";
+        return "3.2.0-RC1";
     }
 
     /// <summary>
