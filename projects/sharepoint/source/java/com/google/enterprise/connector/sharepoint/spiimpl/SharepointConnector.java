@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.base.Strings;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.adgroups.AdGroupsConnector;
 import com.google.enterprise.connector.sharepoint.client.AclHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
@@ -86,7 +87,7 @@ public class SharepointConnector implements Connector,
   private List<String> infoPathBaseTemplate;
   private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
   private boolean reWriteRecordUrlUsingAliasMappingRules;
-  private ConnectorPersistentStore connectorPersistnetStore;
+  private ConnectorPersistentStore connectorPersistentStore;
   private boolean fetchACLInBatches = false;
   private int aclBatchSizeFactor = 2;
   /** Threshold value to identify large ACLs. **/
@@ -135,6 +136,7 @@ public class SharepointConnector implements Connector,
   private SocialOption socialOption;
 
   public SharepointConnector() {
+    // TODO(jlacey): sharepointClientContext is always null here.
     socialConnector = new SharepointSocialConnector(this.sharepointClientContext);
   }
 
@@ -470,6 +472,10 @@ public class SharepointConnector implements Connector,
     sharepointClientContext.setIncluded_metadata(included_metadata);
     sharepointClientContext.setExcluded_metadata(excluded_metadata);
     sharepointClientContext.setInfoPathBaseTemplate(infoPathBaseTemplate);
+    sharepointClientContext.setReWriteDisplayUrlUsingAliasMappingRules(
+        reWriteDisplayUrlUsingAliasMappingRules);
+    sharepointClientContext.setReWriteRecordUrlUsingAliasMappingRules(
+        reWriteRecordUrlUsingAliasMappingRules);
     sharepointClientContext.setUsernameFormatInAce(getUsernameFormatInAce());
     sharepointClientContext.setGroupnameFormatInAce(this
         .getGroupnameFormatInAce());
@@ -509,10 +515,17 @@ public class SharepointConnector implements Connector,
       adGroupsConnector.setPrincipal(username + SPConstants.AT + domain);
       adGroupsConnector.setPassword(password);
       adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
+      adGroupsConnector.setConnectorName(connectorName);
       adGroupsConnector.init();
     }
     sharepointClientContext.setUserProfileFullTraversalInterval(
         this.userProfileFullTraversalInterval);
+  }
+
+  /** This method is only used for testing. */
+  @VisibleForTesting
+  SharepointClientContext getSharepointClientContext() {
+    return sharepointClientContext;
   }
 
   /**
@@ -605,7 +618,7 @@ public class SharepointConnector implements Connector,
   }
 
   public void setDatabaseAccess(ConnectorPersistentStore databaseAccess) {
-    this.connectorPersistnetStore = databaseAccess;
+    this.connectorPersistentStore = databaseAccess;
     if (sharepointClientContext.isPushAcls()) {
       performUserDataStoreInitialization();
     }
@@ -623,7 +636,7 @@ public class SharepointConnector implements Connector,
    * selected data base.
    */
   private void performUserDataStoreInitialization() {
-    localDatabseImpl = connectorPersistnetStore.getLocalDatabase();
+    localDatabseImpl = connectorPersistentStore.getLocalDatabase();
     String locale = localDatabseImpl.getDatabaseType().name();
     LOGGER.config("Data base type : " + locale);
     if (null == locale || locale.length() == 0) {
@@ -916,6 +929,9 @@ public class SharepointConnector implements Connector,
   public void shutdown() throws RepositoryException {
     LOGGER.info("Shutting down the connector with the name [" + connectorName
         + "]");
+    if (adGroupsConnector != null) {
+        adGroupsConnector.shutdown();
+    }
   }
 
   /*
@@ -951,6 +967,10 @@ public class SharepointConnector implements Connector,
             "Dropping the connector names table from the data base.");
         connectorNamesDAO.dropConnectorNamesTable();
       }
+    }
+
+    if (adGroupsConnector != null) {
+        adGroupsConnector.delete();
     }
   }
 

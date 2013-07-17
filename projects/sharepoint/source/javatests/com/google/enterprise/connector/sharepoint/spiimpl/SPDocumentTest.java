@@ -89,8 +89,33 @@ public class SPDocumentTest extends TestCase {
     this.doc.setContentDwnldURL(TestConfiguration.Site1_List_Item_MSG_File_URL);
     final SPDocument.SPContent content = this.doc.downloadContents();
     assertEquals(content.getStatus(), SPConstants.CONNECTIVITY_SUCCESS);
-    assertEquals("application/vnd.ms-outlook", this.doc.getContentType());
     assertEquals("application/vnd.ms-outlook", content.getContentType());
+  }
+
+  public final void testStatusCodeForInvalidUrl() throws Exception {
+    // A temporary test document is needed since we need to use a content
+    // feed when retrieving the property HTTP_STATUS_CODE. If we used a
+    // metadata-and-url, SPDocument will return a null for HTTP_STATUS_CODE.
+    SPDocument testDoc = new SPDocument(doc.getDocId(), doc.getDisplayUrl(),
+        doc.getLastMod(), doc.getAuthor(), doc.getObjType(),
+        doc.getParentWebTitle(), FeedType.CONTENT_FEED, doc.getSPType());
+    testDoc.setSharepointClientContext(doc.getSharepointClientContext());
+    testDoc.setContentDwnldURL(TestConfiguration.Site1_List_Item_MSG_File_URL
+        + ".invalid.txt");
+    assertNull(testDoc.getContent());
+
+    final Property prop = testDoc.findProperty(SPConstants.HTTP_STATUS_CODE);
+    assertNotNull(prop);
+    assertEquals("404", prop.nextValue().toString());
+    assertNull(prop.nextValue());
+  }
+
+  public final void testDownloadContentsForInvalidUrl() throws Exception {
+    this.doc.setContentDwnldURL(TestConfiguration.Site1_List_Item_MSG_File_URL
+        + ".invalid.txt");
+    final SPDocument.SPContent content = this.doc.downloadContents();
+    assertEquals("404", content.getStatus());
+    assertEquals(404, content.getStatusCode());
   }
 
   public void testGetPropertyNamesWithoutExcludedMetadata() throws Exception {

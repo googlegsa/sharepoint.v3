@@ -14,20 +14,28 @@
 
 package com.google.enterprise.connector.adgroups;
 
+import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.adgroups.AdServer;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
 import com.google.enterprise.connector.spi.ConnectorPersistentStoreAware;
+import com.google.enterprise.connector.spi.ConnectorShutdownAware;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
 import com.google.enterprise.connector.spi.Session;
 
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
-public class AdGroupsConnector
-    implements Connector, ConnectorPersistentStoreAware {
+public class AdGroupsConnector implements Connector, 
+    ConnectorPersistentStoreAware, ConnectorShutdownAware {
 
   private static final Logger LOGGER =
       Logger.getLogger(AdServer.class.getName());
@@ -43,6 +51,7 @@ public class AdGroupsConnector
   private String dbType;
 
   private String globalNamespace;
+  private String connectorName;
 
   @Override
   public Session login() throws RepositoryLoginException, RepositoryException {
@@ -57,6 +66,9 @@ public class AdGroupsConnector
   public void setDatabaseAccess(ConnectorPersistentStore store) {
     setDataSource(store.getLocalDatabase().getDatabaseType().name(),
         store.getLocalDatabase().getDataSource());
+
+    final AdDbUtil db = new AdDbUtil(getDataSource(), getDatabaseType());
+    db.ensureConnectorNameInstanceExists(connectorName);
   }
 
   // this method exists only to simplify testing
@@ -129,5 +141,35 @@ public class AdGroupsConnector
   /** Sets whether BUILTIN groups should be included in group lookup. */
   public void setIncludeBuiltinGroups(boolean includeBuiltinGroups) {
     this.includeBuiltinGroups = includeBuiltinGroups;
+  }
+
+  public String getConnectorName() {
+    return connectorName;
+  }
+
+  public void setConnectorName(String connectorName) {
+    this.connectorName = connectorName;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see com.google.enterprise.connector.spi.ConnectorShutdownAware#shutdown()
+   */
+  public void shutdown() throws RepositoryException {
+    LOGGER.info("Shutting down the connector with the name [" + connectorName
+        + "]");
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see com.google.enterprise.connector.spi.ConnectorShutdownAware#delete()
+   */
+  public void delete() throws RepositoryException {
+    LOGGER.info("Deleting the connector with the name [" + connectorName
+        + "] from the database table.");
+    final AdDbUtil db = new AdDbUtil(getDataSource(), getDatabaseType());
+    db.deleteConnectorNameInstance(connectorName);
   }
 }
