@@ -1,5 +1,8 @@
 <%@ Assembly Name="Microsoft.SharePoint.ApplicationPages, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 
+<%@ Assembly Name="System.Security, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" %>
+<%@ Assembly Name="System.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" %>
+
 <%-- <% Here '~' is included in the MasterPageFile attribute. ~ refers to the root directory %>--%>
 <%-- <% Enabled the Session state in the page by setting the attribute 'EnableSessionState' to true  %>--%>
 <%@ Page Language="C#" Inherits="Microsoft.SharePoint.ApplicationPages.SearchResultsPage"
@@ -15,10 +18,13 @@
 <%@ Register TagPrefix="Utilities" Namespace="Microsoft.SharePoint.Utilities" Assembly="Microsoft.SharePoint, Version=12.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c" %>
 <%@ Import Namespace="Microsoft.SharePoint.ApplicationPages" %>
 <%@ Import Namespace="Microsoft.SharePoint" %>
+<%@ Import Namespace="System.Collections.Generic" %>
 <%@ Import Namespace="System.Net" %>
 <%@ Import Namespace="System.IO" %>
 <%@ Import Namespace="System.Web.Configuration" %>
+<%@ Import Namespace="System.Security.Cryptography" %>
 <%@ Import Namespace="System.Security.Cryptography.X509Certificates" %>
+<%@ Import Namespace="System.Security.Cryptography.Xml" %>
 <%@ Import Namespace="System.Xml" %>
 <%@ Import Namespace="System.Xml.Xsl" %>
 <%@ Import Namespace="System.Text" %>
@@ -85,6 +91,202 @@
             ERROR
         }
 
+
+
+        public class Common
+        {
+            // String to hold the SAML namespace declaration
+            public const String SAML_NAMESPACE = "urn:oasis:names:tc:SAML:2.0:protocol";
+            public const String SAML_NAMESPACE_ASSERTION = "urn:oasis:names:tc:SAML:2.0:assertion";
+            // String used as prefix for artifacts
+            public const String ARTIFACT = "Artifact";
+            //String used to identiy the Issuer Node
+            public const String ISSUER = "Issuer";
+
+            public static String assertionConsumer = null;
+            public static String idpEntityId = null;
+
+            public static int iTrustDuration = 300;
+            public static XmlDocument postResponse;
+            public static X509Certificate2 certificate = null;
+
+            static Common()
+            {
+                HttpServerUtility Server = HttpContext.Current.Server;
+                postResponse = new XmlDocument();
+                String template = Server.MapPath("PostResponse.xml");
+                postResponse.Load(template);
+                GSAAssertionConsumer = WebConfigurationManager.AppSettings["assertion_consumer"];
+                IDPEntityId = WebConfigurationManager.AppSettings["idp_entity_id"];
+                iTrustDuration = int.Parse(WebConfigurationManager.AppSettings["trust_duration"]);
+                GetCertificate();
+            }
+
+            private static void GetCertificate()
+            {
+                String certName = WebConfigurationManager.AppSettings["certificate_friendly_name"];
+                if (null == certName || "".Equals(certName))
+                    return;
+
+                // Local Computer\Personal
+                X509Store store = new X509Store(StoreLocation.LocalMachine);
+                // create and open store for read-only access
+                store.Open(OpenFlags.ReadOnly);
+
+                foreach (X509Certificate2 cert in store.Certificates)
+                {
+                    if (cert.FriendlyName.Equals(certName))
+                    {
+                        Common.certificate = cert;
+                        break;
+                    }
+                }
+                store.Close();
+            }
+
+            /// <summary>
+            ///Method to determine the URL to which the user is redirected
+            /// after login.
+            /// Based on whether this is a simulation or not.
+            ///The simulator is a test utility that simulates
+            ///the SAML requests that come from a GSA.
+            /// 
+            /// </summary>
+            public static String GSAAssertionConsumer
+            {
+                get
+                {
+                    return assertionConsumer;
+                }
+                set
+                {
+                    assertionConsumer = value;
+                }
+            }
+
+
+            /// <summary>
+            /// Method to determine the IDP Entity ID
+            /// </summary>
+            public static String IDPEntityId
+            {
+                get
+                {
+                    return idpEntityId;
+                }
+                set
+                {
+                    if (value != null)
+                    {
+                        idpEntityId = value.Trim();
+                    }
+                    else
+                    {
+                        idpEntityId = "";
+                    }
+                }
+            }
+
+            /// <summary>
+            ///  Method to obtain the current time, converted
+            ///  to a specific format for insertion into responses
+            /// </summary>
+            /// <param name="time"></param>
+            /// <returns>Universal time format</returns>
+            public static String FormatInvariantTime(DateTime time)
+            {
+                return time.ToUniversalTime().ToString("s", System.Globalization.DateTimeFormatInfo.InvariantInfo) + "Z";
+            }
+            ///<summary>            
+            /// The random strings that used by all the different "ID" must start with alphabet, or an underscore. 
+            /// That's why I've prefixed "a" here.
+            /// </summary>
+            /// <returns>Random string</returns>
+
+            public static String GenerateRandomString()
+            {
+                String id = "a" + System.Guid.NewGuid().ToString("N");
+                id = System.Web.HttpUtility.UrlEncode(id);
+                return id;
+            }
+
+            /// <summary>
+            /// Method to obtain an XML element within an XMLDocument,
+            /// given the element name.
+            /// </summary>
+            /// <param name="doc">Xml Document</param>
+            /// <param name="name">element name to be found</param>
+            /// <returns></returns>
+            public static XmlNode FindOnly(XmlDocument doc, String name)
+            {
+                XmlNodeList list = FindAllElements(doc, name);
+                return list.Item(0);
+            }
+
+            /// <summary>
+            /// Method to obtain a List of XML elements within an XMLDocument,
+            /// given the element name.
+            /// </summary>
+            /// <param name="doc">Xml Document</param>
+            /// <param name="name">element name to be found</param>
+            /// <returns>List of XML Elements with matcing name</returns>
+            public static XmlNodeList FindAllElements(XmlDocument doc, String name)
+            {
+                XmlNodeList list = doc.GetElementsByTagName(name, name.Equals(Common.ISSUER) ? Common.SAML_NAMESPACE_ASSERTION : Common.SAML_NAMESPACE);
+                return list;
+            }
+
+            /// <summary>
+            /// Method to add an XML attribute to an element
+            /// </summary>
+            /// <param name="node"></param>
+            /// <param name="name"></param>
+            /// <param name="value"></param>
+            public static void AddAttribute(XmlNode node, String name, String value)
+            {
+                XmlAttribute attr = node.OwnerDocument.CreateAttribute(name);
+                attr.Value = value;
+                node.Attributes.Append(attr);
+            }
+            public static string EncodeTo64(string toEncode)
+            {
+                byte[] toEncodeAsBytes
+                      = System.Text.ASCIIEncoding.ASCII.GetBytes(toEncode);
+                string returnValue
+                      = System.Convert.ToBase64String(toEncodeAsBytes);
+                return returnValue;
+            }
+        }
+
+        public class AuthNRequest
+        {
+            String _id, _issuer;
+            public String Id
+            {
+                get
+                {
+                    return _id;
+                }
+                set
+                {
+                    _id = value;
+                }
+            }
+
+            public String Issuer
+            {
+                get
+                {
+                    return _issuer;
+                }
+                set
+                {
+                    _issuer = value;
+                }
+            }
+        }
+        
+        
         /*Google Search Box for SharePoint*/
         class GoogleSearchBox
         {
@@ -117,6 +319,8 @@
             public XslTransform xslt1 = null;
             public XslTransform xslt2 = null;
 
+            public Boolean useSamlPost = true;
+
             public GoogleSearchBox()
             {
                 GSALocation = "";
@@ -125,6 +329,158 @@
                 xslGSA2SP = "";
                 xslSP2result = "";
             }
+
+            public static String Decompress(String samlRequest)
+            {
+                byte[] b = Convert.FromBase64String(samlRequest);
+
+                using (MemoryStream inputStream = new MemoryStream(b))
+                {
+                    using (DeflateStream gzip =
+                      new DeflateStream(inputStream, CompressionMode.Decompress))
+                    {
+                        using (StreamReader reader =
+                          new StreamReader(gzip, System.Text.Encoding.UTF8))
+                        {
+                            return reader.ReadToEnd();
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Extracts the Authn request ID from the SAML Request parameter
+            /// </summary>
+            /// <returns></returns>
+            public AuthNRequest ExtractAuthNRequest(String samlRequest)
+            {
+
+                samlRequest = Decompress(samlRequest);
+
+                if (samlRequest == null)
+                {
+
+                    return null;
+                }
+                XmlDocument doc = new XmlDocument();
+                doc.InnerXml = samlRequest;
+                XmlElement root = doc.DocumentElement;
+                AuthNRequest req = new AuthNRequest();
+                req.Id = root.Attributes["ID"].Value;
+                req.Issuer = Common.FindOnly(doc, "Issuer").InnerText;
+                return req;
+            }
+
+            String BuildAssertion(String subject, AuthNRequest authNRequest, String host)
+            {
+                log("inside BuildAssertion", LOG_LEVEL.INFO);
+                String recipientGsa = Common.GSAAssertionConsumer;
+                XmlDocument respDoc = (XmlDocument)Common.postResponse.CloneNode(true);
+                log("before replacement: " + respDoc.InnerXml, LOG_LEVEL.INFO);
+                if (!recipientGsa.StartsWith("http"))
+                {
+                    recipientGsa = "http://" + host + recipientGsa;
+                    log("recipientGsa: " + recipientGsa, LOG_LEVEL.INFO);
+                }
+
+                String req = respDoc.InnerXml;
+                req = req.Replace("%REQID", authNRequest.Id);
+                DateTime currentTimeStamp = DateTime.Now;
+                req = req.Replace("%INSTANT", Common.FormatInvariantTime(currentTimeStamp.AddMinutes(-1)));
+                req = req.Replace("%NOT_ON_OR_AFTER", Common.FormatInvariantTime(currentTimeStamp.AddSeconds(Common.iTrustDuration)));
+                req = req.Replace("%ISSUER", Common.IDPEntityId);
+                String MessageId = Common.GenerateRandomString();
+                req = req.Replace("%MESSAGE_ID", MessageId);
+                req = req.Replace("%RESPONSE_ID", Common.GenerateRandomString());
+                req = req.Replace("%ASSERTION_ID", Common.GenerateRandomString());
+                req = req.Replace("%SUBJECT", System.Security.SecurityElement.Escape(subject));
+                req = req.Replace("%RECIPIENT", recipientGsa);
+                req = req.Replace("%AUTHN_REQUEST_ID", System.Security.SecurityElement.Escape(authNRequest.Id));
+                req = req.Replace("%AUDIENCE", authNRequest.Issuer);
+
+                respDoc.InnerXml = req;
+                // Sign the XML document. 
+                SignXml(respDoc, MessageId);
+                log("exit BuildAssession", LOG_LEVEL.INFO);
+                return respDoc.InnerXml;
+            }
+
+            public string GetAssertionConsumer()
+            {
+                return Common.assertionConsumer;
+            }
+            // code has the key with which it was signed.
+            public void SignXml(XmlDocument xmlDoc, String MessageId)
+            {
+                RSACryptoServiceProvider Key = Common.certificate.PrivateKey as RSACryptoServiceProvider;
+                // Check arguments.
+                if (xmlDoc == null)
+                    throw new ArgumentException("xmlDoc is null");
+                if (Key == null)
+                    throw new ArgumentException("Key");
+
+                // Create a SignedXml object.
+                SignedXml signedXml = new SignedXml(xmlDoc);
+
+                // Add the key to the SignedXml document.
+                signedXml.SigningKey = Key;
+
+                // Create a reference to be signed.
+                Reference reference = new Reference();
+                reference.Uri = "#" + MessageId;
+
+                // Add an enveloped transformation to the reference.
+                Transform env = new XmlDsigEnvelopedSignatureTransform();
+                //env.PropagatedNamespaces.Add("ds", "http://www.w3.org/2000/09/xmldsig#");
+                reference.AddTransform(env);
+
+
+                // Add the reference to the SignedXml object.
+                signedXml.AddReference(reference);
+
+
+                // Compute the signature.
+                signedXml.ComputeSignature();
+
+                // Get the XML representation of the signature and save
+                // it to an XmlElement object.
+                XmlElement xmlDigitalSignature = signedXml.GetXml();
+
+                // Append the element to the XML document.
+                xmlDoc.DocumentElement.AppendChild(xmlDoc.ImportNode(xmlDigitalSignature, true));
+                log(xmlDoc.InnerXml, LOG_LEVEL.INFO);
+            }
+
+            public String GetSamlAssertion(String samlPostUrl, String host)
+            {
+
+                Uri samlPostUri = new Uri(samlPostUrl);
+                NameValueCollection queryParams = HttpUtility.ParseQueryString(samlPostUri.Query);
+                if (String.IsNullOrEmpty(queryParams["SAMLRequest"]))
+                {
+                    throw new Exception("Failed to extract SAML Request");
+                }
+
+
+                AuthNRequest authNRequest = ExtractAuthNRequest(queryParams["SAMLRequest"]);
+                if (String.IsNullOrEmpty(authNRequest.Id))
+                {
+
+                    throw new Exception("Failed to extract AuthN Request Id from SAML Request");
+                }
+
+                String subject = GetIdentity();
+                log("subject = " + subject, LOG_LEVEL.INFO);
+                String SamlAssertion = BuildAssertion(subject, authNRequest, host);
+
+                return Common.EncodeTo64(SamlAssertion);
+            }
+
+            public String GetIdentity()
+            {
+                return SPContext.Current.Web.CurrentUser.LoginName;                
+            }
+            
 
             //Method to extract configuration properties into GoogleSearchBox
             public void initGoogleSearchBox()
@@ -167,6 +523,12 @@
                       "&emdstyle=true";
                 }
 
+
+                //SAML Post Configuration
+                bool parseError;
+                useSamlPost =
+                    Boolean.TryParse(WebConfigurationManager.AppSettings["UseSamlPost"], out parseError);                
+                
                 LogLocation = getLogLocationFromConfig();
 
                 //set the current log level
@@ -412,7 +774,29 @@
                 return returnstring;
             }
 
+            public HttpWebResponse GetPostResponse(String url, Dictionary<String, String> postData, CookieContainer cc)
+            {
+                HttpWebRequest httpPost = (HttpWebRequest)HttpWebRequest.Create(url);
+                httpPost.Method = "POST";
+                StringBuilder sbPostData = new StringBuilder();
+                foreach (String key in postData.Keys)
+                {
+                    sbPostData.AppendFormat("{0}={1}&", HttpUtility.UrlEncode(key), HttpUtility.UrlEncode(postData[key]));
+                }
+                log("Post data : " + sbPostData.ToString(), LOG_LEVEL.INFO);
+                httpPost.CookieContainer = cc;
+                byte[] data = Encoding.ASCII.GetBytes(sbPostData.ToString());
 
+                httpPost.ContentType = "application/x-www-form-urlencoded";
+                httpPost.ContentLength = data.Length;
+
+                Stream requestStream = httpPost.GetRequestStream();
+                requestStream.Write(data, 0, data.Length);
+                requestStream.Close();
+
+
+                return (HttpWebResponse)httpPost.GetResponse();
+            }
 
             /// <summary>
             /// This method make the HttpWebRequest to the supplied URL
@@ -997,6 +1381,7 @@ else if(document.attachEvent)
                             int i;
 			                String GSASearchUrl = gProps.GSALocation + "/search" + searchReq + gProps.embeddedModeQueryArg;
                             ////////////////////////////// PROCESSING THE RESULTS FROM THE GSA/////////////////
+                            objReq = (HttpWebRequest)HttpWebRequest.Create(GSASearchUrl);
                             objResp = (HttpWebResponse)gProps.GetResponse(false, GSASearchUrl, null, null);//fire getresponse
                             string contentEncoding = objResp.Headers["Content-Encoding"];
                             string returnstring = "";//initialize the return string
@@ -1167,11 +1552,34 @@ else if(document.attachEvent)
                                     }//end: if ((key_val != null) && (key_val[0] != null))
                                 }
 
-                                HttpWebResponse objNewResp = (HttpWebResponse)gProps.GetResponse(true, GSASearchUrl, newcc, objResp);//fire getresponse
-                                contentEncoding = objResp.Headers["Content-Encoding"];
-                                returnstring = "";//initialize the return string
-                                Stream objNewStream = objNewResp.GetResponseStream();//if the request is successful, get the results in returnstring
-                                returnstring = gProps.GetContentFromStream(contentEncoding, objNewStream);
+                                if (gProps.useSamlPost && gProps.accessLevel == "a")
+                                {
+                                    // With SAML post and secure search, user will be redirected to SAML Post page
+                                    // Following code will intercept this redirect, perform SAML Post
+                                    // and return response.
+                                    HttpWebResponse objNewResp = (HttpWebResponse)gProps.GetResponse(false, newURL, newcc, objResp);//fire getresponse
+
+                                    contentEncoding = objResp.Headers["Content-Encoding"];
+                                    String newLocation = objNewResp.Headers["Location"];
+                                    gProps.log("new redirection location is " + newLocation, LOG_LEVEL.INFO);
+                                    String samlAssertion = gProps.GetSamlAssertion(newLocation, objNewResp.Headers["Host"]);
+                                    String consumer = gProps.GetAssertionConsumer();
+                                    Dictionary<String, String> postData = new Dictionary<string, string>();
+                                    postData.Add("SAMLResponse", samlAssertion);
+                                    postData.Add("RelayState", String.Empty);
+
+                                    HttpWebResponse samlPostResponse = gProps.GetPostResponse(consumer, postData, newcc);
+                                    Stream responseStream = samlPostResponse.GetResponseStream();
+                                    returnstring = gProps.GetContentFromStream(contentEncoding, responseStream);
+                                }
+                                else
+                                {
+                                    HttpWebResponse objNewResp = (HttpWebResponse)gProps.GetResponse(true, newURL, newcc, objResp);//fire getresponse
+                                    contentEncoding = objResp.Headers["Content-Encoding"];
+                                    returnstring = "";//initialize the return string
+                                    Stream objNewStream = objNewResp.GetResponseStream();//if the request is successful, get the results in returnstring
+                                    returnstring = gProps.GetContentFromStream(contentEncoding, objNewStream);
+                                }
                             }
                             else
                             {
