@@ -80,6 +80,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   private FeedType feedType;
   private SPType spType;
   private ActionType action = ActionType.ADD;
+  private int httpStatusCode = 0;
 
   private Folder parentFolder;
   // When a folder is renamed/restored and the current document is being sent
@@ -525,21 +526,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
               new StringValue(contentType));
         }
       }
-    } else if (collator.equals(strPropertyName,
-        SPConstants.HTTP_STATUS_CODE)) {
-      if (FeedType.CONTENT_FEED == getFeedType()) {
-        synchronized (this) {
-          if (content == null) {
-            content = downloadContents();
-          }
-          if (content.getStatusCode() != 0) {
-            return new SimpleProperty(Value.getLongValue(
-                content.getStatusCode()));
-          } else {
-            return null;
-          }
-        }
-      }
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
       if (FeedType.CONTENT_FEED != getFeedType()) {
         // TODO Handle ACL feed here.
@@ -677,6 +663,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_DOCUMENTTYPE)) {
       if (documentType != null) {
         return new SimpleProperty(new StringValue(documentType.toString()));
+      } else {
+        return null;
+      }
+    } else if (collator.equals(strPropertyName,
+          SPConstants.HTTP_STATUS_CODE)) {
+      if (httpStatusCode != 0) {
+        return new SimpleProperty(Value.getLongValue(httpStatusCode));
       } else {
         return null;
       }
@@ -838,11 +831,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   }
 
   /**
-   * For downloading the contents of the documents using its URL. Used with
-   * content feeds only.
+   * For downloading the contents of the documents usinf its URL. USed in case
+   * of content feed only.
    *
-   * @return {@link SPContent} containing the status, content type and
-   *    content stream.
+   * @return the status of download
    * @throws RepositoryException
    */
   @VisibleForTesting
@@ -883,10 +875,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       try {
         method = new GetMethod(docURL);
         responseCode = sharepointClientContext.checkConnectivity(docURL, method);
-        if (responseCode != 200) {
-          LOGGER.warning("Unable to get contents for document '" + getUrl() +
-              "'. Received the response code: " + responseCode);
-          return new SPContent(Integer.toString(responseCode), responseCode,
+        httpStatusCode = responseCode;
+        if (null == method || responseCode != 200) {
+          return new SPContent(Integer.toString(responseCode),
               docContentType, docContentStream);
         }
 
@@ -952,16 +943,15 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       }
     }
 
-    return new SPContent(SPConstants.CONNECTIVITY_SUCCESS, responseCode,
-        docContentType, docContentStream);
-  }
-
-  /**
-   * @return the content object for this document.
-   */
-  @VisibleForTesting
-  SPContent getContent() {
-    return content;
+    String status;
+    if (responseCode == 200) {
+      status = SPConstants.CONNECTIVITY_SUCCESS;
+    } else {
+      LOGGER.warning("Unable to get contents for document '" + getUrl() +
+          "'. Received the response code: " + responseCode);
+      status = Integer.toString(responseCode);
+    }
+    return new SPContent(status, docContentType, docContentStream);
   }
 
   /**
@@ -1192,27 +1182,16 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   public void setEmptyDocument(boolean emptyDocument) {
     this.emptyDocument = emptyDocument;
   }
-
-  // TODO: status can be CONNECTIVITY_SUCCESS, FAIL or "empty" and
-  // statusCode is the HTTP status code. Refactor the code to handle
-  // both of these statuses better.
   @VisibleForTesting
   class SPContent {
     private final String status;
-    private final int statusCode;
     private final InputStream contentStream;
     private final String contentType;
     private boolean isConsumed;
 
     public SPContent(String status, String contentType,
         InputStream contentStream) {
-      this(status, 0, contentType, contentStream);
-    }
-
-    public SPContent(String status, int statusCode, String contentType,
-        InputStream contentStream) {
       this.status = status;
-      this.statusCode = statusCode;
       this.contentType = contentType;
       this.contentStream = contentStream;
       this.isConsumed = false;
@@ -1220,10 +1199,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     String getStatus() {
       return status;
-    }
-
-    int getStatusCode() {
-      return statusCode;
     }
 
     String getContentType() {

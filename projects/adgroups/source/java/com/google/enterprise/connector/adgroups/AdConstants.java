@@ -73,7 +73,6 @@ public class AdConstants {
   public static final String DB_MEMBERDN = "memberdn";
   public static final String DB_MEMBERID = "memberid";
   public static final String DB_LASTFULLSYNC = "lastfullsync";
-  public static final String DB_CONNECTORNAME = "connectorname";
 
   public static final String COM_SUN_JNDI_LDAP_LDAP_CTX_FACTORY =
       "com.sun.jndi.ldap.LdapCtxFactory";
