@@ -115,7 +115,7 @@ public class AclHelper {
       supportsDenyAcls = 
           sharepointClientContext.getTraversalContext().supportsDenyAcls();
     }
-    LOGGER.log(Level.CONFIG, "Supports ACL " + supportsInheritedAcls);
+    LOGGER.log(Level.CONFIG, "Supports Inherited ACLs " + supportsInheritedAcls);
 
     final String strDomain = sharepointClientContext.getDomain();
     String strUser = sharepointClientContext.getUsername();
@@ -598,10 +598,14 @@ public class AclHelper {
   public List<SPDocument> getListItemsForAclChangeAndUpdateState(
       ListState listState, ListsHelper listsHelper) {
     List<SPDocument> aclChangedDocs = null;
+    List<SPDocument> attachmentsForChangedDocs = new ArrayList<SPDocument>();
     if (sharepointClientContext.isPushAcls() && listState.isAclChanged()) {
-      GssGetListItemsWithInheritingRoleAssignments wsResult = GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), String.valueOf(listState.getLastDocIdCrawledForAcl()));
+      GssGetListItemsWithInheritingRoleAssignments wsResult = 
+          GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(),
+          String.valueOf(listState.getLastDocIdCrawledForAcl()));
       if (null != wsResult) {
-        aclChangedDocs = listsHelper.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
+        aclChangedDocs = listsHelper.parseCustomWSResponseForListItemNodes(
+            wsResult.getDocXml(), listState);
         if (null != aclChangedDocs) {
           LOGGER.log(Level.INFO, "Found " + aclChangedDocs.size()
               + " documents from list [ " + listState
@@ -609,10 +613,24 @@ public class AclHelper {
               + listState.getLastDocIdCrawledForAcl() + " ], ToID [ "
               + wsResult.getLastIdVisited() + " ], moreDocs [ "
               + wsResult.isMoreDocs() + " ] ");
+          boolean lookForAttachment = listState.canContainAttachments();
           for (SPDocument document : aclChangedDocs) {
             document.setForAclChange(true);
+            if (lookForAttachment) {
+              // Get attachments for ACL changed documents
+              attachmentsForChangedDocs.addAll(
+                  listsHelper.getAttachments(listState, document));
+            }
           }
         }
+
+        if (attachmentsForChangedDocs.size() > 0) {
+          for(SPDocument attachment : attachmentsForChangedDocs) {
+            attachment.setForAclChange(true);
+          }
+          aclChangedDocs.addAll(attachmentsForChangedDocs);
+        }
+
         if (wsResult.isMoreDocs()) {
           listState.updateAclCrawlStatus(true, wsResult.getLastIdVisited());
         } else {
@@ -677,13 +695,18 @@ public class AclHelper {
 
   public void fetchAclChangesSinceTokenAndUpdateState(WebState webState) {
     if (!sharepointClientContext.isPushAcls()) {
+      LOGGER.log(Level.INFO, 
+          "Not performing ACL change detection because PushAcls is false.");
       return;
     }
 
     // Do not initiate ACL change detection if all the list states have not
     // yet been processed for the previously detected ACl changes
     for (ListState listState : webState.getAllListStateSet()) {
-      if (listState.isAclChanged()) {
+      if (listState.isAclChanged() && !listState.isNoCrawl()) {
+        LOGGER.log(Level.INFO, 
+            "Not performing ACL change detection because List [" + listState
+            + "] is still pending for ACL change from previous run.");
         return;
       }
     }
@@ -780,7 +803,7 @@ public class AclHelper {
           webstate.resetState();
           isWebReset = true;
         }
-       } else if (objType == ObjectType.WEB && !isWebChanged) {
+       } else if (objType == ObjectType.WEB) {
          if (changeType == SPChangeType.AssignmentDelete) {
           // Typically, deletion of a role affects the ACL of only
           // those entities down the hierarchy which are inheriting
@@ -795,13 +818,14 @@ public class AclHelper {
           webstate.resetState();
           webstate.setWebApplicationPolicyChange(true);   
           isWebReset = true;
-        } else {
+        } else if (!isWebChanged){
           // With inherited ACL support no need to re-crawl
           // all inheriting Lists.
           // Web Permissions are associated with Web home Page.
           // just marking web home page for re-crawl.
           // TODO : Need to change setWebApplicationPolicyChange
           // to something like setRevisitWebHome.
+	      webstate.setWebApplicationPolicyChange(true);
           if (supportsInheritedAcls) {
             LOGGER.log(Level.INFO, "Change in Web Permissions - Reseting Site home Page");
             webstate.setWebApplicationPolicyChange(true);
@@ -822,8 +846,19 @@ public class AclHelper {
             // changed role assignments.
             for (ListState listState : webstate.getAllListStateSet()) {
               if (!listState.isInheritedSecurity()) {
+                LOGGER.log(Level.INFO, "Skipping List [ "
+                    + listState
+                    + " ] as it does not inherit its permission");
                 continue;
               }
+              
+              if (listState.isNoCrawl()) {
+                LOGGER.log(Level.INFO, "Skipping List [ "
+                    + listState
+                    + " ] as it is marked for no crawl");
+                continue;
+              }
+              
               if (!processedLists.contains(listState)) {
                 LOGGER.log(Level.INFO, "Marking List [ "
                     + listState
