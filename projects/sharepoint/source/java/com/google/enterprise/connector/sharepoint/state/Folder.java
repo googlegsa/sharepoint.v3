@@ -23,7 +23,6 @@ public final class Folder implements Comparable<Folder> {
   private final String path;
   private final String id;
   private final int intId;
-  private String nextPage;
 
   public Folder(String path, String id) {
     if (null == id || null == path) {
@@ -46,14 +45,6 @@ public final class Folder implements Comparable<Folder> {
     return intId;
   }
 
-  public String getNextPage() {
-    return nextPage;
-  }
-
-  public void setNextPage(String nextPage) {
-    this.nextPage = nextPage;
-  }
-
   public int compareTo(Folder folder) {
     return getIntId() - folder.getIntId();
   }
@@ -74,7 +65,6 @@ public final class Folder implements Comparable<Folder> {
 
   @Override
   public String toString() {
-    return "Path [ " + path + " ], Id [ " + id 
-        + " ], NextPage [ " + nextPage + " ]";
+    return "Path [ " + path + " ], Id [ " + id + " ] ";
   }
 }

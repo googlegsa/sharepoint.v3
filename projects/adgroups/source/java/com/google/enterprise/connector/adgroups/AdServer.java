@@ -100,7 +100,7 @@ public class AdServer {
     // Connecting to configuration naming context is very slow for crawl users
     // in large multidomain environment, which belong to thousands of groups
     // TODO: make this configurable
-    env.put("com.sun.jndi.ldap.read.timeout", "90000");
+    env.put("com.sun.jndi.ldap.read.timeout", "30000");
     if (Strings.isNullOrEmpty(principal)) {
       env.put(Context.SECURITY_AUTHENTICATION, 
           AdConstants.AUTHN_TYPE_ANONYMOUS);

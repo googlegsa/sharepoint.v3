@@ -9,7 +9,6 @@
     <property name="password" value="${password}"/>
     <property name="includeBuiltinGroups" value="${includeBuiltinGroups}"/>
     <property name="googleGlobalNamespace" value="${googleGlobalNamespace}"/>
-    <property name="connectorName" value="${googleConnectorName}"/>
   </bean>
 
   <bean id="propertyPlaceholderConfigurer"

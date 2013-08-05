@@ -14,49 +14,43 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
-import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.ListCrawlInfo;
 import com.google.enterprise.connector.sharepoint.generated.gssitediscovery.WebCrawlInfo;
+import com.google.enterprise.connector.sharepoint.state.ListState;
+import com.google.enterprise.connector.sharepoint.state.WebState;
 
-import java.rmi.RemoteException;
+import java.util.Collection;
+import java.util.Set;
 
-public interface SiteDiscoveryWS extends BaseWS {
+public interface SiteDiscoveryWS {
   /**
-   * Returns the top level URL of all site collections form all web 
-   * applications for a given sharepoint installation.   
+   * Gets all the sitecollections from all the web applications for a given
+   * sharepoint installation
    *
-   * @return an Object array where each entry is a URL String
-   * @throws RemoteException
+   * @return the set of all site colelltions returned bu the GSSiteDiscovery
    */
-  public Object[] getAllSiteCollectionFromAllWebApps() throws RemoteException;
+  public Set<String> getMatchingSiteCollections();
 
   /**
-   * Returns the crawl info of the current web.
+   * Retrieves and update the information about crawl behavior of a set of webs
+   *
+   * @param webs
+   */
+  public void updateWebCrawlInfoInBatch(Set<WebState> webs);
+
+  /**
+   * Retrieves the information about crawl behavior of the web whose URL was
+   * used to construct the endpoint
    *
    * @return WebCrawlInfo of the web whose URL was used to construct the
    *         endpoint
-   * @return a WebCrawlInfo
-   * @throws RemoteException
    */
-  public WebCrawlInfo getWebCrawlInfo() throws RemoteException;
+  public WebCrawlInfo getCurrentWebCrawlInfo();
 
   /**
-   * Retrieves the information about crawl behavior of a list of webs
-   * corresponding to the passed in web urls
+   * Retrieves the information about crawl behavior of a the lists and set it
+   * into the passed in {@link ListState}
    *
-   * @param weburls All web URLs whose crawl info is to be found
-   * @return an WebCrawlInfo array
-   * @throws RemoteException
+   * @param listCollection ListStates to be be updated
    */
-  public WebCrawlInfo[] getWebCrawlInfoInBatch(String[] weburls)
-      throws RemoteException;
-
-  /**
-   * Get the lists crawl info for the the current web.
-   *
-   * @param listGuids An array of list guids
-   * @return an ListCrawlInfo array
-   * @throws RemoteException
-   */
-  public ListCrawlInfo[] getListCrawlInfo(String[] listGuids)
-      throws RemoteException;
+  public void updateListCrawlInfo(Collection<ListState> listCollection);
 }

@@ -166,7 +166,7 @@ public class SPConstants {
   public static final String QUERYOPTIONS = "QueryOptions";
   public static final String VIEWATTRIBUTES = "ViewAttributes";
   public static final String SCOPE = "Scope";
-  public static final String RECURSIVE = "RecursiveAll";
+  public static final String RECURSIVE = "Recursive";
   public static final String QUERY = "Query";
   public static final String ORDERBY = "OrderBy";
   public static final String DISPFORM = "DispForm.aspx?ID=";
@@ -247,7 +247,6 @@ public class SPConstants {
   public static final String SPAUTHOR = "sharepoint:author";
   public static final String LIST_GUID = "sharepoint:listguid";
   public static final String PARENT_WEB_TITLE = "sharepoint:parentwebtitle";
-  public static final String HTTP_STATUS_CODE = "sharepoint:httpstatuscode";
   public static final String OBJECT_TYPE = "google:objecttype";
   public static final String NO_OBJTYPE = "No Object Type";
   public static final String OBJTYPE_WEB = "Web";
@@ -301,8 +300,6 @@ public class SPConstants {
   
   public static final String STATE_LISTITEMCOLLECTION_POSITION_NEXT =
       "ListItemCollectionPositionNext";
-  public static final String STATE_ALLOW_ANONYMOUS_ACCESS = 
-      "AllowAnonymousAccess";
 
   public static final String STATE_EXTRAIDS_FOLDERS = "FolderItemIDs";
   public static final String STATE_EXTRAIDS_ATTACHMENTS = "Attachments";

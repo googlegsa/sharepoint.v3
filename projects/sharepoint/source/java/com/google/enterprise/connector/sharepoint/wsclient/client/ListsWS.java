@@ -38,16 +38,6 @@ public interface ListsWS extends BaseWS {
    */
   public List<Folder> getSubFoldersRecursively(ListState list,
       Folder folder, String lastID);
-  
-  /**
-   * Retrieves all child items under folder hierarchy as per
-   * pagination information available with folder.
-   * @param list
-   * @param currentFolder
-   * @return list of child items under Folder
-   */
-  public List<SPDocument>getListItemsUnderFolderHeirarchy(
-      ListState list, Folder currentFolder);
 
   /**
    * Used to get list items under a list. If a change token is specified, we

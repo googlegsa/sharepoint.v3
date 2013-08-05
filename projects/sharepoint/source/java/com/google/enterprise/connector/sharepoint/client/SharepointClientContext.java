@@ -252,7 +252,6 @@ public class SharepointClientContext implements Cloneable {
       spCl.setFeedUnPublishedDocuments(this.feedUnPublishedDocuments);
       spCl.setSocialOption(this.getSocialOption());
       spCl.setUserProfileServiceFactory(this.userProfileServiceFactory);
-      spCl.setInitialTraversal(this.initialTraversal);
 
       return spCl;
     } catch (final Throwable e) {

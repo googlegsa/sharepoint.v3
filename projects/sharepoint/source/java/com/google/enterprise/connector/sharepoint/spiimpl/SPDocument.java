@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.Attribute;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -156,11 +155,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   // Document Type  for Document.
   private DocumentType documentType;
-  
-  // flag to indicate if document is public
-  private boolean publicDocument;
-  // flag to indicate if it is empty document
-  private boolean emptyDocument;
 
   /**
    * @return the toBeFed
@@ -525,21 +519,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
               new StringValue(contentType));
         }
       }
-    } else if (collator.equals(strPropertyName,
-        SPConstants.HTTP_STATUS_CODE)) {
-      if (FeedType.CONTENT_FEED == getFeedType()) {
-        synchronized (this) {
-          if (content == null) {
-            content = downloadContents();
-          }
-          if (content.getStatusCode() != 0) {
-            return new SimpleProperty(Value.getLongValue(
-                content.getStatusCode()));
-          } else {
-            return null;
-          }
-        }
-      }
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
       if (FeedType.CONTENT_FEED != getFeedType()) {
         // TODO Handle ACL feed here.
@@ -595,7 +574,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (strPropertyName.equals(SPConstants.OBJECT_TYPE)) {
       return new SimpleProperty(new StringValue(getObjType()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ISPUBLIC)) {
-      return new SimpleProperty(BooleanValue.makeBooleanValue(publicDocument));
+      return new SimpleProperty(BooleanValue.makeBooleanValue(false));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
       return new SimpleProperty(new StringValue(getAction().toString()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYUSERS)) {
@@ -722,17 +701,14 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   public Set<String> getPropertyNames() throws RepositoryException {
     final Set<String> names = new HashSet<String>();
     ArrayList<String> candidates = new ArrayList<String>();
-    if (!isEmptyDocument()) {
-      candidates.add(SPConstants.OBJECT_TYPE);
-      candidates.add(SPConstants.LIST_GUID);
-      candidates.add(SPConstants.SPAUTHOR);
-      candidates.add(SPConstants.PARENT_WEB_TITLE);
-    }
+    candidates.add(SPConstants.OBJECT_TYPE);
+    candidates.add(SPConstants.LIST_GUID);
+    candidates.add(SPConstants.SPAUTHOR);
+    candidates.add(SPConstants.PARENT_WEB_TITLE);
     if (null != documentType) {
       names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
     }
     if (sharepointClientContext.isPushAcls()) {
-      names.add(SpiConstants.PROPNAME_ISPUBLIC);
       if (!isWebAppPolicyDoc()) {
         // For regular document parent Url should not be null.
         // empty parentUrl indicates error in ACL processing.
@@ -774,16 +750,14 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         names.add(SpiConstants.PROPNAME_ACLDENYGROUPS);
       }
     }
-    if (!isEmptyDocument()) {
-      // Add "extra" metadata fields, including those added by user to the
-      // documentMetadata List for matching against patterns
-      for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
-        final Attribute attr = iter.next();
-        candidates.add(attr.getName().toString());
-      }
-      if (null != title) {
-        names.add(SpiConstants.PROPNAME_TITLE);
-      }
+    // Add "extra" metadata fields, including those added by user to the
+    // documentMetadata List for matching against patterns
+    for (final Iterator<Attribute> iter = getAllAttrs().iterator(); iter.hasNext();) {
+      final Attribute attr = iter.next();
+      candidates.add(attr.getName().toString());
+    }
+    if (null != title) {
+      names.add(SpiConstants.PROPNAME_TITLE);
     }
     ArrayList<Pattern> excludedMetadataPatterns = sharepointClientContext.getExcluded_metadata();
     // Add only those metadata attributes which do not come under excluded
@@ -838,11 +812,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   }
 
   /**
-   * For downloading the contents of the documents using its URL. Used with
-   * content feeds only.
+   * For downloading the contents of the documents usinf its URL. USed in case
+   * of content feed only.
    *
-   * @return {@link SPContent} containing the status, content type and
-   *    content stream.
+   * @return the status of download
    * @throws RepositoryException
    */
   @VisibleForTesting
@@ -857,12 +830,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     }
     LOGGER.config("Document URL [ " + contentDwnldURL
         + " is getting processed for contents");
-    if (isEmptyDocument()) {
-      LOGGER.config("Document URL [" + contentDwnldURL
-          + "] is empty document");
-      return new SPContent("empty",
-          docContentType, docContentStream); 
-    }
     int responseCode = 0;
     boolean downloadContent = true;
     if (getFileSize() > 0
@@ -883,10 +850,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       try {
         method = new GetMethod(docURL);
         responseCode = sharepointClientContext.checkConnectivity(docURL, method);
-        if (responseCode != 200) {
-          LOGGER.warning("Unable to get contents for document '" + getUrl() +
-              "'. Received the response code: " + responseCode);
-          return new SPContent(Integer.toString(responseCode), responseCode,
+        if (null == method || responseCode != 200) {
+          return new SPContent(Integer.toString(responseCode),
               docContentType, docContentStream);
         }
 
@@ -952,16 +917,15 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       }
     }
 
-    return new SPContent(SPConstants.CONNECTIVITY_SUCCESS, responseCode,
-        docContentType, docContentStream);
-  }
-
-  /**
-   * @return the content object for this document.
-   */
-  @VisibleForTesting
-  SPContent getContent() {
-    return content;
+    String status;
+    if (responseCode == 200) {
+      status = SPConstants.CONNECTIVITY_SUCCESS;
+    } else {
+      LOGGER.warning("Unable to get contents for document '" + getUrl() +
+          "'. Received the response code: " + responseCode);
+      status = Integer.toString(responseCode);
+    }
+    return new SPContent(status, docContentType, docContentStream);
   }
 
   /**
@@ -1177,42 +1141,16 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     this.documentType = documentType;
   }
 
-  public boolean isPublicDocument() {
-    return publicDocument;
-  }
-
-  public void setPublicDocument(boolean publicDocument) {
-    this.publicDocument = publicDocument;
-  }
-
-  public boolean isEmptyDocument() {
-    return emptyDocument;
-  }
-
-  public void setEmptyDocument(boolean emptyDocument) {
-    this.emptyDocument = emptyDocument;
-  }
-
-  // TODO: status can be CONNECTIVITY_SUCCESS, FAIL or "empty" and
-  // statusCode is the HTTP status code. Refactor the code to handle
-  // both of these statuses better.
   @VisibleForTesting
   class SPContent {
     private final String status;
-    private final int statusCode;
     private final InputStream contentStream;
     private final String contentType;
     private boolean isConsumed;
 
     public SPContent(String status, String contentType,
         InputStream contentStream) {
-      this(status, 0, contentType, contentStream);
-    }
-
-    public SPContent(String status, int statusCode, String contentType,
-        InputStream contentStream) {
       this.status = status;
-      this.statusCode = statusCode;
       this.contentType = contentType;
       this.contentStream = contentStream;
       this.isConsumed = false;
@@ -1220,10 +1158,6 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
     String getStatus() {
       return status;
-    }
-
-    int getStatusCode() {
-      return statusCode;
     }
 
     String getContentType() {

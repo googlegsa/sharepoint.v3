@@ -15,38 +15,39 @@
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
-import com.google.enterprise.connector.sharepoint.generated.webs.GetWebCollectionResponseGetWebCollectionResult;
-import com.google.enterprise.connector.sharepoint.generated.webs.GetWebResponseGetWebResult;
 
-import java.rmi.RemoteException;
 import java.util.Set;
 
-public interface WebsWS extends BaseWS {
+public interface WebsWS {
   /**
-   * Returns the titles and urls of all sites directly beneath the 
-   * current site.
+   * To get the Web URL from any Page URL of the web
    *
-   * @return a GetWebCollectionResponseGetWebCollectionResult
+   * @param pageURL
+   * @return the well formed Web URL to be used for WS calls
    */
-  public GetWebCollectionResponseGetWebCollectionResult getWebCollection()
-      throws RemoteException;
+  public String getWebURLFromPageURL(String pageURL);
 
   /**
-   * To get the web URL from any page URL of the web
+   * Discovers all the sites from the current site collection which are in
+   * hierarchy lower to the current web.
    *
-   * @param pageUrl
-   * @return the well formed web URL to be used for WS calls
-   * @throws RemoteException
+   * @return The set of child sites
    */
-  public String webUrlFromPageUrl(String pageUrl) throws RemoteException;
+  public Set<String> getDirectChildsites();
 
   /**
-   * Returns properties of a site (for example, name, description, and theme).
+   * To get the Web Title of a given web
    *
-   * @param webURL The Sharepoint web URL to get the properties of
-   * @return a GetWebResponseGetWebResult
-   * @throws RemoteException
+   * @param webURL To identiy the web whose Title is to be discovered
+   * @param spType The SharePOint type for this web
+   * @return the web title
    */
-  public GetWebResponseGetWebResult getWeb(final String webURL)
-      throws RemoteException;
+  public String getWebTitle(String webURL, SPType spType);
+
+  /**
+   * For checking the Web Service connectivity
+   *
+   * @return the Web Service connectivity status
+   */
+  public String checkConnectivity();
 }

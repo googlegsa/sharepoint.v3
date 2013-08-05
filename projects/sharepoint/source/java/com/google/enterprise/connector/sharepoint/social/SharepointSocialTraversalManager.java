@@ -16,7 +16,7 @@ package com.google.enterprise.connector.sharepoint.social;
 
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
@@ -169,8 +169,8 @@ public class SharepointSocialTraversalManager implements TraversalManager {
     return false;
   }
 
-  private boolean needToProcessProfileUpdates (SharePointSocialCheckpoint 
-      profileCheckpoint) throws SharepointException {
+  private boolean needToProcessProfileUpdates (
+      SharePointSocialCheckpoint profileCheckpoint) {
     String currentChangeToken = profileCheckpoint.getUserProfileChangeToken();
     if (Strings.isNullOrEmpty(currentChangeToken)) {
       return false;

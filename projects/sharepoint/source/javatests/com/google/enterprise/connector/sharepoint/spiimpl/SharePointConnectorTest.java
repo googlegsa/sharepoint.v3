@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 import junit.framework.TestCase;
@@ -24,35 +23,5 @@ public class SharePointConnectorTest extends TestCase {
 
   public void testInit() throws RepositoryException {
     assertNotNull(TestConfiguration.getConnectorInstance());
-  }
-
-  public void testReWriteDisplayUrl_default() throws RepositoryException {
-    SharepointConnector connector = TestConfiguration.createConnectorInstance();
-    connector.init();
-    SharepointClientContext context = connector.getSharepointClientContext();
-    assertTrue(context.isReWriteDisplayUrlUsingAliasMappingRules());
-  }
-
-  public void testReWriteDisplayUrl_false() throws RepositoryException {
-    SharepointConnector connector = TestConfiguration.createConnectorInstance();
-    connector.setReWriteDisplayUrlUsingAliasMappingRules(false);
-    connector.init();
-    SharepointClientContext context = connector.getSharepointClientContext();
-    assertFalse(context.isReWriteDisplayUrlUsingAliasMappingRules());
-  }
-
-  public void testReWriteRecordUrl_default() throws RepositoryException {
-    SharepointConnector connector = TestConfiguration.createConnectorInstance();
-    connector.init();
-    SharepointClientContext context = connector.getSharepointClientContext();
-    assertFalse(context.isReWriteRecordUrlUsingAliasMappingRules());
-  }
-
-  public void testReWriteRecordUrl_true() throws RepositoryException {
-    SharepointConnector connector = TestConfiguration.createConnectorInstance();
-    connector.setReWriteRecordUrlUsingAliasMappingRules(true);
-    connector.init();
-    SharepointClientContext context = connector.getSharepointClientContext();
-    assertTrue(context.isReWriteRecordUrlUsingAliasMappingRules());
   }
 }

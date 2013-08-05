@@ -15,9 +15,7 @@
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.common.base.Strings;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.adgroups.AdGroupsConnector;
-import com.google.enterprise.connector.sharepoint.client.AclHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -31,6 +29,7 @@ import com.google.enterprise.connector.sharepoint.ldap.LdapConstants.Method;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService.LdapConnectionSettings;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialConnector;
 import com.google.enterprise.connector.sharepoint.social.UserProfileServiceFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
@@ -87,7 +86,7 @@ public class SharepointConnector implements Connector,
   private List<String> infoPathBaseTemplate;
   private boolean reWriteDisplayUrlUsingAliasMappingRules = true;
   private boolean reWriteRecordUrlUsingAliasMappingRules;
-  private ConnectorPersistentStore connectorPersistentStore;
+  private ConnectorPersistentStore connectorPersistnetStore;
   private boolean fetchACLInBatches = false;
   private int aclBatchSizeFactor = 2;
   /** Threshold value to identify large ACLs. **/
@@ -136,7 +135,6 @@ public class SharepointConnector implements Connector,
   private SocialOption socialOption;
 
   public SharepointConnector() {
-    // TODO(jlacey): sharepointClientContext is always null here.
     socialConnector = new SharepointSocialConnector(this.sharepointClientContext);
   }
 
@@ -185,7 +183,7 @@ public class SharepointConnector implements Connector,
             .getDataSource(), queryProvider);
         // Add current connector instance name to the database table.
         connectorNamesDAO.addConnectorInstanceName(connectorName);
-        new AclHelper(sharepointClientContext, null).checkConnectivity();
+        clientFactory.getAclWS(sharepointClientContext, null).checkConnectivity();
       } catch (Exception e) {
         throw new RepositoryException(
             "Crawling cannot proceed because ACL web service cannot be contacted and hence, "
@@ -472,10 +470,6 @@ public class SharepointConnector implements Connector,
     sharepointClientContext.setIncluded_metadata(included_metadata);
     sharepointClientContext.setExcluded_metadata(excluded_metadata);
     sharepointClientContext.setInfoPathBaseTemplate(infoPathBaseTemplate);
-    sharepointClientContext.setReWriteDisplayUrlUsingAliasMappingRules(
-        reWriteDisplayUrlUsingAliasMappingRules);
-    sharepointClientContext.setReWriteRecordUrlUsingAliasMappingRules(
-        reWriteRecordUrlUsingAliasMappingRules);
     sharepointClientContext.setUsernameFormatInAce(getUsernameFormatInAce());
     sharepointClientContext.setGroupnameFormatInAce(this
         .getGroupnameFormatInAce());
@@ -515,17 +509,10 @@ public class SharepointConnector implements Connector,
       adGroupsConnector.setPrincipal(username + SPConstants.AT + domain);
       adGroupsConnector.setPassword(password);
       adGroupsConnector.setGoogleGlobalNamespace(googleGlobalNamespace);
-      adGroupsConnector.setConnectorName(connectorName);
       adGroupsConnector.init();
     }
     sharepointClientContext.setUserProfileFullTraversalInterval(
         this.userProfileFullTraversalInterval);
-  }
-
-  /** This method is only used for testing. */
-  @VisibleForTesting
-  SharepointClientContext getSharepointClientContext() {
-    return sharepointClientContext;
   }
 
   /**
@@ -618,7 +605,7 @@ public class SharepointConnector implements Connector,
   }
 
   public void setDatabaseAccess(ConnectorPersistentStore databaseAccess) {
-    this.connectorPersistentStore = databaseAccess;
+    this.connectorPersistnetStore = databaseAccess;
     if (sharepointClientContext.isPushAcls()) {
       performUserDataStoreInitialization();
     }
@@ -636,7 +623,7 @@ public class SharepointConnector implements Connector,
    * selected data base.
    */
   private void performUserDataStoreInitialization() {
-    localDatabseImpl = connectorPersistentStore.getLocalDatabase();
+    localDatabseImpl = connectorPersistnetStore.getLocalDatabase();
     String locale = localDatabseImpl.getDatabaseType().name();
     LOGGER.config("Data base type : " + locale);
     if (null == locale || locale.length() == 0) {
@@ -929,9 +916,6 @@ public class SharepointConnector implements Connector,
   public void shutdown() throws RepositoryException {
     LOGGER.info("Shutting down the connector with the name [" + connectorName
         + "]");
-    if (adGroupsConnector != null) {
-        adGroupsConnector.shutdown();
-    }
   }
 
   /*
@@ -967,10 +951,6 @@ public class SharepointConnector implements Connector,
             "Dropping the connector names table from the data base.");
         connectorNamesDAO.dropConnectorNamesTable();
       }
-    }
-
-    if (adGroupsConnector != null) {
-        adGroupsConnector.delete();
     }
   }
 

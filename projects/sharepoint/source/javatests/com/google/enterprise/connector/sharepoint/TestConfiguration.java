@@ -813,12 +813,11 @@ public class TestConfiguration {
   }
 
   /**
-   * Gets an uninitialized instance of {@link SharepointConnector} for
-   * testing purposes. The setters have been called, but not {@code init}.
+   * Gets an instance of {@link SharepointConnector} for testing purpose.
    *
    * @return Instance of {@link SharepointConnector}
    */
-  public static SharepointConnector createConnectorInstance()
+  public static SharepointConnector getConnectorInstance()
       throws RepositoryException {
     SharepointConnector connector = new SharepointConnector();
     connector.setClientFactory(clientFactory);
@@ -851,17 +850,6 @@ public class TestConfiguration {
     connector.setGsaAdminUser(TestConfiguration.getGsaAdmin());
     connector.setGsaAdminPassword(TestConfiguration.getGsaAdminPassword());
     connector.setGsaHostAddress(gsaHost);
-    return connector;
-  }
-
-  /**
-   * Gets an instance of {@link SharepointConnector} for testing purposes.
-   *
-   * @return Instance of {@link SharepointConnector}
-   */
-  public static SharepointConnector getConnectorInstance()
-      throws RepositoryException {
-    SharepointConnector connector = createConnectorInstance();
     connector.init();
     return connector;
   }

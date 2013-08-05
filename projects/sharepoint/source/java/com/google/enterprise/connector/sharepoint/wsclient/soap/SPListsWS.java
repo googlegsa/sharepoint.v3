@@ -332,112 +332,36 @@ public class SPListsWS implements ListsWS {
       tmpfolderLevel = null;
     }
     final String folderLevel = tmpfolderLevel;
-    String tmpNextPage = null;
-    do {
-      final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res =
-          getChildFolders(folderLevel, list, tmpNextPage);
 
-      if (res == null) {
-        LOGGER.log(Level.INFO, "No child items found @ ["
-            + folderLevel + "] with next page as [" + tmpNextPage + "]");      
-        break;
-      }
-      tmpNextPage = null;
-      final MessageElement[] me = res.get_any();
-      if ((me != null) && (me.length > 0)) {
-        Iterator<?> itChilds = me[0].getChildElements();
-        while (itChilds.hasNext()) {
-          final MessageElement child = (MessageElement) itChilds.next();
-          if (!SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
-            continue;
-          }
-          tmpNextPage = child.getAttribute(
-              SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);          
-          Iterator<?> itrchild = child.getChildElements();
-          while (itrchild.hasNext()) {
-            final MessageElement row = (MessageElement) itrchild.next();            
-            final String fsObjType =
-                Util.normalizeMetadataValue(
-                    row.getAttribute(SPConstants.OWS_FSOBJTYPE));
-            String relativeURL = row.getAttribute(SPConstants.FILEREF);
-            final String docId = row.getAttribute(SPConstants.ID);
-            if ((fsObjType == null) || (relativeURL == null)
-                || (docId == null)) {
-              continue;
-            } 
-            relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
-            String folderPath = null;
-            if (fsObjType.equals("1")) {
-              if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-                if (!list.updateExtraIDs(relativeURL, docId, true)) {
-                  LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
-                      + relativeURL + " ], listURL [ " + list.getListURL()
-                      + " ]. Perhaps a folder or list was renamed.");
-                }
-              }
-              folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
-              if (folderPath == null) {
-                continue;
-              }
-              if ((folderLevel != null) && (folderLevel.trim().length() != 0)) {
-                if (folderPath.startsWith(folderLevel)) {
-                  folders.add(new Folder(folderPath, docId));
-                }
-              } else {
-                folders.add(new Folder(folderPath, docId));
-              }
-            }
-          }
-        }
-      }
-    } while (tmpNextPage != null);
-
-    // removing duplicate entries
-    folders = new ArrayList<Folder>(new HashSet<Folder>(folders));
-
-    Collections.sort(folders);
-    return folders;
-  }
-
-  private GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult getChildFolders(
-      final String folderLevel,
-      final ListState list, String nextPage ) {
-    
     final String listName = list.getPrimaryKey();
     final String viewName = "";
-    final GetListItemChangesSinceTokenQuery query =
-        new GetListItemChangesSinceTokenQuery();
-    final GetListItemChangesSinceTokenViewFields viewFields =
-        new GetListItemChangesSinceTokenViewFields();
-    final GetListItemChangesSinceTokenQueryOptions queryOptions =
-        new GetListItemChangesSinceTokenQueryOptions();
+    final GetListItemChangesSinceTokenQuery query = new GetListItemChangesSinceTokenQuery();
+    final GetListItemChangesSinceTokenViewFields viewFields = new GetListItemChangesSinceTokenViewFields();
+    final GetListItemChangesSinceTokenQueryOptions queryOptions = new GetListItemChangesSinceTokenQueryOptions();
     final String token = null;
     final GetListItemChangesSinceTokenContains contains = null;
 
     try {
-      if (folderLevel == null) {
-        query.set_any(ListsUtil.createQuery1("0"));
-      } else {
-        query.set_any(ListsUtil.createQuerySubFolders(folderLevel));
-      }
+      query.set_any(ListsUtil.createQuery1(lastID));
       viewFields.set_any(ListsUtil.createViewFields());
-      queryOptions.set_any(ListsUtil.createQueryOptions(true, folderLevel, nextPage));
+      queryOptions.set_any(ListsUtil.createQueryOptions(true, null, null));
       LOGGER.config("Making web service request with the following "
-          + "parameters: query [ " + query.get_any()[0]
+          + "parameters: query [ " + query.get_any()[0] 
           + " ], queryoptions [ " + queryOptions.get_any()[0]
           + " ], viewFields [ " + viewFields.get_any()[0] + "] ");
     } catch (Exception e) {
       LOGGER.log(Level.WARNING, "Unable to get folder hierarchy at folderLevel [ "
           + folderLevel + " ], list [ " + list.getListURL() + " ].", e);
-      return null;
+      return folders;
     }
+
     // Make the getListItemChangesSinceToken request.
-    final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res =
+    final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res = 
         Util.makeWSRequest(sharepointClientContext, this, new Util.RequestExecutor<
         GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult>() {
           public GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult
               onRequest(final BaseWS ws) throws Throwable {
-            return stub.getListItemChangesSinceToken(listName, viewName,
+            return stub.getListItemChangesSinceToken(listName, viewName, 
                 query, viewFields, rowLimit, queryOptions, token, contains);
           }
 
@@ -446,7 +370,65 @@ public class SPListsWS implements ListsWS {
                 + folderLevel + " ], list [ " + list.getListURL() + " ].", e);
           }
         });
-    return res;
+
+    if (res != null) {
+      final MessageElement[] me = res.get_any();
+      if ((me != null) && (me.length > 0)) {
+        Iterator<?> itChilds = me[0].getChildElements();
+        while (itChilds.hasNext()) {
+          final MessageElement child = (MessageElement) itChilds.next();
+          if (SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
+            final String tmpNextPage = child.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
+            String lastItemID = null;
+            Iterator<?> itrchild = child.getChildElements();
+            while (itrchild.hasNext()) {
+              final MessageElement row = (MessageElement) itrchild.next();            
+              final String fsObjType =
+                  Util.normalizeMetadataValue(
+                      row.getAttribute(SPConstants.OWS_FSOBJTYPE));
+              String relativeURL = row.getAttribute(SPConstants.FILEREF);
+              final String docId = row.getAttribute(SPConstants.ID);
+              if ((fsObjType == null) || (relativeURL == null)
+                  || (docId == null)) {
+                continue;
+              }
+              lastItemID = docId;
+              relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
+              String folderPath = null;
+              if (fsObjType.equals("1")) {
+                if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+                  if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                    LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
+                        + relativeURL + " ], listURL [ " + list.getListURL()
+                        + " ]. Perhaps a folder or list was renamed.");
+                  }
+                }
+                folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
+                if (folderPath == null) {
+                  continue;
+                }
+                if ((folderLevel != null) && (folderLevel.trim().length() != 0)) {
+                  if (folderPath.startsWith(folderLevel)) {
+                    folders.add(new Folder(folderPath, docId));
+                  }
+                } else {
+                  folders.add(new Folder(folderPath, docId));
+                }
+              }
+            }
+            if (tmpNextPage != null) {
+              folders.addAll(getSubFoldersRecursively(list, folder, lastItemID));
+            }
+          }
+        }
+      }
+    }
+
+    // removing duplicate entries
+    folders = new ArrayList<Folder>(new HashSet<Folder>(folders));
+
+    Collections.sort(folders);
+    return folders;
   }
 
   /**
@@ -570,102 +552,6 @@ public class SPListsWS implements ListsWS {
     return listItems;
   }
 
-  /**
-   * Method to get list items under folder hierarchy including
-   * sub folders and child list items.
-   * @param list SharePoint list to query for child items
-   * @param currentFolder Folder to get child list items from
-   * @return list of SPDocuments for child items.
-   */
-  public List<SPDocument>getListItemsUnderFolderHeirarchy(
-      ListState list, Folder currentFolder) {
-    final ArrayList<SPDocument> listItems = new ArrayList<SPDocument>();
-    if (null == currentFolder) {
-      return listItems;
-    }
-    final String folderPath = currentFolder.getPath();
-    final String listName = list.getPrimaryKey();
-    final String listUrl = list.getListURL();
-    final String viewName = "";
-    final GetListItemChangesSinceTokenQuery query =
-        new GetListItemChangesSinceTokenQuery();
-    final GetListItemChangesSinceTokenViewFields viewFields =
-        new GetListItemChangesSinceTokenViewFields();
-    final GetListItemChangesSinceTokenQueryOptions queryOptions =
-        new GetListItemChangesSinceTokenQueryOptions();
-    final String token = null;
-    final GetListItemChangesSinceTokenContains contains = null;
-
-
-    try {
-      if (folderPath == null) {
-        query.set_any(ListsUtil.createQuery1("0"));
-      } else {
-        query.set_any(ListsUtil.createQueryInsideFolder(folderPath));
-      }
-      viewFields.set_any(ListsUtil.createViewFields());
-      queryOptions.set_any(ListsUtil.createQueryOptions(
-          true, folderPath, currentFolder.getNextPage()));
-      LOGGER.config("Making web service request with the following "
-          + "parameters: query [ " + query.get_any()[0]
-              + " ], queryoptions [ " + queryOptions.get_any()[0]
-                  + " ], viewFields [ " + viewFields.get_any()[0] + "] ");
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING,
-          "Unable to get folder hierarchy at folderLevel [ "
-              + folderPath + " ], list [ " + list.getListURL() + " ].", e);
-      currentFolder.setNextPage(null);
-      return listItems;
-    }
-
-    final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res =
-        Util.makeWSRequest(sharepointClientContext, this, new Util.RequestExecutor<
-            GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult>() {
-          public GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult
-          onRequest(final BaseWS ws) throws Throwable {
-            return stub.getListItemChangesSinceToken(listName, viewName,
-                query, viewFields, rowLimit, queryOptions, token, contains);
-          }
-
-          public void onError(final Throwable e) {
-            LOGGER.log(Level.WARNING, "Unable to get folder hierarchy at folderLevel [ "
-                + folderPath + " ], list [ " + listUrl + " ].", e);
-          }
-        });
-
-    if (res == null) {
-      LOGGER.log(Level.INFO, "No child items found @ ["
-          + folderPath + "] from folder [" + currentFolder + "]");
-      currentFolder.setNextPage(null);
-      return listItems;
-    }
-    
-    String nextPage = null;
-    final MessageElement[] me = res.get_any();
-    if ((me != null) && (me.length > 0)) {
-      Iterator<?> itChilds = me[0].getChildElements();
-      while (itChilds.hasNext()) {
-        final MessageElement child = (MessageElement) itChilds.next();
-        if (!SPConstants.DATA.equalsIgnoreCase(child.getLocalName())) {
-          continue;
-        }
-        nextPage = 
-            child.getAttribute(SPConstants.LIST_ITEM_COLLECTION_POSITION_NEXT);
-        Iterator<?> itrchild = child.getChildElements();
-        while (itrchild.hasNext()) {
-          final MessageElement row = (MessageElement) itrchild.next();
-          final SPDocument doc = ListsUtil.processListItemElement(
-              sharepointClientContext, row, list, null);
-          if (doc != null) {
-            listItems.add(doc);
-          }
-        }        
-      }
-    }    
-    currentFolder.setNextPage(nextPage);
-    return listItems;
-  }
-
   // TODO: processListDataElement has a dependency on getSubFoldersRecursively
   // if the dependency can be removed then processListDataElement should be 
   // moved to ListsUtil.
@@ -721,75 +607,72 @@ public class SPListsWS implements ListsWS {
               + list.getListURL() + " ]. ");
           continue;
         }
-        
-        String fsObjType = Util.normalizeMetadataValue(
-            row.getAttribute(SPConstants.OWS_FSOBJTYPE));
-        if (fsObjType == null) {
-          fsObjType = Util.normalizeMetadataValue(
-              row.getAttribute(SPConstants.OWS_FSOBJTYPE_INMETA));
-        }
-        
-        boolean isFolder = (fsObjType != null && fsObjType.equals("1"));        
-        
-        String relativeURL = row.getAttribute(SPConstants.FILEREF);
+        if (list.canContainFolders()) {
+          String fsObjType =
+              Util.normalizeMetadataValue(
+                  row.getAttribute(SPConstants.OWS_FSOBJTYPE));
+          if (fsObjType == null) {
+            fsObjType =
+                Util.normalizeMetadataValue(
+                    row.getAttribute(SPConstants.OWS_FSOBJTYPE_INMETA));
+          }
+          String relativeURL = row.getAttribute(SPConstants.FILEREF);
 
-        LOGGER.log(Level.CONFIG, "docID [ " + docId + " ], relativeURL [ "
-            + relativeURL + " ], fsObjType [ " + fsObjType + " ]. ");
+          LOGGER.log(Level.CONFIG, "docID [ " + docId + " ], relativeURL [ "
+              + relativeURL + " ], fsObjType [ " + fsObjType + " ]. ");
 
-        if (null == relativeURL) {
-          LOGGER.log(Level.WARNING, "No relativeURL (FILEREF) attribute"
-              + " found for the document, docID [ "
-              + docId + " ], listURL [ " + list.getListURL() + " ]. ");
-        } else if (null == fsObjType) {
-          LOGGER.log(Level.WARNING,
-              "No fsObjType found for the document, relativeURL [ "
-              + relativeURL + " ], listURL [ " + list.getListURL() + " ]. ");
-        } else {           
-          relativeURL = 
-              relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
-          if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
-            /*
-             * Since we have got an entry for this item, this item can never
-             * be considered as deleted. Remember,
-             * getListItemChangesSinceToken always return the changes,
-             * irrespective of any conditions specified in the CAML query.
-             * And, if for any change the conditions becomes false, the change
-             * details returned for this item may be misleading. For Example,
-             * if item 1 is renamed, and in query we have asked to return only
-             * those items whose ID is greater then 1; Then in that case, the
-             * WS may return change info as delete along with rename for item
-             * 1.
-             */
-            deletedIDs.remove(docId);
-            list.removeFromDeleteCache(docId);
+          if (null == relativeURL) {
+            LOGGER.log(Level.WARNING, "No relativeURL (FILEREF) attribute found for the document, docID [ "
+                + docId + " ], listURL [ " + list.getListURL() + " ]. ");
+          } else if (null == fsObjType) {
+            LOGGER.log(Level.WARNING, "No fsObjType found for the document, relativeURL [ "
+                + relativeURL + " ], listURL [ " + list.getListURL() + " ]. ");
+          } else {           
+            relativeURL = relativeURL.substring(relativeURL.indexOf(SPConstants.HASH) + 1);
+            if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
+              /*
+               * Since we have got an entry for this item, this item can never
+               * be considered as deleted. Remember,
+               * getListItemChangesSinceToken always return the changes,
+               * irrespective of any conditions specified in the CAML query.
+               * And, if for any change the conditions becomes false, the change
+               * details returned for this item may be misleading. For Example,
+               * if item 1 is renamed, and in query we have asked to return only
+               * those items whose ID is greater then 1; Then in that case, the
+               * WS may return change info as delete along with rename for item
+               * 1.
+               */
+              deletedIDs.remove(docId);
+              list.removeFromDeleteCache(docId);
 
-            if (isFolder) {
-              if (!list.updateExtraIDs(relativeURL, docId, true)) {
-                // Try again after updating the folders
-                // info.
-                // Because, the folder might have been renamed.
-                LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
-                    + relativeURL + " ], listURL [ " + list.getListURL()
-                    + " ]. Retrying after updating the folders info.. ");
-                getSubFoldersRecursively(list, null, null);
-
+              if (fsObjType.equals("1")) {
                 if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                  // Try again after updating the folders
+                  // info.
+                  // Because, the folder might have been renamed.
                   LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
                       + relativeURL + " ], listURL [ " + list.getListURL()
-                      + " ]. Perhaps a folder or list was renamed.");
+                      + " ]. Retrying after updating the folders info.. ");
+                  getSubFoldersRecursively(list, null, null);
+
+                  if (!list.updateExtraIDs(relativeURL, docId, true)) {
+                    LOGGER.log(Level.INFO, "Unable to update relativeURL [ "
+                        + relativeURL + " ], listURL [ " + list.getListURL()
+                        + " ]. Perhaps a folder or list was renamed.");
+                  }
                 }
               }
             }
-          }
 
-          if (isFolder) {
-            if (restoredIDs.contains(docId) || renamedIDs.contains(docId)) {
-              list.addToChangedFolders(new Folder(
-                  Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
-                  docId));
+            if (fsObjType.equals("1")) {
+              if (restoredIDs.contains(docId) || renamedIDs.contains(docId)) {
+                list.addToChangedFolders(new Folder(
+                    Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
+                    docId));
+              }
             }
           }
-        }
+        } // End -> if(list.isDocumentLibrary())
 
         /*
          * Do not process list items i.e, rs:rows here. This is because, we need
@@ -797,12 +680,8 @@ public class SPListsWS implements ListsWS {
          * reach the batch hint with such documents then only we'll process the
          * updated items.
          */
-        
-        boolean isFeedable = 
-            ListsUtil.isFeedableListItem(sharepointClientContext, row, list);
-        boolean pushAcls = sharepointClientContext.isPushAcls();
 
-        if (isFeedable || (isFolder && pushAcls)) {
+        if (ListsUtil.isFeedableListItem(sharepointClientContext, row, list)) {
           updatedListItems.add(row);
         } else if (!sharepointClientContext.isInitialTraversal()) {
           // Added unpublished documents to delete list if

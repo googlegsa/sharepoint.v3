@@ -47,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -312,17 +311,6 @@ public class ListsHelper {
   public List<Folder> getSubFoldersRecursively(final ListState list,
       final Folder folder, final String lastID) {
     return listsWS.getSubFoldersRecursively(list, folder, lastID);
-  }
-  
-  /**
-   * Retrieves all child list items and sub folders under folder hierarchy
-   * @param list
-   * @param currentFolder
-   * @return the list of documents as {@link SPDocument}
-   */
-  public List<SPDocument> getListItemsUnderFolderHeirarchy(
-      final ListState list, Folder currentFolder) {
-    return listsWS.getListItemsUnderFolderHeirarchy(list, currentFolder);   
   }
 
   /**
@@ -696,35 +684,67 @@ public class ListsHelper {
     if (null == lastDocument || null == allItems) {
       return;
     }
-    
-    Iterator<Folder> itrChangedFolders = list.getChangedFolders().iterator();
-    Set<SPDocument> currentSet = new TreeSet<SPDocument>();
 
-    while (itrChangedFolders.hasNext() 
-        && currentSet.size() < sharepointClientContext.getBatchHint()) {
+    final Folder lastDocParentFolder = lastDocument.getParentFolder();
+    final Folder lastDocRenamedFolder = lastDocument.getRenamedFolder();
+
+    if (null != lastDocRenamedFolder) {
+      int index = list.getChangedFolders().indexOf(lastDocRenamedFolder);
+      if (index > 0) {
+        list.getChangedFolders().subList(0, index).clear();
+      }
+    }
+
+    Iterator<Folder> itrChangedFolders = list.getChangedFolders().iterator();
+    while (itrChangedFolders.hasNext()) {
       Folder changedFolder = itrChangedFolders.next();
-      LOGGER.log(Level.INFO, "Processing renamed/restored folder ["
-          + changedFolder + "] ");
-      while (currentSet.size() < sharepointClientContext.getBatchHint()) {
-        List<SPDocument> currentListItems = 
-            getListItemsUnderFolderHeirarchy(list, changedFolder);
-        int count = currentListItems.size();
-        LOGGER.log(Level.FINE, "found " + count
-            + " items under folder [" + changedFolder + " ] ");       
-        currentSet.addAll(currentListItems);
-        if (count == 0) {
-          changedFolder.setNextPage(null);
+      if (allItems.size() >= sharepointClientContext.getBatchHint()) {
+        // more folders to traverse
+        if (null == list.getNextPage()) {
+          list.setNextPage("not null");
         }
-        if (changedFolder.getNextPage() == null) {
-          break;
+        break;
+      }
+
+      final List<Folder> folders = getSubFoldersRecursively(list, changedFolder, null);
+      if (null != lastDocParentFolder) {
+        int index = folders.indexOf(lastDocParentFolder);
+        if (index > 0) {
+          folders.subList(0, index).clear();
         }
       }
-      
-      if (changedFolder.getNextPage() == null) {
+
+      LOGGER.log(Level.INFO, "Processing renamed/restored folder ["
+          + changedFolder + "] ");
+
+      int docCountFromCurrentFolder = 0;
+      for (Folder currentFolder : folders) {
+        if (allItems.size() >= sharepointClientContext.getBatchHint()) {
+          // More sub folders to be crawled
+          if (null == list.getNextPage()) {
+            list.setNextPage("not null");
+          }
+          break;
+        }
+        String lastDocIdForCurrentFolder = "0";
+        if (null != lastDocParentFolder
+            && lastDocParentFolder.equals(currentFolder)) {
+          lastDocIdForCurrentFolder = Util.getOriginalDocId(lastDocument.getDocId(), sharepointClientContext.getFeedType());
+        }
+        List<SPDocument> currentListItems = getListItemsAtFolderLevel(list, lastDocIdForCurrentFolder, currentFolder, changedFolder);
+        LOGGER.log(Level.CONFIG, "found " + currentListItems.size()
+            + " items under folder [" + currentFolder + " ] ");
+        docCountFromCurrentFolder += currentListItems.size();
+        allItems.addAll(currentListItems);
+      }
+
+      LOGGER.log(Level.INFO, "found " + docCountFromCurrentFolder
+          + " items under restored/renamed folder [" + changedFolder + " ] ");
+
+      if (null == list.getNextPage() && docCountFromCurrentFolder == 0) {
         itrChangedFolders.remove();
       }
     }
-    allItems.addAll(currentSet);
   }
 
   private List<SPDocument> parseCustomWSResponseForListItemNodes(

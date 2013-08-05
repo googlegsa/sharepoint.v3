@@ -14,18 +14,17 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
-import com.google.enterprise.connector.sharepoint.generated.userprofileservice.GetUserProfileByIndexResult;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
-import java.rmi.RemoteException;
+import java.util.Set;
 
-public interface UserProfile2007WS extends BaseWS {
+public interface UserProfile2007WS extends UserProfile2003WS {
   /**
-   * This method returns the information about the user profile by the specified index.
+   * To get all the My Sites from the specified MySite BAse URL on configuration
+   * page.
    *
-   * @param index The index of the user profile to be retrieved
-   * @return a GetUserProfileByIndexResult
-   * @throws RemoteException
+   * @return the list of MySites
+   * @throws SharepointException
    */
-  public GetUserProfileByIndexResult getUserProfileByIndex(int index)
-      throws RemoteException;
+  public Set<String> getMyLinks() throws SharepointException;
 }

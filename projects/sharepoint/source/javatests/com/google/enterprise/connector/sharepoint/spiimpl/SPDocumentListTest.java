@@ -16,7 +16,6 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
-import com.google.enterprise.connector.sharepoint.client.SiteDataHelper;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -24,6 +23,7 @@ import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
+import com.google.enterprise.connector.sharepoint.wsclient.soap.SPSiteDataWS;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 
@@ -47,8 +47,8 @@ public class SPDocumentListTest extends TestCase {
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     WebState ws = state.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
 
-    final SiteDataHelper siteData = new SiteDataHelper(sharepointClientContext);
-    List<ListState> listCollection = siteData.getNamedLists(ws);
+    final SPSiteDataWS siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
+    List<ListState> listCollection = siteDataWS.getNamedLists(ws);
     assertNotNull(listCollection);
     for (ListState baseList : listCollection) {
       ListsHelper listHelper = new ListsHelper(this.sharepointClientContext);

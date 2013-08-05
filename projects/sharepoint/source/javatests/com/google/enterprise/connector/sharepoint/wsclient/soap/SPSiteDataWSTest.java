@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.client.SiteDataHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
@@ -33,7 +32,7 @@ import junit.framework.TestCase;
 
 public class SPSiteDataWSTest extends TestCase {
   SharepointClientContext sharepointClientContext;
-  SiteDataHelper siteData;
+  SPSiteDataWS siteDataWS;
   final SPClientFactory clientFactory = new SPClientFactory();
 
   protected void setUp() throws Exception {
@@ -43,13 +42,13 @@ public class SPSiteDataWSTest extends TestCase {
     sharepointClientContext.setIncluded_metadata(TestConfiguration.whiteList);
     sharepointClientContext.setExcluded_metadata(TestConfiguration.blackList);
 
-    siteData = new SiteDataHelper(this.sharepointClientContext);
+    this.siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
   }
 
   public final void testSiteDataWS() throws Exception {
     sharepointClientContext.setSiteURL(TestConfiguration.sharepointUrl);
-    this.siteData = new SiteDataHelper(this.sharepointClientContext);
-    assertNotNull(this.siteData);
+    this.siteDataWS = new SPSiteDataWS(this.sharepointClientContext);
+    assertNotNull(this.siteDataWS);
   }
 
   public void testGetNamedList() throws Exception {
@@ -58,12 +57,12 @@ public class SPSiteDataWSTest extends TestCase {
     final WebState ws = state.makeWebState(sharepointClientContext,
         TestConfiguration.sharepointUrl);
     assertNotNull(ws);
-    List<ListState> items = this.siteData.getNamedLists(ws);
+    List<ListState> items = this.siteDataWS.getNamedLists(ws);
     assertNotNull(items);
   }
 
   public void testGetTitle() throws Exception {
-    final String webTitle = this.siteData.getTitle();
+    final String webTitle = this.siteDataWS.getTitle();
     assertNotNull(webTitle);
   }
 
@@ -72,7 +71,7 @@ public class SPSiteDataWSTest extends TestCase {
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     WebState ws = state.makeWebState(sharepointClientContext,
         TestConfiguration.sharepointUrl + SPConstants.DEFAULT_SITE_LANDING_PAGE);
-    final SPDocument document = this.siteData.getSiteData(ws);
+    final SPDocument document = this.siteDataWS.getSiteData(ws);
     assertNotNull(document);
     String author = document.getAuthor().toLowerCase();
     String objectType = document.getObjType();
@@ -85,7 +84,7 @@ public class SPSiteDataWSTest extends TestCase {
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     WebState ws = state.makeWebState(sharepointClientContext,
         TestConfiguration.UTF8SiteUrl);
-    final SPDocument document = this.siteData.getSiteData(ws);
+    final SPDocument document = this.siteDataWS.getSiteData(ws);
     assertNotNull(document);
     // document Type should be null. For Publishing sites it will be ACL.
     assertNull(document.getDocumentType());
@@ -100,7 +99,7 @@ public class SPSiteDataWSTest extends TestCase {
         TestConfiguration.googleConnectorWorkDir, FeedType.CONTENT_FEED);
     WebState ws = state.makeWebState(sharepointClientContext,
         TestConfiguration.publishingSiteUrl + SPConstants.DEFAULT_SITE_LANDING_PAGE);
-    final SPDocument document = this.siteData.getSiteData(ws);
+    final SPDocument document = this.siteDataWS.getSiteData(ws);
     assertNotNull(document);
     // document Type should be null. For Publishing sites it will be ACL.
     assertEquals(DocumentType.ACL,document.getDocumentType());

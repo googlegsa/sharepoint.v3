@@ -20,10 +20,6 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.sitedata._sList;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOfStringHolder;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sWebMetadataHolder;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.Folder;
@@ -134,26 +130,28 @@ public class XmlClientFactory extends MockClientFactory {
   public SiteDataWS getSiteDataWS(final SharepointClientContext ctx) {
     return new MockSiteDataWS(ctx) {
       @Override
-      public ArrayOf_sListHolder getListCollection() {
+      public List<ListState> getNamedLists(final WebState webstate)
+          throws SharepointException {
         final String siteUrl = Util.getWebURLForWSCall(ctx.getSiteURL());
-        final ArrayList<_sList> lists = new ArrayList<_sList>();
+        final ArrayList<ListState> lists = new ArrayList<ListState>();
         try
         {
-          appendLists(lists, siteUrl, root, "");
+          appendLists(lists, siteUrl, root, webstate, ctx.getFeedType(), 
+              "");
         } catch (AxisFault e) {
+          // TODO: This catch should be removed when SiteDataWS gets updated
+          // to use BaseWS.
         }
         LOGGER.info("Created " + lists.size() + " lists for URL "
             + siteUrl + ".");
-        
-        _sList[] arrLists = new _sList[lists.size()];
-        lists.toArray(arrLists);
-        return new ArrayOf_sListHolder(arrLists);
+        return lists;
       }
 
       @Override
-      public _sWebMetadataHolder getSiteData() {
+      public SPDocument getSiteData(final WebState webState)
+          throws SharepointException {
         // TODO: What do we need to return here?
-        return new _sWebMetadataHolder();
+        return null;
       }
     };
   }
@@ -170,19 +168,21 @@ public class XmlClientFactory extends MockClientFactory {
    * @param username The user requesting access
    * @throws AxisFault when the user is not authorized
    */
-  private void appendLists(final ArrayList<_sList> lists,
-      final String webUrl, final MockItem item, String username)
-      throws AxisFault {
+  private void appendLists(final ArrayList<ListState> lists,
+      final String webUrl, final MockItem item, final WebState ws, 
+      final FeedType feedType, String username)
+      throws SharepointException, AxisFault {
     if (!item.hasPermission(username)) {
       throw new AxisFault(SPConstants.UNAUTHORIZED);
     }
 
     for (MockItem child : item.getChildren()) {
       if (MockType.List == child.getType()) {
-        lists.add(create_sList(webUrl, child.getName()));
+        lists.add(createListState(webUrl, child.getName(), ws, feedType,
+            true));
       } else if (MockType.Web == child.getType()) {
         final String childUrl = makeUrl(webUrl, child.getName());
-        appendLists(lists, childUrl, child, username);
+        appendLists(lists, childUrl, child, ws, feedType, username);
       }
     }
   }
@@ -221,23 +221,5 @@ public class XmlClientFactory extends MockClientFactory {
     }
 
     return item;
-  }
-
-  /**
-   * Creates a new {@link _sList}.
-   *
-   * @param webUrl The URL of the parent web
-   * @param listName The name of the new list
-   * @return a new {@link _sList}
-   */
-  private _sList create_sList(final String webUrl, final String listName) {
-    _sList list = new _sList();
-    list.setInternalName(listName);
-    list.setTitle(listName);
-    list.setBaseType(SPConstants.DOC_LIB);
-    list.setDefaultViewUrl(webUrl + "/" + listName);
-    list.setLastModified(Util.formatDate(Calendar.getInstance()));
-    list.setInheritedSecurity(true);
-    return list;
   }
 }
