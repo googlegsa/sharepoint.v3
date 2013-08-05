@@ -319,7 +319,7 @@
             public XslTransform xslt1 = null;
             public XslTransform xslt2 = null;
 
-            public Boolean useSamlPost = true;
+            public Boolean useSamlPost = false;
 
             public GoogleSearchBox()
             {
@@ -485,6 +485,11 @@
             //Method to extract configuration properties into GoogleSearchBox
             public void initGoogleSearchBox()
             {
+	            LogLocation = getLogLocationFromConfig();
+
+                //set the current log level
+                currentLogLevel = getLogLevel();
+
                 /*Parameter validatations and NULL checks*/
                 GSALocation = WebConfigurationManager.AppSettings["GSALocation"];
                 if ((GSALocation == null) || (GSALocation.Trim().Equals("")))
@@ -525,14 +530,7 @@
 
 
                 //SAML Post Configuration
-                bool parseError;
-                useSamlPost =
-                    Boolean.TryParse(WebConfigurationManager.AppSettings["UseSamlPost"], out parseError);                
-                
-                LogLocation = getLogLocationFromConfig();
-
-                //set the current log level
-                currentLogLevel = getLogLevel();
+                Boolean.TryParse(WebConfigurationManager.AppSettings["UseSamlPost"], out useSamlPost);
 
                 frontEnd = WebConfigurationManager.AppSettings["frontEnd"];
                 if ((frontEnd == null) || (frontEnd.Trim().Equals("")))
