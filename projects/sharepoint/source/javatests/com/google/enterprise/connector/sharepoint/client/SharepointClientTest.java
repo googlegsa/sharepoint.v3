@@ -91,11 +91,6 @@ public class SharepointClientTest extends TestCase {
             System.out.println("<docId>" + docProp.nextValue().toString()
                 + "</docId>");
           }
-          final Property contentUrlProp = pm.findProperty(SpiConstants.PROPNAME_CONTENTURL);
-          if (contentUrlProp != null) {
-            System.out.println("<contentUrl>"
-                + contentUrlProp.nextValue().toString() + "</contentUrl>");
-          }
           final Property searchUrlProp = pm.findProperty(SpiConstants.PROPNAME_SEARCHURL);
           if (searchUrlProp != null) {
             System.out.println("<searchUrl>"
