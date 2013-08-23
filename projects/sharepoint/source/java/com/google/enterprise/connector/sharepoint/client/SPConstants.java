@@ -597,42 +597,4 @@ public class SPConstants {
   public static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
   public static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
   public static final String UDS_COLUMN_USER_NAME = "SPUserName";
-
-  public static class SPBasePermissions {
-    public static final String EMPTYMASK = "EmptyMask";
-    public static final String VIEWLISTITEMS = "ViewListItems";
-    public static final String ADDLISTITEMS = "AddListItems";
-    public static final String EDITLISTITEMS = "EditListItems";
-    public static final String DELETELISTITEMS = "DeleteListItems";
-    public static final String APPROVEITEMS = "ApproveItems";
-    public static final String OPENITEMS = "OpenItems";
-    public static final String VIEWVERSIONS = "ViewVersions";
-    public static final String DELETEVERSIONS = "DeleteVersions";
-    public static final String CANCELCHECKOUT = "CancelCheckout";
-    public static final String MANAGEPERSONALVIEWS = "ManagePersonalViews";
-    public static final String MANAGELISTS = "ManageLists";
-    public static final String VIEWFORMPAGES = "ViewFormPages";
-    public static final String OPEN = "Open";
-    public static final String VIEWPAGES = "ViewPages";
-    public static final String ADDANDCUSTOMIZEPAGES = "AddAndCustomizePages";
-    public static final String APPLYTHEMEANDBORDER = "ApplyThemeAndBorder";
-    public static final String APPLYSTYLESHEETS = "ApplyStyleSheets";
-    public static final String VIEWUSAGEDATA = "ViewUsageData";
-    public static final String CREATESSCSITE = "CreateSSCSite";
-    public static final String MANAGESUBWEBS = "ManageSubwebs";
-    public static final String CREATEGROUPS = "CreateGroups";
-    public static final String MANAGEPERMISSIONS = "ManagePermissions";
-    public static final String BROWSEDIRECTORIES = "BrowseDirectories";
-    public static final String BROWSEUSERINFO = "BrowseUserInfo";
-    public static final String ADDDELPRIVATEWEBPARTS = "AddDelPrivateWebParts";
-    public static final String UPDATEPERSONALWEBPARTS = "UpdatePersonalWebParts";
-    public static final String MANAGEWEB = "ManageWeb";
-    public static final String USECLIENTINTEGRATION = "UseClientIntegration";
-    public static final String USEREMOTEAPIS = "UseRemoteAPIs";
-    public static final String MANAGEALERTS = "ManageAlerts";
-    public static final String CREATEALERTS = "CreateAlerts";
-    public static final String EDITMYUSERINFO = "EditMyUserInfo";
-    public static final String ENUMERATEPERMISSIONS = "EnumeratePermissions";
-    public static final String FULLMASK = "FullMask";
-  }
 }

@@ -72,14 +72,13 @@ import javax.xml.rpc.ServiceException;
  * Java Client for calling GssAcl.asmx web service. Provides a layer to talk to
  * the ACL Web Service on the SharePoint server. Any call to this Web Service
  * must go through this layer.
- *
- * @author nitendra_thakur
  */
+@SuppressWarnings("deprecation") // TODO(jlacey): RoleType is deprecated.
 public class AclHelper {
   private final Logger LOGGER = Logger.getLogger(AclHelper.class.getName());
-  private SharepointClientContext sharepointClientContext = null;
-  private boolean supportsInheritedAcls = false;
-  private boolean supportsDenyAcls = false;
+  private final SharepointClientContext sharepointClientContext;
+  private final boolean supportsInheritedAcls;
+  private final boolean supportsDenyAcls;
   private final AclWS aclWS;
 
   /**
@@ -103,17 +102,17 @@ public class AclHelper {
     aclWS = sharepointClientContext.getClientFactory().getAclWS(
         sharepointClientContext, siteurl);
 
-    if (!sharepointClientContext.isPushAcls()) {
-      return;
-    }
-    if (null == siteurl) {
-      siteurl = sharepointClientContext.getSiteURL();
-    }
     if (null != sharepointClientContext.getTraversalContext()) {
       supportsInheritedAcls = 
           sharepointClientContext.getTraversalContext().supportsInheritedAcls();
       supportsDenyAcls = 
           sharepointClientContext.getTraversalContext().supportsDenyAcls();
+    } else {
+      supportsInheritedAcls = false;
+      supportsDenyAcls = false;
+    }
+    if (!sharepointClientContext.isPushAcls()) {
+      return;
     }
     LOGGER.log(Level.CONFIG, "Supports Inherited ACLs " + supportsInheritedAcls);
 
@@ -341,7 +340,7 @@ public class AclHelper {
         String[] deniedPermissions = permissions.getDeniedPermission();
         if (null != deniedPermissions) {
           Set<RoleType> deniedRoleTypes =
-              Util.getRoleTypesFor(deniedPermissions, objectType);
+              getRoleTypesFor(deniedPermissions, objectType);
           if (deniedRoleTypes.size() > 0) {
             LOGGER.fine("Denied Permission list "
                 + Arrays.asList(permissions.getDeniedPermission())
@@ -372,8 +371,8 @@ public class AclHelper {
         LOGGER.fine("Permission list "
             + Arrays.asList(permissions.getAllowedPermissions())
             + " for the User " + principalName);
-        Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(
-            permissions.getAllowedPermissions(), objectType);
+        Set<RoleType> allowedRoleTypes =
+            getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
         if (!allowedRoleTypes.isEmpty()) {
           LOGGER.fine("Principal [ "+ principalName
               + " ] Allowed Role Types [ "+ allowedRoleTypes + " ]");
@@ -446,6 +445,140 @@ public class AclHelper {
     target.setDenyUsersAclMap(source.getDenyUsersAclMap());
     target.setDenyGroupsAclMap(source.getDenyGroupsAclMap());
   } 
+
+  private static class SPBasePermissions {
+    public static final String EMPTYMASK = "EmptyMask";
+    public static final String VIEWLISTITEMS = "ViewListItems";
+    public static final String ADDLISTITEMS = "AddListItems";
+    public static final String EDITLISTITEMS = "EditListItems";
+    public static final String DELETELISTITEMS = "DeleteListItems";
+    public static final String APPROVEITEMS = "ApproveItems";
+    public static final String OPENITEMS = "OpenItems";
+    public static final String VIEWVERSIONS = "ViewVersions";
+    public static final String DELETEVERSIONS = "DeleteVersions";
+    public static final String CANCELCHECKOUT = "CancelCheckout";
+    public static final String MANAGEPERSONALVIEWS = "ManagePersonalViews";
+    public static final String MANAGELISTS = "ManageLists";
+    public static final String VIEWFORMPAGES = "ViewFormPages";
+    public static final String OPEN = "Open";
+    public static final String VIEWPAGES = "ViewPages";
+    public static final String ADDANDCUSTOMIZEPAGES = "AddAndCustomizePages";
+    public static final String APPLYTHEMEANDBORDER = "ApplyThemeAndBorder";
+    public static final String APPLYSTYLESHEETS = "ApplyStyleSheets";
+    public static final String VIEWUSAGEDATA = "ViewUsageData";
+    public static final String CREATESSCSITE = "CreateSSCSite";
+    public static final String MANAGESUBWEBS = "ManageSubwebs";
+    public static final String CREATEGROUPS = "CreateGroups";
+    public static final String MANAGEPERMISSIONS = "ManagePermissions";
+    public static final String BROWSEDIRECTORIES = "BrowseDirectories";
+    public static final String BROWSEUSERINFO = "BrowseUserInfo";
+    public static final String ADDDELPRIVATEWEBPARTS = "AddDelPrivateWebParts";
+    public static final String UPDATEPERSONALWEBPARTS = "UpdatePersonalWebParts";
+    public static final String MANAGEWEB = "ManageWeb";
+    public static final String USECLIENTINTEGRATION = "UseClientIntegration";
+    public static final String USEREMOTEAPIS = "UseRemoteAPIs";
+    public static final String MANAGEALERTS = "ManageAlerts";
+    public static final String CREATEALERTS = "CreateAlerts";
+    public static final String EDITMYUSERINFO = "EditMyUserInfo";
+    public static final String ENUMERATEPERMISSIONS = "EnumeratePermissions";
+    public static final String FULLMASK = "FullMask";
+  }
+
+  /**
+   * Maps a set of SharePoint defined permissions to CM defined permissions.
+   * TODO: The logic used for mapping could be improved depending on the current
+   * discussions going on at this front with John Felton.
+   *
+   * @param permissions SharePoint Permissions
+   * @param objectType Kind of entity (List/List-Item/Web) for which the mapping
+   *          is to be done. This is required because SharePoint defines
+   *          multiple granular permissions for various entity types and all
+   *          these permissions may not be applicable to all the entities. For
+   *          Example, "ManageWeb" has nothing do with ListItems.
+   * @return a list of {@link RoleType}
+   */
+  private Set<RoleType> getRoleTypesFor(String[] permissions,
+      ObjectType objectType) {
+    Set<RoleType> roleTypes = Sets.newHashSet();
+    if (null == permissions || permissions.length == 0 || null == objectType) {
+      return roleTypes;
+    }
+    if (permissions.length == 0
+        || (permissions.length == 1 && permissions[0].equals(SPBasePermissions.EMPTYMASK))) {
+      return roleTypes;
+    }
+
+    // The following two flags are to check if all the required permissions
+    // for WRITER access on a list are fulfilled or not. We may need to add
+    // more flags in future corresponding to any extra permissions that we
+    // agree to check to give a user WRITER access on a list
+    boolean managelist = false;
+    boolean additems = false;
+
+    // For checking Limited Access permission which will be mapped to the
+    // PEEKER in CM
+    boolean viewFormPages = false;
+    boolean open = false;
+    // flags to check all the required permissions for READER access on
+    // SharePoint List or Document Library.
+    boolean viewPages = false;
+    boolean viewListItems = false;
+
+    for (String permission : permissions) {
+      if (SPBasePermissions.FULLMASK.equals(permission)) {
+        roleTypes.add(RoleType.OWNER);
+      }
+
+      if (SPBasePermissions.VIEWFORMPAGES.equals(permission)) {
+        viewFormPages = true;
+      }
+      if (SPBasePermissions.OPEN.equals(permission)) {
+        open = true;
+      }
+
+      if (ObjectType.ITEM.equals(objectType)) {
+        if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.WRITER);
+        }
+        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.READER);
+        }
+      } else if (ObjectType.LIST.equals(objectType)) {
+        if (!managelist && SPBasePermissions.MANAGELISTS.equals(permission)) {
+          managelist = true;
+        }
+        if (!additems && SPBasePermissions.ADDLISTITEMS.equals(permission)) {
+          additems = true;
+        }
+        if (SPBasePermissions.VIEWPAGES.equals(permission)) {
+          viewPages = true;
+        }
+        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+          viewListItems = true;
+        }
+      } else if (ObjectType.SITE_LANDING_PAGE.equals(objectType)) {
+        if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.WRITER);
+        }
+        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.READER);
+        }
+      }
+      // Currently, only list and list-items are fed as documents. In
+      // future, if sites and pages are also sent, more checks will have
+      // to be added here
+    }
+    if (ObjectType.LIST.equals(objectType) && viewPages && viewListItems) {
+      roleTypes.add(RoleType.READER);
+    }     
+    if (ObjectType.LIST.equals(objectType) && managelist && additems) {
+      roleTypes.add(RoleType.WRITER);
+    }
+    if (viewFormPages && open) {
+      roleTypes.add(RoleType.PEEKER);
+    }
+    return roleTypes;
+  }
 
   /**
    * Method to process GssAcl permissions.
