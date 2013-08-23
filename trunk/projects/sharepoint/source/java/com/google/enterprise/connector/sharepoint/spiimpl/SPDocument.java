@@ -496,9 +496,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
           + "] as DocumentType is ACL and PushAcls is false.");
     }
     final Collator collator = Util.getCollator();
-    if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENTURL)) {
-      return new SimpleProperty(new StringValue(getUrl()));
-    } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
+    if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
       if (FeedType.CONTENT_FEED == getFeedType()
           && ActionType.ADD.equals(getAction())) {
         synchronized (this) {

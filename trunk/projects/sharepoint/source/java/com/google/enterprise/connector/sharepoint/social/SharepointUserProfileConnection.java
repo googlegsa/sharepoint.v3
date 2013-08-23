@@ -247,7 +247,6 @@ public class SharepointUserProfileConnection {
       } catch (UnsupportedEncodingException e) {
         throw new AssertionError();
       }
-      userProfile.setProperty(SpiConstants.PROPNAME_CONTENTURL, url);
       userProfile.setProperty(SpiConstants.PROPNAME_CONTENT, "");
       userProfile.setProperty(SpiConstants.PROPNAME_MIMETYPE, "text/plain");
       userProfile.setProperty(SpiConstants.PROPNAME_DISPLAYURL, url);
