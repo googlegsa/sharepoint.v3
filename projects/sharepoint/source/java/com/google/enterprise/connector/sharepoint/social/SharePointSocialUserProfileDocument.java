@@ -14,34 +14,28 @@
 
 package com.google.enterprise.connector.sharepoint.social;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType;
-import com.google.enterprise.connector.spi.SpiConstants.RoleType;
+import com.google.enterprise.connector.spi.Value;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class SharePointSocialUserProfileDocument 
     extends SocialUserProfileDocument {
   
   private int nextValue = -1; 
 
-  //List of users and their permissions to be sent in document's ACL
-  private Map<Principal, Set<RoleType>> allowAclMap;
+  // List of groups to be sent in document's ACL.
+  private Set<Principal> allowAclMap;
 
-  //List of users and their denied permissions to be sent in document's ACL
-  private Map<Principal, Set<RoleType>> denyAclMap;
-  
   private ActionType actionType;
 
   public SharePointSocialUserProfileDocument(String collectionName) {
@@ -64,7 +58,7 @@ public class SharePointSocialUserProfileDocument
     if (SpiConstants.PROPNAME_ACLGROUPS.equalsIgnoreCase(name)) {
       if (allowAclMap != null) {
         List<Value> values = new ArrayList<Value>(allowAclMap.size());
-        for (Principal user : allowAclMap.keySet()) {
+        for (Principal user : allowAclMap) {
           values.add(Value.getPrincipalValue(user));
         }
         return new SimpleProperty(values);
@@ -78,13 +72,11 @@ public class SharePointSocialUserProfileDocument
   public void AddAllowAclToDocument(
       String globalNamespace, String principalName) {
    if (allowAclMap == null) {
-     allowAclMap = Maps.newHashMap();
+     allowAclMap = Sets.newHashSet();
    }
-   Set<RoleType> roleTypes = new HashSet<RoleType>();
-   roleTypes.add(RoleType.READER);
-   allowAclMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+   allowAclMap.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
        globalNamespace, principalName,
-       CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);    
+       CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
   }
 
   public ActionType getActionType() {

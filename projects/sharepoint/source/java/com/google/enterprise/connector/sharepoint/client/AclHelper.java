@@ -18,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -58,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -277,11 +277,10 @@ public class AclHelper {
         largeACLUrlToDocMap.put(document.getUrl(), document);
         continue ACL;
       }
-      Map<Principal, Set<RoleType>> userPermissionMap = Maps.newHashMap();
-      Map<Principal, Set<RoleType>> groupPermissionMap = Maps.newHashMap();
-      Map<Principal, Set<RoleType>> deniedUserPermissionMap = Maps.newHashMap();
-      Map<Principal, Set<RoleType>> deniedGroupPermissionMap =
-          Maps.newHashMap();
+      Set<Principal> userPermissionMap = Sets.newHashSet();
+      Set<Principal> groupPermissionMap = Sets.newHashSet();
+      Set<Principal> deniedUserPermissionMap = Sets.newHashSet();
+      Set<Principal> deniedGroupPermissionMap = Sets.newHashSet();
       document.setUniquePermissions(
           !Boolean.parseBoolean(acl.getInheritPermissions()));
       if (!Strings.isNullOrEmpty(acl.getParentUrl())) {
@@ -343,21 +342,21 @@ public class AclHelper {
         if (null != deniedPermissions) {
           Set<RoleType> deniedRoleTypes =
               Util.getRoleTypesFor(deniedPermissions, objectType);
-          if (null != deniedRoleTypes && deniedRoleTypes.size() > 0) {
+          if (deniedRoleTypes.size() > 0) {
             LOGGER.fine("Denied Permission list "
                 + Arrays.asList(permissions.getDeniedPermission())
                 + " for the User " + principalName);
             LOGGER.fine("Principal [" + principalName
                 + "] Denied Role Types [ " + deniedRoleTypes + " ]");
-            //Pass denied permissions only if Reader role is denied.
-            if (deniedRoleTypes.contains(RoleType.READER)) {
+            // Pass denied permissions only if Peeker or Reader role is denied.
+            if (deniedRoleTypes.contains(RoleType.PEEKER)
+                || deniedRoleTypes.contains(RoleType.READER)) {
               if (supportsDenyAcls) {
                 LOGGER.fine("Processing Deny permissions"
                     + " for Principal ["+ principalName + "]");
-                processPermissions(principal, deniedRoleTypes,
-                    deniedUserPermissionMap, deniedGroupPermissionMap,
-                    principalName, siteCollUrl, memberships,
-                    webState);
+                processPermissions(principal, deniedUserPermissionMap,
+                    deniedGroupPermissionMap, principalName, siteCollUrl,
+                    memberships, webState);
               } else {
                 // Skipping ACL as denied ACLs are not supported as per
                 // Traversal Context.
@@ -375,12 +374,17 @@ public class AclHelper {
             + " for the User " + principalName);
         Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(
             permissions.getAllowedPermissions(), objectType);
-        if (allowedRoleTypes != null && !allowedRoleTypes.isEmpty()) {
+        if (!allowedRoleTypes.isEmpty()) {
           LOGGER.fine("Principal [ "+ principalName
               + " ] Allowed Role Types [ "+ allowedRoleTypes + " ]");
-          processPermissions(principal, allowedRoleTypes, userPermissionMap,
-              groupPermissionMap, principalName, siteCollUrl, memberships,
-              webState);
+          // Pass allowed permissions only if role other than Peeker is allowed.
+          if (allowedRoleTypes.contains(RoleType.READER)
+              || allowedRoleTypes.contains(RoleType.WRITER)
+              || allowedRoleTypes.contains(RoleType.OWNER)) {
+            processPermissions(principal, userPermissionMap,
+                groupPermissionMap, principalName, siteCollUrl, memberships,
+                webState);
+          }
         }
       }
       document.setUsersAclMap(userPermissionMap);
@@ -447,7 +451,6 @@ public class AclHelper {
    * Method to process GssAcl permissions.
    *
    * @param principal GsssPrincipal Object to process.
-   * @param roleTypes  Allowed / denied RoleTypes.
    * @param userPermissionMap Permissions Map to add user permissions.
    * @param groupPermissionMap Permissions Map to add group permissions.
    * @param principalName Principal Name
@@ -455,25 +458,23 @@ public class AclHelper {
    * @param memberships UserGroup Membership object
    */
   private void processPermissions(GssPrincipal principal,
-      Set<RoleType> roleTypes, Map<Principal, Set<RoleType>> userPermissionMap,
-      Map<Principal, Set<RoleType>> groupPermissionMap, String principalName,
-      String webStateUrl, Set<UserGroupMembership> memberships,
-      WebState webState) {
+      Set<Principal> userPermissionMap, Set<Principal> groupPermissionMap,
+      String principalName, String webStateUrl,
+      Set<UserGroupMembership> memberships, WebState webState) {
     String globalNamespace = sharepointClientContext.getGoogleGlobalNamespace();
     String localNamespace = sharepointClientContext.getGoogleLocalNamespace();
     if (PrincipalType.USER.equals(principal.getType())) {
-      userPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+      userPermissionMap.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
               globalNamespace, principalName,
-              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())) {
-      groupPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+      groupPermissionMap.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
               globalNamespace, principalName,
-              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
     } else if (PrincipalType.SPGROUP.equals(principal.getType())) {
-      groupPermissionMap.put(
-          new Principal(SpiConstants.PrincipalType.UNQUALIFIED, localNamespace,
-              "[" + webStateUrl + "]" + principalName,
-              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+      groupPermissionMap.add(new Principal(SpiConstants.PrincipalType.UNQUALIFIED,
+              localNamespace, "[" + webStateUrl + "]" + principalName,
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
 
       // If it's a SharePoint group, add the membership info
       // into the User Data Store
@@ -762,7 +763,7 @@ public class AclHelper {
 
     // To keep track of all the lists which have been processed. This is to
     // avoid re-processing of the same list due to multiple changes
-    Set<ListState> processedLists = new HashSet<ListState>();
+    Set<ListState> processedLists = Sets.newHashSet();
 
     // All groups where there are some membership changes
     // TODO: why not this is integer?
