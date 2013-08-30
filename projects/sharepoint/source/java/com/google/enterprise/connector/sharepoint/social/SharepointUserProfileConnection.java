@@ -147,7 +147,7 @@ public class SharepointUserProfileConnection {
     String globalNamespace =
         ctxt.getSpClientContext().getGoogleGlobalNamespace();
     // Default ACL for User profile document
-    userProfile.AddAllowAclToDocument(
+    userProfile.addAclGroupToDocument(
         globalNamespace, "NT AUTHORITY\\Authenticated Users");
     populateProfileProperties(userProfile, props, userColleagues);
     return userProfile;
@@ -267,7 +267,7 @@ public class SharepointUserProfileConnection {
     String globalNamespace =
         ctxt.getSpClientContext().getGoogleGlobalNamespace();
     // Default ACL for User profile document
-    userProfile.AddAllowAclToDocument(
+    userProfile.addAclGroupToDocument(
         globalNamespace, "NT AUTHORITY\\Authenticated Users");
 
     String nextValue = getUserProfileByIndexResult.getNextValue();

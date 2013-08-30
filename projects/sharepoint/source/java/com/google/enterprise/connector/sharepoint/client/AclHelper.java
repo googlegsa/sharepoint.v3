@@ -276,10 +276,10 @@ public class AclHelper {
         largeACLUrlToDocMap.put(document.getUrl(), document);
         continue ACL;
       }
-      Set<Principal> userPermissionMap = Sets.newHashSet();
-      Set<Principal> groupPermissionMap = Sets.newHashSet();
-      Set<Principal> deniedUserPermissionMap = Sets.newHashSet();
-      Set<Principal> deniedGroupPermissionMap = Sets.newHashSet();
+      Set<Principal> aclUsers = Sets.newHashSet();
+      Set<Principal> aclGroups = Sets.newHashSet();
+      Set<Principal> aclDenyUsers = Sets.newHashSet();
+      Set<Principal> aclDenyGroups = Sets.newHashSet();
       document.setUniquePermissions(
           !Boolean.parseBoolean(acl.getInheritPermissions()));
       if (!Strings.isNullOrEmpty(acl.getParentUrl())) {
@@ -353,9 +353,8 @@ public class AclHelper {
               if (supportsDenyAcls) {
                 LOGGER.fine("Processing Deny permissions"
                     + " for Principal ["+ principalName + "]");
-                processPermissions(principal, deniedUserPermissionMap,
-                    deniedGroupPermissionMap, principalName, siteCollUrl,
-                    memberships, webState);
+                processPrincipal(principal, aclDenyUsers, aclDenyGroups,
+                    principalName, siteCollUrl, memberships, webState);
               } else {
                 // Skipping ACL as denied ACLs are not supported as per
                 // Traversal Context.
@@ -380,16 +379,15 @@ public class AclHelper {
           if (allowedRoleTypes.contains(RoleType.READER)
               || allowedRoleTypes.contains(RoleType.WRITER)
               || allowedRoleTypes.contains(RoleType.OWNER)) {
-            processPermissions(principal, userPermissionMap,
-                groupPermissionMap, principalName, siteCollUrl, memberships,
-                webState);
+            processPrincipal(principal, aclUsers, aclGroups,
+                principalName, siteCollUrl, memberships, webState);
           }
         }
       }
-      document.setUsersAclMap(userPermissionMap);
-      document.setGroupsAclMap(groupPermissionMap);
-      document.setDenyUsersAclMap(deniedUserPermissionMap);
-      document.setDenyGroupsAclMap(deniedGroupPermissionMap);
+      document.setAclUsers(aclUsers);
+      document.setAclGroups(aclGroups);
+      document.setAclDenyUsers(aclDenyUsers);
+      document.setAclDenyGroups(aclDenyGroups);
     }
 
     if (!reprocessDocs.isEmpty()) {
@@ -440,10 +438,10 @@ public class AclHelper {
    * @param target target SPDocument for copy
    */
   private void copyAcls(SPDocument source, SPDocument target) {
-    target.setUsersAclMap(source.getUsersAclMap());
-    target.setGroupsAclMap(source.getGroupsAclMap());
-    target.setDenyUsersAclMap(source.getDenyUsersAclMap());
-    target.setDenyGroupsAclMap(source.getDenyGroupsAclMap());
+    target.setAclUsers(source.getAclUsers());
+    target.setAclGroups(source.getAclGroups());
+    target.setAclDenyUsers(source.getAclDenyUsers());
+    target.setAclDenyGroups(source.getAclDenyGroups());
   } 
 
   private static class SPBasePermissions {
@@ -581,31 +579,30 @@ public class AclHelper {
   }
 
   /**
-   * Method to process GssAcl permissions.
+   * Method to process GssAcl principals.
    *
-   * @param principal GsssPrincipal Object to process.
-   * @param userPermissionMap Permissions Map to add user permissions.
-   * @param groupPermissionMap Permissions Map to add group permissions.
+   * @param principal GssPrincipal Object to process
+   * @param users set to add user principals to
+   * @param groups set to add group principals to
    * @param principalName Principal Name
    * @param webStateUrl Site Collection Url from WebState
    * @param memberships UserGroup Membership object
    */
-  private void processPermissions(GssPrincipal principal,
-      Set<Principal> userPermissionMap, Set<Principal> groupPermissionMap,
-      String principalName, String webStateUrl,
+  private void processPrincipal(GssPrincipal principal, Set<Principal> users,
+      Set<Principal> groups, String principalName, String webStateUrl,
       Set<UserGroupMembership> memberships, WebState webState) {
     String globalNamespace = sharepointClientContext.getGoogleGlobalNamespace();
     String localNamespace = sharepointClientContext.getGoogleLocalNamespace();
     if (PrincipalType.USER.equals(principal.getType())) {
-      userPermissionMap.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+      users.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
               globalNamespace, principalName,
               CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())) {
-      groupPermissionMap.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+      groups.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
               globalNamespace, principalName,
               CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
     } else if (PrincipalType.SPGROUP.equals(principal.getType())) {
-      groupPermissionMap.add(new Principal(SpiConstants.PrincipalType.UNQUALIFIED,
+      groups.add(new Principal(SpiConstants.PrincipalType.UNQUALIFIED,
               localNamespace, "[" + webStateUrl + "]" + principalName,
               CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
 
