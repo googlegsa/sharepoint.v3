@@ -34,7 +34,7 @@ public class SharePointSocialUserProfileDocument
   private int nextValue = -1; 
 
   // List of groups to be sent in document's ACL.
-  private Set<Principal> allowAclMap;
+  private Set<Principal> aclGroups;
 
   private ActionType actionType;
 
@@ -56,10 +56,10 @@ public class SharePointSocialUserProfileDocument
   @Override
   public Property findProperty(String name) {
     if (SpiConstants.PROPNAME_ACLGROUPS.equalsIgnoreCase(name)) {
-      if (allowAclMap != null) {
-        List<Value> values = new ArrayList<Value>(allowAclMap.size());
-        for (Principal user : allowAclMap) {
-          values.add(Value.getPrincipalValue(user));
+      if (aclGroups != null) {
+        List<Value> values = new ArrayList<Value>(aclGroups.size());
+        for (Principal group : aclGroups) {
+          values.add(Value.getPrincipalValue(group));
         }
         return new SimpleProperty(values);
       } else {
@@ -69,12 +69,12 @@ public class SharePointSocialUserProfileDocument
     return super.findProperty(name);
   }
   
-  public void AddAllowAclToDocument(
-      String globalNamespace, String principalName) {
-   if (allowAclMap == null) {
-     allowAclMap = Sets.newHashSet();
+  public void addAclGroupToDocument(String globalNamespace,
+      String principalName) {
+   if (aclGroups == null) {
+     aclGroups = Sets.newHashSet();
    }
-   allowAclMap.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+   aclGroups.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
        globalNamespace, principalName,
        CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
   }
