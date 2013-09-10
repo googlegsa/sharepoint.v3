@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.generated.userprofileservice.G
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 
 import java.util.logging.Logger;
+import java.util.List;
 import java.util.Set;
 
 public class MockUserProfile2007WS implements UserProfile2007WS {
@@ -61,5 +62,9 @@ public class MockUserProfile2007WS implements UserProfile2007WS {
   @Override
   public GetUserProfileByIndexResult getUserProfileByIndex(int index) {
     return new GetUserProfileByIndexResult();
+  }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
   }
 }

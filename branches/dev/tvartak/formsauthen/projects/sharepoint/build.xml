@@ -142,6 +142,9 @@
     <property name="generated.package" 
               value="com.google.enterprise.connector.sharepoint.generated"/>
 
+    <wsdl2java url="${wsdl}/Authentication.wsdl"
+               package="${generated.package}.authentication"
+               generates="${src_generated}/authentication/Authentication.java"/>
     <wsdl2java url="${wsdl}/SiteData.wsdl"
                package="${generated.package}.sitedata"
                generates="${src_generated}/sitedata/SiteData.java"/>

@@ -14,6 +14,8 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.client;
 
+import java.util.List;
+
 public interface BaseWS {
   /**
    * Returns the username that is used for the web requests. This must be
@@ -44,4 +46,10 @@ public interface BaseWS {
    * @param timeout The timeout in milliseconds to use for web requests
    */
   public void setTimeout(int timeout);
+  
+  /**
+   * Sets forms authentication cookie for web service call
+   * @param cookie forms authentication cookie for web service call
+   */
+  public void setFormsAuthenticationCookie(List<String> cookie);
 }

@@ -25,10 +25,13 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2007WS;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
+
+import org.apache.axis.transport.http.HTTPConstants;
 
 /**
  * Java Client for calling UserProfile.asmx for SharePoint2007 Provides a layer
@@ -105,6 +108,20 @@ public class SPUserProfileWS implements UserProfile2007WS {
    */
   public GetUserProfileByIndexResult getUserProfileByIndex(int index)
       throws RemoteException {
+    setCookie();
     return stub.getUserProfileByIndex(index);
+  }
+
+  private List<String> cookie;
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }

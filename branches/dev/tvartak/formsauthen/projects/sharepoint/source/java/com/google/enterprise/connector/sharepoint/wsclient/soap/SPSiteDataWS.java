@@ -30,8 +30,10 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 
 import org.apache.axis.holders.UnsignedIntHolder;
+import org.apache.axis.transport.http.HTTPConstants;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,6 +112,7 @@ public class SPSiteDataWS implements SiteDataWS {
    * @throws RemoteException
    */
   public ArrayOf_sListHolder getListCollection() throws RemoteException {
+    setCookie();
     final ArrayOf_sListHolder vLists = new ArrayOf_sListHolder();
     final UnsignedIntHolder getListCollectionResult = new UnsignedIntHolder();
     stub.getListCollection(getListCollectionResult, vLists);
@@ -132,9 +135,23 @@ public class SPSiteDataWS implements SiteDataWS {
     final StringHolder strRoles = new StringHolder();
     final ArrayOfStringHolder vRolesUsers = new ArrayOfStringHolder();
     final ArrayOfStringHolder vRolesGroups = new ArrayOfStringHolder();
+    setCookie();
     stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles,
         vRolesUsers, vRolesGroups);
     return sWebMetadata;
+  }
+
+  private List<String> cookie;
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }
 

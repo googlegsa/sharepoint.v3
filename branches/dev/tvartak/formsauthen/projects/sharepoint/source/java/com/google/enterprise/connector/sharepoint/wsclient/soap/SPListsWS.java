@@ -43,6 +43,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.util.DateUtil;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.apache.axis.message.MessageElement;
+import org.apache.axis.transport.http.HTTPConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
@@ -153,6 +154,7 @@ public class SPListsWS implements ListsWS {
           + " ] since stub is null.");
       return listAttachments;
     }
+    setCookie();
 
     final String listName = baseList.getPrimaryKey();
     final String listItemId = Util.getOriginalDocId(listItem.getDocId(),
@@ -255,6 +257,8 @@ public class SPListsWS implements ListsWS {
       LOGGER.warning("Unable to get the list items since stub is null.");
       return listItems;
     }
+    
+    setCookie();
 
     final GetListItemsQuery query = new GetListItemsQuery();
     final GetListItemsViewFields viewFields = new GetListItemsViewFields();
@@ -414,6 +418,7 @@ public class SPListsWS implements ListsWS {
     final String token = null;
     final GetListItemChangesSinceTokenContains contains = null;
 
+    setCookie();
     try {
       if (folderLevel == null) {
         query.set_any(ListsUtil.createQuery1("0"));
@@ -493,6 +498,8 @@ public class SPListsWS implements ListsWS {
       LOGGER.warning("Unable to get the list items since stub is null.");
       return listItems;
     }
+    
+    setCookie();
 
     // Set token as null If it is blank, because the web service expects so,
     // otherwise it fails.
@@ -617,6 +624,8 @@ public class SPListsWS implements ListsWS {
       currentFolder.setNextPage(null);
       return listItems;
     }
+    
+    setCookie();
 
     final GetListItemChangesSinceTokenResponseGetListItemChangesSinceTokenResult res =
         Util.makeWSRequest(sharepointClientContext, this, new Util.RequestExecutor<
@@ -825,6 +834,19 @@ public class SPListsWS implements ListsWS {
     } // end of For
 
     return updatedListItems;
+  }
+
+  private List<String> cookie;
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }
 

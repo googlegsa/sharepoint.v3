@@ -20,6 +20,7 @@ import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.
 import com.google.enterprise.connector.sharepoint.generated.gsbulkauthorization.UserRoleMembership;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 
+import java.util.List;
 import java.util.logging.Logger;
 import java.rmi.RemoteException;
 
@@ -83,5 +84,9 @@ public class MockBulkAuthorizationWS implements BulkAuthorizationWS {
   public UserRoleMembership getUserRoleMembership(String membership,
       String userName, String password) throws RemoteException {
     return null;
+  }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
   }
 }

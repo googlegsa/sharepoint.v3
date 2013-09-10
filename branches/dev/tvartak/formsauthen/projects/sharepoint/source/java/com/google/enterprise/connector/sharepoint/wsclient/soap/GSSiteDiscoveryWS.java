@@ -26,10 +26,13 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryWS;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
+
+import org.apache.axis.transport.http.HTTPConstants;
 
 /**
  * Java Client for calling GSSiteDiscovery.asmx. Provides a layer to talk to the
@@ -104,6 +107,7 @@ public class GSSiteDiscoveryWS implements SiteDiscoveryWS {
    * @throws RemoteException
    */
   public Object[] getAllSiteCollectionFromAllWebApps() throws RemoteException {
+    setCookie();
     return stub.getAllSiteCollectionFromAllWebApps();
   }
 
@@ -116,6 +120,7 @@ public class GSSiteDiscoveryWS implements SiteDiscoveryWS {
    * @throws RemoteException
    */
   public WebCrawlInfo getWebCrawlInfo() throws RemoteException {
+    setCookie();
     return stub.getWebCrawlInfo();
   }
 
@@ -129,6 +134,7 @@ public class GSSiteDiscoveryWS implements SiteDiscoveryWS {
    */
   public WebCrawlInfo[] getWebCrawlInfoInBatch(String[] weburls)
       throws RemoteException {
+    setCookie();
     return stub.getWebCrawlInfoInBatch(weburls);
   }
 
@@ -141,6 +147,20 @@ public class GSSiteDiscoveryWS implements SiteDiscoveryWS {
    */
   public ListCrawlInfo[] getListCrawlInfo(String[] listGuids)
       throws RemoteException {
+    setCookie();
     return stub.getListCrawlInfo(listGuids);
+  }
+
+  private List<String> cookie;
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }

@@ -42,6 +42,7 @@ import org.apache.commons.httpclient.HttpMethodBase;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.UUID;
 
@@ -167,8 +168,8 @@ public class MockClientFactory implements ClientFactory {
    * can connect to the host.
    */
   /* @Override */
-  public int checkConnectivity(HttpMethodBase method,
-      Credentials credentials) throws IOException {
+  public int checkConnectivity(HttpMethodBase method, Credentials credentials,
+      SharepointClientContext ctx) throws IOException {
     return 200;
   }
 
@@ -294,5 +295,10 @@ public class MockClientFactory implements ClientFactory {
     else
       url = childName;
     return url;
+  }
+
+  @Override
+  public void shutdown() {   
+    
   }
 }

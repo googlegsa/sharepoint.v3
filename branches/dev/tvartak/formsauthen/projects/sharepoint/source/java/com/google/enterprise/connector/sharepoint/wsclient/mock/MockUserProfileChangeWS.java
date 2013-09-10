@@ -19,6 +19,7 @@ import com.google.enterprise.connector.sharepoint.generated.userprofilechangeser
 import com.google.enterprise.connector.sharepoint.generated.userprofilechangeservice.UserProfileChangeQuery;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 public class MockUserProfileChangeWS implements UserProfileChangeWS {
@@ -60,5 +61,9 @@ public class MockUserProfileChangeWS implements UserProfileChangeWS {
   @Override
   public String getCurrentChangeToken() {
     return null;
+  }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {   
   }
 }

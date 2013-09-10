@@ -13,11 +13,18 @@
 // limitations under the License.
 package com.google.enterprise.connector.sharepoint.wsclient.soap;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.generated.authentication.AuthenticationLocator;
+import com.google.enterprise.connector.sharepoint.generated.authentication.AuthenticationMode;
+import com.google.enterprise.connector.sharepoint.generated.authentication.AuthenticationSoap_BindingStub;
+import com.google.enterprise.connector.sharepoint.generated.authentication.LoginResult;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.AuthenticationWS;
+import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ListsWS;
@@ -28,6 +35,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile200
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
+import org.apache.axis.transport.http.HTTPConstants;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -38,23 +46,35 @@ import org.apache.commons.httpclient.params.HttpClientParams;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.rpc.ServiceException;
 
 /**
  * A factory for the interfaces that encapsulates the SharePoint
  * webservices.
  */
 public class SPClientFactory implements ClientFactory {
-  private static final Logger LOGGER = Logger.getLogger(SPClientFactory.class.getName());
+  private static final Logger LOGGER =
+      Logger.getLogger(SPClientFactory.class.getName());
   private static final int HTTP_CLIENT_TIMEOUT_SECONDS = 300;
   
+  private final Map<String, FormsAuthenticationHandler> authenticationHandlers
+      = new HashMap<String, FormsAuthenticationHandler>();
+  private ScheduledThreadPoolExecutor scheduledExecutor = 
+      new ScheduledThreadPoolExecutor(1);
+ 
   private static class Resource {
     private final HttpClient httpClient;
     private final Set<String> webAppsVisited;
@@ -74,14 +94,18 @@ public class SPClientFactory implements ClientFactory {
    * @return a new alerts web service instance.
    */
   public AlertsWS getAlertsWS(final SharepointClientContext ctx) {
-    try {
-      return new SPAlertsWS(ctx);
+    try {    
+      SPAlertsWS alert = new SPAlertsWS(ctx);
+      addFormsAuthenticationCookie(ctx, alert);
+      return alert;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create alerts web service instance.", e);
       return null;
     }
   }
+  
+
 
   /**
    * Gets the instance of the bulk authorization web service.
@@ -91,7 +115,9 @@ public class SPClientFactory implements ClientFactory {
   public BulkAuthorizationWS getBulkAuthorizationWS(
       final SharepointClientContext ctx) {
     try {
-      return new GSBulkAuthorizationWS(ctx);
+      GSBulkAuthorizationWS bulkAuthz = new GSBulkAuthorizationWS(ctx);
+      addFormsAuthenticationCookie(ctx, bulkAuthz);
+      return bulkAuthz;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, "Failed to initialize GSBulkAuthorizationWS.",
           e);
@@ -107,7 +133,9 @@ public class SPClientFactory implements ClientFactory {
   public ListsWS getListsWS(final SharepointClientContext ctx,
       final String rowLimit) {
     try {
-      return new SPListsWS(ctx, rowLimit);
+      SPListsWS listWS = new SPListsWS(ctx, rowLimit);
+      addFormsAuthenticationCookie(ctx, listWS);
+      return listWS;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create lists web service instance.", e);
@@ -122,7 +150,9 @@ public class SPClientFactory implements ClientFactory {
    */
   public SiteDataWS getSiteDataWS(final SharepointClientContext ctx) {
     try {
-      return new SPSiteDataWS(ctx);
+      SPSiteDataWS siteData = new SPSiteDataWS(ctx);
+      addFormsAuthenticationCookie(ctx, siteData);
+      return siteData;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create site data web service instance.", e);
@@ -138,8 +168,12 @@ public class SPClientFactory implements ClientFactory {
   public UserProfile2003WS getUserProfile2003WS(
       final SharepointClientContext ctx) {
     try {
-      return new com.google.enterprise.connector.sharepoint.wsclient.soap.
+      com.google.enterprise.connector.sharepoint.wsclient.soap.
+          sp2003.SPUserProfileWS userProfile 
+          = new com.google.enterprise.connector.sharepoint.wsclient.soap.
           sp2003.SPUserProfileWS(ctx);
+      addFormsAuthenticationCookie(ctx, userProfile);
+      return userProfile;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create user profile web service instance.", e);
@@ -155,7 +189,9 @@ public class SPClientFactory implements ClientFactory {
   public UserProfile2007WS getUserProfile2007WS(
       final SharepointClientContext ctx) {
     try {
-      return new SPUserProfileWS(ctx);
+      SPUserProfileWS userProfile = new SPUserProfileWS(ctx);
+      addFormsAuthenticationCookie(ctx, userProfile);
+      return userProfile;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create user profile web service instance.", e);
@@ -170,7 +206,9 @@ public class SPClientFactory implements ClientFactory {
    */
   public WebsWS getWebsWS(final SharepointClientContext ctx) {
     try {
-      return new SPWebsWS(ctx);
+      SPWebsWS webs = new SPWebsWS(ctx);
+      addFormsAuthenticationCookie(ctx, webs);
+      return webs;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create webs web service instance.", e);
@@ -185,7 +223,9 @@ public class SPClientFactory implements ClientFactory {
    */
   public AclWS getAclWS(final SharepointClientContext ctx, String webUrl) {
     try {
-      return new GSAclWS(webUrl);
+      GSAclWS aclWS = new GSAclWS(webUrl);
+      addFormsAuthenticationCookie(ctx, aclWS);
+      return aclWS;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create ACLs web service instance.", e);
@@ -201,7 +241,9 @@ public class SPClientFactory implements ClientFactory {
   public SiteDiscoveryWS getSiteDiscoveryWS(final SharepointClientContext ctx,
       String webUrl) {
     try {
-      return new GSSiteDiscoveryWS(ctx, webUrl);
+      GSSiteDiscoveryWS siteDiscovery = new GSSiteDiscoveryWS(ctx, webUrl);
+      addFormsAuthenticationCookie(ctx, siteDiscovery);
+      return siteDiscovery;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create site discovery web service instance.", e);
@@ -209,10 +251,19 @@ public class SPClientFactory implements ClientFactory {
     }
   }
 
-  public int checkConnectivity(HttpMethodBase method,
-      Credentials credentials) throws IOException {
+  public int checkConnectivity(HttpMethodBase method, Credentials credentials,
+      SharepointClientContext ctx) throws IOException {
     Resource resource = reserveResource(credentials);
     String currentWebApp = Util.getWebApp(method.getURI().getURI());
+    try {
+      List<String> cookie = getFormsAuthenCookie(ctx.getSiteURL(), ctx);
+      if (cookie != null) {
+        method.addRequestHeader(
+            HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      }
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
     try {
       int responseCode = resource.httpClient.executeMethod(method);
       if (responseCode == 200) {
@@ -321,7 +372,9 @@ public class SPClientFactory implements ClientFactory {
   public UserProfileChangeWS getUserProfileChangeWS(
       SharepointClientContext ctx) {  
     try {
-      return new SPUserProfileChangeWS(ctx);
+      SPUserProfileChangeWS profileChange = new SPUserProfileChangeWS(ctx);
+      addFormsAuthenticationCookie(ctx, profileChange);
+      return profileChange;
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING,
           "Unable to create SharePoint User" 
@@ -329,5 +382,49 @@ public class SPClientFactory implements ClientFactory {
       return null;
     }
   }
+  
+  private void addFormsAuthenticationCookie(
+      SharepointClientContext ctx, BaseWS ws) throws Exception {
+    List<String> cookie = getFormsAuthenCookie(ctx.getSiteURL(), ctx);
+    ws.setFormsAuthenticationCookie(cookie);
+  }
+
+
+
+
+  private List<String> getFormsAuthenCookie(
+      String url, SharepointClientContext ctx) throws Exception {
+    String webApp = Util.getWebApp(url);
+    FormsAuthenticationHandler handler;
+    if (authenticationHandlers.containsKey(webApp)) {
+      handler = authenticationHandlers.get(webApp);
+    } else {
+      handler = new FormsAuthenticationHandler(webApp, scheduledExecutor, ctx);
+      handler.start();
+      authenticationHandlers.put(webApp, handler);     
+    }
+    
+    if (!handler.isFormsAuthentication()) {
+      return null;
+    }
+    
+    return handler.getAuthenticationCookies();
+  }
+
+
+
+  @Override
+  public void shutdown() {   
+    scheduledExecutor.shutdown();
+    try {     
+      scheduledExecutor.awaitTermination(10, TimeUnit.SECONDS);
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+    }
+    
+    scheduledExecutor.shutdownNow();  
+    scheduledExecutor = null; 
+  }
+ 
 }
 

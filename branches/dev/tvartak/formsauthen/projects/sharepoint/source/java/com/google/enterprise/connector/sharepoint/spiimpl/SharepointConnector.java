@@ -920,6 +920,7 @@ public class SharepointConnector implements Connector,
   public void shutdown() throws RepositoryException {
     LOGGER.info("Shutting down the connector with the name [" + connectorName
         + "]");
+    clientFactory.shutdown();
   }
 
   /*

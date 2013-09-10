@@ -26,10 +26,13 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.AlertsWS;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
+
+import org.apache.axis.transport.http.HTTPConstants;
 
 /**
  * Java Client for calling Alerts.asmx Provides a layer to talk to the Alerts
@@ -102,6 +105,20 @@ public class SPAlertsWS implements AlertsWS {
    * @throws RemoteException
    */
   public AlertInfo getAlerts() throws RemoteException {
+    setCookie();
     return stub.getAlerts();
+  }
+
+  private List<String> cookie;
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }
