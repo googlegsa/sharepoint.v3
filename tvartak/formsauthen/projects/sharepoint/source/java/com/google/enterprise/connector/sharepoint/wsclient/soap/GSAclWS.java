@@ -27,10 +27,13 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.AclWS;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
+
+import org.apache.axis.transport.http.HTTPConstants;
 
 /**
  * Java Client for calling GssAcl.asmx web service. Provides a layer to talk to
@@ -43,6 +46,7 @@ public class GSAclWS implements AclWS{
   private GssAclMonitorSoap_BindingStub stub = null;
   private final Logger LOGGER = Logger.getLogger(GSAclWS.class.getName());
   private boolean supportsDenyAcls = false;
+  private List<String> cookie;
 
   /**
    * @param siteurl siteurl to be used for constructing endpoints.
@@ -97,6 +101,7 @@ public class GSAclWS implements AclWS{
    */
   public GssGetAclChangesSinceTokenResult getAclChangesSinceToken(
       String token, String nextToken) throws RemoteException {
+    setCookie();
     return stub.getAclChangesSinceToken(token, nextToken);
   }
 
@@ -112,6 +117,7 @@ public class GSAclWS implements AclWS{
   public GssGetListItemsWithInheritingRoleAssignments 
       getListItemsWithInheritingRoleAssignments(String listGuid,
       int batchHint, int lastItemId) throws RemoteException {
+    setCookie();
     return stub.getListItemsWithInheritingRoleAssignments(listGuid, 
         batchHint, lastItemId);
   }
@@ -126,6 +132,7 @@ public class GSAclWS implements AclWS{
    */
   public String[] getListsWithInheritingRoleAssignments()
       throws RemoteException {
+    setCookie();   
     return stub.getListsWithInheritingRoleAssignments();
   }
 
@@ -139,6 +146,7 @@ public class GSAclWS implements AclWS{
    */
   public GssResolveSPGroupResult resolveSPGroupInBatch(
       String[] groupIds, int batchSize) throws RemoteException {
+    setCookie();
     return stub.resolveSPGroupInBatch(groupIds, batchSize);
   }
   
@@ -147,6 +155,7 @@ public class GSAclWS implements AclWS{
    * checking the Web Service connectivity
    */
   public void checkConnectivity() throws RemoteException {
+    setCookie();
     stub.checkConnectivity();
   }
 
@@ -165,6 +174,7 @@ public class GSAclWS implements AclWS{
   public GssGetAclForUrlsResult getAclForUrlsUsingInheritance(
       String[] urls, boolean useInheritance, boolean includePolicyAcls,
       int largeAclThreshold, boolean metaUrlFeed) throws RemoteException {
+    setCookie();
     return stub.getAclForUrlsUsingInheritance(urls, useInheritance,
         includePolicyAcls, largeAclThreshold, metaUrlFeed);
   }
@@ -175,6 +185,19 @@ public class GSAclWS implements AclWS{
    */
   public GssGetAclForUrlsResult getAclForWebApplicationPolicy()
       throws Exception {
+    setCookie();
     return stub.getAclForWebApplicationPolicy();
+  }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }

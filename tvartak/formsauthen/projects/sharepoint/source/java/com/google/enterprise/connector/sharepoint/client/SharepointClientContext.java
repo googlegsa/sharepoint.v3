@@ -709,12 +709,14 @@ public class SharepointClientContext implements Cloneable {
     }
     
     try {
-      int responseCode = clientFactory.checkConnectivity(method, credentials);
+      int responseCode =
+          clientFactory.checkConnectivity(method, credentials, this);
       if (responseCode == 401 && ntlm && !kerberos) {
         LOGGER.log(Level.FINE, "Trying with HTTP Basic.");
         username = Util.getUserNameWithDomain(this.username, domain);
         credentials = new UsernamePasswordCredentials(username, password);
-        responseCode = clientFactory.checkConnectivity(method, credentials);
+        responseCode =
+            clientFactory.checkConnectivity(method, credentials, this);
       }
       if (responseCode != 200) {
         LOGGER.log(Level.WARNING, "responseCode: " + responseCode);

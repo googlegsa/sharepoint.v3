@@ -26,9 +26,11 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfile2003WS;
 
 import org.apache.axis.AxisFault;
+import org.apache.axis.transport.http.HTTPConstants;
 
 import java.rmi.RemoteException;
 import java.text.Collator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -124,6 +126,20 @@ public class SPUserProfileWS implements UserProfile2003WS {
    */
   public GetUserProfileByIndexResult getUserProfileByIndex(int index)
       throws RemoteException {
+    setCookie();
     return stub.getUserProfileByIndex(index);
+  }
+
+  private List<String> cookie;
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }

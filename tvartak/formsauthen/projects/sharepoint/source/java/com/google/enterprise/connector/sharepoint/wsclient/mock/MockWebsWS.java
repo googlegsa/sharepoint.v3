@@ -24,6 +24,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
 import java.util.logging.Logger;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class MockWebsWS implements WebsWS {
@@ -90,5 +91,9 @@ public class MockWebsWS implements WebsWS {
   @Override
   public GetWebResponseGetWebResult getWeb(final String webURL) {
     return new GetWebResponseGetWebResult();
+  }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
   }
 }

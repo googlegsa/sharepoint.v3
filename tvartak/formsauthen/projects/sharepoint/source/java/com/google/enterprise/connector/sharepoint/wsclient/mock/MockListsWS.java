@@ -98,4 +98,8 @@ public class MockListsWS implements ListsWS {
       Folder currentFolder) {
     return Collections.emptyList();
   }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+  }
 }

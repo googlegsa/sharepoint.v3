@@ -77,4 +77,8 @@ public class MockSiteDataWS implements SiteDataWS {
   public _sWebMetadataHolder getSiteData() throws RemoteException {
     return null;
   }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+  }
 }

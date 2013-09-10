@@ -108,7 +108,7 @@ public interface ClientFactory {
    * @throws IOException
    */
   public int checkConnectivity(HttpMethodBase method,
-      Credentials credentials) throws IOException;
+      Credentials credentials, SharepointClientContext ctx) throws IOException;
 
   /**
    * Gets the header for a previous executed request to checkConnectivity.
@@ -118,4 +118,9 @@ public interface ClientFactory {
    * @return the value of the header if it exists; null otherwise
    */
   public String getResponseHeader(HttpMethodBase method, String headerName);
+  
+  /**
+   * Method to release resources held by client factory.
+   */
+  public void shutdown();
 }

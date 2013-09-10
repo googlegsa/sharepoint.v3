@@ -24,6 +24,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDiscoveryW
 import java.util.logging.Logger;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class MockSiteDiscoveryWS implements SiteDiscoveryWS {
@@ -113,5 +114,9 @@ public class MockSiteDiscoveryWS implements SiteDiscoveryWS {
    */
   public ListCrawlInfo[] getListCrawlInfo(String[] listGuids) {
     return new ListCrawlInfo[0];
+  }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {   
   }
 }

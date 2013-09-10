@@ -27,10 +27,13 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BulkAuthorizationWS;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
+
+import org.apache.axis.transport.http.HTTPConstants;
 
 /**
  * Java Client for calling GSBulkAuthorization.asmx. Provides a layer to talk to
@@ -42,6 +45,7 @@ import javax.xml.rpc.ServiceException;
 public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
   private final Logger LOGGER = Logger.getLogger(GSBulkAuthorizationWS.class.getName());
   private SharepointClientContext sharepointClientContext;
+  private List<String> cookie;
   private BulkAuthorizationSoap_BindingStub stub = null;
   private String endpoint;
 
@@ -112,6 +116,7 @@ public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
    */
   public AuthDataPacket[] authorize(final AuthDataPacket[] authDataPacketArray,
       final String userId) throws RemoteException {
+    setCookie();
     ArrayOfAuthDataPacketHolder arrayOfAuthDataPacketHolder = 
         new ArrayOfAuthDataPacketHolder(authDataPacketArray);
     stub.authorize(arrayOfAuthDataPacketHolder, userId);
@@ -125,12 +130,26 @@ public class GSBulkAuthorizationWS implements BulkAuthorizationWS {
    *         failure.
    */
   public String checkConnectivity() throws RemoteException {
+    setCookie();
     return stub.checkConnectivity();
   }
 
   @Override
   public UserRoleMembership getUserRoleMembership(String membership,
       String userName, String password) throws RemoteException {
+    setCookie();
     return stub.getUserRoleMembership(membership, userName, password);
+  }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }

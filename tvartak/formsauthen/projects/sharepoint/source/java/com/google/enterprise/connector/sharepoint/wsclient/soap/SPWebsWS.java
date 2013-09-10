@@ -25,10 +25,13 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.WebsWS;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
+
+import org.apache.axis.transport.http.HTTPConstants;
 
 /**
  * Java Client for calling Webs.asmx Provides a layer to talk to the Webs Web
@@ -102,6 +105,7 @@ public class SPWebsWS implements WebsWS {
    */
   public GetWebCollectionResponseGetWebCollectionResult getWebCollection()
       throws RemoteException {
+    setCookie();
     return stub.getWebCollection();
   }
   
@@ -113,6 +117,7 @@ public class SPWebsWS implements WebsWS {
    * @throws RemoteException
    */
   public String webUrlFromPageUrl(String pageUrl) throws RemoteException {
+    setCookie();
     return stub.webUrlFromPageUrl(pageUrl);
   }
 
@@ -125,6 +130,20 @@ public class SPWebsWS implements WebsWS {
    */
   public GetWebResponseGetWebResult getWeb(final String webURL)
       throws RemoteException {
+    setCookie();
     return stub.getWeb(webURL);
+  }
+
+  private List<String> cookie;
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }

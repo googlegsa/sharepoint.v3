@@ -65,4 +65,9 @@ public class MockAlertsWS implements AlertsWS {
   public AlertInfo getAlerts() {
     return null;
   }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    
+  }
 }

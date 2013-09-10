@@ -130,4 +130,8 @@ public class MockAclWS implements AclWS {
       throws Exception {
     return null;
   }
+
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+  }
 }

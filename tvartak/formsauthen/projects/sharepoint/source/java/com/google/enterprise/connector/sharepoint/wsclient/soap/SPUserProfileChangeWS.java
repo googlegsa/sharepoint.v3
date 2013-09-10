@@ -26,15 +26,19 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.wsclient.client.UserProfileChangeWS;
 
 import java.rmi.RemoteException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.rpc.ServiceException;
 
+import org.apache.axis.transport.http.HTTPConstants;
+
 public class SPUserProfileChangeWS implements UserProfileChangeWS {
   private final Logger LOGGER = Logger.getLogger(
       SPUserProfileChangeWS.class.getName());
   private UserProfileChangeServiceSoap_BindingStub stub;
+  private List<String> authenticationCookies;
 
   public SPUserProfileChangeWS(SharepointClientContext 
       inSharepointClientContext) throws SharepointException {
@@ -79,11 +83,26 @@ public class SPUserProfileChangeWS implements UserProfileChangeWS {
   @Override
   public UserProfileChangeDataContainer getChanges(String changeToken,
       UserProfileChangeQuery changeQuery) throws RemoteException {
+    setCookie();
     return stub.getChanges(changeToken, changeQuery);
   }
 
   @Override
   public String getCurrentChangeToken() throws RemoteException {
+    setCookie();
     return stub.getCurrentChangeToken();
+  }
+
+  private List<String> cookie;
+  @Override
+  public void setFormsAuthenticationCookie(List<String> cookie) {
+    this.cookie = cookie;
+  }
+  
+  private void setCookie() {
+    if (cookie != null) {
+      stub._setProperty(HTTPConstants.HEADER_COOKIE, cookie.get(0));
+      stub.setMaintainSession(true);
+    }
   }
 }

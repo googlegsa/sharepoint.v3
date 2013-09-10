@@ -134,6 +134,7 @@ public class SPConstants {
   public static final String ALERT_SUFFIX_IN_DOCID = "[ALERT]";
 
   // End Point constants
+  public static final String AUTHENTICATION_END_POINT = "/_vti_bin/Authentication.asmx";
   public static final String LISTS_END_POINT = "/_vti_bin/Lists.asmx";
   public static final String WEBSENDPOINT = "/_vti_bin/Webs.asmx";
   public static final String ALERTSENDPOINT = "/_vti_bin/alerts.asmx";

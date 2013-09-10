@@ -111,28 +111,64 @@ public class BulkAuthorization : System.Web.Services.WebService
         List<String> scRoles = new List<String>();
         scRoles.Add(userRoles.UserName);
 
-        if (Roles.Enabled)
+        if (Roles.Providers != null)
+        {
+            foreach (RoleProvider rp in Roles.Providers)
+            {
+                userRoles.AddLogs(String.Format("Role Provider {0} is available", rp.Name));
+            }
+        }
+        else
+        {
+            userRoles.AddLogs("Role Provider collection is empty!!!.");
+        }
+        
+        if (Roles.Enabled && Roles.Provider != null)
         {
             try
             {
+               
+                
                 userRoles.RoleProvider = Roles.Provider.Name;
+                userRoles.AddLogs(String.Format("Using Role Provider {0}", userRoles.RoleProvider));
+                String[] rolesForUser = Roles.GetRolesForUser(userName);
 
-                foreach (String role in Roles.GetRolesForUser(userName))
+                if (rolesForUser != null)
                 {
-                    scRoles.Add(String.Format("{0}:{1}", userRoles.RoleProvider, role));
+                    foreach (String role in rolesForUser)
+                    {
+                        scRoles.Add(String.Format("{0}:{1}", userRoles.RoleProvider, role));
+                    }
+                }
+                else
+                {
+                    userRoles.AddLogs(String.Format("No roles for User [{0}] under Role Provider [{1}]", userName, userRoles.RoleProvider));
+                    
                 }
                
             }
             catch (Exception ex)
             {
-                userRoles.AddLogs(String.Format("Error resolving roles for User [{0}] with Error [{1}]", userName, ex.Message));
+                userRoles.AddLogs(String.Format("Error resolving roles for User [{0}] with Error [{1}] --- Source [{2}]", userName, ex.Message, ex.Source));
                 userRoles.AddLogs(String.Format("Error Stack Trace [{0}]", ex.StackTrace));
+                if (ex.InnerException != null)
+                {
+                    userRoles.AddLogs(String.Format("Inner Exception for User [{0}] with Error [{1}] --- Source [{2}]", userName, ex.InnerException.Message, ex.InnerException.Source));
+                    userRoles.AddLogs(String.Format("Error Stack Trace inner exception [{0}]", ex.InnerException.StackTrace));
+                }
 
             }
         }
         else
         {
-            userRoles.AddLogs("Roles are not enabled on this SharePoint web application.");
+            if (Roles.Provider == null)
+            {
+                userRoles.AddLogs("Role Provider is null!!!.");
+            }
+            else
+            {
+                userRoles.AddLogs("Roles are not enabled on this SharePoint web application.");
+            }
         }
         userRoles.Roles = scRoles.ToArray();
         return userRoles;
