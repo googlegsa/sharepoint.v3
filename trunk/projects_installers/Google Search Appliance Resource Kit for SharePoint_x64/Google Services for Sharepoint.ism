@@ -240,7 +240,7 @@
 		<row><td>SHAREPOINTLOCATION</td><td>NewSignature13</td></row>
 		<row><td>SHAREPOINTLOCATION</td><td>NewSignature16</td></row>
 		<row><td>SP2010</td><td>NewSignature15</td></row>
-		<row><td>SP2013</td><td>NewSignature19</td></row>
+		<row><td>SP2013</td><td>NewSignature113</td></row>
 		<row><td>STSADMPATH</td><td>NewSignature12</td></row>
 		<row><td>STSADMPATH</td><td>NewSignature14</td></row>
 		<row><td>STSADMPATH</td><td>NewSignature18</td></row>
@@ -364,10 +364,10 @@
 		<row><td>AllOtherFiles</td><td>{E3DC3A56-FB97-4725-8BE8-1EC056C3A7D9}</td><td>ISAPI</td><td>8</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASAMLBridge</td><td>{16C89BD7-A563-41F6-9D5B-18F81CE29809}</td><td>SAML_BRIDGE2</td><td>264</td><td/><td>ac.log</td><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASAMLBridgeBin</td><td>{938F3CE5-ADCD-4304-92C4-4B866E220288}</td><td>BIN6</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASearchControl_SP2007</td><td>{557B35B4-53AC-4039-8952-85B0D2135397}</td><td>CONTROLTEMPLATES</td><td>264</td><td>SP2010=""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASearchControl_SP2007</td><td>{557B35B4-53AC-4039-8952-85B0D2135397}</td><td>CONTROLTEMPLATES</td><td>264</td><td>SP2010="" OR SP2013=""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASearchControl_SP2010</td><td>{63872797-1FDC-48C9-86B7-09D99C7F7EB9}</td><td>CONTROLTEMPLATES</td><td>264</td><td>SP2010&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASearchControl_SP2013</td><td>{C264B5AA-B71F-4D1D-90C9-3F09D0259302}</td><td>CONTROLTEMPLATES</td><td>264</td><td>SP2013&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GSASearchResults_SP2007</td><td>{4F8C6252-6B48-4582-A3B5-441B1115875A}</td><td>LAYOUTS</td><td>264</td><td>SP2010=""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GSASearchResults_SP2007</td><td>{4F8C6252-6B48-4582-A3B5-441B1115875A}</td><td>LAYOUTS</td><td>264</td><td>SP2010="" OR SP2013=""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASearchResults_SP2010</td><td>{4AE29CD3-2C2C-4E07-AD49-E704D9A62164}</td><td>LAYOUTS</td><td>264</td><td>SP2010&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASearchResults_SP2013</td><td>{8F34F0DD-DA80-4052-B196-88B3BAD39022}</td><td>LAYOUTS</td><td>264</td><td>SP2013&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSASimulator</td><td>{1F30E299-F3D2-4156-94E6-8B0C36FF4EF6}</td><td>GSA_SIMULATOR2</td><td>264</td><td/><td>gsa.log</td><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -376,12 +376,13 @@
 		<row><td>GSASimulatorForSharePointWebsiteComponent</td><td>{FB9FCD38-D2BE-44E7-AD35-A374E8802B43}</td><td>GSA_RESOURCE_KIT</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GSBTestUtilityFiles</td><td>{50EBD1BE-8D7E-4F28-B0DA-5B8F3767CA25}</td><td>GSA_RESOURCE_KIT</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxComponent</td><td>{5257C98F-3942-4998-96D0-68AF443FC786}</td><td>TEMPLATE</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleSearchBoxComponent_SP2013</td><td>{C42D46D6-6C76-4FDC-ACA6-6C79267CBF9D}</td><td>TEMPLATE</td><td>264</td><td>SP2013&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxFeature</td><td>{3576DC73-8AE6-4834-AF33-B9711A61F9FE}</td><td>GSAFEATURE</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleServicesComponent</td><td>{601174E2-AC37-40E1-890B-02508399248C}</td><td>ISAPI</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleServicesLogComponent</td><td>{3EA1EAE1-DFCA-4307-BFEC-5BDF54DDBDD6}</td><td>TEMPLATE</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleWatermarkImage</td><td>{4B6BDBBA-BFB8-4C89-8C83-06AC527883F1}</td><td>IMAGES</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SAMLBridgeCustomApplication</td><td>{5305E4AC-4758-4EF0-8935-93FD9B16B260}</td><td>SAML_BRIDGE2</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>UnInstallComp</td><td>{6722B1A2-9D7D-4E2A-9E32-3E4FF554DF89}</td><td>INSTALLDIR</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>UnInstallComp</td><td>{6722B1A2-9D7D-4E2A-9E32-3E4FF554DF89}</td><td>INSTALLDIR</td><td>264</td><td>SP2013&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 	</table>
 
 	<table name="Condition">
@@ -1919,6 +1920,7 @@
 		<row><td>GoogleSearchBox</td><td>GSASearchResults_SP2010</td></row>
 		<row><td>GoogleSearchBox</td><td>GSASearchResults_SP2013</td></row>
 		<row><td>GoogleSearchBox</td><td>GoogleSearchBoxComponent</td></row>
+		<row><td>GoogleSearchBox</td><td>GoogleSearchBoxComponent_SP2013</td></row>
 		<row><td>GoogleSearchBox</td><td>GoogleSearchBoxFeature</td></row>
 		<row><td>GoogleSearchBox</td><td>GoogleWatermarkImage</td></row>
 		<row><td>GoogleServicesForSharePoint</td><td>GoogleServicesComponent</td></row>
@@ -1971,6 +1973,7 @@
 		<row><td>authzresponsesoapenvelopesta</td><td>GSASAMLBridge</td><td>AUTHZR~1.XML|AuthzResponseSoapEnvelopeStart.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\AuthzResponseSoapEnvelopeStart.xml</td><td>1</td><td/></row>
 		<row><td>cleanupstalewebsites.exe</td><td>GSBTestUtilityFiles</td><td>CLEANU~1.EXE|CleanUpStaleWebSites.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\CleanUpStaleWebSites\bin\Release\CleanUpStaleWebSites.exe</td><td>1</td><td/></row>
 		<row><td>configuration_wizard.exe</td><td>GoogleSearchBoxComponent</td><td>CONFIG~1.EXE|Configuration Wizard.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\GSBControlPanel\bin\Release\Configuration Wizard.exe</td><td>1</td><td/></row>
+		<row><td>configuration_wizard.exe.con</td><td>GoogleSearchBoxComponent_SP2013</td><td>CONFIG~1.CON|Configuration Wizard.exe.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\GSBControlPanel\bin\Release\Configuration Wizard.exe.config</td><td>1</td><td/></row>
 		<row><td>cookiecracker.aspx</td><td>GSASimulator</td><td>COOKIE~1.ASP|CookieCracker.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\CookieCracker.aspx</td><td>1</td><td/></row>
 		<row><td>cookieprovider.aspx</td><td>GSASimulator</td><td>COOKIE~1.ASP|CookieProvider.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\CookieProvider.aspx</td><td>1</td><td/></row>
 		<row><td>cookieredirect.aspx</td><td>GSASimulator</td><td>COOKIE~1.ASP|CookieRedirect.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\CookieRedirect.aspx</td><td>1</td><td/></row>
@@ -2002,6 +2005,7 @@
 		<row><td>gsasearchresults.aspx1</td><td>GSASearchResults_SP2007</td><td>GSASEA~1.ASP|GSASearchresults.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSASearchresults.aspx</td><td>1</td><td/></row>
 		<row><td>gsasearchresults.aspx2</td><td>GSASearchResults_SP2013</td><td>GSASEA~1.ASP|GSASearchresults.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSASearchresults.aspx</td><td>1</td><td/></row>
 		<row><td>gsbcleanupgsasettings.exe</td><td>GoogleSearchBoxComponent</td><td>GSBCLE~1.EXE|GSBCleanUpGSASettings.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe</td><td>1</td><td/></row>
+		<row><td>gsbcleanupgsasettings.exe.co</td><td>GoogleSearchBoxComponent_SP2013</td><td>GSBCLE~1.CON|GSBCleanUpGSASettings.exe.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\GSBCleanUpGSASettings\bin\Release\GSBCleanUpGSASettings.exe.config</td><td>1</td><td/></row>
 		<row><td>gsbulkauthorization.asmx</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASM|GSBulkAuthorization.asmx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects\sharepoint\source\net\GSBulkAuthorization.asmx</td><td>1</td><td/></row>
 		<row><td>gsbulkauthorizationdisco.asp</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASP|GSBulkAuthorizationdisco.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects\sharepoint\source\net\GSBulkAuthorizationdisco.aspx</td><td>1</td><td/></row>
 		<row><td>gsbulkauthorizationwsdl.aspx</td><td>GoogleServicesComponent</td><td>GSBULK~1.ASP|GSBulkAuthorizationwsdl.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects\sharepoint\source\net\GSBulkAuthorizationwsdl.aspx</td><td>1</td><td/></row>
@@ -2316,6 +2320,7 @@
 		<row><td>GSASimulatorForSharePointWebsiteComponent</td><td/><td/><td>_78918649_7E75_4989_8911_43422342D69C_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GSBTestUtilityFiles</td><td/><td/><td>_E5793E9F_A535_4163_BCC0_2E1D9157357A_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleSearchBoxComponent</td><td/><td/><td>_AACDA452_86F8_4EF4_B258_7780D719D84C_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>GoogleSearchBoxComponent_SP2013</td><td/><td/><td>_449514B2_48C1_4A9E_BE4B_E6228542496E_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleSearchBoxFeature</td><td/><td/><td>_AEDEE79F_9B2A_449D_9073_B18F457FC4B9_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleServicesComponent</td><td/><td/><td>_C90DA180_B09E_48B6_B0F5_A3B88E8D23A2_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleServicesLogComponent</td><td/><td/><td>_0050052E_4915_4836_AEAE_608294DA04E3_FILTER</td><td/><td/><td/><td/></row>
@@ -4248,7 +4253,7 @@
 		<row><td>ID_STRING41</td><td>1033</td><td>original.txt</td><td>0</td><td/><td>1025319659</td></row>
 		<row><td>ID_STRING42</td><td>1033</td><td>moved.txt</td><td>0</td><td/><td>1025319659</td></row>
 		<row><td>ID_STRING43</td><td>1033</td><td>original.txt</td><td>0</td><td/><td>1025321707</td></row>
-		<row><td>ID_STRING44</td><td>1033</td><td>moved.txt</td><td>0</td><td/><td>1025321707</td></row>
+		<row><td>ID_STRING44</td><td>1033</td><td>Detected installations</td><td>0</td><td/><td>-467560053</td></row>
 		<row><td>ID_STRING45</td><td>1033</td><td>searchresults.aspx</td><td>0</td><td/><td>1025338443</td></row>
 		<row><td>ID_STRING46</td><td>1033</td><td>searchresults.aspx.backup</td><td>0</td><td/><td>1025320203</td></row>
 		<row><td>ID_STRING47</td><td>1033</td><td>searchresults.aspx.new</td><td>0</td><td/><td>1025311883</td></row>
@@ -4330,7 +4335,21 @@
 		<row><td>NEW_STRING22</td><td>1033</td><td>fdfgfdgdf</td><td>0</td><td/><td>-711073267</td></row>
 		<row><td>NEW_STRING23</td><td>1033</td><td>Text</td><td>0</td><td/><td>-711103635</td></row>
 		<row><td>NEW_STRING24</td><td>1033</td><td>dssdfdsfsfs</td><td>0</td><td/><td>-711105619</td></row>
+		<row><td>NEW_STRING25</td><td>1033</td><td>[SP2010]</td><td>0</td><td/><td>-467543701</td></row>
+		<row><td>NEW_STRING26</td><td>1033</td><td>Text</td><td>0</td><td/><td>-467598997</td></row>
+		<row><td>NEW_STRING27</td><td>1033</td><td>SP2010</td><td>0</td><td/><td>-467562133</td></row>
+		<row><td>NEW_STRING28</td><td>1033</td><td>SP2013</td><td>0</td><td/><td>-467594869</td></row>
+		<row><td>NEW_STRING29</td><td>1033</td><td>[SP2013]</td><td>0</td><td/><td>-467570293</td></row>
 		<row><td>NEW_STRING3</td><td>1033</td><td>Google Search Appliance Resource Kit for SharePoint 3.2.0</td><td>0</td><td/><td>1302290768</td></row>
+		<row><td>NEW_STRING30</td><td>1033</td><td>ASPNETKEY</td><td>0</td><td/><td>-467598773</td></row>
+		<row><td>NEW_STRING31</td><td>1033</td><td>[ASPNETKEY]</td><td>0</td><td/><td>-467547605</td></row>
+		<row><td>NEW_STRING32</td><td>1033</td><td>[SHAREPOINTLOCATION]</td><td>0</td><td/><td>-467551253</td></row>
+		<row><td>NEW_STRING33</td><td>1033</td><td>SHAREPOINTLOCATION</td><td>0</td><td/><td>-467567637</td></row>
+		<row><td>NEW_STRING34</td><td>1033</td><td>SP2013</td><td>0</td><td/><td>-467575669</td></row>
+		<row><td>NEW_STRING35</td><td>1033</td><td>[SP2013]</td><td>0</td><td/><td>-467561333</td></row>
+		<row><td>NEW_STRING36</td><td>1033</td><td>[SP2013]</td><td>0</td><td/><td>-467556853</td></row>
+		<row><td>NEW_STRING37</td><td>1033</td><td>SP2010</td><td>0</td><td/><td>-467579890</td></row>
+		<row><td>NEW_STRING38</td><td>1033</td><td>[SP2010]</td><td>0</td><td/><td>-467567602</td></row>
 		<row><td>NEW_STRING4</td><td>1033</td><td>&amp;OK</td><td>0</td><td/><td>1293784946</td></row>
 		<row><td>NEW_STRING5</td><td>1033</td><td>&amp;Cancel</td><td>0</td><td/><td>1293795347</td></row>
 		<row><td>NEW_STRING6</td><td>1033</td><td>Google SAML Bridge port number</td><td>0</td><td/><td>765307597</td></row>
@@ -4623,43 +4642,43 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<col def="I2">Sequence</col>
 		<col def="S255">ISComments</col>
 		<col def="I4">ISAttributes</col>
-		<row><td>AppSearch</td><td/><td>400</td><td>AppSearch</td><td/></row>
-		<row><td>CCPSearch</td><td>CCP_TEST</td><td>500</td><td>CCPSearch</td><td/></row>
-		<row><td>CancelSetup</td><td>CANCELINSTALL = 1</td><td>1221</td><td/><td/></row>
-		<row><td>CheckASPNET</td><td>Not Installed</td><td>1219</td><td/><td/></row>
-		<row><td>CheckIISServiceRunning</td><td>Not Installed</td><td>1218</td><td/><td/></row>
-		<row><td>CheckIISVersion</td><td>Not Installed</td><td>1216</td><td/><td/></row>
-		<row><td>CheckPrevGssFound</td><td>(Not Installed and &amp;GoogleServicesForSharePoint=3)</td><td>1220</td><td/><td/></row>
-		<row><td>CostFinalize</td><td/><td>1000</td><td>CostFinalize</td><td/></row>
-		<row><td>CostInitialize</td><td/><td>800</td><td>CostInitialize</td><td/></row>
-		<row><td>ExecuteAction</td><td/><td>1300</td><td>ExecuteAction</td><td/></row>
-		<row><td>FileCost</td><td/><td>900</td><td>FileCost</td><td/></row>
-		<row><td>FindRelatedProducts</td><td/><td>430</td><td>FindRelatedProducts</td><td/></row>
-		<row><td>GSASimulatorForSharePoint</td><td>(Not Installed  and &amp;GSASimulatorForSharePoint=3) or (Installed  and &amp;GSASimulatorForSharePoint=3)</td><td>1235</td><td/><td/></row>
+		<row><td>AppSearch</td><td/><td>6</td><td>AppSearch</td><td/></row>
+		<row><td>CCPSearch</td><td>CCP_TEST</td><td>430</td><td>CCPSearch</td><td/></row>
+		<row><td>CancelSetup</td><td>CANCELINSTALL = 1</td><td>1220</td><td/><td/></row>
+		<row><td>CheckASPNET</td><td>Not Installed</td><td>1216</td><td/><td/></row>
+		<row><td>CheckIISServiceRunning</td><td>Not Installed</td><td>1215</td><td/><td/></row>
+		<row><td>CheckIISVersion</td><td>Not Installed</td><td>1212</td><td/><td/></row>
+		<row><td>CheckPrevGssFound</td><td>(Not Installed and &amp;GoogleServicesForSharePoint=3)</td><td>1218</td><td/><td/></row>
+		<row><td>CostFinalize</td><td/><td>980</td><td>CostFinalize</td><td/></row>
+		<row><td>CostInitialize</td><td/><td>600</td><td>CostInitialize</td><td/></row>
+		<row><td>ExecuteAction</td><td/><td>1240</td><td>ExecuteAction</td><td/></row>
+		<row><td>FileCost</td><td/><td>700</td><td>FileCost</td><td/></row>
+		<row><td>FindRelatedProducts</td><td/><td>400</td><td>FindRelatedProducts</td><td/></row>
+		<row><td>GSASimulatorForSharePoint</td><td>(Not Installed  and &amp;GSASimulatorForSharePoint=3) or (Installed  and &amp;GSASimulatorForSharePoint=3)</td><td>1230</td><td/><td/></row>
 		<row><td>GSBLaunchWebAppList</td><td>(Not Installed and &amp;GoogleSearchBox=3) or (Installed and &amp;GoogleSearchBox=3)</td><td>1312</td><td/><td/></row>
 		<row><td>GSSLaunchVerifyInstallation</td><td>(Not Installed and &amp;GoogleServicesForSharePoint=3) or (Installed and &amp;GoogleServicesForSharePoint=3)</td><td>1337</td><td/><td/></row>
-		<row><td>ISPreventDowngrade</td><td>ISFOUNDNEWERPRODUCTVERSION</td><td>450</td><td>ISPreventDowngrade</td><td/></row>
-		<row><td>ISSetAllUsers</td><td>Not Installed</td><td>10</td><td/><td/></row>
-		<row><td>InstallWelcome</td><td>Not Installed</td><td>1212</td><td>InstallWelcome</td><td/></row>
-		<row><td>IsolateComponents</td><td/><td>950</td><td>IsolateComponents</td><td/></row>
-		<row><td>LaunchConditions</td><td>Not Installed</td><td>1215</td><td>LaunchConditions</td><td/></row>
-		<row><td>MaintenanceWelcome</td><td>Installed And Not RESUME And Not Preselected And Not PATCH</td><td>1230</td><td>MaintenanceWelcome</td><td/></row>
-		<row><td>MigrateFeatureStates</td><td/><td>1200</td><td>MigrateFeatureStates</td><td/></row>
-		<row><td>PatchWelcome</td><td>Installed And PATCH And Not IS_MAJOR_UPGRADE</td><td>1205</td><td>Patch Panel</td><td/></row>
-		<row><td>RMCCPSearch</td><td>Not CCP_SUCCESS And CCP_TEST</td><td>600</td><td>RMCCPSearch</td><td/></row>
-		<row><td>ResolveSource</td><td>Not Installed</td><td>990</td><td>ResolveSource</td><td/></row>
+		<row><td>ISPreventDowngrade</td><td>ISFOUNDNEWERPRODUCTVERSION</td><td>420</td><td>ISPreventDowngrade</td><td/></row>
+		<row><td>ISSetAllUsers</td><td>Not Installed</td><td>5</td><td/><td/></row>
+		<row><td>InstallWelcome</td><td>Not Installed</td><td>1200</td><td>InstallWelcome</td><td/></row>
+		<row><td>IsolateComponents</td><td/><td>800</td><td>IsolateComponents</td><td/></row>
+		<row><td>LaunchConditions</td><td>Not Installed</td><td>1205</td><td>LaunchConditions</td><td/></row>
+		<row><td>MaintenanceWelcome</td><td>Installed And Not RESUME And Not Preselected And Not PATCH</td><td>1223</td><td>MaintenanceWelcome</td><td/></row>
+		<row><td>MigrateFeatureStates</td><td/><td>1000</td><td>MigrateFeatureStates</td><td/></row>
+		<row><td>PatchWelcome</td><td>Installed And PATCH And Not IS_MAJOR_UPGRADE</td><td>1100</td><td>Patch Panel</td><td/></row>
+		<row><td>RMCCPSearch</td><td>Not CCP_SUCCESS And CCP_TEST</td><td>450</td><td>RMCCPSearch</td><td/></row>
+		<row><td>ResolveSource</td><td>Not Installed</td><td>970</td><td>ResolveSource</td><td/></row>
 		<row><td>SAMLBridgeLaunchConfigurationForm</td><td>(Not Installed  and &amp;GoogleSAMLBridge=3) or (Installed  and &amp;GoogleSAMLBridge=3)</td><td>1362</td><td/><td/></row>
-		<row><td>SetAllUsersProfileNT</td><td>VersionNT = 400</td><td>970</td><td/><td/></row>
-		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>1100</td><td/><td/></row>
+		<row><td>SetAllUsersProfileNT</td><td>VersionNT = 400</td><td>950</td><td/><td/></row>
+		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>990</td><td/><td/></row>
 		<row><td>SetupCompleteError</td><td/><td>-3</td><td>SetupCompleteError</td><td/></row>
 		<row><td>SetupCompleteSuccess</td><td/><td>-1</td><td>SetupCompleteSuccess</td><td/></row>
-		<row><td>SetupInitialization</td><td/><td>420</td><td>SetupInitialization</td><td/></row>
+		<row><td>SetupInitialization</td><td/><td>10</td><td>SetupInitialization</td><td/></row>
 		<row><td>SetupInterrupted</td><td/><td>-2</td><td>SetupInterrupted</td><td/></row>
-		<row><td>SetupProgress</td><td/><td>1240</td><td>SetupProgress</td><td/></row>
+		<row><td>SetupProgress</td><td/><td>1235</td><td>SetupProgress</td><td/></row>
 		<row><td>SetupResume</td><td>Installed And (RESUME Or Preselected) And Not PATCH</td><td>1222</td><td>SetupResume</td><td/></row>
-		<row><td>ValidateProductID</td><td/><td>700</td><td>ValidateProductID</td><td/></row>
-		<row><td>setAllUsersProfile2K</td><td>VersionNT &gt;= 500</td><td>980</td><td/><td/></row>
-		<row><td>setUserProfileNT</td><td>VersionNT</td><td>960</td><td/><td/></row>
+		<row><td>ValidateProductID</td><td/><td>500</td><td>ValidateProductID</td><td/></row>
+		<row><td>setAllUsersProfile2K</td><td>VersionNT &gt;= 500</td><td>960</td><td/><td/></row>
+		<row><td>setUserProfileNT</td><td>VersionNT</td><td>900</td><td/><td/></row>
 	</table>
 
 	<table name="IsolatedComponent">
@@ -4977,7 +4996,21 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>NewProperty11</td><td>0</td><td/></row>
 		<row><td>NewProperty12</td><td>0</td><td/></row>
 		<row><td>NewProperty13</td><td>0</td><td/></row>
+		<row><td>NewProperty14</td><td>0</td><td/></row>
+		<row><td>NewProperty15</td><td>0</td><td/></row>
+		<row><td>NewProperty16</td><td>0</td><td/></row>
+		<row><td>NewProperty17</td><td>0</td><td/></row>
+		<row><td>NewProperty18</td><td>0</td><td/></row>
+		<row><td>NewProperty19</td><td>0</td><td/></row>
 		<row><td>NewProperty2</td><td>0</td><td/></row>
+		<row><td>NewProperty20</td><td>0</td><td/></row>
+		<row><td>NewProperty21</td><td>0</td><td/></row>
+		<row><td>NewProperty22</td><td>0</td><td/></row>
+		<row><td>NewProperty23</td><td>0</td><td/></row>
+		<row><td>NewProperty24</td><td>0</td><td/></row>
+		<row><td>NewProperty25</td><td>0</td><td/></row>
+		<row><td>NewProperty26</td><td>0</td><td/></row>
+		<row><td>NewProperty27</td><td>0</td><td/></row>
 		<row><td>NewProperty3</td><td>0</td><td/></row>
 		<row><td>NewProperty4</td><td>0</td><td/></row>
 		<row><td>NewProperty5</td><td>0</td><td/></row>
@@ -5028,7 +5061,7 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>SAMLPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
 		<row><td>SHOWLAUNCHPROGRAM</td><td>0</td><td/></row>
 		<row><td>SearchControlOriginalLocation</td><td>C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\</td><td/></row>
-		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;SAML_BRIDGE3;GSA_RESOURCE_KIT;SHAREPOINTLOCATION;STSADMPATH;SP2010;ASPNETKEY;SHAREPOINTLOCATION;STSADMPATH;SHAREPOINTLOCATION;STSADMPATH;SP2013;GSS;PREVGSSFOUND;PREVGSSFOUND;PREVGSSFOUND</td><td/></row>
+		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;SAML_BRIDGE3;GSA_RESOURCE_KIT;SHAREPOINTLOCATION;STSADMPATH;ASPNETKEY;SHAREPOINTLOCATION;STSADMPATH;SHAREPOINTLOCATION;STSADMPATH;GSS;PREVGSSFOUND;PREVGSSFOUND;PREVGSSFOUND;SP2013;SP2010</td><td/></row>
 		<row><td>SetupType</td><td>Typical</td><td/></row>
 		<row><td>TESTUTILITYPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
 		<row><td>UpgradeCode</td><td>{A9A5C3C2-1F45-47DA-877B-66078B3EA554}</td><td/></row>
@@ -5080,11 +5113,11 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<col def="I2">Type</col>
 		<row><td>NewSignature1</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\12.0</td><td>Location</td><td>18</td></row>
 		<row><td>NewSignature11</td><td>2</td><td>SOFTWARE\Microsoft\INetStp</td><td>PathWWWRoot</td><td>2</td></row>
+		<row><td>NewSignature113</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\15.0</td><td>Location</td><td>16</td></row>
 		<row><td>NewSignature13</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\14.0</td><td>Location</td><td>18</td></row>
-		<row><td>NewSignature15</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\14.0</td><td>Location</td><td>18</td></row>
+		<row><td>NewSignature15</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\14.0</td><td>Location</td><td>16</td></row>
 		<row><td>NewSignature16</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\15.0</td><td>Location</td><td>16</td></row>
 		<row><td>NewSignature17</td><td>2</td><td>Software\Microsoft\ASP.NET</td><td>RootVer</td><td>18</td></row>
-		<row><td>NewSignature19</td><td>2</td><td>SOFTWARE\Microsoft\Shared Tools\Web Server Extensions\15.0</td><td>Location</td><td>17</td></row>
 		<row><td>_IISROOTFOLDER</td><td>2</td><td>Software\Microsoft\InetStp</td><td>PathWWWRoot</td><td>16</td></row>
 		<row><td>_IIS_VERSION</td><td>2</td><td>SYSTEM\CurrentControlSet\Services\W3SVC\Parameters</td><td>MajorVersion</td><td>18</td></row>
 	</table>
@@ -5225,7 +5258,6 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>NewSignature12</td><td>stsadm.exe</td><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>NewSignature14</td><td>stsadm.exe</td><td/><td/><td/><td/><td/><td/><td/></row>
 		<row><td>NewSignature18</td><td>stsadm.exe</td><td/><td/><td/><td/><td/><td/><td/></row>
-		<row><td>NewSignature19</td><td>FileName</td><td/><td/><td/><td/><td/><td/><td/></row>
 	</table>
 
 	<table name="TextStyle">
