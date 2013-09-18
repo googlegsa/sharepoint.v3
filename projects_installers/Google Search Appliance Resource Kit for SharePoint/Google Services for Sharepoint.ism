@@ -4456,7 +4456,6 @@
 		<row><td>InstallServices</td><td>VersionNT</td><td>5800</td><td>InstallServices</td><td/></row>
 		<row><td>InstallValidate</td><td/><td>1400</td><td>InstallValidate</td><td/></row>
 		<row><td>IsolateComponents</td><td/><td>950</td><td>IsolateComponents</td><td/></row>
-		<row><td>LaunchConditions</td><td>Not Installed</td><td>410</td><td>LaunchConditions</td><td/></row>
 		<row><td>MigrateFeatureStates</td><td/><td>1010</td><td>MigrateFeatureStates</td><td/></row>
 		<row><td>MsiConfigureServices</td><td>VersionMsi &gt;= "5.00"</td><td>5801</td><td>MSI5 MsiConfigureServices</td><td/></row>
 		<row><td>MsiPublishAssemblies</td><td/><td>6250</td><td>MsiPublishAssemblies</td><td/></row>
