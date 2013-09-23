@@ -21,6 +21,7 @@ export prototype GetASPNETKEY(HWND);
 export prototype GetIISServiceState(HWND);
 export prototype GetIISVersion(HWND);
 export prototype GetPrevGSSFound(HWND);
+export prototype SetWebServerExtensions14(HWND);
 
 // To Do:  Declare global variables, define constants, and prototype user-
 //         defined and DLL functions here.
@@ -141,5 +142,18 @@ begin
 			//populate CANCELINSTALL
 			MsiSetProperty(hMSI, "CANCELINSTALL", "1");
 		endif;
+	endif;
+end;
+
+function SetWebServerExtensions14(hMSI)
+	STRING szSP2013, szSHAREPOINTLOCATION;
+	NUMBER nvSize, nvLen, nResult;
+begin
+	nvSize = 256;
+	MsiGetProperty(ISMSI_HANDLE, "SP2013", szSP2013, nvSize);
+	if (StrLength(szSP2013) > 0) then
+		MsiGetProperty(ISMSI_HANDLE, "SHAREPOINTLOCATION", szSHAREPOINTLOCATION, nvSize);
+		StrReplace(szSHAREPOINTLOCATION,"15", "14", StrLength(szSHAREPOINTLOCATION) - 3);
+		MsiSetProperty(ISMSI_HANDLE, "WEBSERVEREXTENSIONS14", szSHAREPOINTLOCATION);
 	endif;
 end;

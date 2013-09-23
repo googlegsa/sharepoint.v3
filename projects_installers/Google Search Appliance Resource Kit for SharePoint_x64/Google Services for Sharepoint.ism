@@ -162,7 +162,9 @@
 		<row><td>InstallInitialize</td><td/><td>1500</td><td>InstallInitialize</td><td/></row>
 		<row><td>InstallValidate</td><td/><td>1400</td><td>InstallValidate</td><td/></row>
 		<row><td>ScheduleReboot</td><td>ISSCHEDULEREBOOT</td><td>4010</td><td>ScheduleReboot</td><td/></row>
-		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>1200</td><td/><td/></row>
+		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed) and (SP2013 = "")</td><td>1200</td><td/><td/></row>
+		<row><td>SetInstallDirFromWebServerExtensions14</td><td>SHAREPOINTLOCATION and (Not Installed) and (SP2013 &lt;&gt; "")</td><td>1350</td><td/><td/></row>
+		<row><td>SetWebServerExtensions14</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>1300</td><td/><td/></row>
 	</table>
 
 	<table name="AdminUISequence">
@@ -176,7 +178,9 @@
 		<row><td>CostInitialize</td><td/><td>800</td><td>CostInitialize</td><td/></row>
 		<row><td>ExecuteAction</td><td/><td>1300</td><td>ExecuteAction</td><td/></row>
 		<row><td>FileCost</td><td/><td>900</td><td>FileCost</td><td/></row>
-		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>1005</td><td/><td/></row>
+		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed) and (SP2013 = "")</td><td>1005</td><td/><td/></row>
+		<row><td>SetInstallDirFromWebServerExtensions14</td><td>SHAREPOINTLOCATION and (Not Installed) and (SP2013 &lt;&gt; "")</td><td>1008</td><td/><td/></row>
+		<row><td>SetWebServerExtensions14</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>1007</td><td/><td/></row>
 		<row><td>SetupCompleteError</td><td/><td>-3</td><td>SetupCompleteError</td><td/></row>
 		<row><td>SetupCompleteSuccess</td><td/><td>-1</td><td>SetupCompleteSuccess</td><td/></row>
 		<row><td>SetupInitialization</td><td/><td>50</td><td>SetupInitialization</td><td/></row>
@@ -378,8 +382,8 @@
 		<row><td>GoogleSearchBoxComponent</td><td>{5257C98F-3942-4998-96D0-68AF443FC786}</td><td>TEMPLATE</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxComponent_SP2013</td><td>{C42D46D6-6C76-4FDC-ACA6-6C79267CBF9D}</td><td>TEMPLATE</td><td>264</td><td>SP2013&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxFeature</td><td>{3576DC73-8AE6-4834-AF33-B9711A61F9FE}</td><td>GSAFEATURE</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GoogleServicesComponent</td><td>{601174E2-AC37-40E1-890B-02508399248C}</td><td>ISAPI</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
-		<row><td>GoogleServicesLogComponent</td><td>{3EA1EAE1-DFCA-4307-BFEC-5BDF54DDBDD6}</td><td>TEMPLATE</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleServicesComponent</td><td>{601174E2-AC37-40E1-890B-02508399248C}</td><td>ISAPI1</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleServicesLogComponent</td><td>{3EA1EAE1-DFCA-4307-BFEC-5BDF54DDBDD6}</td><td>TEMPLATE1</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleWatermarkImage</td><td>{4B6BDBBA-BFB8-4C89-8C83-06AC527883F1}</td><td>IMAGES</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>SAMLBridgeCustomApplication</td><td>{5305E4AC-4758-4EF0-8935-93FD9B16B260}</td><td>SAML_BRIDGE2</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>UnInstallComp</td><td>{6722B1A2-9D7D-4E2A-9E32-3E4FF554DF89}</td><td>INSTALLDIR</td><td>264</td><td>SP2013&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -1050,8 +1054,8 @@
 		<row><td>CheckIISVersion</td><td>65</td><td>ISSetup.dll</td><td>f1</td><td>0</td><td/></row>
 		<row><td>CheckPrevGssFound</td><td>1</td><td>ISSetup.dll</td><td>f4</td><td>0</td><td/></row>
 		<row><td>CleanUpStaleSites</td><td>82</td><td>cleanupstalewebsites.exe</td><td>"[GSA_RESOURCE_KIT]"</td><td/><td/></row>
-		<row><td>GSBLaunchWebAppList</td><td>82</td><td>configuration_wizard.exe</td><td>"[INSTALLDIR]"</td><td/><td/></row>
-		<row><td>GSBUnInstallCleanWebConfig</td><td>82</td><td>gsbcleanupgsasettings.exe</td><td>"[INSTALLDIR]"</td><td/><td/></row>
+		<row><td>GSBLaunchWebAppList</td><td>82</td><td>configuration_wizard.exe</td><td>"[SHAREPOINTLOCATION]"</td><td/><td/></row>
+		<row><td>GSBUnInstallCleanWebConfig</td><td>82</td><td>gsbcleanupgsasettings.exe</td><td>"[SHAREPOINTLOCATION]"</td><td/><td/></row>
 		<row><td>GSSLaunchVerifyInstallation</td><td>82</td><td>verify_installation.exe</td><td/><td/><td/></row>
 		<row><td>ISIISCleanup</td><td>1</td><td>binIISHelper</td><td>ISIISCleanup</td><td/><td/></row>
 		<row><td>ISIISCosting</td><td>1</td><td>binIISHelper</td><td>ISIISCosting</td><td/><td/></row>
@@ -1071,6 +1075,8 @@
 		<row><td>SetARPINSTALLLOCATION</td><td>51</td><td>ARPINSTALLLOCATION</td><td>[INSTALLDIR]</td><td/><td/></row>
 		<row><td>SetAllUsersProfileNT</td><td>51</td><td>ALLUSERSPROFILE</td><td>[%SystemRoot]\Profiles\All Users</td><td/><td/></row>
 		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>291</td><td>INSTALLDIR</td><td>[SHAREPOINTLOCATION]</td><td/><td/></row>
+		<row><td>SetInstallDirFromWebServerExtensions14</td><td>35</td><td>INSTALLDIR</td><td>[WEBSERVEREXTENSIONS14]</td><td/><td/></row>
+		<row><td>SetWebServerExtensions14</td><td>1</td><td>ISSetup.dll</td><td>f5</td><td/><td/></row>
 		<row><td>ShowMsiLog</td><td>226</td><td>SystemFolder</td><td>[SystemFolder]notepad.exe "[MsiLogFileLocation]"</td><td/><td>Shows Property-driven MSI Log</td></row>
 		<row><td>setAllUsersProfile2K</td><td>51</td><td>ALLUSERSPROFILE</td><td>[%ALLUSERSPROFILE]</td><td/><td/></row>
 		<row><td>setUserProfileNT</td><td>51</td><td>USERPROFILE</td><td>[%USERPROFILE]</td><td/><td/></row>
@@ -1165,6 +1171,7 @@
 		<row><td>IMAGES</td><td>TEMPLATE</td><td>IMAGES</td><td/><td>0</td><td/></row>
 		<row><td>INSTALLDIR</td><td>CommonFilesFolder</td><td>.</td><td/><td>3</td><td/></row>
 		<row><td>ISAPI</td><td>INSTALLDIR</td><td>ISAPI</td><td/><td>0</td><td/></row>
+		<row><td>ISAPI1</td><td>SHAREPOINTLOCATION</td><td>ISAPI</td><td/><td>0</td><td/></row>
 		<row><td>ISCommonFilesFolder</td><td>CommonFilesFolder</td><td>Instal~1|InstallShield</td><td/><td>0</td><td/></row>
 		<row><td>ISMyCompanyDir</td><td>ProgramFilesFolder</td><td>MYCOMP~1|My Company Name</td><td/><td>0</td><td/></row>
 		<row><td>ISMyProductDir</td><td>ISMyCompanyDir</td><td>MYPROD~1|My Product Name</td><td/><td>0</td><td/></row>
@@ -1183,6 +1190,7 @@
 		<row><td>SAML_BRIDGE</td><td>INSTALLDIR</td><td>SAML-B~1|saml-bridge</td><td/><td>0</td><td/></row>
 		<row><td>SAML_BRIDGE1</td><td>SAML_BRIDGE</td><td>SAML-B~1|saml-bridge</td><td/><td>0</td><td/></row>
 		<row><td>SAML_BRIDGE2</td><td>GSA_RESOURCE_KIT</td><td>SAML-B~1|saml-bridge</td><td/><td>0</td><td/></row>
+		<row><td>SHAREPOINTLOCATION</td><td>TARGETDIR</td><td>.</td><td/><td>0</td><td/></row>
 		<row><td>SendToFolder</td><td>TARGETDIR</td><td>.:SendTo</td><td/><td>3</td><td/></row>
 		<row><td>StartMenuFolder</td><td>TARGETDIR</td><td>.:STARTM~1|Start Menu</td><td/><td>3</td><td/></row>
 		<row><td>StartupFolder</td><td>TARGETDIR</td><td>.:StartUp</td><td/><td>3</td><td/></row>
@@ -1190,6 +1198,7 @@
 		<row><td>SystemFolder64</td><td>TARGETDIR</td><td>SystemFolder64</td><td/><td>0</td><td/></row>
 		<row><td>TARGETDIR</td><td/><td>SourceDir</td><td/><td>0</td><td/></row>
 		<row><td>TEMPLATE</td><td>INSTALLDIR</td><td>TEMPLATE</td><td/><td>0</td><td/></row>
+		<row><td>TEMPLATE1</td><td>SHAREPOINTLOCATION</td><td>TEMPLATE</td><td/><td>0</td><td/></row>
 		<row><td>TempFolder</td><td>TARGETDIR</td><td>.:Temp</td><td/><td>0</td><td/></row>
 		<row><td>TemplateFolder</td><td>TARGETDIR</td><td>.:ShellNew</td><td/><td>0</td><td/></row>
 		<row><td>USERPROFILE</td><td>TARGETDIR</td><td>.:USERPR~1|UserProfile</td><td/><td>0</td><td/></row>
@@ -1897,7 +1906,7 @@
 		<row><td>GSASimulatorForSharePoint</td><td/><td>##ID_STRING69##</td><td>##ID_STRING70##</td><td>8</td><td>1</td><td>GSA_RESOURCE_KIT</td><td>0</td><td/><td/><td/><td/></row>
 		<row><td>GoogleSAMLBridge</td><td>GSASimulatorForSharePoint</td><td>##ID_STRING9##</td><td>##ID_STRING24##</td><td>15</td><td>101</td><td>SAML_BRIDGE2</td><td>0</td><td/><td/><td/><td/></row>
 		<row><td>GoogleSearchBox</td><td/><td>##IDS_FEATURE_DISPLAY_NAME8##</td><td>##ID_STRING11##</td><td>2</td><td>1</td><td>TEMPLATE</td><td>0</td><td/><td>Install Google Search Box for SharePoint components</td><td/><td/></row>
-		<row><td>GoogleServicesForSharePoint</td><td/><td>##ID_STRING8##</td><td>##ID_STRING65##</td><td>4</td><td>1</td><td>ISAPI</td><td>0</td><td/><td/><td/><td/></row>
+		<row><td>GoogleServicesForSharePoint</td><td/><td>##ID_STRING8##</td><td>##ID_STRING65##</td><td>4</td><td>1</td><td>ISAPI1</td><td>0</td><td/><td/><td/><td/></row>
 		<row><td>UnInstallation</td><td/><td>##ID_STRING73##</td><td>##ID_STRING74##</td><td>0</td><td>1</td><td>INSTALLDIR</td><td>16</td><td/><td/><td/><td/></row>
 	</table>
 
@@ -2543,6 +2552,7 @@
 		<row><td>f2</td><td>0</td><td>GetASPNETKEY</td><td/></row>
 		<row><td>f3</td><td>64</td><td>GetIISServiceState</td><td/></row>
 		<row><td>f4</td><td>0</td><td>GetPrevGSSFound</td><td/></row>
+		<row><td>f5</td><td>0</td><td>SetWebServerExtensions14</td><td/></row>
 	</table>
 
 	<table name="ISLanguage">
@@ -4579,8 +4589,10 @@
 		<row><td>SelfUnregModules</td><td/><td>2200</td><td>SelfUnregModules</td><td/></row>
 		<row><td>SetARPINSTALLLOCATION</td><td/><td>1100</td><td>SetARPINSTALLLOCATION</td><td/></row>
 		<row><td>SetAllUsersProfileNT</td><td>VersionNT = 400</td><td>970</td><td/><td/></row>
-		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>1006</td><td/><td/></row>
+		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed) and (SP2013 = "")</td><td>1006</td><td/><td/></row>
+		<row><td>SetInstallDirFromWebServerExtensions14</td><td>SHAREPOINTLOCATION and (Not Installed) and (SP2013 &lt;&gt; "")</td><td>1009</td><td/><td/></row>
 		<row><td>SetODBCFolders</td><td/><td>1200</td><td>SetODBCFolders</td><td/></row>
+		<row><td>SetWebServerExtensions14</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>1008</td><td/><td/></row>
 		<row><td>StartServices</td><td>VersionNT</td><td>5900</td><td>StartServices</td><td/></row>
 		<row><td>StopServices</td><td>VersionNT</td><td>1900</td><td>StopServices</td><td/></row>
 		<row><td>UnpublishComponents</td><td/><td>1700</td><td>UnpublishComponents</td><td/></row>
@@ -4669,7 +4681,9 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>ResolveSource</td><td>Not Installed</td><td>970</td><td>ResolveSource</td><td/></row>
 		<row><td>SAMLBridgeLaunchConfigurationForm</td><td>(Not Installed  and &amp;GoogleSAMLBridge=3) or (Installed  and &amp;GoogleSAMLBridge=3)</td><td>1362</td><td/><td/></row>
 		<row><td>SetAllUsersProfileNT</td><td>VersionNT = 400</td><td>950</td><td/><td/></row>
-		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>990</td><td/><td/></row>
+		<row><td>SetInstallDirFromSharePointRegistrySearch</td><td>SHAREPOINTLOCATION and (Not Installed) and (SP2013 = "")</td><td>990</td><td/><td/></row>
+		<row><td>SetInstallDirFromWebServerExtensions14</td><td>SHAREPOINTLOCATION and (Not Installed) and (SP2013 &lt;&gt; "")</td><td>997</td><td/><td/></row>
+		<row><td>SetWebServerExtensions14</td><td>SHAREPOINTLOCATION and (Not Installed)</td><td>995</td><td/><td/></row>
 		<row><td>SetupCompleteError</td><td/><td>-3</td><td>SetupCompleteError</td><td/></row>
 		<row><td>SetupCompleteSuccess</td><td/><td>-1</td><td>SetupCompleteSuccess</td><td/></row>
 		<row><td>SetupInitialization</td><td/><td>10</td><td>SetupInitialization</td><td/></row>
@@ -5061,10 +5075,11 @@ UwBJAE4ARwBMAEUAXwBNAFMASQBfAEkATQBBAEcARQABAFAAUgBPAEoARQBDAFQAXwBBAFMAUwBJAFMA
 		<row><td>SAMLPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
 		<row><td>SHOWLAUNCHPROGRAM</td><td>0</td><td/></row>
 		<row><td>SearchControlOriginalLocation</td><td>C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\</td><td/></row>
-		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;SAML_BRIDGE3;GSA_RESOURCE_KIT;SHAREPOINTLOCATION;STSADMPATH;ASPNETKEY;SHAREPOINTLOCATION;STSADMPATH;SHAREPOINTLOCATION;STSADMPATH;GSS;PREVGSSFOUND;PREVGSSFOUND;PREVGSSFOUND;SP2013;SP2010</td><td/></row>
+		<row><td>SecureCustomProperties</td><td>ISFOUNDNEWERPRODUCTVERSION;USERNAME;COMPANYNAME;ISX_SERIALNUM;SUPPORTDIR;SHAREPOINTLOCATION;INSTALLDIR;IISROOTFOLDER;DATABASEDIR;USERPROFILE;IIS_VERSION;ALLUSERSPROFILE;TEMPLATE;ISAPI;SAML_BRIDGE;MYTESTUTILITYPORTPROPERTY;LAUNCHPROGRAM;GSBTESTUTILITY;MYSAMLPORTPROPERTY;IISROOTLOCATION;GSASIMULATORFORSHAREPOINTLOCATION;APP_CODE1;BIN;GSASIMULATORFORSHAREPOINT;SAML_BRIDGE2;SAML_BRIDGE3;GSA_RESOURCE_KIT;SHAREPOINTLOCATION;STSADMPATH;ASPNETKEY;SHAREPOINTLOCATION;STSADMPATH;SHAREPOINTLOCATION;STSADMPATH;GSS;PREVGSSFOUND;PREVGSSFOUND;PREVGSSFOUND;SP2013;SP2010;;ISAPI1</td><td/></row>
 		<row><td>SetupType</td><td>Typical</td><td/></row>
 		<row><td>TESTUTILITYPORT</td><td>INSTALLSHIELD_IIS_NEXT_NEW_SITE_NUMBER</td><td/></row>
 		<row><td>UpgradeCode</td><td>{A9A5C3C2-1F45-47DA-877B-66078B3EA554}</td><td/></row>
+		<row><td>WEBSERVEREXTENSIONS14</td><td>0</td><td/></row>
 		<row><td>_IsMaintenance</td><td>Change</td><td/></row>
 		<row><td>_IsSetupTypeMin</td><td>Typical</td><td/></row>
 		<row><td>abcd</td><td>0</td><td/></row>
