@@ -382,6 +382,7 @@
 		<row><td>GoogleSearchBoxComponent</td><td>{5257C98F-3942-4998-96D0-68AF443FC786}</td><td>TEMPLATE</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxComponent_SP2013</td><td>{C42D46D6-6C76-4FDC-ACA6-6C79267CBF9D}</td><td>TEMPLATE</td><td>264</td><td>SP2013&lt;&gt;""</td><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleSearchBoxFeature</td><td>{3576DC73-8AE6-4834-AF33-B9711A61F9FE}</td><td>GSAFEATURE</td><td>264</td><td/><td/><td>17</td><td>This component consists of files not belonging to other components.</td><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
+		<row><td>GoogleSearchBoxXSLFiles</td><td>{9F598A27-78F9-40F2-B4C3-D5CACAE243BE}</td><td>TEMPLATE1</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleServicesComponent</td><td>{601174E2-AC37-40E1-890B-02508399248C}</td><td>ISAPI1</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleServicesLogComponent</td><td>{3EA1EAE1-DFCA-4307-BFEC-5BDF54DDBDD6}</td><td>TEMPLATE1</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
 		<row><td>GoogleWatermarkImage</td><td>{4B6BDBBA-BFB8-4C89-8C83-06AC527883F1}</td><td>IMAGES</td><td>264</td><td/><td/><td>17</td><td/><td/><td/><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td><td>/LogFile=</td></row>
@@ -1931,6 +1932,7 @@
 		<row><td>GoogleSearchBox</td><td>GoogleSearchBoxComponent</td></row>
 		<row><td>GoogleSearchBox</td><td>GoogleSearchBoxComponent_SP2013</td></row>
 		<row><td>GoogleSearchBox</td><td>GoogleSearchBoxFeature</td></row>
+		<row><td>GoogleSearchBox</td><td>GoogleSearchBoxXSLFiles</td></row>
 		<row><td>GoogleSearchBox</td><td>GoogleWatermarkImage</td></row>
 		<row><td>GoogleServicesForSharePoint</td><td>GoogleServicesComponent</td></row>
 		<row><td>GoogleServicesForSharePoint</td><td>GoogleServicesLogComponent</td></row>
@@ -2002,14 +2004,14 @@
 		<row><td>google.gif1</td><td>GSASimulator</td><td>google.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\google.gif</td><td>1</td><td/></row>
 		<row><td>google_custom_search_waterma</td><td>GoogleWatermarkImage</td><td>GOOGLE~1.GIF|google_custom_search_watermark.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\google_custom_search_watermark.gif</td><td>1</td><td/></row>
 		<row><td>gsa.log</td><td>GSASimulator</td><td>gsa.log</td><td>0</td><td/><td/><td>0</td><td>1</td><td>&lt;SAMLSRC&gt;\gsa-simulator\gsa.log</td><td>1</td><td/></row>
-		<row><td>gsa2sp.xsl</td><td>GoogleSearchBoxComponent</td><td>GSA2SP.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\GSA2SP.xsl</td><td>1</td><td/></row>
+		<row><td>gsa2sp.xsl</td><td>GoogleSearchBoxXSLFiles</td><td>GSA2SP.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\GSA2SP.xsl</td><td>1</td><td/></row>
 		<row><td>gsaapplication.master</td><td>GSASearchResults_SP2007</td><td>GSAAPP~1.MAS|GSAapplication.master</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSAapplication.master</td><td>1</td><td/></row>
 		<row><td>gsaforward.aspx</td><td>GSASearchResults_SP2010</td><td>GSAFOR~1.ASP|GSAForward.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSAForward.aspx</td><td>1</td><td/></row>
 		<row><td>gsaforward.aspx1</td><td>GSASearchResults_SP2007</td><td>GSAFOR~1.ASP|GSAForward.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSAForward.aspx</td><td>1</td><td/></row>
 		<row><td>gsaforward.aspx2</td><td>GSASearchResults_SP2013</td><td>GSAFOR~1.ASP|GSAForward.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSAForward.aspx</td><td>1</td><td/></row>
 		<row><td>gsasearcharea.ascx</td><td>GSASearchControl_SP2007</td><td>GSASEA~1.ASC|GSASearchArea.ascx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSASearchArea.ascx</td><td>1</td><td/></row>
 		<row><td>gsasearcharea.ascx1</td><td>GSASearchControl_SP2010</td><td>GSASEA~1.ASC|GSASearchArea.ascx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSASearchArea.ascx</td><td>1</td><td/></row>
-		<row><td>gsasearcharea.ascx2</td><td>GSASearchControl_SP2013</td><td>GSASEA~1.ASC|GSASearchArea.ascx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSASearchArea.ascx</td><td>1</td><td/></row>
+		<row><td>gsasearcharea.ascx2</td><td>GSASearchControl_SP2013</td><td>GSASEA~1.ASC|GSASearchArea.ascx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2013\GSASearchArea.ascx</td><td>1</td><td/></row>
 		<row><td>gsasearchresults.aspx</td><td>GSASearchResults_SP2010</td><td>GSASEA~1.ASP|GSASearchresults.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSASearchresults.aspx</td><td>1</td><td/></row>
 		<row><td>gsasearchresults.aspx1</td><td>GSASearchResults_SP2007</td><td>GSASEA~1.ASP|GSASearchresults.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2007\GSASearchresults.aspx</td><td>1</td><td/></row>
 		<row><td>gsasearchresults.aspx2</td><td>GSASearchResults_SP2013</td><td>GSASEA~1.ASP|GSASearchresults.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\SP2010\GSASearchresults.aspx</td><td>1</td><td/></row>
@@ -2033,6 +2035,9 @@
 		<row><td>post.aspx</td><td>GSASAMLBridge</td><td>POST~1.ASP|Post.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\Post.aspx</td><td>1</td><td/></row>
 		<row><td>postform.html</td><td>GSASAMLBridge</td><td>POSTFO~1.HTM|PostForm.html</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PostForm.html</td><td>1</td><td/></row>
 		<row><td>postresponse.xml</td><td>GSASAMLBridge</td><td>POSTRE~1.XML|PostResponse.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PostResponse.xml</td><td>1</td><td/></row>
+		<row><td>postresponse.xml1</td><td>GSASearchResults_SP2007</td><td>POSTRE~1.XML|PostResponse.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PostResponse.xml</td><td>1</td><td/></row>
+		<row><td>postresponse.xml2</td><td>GSASearchResults_SP2010</td><td>POSTRE~1.XML|PostResponse.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PostResponse.xml</td><td>1</td><td/></row>
+		<row><td>postresponse.xml3</td><td>GSASearchResults_SP2013</td><td>POSTRE~1.XML|PostResponse.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PostResponse.xml</td><td>1</td><td/></row>		
 		<row><td>precompiledapp.config</td><td>GSASAMLBridge</td><td>PRECOM~1.CON|PrecompiledApp.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PrecompiledApp.config</td><td>1</td><td/></row>
 		<row><td>precompiledapp.config1</td><td>GSASimulator</td><td>PRECOM~1.CON|PrecompiledApp.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\PrecompiledApp.config</td><td>1</td><td/></row>
 		<row><td>remove.gif</td><td>GoogleWatermarkImage</td><td>remove.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\remove.gif</td><td>1</td><td/></row>
@@ -2047,7 +2052,7 @@
 		<row><td>search.aspx.resx</td><td>GSASimulator</td><td>SEARCH~1.RES|Search.aspx.resx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\Search.aspx.resx</td><td>1</td><td/></row>
 		<row><td>searchsite.aspx</td><td>GSBTestUtilityFiles</td><td>SEARCH~1.ASP|SearchSite.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\GoogleSearchBoxTestUtility\SearchSite.aspx</td><td>1</td><td/></row>
 		<row><td>searchsite.aspx.cs</td><td>GSBTestUtilityFiles</td><td>SEARCH~1.CS|SearchSite.aspx.cs</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\GoogleSearchBoxTestUtility\SearchSite.aspx.cs</td><td>1</td><td/></row>
-		<row><td>sp_actual.xsl</td><td>GoogleSearchBoxComponent</td><td>SP_ACT~1.XSL|SP_Actual.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\SP_Actual.xsl</td><td>1</td><td/></row>
+		<row><td>sp_actual.xsl</td><td>GoogleSearchBoxXSLFiles</td><td>SP_ACT~1.XSL|SP_Actual.xsl</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\SP_Actual.xsl</td><td>1</td><td/></row>
 		<row><td>verify_installation.exe</td><td>GoogleServicesLogComponent</td><td>VERIFY~1.EXE|Verify Installation.exe</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\CheckConnectivityApp\bin\Release\Verify Installation.exe</td><td>1</td><td/></row>
 		<row><td>viewlogs.bat1</td><td>GoogleServicesLogComponent</td><td>ViewLogs.bat</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\SearchBoxFiles\ViewLogs.bat</td><td>1</td><td/></row>
 		<row><td>warn4.jpg</td><td>GoogleSearchBoxComponent</td><td>warn4.JPG</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;ISProjectFolder&gt;\files\SearchBoxFiles\warn4.JPG</td><td>1</td><td/></row>
@@ -2331,6 +2336,7 @@
 		<row><td>GoogleSearchBoxComponent</td><td/><td/><td>_AACDA452_86F8_4EF4_B258_7780D719D84C_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleSearchBoxComponent_SP2013</td><td/><td/><td>_449514B2_48C1_4A9E_BE4B_E6228542496E_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleSearchBoxFeature</td><td/><td/><td>_AEDEE79F_9B2A_449D_9073_B18F457FC4B9_FILTER</td><td/><td/><td/><td/></row>
+		<row><td>GoogleSearchBoxXSLFiles</td><td/><td/><td>_03FFE1F9_797C_47C9_9A44_A49292622743_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleServicesComponent</td><td/><td/><td>_C90DA180_B09E_48B6_B0F5_A3B88E8D23A2_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleServicesLogComponent</td><td/><td/><td>_0050052E_4915_4836_AEAE_608294DA04E3_FILTER</td><td/><td/><td/><td/></row>
 		<row><td>GoogleWatermarkImage</td><td/><td/><td>_AACDA452_86F8_4EF4_B258_7780D719D84C_FILTER</td><td/><td/><td/><td/></row>

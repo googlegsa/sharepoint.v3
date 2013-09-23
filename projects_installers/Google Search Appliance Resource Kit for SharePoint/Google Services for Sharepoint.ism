@@ -1988,6 +1988,7 @@
 		<row><td>post.aspx</td><td>GSASAMLBridge</td><td>POST~1.ASP|Post.aspx</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\Post.aspx</td><td>1</td><td/></row>
 		<row><td>postform.html</td><td>GSASAMLBridge</td><td>POSTFO~1.HTM|PostForm.html</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PostForm.html</td><td>1</td><td/></row>
 		<row><td>postresponse.xml</td><td>GSASAMLBridge</td><td>POSTRE~1.XML|PostResponse.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PostResponse.xml</td><td>1</td><td/></row>
+		<row><td>postresponse.xml1</td><td>GSASearchResults</td><td>POSTRE~1.XML|PostResponse.xml</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PostResponse.xml</td><td>1</td><td/></row>
 		<row><td>precompiledapp.config</td><td>GSASAMLBridge</td><td>PRECOM~1.CON|PrecompiledApp.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SAMLDIR&gt;\PrecompiledApp.config</td><td>1</td><td/></row>
 		<row><td>precompiledapp.config1</td><td>GSASimulator</td><td>PRECOM~1.CON|PrecompiledApp.config</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;GSASIMDIR&gt;\PrecompiledApp.config</td><td>1</td><td/></row>
 		<row><td>remove.gif</td><td>GoogleWatermarkImage</td><td>remove.gif</td><td>0</td><td/><td/><td/><td>1</td><td>&lt;SHAREPOINTSRC&gt;\projects_google_searchbox\Common Files\remove.gif</td><td>1</td><td/></row>
