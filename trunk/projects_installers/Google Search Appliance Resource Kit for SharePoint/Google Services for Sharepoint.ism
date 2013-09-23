@@ -1873,7 +1873,7 @@
 		<col def="S255">ISComments</col>
 		<col def="S255">ISFeatureCabName</col>
 		<col def="S255">ISProFeatureName</col>
-		<row><td>GSASimulatorForSharePoint</td><td/><td>##ID_STRING69##</td><td>##ID_STRING70##</td><td>8</td><td>1</td><td>GSA_RESOURCE_KIT</td><td>0</td><td/><td/><td/><td/></row>
+		<row><td>GSASimulatorForSharePoint</td><td/><td>##ID_STRING69##</td><td>##ID_STRING70##</td><td>8</td><td>101</td><td>GSA_RESOURCE_KIT</td><td>0</td><td/><td/><td/><td/></row>
 		<row><td>GoogleSAMLBridge</td><td>GSASimulatorForSharePoint</td><td>##ID_STRING9##</td><td>##ID_STRING24##</td><td>15</td><td>101</td><td>SAML_BRIDGE2</td><td>0</td><td/><td/><td/><td/></row>
 		<row><td>GoogleSearchBox</td><td/><td>##IDS_FEATURE_DISPLAY_NAME8##</td><td>##ID_STRING11##</td><td>2</td><td>1</td><td>TEMPLATE</td><td>0</td><td/><td>Install Google Search Box for SharePoint components</td><td/><td/></row>
 		<row><td>GoogleServicesForSharePoint</td><td/><td>##ID_STRING8##</td><td>##ID_STRING65##</td><td>4</td><td>1</td><td>ISAPI</td><td>0</td><td/><td/><td/><td/></row>
