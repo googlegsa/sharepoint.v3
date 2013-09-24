@@ -156,7 +156,7 @@ namespace GSBControlPanel
             gcm.ModifyNode("/configuration/appSettings", "SearchTipsHTMLFileName", SearchTipsHTMLFileName);
 
             // Code for enabling Session State on SharePoint Web Application
-            gcm.ModifyNodeForHttpModule("//httpModules","//modules", "Session", SessionStateModule);
+            gcm.ModifyNodeForHttpModule("//httpModules", "Session", SessionStateModule);
 
             gcm.ModifyNode("/configuration/appSettings", "EnableEmbeddedMode", EnableEmbeddedMode.ToString().ToLower());
             // UseContainerTheme configuartion parameter value should be same as EnableEmbeddedMode
