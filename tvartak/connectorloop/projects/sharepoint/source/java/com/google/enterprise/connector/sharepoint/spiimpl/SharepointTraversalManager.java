@@ -286,13 +286,14 @@ public class SharepointTraversalManager implements TraversalManager,
     // The true flag indicates that we want to check if there are any
     // pending docs from previous crawl cycle
     rsAll = traverse(sharepointClient, true);
+    int docsFound = 0;
     if ((rsAll != null) && (rsAll.size() > 0)) {
       LOGGER.info("Traversal returned " + rsAll.size()
           + " documents discovered in the previous batch traversal(s).");
     } else {
       LOGGER.info("No documents to be sent from previous batch traversal(s). Recrawling...");
       try {
-        sharepointClient.updateGlobalState(globalState);
+       docsFound = sharepointClient.updateGlobalState(globalState);
       } catch (final Exception e) {
         LOGGER.log(Level.SEVERE, "Exception while updating global state.... ", e);
       } catch (final Throwable t) {
@@ -328,7 +329,15 @@ public class SharepointTraversalManager implements TraversalManager,
       sharepointClientContext = (SharepointClientContext) sharepointClientContextOriginal.clone();
     }
     if (rsAll != null) {
-      LOGGER.info("Traversal returned [" + rsAll.size() + "] documents");
+      LOGGER.log(Level.INFO, "UpdateGlobalState was not invoked or it "
+          + "found [{0}] documents. Traversal returned [{1}] documents",
+          new Object[]{docsFound, rsAll.size()});
+      if (docsFound != rsAll.size()) {
+        LOGGER.log(Level.WARNING, "Possible overflow."
+            + " Mismatch between UpdateGlobalState found "
+            + "[{0}] and traverse found [{1}]", 
+            new Object[]{docsFound, rsAll.size()});
+      }
     } else {
       LOGGER.info("Traversal returned [0] documents");
     }
