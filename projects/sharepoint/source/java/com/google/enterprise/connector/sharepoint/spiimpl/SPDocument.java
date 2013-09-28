@@ -647,6 +647,16 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   }
 
   /**
+   * Returns true if none of the ACL properties are set for a document.
+   * Note: calling method should check for "isPushAcls" before calling this.
+   */
+  public boolean isMissingAcls() {
+    return (!isPublicDocument() && parentUrl == null  
+        && aclUsers == null && aclGroups == null
+        && aclDenyUsers == null && aclDenyGroups == null);
+  }
+
+  /**
    * Return a set of metadata that are attached with this instance of
    * SPDocument. CM will then call findProperty for each metadata to construct
    * the feed for this document.
@@ -665,6 +675,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
     }
     if (sharepointClientContext.isPushAcls()) {
+      if (isMissingAcls()) {
+        sharepointClientContext.logToFile(SPConstants.MISSING_ACL_URL_LOG,
+            "Missing ACL : Document [" + this +"] is missing ACL.");
+      }
       names.add(SpiConstants.PROPNAME_ISPUBLIC);
       if (!isWebAppPolicyDoc()) {
         // For regular document parent Url should not be null.
