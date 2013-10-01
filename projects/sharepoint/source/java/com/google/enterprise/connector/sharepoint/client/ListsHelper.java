@@ -478,9 +478,12 @@ public class ListsHelper {
     final Set<String> deletedIDs = new HashSet<String>();
     final Set<String> restoredIDs = new HashSet<String>();
     final Set<String> renamedIDs = new HashSet<String>();
-    // retry is defined as an array instead of simple boolean object
-    // since it needs to be used with inline class.
+
+    // retry and errorFetchingItems are defined as an array instead of 
+    // simple boolean objects since needs to be used with inline class.
     final boolean[] retry = new boolean[1];
+    final boolean[] errorFetchingItems = new boolean[1];
+
     List<SPDocument> requestListItems = null;
     final List<SPDocument> initialRequestListItems = Util.makeWSRequest(
         sharepointClientContext, listsWS,
@@ -493,6 +496,10 @@ public class ListsHelper {
       
       public void onError(final Throwable e) {
         retry[0] = handleListException(list, e);     
+        // setup error flag if there is exception and no retry
+        if (!retry[0]) {
+          errorFetchingItems[0] = true;
+        }
       }
     });    
     if (initialRequestListItems != null && retry[0] == false) {
@@ -513,6 +520,7 @@ public class ListsHelper {
 
             public void onError(final Throwable e) {
               handleListException(list, e);     
+              errorFetchingItems[0] = true;
             }
           });
       if (retryRequestListItems != null) {
@@ -545,6 +553,8 @@ public class ListsHelper {
     if (listItems.size() > 0) {
       LOGGER.info("found " + listItems.size() + " Items in List/Library ["
           + list.getListURL() + "] ");
+    } else if (errorFetchingItems[0]) {
+      LOGGER.log(Level.WARNING, "Error fetching items from List [{0}].", list);
     } else {
       LOGGER.config("No Items found in List/Library [" + list.getListURL()
           + "]");
