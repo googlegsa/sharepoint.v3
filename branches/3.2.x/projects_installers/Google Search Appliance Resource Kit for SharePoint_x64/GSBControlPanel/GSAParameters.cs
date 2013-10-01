@@ -71,22 +71,6 @@ namespace GSBControlPanel
 
         private void btnOk_Click(object sender, EventArgs e)
         {
-            if (!rbPublic.Checked && chkUseSAMLPost.Checked) {
-                if (String.IsNullOrEmpty(txtArtifactConsumerURL.Text.Trim()))
-                {
-                    MessageBox.Show("Please specify valid SAML Assertion Consumer Url", "Validation Error");
-                    txtArtifactConsumerURL.Focus();
-                    return;
-                }
-
-                if (String.IsNullOrEmpty(txtCertName.Text.Trim()))
-                {
-                    MessageBox.Show("Please specify valid certificate friendly name", "Validation Error");
-                    txtCertName.Focus();
-                    return;
-                }
-
-            }
             String GsaUrl = ""; 
             try
             {
@@ -191,13 +175,6 @@ namespace GSBControlPanel
 
             enableFrontendConfiguration(rbGSAFrontEnd.Checked);
             enableDefaultSearchTypeConfiguration(rbPublicAndSecure.Checked);
-            myVal = readAppSettings(gcm, "UseSamlPost");
-            Boolean useSamlPost = myVal.ToLower().Equals("true") && !rbPublic.Checked;
-            chkUseSAMLPost.Checked = useSamlPost;
-            chkUseSAMLPost.Enabled = !rbPublic.Checked;
-            txtCertName.Text = readAppSettings(gcm, "certificate_friendly_name");
-            txtArtifactConsumerURL.Text = readAppSettings(gcm, "assertion_consumer");
-            enableSamlPostConfiguration(useSamlPost);           
             loadComplete = true;
         }
 
@@ -284,9 +261,6 @@ namespace GSBControlPanel
                 gc.DefaultSearchType = "public";
             }
 
-            gc.CertificateName = txtCertName.Text.Trim();
-            gc.UseSamlPost = chkUseSAMLPost.Checked;
-            gc.ArtifactConsumer = txtArtifactConsumerURL.Text.Trim();
             return gc;
         }
 
@@ -359,26 +333,12 @@ namespace GSBControlPanel
             {
                 rbPublicDefaultSearchType.Checked = true;
             }
-            chkUseSAMLPost.Enabled = !rbPublic.Checked;
-            enableSamlPostConfiguration(chkUseSAMLPost.Checked && chkUseSAMLPost.Enabled);            
         }
         
         private void rbPublicAndSecure_CheckedChanged(object sender, EventArgs e)
         {
             enableDefaultSearchTypeConfiguration(rbPublicAndSecure.Checked);
 
-        }
-
-        private void chkUseSAMLPost_CheckedChanged(object sender, EventArgs e)
-        {
-            enableSamlPostConfiguration(chkUseSAMLPost.Checked);
-            
-        }
-
-        private void enableSamlPostConfiguration(Boolean applicable)
-        {
-            txtCertName.Enabled = applicable;
-            txtArtifactConsumerURL.Enabled = applicable;
         }
 
     }

@@ -37,15 +37,14 @@ namespace SAMLConfiguration
             this.btnCancel = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.lblLogLevel = new System.Windows.Forms.Label();
-            this.txtCertName = new System.Windows.Forms.TextBox();
-            this.lblCertName = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(253, 101);
+            this.btnSave.Location = new System.Drawing.Point(400, 59);
+            this.btnSave.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(75, 23);
+            this.btnSave.Size = new System.Drawing.Size(100, 28);
             this.btnSave.TabIndex = 3;
             this.btnSave.Text = "&Save";
             this.toolTip1.SetToolTip(this.btnSave, "Save Search Appliance settings");
@@ -55,29 +54,32 @@ namespace SAMLConfiguration
             // lblArtifactConsumer
             // 
             this.lblArtifactConsumer.AutoSize = true;
-            this.lblArtifactConsumer.Location = new System.Drawing.Point(9, 13);
+            this.lblArtifactConsumer.Location = new System.Drawing.Point(12, 16);
+            this.lblArtifactConsumer.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblArtifactConsumer.Name = "lblArtifactConsumer";
-            this.lblArtifactConsumer.Size = new System.Drawing.Size(90, 13);
+            this.lblArtifactConsumer.Size = new System.Drawing.Size(120, 17);
             this.lblArtifactConsumer.TabIndex = 0;
             this.lblArtifactConsumer.Text = "Artifact Consumer";
             this.toolTip1.SetToolTip(this.lblArtifactConsumer, "SAML Bridge artifact consumer URL");
             // 
             // tbArtifactConsumerURL
             // 
-            this.tbArtifactConsumerURL.Location = new System.Drawing.Point(105, 13);
+            this.tbArtifactConsumerURL.Location = new System.Drawing.Point(140, 16);
+            this.tbArtifactConsumerURL.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.tbArtifactConsumerURL.Name = "tbArtifactConsumerURL";
-            this.tbArtifactConsumerURL.Size = new System.Drawing.Size(369, 20);
+            this.tbArtifactConsumerURL.Size = new System.Drawing.Size(491, 22);
             this.tbArtifactConsumerURL.TabIndex = 1;
-            this.tbArtifactConsumerURL.Text = "https://yourgsa/security-manager/samlassertionconsumer";
+            this.tbArtifactConsumerURL.Text = "https://gsa-host/security-manager/samlassertionconsumer";
             this.toolTip1.SetToolTip(this.tbArtifactConsumerURL, "Enter the SAML Bridge artifact consumer URL");
             this.tbArtifactConsumerURL.TextChanged += new System.EventHandler(this.tbGSALocation_TextChanged);
             // 
             // cbSetLogLevel
             // 
             this.cbSetLogLevel.AutoSize = true;
-            this.cbSetLogLevel.Location = new System.Drawing.Point(105, 76);
+            this.cbSetLogLevel.Location = new System.Drawing.Point(140, 58);
+            this.cbSetLogLevel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.cbSetLogLevel.Name = "cbSetLogLevel";
-            this.cbSetLogLevel.Size = new System.Drawing.Size(114, 17);
+            this.cbSetLogLevel.Size = new System.Drawing.Size(145, 21);
             this.cbSetLogLevel.TabIndex = 2;
             this.cbSetLogLevel.Text = "Enable debug logs";
             this.cbSetLogLevel.UseVisualStyleBackColor = true;
@@ -85,9 +87,10 @@ namespace SAMLConfiguration
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(367, 101);
+            this.btnCancel.Location = new System.Drawing.Point(533, 59);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.Size = new System.Drawing.Size(100, 28);
             this.btnCancel.TabIndex = 4;
             this.btnCancel.Text = "&Cancel";
             this.toolTip1.SetToolTip(this.btnCancel, "Do not save Search Appliance settings");
@@ -97,36 +100,20 @@ namespace SAMLConfiguration
             // lblLogLevel
             // 
             this.lblLogLevel.AutoSize = true;
-            this.lblLogLevel.Location = new System.Drawing.Point(9, 76);
+            this.lblLogLevel.Location = new System.Drawing.Point(13, 59);
+            this.lblLogLevel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblLogLevel.Name = "lblLogLevel";
-            this.lblLogLevel.Size = new System.Drawing.Size(54, 13);
+            this.lblLogLevel.Size = new System.Drawing.Size(70, 17);
             this.lblLogLevel.TabIndex = 0;
             this.lblLogLevel.Text = "Log Level";
-            // 
-            // txtCertName
-            // 
-            this.txtCertName.Location = new System.Drawing.Point(135, 47);
-            this.txtCertName.Name = "txtCertName";
-            this.txtCertName.Size = new System.Drawing.Size(193, 20);
-            this.txtCertName.TabIndex = 7;
-            // 
-            // lblCertName
-            // 
-            this.lblCertName.Location = new System.Drawing.Point(9, 47);
-            this.lblCertName.Name = "lblCertName";
-            this.lblCertName.Size = new System.Drawing.Size(131, 19);
-            this.lblCertName.TabIndex = 6;
-            this.lblCertName.Text = "Certificate Friendly Name";
             // 
             // frmSAMLConfiguration
             // 
             this.AcceptButton = this.btnSave;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(484, 134);
-            this.Controls.Add(this.txtCertName);
-            this.Controls.Add(this.lblCertName);
+            this.ClientSize = new System.Drawing.Size(645, 110);
             this.Controls.Add(this.cbSetLogLevel);
             this.Controls.Add(this.lblLogLevel);
             this.Controls.Add(this.btnCancel);
@@ -135,6 +122,7 @@ namespace SAMLConfiguration
             this.Controls.Add(this.btnSave);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmSAMLConfiguration";
@@ -154,8 +142,6 @@ namespace SAMLConfiguration
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label lblLogLevel;
-        private System.Windows.Forms.TextBox txtCertName;
-        private System.Windows.Forms.Label lblCertName;
     }
 }
 

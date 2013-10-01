@@ -413,20 +413,18 @@ public class AdDbUtil {
         continue;
       }
       Long groupId = getEntityId(Query.FIND_ENTITY, e.getSqlParams());
-      Map<String, Number> dbMemberships = new HashMap<String, Number>();
+      Set<String> dbMemberships = new HashSet<String>();
       for (HashMap<String, Object> dbMembership: 
         select(Query.SELECT_MEMBERSHIPS_BY_DN, e.getSqlParams())) {
-        dbMemberships.put((String) dbMembership.get(AdConstants.DB_MEMBERDN),
-            (Number) dbMembership.get(AdConstants.DB_MEMBERID));
+        dbMemberships.add((String) dbMembership.get(AdConstants.DB_MEMBERDN));
       }
       Set<AdMembership> adMemberships = e.getMembers();
 
       if (LOGGER.isLoggable(Level.FINE)) {
         StringBuffer sb = new StringBuffer("For user [").append(e).append(
-            "] identified " + dbMemberships.size()
-            + " memberships in Database:");
-        for (String memberDn : dbMemberships.keySet()) {
-          sb.append("[").append(memberDn).append("] ");
+            "] identified "+ dbMemberships.size() +" memberships in Database:");
+        for (String dbMembership : dbMemberships) {
+          sb.append("[").append(dbMembership).append("] ");
         }
         sb.append(" and " + adMemberships.size()
             + " memberships in Active Directory:");
@@ -444,19 +442,10 @@ public class AdDbUtil {
 
         int batch = 0;
         for (AdMembership m : adMemberships) {
-          // If member is missing from group in the DB or present but has a 
-          // null memberId
-          if (!dbMemberships.containsKey(m.memberDn) || (m.memberId != null 
-              && dbMemberships.get(m.memberDn) == null)) {
-            if (!dbMemberships.containsKey(m.memberDn)) {
-              LOGGER.finer(
-                  "Adding [" + m.memberDn + "] id [ " + m.memberId
-                  + "] as member to group [" + e + "]");
-            } else {
-              LOGGER.finer(
-                  "Resolving [" + m.memberDn + "] to id [ " + m.memberId
-                  + "] as member of group [" + e + "]");
-            }
+          if (!dbMemberships.contains(m.memberDn)) {
+            LOGGER.finer(
+                "Adding [" + m.memberDn + "] id [ " + m.memberId
+                + "] as member to group [" + e + "]");
             Map<String, Object> insParams = new HashMap<String, Object>();
             insParams.put(AdConstants.DB_GROUPID, groupId);
             insParams.put(AdConstants.DB_MEMBERDN, m.memberDn);
@@ -487,9 +476,9 @@ public class AdDbUtil {
             Query.DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN, identifiers));
         Map<String, Object> delParams = e.getSqlParams();
 
-        for (String memberDn : dbMemberships.keySet()) {
-          LOGGER.finer("Removing [" + memberDn + "] from group [" + e + "]");
-          delParams.put(AdConstants.DB_MEMBERDN, memberDn);
+        for (String s : dbMemberships) {
+          LOGGER.finer("Removing [" + s + "] from group [" + e + "]");
+          delParams.put(AdConstants.DB_MEMBERDN, s);
           addParams(delStatement, identifiers, delParams);
           delStatement.addBatch();
           if (++batch == batchHint) {

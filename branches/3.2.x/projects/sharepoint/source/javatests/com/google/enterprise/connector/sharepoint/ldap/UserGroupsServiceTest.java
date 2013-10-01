@@ -94,17 +94,14 @@ public class UserGroupsServiceTest {
   public void testGetAllParentGroups() {
     Set<String> parentGroups = new HashSet<String>();
 
-    userGroupsService.getAllParentGroups(TestConfiguration.ldapgroupname,
-        parentGroups, ldapConnection.getLdapContext());
+    userGroupsService.getAllParentGroups(TestConfiguration.ldapgroupname, parentGroups);
     // including the group it self.
     assertEquals(10, parentGroups.size());
     assertTrue(parentGroups.contains(TestConfiguration.google));
     assertTrue(parentGroups.contains(TestConfiguration.expectedParentGroup));
     // I&SBU-Web is parent of Google group
     parentGroups = null;
-    userGroupsService.getAllParentGroups(
-        TestConfiguration.fakeoremptyldapgroupname,
-        parentGroups, ldapConnection.getLdapContext());
+    userGroupsService.getAllParentGroups(TestConfiguration.fakeoremptyldapgroupname, parentGroups);
     assertNull(parentGroups);
   }
 
@@ -129,6 +126,28 @@ public class UserGroupsServiceTest {
 
     UserGroupsCache<Object, ConcurrentHashMap<String, Set<Principal>>>
         cacheStore = userGroupsService.getLugCacheStore();
+  }
+
+  /**
+   * Test method for
+   * {@link com.google.enterprise.connector.sharepoint.ldap.UserGroupsService#getSamAccountNameFromSearchUser(java.lang.String)}
+   * .
+   */
+  @Test
+  public void testGetSamAccountNameFromSearchUser() {
+    String expectedUserName = TestConfiguration.username;
+
+    String userName3 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat3);
+    assertNotNull(userName3);
+    assertEquals(TestConfiguration.searchUserID, userName3);
+
+    String userName1 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat1);
+    assertNotNull(userName1);
+    assertEquals(TestConfiguration.searchUserID, userName1);
+
+    String userName2 = userGroupsService.getSamAccountNameForSearchUser(TestConfiguration.userNameFormat2);
+    assertNotNull(userName2);
+    assertEquals(TestConfiguration.searchUserID, userName2);
   }
 
   @Test
@@ -247,8 +266,7 @@ public class UserGroupsServiceTest {
     groupNames.add("CN=Group2_Name (Comment),DC=gsa-connectors,DC=com");
     groupNames.add("no comma");
     
-    Set<String> samNames = userGroupsService.getSAMAccountNames(groupNames,
-        ldapConnection.getLdapContext());
+    Set<String> samNames = userGroupsService.getSAMAccountNames(groupNames);
     assertNotNull(samNames);
     assertEquals(ImmutableSet.of(
         "Domain Users", "GrpNmCmt", "Group2_Name (Comment)"), samNames);
