@@ -14,28 +14,34 @@
 
 package com.google.enterprise.connector.sharepoint.social;
 
-import com.google.common.collect.Sets;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.Maps;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-import com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType;
 import com.google.enterprise.connector.spi.Value;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType;
+import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 public class SharePointSocialUserProfileDocument 
     extends SocialUserProfileDocument {
   
   private int nextValue = -1; 
 
-  // List of groups to be sent in document's ACL.
-  private Set<Principal> aclGroups;
+  //List of users and their permissions to be sent in document's ACL
+  private Map<Principal, Set<RoleType>> allowAclMap;
 
+  //List of users and their denied permissions to be sent in document's ACL
+  private Map<Principal, Set<RoleType>> denyAclMap;
+  
   private ActionType actionType;
 
   public SharePointSocialUserProfileDocument(String collectionName) {
@@ -56,10 +62,10 @@ public class SharePointSocialUserProfileDocument
   @Override
   public Property findProperty(String name) {
     if (SpiConstants.PROPNAME_ACLGROUPS.equalsIgnoreCase(name)) {
-      if (aclGroups != null) {
-        List<Value> values = new ArrayList<Value>(aclGroups.size());
-        for (Principal group : aclGroups) {
-          values.add(Value.getPrincipalValue(group));
+      if (allowAclMap != null) {
+        List<Value> values = new ArrayList<Value>(allowAclMap.size());
+        for (Principal user : allowAclMap.keySet()) {
+          values.add(Value.getPrincipalValue(user));
         }
         return new SimpleProperty(values);
       } else {
@@ -69,14 +75,16 @@ public class SharePointSocialUserProfileDocument
     return super.findProperty(name);
   }
   
-  public void addAclGroupToDocument(String globalNamespace,
-      String principalName) {
-   if (aclGroups == null) {
-     aclGroups = Sets.newHashSet();
+  public void AddAllowAclToDocument(
+      String globalNamespace, String principalName) {
+   if (allowAclMap == null) {
+     allowAclMap = Maps.newHashMap();
    }
-   aclGroups.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+   Set<RoleType> roleTypes = new HashSet<RoleType>();
+   roleTypes.add(RoleType.READER);
+   allowAclMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
        globalNamespace, principalName,
-       CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
+       CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);    
   }
 
   public ActionType getActionType() {

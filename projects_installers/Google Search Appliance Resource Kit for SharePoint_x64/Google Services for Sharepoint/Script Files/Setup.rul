@@ -20,8 +20,6 @@
 export prototype GetASPNETKEY(HWND);
 export prototype GetIISServiceState(HWND);
 export prototype GetIISVersion(HWND);
-export prototype GetPrevGSSFound(HWND);
-export prototype SetWebServerExtensions14(HWND);
 
 // To Do:  Declare global variables, define constants, and prototype user-
 //         defined and DLL functions here.
@@ -126,34 +124,4 @@ begin
 		endif;
 	endif;
 	
-end;
-
-function GetPrevGSSFound(hMSI)
-	STRING szPREVGSSFOUND, szProductName;
-	NUMBER nvSize, nvLen, nResult;
-begin
-	nvSize = 256;
-	MsiGetProperty(ISMSI_HANDLE, "PREVGSSFOUND", szPREVGSSFOUND, nvSize);
-	MsiGetProperty(ISMSI_HANDLE, "ProductName", szSdProduct, nvSize); 
-	if (StrLength(szPREVGSSFOUND) > 0) then
-		MessageBox("WARNING: Connector Services for SharePoint files are already present on the local system.  The solution may have been deployed manually.", WARNING);
-		nResult = SprintfBox(MB_OKCANCEL, szSdProduct, "%s", "Do you want to proceed with the installation?  Existing Connector Services for SharePoint files will be overwritten.  Click OK to proceed.");
-		if(nResult = IDCANCEL) then
-			//populate CANCELINSTALL
-			MsiSetProperty(hMSI, "CANCELINSTALL", "1");
-		endif;
-	endif;
-end;
-
-function SetWebServerExtensions14(hMSI)
-	STRING szSP2013, szSHAREPOINTLOCATION;
-	NUMBER nvSize, nvLen, nResult;
-begin
-	nvSize = 256;
-	MsiGetProperty(ISMSI_HANDLE, "SP2013", szSP2013, nvSize);
-	if (StrLength(szSP2013) > 0) then
-		MsiGetProperty(ISMSI_HANDLE, "SHAREPOINTLOCATION", szSHAREPOINTLOCATION, nvSize);
-		StrReplace(szSHAREPOINTLOCATION,"15", "14", StrLength(szSHAREPOINTLOCATION) - 3);
-		MsiSetProperty(ISMSI_HANDLE, "WEBSERVEREXTENSIONS14", szSHAREPOINTLOCATION);
-	endif;
 end;

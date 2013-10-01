@@ -87,8 +87,8 @@ public class GSAclWSTest extends TestCase {
     aclHelper.fetchAclForDocuments(docList, webState);
     for (SPDocument document : docList.getDocuments()) {
       assertNotNull(document);
-      assertNotNull(document.getAclUsers());
-      assertNotNull(document.getAclGroups());
+      assertNotNull(document.getUsersAclMap());
+      assertNotNull(document.getGroupsAclMap());
     }
   }
 
@@ -107,12 +107,12 @@ public class GSAclWSTest extends TestCase {
     assertNotNull(webApppolicy);
     assertEquals("Web app policy URL should be same as root site URL",
         TestConfiguration.Site4_URL, webApppolicy.getUrl());
-    assertNotNull(webApppolicy.getAclGroups());
-    assertFalse(webApppolicy.getAclGroups().isEmpty());
-    assertNotNull(webApppolicy.getAclDenyUsers());
-    assertFalse(webApppolicy.getAclDenyUsers().isEmpty());
-    assertNotNull(webApppolicy.getAclUsers());
-    assertFalse(webApppolicy.getAclUsers().isEmpty());
+    assertNotNull(webApppolicy.getGroupsAclMap());
+    assertFalse(webApppolicy.getGroupsAclMap().isEmpty());
+    assertNotNull(webApppolicy.getDenyUsersAclMap());
+    assertFalse(webApppolicy.getDenyUsersAclMap().isEmpty());
+    assertNotNull(webApppolicy.getUsersAclMap());
+    assertFalse(webApppolicy.getUsersAclMap().isEmpty());      
   }
 
   public void testGetAclForUrlsUsingInheritance() throws Exception {
@@ -222,21 +222,22 @@ public class GSAclWSTest extends TestCase {
     assertNotNull("parent id is null for "
         + document, document.getParentId());
     assertTrue(document.getParentUrl().equalsIgnoreCase(parentUrl));
-    assertTrue(document.getAclGroups() == null
-        || document.getAclGroups().isEmpty());
-    assertTrue(document.getAclDenyUsers() == null
-        || document.getAclDenyUsers().isEmpty());
-    assertTrue(document.getAclUsers() == null
-        || document.getAclUsers().isEmpty());
-    assertTrue(document.getAclDenyGroups() == null
-        || document.getAclDenyGroups().isEmpty());
+    assertTrue(null == document.getGroupsAclMap() ||
+        document.getGroupsAclMap().isEmpty());
+    assertTrue(null == document.getDenyUsersAclMap()||
+        document.getDenyUsersAclMap().isEmpty());   
+    assertTrue(null == document.getUsersAclMap() ||
+        document.getUsersAclMap().isEmpty() );
+    assertTrue(null == document.getDenyGroupsAclMap() ||
+        document.getDenyGroupsAclMap().isEmpty());
   }
 
   private void checkUniquePermissions (SPDocument document, String parentUrl) {   
     assertTrue("UniquePermission not true" + document, 
         document.isUniquePermissions());
-    assertNotNull("getAclUsers is empty", document.getAclUsers());
-    assertNotNull(document.getAclGroups());
+    assertNotNull("getUsersAclMap is empty", 
+        document.getUsersAclMap());          
+    assertNotNull(document.getGroupsAclMap());
     assertTrue("Parent Url Mismatch", 
         document.getParentUrl().equalsIgnoreCase(parentUrl));
   }

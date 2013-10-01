@@ -41,28 +41,6 @@ namespace GSBControlPanel
         private string defaultSearchType = "publicAndSecure";
         private string searchTipsHTMLFileName = "user_help.html";
 
-        private Boolean useSamlPost;
-
-        public Boolean UseSamlPost
-        {
-            get { return useSamlPost; }
-            set { useSamlPost = value; }
-        }
-        private String artifactConsumer;
-
-        public String ArtifactConsumer
-        {
-            get { return artifactConsumer; }
-            set { artifactConsumer = value; }
-        }
-        private String certificateName;
-
-        public String CertificateName
-        {
-            get { return certificateName; }
-            set { certificateName = value; }
-        }
-
         private Boolean enableEmbeddedMode = false;
         public Boolean EnableEmbeddedMode
         {
@@ -161,10 +139,6 @@ namespace GSBControlPanel
             gcm.ModifyNode("/configuration/appSettings", "EnableEmbeddedMode", EnableEmbeddedMode.ToString().ToLower());
             // UseContainerTheme configuartion parameter value should be same as EnableEmbeddedMode
             gcm.ModifyNode("/configuration/appSettings", "UseContainerTheme", EnableEmbeddedMode.ToString().ToLower());
-
-            gcm.ModifyNode("/configuration/appSettings", "UseSamlPost", UseSamlPost.ToString().ToLower());
-            gcm.ModifyNode("/configuration/appSettings", "assertion_consumer", artifactConsumer);
-            gcm.ModifyNode("/configuration/appSettings", "certificate_friendly_name", CertificateName);
             
             //this needs to be saved only during installation. should be unchnaged otherwise
             if (isInstaller == true)
