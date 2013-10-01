@@ -271,6 +271,34 @@ public class ListStateTest extends TestCase {
     assertTrue(attchmnts.contains(attchmnt7));
     assertTrue(attchmnts.contains(attchmnt8));
   }
+  
+  public void testAttachmentDocumentsWithSpecialChars()
+      throws SharepointException {
+    String attchmnt1 =
+        "http://intranet.sp.com/Lists/MyList/Attachments/1/Attachment1.doc";
+    String attchmnt2 = 
+        "http://intranet.sp.com/Lists/MyList/Attachments/1/Attachment2.doc";
+    String attchmnt3 = 
+        "http://intranet.sp.com/Lists/MyList/Attachments/1"
+        + "/Attachment3 [with special char].doc";
+    ListState testList = new ListState("{guid}", "MyList",
+        SPConstants.GENERIC_LIST, null, "", "", null);
+    testList.updateExtraIDAsAttachment("1", attchmnt1);
+    testList.updateExtraIDAsAttachment("1", attchmnt2);
+    testList.updateExtraIDAsAttachment("1", attchmnt3);
+    List<String> attchmnts = testList.getAttachmntURLsFor("1");
+    assertEquals(3, attchmnts.size());
+    assertTrue(attchmnts.contains(attchmnt1));
+    assertTrue(attchmnts.contains(attchmnt2));
+    assertTrue(attchmnts.contains(attchmnt3));
+    // remove attachment with special chars
+    testList.removeAttachmntURLFor("1", attchmnt3);
+    attchmnts = testList.getAttachmntURLsFor("1");
+    assertEquals(2, attchmnts.size());
+    assertTrue(attchmnts.contains(attchmnt1));
+    assertTrue(attchmnts.contains(attchmnt2));
+  }
+  
 
   public void testGetLastDocForWSRefresh() throws SharepointException {
     Calendar cal1 = Calendar.getInstance();
