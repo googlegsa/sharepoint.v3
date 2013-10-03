@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.sharepoint.client.AlertsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -287,6 +288,7 @@ public class SharepointClient {
    * @return True if ACL was retrieved successfully OR false in case of any
    *         exceptions/errors
    */
+  @VisibleForTesting
   boolean handleACLForDocuments(SPDocumentList resultSet, WebState webState,
       GlobalState globalState, boolean sendPendingDocs) {
 
@@ -296,37 +298,51 @@ public class SharepointClient {
       return true;
     }
 
-    if (sendPendingDocs) {
-      // This is to indicate that ACLs have been retrieved previously and
-      // hence just return the set of docs
+    if (resultSet == null || resultSet.size() == 0) {
       return true;
     }
 
-    boolean aclRetrievalResult = false;
+    if (sendPendingDocs) {
+      boolean missingAcls = false;
+      for (SPDocument document : resultSet.getDocuments()) {
+        missingAcls = document.isMissingAcls();
+        if (missingAcls) {
+          LOGGER.log(Level.WARNING, 
+              "Document [{0}] is missing ACL. This is an overflow document "
+              + "from WebState [{1}]. Fetching ACLs for this batch.", 
+              new Object[] {document.getUrl(), webState.getWebUrl()});
+          break;
+        }
+      }
+
+      if (!missingAcls) {
+        // This is to indicate that ACLs have been retrieved previously and
+        // hence just return the set of docs
+        return true;
+      }
+    }
+
+    boolean aclRetrievalResult;
     // Fetch ACL for all the documents crawled from the current WebState
     // Do not try to re-fetch the ACL when documents are pending from
     // previous batch traversals
-    if (null != resultSet && resultSet.size() > 0) {
-      if (sharepointClientContext.isFetchACLInBatches()) {
-        aclRetrievalResult = fetchACLInBatches(resultSet, webState,
-            globalState, sharepointClientContext.getAclBatchSizeFactor());
-      } else {
-        aclRetrievalResult =
-            fetchACLForDocuments(resultSet, webState, globalState);
-      }
-      // Resolve SP Groups only if ACLs retrieval is successful
-      if (aclRetrievalResult) {
-        boolean spGroupResolutionResult = resolveSharePointGroups(webState);
-        return spGroupResolutionResult;
-      } else {
-        LOGGER.log(Level.WARNING, "No documents will be sent for site [ "
-            + webState.getWebUrl()
-            + " ] as ACL retrieval has failed. Please check the errors/logs" +
-            " associated with ACL retrieval before this");
-        return false;
-      }
+    if (sharepointClientContext.isFetchACLInBatches()) {
+      aclRetrievalResult = fetchACLInBatches(resultSet, webState,
+          globalState, sharepointClientContext.getAclBatchSizeFactor());
+    } else {
+      aclRetrievalResult =
+          fetchACLForDocuments(resultSet, webState, globalState);
     }
-    return aclRetrievalResult;
+    // Resolve SP Groups only if ACLs retrieval is successful
+    if (aclRetrievalResult) {
+      return resolveSharePointGroups(webState);      
+    } else {
+      LOGGER.log(Level.WARNING, "No documents will be sent for site [ "
+        + webState.getWebUrl()
+        + " ] as ACL retrieval has failed. Please check the errors/logs" +
+        " associated with ACL retrieval before this");
+      return false;
+    }
   }
 
   /**
