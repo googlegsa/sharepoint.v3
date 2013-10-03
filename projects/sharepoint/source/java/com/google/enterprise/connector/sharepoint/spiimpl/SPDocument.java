@@ -36,8 +36,6 @@ import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 import com.google.enterprise.connector.spi.Value;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-import com.google.enterprise.connector.spi.SpiConstants.RoleType;
-import com.google.enterprise.connector.spiimpl.BinaryValue;
 import com.google.enterprise.connector.spiimpl.BooleanValue;
 import com.google.enterprise.connector.spiimpl.DateValue;
 import com.google.enterprise.connector.spiimpl.StringValue;
@@ -49,7 +47,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.IllegalStateException;
 import java.net.URLDecoder;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -57,9 +54,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -67,8 +62,6 @@ import java.util.regex.Pattern;
 /**
  * Class to hold data regarding a sharepoint document. Anything that is sent ot
  * GSA for indexing must be represented as an instance of this class.
- *
- * @author nitendra_thakur
  */
 public class SPDocument implements Document, Comparable<SPDocument> {
   private String docId;
@@ -106,30 +99,24 @@ public class SPDocument implements Document, Comparable<SPDocument> {
 
   private final Logger LOGGER = Logger.getLogger(SPDocument.class.getName());
 
-  /**
-   * A guess as to how many attributes we should allow for initially.
-   */
-  // FIXME: Do we really need such guessing?
-  private final int INITIALATTRLISTSIZE = 5;
-  private final ArrayList<Attribute> attrs = new ArrayList<Attribute>(
-      INITIALATTRLISTSIZE);
+  private final ArrayList<Attribute> attrs = new ArrayList<Attribute>(5);
 
   /**
    * Flag to indicate if this document is to be sent as a feed
    */
   private boolean toBeFed = true;
 
-  // List of users and their permissions to be sent in document's ACL
-  private Map<Principal, Set<RoleType>> usersAclMap;
+  // List of allowed users to be sent in document's ACL
+  private Set<Principal> aclUsers;
 
-  // List of groups and their permissions to be sent in document's ACL
-  private Map<Principal, Set<RoleType>> groupsAclMap;
+  // List of allowed groups to be sent in document's ACL
+  private Set<Principal> aclGroups;
 
-  //List of users and their denied permissions to be sent in document's ACL
-  private Map<Principal, Set<RoleType>> denyUsersAclMap;
+  // List of denied users to be sent in document's ACL
+  private Set<Principal> aclDenyUsers;
 
-  // List of groups and their denied permissions to be sent in document's ACL
-  private Map<Principal, Set<RoleType>> denyGroupsAclMap;
+  // List of denied groups to be sent in document's ACL
+  private Set<Principal> aclDenyGroups;
 
   // Check if the documents is discovered from ACL based crawling. An ACL
   // based crawling happens when a security change occurs on site/list which
@@ -489,6 +476,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    * or, connector can inform them pre-hand during the call to getAll
    * propertoes.
    */
+  @Override
   public Property findProperty(final String strPropertyName)
       throws RepositoryException {
     if (!sharepointClientContext.isPushAcls() &&
@@ -499,9 +487,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
           + "] as DocumentType is ACL and PushAcls is false.");
     }
     final Collator collator = Util.getCollator();
-    if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENTURL)) {
-      return new SimpleProperty(new StringValue(getUrl()));
-    } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
+    if (collator.equals(strPropertyName, SpiConstants.PROPNAME_CONTENT)) {
       if (FeedType.CONTENT_FEED == getFeedType()
           && ActionType.ADD.equals(getAction())) {
         synchronized (this) {
@@ -599,79 +585,13 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
       return new SimpleProperty(new StringValue(getAction().toString()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYUSERS)) {
-      if (denyUsersAclMap != null) {
-        List<Value> values = new ArrayList<Value>(getDenyUsersAclMap().size());
-        for (Principal user : getDenyUsersAclMap().keySet()) {
-          values.add(Value.getPrincipalValue(user));
-        }
-        return new SimpleProperty(values);
-      } else {
-        return null;
-      }
+      return getPrincipalProperty(aclDenyUsers);
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYGROUPS)) {
-      if (denyGroupsAclMap != null) {
-        List<Value> values = new ArrayList<Value>(getDenyGroupsAclMap().size());
-        for (Principal group : getDenyGroupsAclMap().keySet()) {
-          values.add(Value.getPrincipalValue(group));
-        }
-        return new SimpleProperty(values);
-      } else {
-        return null;
-      }
+      return getPrincipalProperty(aclDenyGroups);
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLUSERS)) {
-      if (usersAclMap != null) {
-        List<Value> values = new ArrayList<Value>(usersAclMap.size());
-        for (Principal user : usersAclMap.keySet()) {
-          values.add(Value.getPrincipalValue(user));
-        }
-        return new SimpleProperty(values);
-      } else {
-        return null;
-      }
+      return getPrincipalProperty(aclUsers);
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLGROUPS)) {
-      if (groupsAclMap != null) {
-        List<Value> values = new ArrayList<Value>(groupsAclMap.size());
-        for (Principal group : groupsAclMap.keySet()) {
-          values.add(Value.getPrincipalValue(group));
-        }
-        return new SimpleProperty(values);
-      } else {
-        return null;
-      }
-    } else if (strPropertyName.startsWith(SpiConstants.USER_ROLES_PROPNAME_PREFIX)) {
-      // TODO: This is a hack to lookup a Principal in a set by string name.
-      // We should just remove roles entirely.
-      String originalName = strPropertyName.substring(
-          SpiConstants.USER_ROLES_PROPNAME_PREFIX.length());
-      for (Entry<Principal, Set<RoleType>> entry : usersAclMap.entrySet()) {
-        if (entry.getKey().getName().equals(originalName)) {
-          Set<RoleType> roleTypes = entry.getValue();
-          List<Value> values = new ArrayList<Value>(roleTypes.size());
-          for (RoleType roleType : roleTypes) {
-            values.add(Value.getStringValue(roleType.toString()));
-          }
-          return new SimpleProperty(values);
-        }
-      }
-      LOGGER.warning("Unable to find role for " + originalName);
-      return null;
-    } else if (strPropertyName.startsWith(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX)) {
-      // TODO: This is a hack to lookup a Principal in a set by string name.
-      // We should just remove roles entirely.
-      String originalName = strPropertyName.substring(
-          SpiConstants.GROUP_ROLES_PROPNAME_PREFIX.length());
-      for (Entry<Principal, Set<RoleType>> entry : groupsAclMap.entrySet()) {
-        if (entry.getKey().getName().equals(originalName)) {
-          Set<RoleType> roleTypes = entry.getValue();
-          List<Value> values = new ArrayList<Value>(roleTypes.size());
-          for (RoleType roleType : roleTypes) {
-            values.add(Value.getStringValue(roleType.toString()));
-          }
-          return new SimpleProperty(values);
-        }
-      }
-      LOGGER.warning("Unable to find role for " + originalName);
-      return null;
+      return getPrincipalProperty(aclGroups);
     } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_TITLE)) {
       return new SimpleProperty(new StringValue(title));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_DOCUMENTTYPE)) {
@@ -714,11 +634,34 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     return null;// no matches found
   }
 
+  private Property getPrincipalProperty(Set<Principal> aclPrincipals) {
+    if (aclPrincipals != null) {
+      List<Value> values = new ArrayList<Value>(aclPrincipals.size());
+      for (Principal user : aclPrincipals) {
+        values.add(Value.getPrincipalValue(user));
+      }
+      return new SimpleProperty(values);
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Returns true if none of the ACL properties are set for a document.
+   * Note: calling method should check for "isPushAcls" before calling this.
+   */
+  public boolean isMissingAcls() {
+    return (!isPublicDocument() && parentUrl == null  
+        && aclUsers == null && aclGroups == null
+        && aclDenyUsers == null && aclDenyGroups == null);
+  }
+
   /**
    * Return a set of metadata that are attached with this instance of
    * SPDocument. CM will then call findProperty for each metadata to construct
    * the feed for this document.
    */
+  @Override
   public Set<String> getPropertyNames() throws RepositoryException {
     final Set<String> names = new HashSet<String>();
     ArrayList<String> candidates = new ArrayList<String>();
@@ -732,6 +675,10 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       names.add(SpiConstants.PROPNAME_DOCUMENTTYPE);
     }
     if (sharepointClientContext.isPushAcls()) {
+      if (isMissingAcls()) {
+        sharepointClientContext.logToFile(SPConstants.MISSING_ACL_URL_LOG,
+            "Missing ACL : Document [" + this +"] is missing ACL.");
+      }
       names.add(SpiConstants.PROPNAME_ISPUBLIC);
       if (!isWebAppPolicyDoc()) {
         // For regular document parent Url should not be null.
@@ -753,24 +700,16 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         names.add(SpiConstants.PROPNAME_ACLINHERITANCETYPE);
       }
 
-      if (null != usersAclMap) {
+      if (aclUsers != null) {
         names.add(SpiConstants.PROPNAME_ACLUSERS);
-        for (Entry<Principal, Set<RoleType>> ace : usersAclMap.entrySet()) {
-          names.add(SpiConstants.USER_ROLES_PROPNAME_PREFIX
-              + ace.getKey().getName());
-        }
       }
-      if (null != groupsAclMap) {
+      if (aclGroups != null) {
         names.add(SpiConstants.PROPNAME_ACLGROUPS);
-        for (Entry<Principal, Set<RoleType>> ace : groupsAclMap.entrySet()) {
-          names.add(SpiConstants.GROUP_ROLES_PROPNAME_PREFIX
-              + ace.getKey().getName());
-        }
       }
-      if (null != denyUsersAclMap) {
+      if (aclDenyUsers != null) {
         names.add(SpiConstants.PROPNAME_ACLDENYUSERS);
       }
-      if (null != denyGroupsAclMap) {
+      if (aclDenyGroups != null) {
         names.add(SpiConstants.PROPNAME_ACLDENYGROUPS);
       }
     }
@@ -1072,21 +1011,21 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   }
 
   @VisibleForTesting
-  public Map<Principal, Set<RoleType>> getUsersAclMap() {
-    return usersAclMap;
+  public Set<Principal> getAclUsers() {
+    return aclUsers;
   }
 
-  public void setUsersAclMap(Map<Principal, Set<RoleType>> usersAclMap) {
-    this.usersAclMap = usersAclMap;
+  public void setAclUsers(Set<Principal> aclUsers) {
+    this.aclUsers = aclUsers;
   }
 
   @VisibleForTesting
-  public Map<Principal, Set<RoleType>> getGroupsAclMap() {
-    return groupsAclMap;
+  public Set<Principal> getAclGroups() {
+    return aclGroups;
   }
 
-  public void setGroupsAclMap(Map<Principal, Set<RoleType>> groupsAclMap) {
-    this.groupsAclMap = groupsAclMap;
+  public void setAclGroups(Set<Principal> aclGroups) {
+    this.aclGroups = aclGroups;
   }
 
   public boolean isForAclChange() {
@@ -1138,21 +1077,21 @@ public class SPDocument implements Document, Comparable<SPDocument> {
   }
 
   @VisibleForTesting
-  public Map<Principal, Set<RoleType>> getDenyUsersAclMap() {
-    return denyUsersAclMap;
+  public Set<Principal> getAclDenyUsers() {
+    return aclDenyUsers;
   }
 
-  public void setDenyUsersAclMap(Map<Principal, Set<RoleType>> denyUsers) {
-    this.denyUsersAclMap = denyUsers;
+  public void setAclDenyUsers(Set<Principal> aclDenyUsers) {
+    this.aclDenyUsers = aclDenyUsers;
   }
 
   @VisibleForTesting
-  public Map<Principal, Set<RoleType>> getDenyGroupsAclMap() {
-    return denyGroupsAclMap;
+  public Set<Principal> getAclDenyGroups() {
+    return aclDenyGroups;
   }
 
-  public void setDenyGroupsAclMap(Map<Principal, Set<RoleType>> denyGroups) {
-    this.denyGroupsAclMap = denyGroups;
+  public void setAclDenyGroups(Set<Principal> aclDenyGroups) {
+    this.aclDenyGroups = aclDenyGroups;
   }
 
   public boolean isWebAppPolicyDoc() {

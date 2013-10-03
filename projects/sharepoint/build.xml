@@ -91,7 +91,7 @@
   <include file="${connector-manager.dir}/../svnbuild.xml" as="svn"/>
 
   <target name="sharepoint-connector" depends="clean,init, compile, jar,
-    download-sharepoint-connector">
+    download-sharepoint-connector, download-solution-package">
   </target>
 
   <target name="init" >
@@ -126,7 +126,7 @@
     <attribute name="generates" default="must-not-exist" />
     <sequential>
       <if>
-	<!-- TODO: Use dependset to include all stubs in the check. -->
+    <!-- TODO: Use dependset to include all stubs in the check. -->
         <not><uptodate srcfile="@{url}" targetfile="@{generates}"/></not>
         <then>
           <java classname="org.apache.axis.wsdl.WSDL2Java" fork="True">
@@ -172,7 +172,7 @@
     <wsdl2java url="${wsdl}/SP2010UserProfileService.wsdl"
                package="${generated.package}.sp2010.userprofileservice"
                generates="${src_generated}/sp2010/userprofileservice/UserProfileService.java"/>
-	<wsdl2java url="${wsdl}/UserProfileChangeService.wsdl"
+    <wsdl2java url="${wsdl}/UserProfileChangeService.wsdl"
                package="${generated.package}.userprofilechangeservice"
                generates="${src_generated}/userprofilechangeservice/UserProfileChangeService.java"/>
   </target>
@@ -307,12 +307,11 @@
     <property name="downloads.prefix"
               value="connector-sharepoint-${svn.branch}" />
     <property name="repackage.prefix" value="connector-sharepoint-${version}"/>
-
-    <!-- Preserve the existing file name from the documentation. -->
+	<property name="gss.name" value="connector-services-sharepoint" /> 
     <property name="gss.prefix"
-              value="Google_Services_for_SharePoint_${svn.branch}" />
+              value="${gss.name}-${svn.branch}" />    
     <property name="repackage.gss.prefix"
-              value="Google_Services_for_SharePoint_${version}" />
+              value="${gss.name}-${version}" />    
   </target>
 
   <target name="jar" depends="compile,init-package"
@@ -368,7 +367,8 @@
     </jar>
   </target>
 
-  <target name="download-sharepoint-connector" depends="jar,javadoc">
+  <target name="download-sharepoint-connector" 
+          depends="jar,javadoc,download-solution-package">
     <zip destfile="${downloads.dir}/${downloads.prefix}-src.zip">
       <zipfileset dir="." prefix="${downloads.prefix}">
         <include name="javadoc/**" />
@@ -408,25 +408,44 @@
     <checksum algorithm="SHA-1"
               file="${downloads.dir}/${downloads.prefix}.zip" />
 
-    <zip destfile="${downloads.dir}/${gss.prefix}.zip">
-      <zipfileset dir="" prefix="${gss.prefix}">
-        <!-- Preserve the existing directory layout from the documentation. -->
-        <include name="source_net/**" />
+    <zip destfile="${downloads.dir}/${gss.prefix}-src.zip">
+      <zipfileset dir="" prefix="${gss.prefix}-src">
+        <include name="source/net/**" />        
       </zipfileset>
+    </zip>
+    <checksum algorithm="SHA-1"
+              file="${downloads.dir}/${gss.prefix}-src.zip" />    
+  </target>
+  
+  <target name="download-solution-package" depends="oscheck"
+       if="isWindows">
+    <exec executable="makecab">
+        <arg value="/f"/>
+        <arg value="build.ddf"/>   
+    </exec>    
+    <zip destfile="${downloads.dir}/${gss.prefix}.zip">
+      <zipfileset file="${build}/${gss.name}.wsp" prefix="${gss.prefix}" />
     </zip>
     <checksum algorithm="SHA-1"
               file="${downloads.dir}/${gss.prefix}.zip" />
   </target>
+  
+  <target name="oscheck">
+    <condition property="isWindows">
+      <os family="windows" />
+    </condition>        
+  </target>
+  
 
   <target name="repackage" depends="init-package"
           description="Repackage release candidate files for release.">
     <repackage-downloads downloads.dir="${downloads.dir}"
                          downloads.prefix="${downloads.prefix}"
                          repackage.prefix="${repackage.prefix}" />
-    <repackage-zip destfile="${downloads.dir}/${repackage.gss.prefix}.zip"
-                   src="${downloads.dir}/${gss.prefix}.zip"
-                   downloads.prefix="${gss.prefix}"
-                   repackage.prefix="${repackage.gss.prefix}" />
+                         
+    <repackage-downloads downloads.dir="${downloads.dir}"
+                         downloads.prefix="${gss.prefix}"
+                         repackage.prefix="${repackage.gss.prefix}" />
   </target>
 
   <target name="clean" depends="clean_code_coverage" description="Deletes files produced by compile and test.">

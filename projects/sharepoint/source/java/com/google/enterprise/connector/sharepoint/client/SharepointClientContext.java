@@ -875,6 +875,12 @@ public class SharepointClientContext implements Cloneable {
    * @param info
    */
   public void logExcludedURL(final String info) {
+    logToFile(SPConstants.EXCLUDED_URL_LOG, info);   
+  }
+  
+  // This method is logging everything under excluded url directory.
+  // TODO : generalize this. 
+  public void logToFile(String fileNamePrefix, String info) {
     // If the parent directory does not exist, create one
     File file = new File(excludedURL_ParentDir);
     if ((file == null) || !file.exists() || !file.isDirectory()) {
@@ -883,7 +889,7 @@ public class SharepointClientContext implements Cloneable {
     }
 
     final String fileName = excludedURL_ParentDir + SPConstants.SLASH
-        + SPConstants.EXCLUDED_URL_LOG + 0 + ".txt";
+        + fileNamePrefix + 0 + ".txt";
     file = new File(fileName);
 
     try {
@@ -895,7 +901,7 @@ public class SharepointClientContext implements Cloneable {
         // logs
         // Delete the oldest log file
         final String tmpFileName = excludedURL_ParentDir + SPConstants.SLASH
-            + SPConstants.EXCLUDED_URL_LOG + SPConstants.EXCLUDED_URL_MAX_COUNT
+            + fileNamePrefix + SPConstants.EXCLUDED_URL_MAX_COUNT
             + ".txt";
         File tmpFile = new File(tmpFileName);
         LOGGER.log(Level.INFO, "Deleting " + tmpFileName
@@ -903,9 +909,9 @@ public class SharepointClientContext implements Cloneable {
 
         for (int i = SPConstants.EXCLUDED_URL_MAX_COUNT - 1; i >= 0; --i) {
           tmpFile = new File(excludedURL_ParentDir + SPConstants.SLASH
-              + SPConstants.EXCLUDED_URL_LOG + i + ".txt");
+              + fileNamePrefix + i + ".txt");
           tmpFile.renameTo(new File(excludedURL_ParentDir + SPConstants.SLASH
-                  + SPConstants.EXCLUDED_URL_LOG + (i + 1) + ".txt"));
+                  + fileNamePrefix + (i + 1) + ".txt"));
         }
         LOGGER.log(Level.INFO, "creating " + fileName + " ... status: "
             + file.createNewFile());
