@@ -37,11 +37,13 @@ namespace SAMLConfiguration
             this.btnCancel = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.lblLogLevel = new System.Windows.Forms.Label();
+            this.txtCertName = new System.Windows.Forms.TextBox();
+            this.lblCertName = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(300, 48);
+            this.btnSave.Location = new System.Drawing.Point(253, 101);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 3;
@@ -73,7 +75,7 @@ namespace SAMLConfiguration
             // cbSetLogLevel
             // 
             this.cbSetLogLevel.AutoSize = true;
-            this.cbSetLogLevel.Location = new System.Drawing.Point(105, 47);
+            this.cbSetLogLevel.Location = new System.Drawing.Point(105, 76);
             this.cbSetLogLevel.Name = "cbSetLogLevel";
             this.cbSetLogLevel.Size = new System.Drawing.Size(114, 17);
             this.cbSetLogLevel.TabIndex = 2;
@@ -83,7 +85,7 @@ namespace SAMLConfiguration
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(400, 48);
+            this.btnCancel.Location = new System.Drawing.Point(367, 101);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 4;
@@ -95,11 +97,26 @@ namespace SAMLConfiguration
             // lblLogLevel
             // 
             this.lblLogLevel.AutoSize = true;
-            this.lblLogLevel.Location = new System.Drawing.Point(10, 48);
+            this.lblLogLevel.Location = new System.Drawing.Point(9, 76);
             this.lblLogLevel.Name = "lblLogLevel";
             this.lblLogLevel.Size = new System.Drawing.Size(54, 13);
             this.lblLogLevel.TabIndex = 0;
             this.lblLogLevel.Text = "Log Level";
+            // 
+            // txtCertName
+            // 
+            this.txtCertName.Location = new System.Drawing.Point(135, 47);
+            this.txtCertName.Name = "txtCertName";
+            this.txtCertName.Size = new System.Drawing.Size(193, 20);
+            this.txtCertName.TabIndex = 7;
+            // 
+            // lblCertName
+            // 
+            this.lblCertName.Location = new System.Drawing.Point(9, 47);
+            this.lblCertName.Name = "lblCertName";
+            this.lblCertName.Size = new System.Drawing.Size(131, 19);
+            this.lblCertName.TabIndex = 6;
+            this.lblCertName.Text = "Certificate Friendly Name";
             // 
             // frmSAMLConfiguration
             // 
@@ -107,7 +124,9 @@ namespace SAMLConfiguration
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(484, 89);
+            this.ClientSize = new System.Drawing.Size(484, 134);
+            this.Controls.Add(this.txtCertName);
+            this.Controls.Add(this.lblCertName);
             this.Controls.Add(this.cbSetLogLevel);
             this.Controls.Add(this.lblLogLevel);
             this.Controls.Add(this.btnCancel);
@@ -135,6 +154,8 @@ namespace SAMLConfiguration
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label lblLogLevel;
+        private System.Windows.Forms.TextBox txtCertName;
+        private System.Windows.Forms.Label lblCertName;
     }
 }
 

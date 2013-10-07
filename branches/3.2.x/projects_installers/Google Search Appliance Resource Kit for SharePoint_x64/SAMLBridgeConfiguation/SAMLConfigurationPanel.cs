@@ -32,6 +32,7 @@ namespace SAMLConfiguration
         public const String PROVIDER="provider";
         public const String LOG_LEVEL="log_level";
         public const String ARTIFACT_CONSUMER = "assertion_consumer";
+        public const String CERT_FRIENDLY_NAME = "certificate_friendly_name";
 
         #region API declarations and constants
         private const int MF_BYPOSITION = 0x400;
@@ -107,6 +108,13 @@ namespace SAMLConfiguration
             {
                 cbSetLogLevel.Checked = true;
             }
+
+            String certName = scm.GetNodeValue("/configuration/appSettings/add[@key='" + CERT_FRIENDLY_NAME + "']");
+            if (!String.IsNullOrEmpty(certName))
+            {
+                txtCertName.Text = certName;
+            }
+
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -138,7 +146,7 @@ namespace SAMLConfiguration
             String LogLevel = cbSetLogLevel.Checked == true ? "debug" : "error";
             scm.ModifyNode("/configuration/appSettings", ARTIFACT_CONSUMER, tbArtifactConsumerURL.Text);
             scm.ModifyNode("/configuration/appSettings", LOG_LEVEL, LogLevel);
-
+            scm.ModifyNode("/configuration/appSettings", CERT_FRIENDLY_NAME, txtCertName.Text);
             scm.SaveXML();//persist the chnages to the web.config file
             this.Close();//close the form
         }

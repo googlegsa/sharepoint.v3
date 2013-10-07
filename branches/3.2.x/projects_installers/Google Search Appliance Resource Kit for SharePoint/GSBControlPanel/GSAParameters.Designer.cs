@@ -56,14 +56,21 @@ namespace GSBControlPanel
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.lblDefaultSearchType = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.chkUseSAMLPost = new System.Windows.Forms.CheckBox();
+            this.txtArtifactConsumerURL = new System.Windows.Forms.TextBox();
+            this.lblArtifactConsumer = new System.Windows.Forms.Label();
+            this.lblCertName = new System.Windows.Forms.Label();
+            this.txtCertName = new System.Windows.Forms.TextBox();
             this.gbSelectFrontEnd.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(309, 290);
+            this.btnOk.Location = new System.Drawing.Point(311, 413);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(71, 23);
             this.btnOk.TabIndex = 7;
@@ -98,8 +105,8 @@ namespace GSBControlPanel
             this.tbSiteCollection.Size = new System.Drawing.Size(377, 20);
             this.tbSiteCollection.TabIndex = 1;
             this.tbSiteCollection.Text = "default_collection";
-            this.toolTip1.SetToolTip(this.tbSiteCollection, "Enter the GSA collection name. For entering multiple collections use pipe (|) as sepa" +
-                    "rator. E.g. colln1|colln2");
+            this.toolTip1.SetToolTip(this.tbSiteCollection, "Enter the GSA collection name. For entering multiple collections use pipe (|) as " +
+                    "separator. E.g. colln1|colln2");
             this.tbSiteCollection.TextChanged += new System.EventHandler(this.tbSiteCollection_TextChanged);
             // 
             // lblSiteCollection
@@ -134,7 +141,7 @@ namespace GSBControlPanel
             // cbEnableLogging
             // 
             this.cbEnableLogging.AutoSize = true;
-            this.cbEnableLogging.Location = new System.Drawing.Point(120, 285);
+            this.cbEnableLogging.Location = new System.Drawing.Point(122, 408);
             this.cbEnableLogging.Name = "cbEnableLogging";
             this.cbEnableLogging.Size = new System.Drawing.Size(65, 17);
             this.cbEnableLogging.TabIndex = 6;
@@ -145,7 +152,7 @@ namespace GSBControlPanel
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(396, 289);
+            this.btnCancel.Location = new System.Drawing.Point(398, 412);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(71, 23);
             this.btnCancel.TabIndex = 8;
@@ -243,7 +250,7 @@ namespace GSBControlPanel
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 289);
+            this.label2.Location = new System.Drawing.Point(10, 412);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(56, 13);
             this.label2.TabIndex = 0;
@@ -328,13 +335,72 @@ namespace GSBControlPanel
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.txtCertName);
+            this.groupBox3.Controls.Add(this.lblCertName);
+            this.groupBox3.Controls.Add(this.txtArtifactConsumerURL);
+            this.groupBox3.Controls.Add(this.lblArtifactConsumer);
+            this.groupBox3.Controls.Add(this.chkUseSAMLPost);
+            this.groupBox3.Location = new System.Drawing.Point(8, 277);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(484, 125);
+            this.groupBox3.TabIndex = 44;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "SAML Bridge Post Configuration";
+            // 
+            // chkUseSAMLPost
+            // 
+            this.chkUseSAMLPost.AutoSize = true;
+            this.chkUseSAMLPost.Location = new System.Drawing.Point(13, 26);
+            this.chkUseSAMLPost.Name = "chkUseSAMLPost";
+            this.chkUseSAMLPost.Size = new System.Drawing.Size(101, 17);
+            this.chkUseSAMLPost.TabIndex = 0;
+            this.chkUseSAMLPost.Text = "Use SAML Post";
+            this.chkUseSAMLPost.UseVisualStyleBackColor = true;
+            this.chkUseSAMLPost.CheckedChanged += new System.EventHandler(this.chkUseSAMLPost_CheckedChanged);
+            // 
+            // txtArtifactConsumerURL
+            // 
+            this.txtArtifactConsumerURL.Location = new System.Drawing.Point(112, 49);
+            this.txtArtifactConsumerURL.Name = "txtArtifactConsumerURL";
+            this.txtArtifactConsumerURL.Size = new System.Drawing.Size(369, 20);
+            this.txtArtifactConsumerURL.TabIndex = 3;
+            this.txtArtifactConsumerURL.Text = "https://yourgsa/security-manager/samlassertionconsumer";
+            this.toolTip1.SetToolTip(this.txtArtifactConsumerURL, "Enter the SAML Bridge artifact consumer URL");
+            // 
+            // lblArtifactConsumer
+            // 
+            this.lblArtifactConsumer.Location = new System.Drawing.Point(10, 52);
+            this.lblArtifactConsumer.Name = "lblArtifactConsumer";
+            this.lblArtifactConsumer.Size = new System.Drawing.Size(105, 17);
+            this.lblArtifactConsumer.TabIndex = 2;
+            this.lblArtifactConsumer.Text = "Assertion Consumer";
+            this.toolTip1.SetToolTip(this.lblArtifactConsumer, "SAML Bridge artifact consumer URL");
+            // 
+            // lblCertName
+            // 
+            this.lblCertName.Location = new System.Drawing.Point(10, 86);
+            this.lblCertName.Name = "lblCertName";
+            this.lblCertName.Size = new System.Drawing.Size(131, 19);
+            this.lblCertName.TabIndex = 4;
+            this.lblCertName.Text = "Certificate Friendly Name";
+            // 
+            // txtCertName
+            // 
+            this.txtCertName.Location = new System.Drawing.Point(136, 84);
+            this.txtCertName.Name = "txtCertName";
+            this.txtCertName.Size = new System.Drawing.Size(193, 20);
+            this.txtCertName.TabIndex = 5;
+            // 
             // frmGSAParams
             // 
             this.AcceptButton = this.btnOk;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(522, 339);
+            this.ClientSize = new System.Drawing.Size(522, 501);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.lblDefaultSearchType);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.lblServeMethod);
@@ -367,6 +433,8 @@ namespace GSBControlPanel
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -400,6 +468,12 @@ namespace GSBControlPanel
         private System.Windows.Forms.Label lblDefaultSearchType;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.RadioButton rbPublicDefaultSearchType;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.CheckBox chkUseSAMLPost;
+        private System.Windows.Forms.TextBox txtArtifactConsumerURL;
+        private System.Windows.Forms.Label lblArtifactConsumer;
+        private System.Windows.Forms.Label lblCertName;
+        private System.Windows.Forms.TextBox txtCertName;
     }
 }
 

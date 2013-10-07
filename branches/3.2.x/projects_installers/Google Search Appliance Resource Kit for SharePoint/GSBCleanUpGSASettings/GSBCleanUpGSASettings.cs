@@ -77,6 +77,18 @@ namespace GSBCleanUpGSASettings
 
                                 // Deleting the node corresponding to the HTML help file for Search Tips
                                 mgr.DeleteNode("/configuration/appSettings/add[@key='SearchTipsHTMLFileName']");
+								
+								 // Embedded mode related app settings
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='EnableEmbeddedMode']");
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='UseContainerTheme']");
+
+                                // filterParameter app settings
+                                mgr.DeleteNode("/configuration/appSettings/add[@key='filterParameter']");
+								
+							    // Deleting the node corresponding to the SAML POST
+								mgr.DeleteNode("/configuration/appSettings/add[@key='UseSamlPost']");
+								mgr.DeleteNode("/configuration/appSettings/add[@key='assertion_consumer']");
+								mgr.DeleteNode("/configuration/appSettings/add[@key='certificate_friendly_name']");
 
                                 mgr.SaveXML();
                                 #endregion save results to file

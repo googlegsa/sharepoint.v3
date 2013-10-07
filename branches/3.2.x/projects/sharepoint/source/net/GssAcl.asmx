@@ -1018,24 +1018,6 @@ public class GssAclMonitor
                             e.StackTrace);
                         allAcls.Add(acl);
                     }
-                    finally
-                    {
-                        if (secobj != null)
-                        {
-                            if (secobj is SPWeb)
-                            {
-                                try
-                                {
-                                    SPWeb spWebToDispose = (SPWeb)secobj;
-                                    spWebToDispose.Dispose();
-                                }
-                                catch (Exception exDispose)
-                                {
-                                    exDispose = null; //Ignoring dispose or type casting error;
-                                }
-                            }
-                        }
-                    }
                 }                
                 result.AllAcls = allAcls;
                 result.SiteCollectionUrl = site.Url;
@@ -1663,7 +1645,7 @@ public sealed class GssAclUtility
         }
         else
         {
-            return web.Site.OpenWeb(web.ID);
+            return web;
         }
 
         SPList list = web.GetList(url);
@@ -1724,10 +1706,9 @@ public sealed class GssAclUtility
             //Returning List as a default Identified Object
             return list;
         }
-        // TODO Need to check this. 
-        return web.Site.OpenWeb(web.ID);
-
-
+        // TODO Need to check if we should return null here
+        // instead of sending current SPWeb since we are unable to identify object. 
+        return web;
     }
 
     public static String GetUrl(ISecurableObject spObject, String strSiteUrl)
@@ -1735,10 +1716,7 @@ public sealed class GssAclUtility
         String strUrl = String.Empty;
         if (spObject is SPWeb)
         {
-            using (SPWeb oWeb = (SPWeb)spObject)
-            {
-                strUrl = oWeb.Url + "/default.aspx";
-            }
+            strUrl = ((SPWeb)spObject).Url + "/default.aspx";
         }
         else if (spObject is SPList)
         {
@@ -1768,77 +1746,73 @@ public sealed class GssAclUtility
         if (child is SPListItem)
         {
             SPListItem oChildItem = (SPListItem)child;
-            using (SPWeb oParentWeb = oChildItem.Web)
+            SPFile oFile = oChildItem.File;
+            // In case of Folders and generic List items oChildItem.File will be null. 
+            // So need to create SPFile object explicitly.
+            if (oFile == null)
             {
-                SPFile oFile = oChildItem.File;
-                //In case of Folders and generic List items oChildItem.File will be null. 
-                //So need to create SPFile object explicitly.
-                if (oFile == null)
+                oFile = oChildItem.Web.GetFile(oChildItem.Url);
+            }
+            if (oFile != null)
+            {
+                aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
+                //To check if Item is available at root level or inside folder
+                if (String.Compare(oFile.ParentFolder.ServerRelativeUrl,
+                    oChildItem.ParentList.RootFolder.ServerRelativeUrl, true) == 0)
                 {
-                    oFile = oParentWeb.GetFile(oChildItem.Url);
+                    // If item is available at root level (outside folder) return default view
+                    // URL for SPList (same URL is being used in ListState by connector)                       
+                    aclToUpdate.ParentId =
+                        String.Format("{{{0}}}", oChildItem.ParentList.ID.ToString());
                 }
-                if (oFile != null)
+                else
                 {
-                    aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;                    
-                    //To check if Item is available at root level or inside folder
-                    if (String.Compare(oFile.ParentFolder.ServerRelativeUrl, oChildItem.ParentList.RootFolder.ServerRelativeUrl, true) == 0)
+                    // If item is available inside folder 
+                    // then return folder Url in case of meta url feeds.
+                    if (bMetaUrlFeed)
                     {
-                        //If item is available at root level (outside folder) return default view URL for SPList (same URL is being used in ListState by connector)                       
-                        aclToUpdate.ParentId = String.Format("{{{0}}}", oChildItem.ParentList.ID.ToString());
+                        aclToUpdate.ParentUrl = strSiteUrl + oFile.ParentFolder.ServerRelativeUrl;
                     }
-                    else
-                    {
-                        //If item is available inside folder then return folder Url in case of meta url feeds.
-                        if (bMetaUrlFeed)
-                        {
-                            aclToUpdate.ParentUrl = strSiteUrl + oFile.ParentFolder.ServerRelativeUrl;
-                        }
-                        aclToUpdate.ParentId = oFile.ParentFolder.Item.ID.ToString();
-                    }
+                    aclToUpdate.ParentId = oFile.ParentFolder.Item.ID.ToString();
                 }
             }
         }
         else if (child is SPList)
         {
             SPList oChildList = (SPList)child;
-            using (SPWeb oParentWeb = oChildList.ParentWeb)
-            {
-               // Homepage for SPWeb. SPConnector is always using this as default.aspx
-               // TODO Ideally This should be used as String strWelcomePage = oParentWeb.RootFolder.WelcomePage;
-                String strWelcomePage = "default.aspx";
-                aclToUpdate.ParentUrl = oParentWeb.Url + "/" + strWelcomePage;
-                aclToUpdate.ParentId = String.Format("{{{0}}}", oParentWeb.ID.ToString()); 
-            }
+            // As per https://msdn.microsoft.com/en-us/library/aa973248(v=office.12).aspx
+            // No need to dispose SPList.ParentWeb
+            SPWeb oParentWeb = oChildList.ParentWeb; 
+            // Homepage for SPWeb. SPConnector is always using this as default.aspx
+            // TODO Ideally This should be used as String strWelcomePage = oParentWeb.RootFolder.WelcomePage;
+            String strWelcomePage = "default.aspx";
+            aclToUpdate.ParentUrl = oParentWeb.Url + "/" + strWelcomePage;
+            aclToUpdate.ParentId = String.Format("{{{0}}}", oParentWeb.ID.ToString());
+
         }
         else if (child is SPWeb)
         {
-            using (SPWeb oChildWeb = (SPWeb)child)
+            // No need to dispose SPWeb Object created by type cast.
+            SPWeb oChildWeb = (SPWeb)child;
+            // As per https://msdn.microsoft.com/en-us/library/aa973248(v=office.12).aspx
+            // No need to dispose SPWeb.ParentWeb
+            SPWeb oParentWeb = oChildWeb.ParentWeb;
+
+            if (oParentWeb != null && oParentWeb.Exists)
             {
-                using (SPWeb oParentWeb = oChildWeb.ParentWeb)
-                {
-                    if (oParentWeb != null && oParentWeb.Exists)
-                    {
-                        //Homepage for SPWeb
-                        String strWelcomePage = "default.aspx";
-                        aclToUpdate.ParentUrl = oParentWeb.Url + "/" + strWelcomePage;
-                        aclToUpdate.ParentId = String.Format("{{{0}}}", oParentWeb.ID.ToString()); 
-                    }
-                    else
-                    {
-                        using (SPSite oSite = oChildWeb.Site)
-                        {
-                            using (SPWeb oRootWeb = oSite.RootWeb)
-                            {
-                                //Homepage for Root SPWeb
-                                String strWelcomePage = "default.aspx";
-                                aclToUpdate.ParentUrl = oRootWeb.Url + "/" + strWelcomePage;
-                                aclToUpdate.ParentId = String.Format("{{{0}}}", oRootWeb.ID.ToString()); 
-                            }
-                        }
-                    }
-                }
+                //Homepage for SPWeb
+                String strWelcomePage = "default.aspx";
+                aclToUpdate.ParentUrl = oParentWeb.Url + "/" + strWelcomePage;
+                aclToUpdate.ParentId = String.Format("{{{0}}}", oParentWeb.ID.ToString());
             }
-        }      
+            else // Child is a root web (since there is no parent)
+            {
+                //Homepage for Root SPWeb
+                String strWelcomePage = "default.aspx";
+                aclToUpdate.ParentUrl = oChildWeb.Url + "/" + strWelcomePage;
+                aclToUpdate.ParentId = String.Format("{{{0}}}", oChildWeb.ID.ToString());
+            }
+        }
     }
 
     /// <summary>
