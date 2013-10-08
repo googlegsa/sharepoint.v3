@@ -249,7 +249,7 @@ public class ListsHelper {
       }
 
       public MessageElement[] getQueryOptions() throws Exception {
-        return ListsUtil.createQueryOptions(list.canContainFolders(), null, null);
+        return ListsUtil.createQueryOptions(list.canContainFolders(), null);
       }
     };
 
@@ -323,76 +323,6 @@ public class ListsHelper {
   public List<SPDocument> getListItemsUnderFolderHeirarchy(
       final ListState list, Folder currentFolder) {
     return listsWS.getListItemsUnderFolderHeirarchy(list, currentFolder);   
-  }
-
-  /**
-   * Retrieves the list items only the specified level. This required when a
-   * folder is restored and we need to discover items level by level.
-   *
-   * @param list Base List
-   * @param lastItemIdAtFolderLevel Last Item ID that we have already
-   *          identified at this level.
-   * @param currentFolder The folder from where to discover the items
-   * @return list of documents as {@link SPDocument}
-   */
-  public List<SPDocument> getListItemsAtFolderLevel(final ListState list,
-      final String lastItemIdAtFolderLevel, final Folder currentFolder,
-      final Folder renamedFolder) {
-    if (null == currentFolder) {
-      return Collections.emptyList();
-    }
-
-    LOGGER.fine("DocId for WS call : " + lastItemIdAtFolderLevel
-        + " folder path : " + currentFolder + " for renamed folder "
-        + renamedFolder);
-    final String listName = list.getPrimaryKey();
-    final String viewName = "";
-    final String webID = "";
-
-    final ListsUtil.SPQueryInfo queryInfo = new ListsUtil.SPQueryInfo() {
-      public MessageElement[] getQuery() throws Exception {
-        return ListsUtil.createQuery2(lastItemIdAtFolderLevel);
-      }
-
-      public MessageElement[] getViewFields() throws Exception {
-        return ListsUtil.createViewFields();
-      }
-
-      public MessageElement[] getQueryOptions() throws Exception {
-        return ListsUtil.createQueryOptions(false, currentFolder.getPath(), null);
-      }
-    };
-        
-    // Make the getListItems request.
-    List<SPDocument> listItems = Util.makeWSRequest(
-        sharepointClientContext, listsWS,
-        new Util.RequestExecutor<List<SPDocument>>() {
-      public List<SPDocument> onRequest(final BaseWS ws)
-          throws Throwable {
-        return ((ListsWS) ws).getListItems(list, listName, viewName, queryInfo, webID, null);
-      }
-      
-      public void onError(final Throwable e) {
-        LOGGER.log(Level.WARNING, "Unable to get items for list [ "
-            + listName + " ].", e);
-      }
-    });
-
-    if (null == listItems) {
-      return Collections.emptyList();
-    }
-    
-    // Set the parent and rename folder for each document.
-    for (SPDocument doc : listItems) {
-      doc.setRenamedFolder(renamedFolder);
-      doc.setParentFolder(currentFolder);
-    }
-
-    Collections.sort(listItems);
-    LOGGER.fine("Found " + listItems.size() + " in the folder "
-        + currentFolder);
-
-    return listItems;
   }
 
   /**
@@ -470,7 +400,7 @@ public class ListsHelper {
 
       public MessageElement[] getQueryOptions() throws Exception {
         return ListsUtil.createQueryOptions(
-            true, null, list.getListItemCollectionPositionNext());
+            true, list.getListItemCollectionPositionNext());
       }
     };
 

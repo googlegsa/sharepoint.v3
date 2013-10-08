@@ -133,15 +133,6 @@ public class SPListsWSTest extends TestCase {
     System.out.println("[ getFolderHierarchy() ] Test Passed.");
   }
 
-  public void testGetListItemsAtFolderLevel() throws MalformedURLException,
-      RepositoryException {
-    System.out.println("Testing getListItemsAtFolderLevel()...");
-    List<SPDocument> items =
-        listsHelper.getListItemsAtFolderLevel(this.testList, null, null, null);
-    assertNotNull(items);
-    System.out.println("[ getListItemsAtFolderLevel() ] Test Passed.");
-  }
-
   public void testGetListItems() throws MalformedURLException,
       RepositoryException {
     System.out.println("Testing getListItems()...");

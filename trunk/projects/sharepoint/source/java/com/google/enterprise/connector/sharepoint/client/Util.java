@@ -970,48 +970,6 @@ public final class Util {
   }
 
   /**
-   * While specifying the folder level scope we have to remove the preceding
-   * parent site name. e.g, site/list/folder should be converted to list/folder
-   *
-   * @param webURL The parent Web URL
-   * @param docPath docPath as returned by the Web Service
-   */
-  public static String getFolderPathForWSCall(final String webURL,
-      String docPath) {
-    String tmpDocPath = docPath;
-    if ((webURL == null) || (docPath == null)) {
-      return null;
-    }
-    if (docPath.startsWith(SPConstants.SLASH)) {
-      docPath = docPath.replaceFirst(SPConstants.SLASH, "");
-    }
-    String webPath = "";
-    try {
-      final URL web_url = new URL(webURL);
-      webPath = web_url.getPath();
-      if (webPath.startsWith(SPConstants.SLASH)) {
-        webPath = webPath.replaceFirst(SPConstants.SLASH, "");
-      }
-    } catch (final Exception e) {
-      LOGGER.log(Level.WARNING, "Failed to create URL from given webURL.", e);
-      return null;
-    }
-    if (docPath.startsWith(webPath)) {
-      docPath = docPath.replaceFirst(webPath, "");
-    } else {
-      LOGGER.log(Level.WARNING, "Received docPath [" + docPath
-          + "] is not valid as per the given webURL [" + webURL + "] ");
-      return null;
-    }
-    if (docPath.startsWith(SPConstants.SLASH)) {
-      docPath = docPath.replaceFirst(SPConstants.SLASH, "");
-    }
-    LOGGER.log(Level.FINEST, "input [ " + tmpDocPath + " ], output [ "
-        + docPath + " ]. ");
-    return docPath;
-  }
-
-  /**
    * Normalizes the attribute's name to make better sense to the end user.
    *
    * @param metaName the attribute name as returned by the web service the

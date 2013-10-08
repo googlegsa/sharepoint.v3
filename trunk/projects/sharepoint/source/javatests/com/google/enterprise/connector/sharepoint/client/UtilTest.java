@@ -175,13 +175,6 @@ public class UtilTest extends TestCase {
     System.out.println("[ matcher() ] Test Completed");
   }
 
-  public final void testGetFolderPathForWSCall() {
-    System.out.println("Testing getFolderPathForWSCall()..");
-    final String foldPath = Util.getFolderPathForWSCall("http://host.mycomp.com/sanity", "sanity/testLib/fold1");
-    assertNotNull(foldPath);
-    System.out.println("[ getFolderPathForWSCall() ] Test Completed");
-  }
-
   /**
    * @Test Tests {@link Util#formatDate(Calendar, String)}
    */
