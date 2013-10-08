@@ -375,7 +375,7 @@ public class SPListsWS implements ListsWS {
                       + " ]. Perhaps a folder or list was renamed.");
                 }
               }
-              folderPath = Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL);
+              folderPath = relativeURL;
               if (folderPath == null) {
                 continue;
               }
@@ -421,7 +421,7 @@ public class SPListsWS implements ListsWS {
         query.set_any(ListsUtil.createQuerySubFolders(folderLevel));
       }
       viewFields.set_any(ListsUtil.createViewFields());
-      queryOptions.set_any(ListsUtil.createQueryOptions(true, folderLevel, nextPage));
+      queryOptions.set_any(ListsUtil.createQueryOptions(true, nextPage));
       LOGGER.config("Making web service request with the following "
           + "parameters: query [ " + query.get_any()[0]
           + " ], queryoptions [ " + queryOptions.get_any()[0]
@@ -605,7 +605,7 @@ public class SPListsWS implements ListsWS {
       }
       viewFields.set_any(ListsUtil.createViewFields());
       queryOptions.set_any(ListsUtil.createQueryOptions(
-          true, folderPath, currentFolder.getNextPage()));
+          true, currentFolder.getNextPage()));
       LOGGER.config("Making web service request with the following "
           + "parameters: query [ " + query.get_any()[0]
               + " ], queryoptions [ " + queryOptions.get_any()[0]
@@ -784,9 +784,7 @@ public class SPListsWS implements ListsWS {
 
           if (isFolder) {
             if (restoredIDs.contains(docId) || renamedIDs.contains(docId)) {
-              list.addToChangedFolders(new Folder(
-                  Util.getFolderPathForWSCall(list.getParentWebState().getWebUrl(), relativeURL),
-                  docId));
+              list.addToChangedFolders(new Folder(relativeURL, docId));
             }
           }
         }
