@@ -292,28 +292,19 @@ public abstract class ListsUtil {
    * Generates the query options required for making Sharepoint lists
    * web service requests.
    *
-   * @param recursion
-   * @param folderLevel
+   * @param recursion flag to indicate if folders should be returned as 
+   *        part of query results
    * @param nextPage
    * @return the query options being used for WS call
    */
   public static MessageElement[] createQueryOptions(final boolean recursion,
-      final String folderLevel, final String nextPage) {
+      final String nextPage) {
     final MessageElement me = new MessageElement(new QName("QueryOptions"));
     try {
       me.addChildElement(new MessageElement(
           new QName("IncludeMandatoryColumns"))).addTextNode("true");
       me.addChildElement(new MessageElement(new QName("DateInUtc"))).addTextNode("TRUE");
 
-      // If no scope has been explicitly given, get the list items
-      // recursively. Else, get items only at the given scope. Scope
-      // argument has the higher priority here and will be checked first.
-      if ((folderLevel != null) && (folderLevel.trim().length() > 0)) {
-        me.addChildElement(new MessageElement(new QName("Folder"))).addTextNode(folderLevel);
-        // folder information are by deafult returned by
-        // getListItemChangesSinceToken, when folder scope is given.
-        // Hence, no need to use "OptimizeFor" in this case.
-      } 
       if (recursion) {
         me.addChildElement(new MessageElement(new QName("ViewAttributes"))).addAttribute(
             SOAPFactory.newInstance().createName("Scope"), SPConstants.RECURSIVE);
