@@ -937,7 +937,7 @@ public class ListState implements StatefulObject {
     if (!canContainAttachments() || (attachmentURL == null)) {
       return;
     }
-    final Pattern pat = Pattern.compile("\\#" + itemID + "\\|");
+    final Pattern pat = Pattern.compile("\\#" + Pattern.quote(itemID) + "\\|");
     Matcher match = pat.matcher(attachmentURL);
     if (match.find()) {
       LOGGER.log(Level.SEVERE, "attachmentURL [ " + attachmentURL
@@ -968,7 +968,7 @@ public class ListState implements StatefulObject {
     final Pattern delimPat = Pattern.compile("\\#\\d+\\|");
     final Matcher delimMatch = delimPat.matcher(attchmnts);
 
-    final Pattern pat = Pattern.compile("\\#" + itemID + "\\|");
+    final Pattern pat = Pattern.compile("\\#" + Pattern.quote(itemID) + "\\|");
     final Matcher match = pat.matcher(attchmnts);
     if (match.find()) {
       int startPos = -1;
@@ -1005,7 +1005,7 @@ public class ListState implements StatefulObject {
       return false;
     }
     final Pattern pat = Pattern.compile("\\#" + itemID + "\\|.*?"
-        + attachmentURL);
+        + Pattern.quote(attachmentURL));
     final Matcher match = pat.matcher(attchmnts);
     if (match.find()) {
       final int endPos = match.end();
