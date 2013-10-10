@@ -9,16 +9,15 @@ The following sections describe the release in detail and provide information th
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
 
-Release 3.2.0, July 15, 2013
+Release 3.2.0, October 11, 2013
 ===============================
 
 Introduction
 ------------
-This is a minor release with new features. Users of
-previous releases are encouraged to upgrade. Users of previous
-releases should check the "Version Compatibility" section below
-for instructions on how to use existing data with this new
-release.
+This is a minor release with new features. Users of previous releases
+are encouraged to upgrade. Users of previous releases should check the
+"Version Compatibility" section below for instructions on how to use
+existing data with this new release.
 
 Summary of Changes
 ------------------
@@ -37,6 +36,23 @@ Some occurrences of the old name may still appear, but refer to the
 same component.
 
 This release contains fixes for the following issues:
+
+--Issue 11042004 Connector Services for Sharepoint are not correctly
+                 disposing of resources in some circumstances.
+
+--Issue 11041811 SharePoint connector versions 3.2.0-M2 and 3.2.0-RC1
+                 may not index items inside renamed folders in a list.
+
+--Issue 10969700 SharePoint connector does not feed ACLs for some
+                 overflow documents.
+
+--Issue 10898224 SharePoint connector is skipping or partially
+                 traversing a list or library when SharePoint returns
+                 an error during traversal.
+
+--Issue 10894405 SharePoint connector fails to index documents
+                 containing regular expression special characters in
+                 the URL.
 
 --Issue 9401354 Users in web application policy with claims-based 
                 mode are not correctly resolved.
