@@ -1,0 +1,45 @@
+Welcome to the Google Search Appliance Connector for SharePoint
+
+The Google Search Appliance Connector framework enables Google search
+appliances to search and serve documents stored in non-Web
+repositories, such as enterprise content management systems. An
+enterprise content management (ECM) system provides a central
+repository for large numbers of documents.
+
+The Google Search Appliance Connector for SharePoint enables the
+appliance to traverse documents and attachments on SharePoint sites.
+The connector supports SPS 2003 (SharePoint Portal Server), MOSS 2007
+(Microsoft Office SharePoint Server), WSS 2.0, WSS 3.0 (Windows
+SharePoint Services), SP 2010 (SharePoint Server 2010), and SharePoint
+Foundation 2010. The Metadata blacklist and whitelist for the
+documents has been externalized.
+
+The Google Search Appliance Connector for Microsoft SharePoint
+communicates with the SharePoint Server using the SharePoint Web services
+and feed SharePoint content to the search appliance.
+
+
+Documentation Links
+
+    * Documentation for the Google Search Appliance Connectors
+      http://code.google.com/apis/searchappliance/documentation/connectors/index.html
+
+    * Google Search Appliance Connector for SharePoint
+      http://code.google.com/p/google-enterprise-connector-sharepoint/
+
+
+Licensing
+
+      This product includes software developed by
+      The Apache Software Foundation (http://www.apache.org/).
+
+      A copy of the licensing terms is available in a file called COPYING.
+
+
+Source code for 3rd party libraries
+
+      SharePoint connector uses various 3rd party open source
+      libraries. The versions of these libraries are embedded in the
+      names of the files. If you have trouble locating the source code
+      of any of the libraries used by SharePoint connector, you can
+      file an issue on the SharePoint connector project site.
