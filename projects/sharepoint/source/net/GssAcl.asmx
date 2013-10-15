@@ -513,7 +513,8 @@ public class GssAclChangeCollection
             GssAclChange gssChange = null;
             if (changeUser.IsSiteAdminChange)
             {
-                gssChange = new GssAclChange(ObjectType.ADMINISTRATORS, changeUser.ChangeType, changeUser.Id.ToString());
+                gssChange = new GssAclChange(ObjectType.ADMINISTRATORS, changeUser.ChangeType,
+                    GssAclMonitor.GSSITEADMINGROUPID.ToString());
             }
             else if (changeUser.ChangeType == SPChangeType.Delete)
             {
