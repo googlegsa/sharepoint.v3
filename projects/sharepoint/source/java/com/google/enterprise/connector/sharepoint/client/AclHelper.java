@@ -18,6 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -58,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,14 +72,13 @@ import javax.xml.rpc.ServiceException;
  * Java Client for calling GssAcl.asmx web service. Provides a layer to talk to
  * the ACL Web Service on the SharePoint server. Any call to this Web Service
  * must go through this layer.
- *
- * @author nitendra_thakur
  */
+@SuppressWarnings("deprecation") // TODO(jlacey): RoleType is deprecated.
 public class AclHelper {
   private final Logger LOGGER = Logger.getLogger(AclHelper.class.getName());
-  private SharepointClientContext sharepointClientContext = null;
-  private boolean supportsInheritedAcls = false;
-  private boolean supportsDenyAcls = false;
+  private final SharepointClientContext sharepointClientContext;
+  private final boolean supportsInheritedAcls;
+  private final boolean supportsDenyAcls;
   private final AclWS aclWS;
 
   /**
@@ -103,19 +102,19 @@ public class AclHelper {
     aclWS = sharepointClientContext.getClientFactory().getAclWS(
         sharepointClientContext, siteurl);
 
-    if (!sharepointClientContext.isPushAcls()) {
-      return;
-    }
-    if (null == siteurl) {
-      siteurl = sharepointClientContext.getSiteURL();
-    }
     if (null != sharepointClientContext.getTraversalContext()) {
       supportsInheritedAcls = 
           sharepointClientContext.getTraversalContext().supportsInheritedAcls();
       supportsDenyAcls = 
           sharepointClientContext.getTraversalContext().supportsDenyAcls();
+    } else {
+      supportsInheritedAcls = false;
+      supportsDenyAcls = false;
     }
-    LOGGER.log(Level.CONFIG, "Supports ACL " + supportsInheritedAcls);
+    if (!sharepointClientContext.isPushAcls()) {
+      return;
+    }
+    LOGGER.log(Level.CONFIG, "Supports Inherited ACLs " + supportsInheritedAcls);
 
     final String strDomain = sharepointClientContext.getDomain();
     String strUser = sharepointClientContext.getUsername();
@@ -277,11 +276,10 @@ public class AclHelper {
         largeACLUrlToDocMap.put(document.getUrl(), document);
         continue ACL;
       }
-      Map<Principal, Set<RoleType>> userPermissionMap = Maps.newHashMap();
-      Map<Principal, Set<RoleType>> groupPermissionMap = Maps.newHashMap();
-      Map<Principal, Set<RoleType>> deniedUserPermissionMap = Maps.newHashMap();
-      Map<Principal, Set<RoleType>> deniedGroupPermissionMap =
-          Maps.newHashMap();
+      Set<Principal> aclUsers = Sets.newHashSet();
+      Set<Principal> aclGroups = Sets.newHashSet();
+      Set<Principal> aclDenyUsers = Sets.newHashSet();
+      Set<Principal> aclDenyGroups = Sets.newHashSet();
       document.setUniquePermissions(
           !Boolean.parseBoolean(acl.getInheritPermissions()));
       if (!Strings.isNullOrEmpty(acl.getParentUrl())) {
@@ -342,22 +340,21 @@ public class AclHelper {
         String[] deniedPermissions = permissions.getDeniedPermission();
         if (null != deniedPermissions) {
           Set<RoleType> deniedRoleTypes =
-              Util.getRoleTypesFor(deniedPermissions, objectType);
-          if (null != deniedRoleTypes && deniedRoleTypes.size() > 0) {
+              getRoleTypesFor(deniedPermissions, objectType);
+          if (deniedRoleTypes.size() > 0) {
             LOGGER.fine("Denied Permission list "
                 + Arrays.asList(permissions.getDeniedPermission())
                 + " for the User " + principalName);
             LOGGER.fine("Principal [" + principalName
                 + "] Denied Role Types [ " + deniedRoleTypes + " ]");
-            //Pass denied permissions only if Reader role is denied.
-            if (deniedRoleTypes.contains(RoleType.READER)) {
+            // Pass denied permissions only if Peeker or Reader role is denied.
+            if (deniedRoleTypes.contains(RoleType.PEEKER)
+                || deniedRoleTypes.contains(RoleType.READER)) {
               if (supportsDenyAcls) {
                 LOGGER.fine("Processing Deny permissions"
                     + " for Principal ["+ principalName + "]");
-                processPermissions(principal, deniedRoleTypes,
-                    deniedUserPermissionMap, deniedGroupPermissionMap,
-                    principalName, siteCollUrl, memberships,
-                    webState);
+                processPrincipal(principal, aclDenyUsers, aclDenyGroups,
+                    principalName, siteCollUrl, memberships, webState);
               } else {
                 // Skipping ACL as denied ACLs are not supported as per
                 // Traversal Context.
@@ -373,20 +370,24 @@ public class AclHelper {
         LOGGER.fine("Permission list "
             + Arrays.asList(permissions.getAllowedPermissions())
             + " for the User " + principalName);
-        Set<RoleType> allowedRoleTypes = Util.getRoleTypesFor(
-            permissions.getAllowedPermissions(), objectType);
-        if (allowedRoleTypes != null && !allowedRoleTypes.isEmpty()) {
+        Set<RoleType> allowedRoleTypes =
+            getRoleTypesFor(permissions.getAllowedPermissions(), objectType);
+        if (!allowedRoleTypes.isEmpty()) {
           LOGGER.fine("Principal [ "+ principalName
               + " ] Allowed Role Types [ "+ allowedRoleTypes + " ]");
-          processPermissions(principal, allowedRoleTypes, userPermissionMap,
-              groupPermissionMap, principalName, siteCollUrl, memberships,
-              webState);
+          // Pass allowed permissions only if role other than Peeker is allowed.
+          if (allowedRoleTypes.contains(RoleType.READER)
+              || allowedRoleTypes.contains(RoleType.WRITER)
+              || allowedRoleTypes.contains(RoleType.OWNER)) {
+            processPrincipal(principal, aclUsers, aclGroups,
+                principalName, siteCollUrl, memberships, webState);
+          }
         }
       }
-      document.setUsersAclMap(userPermissionMap);
-      document.setGroupsAclMap(groupPermissionMap);
-      document.setDenyUsersAclMap(deniedUserPermissionMap);
-      document.setDenyGroupsAclMap(deniedGroupPermissionMap);
+      document.setAclUsers(aclUsers);
+      document.setAclGroups(aclGroups);
+      document.setAclDenyUsers(aclDenyUsers);
+      document.setAclDenyGroups(aclDenyGroups);
     }
 
     if (!reprocessDocs.isEmpty()) {
@@ -437,43 +438,173 @@ public class AclHelper {
    * @param target target SPDocument for copy
    */
   private void copyAcls(SPDocument source, SPDocument target) {
-    target.setUsersAclMap(source.getUsersAclMap());
-    target.setGroupsAclMap(source.getGroupsAclMap());
-    target.setDenyUsersAclMap(source.getDenyUsersAclMap());
-    target.setDenyGroupsAclMap(source.getDenyGroupsAclMap());
+    target.setAclUsers(source.getAclUsers());
+    target.setAclGroups(source.getAclGroups());
+    target.setAclDenyUsers(source.getAclDenyUsers());
+    target.setAclDenyGroups(source.getAclDenyGroups());
   } 
 
+  private static class SPBasePermissions {
+    public static final String EMPTYMASK = "EmptyMask";
+    public static final String VIEWLISTITEMS = "ViewListItems";
+    public static final String ADDLISTITEMS = "AddListItems";
+    public static final String EDITLISTITEMS = "EditListItems";
+    public static final String DELETELISTITEMS = "DeleteListItems";
+    public static final String APPROVEITEMS = "ApproveItems";
+    public static final String OPENITEMS = "OpenItems";
+    public static final String VIEWVERSIONS = "ViewVersions";
+    public static final String DELETEVERSIONS = "DeleteVersions";
+    public static final String CANCELCHECKOUT = "CancelCheckout";
+    public static final String MANAGEPERSONALVIEWS = "ManagePersonalViews";
+    public static final String MANAGELISTS = "ManageLists";
+    public static final String VIEWFORMPAGES = "ViewFormPages";
+    public static final String OPEN = "Open";
+    public static final String VIEWPAGES = "ViewPages";
+    public static final String ADDANDCUSTOMIZEPAGES = "AddAndCustomizePages";
+    public static final String APPLYTHEMEANDBORDER = "ApplyThemeAndBorder";
+    public static final String APPLYSTYLESHEETS = "ApplyStyleSheets";
+    public static final String VIEWUSAGEDATA = "ViewUsageData";
+    public static final String CREATESSCSITE = "CreateSSCSite";
+    public static final String MANAGESUBWEBS = "ManageSubwebs";
+    public static final String CREATEGROUPS = "CreateGroups";
+    public static final String MANAGEPERMISSIONS = "ManagePermissions";
+    public static final String BROWSEDIRECTORIES = "BrowseDirectories";
+    public static final String BROWSEUSERINFO = "BrowseUserInfo";
+    public static final String ADDDELPRIVATEWEBPARTS = "AddDelPrivateWebParts";
+    public static final String UPDATEPERSONALWEBPARTS = "UpdatePersonalWebParts";
+    public static final String MANAGEWEB = "ManageWeb";
+    public static final String USECLIENTINTEGRATION = "UseClientIntegration";
+    public static final String USEREMOTEAPIS = "UseRemoteAPIs";
+    public static final String MANAGEALERTS = "ManageAlerts";
+    public static final String CREATEALERTS = "CreateAlerts";
+    public static final String EDITMYUSERINFO = "EditMyUserInfo";
+    public static final String ENUMERATEPERMISSIONS = "EnumeratePermissions";
+    public static final String FULLMASK = "FullMask";
+  }
+
   /**
-   * Method to process GssAcl permissions.
+   * Maps a set of SharePoint defined permissions to CM defined permissions.
+   * TODO: The logic used for mapping could be improved depending on the current
+   * discussions going on at this front with John Felton.
    *
-   * @param principal GsssPrincipal Object to process.
-   * @param roleTypes  Allowed / denied RoleTypes.
-   * @param userPermissionMap Permissions Map to add user permissions.
-   * @param groupPermissionMap Permissions Map to add group permissions.
+   * @param permissions SharePoint Permissions
+   * @param objectType Kind of entity (List/List-Item/Web) for which the mapping
+   *          is to be done. This is required because SharePoint defines
+   *          multiple granular permissions for various entity types and all
+   *          these permissions may not be applicable to all the entities. For
+   *          Example, "ManageWeb" has nothing do with ListItems.
+   * @return a list of {@link RoleType}
+   */
+  private Set<RoleType> getRoleTypesFor(String[] permissions,
+      ObjectType objectType) {
+    Set<RoleType> roleTypes = Sets.newHashSet();
+    if (null == permissions || permissions.length == 0 || null == objectType) {
+      return roleTypes;
+    }
+    if (permissions.length == 0
+        || (permissions.length == 1 && permissions[0].equals(SPBasePermissions.EMPTYMASK))) {
+      return roleTypes;
+    }
+
+    // The following two flags are to check if all the required permissions
+    // for WRITER access on a list are fulfilled or not. We may need to add
+    // more flags in future corresponding to any extra permissions that we
+    // agree to check to give a user WRITER access on a list
+    boolean managelist = false;
+    boolean additems = false;
+
+    // For checking Limited Access permission which will be mapped to the
+    // PEEKER in CM
+    boolean viewFormPages = false;
+    boolean open = false;
+    // flags to check all the required permissions for READER access on
+    // SharePoint List or Document Library.
+    boolean viewPages = false;
+    boolean viewListItems = false;
+
+    for (String permission : permissions) {
+      if (SPBasePermissions.FULLMASK.equals(permission)) {
+        roleTypes.add(RoleType.OWNER);
+      }
+
+      if (SPBasePermissions.VIEWFORMPAGES.equals(permission)) {
+        viewFormPages = true;
+      }
+      if (SPBasePermissions.OPEN.equals(permission)) {
+        open = true;
+      }
+
+      if (ObjectType.ITEM.equals(objectType)) {
+        if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.WRITER);
+        }
+        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.READER);
+        }
+      } else if (ObjectType.LIST.equals(objectType)) {
+        if (!managelist && SPBasePermissions.MANAGELISTS.equals(permission)) {
+          managelist = true;
+        }
+        if (!additems && SPBasePermissions.ADDLISTITEMS.equals(permission)) {
+          additems = true;
+        }
+        if (SPBasePermissions.VIEWPAGES.equals(permission)) {
+          viewPages = true;
+        }
+        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+          viewListItems = true;
+        }
+      } else if (ObjectType.SITE_LANDING_PAGE.equals(objectType)) {
+        if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.WRITER);
+        }
+        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
+          roleTypes.add(RoleType.READER);
+        }
+      }
+      // Currently, only list and list-items are fed as documents. In
+      // future, if sites and pages are also sent, more checks will have
+      // to be added here
+    }
+    if (ObjectType.LIST.equals(objectType) && viewPages && viewListItems) {
+      roleTypes.add(RoleType.READER);
+    }     
+    if (ObjectType.LIST.equals(objectType) && managelist && additems) {
+      roleTypes.add(RoleType.WRITER);
+    }
+    if (viewFormPages && open) {
+      roleTypes.add(RoleType.PEEKER);
+    }
+    return roleTypes;
+  }
+
+  /**
+   * Method to process GssAcl principals.
+   *
+   * @param principal GssPrincipal Object to process
+   * @param users set to add user principals to
+   * @param groups set to add group principals to
    * @param principalName Principal Name
    * @param webStateUrl Site Collection Url from WebState
    * @param memberships UserGroup Membership object
    */
-  private void processPermissions(GssPrincipal principal,
-      Set<RoleType> roleTypes, Map<Principal, Set<RoleType>> userPermissionMap,
-      Map<Principal, Set<RoleType>> groupPermissionMap, String principalName,
-      String webStateUrl, Set<UserGroupMembership> memberships,
-      WebState webState) {
+  private void processPrincipal(GssPrincipal principal, Set<Principal> users,
+      Set<Principal> groups, String principalName, String webStateUrl,
+      Set<UserGroupMembership> memberships, WebState webState) {
     String globalNamespace = sharepointClientContext.getGoogleGlobalNamespace();
     String localNamespace = sharepointClientContext.getGoogleLocalNamespace();
     if (PrincipalType.USER.equals(principal.getType())) {
-      userPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+      users.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
               globalNamespace, principalName,
-              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
     } else if (PrincipalType.DOMAINGROUP.equals(principal.getType())) {
-      groupPermissionMap.put(new Principal(SpiConstants.PrincipalType.UNKNOWN,
+      groups.add(new Principal(SpiConstants.PrincipalType.UNKNOWN,
               globalNamespace, principalName,
-              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
     } else if (PrincipalType.SPGROUP.equals(principal.getType())) {
-      groupPermissionMap.put(
-          new Principal(SpiConstants.PrincipalType.UNQUALIFIED, localNamespace,
-              "[" + webStateUrl + "]" + principalName,
-              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE), roleTypes);
+      groups.add(new Principal(SpiConstants.PrincipalType.UNQUALIFIED,
+              localNamespace, "[" + webStateUrl + "]" + principalName,
+              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
 
       // If it's a SharePoint group, add the membership info
       // into the User Data Store
@@ -598,10 +729,14 @@ public class AclHelper {
   public List<SPDocument> getListItemsForAclChangeAndUpdateState(
       ListState listState, ListsHelper listsHelper) {
     List<SPDocument> aclChangedDocs = null;
+    List<SPDocument> attachmentsForChangedDocs = new ArrayList<SPDocument>();
     if (sharepointClientContext.isPushAcls() && listState.isAclChanged()) {
-      GssGetListItemsWithInheritingRoleAssignments wsResult = GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(), String.valueOf(listState.getLastDocIdCrawledForAcl()));
+      GssGetListItemsWithInheritingRoleAssignments wsResult = 
+          GetListItemsWithInheritingRoleAssignments(listState.getPrimaryKey(),
+          String.valueOf(listState.getLastDocIdCrawledForAcl()));
       if (null != wsResult) {
-        aclChangedDocs = listsHelper.parseCustomWSResponseForListItemNodes(wsResult.getDocXml(), listState);
+        aclChangedDocs = listsHelper.parseCustomWSResponseForListItemNodes(
+            wsResult.getDocXml(), listState);
         if (null != aclChangedDocs) {
           LOGGER.log(Level.INFO, "Found " + aclChangedDocs.size()
               + " documents from list [ " + listState
@@ -609,10 +744,24 @@ public class AclHelper {
               + listState.getLastDocIdCrawledForAcl() + " ], ToID [ "
               + wsResult.getLastIdVisited() + " ], moreDocs [ "
               + wsResult.isMoreDocs() + " ] ");
+          boolean lookForAttachment = listState.canContainAttachments();
           for (SPDocument document : aclChangedDocs) {
             document.setForAclChange(true);
+            if (lookForAttachment) {
+              // Get attachments for ACL changed documents
+              attachmentsForChangedDocs.addAll(
+                  listsHelper.getAttachments(listState, document));
+            }
           }
         }
+
+        if (attachmentsForChangedDocs.size() > 0) {
+          for(SPDocument attachment : attachmentsForChangedDocs) {
+            attachment.setForAclChange(true);
+          }
+          aclChangedDocs.addAll(attachmentsForChangedDocs);
+        }
+
         if (wsResult.isMoreDocs()) {
           listState.updateAclCrawlStatus(true, wsResult.getLastIdVisited());
         } else {
@@ -677,13 +826,18 @@ public class AclHelper {
 
   public void fetchAclChangesSinceTokenAndUpdateState(WebState webState) {
     if (!sharepointClientContext.isPushAcls()) {
+      LOGGER.log(Level.INFO, 
+          "Not performing ACL change detection because PushAcls is false.");
       return;
     }
 
     // Do not initiate ACL change detection if all the list states have not
     // yet been processed for the previously detected ACl changes
     for (ListState listState : webState.getAllListStateSet()) {
-      if (listState.isAclChanged()) {
+      if (listState.isAclChanged() && !listState.isNoCrawl()) {
+        LOGGER.log(Level.INFO, 
+            "Not performing ACL change detection because List [" + listState
+            + "] is still pending for ACL change from previous run.");
         return;
       }
     }
@@ -739,7 +893,7 @@ public class AclHelper {
 
     // To keep track of all the lists which have been processed. This is to
     // avoid re-processing of the same list due to multiple changes
-    Set<ListState> processedLists = new HashSet<ListState>();
+    Set<ListState> processedLists = Sets.newHashSet();
 
     // All groups where there are some membership changes
     // TODO: why not this is integer?
@@ -780,7 +934,7 @@ public class AclHelper {
           webstate.resetState();
           isWebReset = true;
         }
-       } else if (objType == ObjectType.WEB && !isWebChanged) {
+       } else if (objType == ObjectType.WEB) {
          if (changeType == SPChangeType.AssignmentDelete) {
           // Typically, deletion of a role affects the ACL of only
           // those entities down the hierarchy which are inheriting
@@ -795,13 +949,14 @@ public class AclHelper {
           webstate.resetState();
           webstate.setWebApplicationPolicyChange(true);   
           isWebReset = true;
-        } else {
+        } else if (!isWebChanged){
           // With inherited ACL support no need to re-crawl
           // all inheriting Lists.
           // Web Permissions are associated with Web home Page.
           // just marking web home page for re-crawl.
           // TODO : Need to change setWebApplicationPolicyChange
           // to something like setRevisitWebHome.
+	      webstate.setWebApplicationPolicyChange(true);
           if (supportsInheritedAcls) {
             LOGGER.log(Level.INFO, "Change in Web Permissions - Reseting Site home Page");
             webstate.setWebApplicationPolicyChange(true);
@@ -822,8 +977,19 @@ public class AclHelper {
             // changed role assignments.
             for (ListState listState : webstate.getAllListStateSet()) {
               if (!listState.isInheritedSecurity()) {
+                LOGGER.log(Level.INFO, "Skipping List [ "
+                    + listState
+                    + " ] as it does not inherit its permission");
                 continue;
               }
+              
+              if (listState.isNoCrawl()) {
+                LOGGER.log(Level.INFO, "Skipping List [ "
+                    + listState
+                    + " ] as it is marked for no crawl");
+                continue;
+              }
+              
               if (!processedLists.contains(listState)) {
                 LOGGER.log(Level.INFO, "Marking List [ "
                     + listState

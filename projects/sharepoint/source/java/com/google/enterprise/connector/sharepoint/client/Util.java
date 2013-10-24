@@ -16,12 +16,8 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
-import com.google.enterprise.connector.sharepoint.client.SPConstants.SPBasePermissions;
-import com.google.enterprise.connector.sharepoint.generated.gssacl.ObjectType;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.spi.RepositoryException;
-import com.google.enterprise.connector.spi.Value;
-import com.google.enterprise.connector.spi.SpiConstants.RoleType;
 
 import org.apache.axis.AxisFault;
 
@@ -55,12 +51,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1151,102 +1145,6 @@ public final class Util {
       }
     }
     return true;
-  }
-
-  /**
-   * Maps a set of SharePoint defined permissions to CM defined permissions.
-   * TODO: The logic used for mapping could be improved depending on the current
-   * discussions going on at this front with John Felton.
-   *
-   * @param permissions SharePoint Permissions
-   * @param objectType Kind of entity (List/List-Item/Web) for which the mapping
-   *          is to be done. This is required because SharePoint defines
-   *          multiple granular permissions for various entity types and all
-   *          these permissions may not be applicable to all the entities. For
-   *          Example, "ManageWeb" has nothing do with ListItems.
-   * @return a list of {@link RoleType}
-   */
-  public static Set<RoleType> getRoleTypesFor(String[] permissions,
-      ObjectType objectType) {
-    Set<RoleType> roleTypes = new HashSet<RoleType>();
-    if (null == permissions || permissions.length == 0 || null == objectType) {
-      return roleTypes;
-    }
-    if (permissions.length == 0
-        || (permissions.length == 1 && permissions[0].equals(SPBasePermissions.EMPTYMASK))) {
-      return roleTypes;
-    }
-
-    // The following two flags are to check if all the required permissions
-    // for WRITER access on a list are fulfilled or not. We may need to add
-    // more flags in future corresponding to any extra permissions that we
-    // agree to check to give a user WRITER access on a list
-    boolean managelist = false;
-    boolean additems = false;
-
-    // For checking Limited Access permission which will be mapped to the
-    // PEEKER in CM
-    boolean viewFormPages = false;
-    boolean open = false;
-    // flags to check all the required permissions for READER access on
-    // SharePoint List or Document Library.
-    boolean viewPages = false;
-    boolean viewListItems = false;
-
-    for (String permission : permissions) {
-      if (SPBasePermissions.FULLMASK.equals(permission)) {
-        roleTypes.add(RoleType.OWNER);
-      }
-
-      if (SPBasePermissions.VIEWFORMPAGES.equals(permission)) {
-        viewFormPages = true;
-      }
-      if (SPBasePermissions.OPEN.equals(permission)) {
-        open = true;
-      }
-
-      if (ObjectType.ITEM.equals(objectType)) {
-        if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
-          roleTypes.add(RoleType.WRITER);
-        }
-        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
-          roleTypes.add(RoleType.READER);
-        }
-      } else if (ObjectType.LIST.equals(objectType)) {
-        if (!managelist && SPBasePermissions.MANAGELISTS.equals(permission)) {
-          managelist = true;
-        }
-        if (!additems && SPBasePermissions.ADDLISTITEMS.equals(permission)) {
-          additems = true;
-        }
-        if (SPBasePermissions.VIEWPAGES.equals(permission)) {
-          viewPages = true;
-        }
-        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
-          viewListItems = true;
-        }
-      } else if (ObjectType.SITE_LANDING_PAGE.equals(objectType)) {
-        if (SPBasePermissions.EDITLISTITEMS.equals(permission)) {
-          roleTypes.add(RoleType.WRITER);
-        }
-        if (SPBasePermissions.VIEWLISTITEMS.equals(permission)) {
-          roleTypes.add(RoleType.READER);
-        }
-      }
-      // Currently, only list and list-items are fed as documents. In
-      // future, if sites and pages are also sent, more checks will have
-      // to be added here
-    }
-    if (ObjectType.LIST.equals(objectType) && viewPages && viewListItems) {
-      roleTypes.add(RoleType.READER);
-    }     
-    if (ObjectType.LIST.equals(objectType) && managelist && additems) {
-      roleTypes.add(RoleType.WRITER);
-    }
-    if (viewFormPages && open) {
-      roleTypes.add(RoleType.PEEKER);
-    }
-    return roleTypes;
   }
 
   /**
