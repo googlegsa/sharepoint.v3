@@ -9,6 +9,53 @@ main documentation.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
+Release 3.2.2, October 23, 2013
+===============================
+
+Introduction
+------------
+This is a maintenance release that improves quality without adding any
+new functionality. Users of previous releases are encouraged to upgrade.
+
+This connector replaces functionality previously provided by the
+SharePoint connector. This connector can be used automatically in
+conjunction with the SharePoint connector as a drop-in replacement for
+the previous functionality, or used separately with other connectors
+or content sources.
+
+Summary of Changes
+------------------
+This release contains fixes for the following issues:
+--Issues 11007062,10253530 Upgrade H2 database to version 1.3.173 to fix
+                 corruption issues. Possible errors included
+                 ArrayIndexOutOfBoundsException, and SQL error messages such as
+                 "File corrupted while reading record" and "Row not found when
+                 trying to delete from index."
+
+--Issue 10086529 ForeignSecurityPrincipals are not always merged during
+                 membership merge when connector is configured to use
+                 SQL server as datastore.
+
+--Issue 9900497  Enable Bulk processing of AD membership information when
+                 connector is configured to use SQL server as datastore.
+
+Version Compatibility
+---------------------
+Connector instances created using versions 3.0.0 through 3.2.0 may be
+used with this version. This version works with Connector Manager
+version 3.0.0 and above. Versions lower than 3.0.0 of the Connector
+Manager will not work correctly with this version of the connector.
+
+For optimal performance, if you are upgrading from a previous 3.0.x
+version, you need to ensure that all required indexes are available.
+You can either create them manually, or if feasible, Google recommends
+dropping the database tables and resetting the traversal for your connector
+instances after the upgrade. When using the default H2 database, you can
+simply delete the connector_manager.h2.db file under
+Tomcat/webapps/connector-manager/WEB-INF/connector_manager.db
+while Tomcat is stopped.
+
+
 Release 3.2.0, July 15, 2013
 ============================
 
@@ -27,13 +74,8 @@ Summary of Changes
 ------------------
 This release contains fixes for the following issues:
 
---Issue 9900497 Enable Bulk processing of AD membership information when
-                connector is configured to use SQL server as datastore.
-
 --Issue 7121121 Flush AD entries in the user datastore when the last connector
                 instance gets deleted from the Connector Manager.
-				
-
 
 Version Compatibility
 ---------------------
@@ -43,12 +85,13 @@ version 3.0.0 and above. Versions lower than 3.0.0 of the Connector
 Manager will not work correctly with this version of the connector.
 
 For optimal performance, if you are upgrading from a previous 3.0.x
-version, Google recommends dropping the database tables and resetting the
-traversal for your connector instances after the upgrade. When using the
-default H2 database, you can simply delete the connector_manager.h2.db
-file under Tomcat/webapps/connector-manager/WEB-INF/connector_manager.db
+version, you need to ensure that all required indexes are available.
+You can either create them manually, or if feasible, Google recommends
+dropping the database tables and resetting the traversal for your connector
+instances after the upgrade. When using the default H2 database, you can
+simply delete the connector_manager.h2.db file under
+Tomcat/webapps/connector-manager/WEB-INF/connector_manager.db
 while Tomcat is stopped.
-
 
 
 Release 3.0.8, May 31, 2013
