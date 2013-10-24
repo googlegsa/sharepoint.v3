@@ -651,9 +651,14 @@ public class SPDocument implements Document, Comparable<SPDocument> {
    * Note: calling method should check for "isPushAcls" before calling this.
    */
   public boolean isMissingAcls() {
-    return (!isPublicDocument() && parentUrl == null  
-        && aclUsers == null && aclGroups == null
-        && aclDenyUsers == null && aclDenyGroups == null);
+    return (!isPublicDocument() && action == ActionType.ADD 
+        && Strings.isNullOrEmpty(parentUrl)
+        && isNullOrEmptySet(aclUsers) && isNullOrEmptySet(aclGroups)
+        && isNullOrEmptySet(aclDenyUsers) && isNullOrEmptySet(aclDenyGroups));
+  }
+  
+  private boolean isNullOrEmptySet(Set input) {   
+    return (input == null || input.isEmpty());
   }
 
   /**
@@ -677,7 +682,9 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     if (sharepointClientContext.isPushAcls()) {
       if (isMissingAcls()) {
         sharepointClientContext.logToFile(SPConstants.MISSING_ACL_URL_LOG,
-            "Missing ACL : Document [" + this +"] is missing ACL.");
+            "Document [" + this +"] is missing ACL.");
+        LOGGER.log(Level.WARNING, 
+            "Missing ACL:Document [{0}] is missing ACL.", this);
       }
       names.add(SpiConstants.PROPNAME_ISPUBLIC);
       if (!isWebAppPolicyDoc()) {
