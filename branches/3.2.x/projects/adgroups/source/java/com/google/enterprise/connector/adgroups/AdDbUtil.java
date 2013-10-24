@@ -54,6 +54,9 @@ public class AdDbUtil {
     SELECT_SERVER("SELECT_SERVER"),
     UPDATE_SERVER("UPDATE_SERVER"),
     MERGE_ENTITIES("MERGE_ENTITIES"),
+    ADD_ENTITIES("ADD_ENTITIES"),
+    MATCH_ENTITIES("MATCH_ENTITIES"),
+    RESOLVE_PRIMARY_GROUPS("RESOLVE_PRIMARY_GROUPS"),
     FIND_ENTITY("FIND_ENTITY"),
     FIND_PRIMARY_GROUP("FIND_PRIMARY_GROUP"),
     FIND_GROUP("FIND_GROUP"),
@@ -391,6 +394,8 @@ public class AdDbUtil {
         statement.addBatch();
         if (++batch >= batchHint) {
           statement.executeBatch();
+          LOGGER.log(
+              Level.FINE, "Batch execution done for SQL [" + sql + "]");
           batch = 0;
         }
       }
@@ -406,25 +411,28 @@ public class AdDbUtil {
    * Merges memberships from Active Directory to the database
    * @param entities list of entities whose memberships we should update
    */
-  public void mergeMemberships(final Set<AdEntity> entities)
+  public void mergeMemberships(final Set<AdEntity> entities,
+      boolean resolveMemberId)
       throws SQLException {
     for (AdEntity e : entities) {
       if (!e.isGroup()) {
         continue;
       }
       Long groupId = getEntityId(Query.FIND_ENTITY, e.getSqlParams());
-      Set<String> dbMemberships = new HashSet<String>();
+      Map<String, Number> dbMemberships = new HashMap<String, Number>();
       for (HashMap<String, Object> dbMembership: 
         select(Query.SELECT_MEMBERSHIPS_BY_DN, e.getSqlParams())) {
-        dbMemberships.add((String) dbMembership.get(AdConstants.DB_MEMBERDN));
+        dbMemberships.put((String) dbMembership.get(AdConstants.DB_MEMBERDN),
+            (Number) dbMembership.get(AdConstants.DB_MEMBERID));
       }
       Set<AdMembership> adMemberships = e.getMembers();
 
       if (LOGGER.isLoggable(Level.FINE)) {
         StringBuffer sb = new StringBuffer("For user [").append(e).append(
-            "] identified "+ dbMemberships.size() +" memberships in Database:");
-        for (String dbMembership : dbMemberships) {
-          sb.append("[").append(dbMembership).append("] ");
+            "] identified " + dbMemberships.size()
+            + " memberships in Database:");
+        for (String memberDn : dbMemberships.keySet()) {
+          sb.append("[").append(memberDn).append("] ");
         }
         sb.append(" and " + adMemberships.size()
             + " memberships in Active Directory:");
@@ -442,10 +450,25 @@ public class AdDbUtil {
 
         int batch = 0;
         for (AdMembership m : adMemberships) {
-          if (!dbMemberships.contains(m.memberDn)) {
-            LOGGER.finer(
-                "Adding [" + m.memberDn + "] id [ " + m.memberId
-                + "] as member to group [" + e + "]");
+          Map<String, Object> foreign = m.parseForeignSecurityPrincipal();
+          if (foreign != null) {
+            m.memberId = getEntityId(Query.FIND_FOREIGN, foreign);
+          } else if (resolveMemberId){
+            m.memberId = getEntityId(Query.FIND_GROUP, m.getSqlParams());
+          }
+          // If member is missing from group in the DB or present but has a 
+          // null memberId
+          if (!dbMemberships.containsKey(m.memberDn) || (m.memberId != null 
+              && dbMemberships.get(m.memberDn) == null)) {
+            if (!dbMemberships.containsKey(m.memberDn)) {
+              LOGGER.finer(
+                  "Adding [" + m.memberDn + "] id [ " + m.memberId
+                  + "] as member to group [" + e + "]");
+            } else {
+              LOGGER.finer(
+                  "Resolving [" + m.memberDn + "] to id [ " + m.memberId
+                  + "] as member of group [" + e + "]");
+            }
             Map<String, Object> insParams = new HashMap<String, Object>();
             insParams.put(AdConstants.DB_GROUPID, groupId);
             insParams.put(AdConstants.DB_MEMBERDN, m.memberDn);
@@ -476,9 +499,9 @@ public class AdDbUtil {
             Query.DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN, identifiers));
         Map<String, Object> delParams = e.getSqlParams();
 
-        for (String s : dbMemberships) {
-          LOGGER.finer("Removing [" + s + "] from group [" + e + "]");
-          delParams.put(AdConstants.DB_MEMBERDN, s);
+        for (String memberDn : dbMemberships.keySet()) {
+          LOGGER.finer("Removing [" + memberDn + "] from group [" + e + "]");
+          delParams.put(AdConstants.DB_MEMBERDN, memberDn);
           addParams(delStatement, identifiers, delParams);
           delStatement.addBatch();
           if (++batch == batchHint) {
