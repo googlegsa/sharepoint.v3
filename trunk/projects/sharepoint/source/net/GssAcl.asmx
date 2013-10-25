@@ -1756,7 +1756,12 @@ public sealed class GssAclUtility
             }
             if (oFile != null)
             {
-                aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
+                String parentListUrl = oChildItem.ParentList.DefaultViewUrl;
+                if (String.IsNullOrEmpty(parentListUrl) || parentListUrl == "/")
+                {
+                    parentListUrl = oChildItem.ParentList.RootFolder.ServerRelativeUrl;
+                }
+                aclToUpdate.ParentUrl = strSiteUrl + parentListUrl;
                 //To check if Item is available at root level or inside folder
                 if (String.Compare(oFile.ParentFolder.ServerRelativeUrl,
                     oChildItem.ParentList.RootFolder.ServerRelativeUrl, true) == 0)
