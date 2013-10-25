@@ -44,12 +44,12 @@ public class SiteDiscovery : System.Web.Services.WebService
         //get the site collection for the central administration       
         foreach (SPWebApplication wa in SPWebService.AdministrationService.WebApplications)
         {
-            GetAllSiteCollectionsFromWebApplication(wa, webSiteList);
+            GetAllSiteCollectionsFromWenApplication(wa, webSiteList);       
         }
 
         foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
         {
-            GetAllSiteCollectionsFromWebApplication(wa, webSiteList);
+            GetAllSiteCollectionsFromWenApplication(wa, webSiteList);  
         }
         return webSiteList;//return the list
     }
@@ -58,20 +58,32 @@ public class SiteDiscovery : System.Web.Services.WebService
     /// </summary>
     /// <param name="wa">SPWebApplication object to fetch all the Site Collections</param>
     /// <param name="webSiteList">ArrayList object to hold URLs for all the site collections under SPWebApplication</param> 
-    private void GetAllSiteCollectionsFromWebApplication(SPWebApplication wa, ArrayList webSiteList)
+    private void GetAllSiteCollectionsFromWenApplication(SPWebApplication wa, ArrayList webSiteList)
     {
-        if (wa.Sites != null)
-        {
-            // Get web application URL for current request URL Zone.
-            string strWebappUrl = wa.GetResponseUri(SPContext.Current.Site.Zone).AbsoluteUri;
-            if (!strWebappUrl.EndsWith("/"))
+        if (wa != null)
+        {          
+            if (webSiteList == null)
             {
-                strWebappUrl = strWebappUrl + "/";
-            }        
-            foreach (String url in wa.Sites.Names)
-            {
-                webSiteList.Add(strWebappUrl + url);
+                webSiteList = new ArrayList();
             }
+            if (wa.Sites != null && wa.Sites.Count > 0)
+            {
+                //TODO: To use SPSiteCollection.Names property along with SPUrlZone to get all possible URLS (Default,Custom,Intranet,Internet etc) for Web Application
+                foreach (SPSite oSite in wa.Sites)
+                {
+                    try
+                    {
+                        webSiteList.Add(oSite.Url);
+                    }
+                    finally
+                    {
+                        if (oSite != null)
+                        {
+                            oSite.Dispose();
+                        }
+                    }
+                }                
+            }   
         }
     }
         
