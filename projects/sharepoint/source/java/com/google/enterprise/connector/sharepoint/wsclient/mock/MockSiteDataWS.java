@@ -77,4 +77,8 @@ public class MockSiteDataWS implements SiteDataWS {
   public _sWebMetadataHolder getSiteData() throws RemoteException {
     return null;
   }
+
+  public String getContentList(String id) throws RemoteException {
+    return "";
+  }
 }
