@@ -127,7 +127,7 @@ Download and extract the GSBS-3.2.0_SharePoint2010.zip on you SharePoint machine
   <add key="omitSecureCookie" value="false" />
   <add key="xslGSA2SP" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\GSA2SP.xsl" /> 
   <add key="xslSP2result" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\SP_Actual.xsl" /> 
-  <add key="logLocation" value="C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS\" /> 
+  <add key="logLocation" value="C:\program files\Common Files\Microsoft Shared\web server extensions\14\LOGS" /> 
   <add key="defaultSearchType" value="publicAndSecure" />
   <add key="SearchTipsHTMLFileName" value="user_help.html" />
   <add key="EnableEmbeddedMode" value="true" />     
