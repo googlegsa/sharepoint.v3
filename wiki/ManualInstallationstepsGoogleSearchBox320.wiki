@@ -12,9 +12,9 @@ The search Box can be deployed on machine with one of the following:
 
 The Google Search Box for !SharePoint can be downloaded from: 
 http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list
- * !GSBS-3.2.0_SharePoint2013.zip
- * !GSBS-3.2.0_SharePoint2010.zip
- * !GSBS-3.2.0_SharePoint2007.zip
+ * GSBS-3.2.0__!SharePoint2013.zip
+ * GSBS-3.2.0__!SharePoint2010.zip
+ * GSBS-3.2.0__!SharePoint2007.zip
 
 
 For a !SharePoint farm scenario, you need to install the Search Box for all the !SharePoint Web Front Ends connected to the farm. 
