@@ -53,7 +53,7 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2013.zip on you !SharePoint mac
 
 * In IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened.
 * In the Windows Explorer, right click on web.config -> Edit.
-* Go to "<appSettings>" section and add tje following keys (sample values are for reference):
+* Go to "<appSettings>" section and add the following keys (sample values are for reference):
   <add key="GSALocation" value="gsa.mycompany.mydomain.com" />
   <add key="frontEnd" value="default_frontend" />
   <add key="verbose" value="True" />
@@ -119,7 +119,7 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2010.zip on you !SharePoint mac
 * In IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened.
 * In the Windows Explorer, right click on web.config -> Edit               
 * Go to "<appSettings>" section. (For SharePoint Foundation 2010, you will need to create a new "<appSettings>" section)
-* For Sharepoint 2010, add following keys under it. (sample values are for reference)  
+* Add the following keys (sample values are for reference):
   <add key="GSALocation" value="http://gsa.mycompany.mydomain.com" /> 
   <add key="siteCollection" value="default_collection" /> 
   <add key="frontEnd" value="SPS_frontend" /> 
@@ -186,7 +186,7 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2007.zip on you !SharePoint mac
 * In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened 
 * In the Windows Explorer, right click on web.config -> Edit               
 * Go to "<appSettings>" section. (For WSS 3.0, you will need to create a new "<appSettings>" section)
-* For Sharepoint 2007, add following keys under it. (Following are sample values for reference)
+* Add following keys under it. (Following are sample values for reference)
   <add key="GSALocation"  value="http://gsa.mycompany.mydomain.com" /> 
   <add key="siteCollection" value="default_collection" /> 
   <add key="frontEnd" value="SPS_frontend" /> 
