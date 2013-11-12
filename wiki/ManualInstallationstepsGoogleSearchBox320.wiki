@@ -72,7 +72,7 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2013.zip on you !SharePoint mac
   <add key="filterParameter" value="p" />
 
 }}}
-Save the web.config file after making these changes.
+ * Save the web.config file after making these changes.
 
 9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple !SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to enable session state for a given !SharePoint web application. 
 
