@@ -35,12 +35,11 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2013.zip on you !SharePoint mac
 5.    Place file google_custom_search_watermark.gif in directory "C:\Program Files\Common Files\microsoft shared\Web Server Extensions\14\TEMPLATE\IMAGES"
 
 6.    For installation and activation of the "GSAFeature"
+{{{
 
 * Open Windows Command prompt. 
 * Go to directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\15\BIN"
 * Run following commands:
-
-{{{
 
   stsadm.exe -o installfeature -name GSAFeature -force 
   stsadm.exe -o activatefeature -name GSAFeature -force 
