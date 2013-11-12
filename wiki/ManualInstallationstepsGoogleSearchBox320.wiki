@@ -24,7 +24,7 @@ For a !SharePoint farm scenario, you need to install the Search Box for all the 
 
 Download and extract the GSBS-3.2.0_!SharePoint2013.zip on you !SharePoint machine and use the extracted files as per the instructions given below:
 
-1.    Place GSASearchresults.aspx, GSAForward.aspx, and PostResponse.xml in directory "C:\Program Files\Common Files\microsoft shared\Web Server Extensions\14\TEMPLATE\LAYOUTS"
+1.    Place GSASearchresults.aspx, GSAForward.aspx, and !PostResponse.xml in directory "C:\Program Files\Common Files\microsoft shared\Web Server Extensions\14\TEMPLATE\LAYOUTS"
 
 2.    Place Folder "GSAFeature", containing elements.xml and Feature.xml, in directory "C:\Program Files\Common Files\microsoft shared\Web Server Extensions\14\TEMPLATE\FEATURES"
 
