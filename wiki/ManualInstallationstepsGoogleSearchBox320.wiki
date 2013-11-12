@@ -198,7 +198,7 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2007.zip on you !SharePoint mac
        value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\GSA2SP.xsl" /> 
   <add key="xslSP2result" 
        value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\TEMPLATE\SP_Actual.xsl" /> 
-  <add key="logLocation" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\LOGS\ " /> 
+  <add key="logLocation" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\12\LOGS" /> 
   <add key="defaultSearchType" value="publicAndSecure" />
   <add key="SearchTipsHTMLFileName" value="user_help.html" />
   <add key="EnableEmbeddedMode" value="true" />     
