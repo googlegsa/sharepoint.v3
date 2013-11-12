@@ -49,7 +49,7 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2013.zip on you !SharePoint mac
 
  * In IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened.
  * In the Windows Explorer, right click on web.config -> Edit.
- * Go to "<appSettings>" section and add the following keys (sample values are for reference):
+ * Go to "`<appSettings>`" section and add the following keys (sample values are for reference):
 {{{
 
   <add key="GSALocation" value="gsa.mycompany.mydomain.com" />
