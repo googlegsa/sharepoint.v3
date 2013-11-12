@@ -65,9 +65,11 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2013.zip on you !SharePoint mac
   <add key="EnableEmbeddedMode" value="true" />
   <add key="UseContainerTheme" value="false" />
   <add key="xslGSA2SP"
-       value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\15\Template\GSA2SP.xsl" />
+       value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\15\Template\GSA2SP.xsl"
+       />
   <add key="xslSP2result"
-       value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\15\Template\SP_Actual.xsl" />
+       value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\15\Template\SP_Actual.xsl"
+  />
   <add key="logLocation" value="C:\Program Files\Common Files\Microsoft Shared\Web Server Extensions\15\LOGS" />
   <add key="filterParameter" value="p" />
 
