@@ -1,6 +1,8 @@
 #summary Manual installation steps for Google Search Box 3.2.0
 #labels Deprecated
 
+sharepoint
+
 = Pre-requisites =
 
 The search Box can be deployed on machine with one of the following:
