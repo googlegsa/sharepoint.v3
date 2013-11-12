@@ -1,30 +1,28 @@
 #summary Manual installation steps for Google Search Box 3.2.0
 #labels Deprecated
 
-HarepoiNt
-
 = Pre-requisites =
 
 The search Box can be deployed on machine with one of the following:
- * Microsoft SharePoint Server 2013
- * Microsoft SharePoint Server 2010
- * Microsoft SharePoint Foundation 2010
- * Microsoft Office SharePoint Server 2007 (MOSS 2007)
- * Windows SharePoint Services 3.0 (WSS 3.0)
+ * Microsoft !SharePoint Server 2013
+ * Microsoft !SharePoint Server 2010
+ * Microsoft !SharePoint Foundation 2010
+ * Microsoft Office !SharePoint Server 2007 (MOSS 2007)
+ * Windows !SharePoint Services 3.0 (WSS 3.0)
 
-The Google Search Box for SharePoint can be downloaded from: 
+The Google Search Box for !SharePoint can be downloaded from: 
 http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list
- * GSBS-3.2.0_SharePoint2013.zip
- * GSBS-3.2.0_SharePoint2010.zip
- * GSBS-3.2.0_SharePoint2007.zip
+ * GSBS-3.2.0_!SharePoint2013.zip
+ * GSBS-3.2.0_!SharePoint2010.zip
+ * GSBS-3.2.0_!SharePoint2007.zip
 
 
-For a SharePoint farm scenario, you need to install the Search Box for all the SharePoint Web Front Ends connected to the farm. 
+For a !SharePoint farm scenario, you need to install the Search Box for all the !SharePoint Web Front Ends connected to the farm. 
 
 
-= SharePoint 2013 Steps: =
+= !SharePoint 2013 Steps: =
 
-Download and extract the GSBS-3.2.0_SharePoint2013.zip on you SharePoint machine and use the extracted files as per the instructions given below:
+Download and extract the GSBS-3.2.0_!SharePoint2013.zip on you !SharePoint machine and use the extracted files as per the instructions given below:
 
 1.    Place GSASearchresults.aspx, GSAForward.aspx, and PostResponse.xml in directory "C:\Program Files\Common Files\microsoft shared\Web Server Extensions\14\TEMPLATE\LAYOUTS"
 
@@ -48,7 +46,7 @@ Download and extract the GSBS-3.2.0_SharePoint2013.zip on you SharePoint machine
 
 }}}
  
-7.    To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application. 
+7.    To set GSA parameters for performing search using Google search control. In case you have multiple !SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to set GSA parameters for a given !SharePoint web application. 
 
 
 {{{
@@ -74,7 +72,7 @@ Download and extract the GSBS-3.2.0_SharePoint2013.zip on you SharePoint machine
 }}}
 Save the web.config file after making these changes.
 
-9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to enable session state for a given SharePoint web application. 
+9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple !SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to enable session state for a given !SharePoint web application. 
 
 {{{
 
@@ -86,9 +84,9 @@ Save the web.config file after making these changes.
 }}}
 
 
-= SharePoint 2010 Steps: =
+= !SharePoint 2010 Steps: =
 
-Download and extract the GSBS-3.2.0_SharePoint2010.zip on you SharePoint machine and use the extracted files as per the instructions given below:
+Download and extract the GSBS-3.2.0_!SharePoint2010.zip on you !SharePoint machine and use the extracted files as per the instructions given below:
 
 1.    Place GSASearchresults.aspx in directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE\LAYOUTS"
 
@@ -113,7 +111,7 @@ Download and extract the GSBS-3.2.0_SharePoint2010.zip on you SharePoint machine
 
 }}}
  
-8.    To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application. 
+8.    To set GSA parameters for performing search using Google search control. In case you have multiple !SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to set GSA parameters for a given !SharePoint web application. 
 
 {{{
 * In IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened.
@@ -140,7 +138,7 @@ Download and extract the GSBS-3.2.0_SharePoint2010.zip on you SharePoint machine
 Save the web.config file after making these changes.
 
 
-9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to enable session state for a given SharePoint web application. 
+9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple !SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to enable session state for a given !SharePoint web application. 
 
 {{{
 
@@ -152,9 +150,9 @@ Save the web.config file after making these changes.
 }}}
 
 
-= SharePoint 2007 (WSS 3.0) Steps: =
+= !SharePoint 2007 (WSS 3.0) Steps: =
 
-Download and extract the GSBS-3.2.0_SharePoint2007.zip on you SharePoint machine and use the extracted files as per the instructions given below:
+Download and extract the GSBS-3.2.0_!SharePoint2007.zip on you !SharePoint machine and use the extracted files as per the instructions given below:
 
 1.    Place GSASearchresults.aspx in directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE\LAYOUTS"
 
@@ -178,7 +176,7 @@ Download and extract the GSBS-3.2.0_SharePoint2007.zip on you SharePoint machine
   stsadm.exe -o activatefeature -name GSAFeature -force 
 }}}
  
-8.    To set GSA parameters for performing search using Google search control. In case you have multiple SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to set GSA parameters for a given SharePoint web application. 
+8.    To set GSA parameters for performing search using Google search control. In case you have multiple !SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to set GSA parameters for a given !SharePoint web application. 
 
 {{{
 * In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened 
@@ -204,7 +202,7 @@ Download and extract the GSBS-3.2.0_SharePoint2007.zip on you SharePoint machine
 }}}
 Save the web.config file after making these changes.
 
-9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective SharePoint web application. Following are the steps to enable session state for a given SharePoint web application. 
+9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple !SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to enable session state for a given !SharePoint web application. 
 
 {{{
 
