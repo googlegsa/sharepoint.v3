@@ -219,4 +219,4 @@ Save the web.config file after making these changes.
 
 }}}
 
-10. GSAapplication.master is a newly added file for reference purpose. This file is used to reduce the whitespace displayed at the top of the search results. To use this sample master page, copy the file to the Layouts folder (path - "C:\Program Files\Common Files\microsoft shared\Web Server Extensions\12\TEMPLATE\LAYOUTS"). Modify the Page Directive !MasterPageFile attribute like -  !MasterPageFile="~/_layouts/GSAapplication.master" in the GSASearchresults.aspx page found on the same path.
+10. GSAapplication.master is a newly added file for reference purpose. This file is used to reduce the whitespace displayed at the top of the search results. To use this sample master page, copy the file to the Layouts folder (path - "C:\Program Files\Common Files\microsoft shared\Web Server Extensions\12\TEMPLATE\LAYOUTS"). Modify the Page Directive !MasterPageFile attribute like -  !MasterPageFile="~/`_`layouts/GSAapplication.master" in the GSASearchresults.aspx page found on the same path.
