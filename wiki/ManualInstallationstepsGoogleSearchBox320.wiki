@@ -144,8 +144,6 @@ Save the web.config file after making these changes.
 
 * In IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened)  
 * In the Windows Explorer, right click on web.config -> Edit   
-* Go to "<httpModules>" section (For MOSS 2007only), and add the following module under it -  
-  <add name="Session" type="System.Web.SessionState.SessionStateModule" />    
 * Go to "<modules runAllManagedModulesForAllRequests="true">" section and add the following module:   
   <add name="session" type="System.Web.SessionState.SessionStateModule" preCondition="managedHandler" />   
 
@@ -210,7 +208,7 @@ Save the web.config file after making these changes.
 
 * In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened  
 * In the Windows Explorer, right click on web.config -> Edit   
-* Go to "<httpModules>" section (For MOSS 2007only), and add the following module: 
+* Go to "<httpModules>" section and add the following: 
   <add name="Session" type="System.Web.SessionState.SessionStateModule" />    
 
 }}}
