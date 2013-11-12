@@ -75,12 +75,11 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2013.zip on you !SharePoint mac
  * Save the web.config file after making these changes.
 
 9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple !SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to enable session state for a given !SharePoint web application. 
-
+ * In IIS,right click on the SharePoint web site -> Explore. Windows Explorer is opened
+ * In the Windows Explorer, right click on web.config -> Edit   
+ * Go to "`<modules runAllManagedModulesForAllRequests="true">`" section and add the following:
 {{{
 
-* In IIS,right click on the SharePoint web site -> Explore. Windows Explorer is opened
-* In the Windows Explorer, right click on web.config -> Edit   
-* Go to "<modules runAllManagedModulesForAllRequests="true">" section and add the following:
   <add name="session" type="System.Web.SessionState.SessionStateModule" preCondition="managedHandler" />   
 
 }}}
@@ -103,11 +102,12 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2010.zip on you !SharePoint mac
 6.    Place the files "GSA2SP.xsl" and "SP_Actual.xsl" in directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\TEMPLATE"
 
 7.    For installation and activation of the "GSAFeature" 
+ * Open Windows Command prompt.
+ * Go to directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\BIN"
+ * Run following commands:
+
 {{{ 
 
-* Open Windows Command prompt. 
-* Go to directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\14\BIN"
-* Run following commands  
   stsadm.exe -o installfeature -name GSAFeature -force 
   stsadm.exe -o activatefeature -name GSAFeature -force 
 
@@ -146,12 +146,11 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2010.zip on you !SharePoint mac
 
 
 9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple !SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to enable session state for a given !SharePoint web application. 
-
+ * In IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened)  
+ * In the Windows Explorer, right click on web.config -> Edit   
+ * Go to "`<modules runAllManagedModulesForAllRequests="true">`" section and add the following module:   
 {{{
 
-* In IIS, right click on the SharePoint web site -> Explore. Windows Explorer is opened)  
-* In the Windows Explorer, right click on web.config -> Edit   
-* Go to "<modules runAllManagedModulesForAllRequests="true">" section and add the following module:   
   <add name="session" type="System.Web.SessionState.SessionStateModule" preCondition="managedHandler" />   
 
 }}}
@@ -174,13 +173,14 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2007.zip on you !SharePoint mac
 6.    Place the files "GSA2SP.xsl" and "SP_Actual.xsl" in directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\TEMPLATE"
 
 7.    For installation and activation of the "GSAFeature" 
-
+ * Open Windows Command prompt. 
+ * Go to directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\BIN" 
+ * Run following commands:
 {{{ 
-* Open Windows Command prompt. 
-* Go to directory "C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\BIN" 
-* Run following commands  
+
   stsadm.exe -o installfeature -name GSAFeature -force 
   stsadm.exe -o activatefeature -name GSAFeature -force 
+
 }}}
  
 8.    To set GSA parameters for performing search using Google search control. In case you have multiple !SharePoint web applications, you need to set the GSA parameters for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to set GSA parameters for a given !SharePoint web application. 
@@ -215,12 +215,11 @@ Download and extract the GSBS-3.2.0`_`!SharePoint2007.zip on you !SharePoint mac
  * Save the web.config file after making these changes.
 
 9.    To enable session state for performing search with Google search box, the httpmodule for session state needs to be added. In case you have multiple !SharePoint web applications, you need to enable the session state for all the web applications to perform search from sites of respective !SharePoint web application. Following are the steps to enable session state for a given !SharePoint web application. 
-
+ * In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened
+ * In the Windows Explorer, right click on web.config -> Edit   
+ * Go to "`<httpModules>`" section and add the following:
 {{{
 
-* In IIS, right click on the SharePoint web site -> Open, a Windows Explorer is opened  
-* In the Windows Explorer, right click on web.config -> Edit   
-* Go to "<httpModules>" section and add the following: 
   <add name="Session" type="System.Web.SessionState.SessionStateModule" />    
 
 }}}
