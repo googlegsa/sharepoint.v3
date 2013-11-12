@@ -3,6 +3,8 @@
 
 = Pre-requisites =
 
+ManualInstallationstepsGoogleSearchBox320
+
 The search Box can be deployed on machine with one of the following:
  * Microsoft SharePoint Server 2013
  * Microsoft SharePoint Server 2010
