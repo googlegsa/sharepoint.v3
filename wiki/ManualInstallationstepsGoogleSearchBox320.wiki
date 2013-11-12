@@ -1,7 +1,7 @@
 #summary Manual installation steps for Google Search Box 3.2.0
 #labels Deprecated
 
-sharepoint
+HarepoiNt
 
 = Pre-requisites =
 
