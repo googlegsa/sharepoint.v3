@@ -289,7 +289,20 @@ public class SiteDiscovery : System.Web.Services.WebService
         SPContext.Current.Web.ToString();
         List<ListCrawlInfo> listCrawlInfo = new List<ListCrawlInfo>();
 
-        Boolean denyPolicyAvailable = DenyReadPolicyAvailable(SPContext.Current.Site.WebApplication, SPContext.Current.Site.Zone);
+        Boolean checkForAnonymousAccess = false;
+        try
+        {
+            checkForAnonymousAccess = (SPContext.Current.Site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll)
+                && SPContext.Current.Site.WebApplication.IisSettings[SPContext.Current.Site.Zone].AllowAnonymous
+                && !(DenyReadPolicyAvailable(SPContext.Current.Site.WebApplication, SPContext.Current.Site.Zone));
+        }
+        catch (Exception ex)
+        {
+            // Ignoring exception while checking for anonymous access setting.
+            // Content will be considered secure.
+            ex = null;
+        }
+       
         foreach (string guid in listGuids)
         {
             ListCrawlInfo info = new ListCrawlInfo();
@@ -302,7 +315,7 @@ public class SiteDiscovery : System.Web.Services.WebService
                     SPList list = SPContext.Current.Web.Lists[key];
                     info.NoCrawl = list.NoCrawl;
                     info.Status = true;
-                    if (!denyPolicyAvailable)
+                    if (checkForAnonymousAccess)
                     {
                         Boolean anonymousAccessApplicable = (SPContext.Current.Web.AnonymousState != SPWeb.WebAnonymousState.Disabled);
                         Boolean anonymousAccess = anonymousAccessApplicable && (SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & list.AnonymousPermMask64))
