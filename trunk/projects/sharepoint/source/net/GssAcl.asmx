@@ -865,13 +865,23 @@ public class GssAclMonitor
                 GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
                 List<GssAcl> allAcls = new List<GssAcl>();
                 Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
-                Boolean checkForAnonymousAccess = (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll);
-                // Check for deny policy only if anonymous access is enabled.
-                if (checkForAnonymousAccess)
+                Boolean checkForAnonymousAccess = false;
+
+                try
                 {
-                    // If DENY policy is specified, anonymous access will not work in SharePoint.
-                    checkForAnonymousAccess = !(GssAclUtility.DenyReadPolicyAvailable(site.WebApplication, site.Zone));
+                    checkForAnonymousAccess = (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll)
+                        && site.WebApplication.IisSettings[site.Zone].AllowAnonymous
+                        && !(GssAclUtility.DenyReadPolicyAvailable(site.WebApplication, site.Zone));
                 }
+                catch (Exception exAnonymous)
+                {
+                    result.AddLogMessage(String.Format(
+                        "Error reading anonymous access setting for Web [{0}]. Exception [{1}] {2} {3}",
+                        web.Url, exAnonymous.Message, Environment.NewLine, exAnonymous.StackTrace));
+                }
+                
+               
+                                            
                 if (bIncludePolicyAcls)
                 {
                     try
