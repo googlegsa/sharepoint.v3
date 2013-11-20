@@ -1,0 +1,33 @@
+Google Search Box Test Utility for SharePoint 1.0.0(Beta)
+----------------------------------------------------------
+Google Search Box Test Utility for SharePoint 1.0.0(Beta) is used to troubleshoot the Search Box
+
+
+STEPS TO CONFIGURE TEST UTILITY
+===============================
+The Test Utility can be deployed as an IIS web Site or a virtual Directory. 
+
+Following are the steps to deploy the Test Utility as virtual directory.
+-------------------------------------------------------------------------
+1. Open the IIS Manager (Start> All Programs> Administrative Tools> Internet Information Services(IIS) Manager.
+2. Right Click on the web site where you want to create the virtual directory.
+3. Click New> Virtual Directory...
+4. click Next.
+5. Give Alias as "TestGoogleSearchBox" and click Next.
+6. Browse to the path where the Directory "GoogleSearchBoxTestUtility" is located.
+7. Check all the checkboxes for permissions. 
+8. click on Next.
+9. click on Finish.
+
+
+HOW TO USE TEST UTILITY FOR TESTING THE GOOGLE SEARCH BOX DEPLOYMENT
+====================================================================
+1. Open the "Configuration Wizard" for Google Search Box. (Start> All Programs> Google Search Box for SharePoint> Configuration Wizard
+2. Click on "Edit" against the web application which you want to configure
+3. Enter value of "Appliance URL" as the URL of the Google Search Box Test Utility. e.g. http://site.mycompany.com/TestGoogleSearchBox/SearchSite.aspx
+
+Note: see file "Sample_Result.PNG" for Sample result from Test Utility.
+
+
+
+
