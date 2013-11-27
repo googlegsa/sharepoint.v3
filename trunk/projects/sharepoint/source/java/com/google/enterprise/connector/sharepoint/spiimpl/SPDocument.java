@@ -656,8 +656,8 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         && isNullOrEmptySet(aclUsers) && isNullOrEmptySet(aclGroups)
         && isNullOrEmptySet(aclDenyUsers) && isNullOrEmptySet(aclDenyGroups));
   }
-  
-  private boolean isNullOrEmptySet(Set input) {   
+
+  private boolean isNullOrEmptySet(Set<?> input) {
     return (input == null || input.isEmpty());
   }
 

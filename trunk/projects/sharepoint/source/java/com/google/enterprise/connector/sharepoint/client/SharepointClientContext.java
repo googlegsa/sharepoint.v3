@@ -35,6 +35,7 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 
 import java.io.File;
@@ -293,9 +294,12 @@ public class SharepointClientContext implements Cloneable {
       final String excludedURls, final String inMySiteBaseURL,
       final String inAliasMapString, final FeedType inFeedType,
       boolean useSPSearchVisibility) throws SharepointException {
-    // Avoid a deprecation warning on an overloaded Protocol constructor.
-    Protocol.registerProtocol("https", new Protocol("https",
-        new SSLProtocolSocketFactory(), SPConstants.SSL_DEFAULT_PORT));
+    // Avoid a deprecation warning on an overloaded Protocol constructor
+    // by passing the argument as a ProtocolSocketFactory instead of an
+    // SSLProtocolSocketFactory.
+    ProtocolSocketFactory socketFactory = new SSLProtocolSocketFactory();
+    Protocol.registerProtocol("https",
+        new Protocol("https", socketFactory, SPConstants.SSL_DEFAULT_PORT));
 
     this.clientFactory = clientFactory;
     kdcServer = inKdcHost;
