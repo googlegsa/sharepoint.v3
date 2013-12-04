@@ -869,8 +869,12 @@ public class GssAclMonitor
 
                 try
                 {
-                    checkForAnonymousAccess = (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll)
-                        && site.WebApplication.IisSettings[site.Zone].AllowAnonymous
+                    SPIisSettings iisSettings = site.WebApplication.IisSettings.ContainsKey(site.Zone) 
+                        ? site.WebApplication.IisSettings[site.Zone] 
+                        : site.WebApplication.IisSettings[SPUrlZone.Default];
+                    checkForAnonymousAccess = 
+                        (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll)
+                        && iisSettings.AllowAnonymous
                         && !(GssAclUtility.DenyReadPolicyAvailable(site.WebApplication, site.Zone));
                 }
                 catch (Exception exAnonymous)
@@ -2069,23 +2073,52 @@ public sealed class GssAclUtility
         }
         GssPrincipal gssPrincipal = null;
         SPPrincipalInfo userInfo = null;
+        StringBuilder logMessage = new StringBuilder();
         string identity = GssAclUtility.DecodeIdentity(login);
         // ResolvePrincipal is very expensive for deleted users in multidomain environments - check if login is valid first
         if (SPUtility.IsLoginValid(site, identity))
         {
-            userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, identity, SPPrincipalType.All, SPPrincipalSource.All, false);
+            try
+            {
+                userInfo = SPUtility.ResolvePrincipal(site.WebApplication, SPUrlZone.Default,
+                    identity, SPPrincipalType.All, SPPrincipalSource.All, false);
+            }
+            catch (Exception exResolveDefault)
+            {
+                logMessage.AppendFormat(
+                    "Error resolving principal for User {0} under default site zone: {1}",
+                    identity, exResolveDefault.Message);
+                if (site.Zone != SPUrlZone.Default)
+                {
+                    try
+                    {
+                        // In case of exception, try to resolve under current site zone.
+                        userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, identity,
+                            SPPrincipalType.All, SPPrincipalSource.All, false);
+                    }
+                    catch (Exception exResolveSite)
+                    {
+                        // ignore exception and continue processing of other security 
+                        // policy principals
+                        logMessage.AppendFormat(
+                            "Error resolving principal for User {0} for current site zone {1}: {2}",
+                            identity, site.Zone, exResolveSite.Message);
+                    }
+                }
+            }
         }
         if (userInfo == null)
         {
             gssPrincipal = new GssPrincipal(identity, -2);
             gssPrincipal.AddLogMessage("[ " + identity + " ( " + login + ") ] could not be resolved to a valid windows principal. ");
+            gssPrincipal.AddLogMessage(logMessage.ToString());
             gssPrincipal.Type = GssPrincipal.PrincipalType.NA;
             return gssPrincipal;
         }
 
         // There is no concept of ID for security policy users. IDs are an offset defined in context of a site collection and policies are defined at web application level
         gssPrincipal = new GssPrincipal(userInfo.LoginName, -2);
-
+        gssPrincipal.AddLogMessage(logMessage.ToString());
         if (userInfo.PrincipalType.Equals(SPPrincipalType.DistributionList) || userInfo.PrincipalType.Equals(SPPrincipalType.SecurityGroup))
         {
             gssPrincipal.Type = GssPrincipal.PrincipalType.DOMAINGROUP;
