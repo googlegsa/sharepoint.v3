@@ -112,8 +112,21 @@ public class SharepointClient {
     }
     final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
     for (SPDocument doc : list.getCrawlQueue()) {
-      if (doc.getParentList() == null) {
+      ListState parentList = doc.getParentList();
+      if (parentList == null) {
+        LOGGER.log(Level.WARNING, "Document [{0}] is missing parent list . "
+            + "Assigning [{1}] as paren list for document.",
+            new Object[] {doc.getUrl(), list.getListURL()});
         doc.setParentList(list);
+      } else {
+        if (!list.getPrimaryKey().equals(parentList.getPrimaryKey())) {
+          LOGGER.log(Level.WARNING, 
+              "Skipping document . Parent List - crawl queue mismatch"
+              + "for document [{0}]. Parent List is [{1}]. "
+              + "Crawl Queue is associated with list is [{2}].",
+              new Object[] {doc, parentList, list});
+          continue;
+        }
       }
       doc.setParentWeb(web);
       doc.setSharepointClientContext(sharepointClientContext);
@@ -675,16 +688,16 @@ public class SharepointClient {
    */
   // FIXME SharePointClientContext should not be passed as an argument in the
   // methods that are called from here. Instead, use the class member.
-  public void updateGlobalState(final GlobalState globalState)
+  public int updateGlobalState(final GlobalState globalState)
       throws SharepointException {
     if (globalState == null) {
       LOGGER.warning("global state does not exist");
-      return;
+      return 0;
     }
 
     if (sharepointClientContext == null) {
       LOGGER.warning("sharepointClientContext is not found");
-      return;
+      return 0;
     }
     SharepointClientContext tempCtx = (SharepointClientContext) sharepointClientContext.clone();
 
@@ -829,6 +842,7 @@ public class SharepointClient {
       sharepointClientContext.getUserDataStoreDAO().cleanupCache();
     }
     LOGGER.log(Level.INFO, "Returning after crawl cycle.. ");
+    return nDocuments;
   }
 
   public boolean isDoCrawl() {

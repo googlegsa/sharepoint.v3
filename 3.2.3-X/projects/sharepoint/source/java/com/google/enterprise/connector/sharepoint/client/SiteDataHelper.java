@@ -139,51 +139,50 @@ public class SiteDataHelper {
                 new Object[] {element.getTitle(), baseType});
             continue;            
           }
-          
-          String defaultViewUrl = element.getDefaultViewUrl();      
-          String defaultViewItemUrl = defaultViewUrl;
-          if (Strings.isNullOrEmpty(defaultViewUrl)) {
-            LOGGER.log(Level.WARNING, 
-                "List [{0}] with empty default view", element.getTitle());
-            MessageElement list = getListMetadata(element.getInternalName());
-            if (list == null) {
-              LOGGER.log(Level.WARNING,
-                  "Unable to get metadata for List [{0}]. Skipping List",
-                  element.getTitle());
-              continue;
-            }
-            String rootFolder = getMetadataAttributeForList(list, "RootFolder");
-            if (Strings.isNullOrEmpty(rootFolder)) {
-              LOGGER.log(Level.WARNING,
-                  "Unable to get Root Folder for List [{0}]. Skipping List",
-                  element.getTitle());
-              continue;
-            }
-            defaultViewItemUrl = getMetadataAttributeForList(
-                list, "DefaultViewItemUrl");
-            if (Strings.isNullOrEmpty(defaultViewItemUrl)) {
-              LOGGER.log(Level.WARNING, "Unable to get default View Item Url "
-                  + "for List [{0}]. Skipping List", element.getTitle());
-              continue;
-            }
-            LOGGER.log(Level.FINE, 
-                "List [{0}] Root Folder [{1}] Default View Item URL [{2}]", 
-                new Object[] {element.getTitle(), rootFolder,
-                  defaultViewItemUrl});
-            String siteUrl = sharepointClientContext.getSiteURL();
+          MessageElement listMetadata =
+              getListMetadata(element.getInternalName());
+          if (listMetadata == null) {
+            LOGGER.log(Level.WARNING,
+                "Unable to get metadata for List [{0}]. Skipping List",
+                element.getTitle());
+            continue;
+          }
+          String rootFolder =
+              getMetadataAttributeForList(listMetadata, "RootFolder");
+          if (Strings.isNullOrEmpty(rootFolder)) {
+            LOGGER.log(Level.WARNING,
+                "Unable to get Root Folder for List [{0}]. Skipping List",
+                element.getTitle());
+            continue;
+          }
+          String defaultViewItemUrl = getMetadataAttributeForList(
+              listMetadata, "DefaultViewItemUrl");
+          if (Strings.isNullOrEmpty(defaultViewItemUrl)) {
+            LOGGER.log(Level.WARNING, "Unable to get default View Item Url "
+                + "for List [{0}]. Skipping List", element.getTitle());
+            continue;
+          }
+          LOGGER.log(Level.FINE,
+              "List [{0}] Root Folder [{1}] Default View Item URL [{2}]",
+              new Object[] {element.getTitle(), rootFolder,
+                defaultViewItemUrl});
+          String siteUrl = sharepointClientContext.getSiteURL();
+          if (Strings.isNullOrEmpty(element.getDefaultViewUrl())) {
+            LOGGER.log(Level.WARNING, "List [{0}] with empty default view URL."
+                + " Using root folder for List URL.", element.getTitle());
             StringBuilder listUrl = new StringBuilder(siteUrl);
             if (!siteUrl.endsWith("/")) {
               listUrl.append("/");
             }
             listUrl.append(rootFolder);
             url = listUrl.toString();
-            LOGGER.log(Level.INFO, "In absense of default view url, using"
-                + " list url for List [{0}] as [{1}]",
-                new Object[] {element.getTitle(), url});
           } else {
             url = Util.getWebApp(sharepointClientContext.getSiteURL())
-              + defaultViewUrl;
+                + element.getDefaultViewUrl();
           }
+
+          LOGGER.log(Level.INFO, "List url for List [{0}] is [{1}]",
+              new Object[] {element.getTitle(), url});
 
           strBaseTemplate = element.getBaseTemplate();
           if (strBaseTemplate == null) {
