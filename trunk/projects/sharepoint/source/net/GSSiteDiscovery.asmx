@@ -292,9 +292,15 @@ public class SiteDiscovery : System.Web.Services.WebService
         Boolean checkForAnonymousAccess = false;
         try
         {
-            checkForAnonymousAccess = (SPContext.Current.Site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll)
-                && SPContext.Current.Site.WebApplication.IisSettings[SPContext.Current.Site.Zone].AllowAnonymous
-                && !(DenyReadPolicyAvailable(SPContext.Current.Site.WebApplication, SPContext.Current.Site.Zone));
+            SPSite site = SPContext.Current.Site;
+            SPIisSettings iisSettings = site.WebApplication.IisSettings.ContainsKey(site.Zone) 
+                ? site.WebApplication.IisSettings[site.Zone]
+                : site.WebApplication.IisSettings[SPUrlZone.Default];
+
+            checkForAnonymousAccess =
+                (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll)
+                && iisSettings.AllowAnonymous
+                && !(DenyReadPolicyAvailable(site.WebApplication, site.Zone));
         }
         catch (Exception ex)
         {
