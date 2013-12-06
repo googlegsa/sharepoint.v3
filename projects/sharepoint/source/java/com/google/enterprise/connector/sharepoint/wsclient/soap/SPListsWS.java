@@ -113,22 +113,22 @@ public class SPListsWS implements ListsWS {
       }
   }
 
-  /* @Override */
+  @Override
   public String getUsername() {
     return stub.getUsername();
   }
 
-  /* @Override */
+  @Override
   public void setUsername(final String username) {
     stub.setUsername(username);
   }
 
-  /* @Override */
+  @Override
   public void setPassword(final String password) {
     stub.setPassword(password);
   }
 
-  /* @Override */
+  @Override
   public void setTimeout(final int timeout) {
     stub.setTimeout(timeout);
   }
