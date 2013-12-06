@@ -48,6 +48,7 @@ import java.util.TreeSet;
 /**
  * A mock factory for creating a large statefile.
  */
+/* TODO(jlacey): I think this class is broken since the client refactoring. */
 public class LargeStatefileClientFactory extends MockClientFactory {
   private static final Logger LOGGER = Logger.getLogger(LargeStatefileClientFactory.class.getName());
 
@@ -85,17 +86,17 @@ public class LargeStatefileClientFactory extends MockClientFactory {
   public LargeStatefileClientFactory() {
   }
 
-  /* @Override */
+  @Override
   public ListsWS getListsWS(final SharepointClientContext ctx,
       final String rowLimit) {
     return new MockListsWS(ctx) {
-      /* @Override */
+      @Override
       public List<Folder> getSubFoldersRecursively(final ListState list,
           final Folder folder, final String lastID) {
         return new ArrayList<Folder>();
       }
 
-      /* @Override */
+      @Override
       public List<SPDocument> getListItemChangesSinceToken(final ListState list,
           final String listName, final String viewName,
           final ListsUtil.SPQueryInfo queryInfo, final String token,
@@ -104,7 +105,7 @@ public class LargeStatefileClientFactory extends MockClientFactory {
         return getDocuments(list);
       }
 
-      /* @Override */
+      @Override
       public List<SPDocument> getListItems(final ListState list,
           final String listName, final String viewName, 
           final ListsUtil.SPQueryInfo queryInfo, final String webID,
@@ -136,10 +137,9 @@ public class LargeStatefileClientFactory extends MockClientFactory {
     };
   }
 
-  /* @Override */
+  @Override
   public SiteDataWS getSiteDataWS(final SharepointClientContext ctx) {
     return new MockSiteDataWS(ctx) {
-      /* @Override */
       public List<ListState> getNamedLists(final WebState webstate)
           throws SharepointException {
         String siteUrl = ctx.getSiteURL();
@@ -163,7 +163,6 @@ public class LargeStatefileClientFactory extends MockClientFactory {
         return lists;
       }
 
-      /* @Override */
       public SPDocument getSiteData(final WebState webState)
           throws SharepointException {
         // TODO: What do we need to return here?
@@ -172,10 +171,9 @@ public class LargeStatefileClientFactory extends MockClientFactory {
     };
   }
 
-  /* @Override */
+  @Override
   public WebsWS getWebsWS(final SharepointClientContext ctx) {
     return new MockWebsWS(ctx) {
-      /* @Override */
       public Set<String> getDirectChildsites() {
         String siteUrl = ctx.getSiteURL();
         String path = getURLPath(siteUrl);
@@ -193,18 +191,16 @@ public class LargeStatefileClientFactory extends MockClientFactory {
         return sites;
       }
 
-      /* @Override */
       public String getWebTitle(final String webURL, final SPType spType) {
         return getTitleFromURL(webURL);
       }
     };
   }
 
-  /* @Override */
+  @Override
   public SiteDiscoveryWS getSiteDiscoveryWS(
       final SharepointClientContext ctx, String webUrl) {
     return new MockSiteDiscoveryWS(ctx, webUrl) {
-      /* @Override */
       public Set<String> getMatchingSiteCollections() {
         String siteUrl = ctx.getSiteURL();
         String path = getURLPath(siteUrl).toLowerCase();
