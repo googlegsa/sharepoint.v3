@@ -1,7 +1,5 @@
-Release Notes:
-===============
-
-Google Search Appliance Connector for SharePoint
+           Google Search Appliance Connector for SharePoint
+                            Release Notes
 
 This document contains the release notes for Google Search Appliance Connector for SharePoint.
 The following sections describe the release in detail and provide information that supplements the main documentation.
@@ -45,9 +43,9 @@ This release contains fixes for the following issues:
                  from the user group database when users are no longer site
                  collection administrators on SharePoint.
 
---Issue 10084052 SharePoint connector with "oldLdapBehavior=true" throws a
-                 NullPointerException when serving many authentication
-                 requests simultaneously.
+--Issues 10084052, 9987771 SharePoint connector with "oldLdapBehavior=true"
+                 throws a NullPointerException when serving many
+                 authentication requests simultaneously.
 
 --Issue 10059644 SharePoint connector does not update ACLs for Site Home Pages
                  and List Item Attachments, and skips sites for ACL change
@@ -153,6 +151,12 @@ This release contains fixes for the following issues:
 --Issue 9366291 AD domain groups were not resolved correctly with Claims
                 Authentication. The connector returned SIDs instead of
                 group names.
+
+--Issue 8621905 The SharePoint Connector should keep a missing_acl_url log
+                for any documents that were fed in without ACLs when the
+                "Feed ACLs" option is selected. The logs are written to the
+                connector work directory, where the excluded_url logs are
+                written.
 
 --Issue 8538403 By sending delete record for unpublished documents,
                 connector broke the ACL chain for child items.

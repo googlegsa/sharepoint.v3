@@ -63,6 +63,20 @@ namespace GSBControlPanel
             set { certificateName = value; }
         }
 
+        private String idpEntityId;
+        public String IDPEntityID
+        {
+            get { return idpEntityId; }
+            set { idpEntityId = value; }
+        }
+
+        private int trustDuration;
+        public int TrustDuration
+        {
+            get { return trustDuration; }
+            set { trustDuration = value; }
+        }
+
         private Boolean enableEmbeddedMode = false;
         public Boolean EnableEmbeddedMode
         {
@@ -165,6 +179,8 @@ namespace GSBControlPanel
             gcm.ModifyNode("/configuration/appSettings", "UseSamlPost", UseSamlPost.ToString().ToLower());
             gcm.ModifyNode("/configuration/appSettings", "assertion_consumer", artifactConsumer);
             gcm.ModifyNode("/configuration/appSettings", "certificate_friendly_name", CertificateName);
+            gcm.ModifyNode("/configuration/appSettings", "idp_entity_id", IDPEntityID);
+            gcm.ModifyNode("/configuration/appSettings", "trust_duration", TrustDuration.ToString());
             
             //this needs to be saved only during installation. should be unchnaged otherwise
             if (isInstaller == true)
