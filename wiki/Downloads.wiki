@@ -10,4 +10,4 @@ supported versions of the connector.
 
 For unsupported builds, early access, or to download supported patches
 as directed by Google Enterprise Support, see the [http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list Downloads] page on this code site.
-Google may not provide support for builds downloaded from here.
+Google may not provide support for builds downloaded from this code site.
