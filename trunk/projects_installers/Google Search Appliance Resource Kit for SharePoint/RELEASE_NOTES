@@ -1,10 +1,9 @@
-﻿Release Notes
-=============
-
-Google Search Appliance Resource Kit for SharePoint 3.2.0 (32-bit)
+﻿
+                   Google Search Appliance Resource Kit for SharePoint (32-bit)
+                                         Release Notes
 
 This document contains the release notes for Google Search Appliance Resource Kit for SharePoint 
-3.2.0 (32-bit).  The following sections describe the release in detail and provide information that
+(32-bit).  The following sections describe the release in detail and provide information that
 supplements the main documentation.  See the Issues Tab on the Code Site for the current list of 
 known issues and workarounds.
 
@@ -72,9 +71,13 @@ Note:
 * There are separate installers for 32-bit and 64-bit Operating System.
 * The 64-bit installer is supported on machines with x64 platform.
 
-Issues fixed from last release:
--------------------------------
---Issue 4364197 Search Box for SharePoint should support SAML POST binding.
+Issues fixed since 3.0.4
+------------------------
+4364197 - Search Box for SharePoint should support SAML POST Binding.
+11025699 - By default, the SAML Bridge Post fields are editable although "Use SAML POST" is not
+           checked.
+11781829 - The IDP Entity ID and Trust Duration values, for the SAML Bridge Post
+           configuration, may now be set through the Search Box Configuration Wizard.
 
 Known Issues/Limitations
 ------------------------
