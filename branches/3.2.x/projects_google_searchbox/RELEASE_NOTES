@@ -1,5 +1,6 @@
-Release Notes
-==============
+
+          Search Box for SharePoint with Google Search Appliance 
+                            Release Notes
 
 This document contains the release notes for Search Box for SharePoint 3.2.0 with Google Search
 Appliance. The following sections describe the release in detail and provide information that 
@@ -16,16 +17,15 @@ Introduction
 This is a major release with new features.  Users of previous releases are encouraged to upgrade.
 Users of previous releases should check the "Version Compatibility" section below.
 
-Summary of Changes
-------------------
-New features:
-------------------
-[4364197] Support for SAML POST binding
-[8063523] Support for Microsoft SharePoint 2013
+New features in 3.2.0
+---------------------
+4364197 - Support for SAML POST binding
+8063523 - Support for Microsoft SharePoint 2013
 
-Issues fixed from last release
--------------------------------
-[9013720] Search Box for SharePoint has an off-by-one error causing some requests to fail.
+Issues Fixed Since 3.0.4
+------------------------
+9013720 - Search Box for SharePoint has an off-by-one error causing some requests to fail.
+9852852 - Search Box for SharePoint reauthenticates on each request.
 
 Version Compatibility
 -----------------------
