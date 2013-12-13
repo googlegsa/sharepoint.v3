@@ -8,6 +8,13 @@ go to [http://www.google.com/support/enterprise/go/gsa_support] for
 instructions on how to contact Google Enterprise Support and download
 supported versions of the connector.
 
+To download installers for the Google Search Appliance Connectors or the
+Google Search Appliance Resource Kit for !SharePoint, see the
+[https://code.google.com/p/googlesearchapplianceconnectors/downloads/list Downloads]
+page on the 
+[https://code.google.com/p/googlesearchapplianceconnectors/ parent code site].
+
 For unsupported builds, early access, or to download supported patches
 as directed by Google Enterprise Support, see the [http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list Downloads] page on this code site.
-Google may not provide support for builds downloaded from this code site.
+
+Google may not provide support for builds downloaded from the code sites.
