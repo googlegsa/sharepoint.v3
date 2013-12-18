@@ -199,7 +199,7 @@ public class SPListsWS implements ListsWS {
                 final String url = attachmentsIt.next().toString();
                 LOGGER.config("Attachment URL: " + url);
 
-                if (sharepointClientContext.isIncludedUrl(url)) {
+                if (sharepointClientContext.isIncludedUrl(url, LOGGER)) {
                   String modifiedID = listItemId;
                   if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                     modifiedID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID + "["
@@ -218,8 +218,6 @@ public class SPListsWS implements ListsWS {
                   doc.setParentList(baseList);
 
                   listAttachments.add(doc);
-                } else {
-                  LOGGER.warning("Excluding attachment " + url);
                 }
               }
             }
