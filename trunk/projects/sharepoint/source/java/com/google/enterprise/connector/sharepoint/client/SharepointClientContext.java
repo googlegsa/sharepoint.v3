@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.dao.UserDataStoreDAO;
@@ -783,47 +784,47 @@ public class SharepointClientContext implements Cloneable {
   }
 
   /**
-   * Check if the String Value can be included or not
+   * Check if the URL can be included or not. Excluded URLs are logged.
    *
    * @param strValue The URL to be checked
+   * @param loggers additional loggers to log excluded URLs to
    */
-  public boolean isIncludedUrl(final String strValue) {
+  public boolean isIncludedUrl(final String strValue, Logger... loggers) {
     if (includedURlList == null) {
       LOGGER.log(Level.WARNING, "Can not find include URLs");
       return false;
     }
     try {
-      if ((strValue != null) && (strValue.length() != 0)) {
-        if (Util.match(includedURlList, strValue, null)) {
-          final StringBuffer matchedPattern = new StringBuffer();
-          if (excludedURlList == null) {
-            return true;
-          } else if (Util.match(excludedURlList, strValue, matchedPattern)) {
-            if (matchedPattern != null) {
-              logExcludedURL("[ " + strValue
-                  + " ] matched aginst the Excluded URL Pattern: "
-                  + matchedPattern.toString());
-            }
-            return false;
-          }
-          return true;
-        } else {
+      if (Strings.isNullOrEmpty(strValue)) {
+        return false;
+      } else if (Util.match(includedURlList, strValue, null)) {
+        StringBuffer matchedPattern = new StringBuffer();
+        if (excludedURlList != null
+            && Util.match(excludedURlList, strValue, matchedPattern)) {
           logExcludedURL("[ " + strValue
-              + " ] did not match against the Included URL Pattern(s).");
+              + " ] matched against the Excluded URL Pattern: "
+              + matchedPattern.toString(), loggers);
+          return false;
+        } else {
+          return true;
         }
+      } else {
+        logExcludedURL("[ " + strValue
+            + " ] did not match against the Included URL Pattern(s).", loggers);
+        return false;
       }
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, "Probelm while metadata filtering. strValue [ "
-          + strValue + " ]. ");
+    } catch (RuntimeException e) {
+      LOGGER.log(Level.WARNING, "Problem while matching URL [ "
+          + strValue + " ].", e);
+      return false;
     }
-    return false;
   }
 
   /**
    * Check if the Metadata can be included or not. Applies two level filter:
    * Level1: Only those metadata which are specified under included_metadata
    * should be included. If included_metadata is empty, include all. Level2:
-   * exclude all metadata which are spcified under excluded_metadata.
+   * exclude all metadata which are specified under excluded_metadata.
    *
    * @param metadata Metadata to be checked
    */
@@ -874,16 +875,22 @@ public class SharepointClientContext implements Cloneable {
   }
 
   /**
-   * Logs the excluded URL
+   * Logs the excluded URL to the excluded_url log file.
    *
-   * @param info
+   * @param info the message to log
+   * @param loggers additional loggers to log the message to
    */
-  public void logExcludedURL(final String info) {
+  public void logExcludedURL(final String info, Logger... loggers) {
     logToFile(SPConstants.EXCLUDED_URL_LOG, info);   
+    for (Logger logger : loggers) {
+      logger.finer(info);
+    }
   }
-  
+
   // This method is logging everything under excluded url directory.
-  // TODO : generalize this. 
+  // TODO : generalize this.
+  // TODO(jlacey): This should be using java.util.logging, like the
+  // Connector Manager feed logging does.
   public void logToFile(String fileNamePrefix, String info) {
     // If the parent directory does not exist, create one
     File file = new File(excludedURL_ParentDir);

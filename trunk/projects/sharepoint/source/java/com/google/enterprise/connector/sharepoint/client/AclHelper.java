@@ -305,9 +305,9 @@ public class AclHelper {
             document.setParentUrl(sharepointClientContext.getSiteURL());
             document.setParentId(acl.getParentId());
           } else {
-            LOGGER.log(Level.INFO, "Document [ " +document.getUrl()
+            LOGGER.log(Level.INFO, "Document [ " + document.getUrl()
                 + " ] needs to be reprocessed as Parent Url ["
-                + acl.getParentUrl() + "] is not inluded for Traversal");
+                + acl.getParentUrl() + "] is not included for Traversal");
             docUrlsToReprocess.add(document.getUrl());
             excludedParentUrlToDocMap.put(document.getUrl(), document);
             continue ACL;
@@ -1370,7 +1370,7 @@ public class AclHelper {
           throws Throwable {
         return ((AclWS) ws).getAclForWebApplicationPolicy();
       }
-      
+
       public void onError(final Throwable e) {
         LOGGER.log(Level.WARNING,
             "Call to getAclForWebApplicationPolicy failed.", e);

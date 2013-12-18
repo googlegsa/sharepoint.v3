@@ -258,7 +258,7 @@ public class SiteDataHelper {
                   + SPConstants.SLASH + myNewListConst)) {
                 // is included check if actual list url itself
                 // is to be excluded
-                if (sharepointClientContext.isIncludedUrl(url)) {
+                if (sharepointClientContext.isIncludedUrl(url, LOGGER)) {
                   // if a List URL is included, it WILL be
                   // sent as a
                   // Document
@@ -268,7 +268,6 @@ public class SiteDataHelper {
                   // sent as a
                   // Document
                   list.setSendListAsDocument(false);
-                  LOGGER.warning("excluding " + url.toString());
                 }
                 // add the attribute(Metadata to the list )
                 list = getListWithAllAttributes(list, element);
@@ -277,7 +276,7 @@ public class SiteDataHelper {
               } else {
                 // entire subtree is to be excluded
                 // do not construct list state
-                LOGGER.warning("Excluding " + url
+                LOGGER.finest("Excluding " + url
                     + " because entire subtree of " + myNewListConst
                     + " is excluded");
               }
@@ -286,7 +285,6 @@ public class SiteDataHelper {
 
           // Sort the base list
           Collections.sort(listCollection);
-          // dumpcollection(listCollection);
         }
       }
     } catch (final Throwable e) {
@@ -302,7 +300,7 @@ public class SiteDataHelper {
     }
     return listCollection;
   }
-  
+
   private String getMetadataAttributeForList(MessageElement list,
       String attribute) {
     MessageElement metadata = list.getChildElement(new QName("Metadata"));
@@ -312,7 +310,7 @@ public class SiteDataHelper {
     }
     return metadata.getAttribute(attribute);
   }
-  
+
   private MessageElement getListMetadata(final String id) {
     final String listMetadata =
        Util.makeWSRequest(sharepointClientContext, siteDataWS,
@@ -339,7 +337,6 @@ public class SiteDataHelper {
       return null;
     }
   }
-  
 
   /**
    * The metadata for the list/library are set. This is required because lists
