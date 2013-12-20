@@ -32,6 +32,7 @@ namespace GSBControlPanel
         public const String SLASH = "\\";
         public const String XSLGSA2SP = "Template\\GSA2SP.xsl";//For Custom Stylesheet
         public const String XSLSP2RESULT = "Template\\SP_Actual.xsl";//For Custom Stylesheet
+        public const int TRUSTDURATIONDEFAULT = 300;
         
         //for logging
         public const String LOGGING_PATH = "LOGS";//For Custom Stylesheet
@@ -67,6 +68,7 @@ namespace GSBControlPanel
         public frmGSAParams()
         {
             InitializeComponent();
+            this.txtTrustDuration.KeyPress += new KeyPressEventHandler(txtTrustDuration_KeyPress);
         }
 
         private void btnOk_Click(object sender, EventArgs e)
@@ -86,7 +88,32 @@ namespace GSBControlPanel
                     return;
                 }
 
+                if (String.IsNullOrEmpty(txtIDPEntityID.Text.Trim()))
+                {
+                    MessageBox.Show("Please specify valid IDP entity ID", "Validation Error");
+                    txtIDPEntityID.Focus();
+                    return;
+                }
+
+                if (String.IsNullOrEmpty(txtTrustDuration.Text.Trim()))
+                {
+                    MessageBox.Show("Please provide a trust duration", "Validation Error");
+                    txtTrustDuration.Focus();
+                    return;
+                }
+                else
+                {
+                    int trustDuration;
+                    bool isNum = int.TryParse(txtTrustDuration.Text.Trim(), out trustDuration);
+                    if (!isNum || !(trustDuration > 0))
+                    {
+                        MessageBox.Show("Please provide a number for the trust duration", "Validation Error");
+                        txtTrustDuration.Focus();
+                        return;
+                    }                    
+                }
             }
+
             String GsaUrl = ""; 
             try
             {
@@ -156,7 +183,6 @@ namespace GSBControlPanel
                 rbCustomStylesheet.Checked = true;
             }
 
-
             myVal = readAppSettings(gcm, "verbose");
             if (myVal.ToLower().Equals("true"))
             {
@@ -197,6 +223,9 @@ namespace GSBControlPanel
             chkUseSAMLPost.Enabled = !rbPublic.Checked;
             txtCertName.Text = readAppSettings(gcm, "certificate_friendly_name");
             txtArtifactConsumerURL.Text = readAppSettings(gcm, "assertion_consumer");
+            txtIDPEntityID.Text = readAppSettings(gcm, "idp_entity_id");
+            txtTrustDuration.Text = readAppSettings(gcm, "trust_duration");
+
             enableSamlPostConfiguration(useSamlPost);           
             loadComplete = true;
         }
@@ -287,6 +316,19 @@ namespace GSBControlPanel
             gc.CertificateName = txtCertName.Text.Trim();
             gc.UseSamlPost = chkUseSAMLPost.Checked;
             gc.ArtifactConsumer = txtArtifactConsumerURL.Text.Trim();
+            gc.IDPEntityID = txtIDPEntityID.Text.Trim();
+
+            int trustDuration;
+            bool isNum = int.TryParse(txtTrustDuration.Text.Trim(), out trustDuration);
+            if (isNum && (trustDuration > 0))
+            {
+                gc.TrustDuration = Convert.ToInt32(txtTrustDuration.Text.Trim());
+            }
+            else
+            {
+                gc.TrustDuration = TRUSTDURATIONDEFAULT; //set to default
+            }
+
             return gc;
         }
 
@@ -379,7 +421,13 @@ namespace GSBControlPanel
         {
             txtCertName.Enabled = applicable;
             txtArtifactConsumerURL.Enabled = applicable;
+            txtIDPEntityID.Enabled = applicable;
+            txtTrustDuration.Enabled = applicable;
         }
 
+        private void txtTrustDuration_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            e.Handled = !char.IsDigit(e.KeyChar);
+        }       
     }
 }
