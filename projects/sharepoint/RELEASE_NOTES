@@ -1,7 +1,5 @@
-Release Notes:
-===============
-
-Google Search Appliance Connector for SharePoint
+           Google Search Appliance Connector for SharePoint
+                            Release Notes
 
 This document contains the release notes for Google Search Appliance Connector for SharePoint.
 The following sections describe the release in detail and provide information that supplements the main documentation.
@@ -25,14 +23,14 @@ For a summary of the new features, see the Guide to Release 3.0:
 
 http://www.google.com/support/enterprise/static/gsa/docs/admin/connector_30/sharepoint_guide/
 
-Java SE 5.0 is no longer supported. Java 6 or later is required. 
+Java SE 5.0 is no longer supported. Java 6 or later is required.
 
 SharePoint 2003 and WSS 2.0 are no longer supported. Support added for
 SharePoint 2013.
 
-The Google Services for SharePoint (GSS) component has been renamed to 
+The Google Services for SharePoint (GSS) component has been renamed to
 Connector Services for SharePoint in Google Search Appliance.
-Some occurrences of the old name may still appear, but refer to the 
+Some occurrences of the old name may still appear, but refer to the
 same component.
 
 This release contains fixes for the following issues:
@@ -54,37 +52,43 @@ This release contains fixes for the following issues:
                  containing regular expression special characters in
                  the URL.
 
---Issue 9401354 Users in web application policy with claims-based 
+--Issue 9417474 IIS returns 400 errors when sending too large HTTP headers.
+
+--Issue 9401354 Users in web application policy with claims-based
                 mode are not correctly resolved.
-				
---Issue 9366291 AD domain groups were not resolved correctly with Claims 
-                Authentication. The connector returned SIDs instead of 
+
+--Issue 9366291 AD domain groups were not resolved correctly with Claims
+                Authentication. The connector returned SIDs instead of
                 group names.
 
---Issue 9417474 IIS returns 400 errors when sending too large HTTP headers.
+--Issue 8621905 The SharePoint Connector should keep a missing_acl_url log
+                for any documents that were fed in without ACLs when the
+                "Feed ACLs" option is selected. The logs are written to the
+                connector work directory, where the excluded_url logs are
+                written.
 
 --Issue 8538403 By sending delete record for unpublished documents,
                 connector broke the ACL chain for child items.
-                
+
 --Issue 8467118 Performance issue when renaming SharePoint folders prevents
                 the connector from completing traversal.
-                
+
 --Issue 8357746 If the SystemAccount is not available when retrieving ACLs,
                 use the current user's token instead.
-                
+
 --Issue 8325341 If site collection administrators group cannot be resolved
                 in GetAcl request the connector will get stuck in a loop.
-                
+
 --Issue 8317771 Added a sharepoint:httpstatuscode property to documents
                 containing the HTTP response code returned while retrieving
                 document content. This can be used with the SkipDocumentFilter
-                to skip documents with specific error codes, 
+                to skip documents with specific error codes,
                 such as 404 or 500.
-                
+
 --Issue 6732717 Add support for SharePoint anonymous content.
 
---Issue 6553141 The reWriteDisplayUrlUsingAliasMappingRules and 
-                reWriteRecordUrlUsingAliasMappingRules properties do not 
+--Issue 6553141 The reWriteDisplayUrlUsingAliasMappingRules and
+                reWriteRecordUrlUsingAliasMappingRules properties do not
                 work in versions 2.8 and above.
 
 --Issue 6395086 SharePoint connector late binding does not work with
@@ -102,6 +106,10 @@ This version works with Connector Services for SharePoint 3.2.0. Versions
 lower than 3.2.0 of Connector Services for SharePoint will not work
 correctly with this version of the connector.
 
+This version works with Active Directory Groups Connector 3.2.0 and above.
+Versions lower than 3.2.0 of Active Directory Groups Connector are not
+compatible with version 3.2.0 of SharePoint Connector.
+
 Google strongly recommends reindexing your SharePoint content when
 upgrading to 3.0, due to changes in the ACL structures in the connector,
 feeds, and GSA index, and corresponding changes in user identity and group
@@ -115,9 +123,10 @@ permission, and crawling user profiles for Expert Search work only with GSA
 7.0 and higher. All the other connector features will continue to work on
 GSA 7.0.14.G.114, 7.0.14.G.84, 6.14.0.G.28, and 6.12.0.G.30.
 
-Manually upgrade an existing connector and Google Services for SharePoint
-------------------------------------------------------------------------
-The steps to manually upgrade an existing connector or a Google Services for SharePoint can be found at http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/ManualInstallation.
+Manually upgrade an existing connector and Connector Services for SharePoint
+----------------------------------------------------------------------------
+The steps to manually upgrade an existing connector or a Connector Services for 
+SharePoint can be found at http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/ManualInstallation.
 
 Platform Support
 ------------------
@@ -255,10 +264,10 @@ This release contains fixes for the following issues:
                 connector gets stuck in a loop when the number of
                 inheriting permission list items is greater than the
                 batch size.
-                
+
 --Issue 7899343 SharePoint user profile connector does not perform
                 change detection during incremental crawl.
-                
+
 --Issue 7687492 Default SharePoint user profile full traversal
                 interval should be one day.
 
@@ -837,7 +846,7 @@ Version Compatibility
 ---------------------
 This version works with Connector Manager Version 2.8.0 and above.
 Versions lower than 2.8.0 of the Connector Manager will not work correctly with this version of the connector.
-SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher. 
+SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher.
 Flex AuthZ support in the connector works only with GSA 6.14.
 All the other connector features will continue to work on GSA 6.14.0.G.28, 6.12.0.G.30, 6.10.4.G.22, and 6.8.0.G.30.
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
@@ -946,7 +955,7 @@ Version Compatibility
 ---------------------
 This version works with Connector Manager Version 2.8.0 and above.
 Versions lower than 2.8.0 of the Connector Manager will not work correctly with this version of the connector.
-SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher. 
+SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher.
 Flex AuthZ support in the connector works only with GSA 6.14.
 All the other connector features will continue to work on GSA 6.14.0.G.28, 6.12.0.G.30, 6.10.4.G.22, and 6.8.0.G.30.
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
@@ -1088,7 +1097,7 @@ Version Compatibility
 This version works with Connector Manager Version 2.8.0 and above.
 Versions lower than 2.8.0 of the Connector Manager will not work correctly with this version of the connector.
 Connectors with version 2.4.0 and above can be safely upgraded using the steps given below.
-SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher. 
+SharePoint local group resolution support with GSA 6.10.4.G.22 is limited to HTTP Based NTLM and Connector authentication. All authentication mechanisms work with GSA 6.12 and higher.
 Flex AuthZ support in the connector works only with GSA 6.14.
 All the other connector features will continue to work on 6.14.0.G.28, 6.12.0.G.30, GSA 6.10.4.G.22, and 6.8.0.G.30.
 
