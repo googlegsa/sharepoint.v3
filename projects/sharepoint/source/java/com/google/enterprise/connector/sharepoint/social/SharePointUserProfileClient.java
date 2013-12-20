@@ -43,41 +43,48 @@ public class SharePointUserProfileClient {
     SharepointClientContext spContext =  ctxt.getSpClientContext();
     UserProfileChangeHelper userProfileChange =
         new UserProfileChangeHelper(spContext);
-    try {
-      Map<String, ActionType> updatedProfiles =
-          userProfileChange.getChangedUserProfiles(checkpoint);
-      if (updatedProfiles != null && updatedProfiles.size() > 0) {
-        LOGGER.info("Number of Changed User Profiles = "
-            + updatedProfiles.size());
-        for (String updatedUserProfile : updatedProfiles.keySet()) {
-          ActionType action = updatedProfiles.get(updatedUserProfile);
-          LOGGER.info("Processing Updated User Profile for = "
-              + updatedUserProfile);
-          SharePointSocialUserProfileDocument doc =
-              new SharePointSocialUserProfileDocument(ctxt
-                  .getUserProfileCollection());
-          doc.setUserKey(updatedUserProfile);
-          doc.setProperty(SpiConstants.PROPNAME_ACTION, action.toString());
-          doc.setActionType(action);
-          if (action == ActionType.DELETE) {
-            String url = makeItemUrl(updatedUserProfile);
-            LOGGER.info("Deleted User Profile URL = " + url);
+    if (userProfileChange != null) {
+      try {
+        Map<String, ActionType> updatedProfiles = 
+            userProfileChange.getChangedUserProfiles(checkpoint);
+        if (updatedProfiles != null && updatedProfiles.size() > 0) {
+          LOGGER.info("Number of Changed User Profiles = "
+              + updatedProfiles.size());
+          for(String updatedUserProfile : updatedProfiles.keySet()) {
+            ActionType action = updatedProfiles.get(updatedUserProfile);       
+            LOGGER.info("Processing Updated User Profile for = "
+                + updatedUserProfile);
+            SharePointSocialUserProfileDocument doc =
+                new SharePointSocialUserProfileDocument(ctxt
+                    .getUserProfileCollection());
             doc.setUserKey(updatedUserProfile);
-            doc.setProperty(SpiConstants.PROPNAME_ACTION, action.toString());
-            doc.setProperty(SpiConstants.PROPNAME_CONTENT, "");
-            doc.setProperty(SpiConstants.PROPNAME_MIMETYPE, "text/plain");
-            doc.setProperty(SpiConstants.PROPNAME_DISPLAYURL, url);
+            doc.setProperty(
+                SpiConstants.PROPNAME_ACTION, action.toString());
+            doc.setActionType(action);
+            if (action == ActionType.DELETE) {
+              String url = makeItemUrl(updatedUserProfile);
+              LOGGER.info("Deleted User Profile URL = "
+                  + url);
+              doc.setUserKey(updatedUserProfile);
+              doc.setProperty(SpiConstants.PROPNAME_CONTENTURL, url);
+              doc.setProperty(
+                  SpiConstants.PROPNAME_ACTION, action.toString());
+              doc.setProperty(SpiConstants.PROPNAME_CONTENT, "");
+              doc.setProperty(SpiConstants.PROPNAME_MIMETYPE, "text/plain");
+              doc.setProperty(SpiConstants.PROPNAME_DISPLAYURL, url);
+            }
+            updatedDocuments.add(doc);            
           }
-          updatedDocuments.add(doc);
         }
+        return updatedDocuments;
+      } catch (Exception e) {
+        LOGGER.log(Level.WARNING, e.getMessage(), e);        
+        return null;
       }
-      return updatedDocuments;
-    } catch (Exception e) {
-      LOGGER.log(Level.WARNING, e.getMessage(), e);
-      return null;
     }
+    return null;
   }
-
+  
   public String getCurrentChangeTokenOnSharePoint() 
       throws SharepointException {
     SharepointClientContext spContext =  ctxt.getSpClientContext();

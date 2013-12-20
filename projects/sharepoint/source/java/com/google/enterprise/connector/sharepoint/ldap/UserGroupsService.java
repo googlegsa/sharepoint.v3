@@ -70,6 +70,7 @@ public class UserGroupsService implements LdapService {
   private static final Logger LOGGER = Logger.getLogger(UserGroupsService.class.getName());
 
   private LdapConnectionSettings ldapConnectionSettings;
+  private LdapContext context;
   private final UserGroupsCache<Object,
       ConcurrentHashMap<String, Set<Principal>>> lugCacheStore;
   private LdapConnection ldapConnection;
@@ -87,6 +88,7 @@ public class UserGroupsService implements LdapService {
       int cacheSize, long refreshInterval, boolean enableLUGCache) {
     this.ldapConnectionSettings = ldapConnectionSettings;
     ldapConnection = new LdapConnection(ldapConnectionSettings);
+    context = getLdapContext();
     this.sharepointClientContext = null;
     if (enableLUGCache) {
       this.lugCacheStore = new UserGroupsCache<Object,
@@ -105,6 +107,7 @@ public class UserGroupsService implements LdapService {
     if (!Strings.isNullOrEmpty(ldapConnectionSettings.getHostname())) {
       this.ldapConnectionSettings = ldapConnectionSettings;
       ldapConnection = new LdapConnection(ldapConnectionSettings);
+      context = getLdapContext();
     } else {
       LOGGER.warning("Not attempting to create LDAP context, because LDAP host name is empty or null.");
     }
@@ -414,11 +417,9 @@ public class UserGroupsService implements LdapService {
    *
    * @param userSid SID of the user in Active Directory
    * @param primaryGroupId domain local ID of the primary group
-   * @param context 
    * @return string containing the primary group's name
    */
-  private String getPrimaryGroupForTheSearchUser(byte[] userSid,
-      String primaryGroupId, LdapContext context) {
+  String getPrimaryGroupForTheSearchUser(byte[] userSid, String primaryGroupId) {
     if (userSid == null || primaryGroupId == null) {
       return null;
     }
@@ -431,7 +432,7 @@ public class UserGroupsService implements LdapService {
     String searchBase = ldapConnectionSettings.getBaseDN();
     NamingEnumeration<SearchResult> ldapResults = null;
     try {
-      ldapResults = context.search(searchBase, searchFilter, searchCtls);
+      ldapResults = this.context.search(searchBase, searchFilter, searchCtls);
       SearchResult sr = ldapResults.next();
       primaryGroupDN = sr.getNameInNamespace();
     } catch (NamingException ne) {
@@ -455,8 +456,7 @@ public class UserGroupsService implements LdapService {
    * @param userName search user name
    * @return a set of direct groups that the user belongs to in AD.
    */
-  private Set<String> getDirectGroupsForTheSearchUser(String userName,
-      LdapContext context) {
+  Set<String> getDirectGroupsForTheSearchUser(String userName) {
     // Create the search controls.
     SearchControls searchCtls = makeSearchCtls(new String[]{
           LdapConstants.ATTRIBUTE_MEMBER_OF,
@@ -473,7 +473,7 @@ public class UserGroupsService implements LdapService {
     byte[] userSid = null;
     String primaryGroupId = null;
     try {
-      ldapResults = context.search(searchBase, searchFilter, searchCtls);
+      ldapResults = this.context.search(searchBase, searchFilter, searchCtls);
       // Loop through the search results
       while (ldapResults.hasMoreElements()) {
         SearchResult sr = ldapResults.next();
@@ -512,8 +512,7 @@ public class UserGroupsService implements LdapService {
       }
     }
 
-    directGroups.add(
-        getPrimaryGroupForTheSearchUser(userSid, primaryGroupId, context));
+    directGroups.add(getPrimaryGroupForTheSearchUser(userSid, primaryGroupId));
     LOGGER.info("[ " + userName + " ] is a direct member of "
         + directGroups.size() + " groups : " + directGroups);
     return directGroups;
@@ -536,19 +535,18 @@ public class UserGroupsService implements LdapService {
     return filter.toString();
   }
 
-  @VisibleForTesting
-  void getAllParentGroups(String groupName, Set<String> parentGroupsInfo,
-      LdapContext context) {
+  @Override
+  public void getAllParentGroups(String groupName,
+      final Set<String> parentGroupsInfo) {
     if (!Strings.isNullOrEmpty(groupName)) {
       parentGroupsInfo.add(groupName);
-      Set<String> parentGroups =
-          getAllParentGroupsForTheGroup(groupName, context);
+      Set<String> parentGroups = getAllParentGroupsForTheGroup(groupName);
       LOGGER.log(Level.INFO, "Parent groups for the group [" + groupName
           + "] : " + parentGroups);
 
       for (String group : parentGroups) {
         if (!parentGroupsInfo.contains(group)) {
-          getAllParentGroups(group, parentGroupsInfo, context);
+          getAllParentGroups(group, parentGroupsInfo);
         }
       }
     }
@@ -560,8 +558,7 @@ public class UserGroupsService implements LdapService {
    * @param groupName is the group, whose parent groups need to be retrieved.
    * @return a set of all parent groups
    */
-  private Set<String> getAllParentGroupsForTheGroup(String groupName,
-      LdapContext context) {
+  private Set<String> getAllParentGroupsForTheGroup(String groupName) {
     Set<String> parentGroups = new HashSet<String>();
     // Create the search controls
     SearchControls searchCtls = makeSearchCtls(new String[]{LdapConstants.ATTRIBUTE_MEMBER_OF});
@@ -571,7 +568,7 @@ public class UserGroupsService implements LdapService {
     String searchBase = ldapConnectionSettings.getBaseDN();
     NamingEnumeration<SearchResult> ldapResults = null;
     try {
-      ldapResults = context.search(searchBase, searchFilter, searchCtls);
+      ldapResults = this.context.search(searchBase, searchFilter, searchCtls);
       while (ldapResults.hasMoreElements()) {
         SearchResult sr = ldapResults.next();
         Attributes attrs = sr.getAttributes();
@@ -632,8 +629,8 @@ public class UserGroupsService implements LdapService {
     return filter.toString();
   }
 
-  @VisibleForTesting
-  Set<String> getAllLdapGroups(String userName) {
+  @Override
+  public Set<String> getAllLdapGroups(String userName) {
     if (Strings.isNullOrEmpty(userName)) {
       return null;
     }
@@ -642,18 +639,18 @@ public class UserGroupsService implements LdapService {
         + "for the search user: " + userName);
     // fix me by creating a LDAP connection poll instead of creating context
     // object on demand.
-    LdapContext context = new LdapConnection(
+    this.context = new LdapConnection(
         sharepointClientContext.getLdapConnectionSettings()).createContext();
-    Set<String> directGroups = 
-        getDirectGroupsForTheSearchUser(userName, context);
+    Set<String> directGroups = getDirectGroupsForTheSearchUser(userName);
     for (String groupName : directGroups) {
-      getAllParentGroups(groupName, ldapGroups, context);
+      getAllParentGroups(groupName, ldapGroups);
     }
     LOGGER.info("[ " + userName + " ] is a direct or indirect member of "
         + ldapGroups.size() + " groups");
-    Set<String> groupNames = getSAMAccountNames(ldapGroups, context);
+    Set<String> groupNames = getSAMAccountNames(ldapGroups);
     if (null != directGroups) {
       directGroups = null;
+      this.context = null;
     }
     return groupNames;
   }
@@ -664,9 +661,7 @@ public class UserGroupsService implements LdapService {
    *     to resolve
    * @return sAMAccountName for each of the entities
    */
-  @VisibleForTesting
-  Set<String> getSAMAccountNames(Set<String> distinguishedNames,
-      LdapContext context) {
+  Set<String> getSAMAccountNames(Set<String> distinguishedNames) {
     Set<String> result = new HashSet<String>();
     // Create the search controls
     SearchControls searchCtls = makeSearchCtls(
@@ -684,7 +679,7 @@ public class UserGroupsService implements LdapService {
     String searchBase = ldapConnectionSettings.getBaseDN();
     NamingEnumeration<SearchResult> ldapResults = null;
     try {
-      ldapResults = context.search(
+      ldapResults = this.context.search(
           searchBase, filter.toString(), searchCtls);
       while (ldapResults.hasMoreElements()) {
         SearchResult sr = ldapResults.next();
@@ -722,6 +717,30 @@ public class UserGroupsService implements LdapService {
       }
     }
     return result;
+  }
+
+  /**
+   * Retrieves SAM account name for the search user for all the possible primary
+   * verification identities sent by GSA and is require to query Directory
+   * service to fetch all direct groups he belongs to. This implementation is
+   * specific to the AD.
+   *
+   * @param searchUserName search user name.
+   */
+  @Override
+  public String getSamAccountNameForSearchUser(final String searchUserName) {
+    String tmpUserName = null;
+    if (null == searchUserName) {
+      return null;
+    }
+    if (searchUserName.lastIndexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+      tmpUserName = searchUserName.substring(0, searchUserName.indexOf(SPConstants.AT));
+    } else if (searchUserName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+      tmpUserName = searchUserName.substring(searchUserName.indexOf(SPConstants.DOUBLEBACKSLASH) + 1);
+    } else {
+      tmpUserName = searchUserName;
+    }
+    return tmpUserName;
   }
 
   /**

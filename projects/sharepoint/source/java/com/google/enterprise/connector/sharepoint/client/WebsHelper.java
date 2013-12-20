@@ -110,8 +110,10 @@ public class WebsHelper {
               continue;
             }
             final String url = meWeb.getAttribute("Url");
-            if (sharepointClientContext.isIncludedUrl(url, LOGGER)) {
+            if (sharepointClientContext.isIncludedUrl(url)) {
               allWebsList.add(url);
+            } else {
+              LOGGER.warning("excluding " + url);
             }
           }
         }

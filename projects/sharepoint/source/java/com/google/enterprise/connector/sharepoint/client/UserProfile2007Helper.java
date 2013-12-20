@@ -158,9 +158,11 @@ public class UserProfile2007Helper {
             if (strURL.endsWith(SPConstants.SLASH)) {
               strURL = strURL.substring(0, strURL.lastIndexOf(SPConstants.SLASH));
             }
-            if (sharepointClientContext.isIncludedUrl(strURL, LOGGER)) {
+            if (sharepointClientContext.isIncludedUrl(strURL)) {
               lstAllPersonalSites.add(strURL);
               LOGGER.log(Level.CONFIG, "Personal Site: " + strURL);
+            } else {
+              LOGGER.log(Level.WARNING, "excluding " + strURL);
             }
           }
         } catch (final Exception e) {
@@ -207,8 +209,10 @@ public class UserProfile2007Helper {
 
       for (QuickLinkData element : links) {
         url = element.getUrl();
-        if (sharepointClientContext.isIncludedUrl(url, LOGGER)) {
+        if (sharepointClientContext.isIncludedUrl(url)) {
           myLinksSet.add(url);
+        } else {
+          LOGGER.warning("excluding " + url.toString());
         }
       }
 

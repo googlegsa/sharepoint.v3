@@ -47,8 +47,6 @@ namespace GSBControlPanel
             this.rbPublic = new System.Windows.Forms.RadioButton();
             this.rbPublicAndSecureDefaultSearchType = new System.Windows.Forms.RadioButton();
             this.rbPublicDefaultSearchType = new System.Windows.Forms.RadioButton();
-            this.txtArtifactConsumerURL = new System.Windows.Forms.TextBox();
-            this.lblArtifactConsumer = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.gbSelectFrontEnd = new System.Windows.Forms.GroupBox();
             this.lblStylesheet = new System.Windows.Forms.Label();
@@ -59,13 +57,11 @@ namespace GSBControlPanel
             this.lblDefaultSearchType = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.lblTrustDuration = new System.Windows.Forms.Label();
-            this.lblIDPEntityID = new System.Windows.Forms.Label();
-            this.txtTrustDuration = new System.Windows.Forms.TextBox();
-            this.txtIDPEntityID = new System.Windows.Forms.TextBox();
-            this.txtCertName = new System.Windows.Forms.TextBox();
-            this.lblCertName = new System.Windows.Forms.Label();
             this.chkUseSAMLPost = new System.Windows.Forms.CheckBox();
+            this.txtArtifactConsumerURL = new System.Windows.Forms.TextBox();
+            this.lblArtifactConsumer = new System.Windows.Forms.Label();
+            this.lblCertName = new System.Windows.Forms.Label();
+            this.txtCertName = new System.Windows.Forms.TextBox();
             this.gbSelectFrontEnd.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -74,7 +70,7 @@ namespace GSBControlPanel
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(361, 501);
+            this.btnOk.Location = new System.Drawing.Point(311, 413);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(71, 23);
             this.btnOk.TabIndex = 7;
@@ -86,7 +82,7 @@ namespace GSBControlPanel
             // lblGSALocation
             // 
             this.lblGSALocation.AutoSize = true;
-            this.lblGSALocation.Location = new System.Drawing.Point(10, 45);
+            this.lblGSALocation.Location = new System.Drawing.Point(8, 45);
             this.lblGSALocation.Name = "lblGSALocation";
             this.lblGSALocation.Size = new System.Drawing.Size(79, 13);
             this.lblGSALocation.TabIndex = 0;
@@ -94,9 +90,9 @@ namespace GSBControlPanel
             // 
             // tbGSALocation
             // 
-            this.tbGSALocation.Location = new System.Drawing.Point(122, 43);
+            this.tbGSALocation.Location = new System.Drawing.Point(115, 43);
             this.tbGSALocation.Name = "tbGSALocation";
-            this.tbGSALocation.Size = new System.Drawing.Size(403, 20);
+            this.tbGSALocation.Size = new System.Drawing.Size(376, 20);
             this.tbGSALocation.TabIndex = 0;
             this.tbGSALocation.Text = "https://your_gsa_url";
             this.toolTip1.SetToolTip(this.tbGSALocation, "Enter the Google Search appliance URL. ");
@@ -104,9 +100,9 @@ namespace GSBControlPanel
             // 
             // tbSiteCollection
             // 
-            this.tbSiteCollection.Location = new System.Drawing.Point(121, 77);
+            this.tbSiteCollection.Location = new System.Drawing.Point(114, 77);
             this.tbSiteCollection.Name = "tbSiteCollection";
-            this.tbSiteCollection.Size = new System.Drawing.Size(404, 20);
+            this.tbSiteCollection.Size = new System.Drawing.Size(377, 20);
             this.tbSiteCollection.TabIndex = 1;
             this.tbSiteCollection.Text = "default_collection";
             this.toolTip1.SetToolTip(this.tbSiteCollection, "Enter the GSA collection name. For entering multiple collections use pipe (|) as " +
@@ -116,7 +112,7 @@ namespace GSBControlPanel
             // lblSiteCollection
             // 
             this.lblSiteCollection.AutoSize = true;
-            this.lblSiteCollection.Location = new System.Drawing.Point(10, 80);
+            this.lblSiteCollection.Location = new System.Drawing.Point(8, 80);
             this.lblSiteCollection.Name = "lblSiteCollection";
             this.lblSiteCollection.Size = new System.Drawing.Size(53, 13);
             this.lblSiteCollection.TabIndex = 0;
@@ -124,9 +120,9 @@ namespace GSBControlPanel
             // 
             // tbFrontEnd
             // 
-            this.tbFrontEnd.Location = new System.Drawing.Point(122, 152);
+            this.tbFrontEnd.Location = new System.Drawing.Point(115, 152);
             this.tbFrontEnd.Name = "tbFrontEnd";
-            this.tbFrontEnd.Size = new System.Drawing.Size(403, 20);
+            this.tbFrontEnd.Size = new System.Drawing.Size(377, 20);
             this.tbFrontEnd.TabIndex = 2;
             this.tbFrontEnd.Tag = "";
             this.tbFrontEnd.Text = "default_frontend";
@@ -136,7 +132,7 @@ namespace GSBControlPanel
             // lblFrontEnd
             // 
             this.lblFrontEnd.AutoSize = true;
-            this.lblFrontEnd.Location = new System.Drawing.Point(10, 155);
+            this.lblFrontEnd.Location = new System.Drawing.Point(8, 155);
             this.lblFrontEnd.Name = "lblFrontEnd";
             this.lblFrontEnd.Size = new System.Drawing.Size(53, 13);
             this.lblFrontEnd.TabIndex = 0;
@@ -145,7 +141,7 @@ namespace GSBControlPanel
             // cbEnableLogging
             // 
             this.cbEnableLogging.AutoSize = true;
-            this.cbEnableLogging.Location = new System.Drawing.Point(111, 499);
+            this.cbEnableLogging.Location = new System.Drawing.Point(122, 408);
             this.cbEnableLogging.Name = "cbEnableLogging";
             this.cbEnableLogging.Size = new System.Drawing.Size(65, 17);
             this.cbEnableLogging.TabIndex = 6;
@@ -156,7 +152,7 @@ namespace GSBControlPanel
             // btnCancel
             // 
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Location = new System.Drawing.Point(451, 501);
+            this.btnCancel.Location = new System.Drawing.Point(398, 412);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(71, 23);
             this.btnCancel.TabIndex = 8;
@@ -168,7 +164,7 @@ namespace GSBControlPanel
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 6);
+            this.label1.Location = new System.Drawing.Point(5, 6);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(167, 13);
             this.label1.TabIndex = 0;
@@ -190,7 +186,7 @@ namespace GSBControlPanel
             // 
             this.rbCustomStylesheet.AutoSize = true;
             this.rbCustomStylesheet.Checked = true;
-            this.rbCustomStylesheet.Location = new System.Drawing.Point(32, 14);
+            this.rbCustomStylesheet.Location = new System.Drawing.Point(3, 14);
             this.rbCustomStylesheet.Name = "rbCustomStylesheet";
             this.rbCustomStylesheet.Size = new System.Drawing.Size(119, 17);
             this.rbCustomStylesheet.TabIndex = 0;
@@ -204,7 +200,7 @@ namespace GSBControlPanel
             // 
             this.rbPublicAndSecure.AutoSize = true;
             this.rbPublicAndSecure.Checked = true;
-            this.rbPublicAndSecure.Location = new System.Drawing.Point(180, 12);
+            this.rbPublicAndSecure.Location = new System.Drawing.Point(178, 13);
             this.rbPublicAndSecure.Name = "rbPublicAndSecure";
             this.rbPublicAndSecure.Size = new System.Drawing.Size(112, 17);
             this.rbPublicAndSecure.TabIndex = 1;
@@ -218,7 +214,7 @@ namespace GSBControlPanel
             // rbPublic
             // 
             this.rbPublic.AutoSize = true;
-            this.rbPublic.Location = new System.Drawing.Point(33, 12);
+            this.rbPublic.Location = new System.Drawing.Point(6, 13);
             this.rbPublic.Name = "rbPublic";
             this.rbPublic.Size = new System.Drawing.Size(54, 17);
             this.rbPublic.TabIndex = 0;
@@ -231,7 +227,7 @@ namespace GSBControlPanel
             // 
             this.rbPublicAndSecureDefaultSearchType.AutoSize = true;
             this.rbPublicAndSecureDefaultSearchType.Checked = true;
-            this.rbPublicAndSecureDefaultSearchType.Location = new System.Drawing.Point(180, 12);
+            this.rbPublicAndSecureDefaultSearchType.Location = new System.Drawing.Point(178, 13);
             this.rbPublicAndSecureDefaultSearchType.Name = "rbPublicAndSecureDefaultSearchType";
             this.rbPublicAndSecureDefaultSearchType.Size = new System.Drawing.Size(149, 17);
             this.rbPublicAndSecureDefaultSearchType.TabIndex = 1;
@@ -243,7 +239,7 @@ namespace GSBControlPanel
             // rbPublicDefaultSearchType
             // 
             this.rbPublicDefaultSearchType.AutoSize = true;
-            this.rbPublicDefaultSearchType.Location = new System.Drawing.Point(33, 13);
+            this.rbPublicDefaultSearchType.Location = new System.Drawing.Point(6, 13);
             this.rbPublicDefaultSearchType.Name = "rbPublicDefaultSearchType";
             this.rbPublicDefaultSearchType.Size = new System.Drawing.Size(91, 17);
             this.rbPublicDefaultSearchType.TabIndex = 0;
@@ -251,29 +247,10 @@ namespace GSBControlPanel
             this.toolTip1.SetToolTip(this.rbPublicDefaultSearchType, "Select to configure Public Search as default search type.");
             this.rbPublicDefaultSearchType.UseVisualStyleBackColor = true;
             // 
-            // txtArtifactConsumerURL
-            // 
-            this.txtArtifactConsumerURL.Enabled = false;
-            this.txtArtifactConsumerURL.Location = new System.Drawing.Point(140, 55);
-            this.txtArtifactConsumerURL.Name = "txtArtifactConsumerURL";
-            this.txtArtifactConsumerURL.Size = new System.Drawing.Size(359, 20);
-            this.txtArtifactConsumerURL.TabIndex = 3;
-            this.txtArtifactConsumerURL.Text = "https://yourgsa/security-manager/samlassertionconsumer";
-            this.toolTip1.SetToolTip(this.txtArtifactConsumerURL, "Enter the SAML Bridge artifact consumer URL");
-            // 
-            // lblArtifactConsumer
-            // 
-            this.lblArtifactConsumer.Location = new System.Drawing.Point(10, 59);
-            this.lblArtifactConsumer.Name = "lblArtifactConsumer";
-            this.lblArtifactConsumer.Size = new System.Drawing.Size(105, 17);
-            this.lblArtifactConsumer.TabIndex = 2;
-            this.lblArtifactConsumer.Text = "Assertion Consumer";
-            this.toolTip1.SetToolTip(this.lblArtifactConsumer, "SAML Bridge artifact consumer URL");
-            // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(41, 499);
+            this.label2.Location = new System.Drawing.Point(10, 412);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(56, 13);
             this.label2.TabIndex = 0;
@@ -283,16 +260,16 @@ namespace GSBControlPanel
             // 
             this.gbSelectFrontEnd.Controls.Add(this.rbGSAFrontEnd);
             this.gbSelectFrontEnd.Controls.Add(this.rbCustomStylesheet);
-            this.gbSelectFrontEnd.Location = new System.Drawing.Point(122, 103);
+            this.gbSelectFrontEnd.Location = new System.Drawing.Point(115, 103);
             this.gbSelectFrontEnd.Name = "gbSelectFrontEnd";
-            this.gbSelectFrontEnd.Size = new System.Drawing.Size(403, 40);
+            this.gbSelectFrontEnd.Size = new System.Drawing.Size(377, 41);
             this.gbSelectFrontEnd.TabIndex = 3;
             this.gbSelectFrontEnd.TabStop = false;
             // 
             // lblStylesheet
             // 
             this.lblStylesheet.AutoSize = true;
-            this.lblStylesheet.Location = new System.Drawing.Point(10, 121);
+            this.lblStylesheet.Location = new System.Drawing.Point(8, 121);
             this.lblStylesheet.Name = "lblStylesheet";
             this.lblStylesheet.Size = new System.Drawing.Size(56, 13);
             this.lblStylesheet.TabIndex = 0;
@@ -323,7 +300,7 @@ namespace GSBControlPanel
             // lblServeMethod
             // 
             this.lblServeMethod.AutoSize = true;
-            this.lblServeMethod.Location = new System.Drawing.Point(10, 198);
+            this.lblServeMethod.Location = new System.Drawing.Point(8, 198);
             this.lblServeMethod.Name = "lblServeMethod";
             this.lblServeMethod.Size = new System.Drawing.Size(74, 13);
             this.lblServeMethod.TabIndex = 41;
@@ -333,16 +310,16 @@ namespace GSBControlPanel
             // 
             this.groupBox1.Controls.Add(this.rbPublicAndSecure);
             this.groupBox1.Controls.Add(this.rbPublic);
-            this.groupBox1.Location = new System.Drawing.Point(120, 183);
+            this.groupBox1.Location = new System.Drawing.Point(114, 183);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(405, 40);
+            this.groupBox1.Size = new System.Drawing.Size(377, 41);
             this.groupBox1.TabIndex = 4;
             this.groupBox1.TabStop = false;
             // 
             // lblDefaultSearchType
             // 
             this.lblDefaultSearchType.AutoSize = true;
-            this.lblDefaultSearchType.Location = new System.Drawing.Point(10, 243);
+            this.lblDefaultSearchType.Location = new System.Drawing.Point(8, 243);
             this.lblDefaultSearchType.Name = "lblDefaultSearchType";
             this.lblDefaultSearchType.Size = new System.Drawing.Size(105, 13);
             this.lblDefaultSearchType.TabIndex = 43;
@@ -352,95 +329,69 @@ namespace GSBControlPanel
             // 
             this.groupBox2.Controls.Add(this.rbPublicAndSecureDefaultSearchType);
             this.groupBox2.Controls.Add(this.rbPublicDefaultSearchType);
-            this.groupBox2.Location = new System.Drawing.Point(121, 230);
+            this.groupBox2.Location = new System.Drawing.Point(114, 230);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(404, 40);
+            this.groupBox2.Size = new System.Drawing.Size(377, 41);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.lblTrustDuration);
-            this.groupBox3.Controls.Add(this.lblIDPEntityID);
-            this.groupBox3.Controls.Add(this.txtTrustDuration);
-            this.groupBox3.Controls.Add(this.txtIDPEntityID);
             this.groupBox3.Controls.Add(this.txtCertName);
             this.groupBox3.Controls.Add(this.lblCertName);
             this.groupBox3.Controls.Add(this.txtArtifactConsumerURL);
             this.groupBox3.Controls.Add(this.lblArtifactConsumer);
             this.groupBox3.Controls.Add(this.chkUseSAMLPost);
-            this.groupBox3.Location = new System.Drawing.Point(10, 276);
+            this.groupBox3.Location = new System.Drawing.Point(8, 277);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(515, 205);
+            this.groupBox3.Size = new System.Drawing.Size(484, 125);
             this.groupBox3.TabIndex = 44;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "SAML Bridge Post Configuration";
             // 
-            // lblTrustDuration
-            // 
-            this.lblTrustDuration.AutoSize = true;
-            this.lblTrustDuration.Location = new System.Drawing.Point(10, 152);
-            this.lblTrustDuration.Name = "lblTrustDuration";
-            this.lblTrustDuration.Size = new System.Drawing.Size(74, 13);
-            this.lblTrustDuration.TabIndex = 9;
-            this.lblTrustDuration.Text = "Trust Duration";
-            // 
-            // lblIDPEntityID
-            // 
-            this.lblIDPEntityID.AutoSize = true;
-            this.lblIDPEntityID.Location = new System.Drawing.Point(10, 121);
-            this.lblIDPEntityID.Name = "lblIDPEntityID";
-            this.lblIDPEntityID.Size = new System.Drawing.Size(68, 13);
-            this.lblIDPEntityID.TabIndex = 8;
-            this.lblIDPEntityID.Text = "IDP Entity ID";
-            // 
-            // txtTrustDuration
-            // 
-            this.txtTrustDuration.Enabled = false;
-            this.txtTrustDuration.Location = new System.Drawing.Point(140, 152);
-            this.txtTrustDuration.Name = "txtTrustDuration";
-            this.txtTrustDuration.Size = new System.Drawing.Size(65, 20);
-            this.txtTrustDuration.TabIndex = 7;
-            this.txtTrustDuration.Text = TRUSTDURATIONDEFAULT.ToString();
-
-            // 
-            // txtIDPEntityID
-            // 
-            this.txtIDPEntityID.Enabled = false;
-            this.txtIDPEntityID.Location = new System.Drawing.Point(140, 121);
-            this.txtIDPEntityID.Name = "txtIDPEntityID";
-            this.txtIDPEntityID.Size = new System.Drawing.Size(359, 20);
-            this.txtIDPEntityID.TabIndex = 6;
-            this.txtIDPEntityID.Text = "saml-bridge";
-            // 
-            // txtCertName
-            // 
-            this.txtCertName.Enabled = false;
-            this.txtCertName.Location = new System.Drawing.Point(140, 90);
-            this.txtCertName.Name = "txtCertName";
-            this.txtCertName.Size = new System.Drawing.Size(359, 20);
-            this.txtCertName.TabIndex = 5;
-            // 
-            // lblCertName
-            // 
-            this.lblCertName.Location = new System.Drawing.Point(10, 90);
-            this.lblCertName.Name = "lblCertName";
-            this.lblCertName.Size = new System.Drawing.Size(131, 19);
-            this.lblCertName.TabIndex = 4;
-            this.lblCertName.Text = "Certificate Friendly Name";
-
-            // 
             // chkUseSAMLPost
             // 
             this.chkUseSAMLPost.AutoSize = true;
-            this.chkUseSAMLPost.Location = new System.Drawing.Point(10, 24);
+            this.chkUseSAMLPost.Location = new System.Drawing.Point(13, 26);
             this.chkUseSAMLPost.Name = "chkUseSAMLPost";
             this.chkUseSAMLPost.Size = new System.Drawing.Size(101, 17);
             this.chkUseSAMLPost.TabIndex = 0;
             this.chkUseSAMLPost.Text = "Use SAML Post";
             this.chkUseSAMLPost.UseVisualStyleBackColor = true;
             this.chkUseSAMLPost.CheckedChanged += new System.EventHandler(this.chkUseSAMLPost_CheckedChanged);
-
+            // 
+            // txtArtifactConsumerURL
+            // 
+            this.txtArtifactConsumerURL.Location = new System.Drawing.Point(112, 49);
+            this.txtArtifactConsumerURL.Name = "txtArtifactConsumerURL";
+            this.txtArtifactConsumerURL.Size = new System.Drawing.Size(369, 20);
+            this.txtArtifactConsumerURL.TabIndex = 3;
+            this.txtArtifactConsumerURL.Text = "https://yourgsa/security-manager/samlassertionconsumer";
+            this.toolTip1.SetToolTip(this.txtArtifactConsumerURL, "Enter the SAML Bridge artifact consumer URL");
+            // 
+            // lblArtifactConsumer
+            // 
+            this.lblArtifactConsumer.Location = new System.Drawing.Point(10, 52);
+            this.lblArtifactConsumer.Name = "lblArtifactConsumer";
+            this.lblArtifactConsumer.Size = new System.Drawing.Size(105, 17);
+            this.lblArtifactConsumer.TabIndex = 2;
+            this.lblArtifactConsumer.Text = "Assertion Consumer";
+            this.toolTip1.SetToolTip(this.lblArtifactConsumer, "SAML Bridge artifact consumer URL");
+            // 
+            // lblCertName
+            // 
+            this.lblCertName.Location = new System.Drawing.Point(10, 86);
+            this.lblCertName.Name = "lblCertName";
+            this.lblCertName.Size = new System.Drawing.Size(131, 19);
+            this.lblCertName.TabIndex = 4;
+            this.lblCertName.Text = "Certificate Friendly Name";
+            // 
+            // txtCertName
+            // 
+            this.txtCertName.Location = new System.Drawing.Point(136, 84);
+            this.txtCertName.Name = "txtCertName";
+            this.txtCertName.Size = new System.Drawing.Size(193, 20);
+            this.txtCertName.TabIndex = 5;
             // 
             // frmGSAParams
             // 
@@ -448,7 +399,7 @@ namespace GSBControlPanel
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancel;
-            this.ClientSize = new System.Drawing.Size(554, 555);
+            this.ClientSize = new System.Drawing.Size(522, 501);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.lblDefaultSearchType);
             this.Controls.Add(this.groupBox2);
@@ -523,10 +474,6 @@ namespace GSBControlPanel
         private System.Windows.Forms.Label lblArtifactConsumer;
         private System.Windows.Forms.Label lblCertName;
         private System.Windows.Forms.TextBox txtCertName;
-        private System.Windows.Forms.Label lblIDPEntityID;
-        private System.Windows.Forms.TextBox txtTrustDuration;
-        private System.Windows.Forms.TextBox txtIDPEntityID;
-        private System.Windows.Forms.Label lblTrustDuration;
     }
 }
 

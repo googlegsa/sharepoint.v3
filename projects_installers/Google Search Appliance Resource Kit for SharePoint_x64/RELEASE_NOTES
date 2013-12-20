@@ -1,10 +1,11 @@
+Release Notes
+=============
 
-                   Google Search Appliance Resource Kit for SharePoint (64-bit)
-                                         Release Notes
+Google Search Appliance Resource Kit for SharePoint 3.2.0 (64-bit)
 
-This document contains the release notes for Google Search Appliance Resource Kit for SharePoint
-(64-bit).  The following sections describe the release in detail and provide information that
-supplements the main documentation.  See the Issues Tab on the Code Site for the current list of
+This document contains the release notes for Google Search Appliance Resource Kit for SharePoint 
+3.2.0 (64-bit).  The following sections describe the release in detail and provide information that
+supplements the main documentation.  See the Issues Tab on the Code Site for the current list of 
 known issues and workarounds.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
@@ -73,19 +74,15 @@ Note:
 * Microsoft SharePoint is not required if you are installing only GSA Security SPI Simulator or 
   SAML Bridge for Windows.
 * Google Search Appliance Resource Kit for SharePoint now supports SharePoint 2013
-* SharePoint 2007 (WSS 3.0, MOSS 2007), SharePoint 2010, or SharePoint 2013 are not required if you
+* SharePoint 2007 (WSS 3.0, MOSS 2007), SharePoint 2010, or SharePoint 2013 are not required if you 
   are installing only GSA Security SPI Simulator or Google SAML Bridge for Windows.
 * There are separate installers for 32-bit and 64-bit Operating System.
 * The 64-bit installer is supported on machines with x64 platform.
 
-Issues fixed since 3.0.4
-------------------------
-4364197 - Search Box for SharePoint should support SAML POST Binding.
-8063523 - Support for Microsoft SharePoint 2013.
-11025699 - By default, the SAML Bridge Post fields are editable although "Use SAML POST" is not
-           checked.
-11781829 - The IDP Entity ID and Trust Duration values, for the SAML Bridge Post
-           configuration, may now be set through the Search Box Configuration Wizard.
+Issues fixed from last release:
+-------------------------------
+--Issue 4364197 SearchBox for SharePoint should support SAML POST Binding.
+--Issue 8063523 Support for Microsoft SharePoint 2013
 
 Known Issues/Limitations
 ------------------------

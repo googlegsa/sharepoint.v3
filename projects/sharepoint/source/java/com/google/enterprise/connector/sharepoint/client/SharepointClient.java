@@ -15,7 +15,6 @@
 package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.AlertsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -1152,25 +1151,23 @@ public class SharepointClient {
         listItems.addAll(attachmentItems);
       }
 
-      if (listState.getNextPage() == null) {
+      final String nextPage = listState.getNextPage();
+      // Logic: append list-> Document only when the whole list is
+      // traversed
+      if (nextPage == null) {
         if (((listItems != null) && (listItems.size() > 0))
             || (listState.isNewList())) {
-          SPDocument listDoc = listState.getDocumentInstance(
-              sharepointClientContext.getFeedType());
+          final SPDocument listDoc = listState.getDocumentInstance(sharepointClientContext.getFeedType());
           listItems.add(listDoc);
+
+          /*
+           * The only purpose of list.isNewList to decide whether to send the
+           * list as a document. Since, just now we have done this, let's mark
+           * the list as not new.
+           */
           listState.setNewList(false);
         }
       } else {
-        // Send List home page as part of this batch to complete inheritance 
-        // chain for discovered child items for partially traversed List.
-        if (listState.isNewList() && listItems != null && listItems.size() > 0 
-            && sharepointClientContext.getTraversalContext()
-            .supportsInheritedAcls() && !Strings.isNullOrEmpty(
-            listState.getListItemCollectionPositionNext())) {
-          SPDocument listDoc = listState.getDocumentInstance(
-              sharepointClientContext.getFeedType());
-          listItems.add(listDoc);
-        }
 
         // If any of the list has not been traversed completely, doCrawl
         // must not be set true.

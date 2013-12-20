@@ -156,7 +156,7 @@ public class WebState implements StatefulObject {
               + spURL
               + " ] it is a SP2003 site and the feedType being used is content. Content feed is not supported on SP2003. ");
       throw new SharepointException(
-          "Unsupported SharePoint version for content feed being used.");
+          "Unsupported Shrepoint version for content feed being used. ");
     }
   }
 

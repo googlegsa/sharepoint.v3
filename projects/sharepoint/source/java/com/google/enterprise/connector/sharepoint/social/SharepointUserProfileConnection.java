@@ -14,30 +14,28 @@
 
 package com.google.enterprise.connector.sharepoint.social;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.ContactData;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.GetUserProfileByIndexResult;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.Privacy;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.PropertyData;
 import com.google.enterprise.connector.sharepoint.generated.sp2010.userprofileservice.ValueData;
+import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument;
 import com.google.enterprise.connector.spi.SocialUserProfileDocument.ColleagueData;
 import com.google.enterprise.connector.spi.SpiConstants;
-import com.google.enterprise.connector.spi.Value;
+import com.google.enterprise.connector.spiimpl.DateValue;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.rmi.RemoteException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,44 +49,10 @@ import java.util.logging.Logger;
 public class SharepointUserProfileConnection {
 
   private static final Logger LOGGER = SharepointSocialConnector.LOGGER;
-
-  private static final SimpleDateFormat utcDateFormatter;
-
-  static {
-    utcDateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-    utcDateFormatter.setTimeZone(TimeZone.getTimeZone("GMT+0"));
-  }
-
-  private static synchronized String formatAsUtc(Calendar c) {
-    return utcDateFormatter.format(c.getTime());
-  }
-
   private SharepointSocialClientContext ctxt;
   private SharepointConfig config;
   private UserProfileServiceFactory serviceFactory;
   private UserProfileServiceGenerator service;
-
-  public static ArrayList<String> readProfileProperty(
-      PropertyData propertyData) {
-    ArrayList<String> valuesVector = new ArrayList<String>();
-    ValueData[] values = propertyData.getValues();
-    for (ValueData valueData : values) {
-      try {
-        if (valueData.getValue() instanceof Calendar) {
-          String dateAsUtc = formatAsUtc((Calendar) valueData.getValue());
-          LOGGER.finest("UTC Date value from user profile: " + dateAsUtc);
-          valuesVector.add(dateAsUtc);
-        } else {
-          valuesVector.add(valueData.getValue().toString());
-        }
-      } catch (Exception e) {
-        LOGGER.warning("Error converting fieldData for property "
-            + propertyData.getName() + " of type = "
-            + valueData.getClass().getCanonicalName());
-      }
-    }
-    return valuesVector;
-  }
 
   public SharepointUserProfileConnection(SharepointSocialClientContext ctxt) {
     this.ctxt = ctxt;
@@ -98,12 +62,6 @@ public class SharepointUserProfileConnection {
     } else {
       this.serviceFactory = ctxt.getUserProfileServiceFactory();
     }
-  }
-
-  @VisibleForTesting
-  PropertyData[] getUserProfileByName(String accountName)
-      throws RemoteException {
-    return service.getUserProfileByName(accountName);
   }
 
   public int openConnection() throws RepositoryException, RemoteException {
@@ -152,7 +110,7 @@ public class SharepointUserProfileConnection {
       throws RepositoryException, RemoteException {
     PropertyData[] props = null;
     try {
-      props = getUserProfileByName(accountName);
+      props = service.getUserProfileByName(accountName);
     } catch (RemoteException ex) {
       LOGGER.log(Level.WARNING,
           "Error Geting User Profile for " + accountName, ex);
@@ -189,7 +147,7 @@ public class SharepointUserProfileConnection {
     String globalNamespace =
         ctxt.getSpClientContext().getGoogleGlobalNamespace();
     // Default ACL for User profile document
-    userProfile.addAclGroupToDocument(
+    userProfile.AddAllowAclToDocument(
         globalNamespace, "NT AUTHORITY\\Authenticated Users");
     populateProfileProperties(userProfile, props, userColleagues);
     return userProfile;
@@ -201,6 +159,7 @@ public class SharepointUserProfileConnection {
     List<String> propertiesToIndex = config.getPropertiesToIndex();
     boolean secure = config.isSecureSearch();
     for (PropertyData propertyData : props) {
+
       if (propertyData.getName().equals(config.getSpPropertyUserKey())) {
         String userKey = (String) propertyData.getValues()[0].getValue();
         LOGGER.fine("User Key Property: " + propertyData.getName());
@@ -219,8 +178,25 @@ public class SharepointUserProfileConnection {
           if (propertyData.getPrivacy().equals(Privacy.Public)) {
             LOGGER.fine("Including Property: " + propertyData.getName());
 
-            ArrayList<String> valuesVector = readProfileProperty(propertyData);
+            ValueData[] values = propertyData.getValues();
+
+            ArrayList<String> valuesVector = new ArrayList<String>();
+            for (ValueData valueData : values) {
+              try {
+                if (valueData.getValue() instanceof GregorianCalendar) {
+                  GregorianCalendar dt = (GregorianCalendar) valueData
+                      .getValue();
+                  valuesVector.add(String.format("$1tm:$1td:$1tY", dt));
+                }
+                valuesVector.add(valueData.getValue().toString());
+              } catch (Exception e) {
+                LOGGER.warning("Error converting fieldData for property "
+                    + propertyData.getName() + " of type = "
+                    + valueData.getClass().getCanonicalName());
+              }
+            }
             String propName = normalizePropertyName(propertyData.getName());
+
             if (valuesVector.size() > 0) {
               if (propName
                   .equals(SharepointSocialConstants.PROPNAME_RESPONSIBILITY)) {
@@ -271,6 +247,7 @@ public class SharepointUserProfileConnection {
       } catch (UnsupportedEncodingException e) {
         throw new AssertionError();
       }
+      userProfile.setProperty(SpiConstants.PROPNAME_CONTENTURL, url);
       userProfile.setProperty(SpiConstants.PROPNAME_CONTENT, "");
       userProfile.setProperty(SpiConstants.PROPNAME_MIMETYPE, "text/plain");
       userProfile.setProperty(SpiConstants.PROPNAME_DISPLAYURL, url);
@@ -291,7 +268,7 @@ public class SharepointUserProfileConnection {
     String globalNamespace =
         ctxt.getSpClientContext().getGoogleGlobalNamespace();
     // Default ACL for User profile document
-    userProfile.addAclGroupToDocument(
+    userProfile.AddAllowAclToDocument(
         globalNamespace, "NT AUTHORITY\\Authenticated Users");
 
     String nextValue = getUserProfileByIndexResult.getNextValue();

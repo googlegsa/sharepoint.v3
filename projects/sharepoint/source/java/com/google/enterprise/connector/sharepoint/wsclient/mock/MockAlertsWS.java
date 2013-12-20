@@ -38,22 +38,22 @@ public class MockAlertsWS implements AlertsWS {
     sharepointClientContext = ctx;
   }
 
-  @Override
+  /* @Override */
   public String getUsername() {
     return username;
   }
 
-  @Override
+  /* @Override */
   public void setUsername(final String username) {
     this.username = username;
   }
 
-  @Override
+  /* @Override */
   public void setPassword(final String password) {
     this.password = password;
   }
 
-  @Override
+  /* @Override */
   public void setTimeout(final int timeout) {
   }
 

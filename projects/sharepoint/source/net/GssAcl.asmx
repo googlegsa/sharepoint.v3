@@ -513,8 +513,7 @@ public class GssAclChangeCollection
             GssAclChange gssChange = null;
             if (changeUser.IsSiteAdminChange)
             {
-                gssChange = new GssAclChange(ObjectType.ADMINISTRATORS, changeUser.ChangeType,
-                    GssAclMonitor.GSSITEADMINGROUPID.ToString());
+                gssChange = new GssAclChange(ObjectType.ADMINISTRATORS, changeUser.ChangeType, changeUser.Id.ToString());
             }
             else if (changeUser.ChangeType == SPChangeType.Delete)
             {
@@ -865,27 +864,13 @@ public class GssAclMonitor
                 GssGetAclForUrlsResult result = new GssGetAclForUrlsResult();
                 List<GssAcl> allAcls = new List<GssAcl>();
                 Dictionary<GssPrincipal, GssSharepointPermission> commonAceMap = new Dictionary<GssPrincipal, GssSharepointPermission>();
-                Boolean checkForAnonymousAccess = false;
-
-                try
+                Boolean checkForAnonymousAccess = (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll);
+                // Check for deny policy only if anonymous access is enabled.
+                if (checkForAnonymousAccess)
                 {
-                    SPIisSettings iisSettings = site.WebApplication.IisSettings.ContainsKey(site.Zone) 
-                        ? site.WebApplication.IisSettings[site.Zone] 
-                        : site.WebApplication.IisSettings[SPUrlZone.Default];
-                    checkForAnonymousAccess = 
-                        (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll)
-                        && iisSettings.AllowAnonymous
-                        && !(GssAclUtility.DenyReadPolicyAvailable(site.WebApplication, site.Zone));
+                    // If DENY policy is specified, anonymous access will not work in SharePoint.
+                    checkForAnonymousAccess = !(GssAclUtility.DenyReadPolicyAvailable(site.WebApplication, site.Zone));
                 }
-                catch (Exception exAnonymous)
-                {
-                    result.AddLogMessage(String.Format(
-                        "Error reading anonymous access setting for Web [{0}]. Exception [{1}] {2} {3}",
-                        web.Url, exAnonymous.Message, Environment.NewLine, exAnonymous.StackTrace));
-                }
-                
-               
-                                            
                 if (bIncludePolicyAcls)
                 {
                     try
@@ -1054,91 +1039,75 @@ public class GssAclMonitor
     [WebMethod]
     public GssGetAclChangesSinceTokenResult GetAclChangesSinceToken(string fromChangeToken, string toChangeToken)
     {
+        SPSite site;
+        SPWeb web;
+        init(out site, out web);
+
         GssGetAclChangesSinceTokenResult result = new GssGetAclChangesSinceTokenResult();
-        using (SPSite site = new SPSite(SPContext.Current.Site.Url, GssAclUtility.GetAdminToken()))
+        GssAclChangeCollection allChanges = null;
+        SPChangeToken changeTokenEnd = null;
+        if (null != fromChangeToken && fromChangeToken.Length != 0)
         {
-            using (SPWeb web = site.OpenWeb(SPContext.Current.Web.ID))
+            if (null != toChangeToken && toChangeToken.Length != 0)
             {
+                changeTokenEnd = new SPChangeToken(toChangeToken);
+            }
 
-                GssAclChangeCollection allChanges = null;
-                SPChangeToken changeTokenEnd = null;
-                if (String.IsNullOrEmpty(fromChangeToken))
+            SPChangeToken changeTokenStart = new SPChangeToken(fromChangeToken);
+            allChanges = new GssAclChangeCollection(changeTokenStart);
+            try
+            {
+                SPChangeCollection spChanges = GssAclUtility.FetchAclChanges(site, changeTokenStart, changeTokenEnd);
+                foreach (SPChange change in spChanges)
                 {
-                    // It's the first request. Return the current chage token of the site
-                    // collection as the next token for synchronization
-                    allChanges = new GssAclChangeCollection(site.CurrentChangeToken);
-                    result.AllChanges = allChanges;
-                    result.SiteCollectionUrl = site.Url;
-                    result.SiteCollectionGuid = site.ID;
-                    return result;
+                    allChanges.AddChange(change, site, web);
                 }
 
-                if (null != toChangeToken && toChangeToken.Length != 0)
+                // There are two ways to get the next Change Token value that should be used for synchronization. 1) Get the last change token available for the site
+                // 2) Get the last change token corresponding to which changes have been tracked.
+                // The problem with the second approach is that if no ACL specific changes will occur, the change token will never gets updated and will become invalid after some time.
+                // Another performance issue is is that, the scan will always start form the same token unless there is a ACL specific change.
+                // Since, the change tracking logic ensures that all changes will be tracked (i.e there is no rowlimit kind of thing associated), it is safe to use the first approach.
+                if (null == changeTokenEnd)
                 {
-                    changeTokenEnd = new SPChangeToken(toChangeToken);
+                    // Since all the canges have been detected till the time, use the current chage token of the site collection as the next token for synchronization
+                    allChanges.UpdateChangeToken(site.CurrentChangeToken);
                 }
-
-                SPChangeToken changeTokenStart = new SPChangeToken(fromChangeToken);
+                else
+                {
+                    // Since cange detection was done only till changeTokenToEnd, we have to use the same token as next token for synchronization
+                    allChanges.UpdateChangeToken(changeTokenEnd);
+                }
+            }
+            catch (Exception e)
+            {
+                // All the changes should be processed as one atomic operation. If any one fails, all should be ignored. This is in lieu of maintaining a single change token which will be used for executing change queries.
+                // Since, we are not progressing, use the same change token that was received
                 allChanges = new GssAclChangeCollection(changeTokenStart);
-                try
+                result.AddLogMessage("Exception occurred while change detection. " +
+                    "Exception [" + e.Message + "]" + Environment.NewLine + 
+                    e.StackTrace);
+            }
+            finally
+            {
+                if (web != null)
                 {
-                    SPChangeCollection spChanges = GssAclUtility.FetchAclChanges(site, changeTokenStart, changeTokenEnd);
-                    foreach (SPChange change in spChanges)
-                    {
-                        allChanges.AddChange(change, site, web);
-                    }
-
-                    // There are two ways to get the next Change Token value that should be used
-                    // for synchronization. 1) Get the last change token available for the site
-                    // 2) Get the last change token corresponding to which changes have been tracked.
-                    // The problem with the second approach is that if no ACL specific changes will
-                    // occur, the change token will never gets updated and will become invalid after
-                    // some time. Another performance issue is is that, the scan will always start
-                    // form the same token unless there is a ACL specific change.
-                    // Since, the change tracking logic ensures that all changes will be tracked
-                    // (i.e there is no rowlimit kind of thing associated), it is safe to use the
-                    // first approach.
-                    if (null == changeTokenEnd)
-                    {
-                        // Since all the changes have been detected till the time, use the current
-                        // chage token of the site collection as the next token for synchronization
-                        allChanges.UpdateChangeToken(site.CurrentChangeToken);
-                    }
-                    else
-                    {
-                        // Since change detection was done only till changeTokenToEnd, we have to
-                        // use the same token as next token for synchronization
-                        allChanges.UpdateChangeToken(changeTokenEnd);
-                    }
+                    web.Dispose(); // Dispose the SPWeb Object
                 }
-                catch (Exception e)
-                {
-                    // If current change token is invalid there is no way to recover from it.
-                    // So just return current change token. Also mark each group from site
-                    // collection as changed group to force reindexing of SharePoint groups
-                    // to keep them in sync.
-                    allChanges = new GssAclChangeCollection(site.CurrentChangeToken);
-                    result.AddLogMessage("Exception occurred while change detection. "
-                        + "Exception [" + e.Message + "]" + Environment.NewLine +
-                        e.StackTrace);
-                    if (web.IsRootWeb)
-                    {
-                        result.AddLogMessage(
-                            "Forcing reindexing of SharePoint Groups under Site [" + site.Url + "]");
-                        foreach (SPGroup group in web.SiteGroups)
-                        {
-                            GssAclChange groupChange = new GssAclChange(
-                                ObjectType.GROUP, SPChangeType.MemberAdd, group.ID.ToString());
-                            groupChange.IsEffectiveInCurrentWeb = true;
-                            allChanges.Changes.Add(groupChange);
-                        }
-                    }
-                }
-                result.AllChanges = allChanges;
-                result.SiteCollectionUrl = site.Url;
-                result.SiteCollectionGuid = site.ID;
             }
         }
+        else
+        {
+            // It's the first request. Return the current chage token of the site collection as the next token for synchronization
+            allChanges = new GssAclChangeCollection(site.CurrentChangeToken);
+        }
+        if (web != null)
+        {
+            web.Dispose(); 
+        }
+        result.AllChanges = allChanges;
+        result.SiteCollectionUrl = site.Url;
+        result.SiteCollectionGuid = site.ID;
         return result;
     }
 
@@ -1786,12 +1755,7 @@ public sealed class GssAclUtility
             }
             if (oFile != null)
             {
-                String parentListUrl = oChildItem.ParentList.DefaultViewUrl;
-                if (String.IsNullOrEmpty(parentListUrl) || parentListUrl == "/")
-                {
-                    parentListUrl = oChildItem.ParentList.RootFolder.ServerRelativeUrl;
-                }
-                aclToUpdate.ParentUrl = strSiteUrl + parentListUrl;
+                aclToUpdate.ParentUrl = strSiteUrl + oChildItem.ParentList.DefaultViewUrl;
                 //To check if Item is available at root level or inside folder
                 if (String.Compare(oFile.ParentFolder.ServerRelativeUrl,
                     oChildItem.ParentList.RootFolder.ServerRelativeUrl, true) == 0)
@@ -2073,52 +2037,23 @@ public sealed class GssAclUtility
         }
         GssPrincipal gssPrincipal = null;
         SPPrincipalInfo userInfo = null;
-        StringBuilder logMessage = new StringBuilder();
         string identity = GssAclUtility.DecodeIdentity(login);
         // ResolvePrincipal is very expensive for deleted users in multidomain environments - check if login is valid first
         if (SPUtility.IsLoginValid(site, identity))
         {
-            try
-            {
-                userInfo = SPUtility.ResolvePrincipal(site.WebApplication, SPUrlZone.Default,
-                    identity, SPPrincipalType.All, SPPrincipalSource.All, false);
-            }
-            catch (Exception exResolveDefault)
-            {
-                logMessage.AppendFormat(
-                    "Error resolving principal for User {0} under default site zone: {1}",
-                    identity, exResolveDefault.Message);
-                if (site.Zone != SPUrlZone.Default)
-                {
-                    try
-                    {
-                        // In case of exception, try to resolve under current site zone.
-                        userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, identity,
-                            SPPrincipalType.All, SPPrincipalSource.All, false);
-                    }
-                    catch (Exception exResolveSite)
-                    {
-                        // ignore exception and continue processing of other security 
-                        // policy principals
-                        logMessage.AppendFormat(
-                            "Error resolving principal for User {0} for current site zone {1}: {2}",
-                            identity, site.Zone, exResolveSite.Message);
-                    }
-                }
-            }
+            userInfo = SPUtility.ResolvePrincipal(site.WebApplication, site.Zone, identity, SPPrincipalType.All, SPPrincipalSource.All, false);
         }
         if (userInfo == null)
         {
             gssPrincipal = new GssPrincipal(identity, -2);
             gssPrincipal.AddLogMessage("[ " + identity + " ( " + login + ") ] could not be resolved to a valid windows principal. ");
-            gssPrincipal.AddLogMessage(logMessage.ToString());
             gssPrincipal.Type = GssPrincipal.PrincipalType.NA;
             return gssPrincipal;
         }
 
         // There is no concept of ID for security policy users. IDs are an offset defined in context of a site collection and policies are defined at web application level
         gssPrincipal = new GssPrincipal(userInfo.LoginName, -2);
-        gssPrincipal.AddLogMessage(logMessage.ToString());
+
         if (userInfo.PrincipalType.Equals(SPPrincipalType.DistributionList) || userInfo.PrincipalType.Equals(SPPrincipalType.SecurityGroup))
         {
             gssPrincipal.Type = GssPrincipal.PrincipalType.DOMAINGROUP;

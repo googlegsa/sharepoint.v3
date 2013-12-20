@@ -539,8 +539,10 @@ public abstract class ListsUtil {
         // filter out description
         linkSiteURL = linkSiteURL.substring(0, linkSiteURL.indexOf(SPConstants.COMMA));
         LOGGER.config("Linked Site / Site Directory URL :" + linkSiteURL);
-        if (sharepointClientContext.isIncludedUrl(linkSiteURL, LOGGER)) {
+        if (sharepointClientContext.isIncludedUrl(linkSiteURL)) {
           allWebs.add(linkSiteURL);
+        } else {
+          LOGGER.warning("excluding " + linkSiteURL.toString());
         }
       }
     }  
@@ -625,10 +627,13 @@ public abstract class ListsUtil {
       }
     }
 
-    LOGGER.config("ListItem URL: " + url);
-    if (!sharepointClientContext.isIncludedUrl(url.toString(), LOGGER)) {
+    LOGGER.config("ListItem URL :" + url);
+    if (!sharepointClientContext.isIncludedUrl(url.toString())) {
+      LOGGER.warning("excluding " + url.toString());
       return null;
     }
+
+    SPDocument doc;
 
     if (strObjectType == null) {
       if (list.isDocumentLibrary()) {
@@ -660,8 +665,8 @@ public abstract class ListsUtil {
     if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
       docId = list.getListURL() + SPConstants.DOC_TOKEN + docId;      
     }
-    SPDocument doc = new SPDocument(docId, url.toString(), calMod, author,
-        strObjectType, list.getParentWebState().getTitle(),
+    doc = new SPDocument(docId, url.toString(), calMod, author, strObjectType,
+        list.getParentWebState().getTitle(),
         sharepointClientContext.getFeedType(), list.getParentWebState().getSharePointType());
     doc.setFileref(fileref);
     doc.setDisplayUrl(displayUrl);

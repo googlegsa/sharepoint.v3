@@ -59,7 +59,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public AlertsWS getAlertsWS(final SharepointClientContext ctx) {
     return new MockAlertsWS(ctx);
   }
@@ -69,7 +69,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public BulkAuthorizationWS getBulkAuthorizationWS(
       final SharepointClientContext ctx) throws SharepointException {
     return new MockBulkAuthorizationWS(ctx);
@@ -80,7 +80,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public ListsWS getListsWS(final SharepointClientContext ctx,
       final String rowLimit) {
     return new MockListsWS(ctx);
@@ -91,7 +91,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public SiteDataWS getSiteDataWS(final SharepointClientContext ctx) {
     return new MockSiteDataWS(ctx);
   }
@@ -101,7 +101,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public UserProfile2003WS getUserProfile2003WS(
       final SharepointClientContext ctx) {
     return new MockUserProfile2003WS(ctx);
@@ -112,7 +112,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public UserProfile2007WS getUserProfile2007WS(
       final SharepointClientContext ctx) {
     return new MockUserProfile2007WS(ctx);
@@ -123,7 +123,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public WebsWS getWebsWS(final SharepointClientContext ctx) {
     return new MockWebsWS(ctx);
   }
@@ -133,7 +133,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public AclWS getAclWS(final SharepointClientContext ctx, String webUrl) {
     return new MockAclWS(ctx, webUrl);
   }
@@ -143,7 +143,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public SiteDiscoveryWS getSiteDiscoveryWS(final SharepointClientContext ctx,
     String webUrl) {
     return new MockSiteDiscoveryWS(ctx, webUrl);
@@ -154,7 +154,7 @@ public class MockClientFactory implements ClientFactory {
    *
    * This is a stub implementation.
    */
-  @Override
+  /* @Override */
   public UserProfileChangeWS getUserProfileChangeWS(
       final SharepointClientContext ctx) {
     return new MockUserProfileChangeWS(ctx);
@@ -166,7 +166,7 @@ public class MockClientFactory implements ClientFactory {
    * Returns the HTTP result 200 code which indicates that the connector
    * can connect to the host.
    */
-  @Override
+  /* @Override */
   public int checkConnectivity(HttpMethodBase method,
       Credentials credentials) throws IOException {
     return 200;
@@ -178,7 +178,7 @@ public class MockClientFactory implements ClientFactory {
    * Returns the Sharepoint version "14.0.0" which indicates that it's
    * Sharepoint 2007.
    */
-  @Override
+  /* @Override */
   public String getResponseHeader(HttpMethodBase method, String headerName) {
     String headerValue;
     if ("MicrosoftSharePointTeamServices".equals(headerName)) {

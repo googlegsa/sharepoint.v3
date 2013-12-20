@@ -17,7 +17,6 @@ package com.google.enterprise.connector.sharepoint.wsclient.soap;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.Util;
-import com.google.enterprise.connector.sharepoint.generated.sitedata.ObjectType;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteData;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataLocator;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.SiteDataSoap_BindingStub;
@@ -136,11 +135,6 @@ public class SPSiteDataWS implements SiteDataWS {
     stub.getWeb(getWebResult, sWebMetadata, vWebs, vLists, vFPUrls, strRoles,
         vRolesUsers, vRolesGroups);
     return sWebMetadata;
-  }
-  
-  public String getContentList(String id) throws RemoteException {
-    return stub.getContent(
-        ObjectType.List, id, null, null, false, false, new StringHolder());
   }
 }
 

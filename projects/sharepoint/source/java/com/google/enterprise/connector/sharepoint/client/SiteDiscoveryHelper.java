@@ -130,8 +130,10 @@ public class SiteDiscoveryHelper {
           url += path;
         }
 
-        if (sharepointClientContext.isIncludedUrl(url, LOGGER)) {
+        if (sharepointClientContext.isIncludedUrl(url)) {
           siteCollections.add(url);
+        } else {
+          LOGGER.warning("excluding " + url);
         }
       }
     }

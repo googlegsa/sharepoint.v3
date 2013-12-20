@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.wsclient.handlers;
 
 import org.xml.sax.InputSource;
+import org.xml.sax.Parser;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -79,8 +80,7 @@ public class SaxErrorParser extends SAXParser {
   }
 
   @Override
-  @SuppressWarnings("deprecation")
-  public org.xml.sax.Parser getParser() throws SAXException {
+  public Parser getParser() throws SAXException {
     return parser.getParser();
   }
 

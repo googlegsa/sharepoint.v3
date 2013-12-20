@@ -109,18 +109,22 @@ public class SPConstants {
   public static final String SP_MULTI_VALUE_DELIMITER = ";#";
 
   public static final String UNAUTHORIZED = "(401)Unauthorized";
+  public static final String SAXPARSEEXCEPTION = "org.xml.sax.SAXParseException";
 
   public static final String EXCLUDED_URL_DIR = "excluded-URLs";
   public static final String EXCLUDED_URL_LOG = "excluded_url";
   public static final int EXCLUDED_URL_MAX_SIZE = 52428800;
   public static final int EXCLUDED_URL_MAX_COUNT = 5;
-
+  
   public static final String MISSING_ACL_URL_LOG = "missing_acl_url";
 
   public static final String CONNECTIVITY_SUCCESS = "success";
   public static final String CONNECTIVITY_FAIL = "fail";
 
+  public static final String LIST_URL_SUFFIX = "/Forms/AllItems.aspx";
   public static final String FORMS_LIST_URL_SUFFIX = "Forms";
+
+  public static final String INVALID_TOKEN = "ERROR";
 
   public static final String ATTACHMENT_SUFFIX_IN_DOCID = "[ATTACHMENT]";
   public static final Pattern ATTACHMENT_SUFFIX_PATTERN =
@@ -128,7 +132,7 @@ public class SPConstants {
       Pattern.CASE_INSENSITIVE);
   public static final Pattern ATTACHMENT_URL_PATTERN =
       Pattern.compile("^(.+)/Attachments/([0-9]+)/", Pattern.CASE_INSENSITIVE);
-
+      
   public static final String ALERT_SUFFIX_IN_DOCID = "[ALERT]";
 
   // End Point constants
@@ -145,34 +149,50 @@ public class SPConstants {
 
   public static final String DEFAULT_ROWLIMIT = "1000";
 
-  // Constant used by ListsWS for processing the list item data returned by
+  // Constant used by ListsWS for precessing the list item data returned by
   // the Web Service.
+  public static final String NAME = "Name";
   public static final String FSOBJTYPE = "FSObjType";
   public static final String OWS_FSOBJTYPE = "ows_FSObjType";
   public static final String OWS_FSOBJTYPE_INMETA = "ows_MetaInfo_FSObjType";
   public static final String DOC_ATTACHMENTS = "Attachments";
+  public static final String DISPLAYNAME = "DisplayName";
   public static final String MODIFIED = "ows_Modified";
   public static final String FILEREF = "ows_FileRef";
   public static final String CONTENTTYPE = "ows_ContentType";
+  public static final String CONTENTTYPE_INMETA = "ows_MetaInfo_ContentType";
   public static final String EDITOR = "ows_Editor";
   public static final String AUTHOR = "ows_Author";
   public static final String FILE_SIZE_DISPLAY = "ows_FileSizeDisplay";
   public static final String FILE_SIZE = "ows_File_x0020_Size";
+  public static final String QUERYOPTIONS = "QueryOptions";
+  public static final String VIEWATTRIBUTES = "ViewAttributes";
+  public static final String SCOPE = "Scope";
   public static final String RECURSIVE = "RecursiveAll";
+  public static final String QUERY = "Query";
+  public static final String ORDERBY = "OrderBy";
   public static final String DISPFORM = "DispForm.aspx?ID=";
   public static final String VIEWCATEGORY = "ViewCategory.aspx?ID=";
   public static final String VIEWPOST = "ViewPost.aspx?ID=";
   public static final String VIEWCOMMENT = "ViewComment.aspx?ID=";
   public static final String ID = "ows_ID";
+  public static final String DISCUSSIONLASTUPDATED = "ows_DiscussionLastUpdated";
   public static final String DOCUMENT = "Document";
   public static final String URL = "ows_URL";
+  public static final String BT_DISCUSSIONBOARD = "DiscussionBoard";
   public static final String BT_CATEGORIES = "Categories";
   public static final String BT_POSTS = "Posts";
   public static final String BT_COMMENTS = "Comments";
   public static final String CONTENT_TYPE_HEADER = "Content-Type";
+  public static final SimpleDateFormat ISO8601_DATE_FORMAT_SECS = new SimpleDateFormat(
+      "yyyy-MM-dd'T'HH:mm:ss'Z'");
+  public static final SimpleDateFormat ISO8601_DATE_FORMAT_MILLIS = new SimpleDateFormat(
+      "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
   public static final String CHANGES = "Changes";
   public static final String LASTCHANGETOKEN = "LastChangeToken";
   public static final String LIST = "List";
+  public static final String FIELDS = "Fields";
+  public static final String FIELD = "Field";
   public static final String CHANGETYPE = "ChangeType";
   public static final String DELETE = "Delete";
   public static final String RESTORE = "Restore";
@@ -180,6 +200,7 @@ public class SPConstants {
   public static final String MOVE_AWAY = "MoveAway";
   public static final String DATA = "data";
   public static final String LIST_ITEM_COLLECTION_POSITION_NEXT = "ListItemCollectionPositionNext";
+  public static final String CONTENT_TYPE_FOLDER = "Folder";
 
   // The minimum time out value for WS calls
   public static final int MINIMUM_TIMEOUT_FOR_WS = 1000;
@@ -231,6 +252,7 @@ public class SPConstants {
   public static final String HTTP_STATUS_CODE = "sharepoint:httpstatuscode";
   public static final String OBJECT_TYPE = "google:objecttype";
   public static final String NO_OBJTYPE = "No Object Type";
+  public static final String OBJTYPE_WEB = "Web";
   public static final String OBJTYPE_ATTACHMENT = "Attachment";
   public static final String ASPX = "aspx";
   public static final String OBJTYPE_LIST_ITEM = "ListItem";// when no type is
@@ -238,6 +260,7 @@ public class SPConstants {
   // ws call
   public static final String NO_AUTHOR = "No author";
   public static final String DOC_TOKEN = "|";
+  public static final String DOC_TOKEN_META_AND_URL_FEED = "?ID=";
 
   // Other Misc. characters used mostly by SharePointClientUtils and during
   // processing the data returned by WS.
@@ -259,8 +282,9 @@ public class SPConstants {
   public static final String SEPARATOR = " ";
   public static final int SSL_DEFAULT_PORT = 443;
 
-  // Used in the state file info
+  // Used in the the state file info
   public static final String STATE_ID = "ID";
+  public static final String STATE_TITLE = "Title";
   public static final String STATE_TYPE = "Type";
   public static final String STATE_URL = "URL";
   // TODO: rename it to CurrentChangeToken in future to make better sense.
@@ -276,7 +300,7 @@ public class SPConstants {
   public static final String STATE_ACLNEXTCHANGETOKEN = "AclNextChangeToken";
   public static final String STATE_ISACLCHANGED = "IsAclChanged";
   public static final String STATE_LASTDOCIDCRAWLEDFORACL = "LastDocIdCrawledForAcl";
-
+  
   public static final String STATE_LISTITEMCOLLECTION_POSITION_NEXT =
       "ListItemCollectionPositionNext";
   public static final String STATE_ALLOW_ANONYMOUS_ACCESS = 
@@ -298,6 +322,8 @@ public class SPConstants {
   public static final String STATE_PARENT_FOLDER_ID = "ParentFolderID";
   public static final String STATE_RENAMED_FOLDER_PATH = "RenamedFolderPath";
   public static final String STATE_RENAMED_FOLDER_ID = "RenamedFolderID";
+  public static final String STATE_CONTENT_TYPE = "ContentType";
+  public static final String CONTENT_TYPE_DOCUMENT = "Document";
   public static final String STATE_INSERT_TIME = "InsertionTime";
   public static final String STATE_SPTYPE = "SPType";
   public static final String STATE_WEB_TITLE = "WebTitle";
@@ -331,6 +357,15 @@ public class SPConstants {
   public static final String LAST_CRAWLED_LIST_ID = "LastCrawledListStateID";
   public static final String CRAWL_STATE = "CrawlState";
   public static final String FULL_RECRAWL_FLAG = "FullRecrawlFlag";
+  public static final String CONNECTOR_INSTANCE_XML = "connectorInstance.xml";
+  public static final String CONNECTOR_INSTANCE_ROOT = "beans";
+  public static final String CONNECTOR_INSTANCE_BEAN = "bean";
+  public static final String CONNECTOR_INSTANCE_PROPERTY = "property";
+  public static final String CONNECTOR_INSTANCE_NAME = "name";
+  public static final String CONNECTOR_INSTANCE_WHITELIST = "whiteList";
+  public static final String CONNECTOR_INSTANCE_BLACKLIST = "blackList";
+  public static final String CONNECTOR_INSTANCE_LIST = "list";
+  public static final String CONNECTOR_INSTANCE_VALUE = "value";
 
   // Used while creating/validating configuration form
   public static final String VALUE = "value";
@@ -428,6 +463,8 @@ public class SPConstants {
   public static final String PUSH_ACLS_LABEL = "push_Acls";
   public static final String USERNAME_FORMAT_IN_ACE = "usernameFormatInAce";
   public static final String GROUPNAME_FORMAT_IN_ACE = "groupnameFormatInAce";
+  public static final String CONNECT_METHOD_STANDARD_HELP = "connectMethodStandard_help";
+  public static final String CONNECT_METHOD_SSL_HELP = "connectMethodSSL_help";
   public static final String LDAP_CONFIGURATION_SETTINGS =
       "ldapConfigurationSettings";
   public static final String LDAP_SERVER_HOST_ADDRESS = "ldapServerHostAddress";
@@ -446,6 +483,9 @@ public class SPConstants {
 
   public static final String CHECKPOINT_VALUE = "SharePoint";
   public static final int MAX_PORT_VALUE = 65535;
+
+  // HTTP response header constants
+  public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
 
   // Kerberos related constants
   public static final String CONFIG_KRB5 = "config/krb5.conf";
@@ -474,13 +514,17 @@ public class SPConstants {
   public static final String TABLE_NAME = "TABLE_NAME";
   public static final String USER_NAME = "user_name";
   public static final String GROUP_NAME = "group_name";
+  public static final String NAMESPACE = "namespace";
   public static final int MINUS_THREE = -3;
+  public static final int MINUS_TWO = -2;
   public static final String ON = "on";
   public static final String UNCHECKED = "unchecked";
   public static final String LDAP_DEFAULT_PORT_NUMBER = "389";
   public static final String LDAP_INITIAL_CACHE_SIZE = "1000";
   public static final String LDAP_CACHE_REFRESH_INTERVAL_TIME = "7200";
   public static final String TRUE = "true";
+  public static final String WRONG_GROUPNAME_FORMAT = "Wrong_Groupname_Format";
+  public static final String WRONG_USERNAME_FORMAT = "Wrong_Username_Format";
   public static final String BLANK_GROUPNAME_FORMAT = "Blank_Groupname_Format";
   public static final String BLANK_USERNAME_FORMAT = "Blank_Username_Format";
   public static final String BLANK_DOMAIN_NAME_LDAP = "Blank_Domain_Name_LDAP";
@@ -493,16 +537,23 @@ public class SPConstants {
   public static final String SEARCH_BASE_INVALID_NAME = "Search_Base_Invalid_Name";
   public static final String INVALID_PORT_NUMBER = "Invalid_Port_Number";
   public static final String ONKEY_PRESS = "onkeypress=";
+  public static final String DEFAULT_CACHE_REFRESH_INTERVAL = "7200";
+  public static final String DEFAULT_INITAL_CACHE_SIZE = "10000";
   public static final String GROUPS = "groups";
   public static final String EQUAL_TO = "=";
+  public static final String INVALID_LDAP_HOST_ADDRESS = "Invalid_LDAP_HOST_Address_Blank";
   public static final String INVALID_INITIAL_CACHE_SIZE = "Invalid_Initial_Cache_Size";
   public static final String INVALID_CACHE_REFRESH_INTERVAL = "Invalid_Cache_Refresh_Interval";
   public static final String BLANK_INITIAL_CACHE_SIZE = "Blank_Initial_Cache_Size";
   public static final String BLANK_CACHE_REFRESH_INTERVAL = "Blank_Cache_Refresh_Interval";
   public static final String SPECIAL_CHARACTERS_IN_USERNAME_FORMAT = "Special_Characters_In_Username_Format";
   public static final String SPECIAL_CHARACTERS_IN_GROUPNAME_FORMAT = "Special_Characters_In_Groupname_Format";
+  public static final String SIMPLE = "simple";
+  public static final String ANONYMOUS = "ANONYMOUS";
   public static final String ADGROUPS = "adgroups";
   public static final String SPGROUPS = "spgroups";
+  public static final String START_BREAK = "<br>";
+  public static final String END_BREAK = "</br>";
   public static final String GROUPNAME_FORMAT_IN_ACE_ONLY_GROUP_NAME = "groupname";
   public static final String GROUPNAME_FORMAT_IN_ACE_GROUPNAME_AT_DOMAIN = "groupname@domain";
   public static final String GROUPNAME_FORMAT_IN_ACE_DOMAINNAME_SLASH_GROUPNAME = "domain\\groupname";
@@ -527,6 +578,8 @@ public class SPConstants {
   public static final CharSequence ALERTS_EQUALTO = "Alert=";
   public static final String GSAADMINUSER = "gsaAdminUser";
   public static final String GSAADMINPASSWORD = "gsaAdminPassword";
+  public static final String PROXY_INVALID_FORMAT = "Proxy_Invalid_Format";
+  public static final String GSAHOSTADDRESS = "gsaHostAddress";
   public static final String SOCIAL_OPTION = "socialOption";
   public static final String SOCIAL_OPTION_YES = "yes";
   public static final String SOCIAL_OPTION_NO = "no";
@@ -546,4 +599,42 @@ public class SPConstants {
   public static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
   public static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
   public static final String UDS_COLUMN_USER_NAME = "SPUserName";
+
+  public static class SPBasePermissions {
+    public static final String EMPTYMASK = "EmptyMask";
+    public static final String VIEWLISTITEMS = "ViewListItems";
+    public static final String ADDLISTITEMS = "AddListItems";
+    public static final String EDITLISTITEMS = "EditListItems";
+    public static final String DELETELISTITEMS = "DeleteListItems";
+    public static final String APPROVEITEMS = "ApproveItems";
+    public static final String OPENITEMS = "OpenItems";
+    public static final String VIEWVERSIONS = "ViewVersions";
+    public static final String DELETEVERSIONS = "DeleteVersions";
+    public static final String CANCELCHECKOUT = "CancelCheckout";
+    public static final String MANAGEPERSONALVIEWS = "ManagePersonalViews";
+    public static final String MANAGELISTS = "ManageLists";
+    public static final String VIEWFORMPAGES = "ViewFormPages";
+    public static final String OPEN = "Open";
+    public static final String VIEWPAGES = "ViewPages";
+    public static final String ADDANDCUSTOMIZEPAGES = "AddAndCustomizePages";
+    public static final String APPLYTHEMEANDBORDER = "ApplyThemeAndBorder";
+    public static final String APPLYSTYLESHEETS = "ApplyStyleSheets";
+    public static final String VIEWUSAGEDATA = "ViewUsageData";
+    public static final String CREATESSCSITE = "CreateSSCSite";
+    public static final String MANAGESUBWEBS = "ManageSubwebs";
+    public static final String CREATEGROUPS = "CreateGroups";
+    public static final String MANAGEPERMISSIONS = "ManagePermissions";
+    public static final String BROWSEDIRECTORIES = "BrowseDirectories";
+    public static final String BROWSEUSERINFO = "BrowseUserInfo";
+    public static final String ADDDELPRIVATEWEBPARTS = "AddDelPrivateWebParts";
+    public static final String UPDATEPERSONALWEBPARTS = "UpdatePersonalWebParts";
+    public static final String MANAGEWEB = "ManageWeb";
+    public static final String USECLIENTINTEGRATION = "UseClientIntegration";
+    public static final String USEREMOTEAPIS = "UseRemoteAPIs";
+    public static final String MANAGEALERTS = "ManageAlerts";
+    public static final String CREATEALERTS = "CreateAlerts";
+    public static final String EDITMYUSERINFO = "EditMyUserInfo";
+    public static final String ENUMERATEPERMISSIONS = "EnumeratePermissions";
+    public static final String FULLMASK = "FullMask";
+  }
 }
