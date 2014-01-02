@@ -20,6 +20,7 @@ import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalManager;
+import com.google.enterprise.connector.util.EmptyDocumentList;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -403,6 +404,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
     }
     return true;
   }
+
   @Override
   public DocumentList resumeTraversal(String checkpoint)
       throws RepositoryException {
@@ -418,6 +420,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
   @Override
   public DocumentList startTraversal() throws RepositoryException {
     run(true);
-    return null;
+    // Force later batches to call resumeTraversal.
+    return new EmptyDocumentList(AdConstants.CHECKPOINT_VALUE);
   }
 }
