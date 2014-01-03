@@ -14,7 +14,9 @@
 
 package com.google.enterprise.connector.adgroups;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.DocumentList;
@@ -217,28 +219,35 @@ public class AdGroupsTraversalManager implements TraversalManager {
             AdConstants.ATTR_PRIMARYGROUPID,
             AdConstants.ATTR_MEMBER});
 
-        // list of DNs to delete from database
+        // list of DNs to delete from database during incremental traversal
         Set<AdEntity> tombstones;
+        // list of tombstone entities to remove during full traversal
+        List<HashMap<String, Object>> tombstonesInDb =
+            new ArrayList<HashMap<String, Object>>();
         Set<AdEntity> entitiesToUpdate;
         boolean firstTimeForDomain = false;
 
         // when performing full recrawl we retrieve all entities from DB
         // and delete everything that was not rediscovered in AD
+        int numberOfTombstones;
         if (last == 0) {
           LOGGER.info(server + "Retrieving all existing objects from DB.");
-          tombstones = new HashSet<AdEntity>();
-          Set<String> dns = db.selectOne(
-              Query.SELECT_ALL_ENTITIES_BY_SID, server.getSqlParams(),
-              AdConstants.DB_DN);
+          tombstones = ImmutableSet.of();
+          List<HashMap<String, Object>> dbEntities = db.select(
+              Query.SELECT_ALL_ENTITIES_BY_SID, server.getSqlParams());
+          Map<String, HashMap<String, Object>> dns =
+              new HashMap<String, HashMap<String, Object>>();
+          for (HashMap<String, Object> dbEntity : dbEntities) {
+            dns.put((String) dbEntity.get(AdConstants.DB_DN), dbEntity);
+          }
           firstTimeForDomain = dns.isEmpty();
           if (!firstTimeForDomain) {
             for (AdEntity e : entities) {
               dns.remove(e.getDn());
             }
-            for (String dn : dns) {
-              tombstones.add(new AdEntity(null, dn));
-            }
+            tombstonesInDb.addAll(dns.values());
           }
+          numberOfTombstones = tombstonesInDb.size();
         } else {
           // when performing partial crawl we ask the LDAP to list removed
           // objects - by default works only for members of Domain Admins group
@@ -246,18 +255,30 @@ public class AdGroupsTraversalManager implements TraversalManager {
           tombstones = server.search(tombstoneQuery, true,
               new String[] {AdConstants.ATTR_OBJECTGUID,
                   AdConstants.ATTR_SAMACCOUNTNAME});
+          numberOfTombstones = tombstones.size();
+          tombstonesInDb = ImmutableList.of();
         }
 
         LOGGER.info(server + "Found " + entities.size()
-            + " entities to update in the database and " + tombstones.size()
+            + " entities to update in the database and " + numberOfTombstones
             + " entities to remove.");
 
-        if (entities.size() > 0 || tombstones.size() > 0) {
+        if (entities.size() > 0 || numberOfTombstones > 0) {
           // Remove all tombstones from the database
-          LOGGER.info(
-              server + "update 1/6 - Removing tombstones from database ("
-              + tombstones.size() + ")");
-          db.executeBatch(Query.DELETE_MEMBERSHIPS, tombstones);
+          if (last == 0) {
+            LOGGER.log(Level.INFO,
+                "{0} update 1/6 - Removing tombstones from database ({1})",
+                new Object[] {server, tombstonesInDb.size()});
+            db.executeBatch(
+                Query.DELETE_MEMBERSHIPS_BY_ENTITYID, tombstonesInDb);
+            db.executeBatch(Query.DELETE_ENTITY_BY_ENTITYID, tombstonesInDb);
+          } else {
+            LOGGER.log(Level.INFO,
+                "{0} update 1/6 - Removing tombstones from database ({1})",
+                new Object[] {server, tombstones.size()});
+            db.executeBatch(Query.DELETE_MEMBERSHIPS, tombstones);
+            db.executeBatch(Query.DELETE_ENTITY, tombstones);
+          }
 
           // Check for each new/updated entity if it wasn't deleted and 
           // recreated with the same name.
