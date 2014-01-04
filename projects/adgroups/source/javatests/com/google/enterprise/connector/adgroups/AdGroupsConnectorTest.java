@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 
 public class AdGroupsConnectorTest extends TestCase {
   private static final Logger LOGGER =
-      Logger.getLogger(AdDbUtil.class.getName());
+      Logger.getLogger(AdGroupsConnectorTest.class.getName());
 
   private void runUsernameTest(String comment, AuthenticationManager am,
       String username, String domain, String password) 

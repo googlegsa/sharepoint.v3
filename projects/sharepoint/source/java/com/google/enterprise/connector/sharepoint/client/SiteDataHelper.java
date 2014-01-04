@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.generated.sitedata._sList;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOfStringHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
@@ -26,6 +27,7 @@ import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 
+import org.apache.axis.message.MessageElement;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.HeadMethod;
 
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.namespace.QName;
 
 /**
  * This class holds data and methods for any call to SiteData web service.
@@ -131,11 +134,55 @@ public class SiteDataHelper {
               && !collator.equals(baseType, (SPConstants.GENERIC_LIST))
               && !collator.equals(baseType, (SPConstants.ISSUE))
               && !collator.equals(baseType, (SPConstants.SURVEYS))) {
+            LOGGER.log(Level.WARNING, 
+                "Skipping List [{0}] with unsupported base type [{1}]",
+                new Object[] {element.getTitle(), baseType});
+            continue;            
+          }
+          MessageElement listMetadata =
+              getListMetadata(element.getInternalName());
+          if (listMetadata == null) {
+            LOGGER.log(Level.WARNING,
+                "Unable to get metadata for List [{0}]. Skipping List",
+                element.getTitle());
             continue;
           }
+          String rootFolder =
+              getMetadataAttributeForList(listMetadata, "RootFolder");
+          if (Strings.isNullOrEmpty(rootFolder)) {
+            LOGGER.log(Level.WARNING,
+                "Unable to get Root Folder for List [{0}]. Skipping List",
+                element.getTitle());
+            continue;
+          }
+          String defaultViewItemUrl = getMetadataAttributeForList(
+              listMetadata, "DefaultViewItemUrl");
+          if (Strings.isNullOrEmpty(defaultViewItemUrl)) {
+            LOGGER.log(Level.WARNING, "Unable to get default View Item Url "
+                + "for List [{0}]. Skipping List", element.getTitle());
+            continue;
+          }
+          LOGGER.log(Level.FINE,
+              "List [{0}] Root Folder [{1}] Default View Item URL [{2}]",
+              new Object[] {element.getTitle(), rootFolder,
+                defaultViewItemUrl});
+          String siteUrl = sharepointClientContext.getSiteURL();
+          if (Strings.isNullOrEmpty(element.getDefaultViewUrl())) {
+            LOGGER.log(Level.WARNING, "List [{0}] with empty default view URL."
+                + " Using root folder for List URL.", element.getTitle());
+            StringBuilder listUrl = new StringBuilder(siteUrl);
+            if (!siteUrl.endsWith("/")) {
+              listUrl.append("/");
+            }
+            listUrl.append(rootFolder);
+            url = listUrl.toString();
+          } else {
+            url = Util.getWebApp(sharepointClientContext.getSiteURL())
+                + element.getDefaultViewUrl();
+          }
 
-          url = Util.getWebApp(sharepointClientContext.getSiteURL())
-              + element.getDefaultViewUrl();
+          LOGGER.log(Level.INFO, "List url for List [{0}] is [{1}]",
+              new Object[] {element.getTitle(), url});
 
           strBaseTemplate = element.getBaseTemplate();
           if (strBaseTemplate == null) {
@@ -179,14 +226,12 @@ public class SiteDataHelper {
           list.setInheritedSecurity(element.isInheritedSecurity());
           list.setApplyReadSecurity(element.getReadSecurity() == 2);
 
-          String myNewListConst = "";
-          final String listUrl = element.getDefaultViewUrl();// e.g.
-          // /sites/abc/Lists/Announcements/AllItems.aspx
-          LOGGER.log(Level.FINE, "getting listConst for list URL [ " + listUrl
-              + " ] ");
-          if ((listUrl != null) /* && (siteRelativeUrl!=null) */) {
-            final StringTokenizer strTokList = new StringTokenizer(listUrl,
-                SPConstants.SLASH);
+          String myNewListConst = "";    
+          LOGGER.log(Level.FINE, 
+              "getting listConst for list URL [{0}]", defaultViewItemUrl);
+          if (defaultViewItemUrl != null) {
+            final StringTokenizer strTokList = 
+                new StringTokenizer(defaultViewItemUrl, SPConstants.SLASH);
             if (null != strTokList) {
               while ((strTokList.hasMoreTokens())
                   && (strTokList.countTokens() > 1)) {
@@ -202,7 +247,7 @@ public class SiteDataHelper {
               }
               list.setListConst(myNewListConst);
               LOGGER.log(Level.CONFIG, "using listConst [ " + myNewListConst
-                  + " ] for list URL [ " + listUrl + " ] ");
+                  + " ] for list URL [ " + defaultViewItemUrl + " ] ");
 
               // Apply the URL filter here
 
@@ -213,7 +258,7 @@ public class SiteDataHelper {
                   + SPConstants.SLASH + myNewListConst)) {
                 // is included check if actual list url itself
                 // is to be excluded
-                if (sharepointClientContext.isIncludedUrl(url)) {
+                if (sharepointClientContext.isIncludedUrl(url, LOGGER)) {
                   // if a List URL is included, it WILL be
                   // sent as a
                   // Document
@@ -223,7 +268,6 @@ public class SiteDataHelper {
                   // sent as a
                   // Document
                   list.setSendListAsDocument(false);
-                  LOGGER.warning("excluding " + url.toString());
                 }
                 // add the attribute(Metadata to the list )
                 list = getListWithAllAttributes(list, element);
@@ -232,7 +276,7 @@ public class SiteDataHelper {
               } else {
                 // entire subtree is to be excluded
                 // do not construct list state
-                LOGGER.warning("Excluding " + url
+                LOGGER.finest("Excluding " + url
                     + " because entire subtree of " + myNewListConst
                     + " is excluded");
               }
@@ -241,7 +285,6 @@ public class SiteDataHelper {
 
           // Sort the base list
           Collections.sort(listCollection);
-          // dumpcollection(listCollection);
         }
       }
     } catch (final Throwable e) {
@@ -256,6 +299,43 @@ public class SiteDataHelper {
           + " ]");
     }
     return listCollection;
+  }
+
+  private String getMetadataAttributeForList(MessageElement list,
+      String attribute) {
+    MessageElement metadata = list.getChildElement(new QName("Metadata"));
+    if (metadata == null) {
+      LOGGER.warning("Metadata missing for for List");
+      return null;
+    }
+    return metadata.getAttribute(attribute);
+  }
+
+  private MessageElement getListMetadata(final String id) {
+    final String listMetadata =
+       Util.makeWSRequest(sharepointClientContext, siteDataWS,
+           new Util.RequestExecutor<String>() {
+         public String onRequest(final BaseWS ws) throws Throwable {
+           return ((SiteDataWS) ws).getContentList(id);
+         }          
+         public void onError(final Throwable e) {
+           LOGGER.log(Level.WARNING, "Call to getContentList failed.", e);
+         }
+       });
+
+    if (Strings.isNullOrEmpty(listMetadata)) {
+      LOGGER.log(Level.INFO, "Empty List Metadata for List with Id {0}", id);
+      return null;
+    }
+    LOGGER.log(Level.INFO, "List Content for List with Id {0} : {1}",
+        new Object[] {id, listMetadata});
+    try {
+      return ListsUtil.getMeFromString(listMetadata);
+    } catch (Exception ex) {
+      LOGGER.log(Level.WARNING,
+          "Error parsing metadata for List with ID " + id, ex);
+      return null;
+    }
   }
 
   /**

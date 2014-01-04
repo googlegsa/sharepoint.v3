@@ -14,12 +14,15 @@
 
 package com.google.enterprise.connector.adgroups;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.enterprise.connector.adgroups.AdConstants.Method;
 import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.TraversalManager;
+import com.google.enterprise.connector.util.EmptyDocumentList;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -216,27 +219,35 @@ public class AdGroupsTraversalManager implements TraversalManager {
             AdConstants.ATTR_PRIMARYGROUPID,
             AdConstants.ATTR_MEMBER});
 
-        // list of DNs to delete from database
+        // list of DNs to delete from database during incremental traversal
         Set<AdEntity> tombstones;
+        // list of tombstone entities to remove during full traversal
+        List<HashMap<String, Object>> tombstonesInDb =
+            new ArrayList<HashMap<String, Object>>();
+        Set<AdEntity> entitiesToUpdate;
         boolean firstTimeForDomain = false;
 
         // when performing full recrawl we retrieve all entities from DB
         // and delete everything that was not rediscovered in AD
+        int numberOfTombstones;
         if (last == 0) {
           LOGGER.info(server + "Retrieving all existing objects from DB.");
-          tombstones = new HashSet<AdEntity>();
-          Set<String> dns = db.selectOne(
-              Query.SELECT_ALL_ENTITIES_BY_SID, server.getSqlParams(),
-              AdConstants.DB_DN);
+          tombstones = ImmutableSet.of();
+          List<HashMap<String, Object>> dbEntities = db.select(
+              Query.SELECT_ALL_ENTITIES_BY_SID, server.getSqlParams());
+          Map<String, HashMap<String, Object>> dns =
+              new HashMap<String, HashMap<String, Object>>();
+          for (HashMap<String, Object> dbEntity : dbEntities) {
+            dns.put((String) dbEntity.get(AdConstants.DB_DN), dbEntity);
+          }
           firstTimeForDomain = dns.isEmpty();
           if (!firstTimeForDomain) {
             for (AdEntity e : entities) {
               dns.remove(e.getDn());
             }
-            for (String dn : dns) {
-              tombstones.add(new AdEntity(null, dn));
-            }
+            tombstonesInDb.addAll(dns.values());
           }
+          numberOfTombstones = tombstonesInDb.size();
         } else {
           // when performing partial crawl we ask the LDAP to list removed
           // objects - by default works only for members of Domain Admins group
@@ -244,50 +255,92 @@ public class AdGroupsTraversalManager implements TraversalManager {
           tombstones = server.search(tombstoneQuery, true,
               new String[] {AdConstants.ATTR_OBJECTGUID,
                   AdConstants.ATTR_SAMACCOUNTNAME});
+          numberOfTombstones = tombstones.size();
+          tombstonesInDb = ImmutableList.of();
         }
 
         LOGGER.info(server + "Found " + entities.size()
-            + " entities to update in the database and " + tombstones.size()
+            + " entities to update in the database and " + numberOfTombstones
             + " entities to remove.");
 
-        if (entities.size() > 0 || tombstones.size() > 0) {
+        if (entities.size() > 0 || numberOfTombstones > 0) {
           // Remove all tombstones from the database
-          LOGGER.info(
-              server + "update 1/6 - Removing tombstones from database ("
-              + tombstones.size() + ")");
-          db.executeBatch(Query.DELETE_MEMBERSHIPS, tombstones);
+          if (last == 0) {
+            LOGGER.log(Level.INFO,
+                "{0} update 1/6 - Removing tombstones from database ({1})",
+                new Object[] {server, tombstonesInDb.size()});
+            db.executeBatch(
+                Query.DELETE_MEMBERSHIPS_BY_ENTITYID, tombstonesInDb);
+            db.executeBatch(Query.DELETE_ENTITY_BY_ENTITYID, tombstonesInDb);
+          } else {
+            LOGGER.log(Level.INFO,
+                "{0} update 1/6 - Removing tombstones from database ({1})",
+                new Object[] {server, tombstones.size()});
+            db.executeBatch(Query.DELETE_MEMBERSHIPS, tombstones);
+            db.executeBatch(Query.DELETE_ENTITY, tombstones);
+          }
 
           // Check for each new/updated entity if it wasn't deleted and 
           // recreated with the same name.
           LOGGER.info(
               server + "update 2/6 - Checking resurrected entities");
           if (!firstTimeForDomain) {
+            entitiesToUpdate = new HashSet<AdEntity>();
             for (AdEntity e : entities) {
               // Check for duplicates with different GUID than e.
-              Set<String> oldObjectGuids =
-                  db.selectOne(Query.SELECT_ENTITY_BY_DN_AND_NOT_GUID,
-                      e.getSqlParams(), AdConstants.DB_OBJECTGUID);
-              if (oldObjectGuids.size() > 0) {
-                LOGGER.fine("Duplicate entity [" + e + "] discovered.");
-                db.execute(Query.DELETE_MEMBERSHIPS, e.getSqlParams());
-                for (final String oldObjectGuid : oldObjectGuids) {
+              List<HashMap<String, Object>> dbEntities = 
+                  db.select(Query.SELECT_ENTITY_BY_DN_AND_NOT_GUID,
+                      e.getSqlParams());
+              if (dbEntities.isEmpty()) {
+                // new entity
+                entitiesToUpdate.add(e);
+              } else if (dbEntities.size() == 1) {
+                HashMap<String, Object> dbEntity = dbEntities.get(0);
+                if (!isSameEntity(e, dbEntity)) {
+                  entitiesToUpdate.add(e);
+                  // If entities are not same, check for Object GUID for
+                  // resurrected entity.
+                  if (!dbEntity.get(AdConstants.DB_OBJECTGUID).equals(
+                      e.getSqlParams().get(AdConstants.DB_OBJECTGUID))) {
+                    // Resurrected entity
+                    LOGGER.info("Resurrected entity [" + e + "] discovered.");
+                    db.execute(Query.DELETE_MEMBERSHIPS, e.getSqlParams());                  
+                    LOGGER.fine("Deleting old version with objectguid ["
+                        + dbEntity.get(AdConstants.DB_OBJECTGUID) + "]");
+                    db.execute(
+                        Query.DELETE_ENTITY, ImmutableMap.<String, Object>of(
+                            AdConstants.DB_OBJECTGUID, 
+                            dbEntity.get(AdConstants.DB_OBJECTGUID)));                    
+                  }
+                }
+              } else {
+                // Multiple DB entities discovered. This is unexpexcted.
+                for (HashMap<String, Object> dbEntity : dbEntities) {                  
+                  LOGGER.fine("Duplicate entity [" + e + "] discovered.");
+                  db.execute(Query.DELETE_MEMBERSHIPS, e.getSqlParams());
+                  
                   LOGGER.fine("Deleting old version with objectguid ["
-                      + oldObjectGuid + "]");
+                      + dbEntity.get(AdConstants.DB_OBJECTGUID) + "]");
                   db.execute(
                       Query.DELETE_ENTITY, ImmutableMap.<String, Object>of(
-                          AdConstants.DB_OBJECTGUID, oldObjectGuid));
+                          AdConstants.DB_OBJECTGUID, 
+                          dbEntity.get(AdConstants.DB_OBJECTGUID)));
                 }
+                // Add entity to reprocess.
+                entitiesToUpdate.add(e);
               }
             }
+          } else {
+            entitiesToUpdate = entities;
           }
 
           // Merge entities discovered on current server into the database
           LOGGER.info(
-              server + "update 3/6 - Inserting AD Entities into database ("
-              + entities.size() + ")");
+              server + "update 3/6 - Merging AD Entities into database ("
+              + entitiesToUpdate.size() + ")");
           Query entityQuery =
               firstTimeForDomain ? Query.ADD_ENTITIES : Query.MERGE_ENTITIES;
-          db.executeBatch(entityQuery, entities);
+          db.executeBatch(entityQuery, entitiesToUpdate);
 
           // Perform bulk processing only if its full traversal.
           boolean bulkProcessing = 
@@ -358,6 +411,21 @@ public class AdGroupsTraversalManager implements TraversalManager {
     }
   }
 
+  private boolean isSameEntity(AdEntity e, HashMap<String, Object> dbEntity) {
+    Map<String, Object> adEntity = e.getSqlParams();
+    for (String key : dbEntity.keySet()) {
+      String dbValue = "" + dbEntity.get(key);
+      String adValue = "" + adEntity.get(key);
+      if (!dbValue.equals(adValue)) {
+        LOGGER.log(Level.FINE, 
+            "Detected difference on key {0} value from db {1} value from AD {2} for Entity {3}",
+            new Object[] {key, dbValue, adValue, e});
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override
   public DocumentList resumeTraversal(String checkpoint)
       throws RepositoryException {
@@ -373,6 +441,7 @@ public class AdGroupsTraversalManager implements TraversalManager {
   @Override
   public DocumentList startTraversal() throws RepositoryException {
     run(true);
-    return null;
+    // Force later batches to call resumeTraversal.
+    return new EmptyDocumentList(AdConstants.CHECKPOINT_VALUE);
   }
 }

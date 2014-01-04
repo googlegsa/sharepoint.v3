@@ -63,6 +63,7 @@ public class AdDbUtil {
     FIND_FOREIGN("FIND_FOREIGN"),
     MERGE_MEMBERSHIP("MERGE_MEMBERSHIP"),
     DELETE_MEMBERSHIPS("DELETE_MEMBERSHIPS"),
+    DELETE_MEMBERSHIPS_BY_ENTITYID("DELETE_MEMBERSHIPS_BY_ENTITYID"),
     SELECT_USER_BY_SAMACCOUNTNAME("SELECT_USER_BY_SAMACCOUNTNAME"),
     SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME
         ("SELECT_USER_BY_DOMAIN_SAMACCOUNTNAME"),
@@ -74,6 +75,7 @@ public class AdDbUtil {
         ("DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN"),
     SELECT_ALL_ENTITIES_BY_SID("SELECT_ALL_ENTITIES_BY_SID"),
     DELETE_ENTITY("DELETE_ENTITY"),
+    DELETE_ENTITY_BY_ENTITYID("DELETE_ENTITY_BY_ENTITYID"),
     TEST_CONNECTORNAME("TEST_CONNECTORNAME"),
     CREATE_CONNECTORNAME("CREATE_CONNECTORNAME"),
     DROP_CONNECTORNAME_TABLE("DROP_CONNECTORNAME_TABLE"),
@@ -382,15 +384,31 @@ public class AdDbUtil {
    */
   public void executeBatch(Query query, Set<AdEntity> entities)
       throws SQLException {
+    List<Map<String, Object>> sqlParams =
+        new ArrayList<Map<String, Object>>();
+    for (AdEntity e : entities) {
+      sqlParams.add(e.getSqlParams());
+    }
+    executeBatch(query, sqlParams);
+  }
+
+  /**
+   * Executes a batch on list of SQL parameters
+   * @param query to be executed on each entity
+   * @param params list of parameters
+   * @throws SQLException
+   */
+  public void executeBatch (Query query,
+      List<? extends Map<String, Object>> sqlParams) throws SQLException {
     PreparedStatement statement = null;
     try {
       List<String> identifiers = new ArrayList<String>();
       String sql = sortParams(query, identifiers);
       statement = connection.prepareStatement(sql);
   
-      int batch = 0;
-      for (AdEntity e : entities) {
-        addParams(statement, identifiers, e.getSqlParams());
+      int batch = 0;      
+      for (Map<String, Object> p : sqlParams) {
+        addParams(statement, identifiers, p);
         statement.addBatch();
         if (++batch >= batchHint) {
           statement.executeBatch();
@@ -406,7 +424,7 @@ public class AdDbUtil {
       }
     }
   }
-
+  
   /**
    * Merges memberships from Active Directory to the database
    * @param entities list of entities whose memberships we should update

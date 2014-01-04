@@ -41,22 +41,22 @@ public class MockSiteDataWS implements SiteDataWS {
     sharepointClientContext = ctx;
   }
 
-  /* @Override */
+  @Override
   public String getUsername() {
     return username;
   }
 
-  /* @Override */
+  @Override
   public void setUsername(final String username) {
     this.username = username;
   }
 
-  /* @Override */
+  @Override
   public void setPassword(final String password) {
     this.password = password;
   }
 
-  /* @Override */
+  @Override
   public void setTimeout(final int timeout) {
   }
 
@@ -76,5 +76,9 @@ public class MockSiteDataWS implements SiteDataWS {
    */
   public _sWebMetadataHolder getSiteData() throws RemoteException {
     return null;
+  }
+
+  public String getContentList(String id) throws RemoteException {
+    return "";
   }
 }

@@ -44,12 +44,12 @@ public class SiteDiscovery : System.Web.Services.WebService
         //get the site collection for the central administration       
         foreach (SPWebApplication wa in SPWebService.AdministrationService.WebApplications)
         {
-            GetAllSiteCollectionsFromWenApplication(wa, webSiteList);       
+            GetAllSiteCollectionsFromWebApplication(wa, webSiteList);
         }
 
         foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
         {
-            GetAllSiteCollectionsFromWenApplication(wa, webSiteList);  
+            GetAllSiteCollectionsFromWebApplication(wa, webSiteList);
         }
         return webSiteList;//return the list
     }
@@ -58,32 +58,20 @@ public class SiteDiscovery : System.Web.Services.WebService
     /// </summary>
     /// <param name="wa">SPWebApplication object to fetch all the Site Collections</param>
     /// <param name="webSiteList">ArrayList object to hold URLs for all the site collections under SPWebApplication</param> 
-    private void GetAllSiteCollectionsFromWenApplication(SPWebApplication wa, ArrayList webSiteList)
+    private void GetAllSiteCollectionsFromWebApplication(SPWebApplication wa, ArrayList webSiteList)
     {
-        if (wa != null)
-        {          
-            if (webSiteList == null)
+        if (wa.Sites != null)
+        {
+            // Get web application URL for current request URL Zone.
+            string strWebappUrl = wa.GetResponseUri(SPContext.Current.Site.Zone).AbsoluteUri;
+            if (!strWebappUrl.EndsWith("/"))
             {
-                webSiteList = new ArrayList();
+                strWebappUrl = strWebappUrl + "/";
+            }        
+            foreach (String url in wa.Sites.Names)
+            {
+                webSiteList.Add(strWebappUrl + url);
             }
-            if (wa.Sites != null && wa.Sites.Count > 0)
-            {
-                //TODO: To use SPSiteCollection.Names property along with SPUrlZone to get all possible URLS (Default,Custom,Intranet,Internet etc) for Web Application
-                foreach (SPSite oSite in wa.Sites)
-                {
-                    try
-                    {
-                        webSiteList.Add(oSite.Url);
-                    }
-                    finally
-                    {
-                        if (oSite != null)
-                        {
-                            oSite.Dispose();
-                        }
-                    }
-                }                
-            }   
         }
     }
         
@@ -301,7 +289,26 @@ public class SiteDiscovery : System.Web.Services.WebService
         SPContext.Current.Web.ToString();
         List<ListCrawlInfo> listCrawlInfo = new List<ListCrawlInfo>();
 
-        Boolean denyPolicyAvailable = DenyReadPolicyAvailable(SPContext.Current.Site.WebApplication, SPContext.Current.Site.Zone);
+        Boolean checkForAnonymousAccess = false;
+        try
+        {
+            SPSite site = SPContext.Current.Site;
+            SPIisSettings iisSettings = site.WebApplication.IisSettings.ContainsKey(site.Zone) 
+                ? site.WebApplication.IisSettings[site.Zone]
+                : site.WebApplication.IisSettings[SPUrlZone.Default];
+
+            checkForAnonymousAccess =
+                (site.WebApplication.Policies.AnonymousPolicy != SPAnonymousPolicy.DenyAll)
+                && iisSettings.AllowAnonymous
+                && !(DenyReadPolicyAvailable(site.WebApplication, site.Zone));
+        }
+        catch (Exception ex)
+        {
+            // Ignoring exception while checking for anonymous access setting.
+            // Content will be considered secure.
+            ex = null;
+        }
+       
         foreach (string guid in listGuids)
         {
             ListCrawlInfo info = new ListCrawlInfo();
@@ -314,7 +321,7 @@ public class SiteDiscovery : System.Web.Services.WebService
                     SPList list = SPContext.Current.Web.Lists[key];
                     info.NoCrawl = list.NoCrawl;
                     info.Status = true;
-                    if (!denyPolicyAvailable)
+                    if (checkForAnonymousAccess)
                     {
                         Boolean anonymousAccessApplicable = (SPContext.Current.Web.AnonymousState != SPWeb.WebAnonymousState.Disabled);
                         Boolean anonymousAccess = anonymousAccessApplicable && (SPBasePermissions.ViewListItems == (SPBasePermissions.ViewListItems & list.AnonymousPermMask64))

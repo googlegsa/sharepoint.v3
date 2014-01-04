@@ -10,40 +10,40 @@ public class ClaimsAuthScheme implements AuthScheme {
     public URI originalUri;
     public AuthScheme innerAuthScheme;
 
-    /* @Override */
+    @Override
     public String authenticate(Credentials credentials, HttpMethod httpmethod) {
         return null;
     }
 
-    /* @Override */
+    @Override
     public String authenticate(Credentials credentials, String method, String uri) {
         return null;
     }
 
-    /* @Override */
+    @Override
     public String getID() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    /* @Override */
+    @Override
     public String getParameter(String arg0) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    /* @Override */
+    @Override
     public String getRealm() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    /* @Override */
+    @Override
     public String getSchemeName() {
         return "claims";
     }
 
-    /* @Override */
+    @Override
     public boolean isComplete() {
         return complete;
     }
@@ -52,12 +52,12 @@ public class ClaimsAuthScheme implements AuthScheme {
         complete = true;
     }
 
-    /* @Override */
+    @Override
     public boolean isConnectionBased() {
         return false;
     }
 
-    /* @Override */
+    @Override
     public void processChallenge(String challenge) {
     }
 }

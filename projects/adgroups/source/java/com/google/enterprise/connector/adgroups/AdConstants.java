@@ -82,13 +82,13 @@ public class AdConstants {
   public static final String AT = "@";
   public static final char COLON_CHAR = ':';
   public static final String COLON = ":";
-  public static final String SLASH = "/";
-  public static final char SLASH_CHAR = '/';
   public static final String BACKSLASH = "\\";
   public static final char BACKSLASH_CHAR = '\\';
   public static final String EQUALS = "=";
   public static final char EQUALS_CHAR = '=';
   public static final char HYPHEN_CHAR = '-';
+
+  public static final String CHECKPOINT_VALUE = "AD Groups";
 
   public static final String SID_START = "S-";
   public static final String GUID_START = "0x";
