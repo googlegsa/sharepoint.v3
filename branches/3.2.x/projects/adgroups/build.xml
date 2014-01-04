@@ -157,7 +157,9 @@
         <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
         <pathelement location="${jarfile}" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+        <fileset dir="${cm-third-paty.jar}">
+          <include name="*.jar" />
+        </fileset>
         <pathelement location="${cm-third-paty_jcr.jar}/jcr-1.0.jar" />
         <pathelement location="${junit.jarfile}" />
         <pathelement location="${sql.properties}/*.properties" />

@@ -51,6 +51,7 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
   private final AdDbUtil db;
   private final String globalNamespace;
   private final boolean includeBuiltinGroups;
+  private final String databaseType;
 
   /**
    * @param connector an instance of an {@link AdGroupsConnector}
@@ -60,6 +61,7 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
     db = new AdDbUtil(connector.getDataSource(), connector.getDatabaseType());
     globalNamespace = connector.getGoogleGlobalNamespace();
     includeBuiltinGroups = connector.isIncludeBuiltinGroups();
+    databaseType = connector.getDatabaseType();
   }
 
   /**
@@ -208,12 +210,19 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
     List<Principal> groups = new ArrayList<Principal>();
     List<Number> entities = new ArrayList<Number>();
     entities.add(entityId);
+    
+    boolean useRecursiveQuery = databaseType.equalsIgnoreCase("SQLSERVER") 
+        || databaseType.equalsIgnoreCase("ORACLE");
 
     // Add current user to all implicit well known entities
     for (HashMap<String, Object> wellKnown :
              db.select(Query.SELECT_WELLKNOWN_MEMBERSHIPS, null)) {
       groups.add(formatGroup(wellKnown));
-      entities.add((Number) wellKnown.get(AdConstants.DB_ENTITYID));
+      // when using recursive query no need to process 
+      // wellknown entities individually.
+      if (!useRecursiveQuery) {
+        entities.add((Number) wellKnown.get(AdConstants.DB_ENTITYID));
+      }
     }
 
     HashMap<String, Object> params = new HashMap<String, Object>();
@@ -234,8 +243,11 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
           entities.add(groupId);
         }
       }
+      // Using recursive query we need only one iteration of group resolution 
+      if (useRecursiveQuery) {
+        break;
+      }
     }
-
     return groups;
   }
 }

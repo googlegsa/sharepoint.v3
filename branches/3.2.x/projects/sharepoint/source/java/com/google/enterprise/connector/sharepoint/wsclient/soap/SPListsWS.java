@@ -113,22 +113,22 @@ public class SPListsWS implements ListsWS {
       }
   }
 
-  /* @Override */
+  @Override
   public String getUsername() {
     return stub.getUsername();
   }
 
-  /* @Override */
+  @Override
   public void setUsername(final String username) {
     stub.setUsername(username);
   }
 
-  /* @Override */
+  @Override
   public void setPassword(final String password) {
     stub.setPassword(password);
   }
 
-  /* @Override */
+  @Override
   public void setTimeout(final int timeout) {
     stub.setTimeout(timeout);
   }
@@ -199,7 +199,7 @@ public class SPListsWS implements ListsWS {
                 final String url = attachmentsIt.next().toString();
                 LOGGER.config("Attachment URL: " + url);
 
-                if (sharepointClientContext.isIncludedUrl(url)) {
+                if (sharepointClientContext.isIncludedUrl(url, LOGGER)) {
                   String modifiedID = listItemId;
                   if (FeedType.CONTENT_FEED == sharepointClientContext.getFeedType()) {
                     modifiedID = SPConstants.ATTACHMENT_SUFFIX_IN_DOCID + "["
@@ -218,8 +218,6 @@ public class SPListsWS implements ListsWS {
                   doc.setParentList(baseList);
 
                   listAttachments.add(doc);
-                } else {
-                  LOGGER.warning("Excluding attachment " + url);
                 }
               }
             }

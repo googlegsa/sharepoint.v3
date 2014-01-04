@@ -36,4 +36,13 @@ public interface SiteDataWS extends BaseWS {
    * @throws RemoteException
    */
   public _sWebMetadataHolder getSiteData() throws RemoteException;
+  
+  /**
+   * Makes call to SiteData web service to get List meta data.
+   * 
+   * @param id id for List to fetch meta data
+   * @return XML string for List meta data
+   * @throws RemoteException on web service error
+   */
+  public String getContentList(String id) throws RemoteException;
 }

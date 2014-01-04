@@ -140,12 +140,17 @@ public class AclHelper {
    * @return web service response {@link GssGetAclForUrlsResult} as it is
    */
   private GssGetAclForUrlsResult getAclForUrls(final String[] urls,
-      final boolean useInheritance, final boolean includePolicyAcls) {
+      final boolean useInheritance, final boolean includePolicyAcls) 
+      throws SharepointException {
     if (null == urls || urls.length == 0) {
       return null;
     }
-
-    return Util.makeWSRequest(sharepointClientContext, aclWS,
+    
+    // errorFetchingAcls is defined as an array instead of 
+    // simple boolean object since needs to be used with inline class.
+    final Throwable[] errorFetchingAcls = new Throwable[1];
+    GssGetAclForUrlsResult aclResult = 
+        Util.makeWSRequest(sharepointClientContext, aclWS,
         new Util.RequestExecutor<GssGetAclForUrlsResult>() {
       public GssGetAclForUrlsResult onRequest(final BaseWS ws)
           throws Throwable {
@@ -158,8 +163,15 @@ public class AclHelper {
       
       public void onError(final Throwable e) {
         LOGGER.log(Level.WARNING, "Call to getAclForUrls failed.", e);
+        errorFetchingAcls[0] = e;
       }
     });
+    
+    if (errorFetchingAcls[0] != null) {
+      throw new SharepointException("Error fetching ACLs for batch.",
+          errorFetchingAcls[0]);
+    }
+    return aclResult;
   }
 
   /**
@@ -169,7 +181,8 @@ public class AclHelper {
    * @param urlToDocMap Document map to update
    */
   private void fetchAclForDocumentsWithExcludedParents(String[] urls,
-      Map<String, SPDocument> urlToDocMap, WebState webState) {
+      Map<String, SPDocument> urlToDocMap, WebState webState)
+      throws SharepointException {
     GssGetAclForUrlsResult wsResult = getAclForUrls(urls, false, false);
     if (wsResult != null) {
       processWsResponse(wsResult, urlToDocMap, webState);
@@ -180,10 +193,10 @@ public class AclHelper {
    * To process documents with large ACLs
    */
   private void fetchAclForSPDocument(String documentUrl,
-      SPDocument document, WebState webState) {    
+      SPDocument document, WebState webState) throws SharepointException {
     GssGetAclForUrlsResult wsResult =
         getAclForUrls(new String[] { documentUrl },
-        supportsInheritedAcls, !supportsInheritedAcls);
+                 supportsInheritedAcls, !supportsInheritedAcls);
     if (wsResult != null) {
       Map<String, SPDocument> docMapToPass = Maps.newHashMap();
       docMapToPass.put(documentUrl, document);
@@ -204,7 +217,8 @@ public class AclHelper {
    *          represents the document URL
    */
   private void processWsResponse(GssGetAclForUrlsResult wsResult,
-      Map<String, SPDocument> urlToDocMap, WebState webState) {
+      Map<String, SPDocument> urlToDocMap, WebState webState)
+      throws SharepointException{
     if (wsResult == null || urlToDocMap == null) {
       return;
     }
@@ -291,9 +305,9 @@ public class AclHelper {
             document.setParentUrl(sharepointClientContext.getSiteURL());
             document.setParentId(acl.getParentId());
           } else {
-            LOGGER.log(Level.INFO, "Document [ " +document.getUrl()
+            LOGGER.log(Level.INFO, "Document [ " + document.getUrl()
                 + " ] needs to be reprocessed as Parent Url ["
-                + acl.getParentUrl() + "] is not inluded for Traversal");
+                + acl.getParentUrl() + "] is not included for Traversal");
             docUrlsToReprocess.add(document.getUrl());
             excludedParentUrlToDocMap.put(document.getUrl(), document);
             continue ACL;
@@ -684,7 +698,8 @@ public class AclHelper {
    * @param webState parent {@link WebState} from which documents have been
    *          crawled
    */
-  public void fetchAclForDocuments(SPDocumentList resultSet, WebState webState) {
+  public void fetchAclForDocuments(SPDocumentList resultSet, WebState webState) 
+      throws SharepointException {
     if (!sharepointClientContext.isPushAcls() || null == resultSet) {
       return;
     }
@@ -692,30 +707,26 @@ public class AclHelper {
     if (null != documents) {
       Map<String, SPDocument> urlToDocMap = Maps.newHashMap();
       String[] allUrlsForAcl = new String[resultSet.size()];
-      try {
-        int i = 0;
-        for (SPDocument document : documents) {
-          if (document.isWebAppPolicyDoc()) {
-            LOGGER.log(Level.FINEST, 
-                "Skipping Web application policy DOC for ACL Fetch "
-                + document.getUrl());
-            continue;
-          }
-          urlToDocMap.put(document.getUrl(), document);
-          allUrlsForAcl[i++] = document.getUrl();
+      int i = 0;
+      for (SPDocument document : documents) {
+        if (document.isWebAppPolicyDoc()) {
+          LOGGER.log(Level.FINEST, 
+              "Skipping Web application policy DOC for ACL Fetch "
+              + document.getUrl());
+          continue;
         }
-        LOGGER.log(Level.CONFIG, "Getting ACL for #" + urlToDocMap.size()
-            + " entities crawled from site [ " + webState.getWebUrl()
-            + " ]. Document list : " + resultSet.toString());
-        GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl,
-            supportsInheritedAcls, !supportsInheritedAcls);
-        processWsResponse(wsResult, urlToDocMap, webState);
-      } catch (Exception e) {
-        LOGGER.log(Level.WARNING, "Problem while getting ACL from site [ "
-            + webState.getWebUrl() + " ]", e);
+        urlToDocMap.put(document.getUrl(), document);
+        allUrlsForAcl[i++] = document.getUrl();
       }
+      LOGGER.log(Level.CONFIG, "Getting ACL for #" + urlToDocMap.size()
+          + " entities crawled from site [ " + webState.getWebUrl()
+          + " ]. Document list : " + resultSet.toString());
+      GssGetAclForUrlsResult wsResult = getAclForUrls(allUrlsForAcl,
+          supportsInheritedAcls, !supportsInheritedAcls);
+      processWsResponse(wsResult, urlToDocMap, webState);
     }
   }
+
    /**
    * Works similar to
    * {@link ListsHelper#getListItems(ListState, java.util.Calendar, String, Set)}
@@ -1359,7 +1370,7 @@ public class AclHelper {
           throws Throwable {
         return ((AclWS) ws).getAclForWebApplicationPolicy();
       }
-      
+
       public void onError(final Throwable e) {
         LOGGER.log(Level.WARNING,
             "Call to getAclForWebApplicationPolicy failed.", e);
@@ -1392,7 +1403,12 @@ public class AclHelper {
     webAppPolicy.setDocumentType(DocumentType.ACL);
     Map<String, SPDocument> urlToDocMap = Maps.newHashMap();
     urlToDocMap.put(result.getSiteCollectionUrl(), webAppPolicy);
-    processWsResponse(result, urlToDocMap, webState);
+    try {
+      processWsResponse(result, urlToDocMap, webState);
+    } catch (SharepointException ex) {
+      LOGGER.log(Level.WARNING, 
+          "Error processing ACL response for web application policy", ex);
+    }
     webAppPolicy.setWebAppPolicyDoc(true);
     return webAppPolicy;
   }
