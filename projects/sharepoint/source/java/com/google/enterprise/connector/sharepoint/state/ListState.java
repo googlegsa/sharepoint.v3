@@ -1040,6 +1040,12 @@ public class ListState implements StatefulObject {
     if (key.equals(inList.getPrimaryKey())) {
       attrs = inList.getAttrs();
       baseTemplate = inList.getBaseTemplate();
+      if (!listURL.equalsIgnoreCase(inList.getListURL())) {
+        LOGGER.log(Level.INFO, 
+            "Resetting List {0} as List URL changed from [{1}] to [{2}]", 
+            new Object[] {inList.listTitle, listURL, inList.getListURL()});
+        resetState();
+      }
       listURL = inList.getListURL();
       type = inList.getType();
       listTitle = inList.getListTitle();
