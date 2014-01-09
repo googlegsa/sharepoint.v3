@@ -950,7 +950,12 @@ public class SharepointClient {
     for (ListState currentListState : listCollection) {
       ListState listState = webState.lookupList(currentListState.getPrimaryKey());
       if (null != listState) {
-        listState.updateList(currentListState);
+        if (!listState.getListURL().equalsIgnoreCase(
+            currentListState.getListURL())) {
+          tempCtx.logToFile(SPConstants.DEFAULT_VIEW_URL_CHANGE_LOG,
+              listState.getListURL());          
+        }
+        listState.updateList(currentListState);        
       }
     }
 
