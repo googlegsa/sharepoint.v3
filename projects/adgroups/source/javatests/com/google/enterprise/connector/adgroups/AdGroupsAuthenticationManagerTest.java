@@ -46,8 +46,7 @@ public class AdGroupsAuthenticationManagerTest extends TestCase {
         new SimpleAuthenticationIdentity(username));
     assertNotNull(response);
 
-    @SuppressWarnings("unchecked") Collection<Principal> principals =
-        (Collection<Principal>) response.getGroups();
+    Collection<Principal> principals = getGroups(response);
     assertNotNull(principals);
     assertTrue(principals.size() > 0);
 
@@ -68,8 +67,7 @@ public class AdGroupsAuthenticationManagerTest extends TestCase {
     am = s.getAuthenticationManager();
     response = am.authenticate(new SimpleAuthenticationIdentity(username));
 
-    principals =
-        (Collection<Principal>) response.getGroups();
+    principals = getGroups(response);
     assertNotNull(principals);
     assertTrue(principals.size() > 0);
 
@@ -80,6 +78,11 @@ public class AdGroupsAuthenticationManagerTest extends TestCase {
 
     assertEquals("Builtin group resolution mismatch.",
         groupsFound, principals);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Collection<Principal> getGroups(AuthenticationResponse response) {
+    return (Collection<Principal>) response.getGroups();
   }
 
   private static boolean isBuiltin(String str) {
