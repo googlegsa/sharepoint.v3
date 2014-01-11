@@ -1,7 +1,7 @@
-#summary Manual installation steps for SharePoint connector 2.x
+#summary Manual installation steps for the Connector for SharePoint
 
 = Introduction =
-This document walks you through the steps to manually install a Google Enterprise SharePoint connector. The instructions mentioned here are applicable to connector version 2.x and above.
+This document walks you through the steps to manually install the Connector for !SharePoint. The instructions mentioned here are applicable to connector version 2.x and above.
 
 Google strongly recommends that you use the Google connectors installer for installing the connector. Though, you may want to do it manually if,
  * You have built and installed a customized connector manager or a customized version of the connector
@@ -61,9 +61,9 @@ To install the connector manually, follow the instructions given below:
    Also you can check for http://localhost:8080/connector-manager/testConnectivity which will displays the connectivity status or http://localhost:8080/connector-manager/startUp which will display a message indicating the successful deployment of Connector Manager
    * Shut down the Tomcat to start with the further steps.
 
-4. Start a web browser and navigate to the download site on http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list 
+4. Start a web browser and navigate to the [http://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list Downloads page].
 
-5. Download the correct SharePoint connector version (connector-sharepoint-{{{<version>}}}.zip). 
+5. Download the correct !SharePoint connector version (connector-sharepoint-{{{<version>}}}.zip). 
 
 6. Unzip the compressed file. 
 
@@ -86,9 +86,9 @@ To install the connector manually, follow the instructions given below:
 
 11. Copy the logging.properties file from the /Config folder to the /classes folder. 
 
-12. Open the logging.properties file in a text editor and set the value of java.util.logging.FileHandler.pattern equal to the absolute path of the log file.
+12. Open the logging.properties file in a text editor and set the value of java.util.logging.!FileHandler.pattern equal to the absolute path of the log file.
 
-    java.util.logging.FileHandler.pattern={{{<value of $CATALINA_HOME>}}}/logs/google-connectors.%g.log
+    java.util.logging.!FileHandler.pattern={{{<value of $CATALINA_HOME>}}}/logs/google-connectors.%g.log
 
 13. Start the Tomcat server. 
 
@@ -99,36 +99,36 @@ To install the connector manually, follow the instructions given below:
     http://localhost:8080/connector-manager/getConnectorList 
 
 
-==Installing Google Services for SharePoint==
+==Installing Connector Services for !SharePoint==
 
-It is recommended that the version of the Google services for SharePoint should be the same as that of the SharePoint connector version.
+It is recommended that the version of the Connector Services for !SharePoint should be the same as that of the Connector for !SharePoint version.
 
-1. Login to the SharePoint server whose sites are to be crawled by the connector.
+1. Login to the !SharePoint server whose sites are to be crawled by the connector.
 
-2. Go to the ISAPI directory of SharePoint. If you are using the standard default installation, path of this directory would be C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI\ for SharePoint 2007 and ...\14\ISAPI for SharePoint 2010
+2. Go to the ISAPI directory of !SharePoint. If you are using the standard default installation, path of this directory would be C:\Program Files\Common Files\Microsoft Shared\web server extensions\12\ISAPI\ for !SharePoint 2007 and ...\14\ISAPI for !SharePoint 2010
 
-3. Download the correct SharePoint connector source (connector-sharepoint-{{{<version>}}}-src.zip) from the [https://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list?q=Google+Services+for+SharePoint&sort=-uploaded download site].
+3. Download the correct Services for !SharePoint archive (connector-services-sharepoint-{{{<version>}}}-src.zip or !Google_Services_for_!SharePoint_{{{<version>}}}.zip) from the [https://code.google.com/p/google-enterprise-connector-sharepoint/downloads/list?q=services Downloads page].
 
 4. Unzip the compressed file. 
 
 5. Copy the following files found after de-compressing the zip into the ISAPI folder as specified in step 2:
 
-  * source_net\Bulk Auth\SharePoint 2007\GSBulkAuthorization.asmx
-  * source_net\Bulk Auth\SharePoint 2007\GSBulkAuthorizationdisco.aspx
-  * source_net\Bulk Auth\SharePoint 2007\GSBulkAuthorizationwsdl.aspx
+  * source_net\Bulk Auth\!SharePoint 2007\GSBulkAuthorization.asmx
+  * source_net\Bulk Auth\!SharePoint 2007\GSBulkAuthorizationdisco.aspx
+  * source_net\Bulk Auth\!SharePoint 2007\GSBulkAuthorizationwsdl.aspx
 
-  * source_net\Site Discovery\SharePoint 2007\GSSiteDiscovery.asmx
-  * source_net\Site Discovery\SharePoint 2007\GSSiteDiscoverydisco.aspx
-  * source_net\Site Discovery\SharePoint 2007\GSSiteDiscoverywsdl.aspx
+  * source_net\Site Discovery\!SharePoint 2007\GSSiteDiscovery.asmx
+  * source_net\Site Discovery\!SharePoint 2007\GSSiteDiscoverydisco.aspx
+  * source_net\Site Discovery\!SharePoint 2007\GSSiteDiscoverywsdl.aspx
 
-  * source_net\Acl\GssAcl.asmx
-  * source_net\Acl\GssAcldisco.aspx
-  * source_net\Acl\GssAclwsdl.aspx
+  * source_net\Acl\!GssAcl.asmx
+  * source_net\Acl\!GssAcldisco.aspx
+  * source_net\Acl\!GssAclwsdl.aspx
 
-*Note*: Google Services should be installed on all SharePoint front end servers where sites that connector will crawl are hosted.
+*Note*: Connector Services for !SharePoint should be installed on all !SharePoint front end servers where sites that connector will crawl are hosted.
 
-==Verifying the installation of Google Searvices for SharePoint (GSS)==
- * Pick any SharePoint site hosted on the SharePoint server where Google services for SharePoint are deployed. Try browsing this this URL from the browser.
+==Verifying the installation of Connector Services for !SharePoint==
+ * Pick any !SharePoint site hosted on the !SharePoint server where Connector Services for !SharePoint are deployed. Try browsing this this URL from the browser.
  * The connectivity of web services can be verified using following URLs:
 {{{
      http://mycomp.com/_vti_bin/GSBulkAuthorization.asmx
