@@ -1,4 +1,5 @@
 #summary Manual installation steps for Google Search Box 2.6.8
+#labels Deprecated,Phase-Deploy
 
 = Pre-requisites =
 
