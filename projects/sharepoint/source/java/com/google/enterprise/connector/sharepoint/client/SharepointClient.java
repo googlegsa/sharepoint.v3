@@ -112,8 +112,21 @@ public class SharepointClient {
     }
     final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
     for (SPDocument doc : list.getCrawlQueue()) {
-      if (doc.getParentList() == null) {
+      ListState parentList = doc.getParentList();
+      if (parentList == null) {
+        LOGGER.log(Level.WARNING, "Document [{0}] is missing parent list. "
+            + "Assigning [{1}] as parent list for document.",
+            new Object[] {doc.getUrl(), list.getListURL()});
         doc.setParentList(list);
+      } else {
+        if (!list.getPrimaryKey().equals(parentList.getPrimaryKey())) {
+          LOGGER.log(Level.WARNING, 
+              "Skipping document . Parent List - crawl queue mismatch"
+              + "for document [{0}]. Parent List is [{1}]. "
+              + "Crawl Queue is associated with list is [{2}].",
+              new Object[] {doc, parentList, list});
+          continue;
+        }
       }
       doc.setParentWeb(web);
       doc.setSharepointClientContext(sharepointClientContext);
@@ -126,6 +139,16 @@ public class SharepointClient {
       LOGGER.log(Level.FINEST, "[ DocId = " + doc.getDocId() + ", URL = "
           + doc.getUrl() + " ]");
     }
+    
+    if (newlist.isEmpty()) {
+      // If all documents are skipped because of possible 
+      // crawl queue mismatch, then clear crawl queue for list.
+      list.setCrawlQueue(null);       
+      return null;
+    }
+    
+    // Update crawl queue for list with filtered documents.
+    list.setCrawlQueue(newlist);
 
     final SPDocumentList docList = new SPDocumentList(newlist, globalState);
     // FIXME These could be set in traversal manager just before returning
