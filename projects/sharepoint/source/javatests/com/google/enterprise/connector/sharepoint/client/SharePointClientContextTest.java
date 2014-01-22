@@ -16,6 +16,8 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
+import com.google.enterprise.connector.sharepoint.wsclient.mock.MockClientFactory;
+import com.google.enterprise.connector.spi.SimpleTraversalContext;
 
 import junit.framework.TestCase;
 
@@ -27,6 +29,13 @@ public class SharePointClientContextTest extends TestCase {
     sharepointClientContext = TestConfiguration.initContext();
     assertNotNull(this.sharepointClientContext);
   }
+  
+  protected SimpleTraversalContext setSupportsInheritedAcls(
+      boolean supportsInheritedAcls) {
+    SimpleTraversalContext traversalContext = new SimpleTraversalContext();
+    traversalContext.setSupportsInheritedAcls(supportsInheritedAcls);
+    return traversalContext;
+}
 
   public void testClone() throws Exception {
     final SharepointClientContext spc =
@@ -64,5 +73,72 @@ public class SharePointClientContextTest extends TestCase {
 
   public void testRemoveExcludedURLLogs() throws Exception {
     sharepointClientContext.clearExcludedURLLogs();
+  }
+  
+  public void testGetAclBatchSizeNoBatchingInheritedAcls() throws Exception {
+    SharepointClientContext spc 
+        = new SharepointClientContext(new MockClientFactory());
+    spc.setTraversalContext(setSupportsInheritedAcls(true));
+    spc.setPushAcls(true);
+    spc.setAclBatchSizeFactor(10);
+    spc.setFetchACLInBatches(false);
+    
+    assertEquals(-1, spc.getAclBatchSize());    
+  }
+  
+  public void testGetAclBatchSizeFlattenedAcls() throws Exception {
+    SharepointClientContext spc 
+        = new SharepointClientContext(new MockClientFactory());
+    spc.setTraversalContext(setSupportsInheritedAcls(false));   
+    spc.setPushAcls(true);
+    spc.setAclBatchSizeFactor(10);
+    spc.setFetchACLInBatches(false);
+    
+    assertEquals(50, spc.getAclBatchSize());    
+  }
+  
+  public void testGetAclBatchSizeFlattenedAclsNoBatching() throws Exception {
+    SharepointClientContext spc 
+        = new SharepointClientContext(new MockClientFactory());
+    spc.setTraversalContext(setSupportsInheritedAcls(false));    
+    spc.setPushAcls(true);
+    spc.setAclBatchSizeFactor(0);
+    spc.setFetchACLInBatches(false);
+    
+    assertEquals(-1, spc.getAclBatchSize());    
+  }
+  
+  public void testGetAclBatchSizeBatching() throws Exception {
+    SharepointClientContext spc 
+        = new SharepointClientContext(new MockClientFactory());
+    spc.setTraversalContext(setSupportsInheritedAcls(true));   
+    spc.setPushAcls(true);
+    spc.setAclBatchSizeFactor(10);
+    spc.setFetchACLInBatches(true);
+    
+    assertEquals(50, spc.getAclBatchSize());    
+  }
+  
+  // ACL Batch size factor > 500 will result in batch size 1.
+  public void testGetAclBatchSizeLargeBatchSizeFatcor() throws Exception {
+    SharepointClientContext spc 
+        = new SharepointClientContext(new MockClientFactory());
+    spc.setTraversalContext(setSupportsInheritedAcls(true));   
+    spc.setPushAcls(true);
+    spc.setAclBatchSizeFactor(1000);
+    spc.setFetchACLInBatches(true);
+    
+    assertEquals(1, spc.getAclBatchSize());
+  }
+   
+  public void testGetAclBatchSizeNoAcls() throws Exception {
+    SharepointClientContext spc 
+        = new SharepointClientContext(new MockClientFactory());    
+    spc.setTraversalContext(setSupportsInheritedAcls(true));   
+    spc.setPushAcls(false);
+    spc.setAclBatchSizeFactor(10);
+    spc.setFetchACLInBatches(true);
+    
+    assertEquals(-1, spc.getAclBatchSize());
   }
 }

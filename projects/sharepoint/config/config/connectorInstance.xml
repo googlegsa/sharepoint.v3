@@ -62,11 +62,10 @@
   -->
   <!--
     The batchSizeFactor is used to arrive at an appropriate batch size
-    value. The formula used is: n/batchSizeFactor where 'n' is the number
-    of documents discovered in each batch traversal. Value should be > 0
+    value. The formula used is: 500/batchSizeFactor. Value should be > 0
   -->
   <!--
-    <property name="aclBatchSizeFactor"> <value>2</value> </property>
+    <property name="aclBatchSizeFactor"> <value>10</value> </property>
   -->
 
   <!-- Web service time out value. Value should be mentioned in milliseconds
