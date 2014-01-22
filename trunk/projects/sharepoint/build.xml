@@ -277,6 +277,7 @@
         <pathelement location="${adgroups.jar}" />
         <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
         <pathelement location="${cm-third-paty.jar}/h2.jar" />
+        <pathelement location="${json.jarfile}" />
         <pathelement location="${cm-third-paty_jcr.jar}/jcr-1.0.jar" />
         <pathelement location="${config}" />
         <fileset dir="${lib.jar.dir}">
