@@ -39,10 +39,8 @@
   <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
   <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
   <property name="downloads.dir" value="downloads" />
-  <property name="cm-third-paty.jar" value="${connector-manager.dir}/third-party/prod/" />
+  <property name="cm-third-party.jar" value="${connector-manager.dir}/third-party/" />
   <property name="sql.properties" value="source/java/com/google/enterprise/connector/sharepoint/sql/" />
-  <property name="cm-third-paty_jcr.jar" value="${connector-manager.dir}/third-party/tests/" />
-  <property name="json.jarfile" location="${connector-manager.dir}/third-party/prod/json.jar" />
   <condition property="wsdl2java" value="wsdl2java.sh">
     <os family="unix" />
   </condition>
@@ -208,9 +206,10 @@
       <classpath>
         <pathelement location="${spi.jarfile}" />
         <pathelement location="${config}" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+        <fileset dir="${cm-third-party.jar}">
+          <include name="prod/*.jar" />
+        </fileset>
         <pathelement location="${adgroups.jar}" />
-        <pathelement location="${json.jarfile}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
@@ -236,8 +235,9 @@
         <pathelement location="${classes}" />
         <pathelement location="${junit.jarfile}" />
         <pathelement location="${adgroups.jar}" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
-        <pathelement location="${json.jarfile}" />
+        <fileset dir="${cm-third-party.jar}">
+          <include name="prod/*.jar" />
+        </fileset>
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
@@ -275,10 +275,10 @@
         <pathelement location="${testconfig.tmp.dir}" />
         <pathelement location="${jarfile}" />
         <pathelement location="${adgroups.jar}" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
-        <pathelement location="${cm-third-paty.jar}/h2.jar" />
-        <pathelement location="${json.jarfile}" />
-        <pathelement location="${cm-third-paty_jcr.jar}/jcr-1.0.jar" />
+        <fileset dir="${cm-third-party.jar}">
+          <include name="prod/*.jar" />
+          <include name="tests/jcr-1.0.jar" />
+        </fileset>
         <pathelement location="${config}" />
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
@@ -511,8 +511,9 @@
         <pathelement location="${jarfile}" />
         <pathelement location="${config}" />
         <pathelement location="${adgroups.jar}" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
-        <pathelement location="${json.jarfile}" />
+        <fileset dir="${cm-third-party.jar}">
+          <include name="prod/*.jar" />
+        </fileset>
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
           <include name="**/*.properties" />
