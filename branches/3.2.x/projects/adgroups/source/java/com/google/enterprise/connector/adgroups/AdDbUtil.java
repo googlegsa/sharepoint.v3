@@ -395,7 +395,7 @@ public class AdDbUtil {
   /**
    * Executes a batch on list of SQL parameters
    * @param query to be executed on each entity
-   * @param params list of parameters
+   * @param sqlParams list of parameters
    * @throws SQLException
    */
   public void executeBatch (Query query,
@@ -405,7 +405,7 @@ public class AdDbUtil {
       List<String> identifiers = new ArrayList<String>();
       String sql = sortParams(query, identifiers);
       statement = connection.prepareStatement(sql);
-  
+
       int batch = 0;      
       for (Map<String, Object> p : sqlParams) {
         addParams(statement, identifiers, p);
@@ -424,7 +424,7 @@ public class AdDbUtil {
       }
     }
   }
-  
+
   /**
    * Merges memberships from Active Directory to the database
    * @param entities list of entities whose memberships we should update

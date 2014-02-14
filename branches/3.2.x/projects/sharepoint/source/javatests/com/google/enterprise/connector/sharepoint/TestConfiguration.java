@@ -36,6 +36,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.client.ClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.spi.SimpleTraversalContext;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
@@ -588,6 +589,7 @@ public class TestConfiguration {
     } else if (socialOptionLc.equals("only")) {
       sharepointClientContext.setSocialOption(SocialOption.ONLY);
     }
+    sharepointClientContext.setTraversalContext(new SimpleTraversalContext());
     return sharepointClientContext;
   }
 

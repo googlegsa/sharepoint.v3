@@ -566,6 +566,11 @@ public class ListState implements StatefulObject {
         + doc.getDocId() + " ], docURL [ " + doc.getUrl() + " ], Action [ "
         + doc.getAction() + " ], deleteStatus [ " + status
         + " ], currentCrawlQueueSize [ " + crawlQueue.size() + " ]. ");
+    if (!status) {
+      LOGGER.log(Level.WARNING, "Crawl Queue mismatch. Document {0} is not "
+          + "available under crawl queue for List {1}",
+          new Object[] {doc.getUrl(), this.listURL});
+    }
   }
 
   /**
@@ -1040,6 +1045,12 @@ public class ListState implements StatefulObject {
     if (key.equals(inList.getPrimaryKey())) {
       attrs = inList.getAttrs();
       baseTemplate = inList.getBaseTemplate();
+      if (!listURL.equalsIgnoreCase(inList.getListURL())) {
+        LOGGER.log(Level.INFO, 
+            "Resetting List {0} as List URL changed from [{1}] to [{2}]", 
+            new Object[] {inList.listTitle, listURL, inList.getListURL()});
+        resetState();
+      }
       listURL = inList.getListURL();
       type = inList.getType();
       listTitle = inList.getListTitle();
