@@ -116,6 +116,8 @@ public class SPConstants {
   public static final int EXCLUDED_URL_MAX_COUNT = 5;
 
   public static final String MISSING_ACL_URL_LOG = "missing_acl_url";
+  public static final String DEFAULT_VIEW_URL_CHANGE_LOG =
+      "default_view_url_changes";
 
   public static final String CONNECTIVITY_SUCCESS = "success";
   public static final String CONNECTIVITY_FAIL = "fail";

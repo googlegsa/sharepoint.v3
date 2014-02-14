@@ -1297,16 +1297,15 @@ public class AclHelper {
    */
   public boolean resolveSharePointGroups(WebState webState) {
     // Return true if there are no groups to resolve
-    Set<String> spGroupsToResolve = webState.getSPGroupsToResolve();
-    if (spGroupsToResolve == null ||
-        spGroupsToResolve.isEmpty()) {
+    if (webState.getSPGroupsToResolve() == null ||
+        webState.getSPGroupsToResolve().isEmpty()) {
       return true;
     }    
     try {
-      while (!spGroupsToResolve.isEmpty()) {
-        spGroupsToResolve = webState.getSPGroupsToResolve();
-        String[] groupIds = new String[spGroupsToResolve.size()];
-        spGroupsToResolve.toArray(groupIds);
+      while (!webState.getSPGroupsToResolve().isEmpty()) {
+        int size = webState.getSPGroupsToResolve().size();
+        String[] groupIds = new String[webState.getSPGroupsToResolve().size()];
+        webState.getSPGroupsToResolve().toArray(groupIds);
         GssResolveSPGroupResult result = resolveSPGroup(groupIds);
         // Null check for result. Return false if result is null.
         if (result == null) {
@@ -1337,14 +1336,22 @@ public class AclHelper {
               return false;
             }
           }
-          if (webState.getSPGroupsToResolve().isEmpty()) {
-            LOGGER.info("Group resolution complete for WebState [ " +
-                webState.getWebUrl()
-                +" ]");
-          } else {
+        }
+        if (webState.getSPGroupsToResolve().isEmpty()) {
+          LOGGER.info("Group resolution complete for WebState [ " +
+              webState.getWebUrl()
+              +" ]");
+        } else {
+          if (webState.getSPGroupsToResolve().size() < size) {
             LOGGER.info("Need to revisit group resolution for WebState [ "
                 + webState.getWebUrl() 
-                +" ] as all the groups are not resolved in current batch");
+                + " ] as all the groups are not resolved in current batch."
+                + " Remaining: " + webState.getSPGroupsToResolve().toString());
+          } else {
+            LOGGER.warning("Unable to resolve following IDs: "
+                + webState.getSPGroupsToResolve().toString());
+            // returning true because we don't want to revisit this
+            return true;
           }
         }
       }

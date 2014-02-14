@@ -112,8 +112,21 @@ public class SharepointClient {
     }
     final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
     for (SPDocument doc : list.getCrawlQueue()) {
-      if (doc.getParentList() == null) {
+      ListState parentList = doc.getParentList();
+      if (parentList == null) {
+        LOGGER.log(Level.WARNING, "Document [{0}] is missing parent list. "
+            + "Assigning [{1}] as parent list for document.",
+            new Object[] {doc.getUrl(), list.getListURL()});
         doc.setParentList(list);
+      } else {
+        if (!list.getPrimaryKey().equals(parentList.getPrimaryKey())) {
+          LOGGER.log(Level.WARNING, 
+              "Skipping document . Parent List - crawl queue mismatch"
+              + "for document [{0}]. Parent List is [{1}]. "
+              + "Crawl Queue is associated with list is [{2}].",
+              new Object[] {doc, parentList, list});
+          continue;
+        }
       }
       doc.setParentWeb(web);
       doc.setSharepointClientContext(sharepointClientContext);
@@ -126,6 +139,16 @@ public class SharepointClient {
       LOGGER.log(Level.FINEST, "[ DocId = " + doc.getDocId() + ", URL = "
           + doc.getUrl() + " ]");
     }
+    
+    if (newlist.isEmpty()) {
+      // If all documents are skipped because of possible 
+      // crawl queue mismatch, then clear crawl queue for list.
+      list.setCrawlQueue(null);       
+      return null;
+    }
+    
+    // Update crawl queue for list with filtered documents.
+    list.setCrawlQueue(newlist);
 
     final SPDocumentList docList = new SPDocumentList(newlist, globalState);
     // FIXME These could be set in traversal manager just before returning
@@ -327,12 +350,13 @@ public class SharepointClient {
     // Fetch ACL for all the documents crawled from the current WebState
     // Do not try to re-fetch the ACL when documents are pending from
     // previous batch traversals
-    if (sharepointClientContext.isFetchACLInBatches()) {
-      aclRetrievalResult = fetchACLInBatches(resultSet, webState,
-          globalState, sharepointClientContext.getAclBatchSizeFactor());
-    } else {
+    int aclBatchSize = sharepointClientContext.getAclBatchSize();
+    if (aclBatchSize <= 0) {
       aclRetrievalResult =
           fetchACLForDocuments(resultSet, webState, globalState);
+    } else {
+      aclRetrievalResult = fetchACLInBatches(resultSet, webState,
+          globalState, aclBatchSize);
     }
     // Resolve SP Groups only if ACLs retrieval is successful
     if (aclRetrievalResult) {
@@ -451,9 +475,7 @@ public class SharepointClient {
    * @param webState The {@link WebState} to which the documents belong
    * @param globalState The {@link GlobalState} required primarily for the
    *          {@link SPDocumentList}
-   * @param batchSizeFactor The factor by which the current batch of documents
-   *          should be divided to arrive at a smaller batch. The formula used
-   *          is [n/batchSizeFactor]
+   * @param batchSize Batch size to be used for fetching ACLs in batches
    * @return True if ACLs were retrieved successfully OR false in case of any
    *         exceptions/errors
    */
@@ -461,27 +483,12 @@ public class SharepointClient {
    * The access method is package level for JUnit test cases
    */
   boolean fetchACLInBatches(SPDocumentList resultSet, WebState webState,
-      GlobalState globalState, int batchSizeFactor) {
+      GlobalState globalState, int batchSize) {
 
     if (resultSet.size() <= 0) {
       LOGGER.log(Level.CONFIG, "Result set is empty. No documents to fetch ACL");
       return false;
     }
-
-    // Default is 1
-    int batchSize = 1;
-
-    if (batchSizeFactor > 1) {
-      // Connector should attempt ACL retrieval in batches. Determine the
-      // batchSize using batchSizeFactor.
-      batchSize = resultSet.size() / batchSizeFactor;
-
-      // This is to handle the cases like [1/2=0] and the batchSize will
-      // be set to 0. This can result into an infinite loop
-      if (batchSize == 0)
-        batchSize = resultSet.size();
-    }
-
     LOGGER.info("The connector will attempt to fetch ACLs for documents in batches of "
         + batchSize);
 
@@ -950,7 +957,12 @@ public class SharepointClient {
     for (ListState currentListState : listCollection) {
       ListState listState = webState.lookupList(currentListState.getPrimaryKey());
       if (null != listState) {
-        listState.updateList(currentListState);
+        if (!listState.getListURL().equalsIgnoreCase(
+            currentListState.getListURL())) {
+          tempCtx.logToFile(SPConstants.DEFAULT_VIEW_URL_CHANGE_LOG,
+              listState.getListURL());          
+        }
+        listState.updateList(currentListState);        
       }
     }
 

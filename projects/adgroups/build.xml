@@ -34,9 +34,8 @@
   <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
   <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
   <property name="downloads.dir" value="downloads" />
-  <property name="cm-third-paty.jar" value="${connector-manager.dir}/third-party/prod/" />
+  <property name="cm-third-party.jar" value="${connector-manager.dir}/third-party/" />
   <property name="sql.properties" value="source/java/com/google/enterprise/connector/sharepoint/sql/" />
-  <property name="cm-third-paty_jcr.jar" value="${connector-manager.dir}/third-party/tests/" />
 
   <condition property="console" value="/bin/sh">
     <os family="unix" />
@@ -104,7 +103,9 @@
       <classpath>
         <pathelement location="${spi.jarfile}" />
         <pathelement location="${config}" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+        <fileset dir="${cm-third-party.jar}">
+          <include name="prod/*.jar" />
+        </fileset>
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
         </fileset>
@@ -130,7 +131,9 @@
         <pathelement location="${config}" />
         <pathelement location="${classes}" />
         <pathelement location="${junit.jarfile}" />
-        <pathelement location="${cm-third-paty.jar}/spring.jar" />
+        <fileset dir="${cm-third-party.jar}">
+          <include name="prod/*.jar" />
+        </fileset>
 <!--XXX
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
@@ -157,10 +160,9 @@
         <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
         <pathelement location="${jarfile}" />
-        <fileset dir="${cm-third-paty.jar}">
-          <include name="*.jar" />
+        <fileset dir="${cm-third-party.jar}">
+          <include name="prod/*.jar" />
         </fileset>
-        <pathelement location="${cm-third-paty_jcr.jar}/jcr-1.0.jar" />
         <pathelement location="${junit.jarfile}" />
         <pathelement location="${sql.properties}/*.properties" />
         <pathelement location="${config}" />
@@ -280,7 +282,9 @@
         <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
         <pathelement location="${spi.jar.dir}/connector-util.jar" />
-        <pathelement location="${cm-third-paty.jar}/guava-r05.jar" />
+        <fileset dir="${cm-third-party.jar}">
+          <include name="prod/*.jar" />
+        </fileset>
         <pathelement location="${jarfile}" />
         <pathelement location="${config}" />
         <fileset dir="${lib.jar.dir}">

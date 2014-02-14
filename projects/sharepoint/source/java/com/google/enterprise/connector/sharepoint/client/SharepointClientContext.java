@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -102,7 +103,7 @@ public class SharepointClientContext implements Cloneable {
   private boolean reWriteRecordUrlUsingAliasMappingRules;
 
   private boolean fetchACLInBatches = false;
-  private int aclBatchSizeFactor = 2;
+  private int aclBatchSizeFactor = 10;
 
   /** Threshold value to identify large ACLs. **/
   private int largeACLThreshold = 500;
@@ -282,7 +283,8 @@ public class SharepointClientContext implements Cloneable {
   }
 
   /** Constructor used by {@code clone}. */
-  private SharepointClientContext(ClientFactory clientFactory) {
+  @VisibleForTesting
+  SharepointClientContext(ClientFactory clientFactory) {
     this.clientFactory = clientFactory;
   }
 
@@ -1078,6 +1080,33 @@ public class SharepointClientContext implements Cloneable {
    */
   public int getAclBatchSizeFactor() {
     return aclBatchSizeFactor;
+  }
+  
+  /*
+   * Returns ACL batch size to be used for fetching ACLs.
+   * Return -1 to indicate no batching.
+   */
+  public int getAclBatchSize() {
+    // If push ACLs is false, return -1 as no batching.
+    if (!pushAcls) {
+      return -1;
+    }
+    // If using inherited ACLs and fetchACLInBatches is false
+    // return -1 for no batching.
+    if (traversalContext.supportsInheritedAcls() && !fetchACLInBatches) {
+      return -1;
+    }
+    // For flattened ACLs, want to use ACL batching by default.
+    // To avoid ACL batching with falttened ACLs specify ACL batch size factor 
+    // 0 or less.
+    if (aclBatchSizeFactor <= 0) {
+      return -1;
+    }
+    // Use ACL batch size as 1 when aclBatchSizeFactor is > 500.
+    // Using fixed value of 500 to produce predicatble value of batch size
+    // irrespective of connector batch hint or number of documents discovered
+    // by connector.
+    return (aclBatchSizeFactor <= 500) ? (500 / aclBatchSizeFactor) : 1;
   }
 
   /**
