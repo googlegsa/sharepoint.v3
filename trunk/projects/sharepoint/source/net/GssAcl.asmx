@@ -2076,7 +2076,11 @@ public sealed class GssAclUtility
         StringBuilder logMessage = new StringBuilder();
         string identity = GssAclUtility.DecodeIdentity(login);
         // ResolvePrincipal is very expensive for deleted users in multidomain environments - check if login is valid first
-        if (SPUtility.IsLoginValid(site, identity))
+        // For SP 2007 identity will be same as login name
+        // For SP 2010 need to check decoded identity value when using claims authentication
+        // For SP 2013 need to check encoded login value when using claims authentication
+        if (SPUtility.IsLoginValid(site, identity) 
+            || (login != identity && SPUtility.IsLoginValid(site, login)))
         {
             try
             {
@@ -2122,6 +2126,11 @@ public sealed class GssAclUtility
         if (userInfo.PrincipalType.Equals(SPPrincipalType.DistributionList) || userInfo.PrincipalType.Equals(SPPrincipalType.SecurityGroup))
         {
             gssPrincipal.Type = GssPrincipal.PrincipalType.DOMAINGROUP;
+        }
+        // In claims mode the resolved groupname will be only sid, get the DisplayName instead
+        if (gssPrincipal.Name.ToLower().StartsWith("s-1-5"))
+        {
+            gssPrincipal.Name = userInfo.DisplayName;
         }
         return gssPrincipal;
     }
