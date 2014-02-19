@@ -48,6 +48,7 @@ import org.apache.commons.httpclient.auth.CredentialsProvider;
 import org.apache.commons.httpclient.auth.CredentialsNotAvailableException;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.auth.MalformedChallengeException;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HostParams;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
@@ -705,6 +706,80 @@ class HttpMethodDirector {
         }
     }
 
+    private static String httpExchange(HttpMethod method) throws IOException {
+      StringBuilder sb = new StringBuilder();
+      sb.append(
+          method.getName()).append(" ").append(method.getURI()).append("\n");
+      for (Header h : method.getRequestHeaders()) {
+        sb.append(h.getName()).append(": ").append(h.getValue()).append("\n");
+      }
+      sb.append("\n");
+
+      sb.append(method.getStatusLine()).append("\n");
+      for (Header h : method.getResponseHeaders()) {
+        sb.append(h.getName()).append(": ").append(h.getValue()).append("\n");
+      }
+      sb.append(method.getResponseBodyAsString());
+      return sb.toString();
+    }
+
+    private boolean adfsLogin(String sharepoint, Credentials credentials)
+        throws HttpException, IOException {
+      if (System.getProperty("adfs.stsendpoint") == null) {
+        return false;
+      }
+      if (!(credentials instanceof NTCredentials)) {
+        LOG.error("ADFS login requested without NT Credentials");
+        return false;
+      }
+      NTCredentials creds = (NTCredentials) credentials;
+      String stsendpoint = System.getProperty("adfs.stsendpoint");
+      String trust = sharepoint + "/_trust";
+      String wstrust = String.format("<?xml version='1.0'?><s:Envelope xmlns:s='http://www.w3.org/2003/05/soap-envelope' xmlns:a='http://www.w3.org/2005/08/addressing' xmlns:u='http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd'><s:Header><a:Action s:mustUnderstand='1'>http://schemas.xmlsoap.org/ws/2005/02/trust/RST/Issue</a:Action><a:ReplyTo><a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address></a:ReplyTo><a:To s:mustUnderstand='1'>%s</a:To><o:Security xmlns:o='http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd' s:mustUnderstand='1'><o:UsernameToken><o:Username>%s</o:Username><o:Password>%s</o:Password></o:UsernameToken></o:Security></s:Header><s:Body><t:RequestSecurityToken xmlns:t='http://schemas.xmlsoap.org/ws/2005/02/trust'><wsp:AppliesTo xmlns:wsp='http://schemas.xmlsoap.org/ws/2004/09/policy'><a:EndpointReference><a:Address>%s</a:Address></a:EndpointReference></wsp:AppliesTo><t:KeyType>http://schemas.xmlsoap.org/ws/2005/05/identity/NoProofKey</t:KeyType><t:RequestType>http://schemas.xmlsoap.org/ws/2005/02/trust/Issue</t:RequestType><t:TokenType>urn:oasis:names:tc:SAML:1.0:assertion</t:TokenType></t:RequestSecurityToken></s:Body></s:Envelope>",
+          stsendpoint,
+          creds.getDomain() + "\\" + creds.getUserName(),
+          creds.getPassword(),
+          trust);
+          PostMethod post = new PostMethod(stsendpoint);
+      post.addRequestHeader(
+          "Content-Type", "application/soap+xml; charset=utf-8");
+      post.setRequestBody(wstrust);
+      hostConfiguration.setHost(post.getURI());
+      executeMethod(post);
+      if (post.getStatusCode() != HttpStatus.SC_OK) {
+        LOG.error("Unable to login into STS\n" + httpExchange(post));
+        return false;
+      }
+      String response = post.getResponseBodyAsString();
+      LOG.debug("STS response: " + response);
+      int tokenstart = response.indexOf("RequestSecurityTokenResponse");
+      while (response.charAt(tokenstart) != '<') {
+        tokenstart--;
+      }
+
+      int tokenend = response.lastIndexOf("RequestSecurityTokenResponse");
+      while (response.charAt(tokenend) != '>') {
+        tokenend++;
+      }
+
+      response = response.substring(tokenstart, tokenend + 1);
+      LOG.debug("RequestSecurityTokenResponse: " + response);
+      String saml = sharepoint + "_layouts/Authenticate.aspx?Source=%2F";
+
+      post = new PostMethod(trust);
+      post.addParameter("wa", "wsignin1.0");
+      post.addParameter("wctx", saml);
+      post.addParameter("wresult", response);
+      hostConfiguration.setHost(post.getURI());
+
+      executeMethod(post);
+
+      if (post.getStatusCode() != HttpStatus.SC_MOVED_TEMPORARILY) {
+        LOG.error("Unable to establish trust\n" + httpExchange(post));
+      }
+      return true;
+    }
+
     private boolean processClaimsAuthChallenge(HttpMethod method)
             throws MalformedChallengeException, AuthenticationException, IOException
     {
@@ -725,6 +800,12 @@ class HttpMethodDirector {
         Credentials creds = (cp == null) ?
             state.getCredentials(AuthScope.ANY) :
             cp.getCredentials(claims, authscope.getHost(), authscope.getPort(), false);
+            
+        if (adfsLogin(method.getURI().getScheme()
+            + "://" + method.getURI().getAuthority(), creds)) {
+          claims.setComplete();
+          return true;
+        }
 
         this.state.setCredentials(authscope, creds);
         if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
