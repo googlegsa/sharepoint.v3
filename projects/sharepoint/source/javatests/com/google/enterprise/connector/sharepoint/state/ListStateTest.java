@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
+import com.google.common.collect.ImmutableList;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -21,10 +22,12 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -327,5 +330,29 @@ public class ListStateTest extends TestCase {
 
     doc4.setAction(ActionType.DELETE);
     assertEquals(doc3, list1.getLastDocForWSRefresh());
+  }
+
+  public void testDefensiveCopyForCrawlQueue() throws SharepointException {
+    ListState list = new ListState("{GUID_LIST_1}", "List1", "GenericList",
+        Calendar.getInstance(), "List",
+        "http://sharepoint.example.com/List1/AllItems.aspx", null);
+    List<SPDocument> mutableDocumentList = new ArrayList<SPDocument>();
+    SPDocument document1 = new SPDocument(
+        "LIST_ITEM_1", "http://sharepoint.example.com/List1/DispForm.aspx?ID=1",
+        Calendar.getInstance(), SpiConstants.ActionType.ADD);
+    mutableDocumentList.add(document1);
+    
+    list.setCrawlQueue(mutableDocumentList);
+    // Verify List crawl queue
+    assertEquals(ImmutableList.of(document1), list.getCrawlQueue());
+
+     // Add new document to mutable list
+    SPDocument document2 = new SPDocument(
+        "LIST_ITEM_2", "http://sharepoint.example.com/List1/DispForm.aspx?ID=2",
+        Calendar.getInstance(), SpiConstants.ActionType.ADD);
+    mutableDocumentList.add(document2);
+
+    // Verify List crawl queue is not modified
+    assertEquals(ImmutableList.of(document1), list.getCrawlQueue());
   }
 }

@@ -545,7 +545,8 @@ public class ListState implements StatefulObject {
    * @param inCrawlQueue
    */
   public void setCrawlQueue(final List<SPDocument> inCrawlQueue) {
-    crawlQueue = inCrawlQueue;
+    crawlQueue = 
+        (inCrawlQueue == null) ? null : new ArrayList<SPDocument>(inCrawlQueue);
   }
 
   /**
