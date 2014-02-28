@@ -14,24 +14,32 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import com.google.common.collect.ImmutableList;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocument;
 import com.google.enterprise.connector.sharepoint.spiimpl.SPDocumentList;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
+import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.mock.MockClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.Property;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SpiConstants;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 
+import org.apache.commons.httpclient.Credentials;
+import org.apache.commons.httpclient.HttpMethodBase;
+
+import junit.framework.TestCase;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
-
-import junit.framework.TestCase;
 
 public class SharepointClientTest extends TestCase {
 
@@ -242,5 +250,128 @@ public class SharepointClientTest extends TestCase {
     list.add(doc);
     SPDocumentList docList = new SPDocumentList(list, gs);
     return docList;
+  }
+
+  public void testHandleCrawlQueueForList() throws SharepointException {
+    SharepointClientContext spContext = getSharePointClientContext();
+    SharepointClient spClient =
+        new SharepointClient(spContext.getClientFactory(), spContext);
+    GlobalState globalState = new GlobalState(
+        spContext.getClientFactory(),"temp",FeedType.CONTENT_FEED);
+    WebState dummyWebState = globalState.makeWebState(
+        spContext, "http://sharepoint.example.com/defaul.aspx");
+
+    ListState list1 = new ListState("{GUID_LIST_1}", "List1", "GenericList",
+        Calendar.getInstance(), "List",
+        "http://sharepoint.example.com/List1/AllItems.aspx", dummyWebState);
+    dummyWebState.AddOrUpdateListStateInWebState(
+        list1, Util.calendarToJoda(Calendar.getInstance()));
+    ListState list2 = new ListState("{GUID_LIST_2}", "List2", "GenericList",
+        Calendar.getInstance(), "List",
+        "http://sharepoint.example.com/List2/AllItems.aspx", dummyWebState);
+    dummyWebState.AddOrUpdateListStateInWebState(
+        list2, Util.calendarToJoda(Calendar.getInstance()));
+
+    List<SPDocument> list1CrawlQueue = new ArrayList<SPDocument>();
+    SPDocument correctDocument = new SPDocument(
+        "LIST_ITEM_1", "http://sharepoint.example.com/List1/DispForm.aspx?ID=1",
+        Calendar.getInstance(), ActionType.ADD);
+    correctDocument.setParentList(list1);
+    list1CrawlQueue.add(correctDocument);
+    SPDocument missingParentDocument = new SPDocument(
+        "LIST_ITEM_2_MISSING_PARRENT",
+        "http://sharepoint.example.com/List1/DispForm.aspx?ID=2",
+        Calendar.getInstance(), ActionType.ADD);
+    list1CrawlQueue.add(missingParentDocument);
+    SPDocument parentMismatchDocument = new SPDocument(
+        "LIST_ITEM_3_MISMATCH",
+        "http://sharepoint.example.com/List2/DispForm.aspx?ID=1",
+        Calendar.getInstance(), ActionType.ADD);
+    parentMismatchDocument.setParentList(list2);
+    list1CrawlQueue.add(parentMismatchDocument);
+    list1.setCrawlQueue(list1CrawlQueue);
+
+    SPDocumentList docList =
+        spClient.handleCrawlQueueForList(globalState, dummyWebState, list1);
+    assertNotNull(docList);
+    // verify SPDocumentList does not contain mismatched document
+    assertEquals(ImmutableList.of(
+        correctDocument, missingParentDocument), docList.getDocuments());
+    // verify List crawl queue does not contain mismatched document
+    assertEquals(ImmutableList.of(
+        correctDocument, missingParentDocument), list1.getCrawlQueue());
+    // verify parentlist for missing parent document is set after
+    // handleCrawlQueueForList call
+    assertEquals(list1, missingParentDocument.getParentList());
+  }
+
+  public void testTraverseNoACLs() throws SharepointException {
+    SharepointClientContext spContext = getSharePointClientContext();
+    SharepointClient spClient =
+        new SharepointClient(spContext.getClientFactory(), spContext);
+    GlobalState globalState = new GlobalState(
+        spContext.getClientFactory(),"temp",FeedType.CONTENT_FEED);
+    WebState dummyWebState = globalState.makeWebState(
+        spContext, "http://sharepoint.example.com/defaul.aspx");
+
+    ListState list1 = new ListState("{GUID_LIST_1}", "List1", "GenericList",
+        Calendar.getInstance(), "List",
+        "http://sharepoint.example.com/List1/AllItems.aspx", dummyWebState);
+    dummyWebState.AddOrUpdateListStateInWebState(
+        list1, Util.calendarToJoda(Calendar.getInstance()));
+    ListState list2 = new ListState("{GUID_LIST_2}", "List2", "GenericList",
+        Calendar.getInstance(), "List",
+        "http://sharepoint.example.com/List2/AllItems.aspx", dummyWebState);
+    dummyWebState.AddOrUpdateListStateInWebState(
+        list2, Util.calendarToJoda(Calendar.getInstance()));
+
+    List<SPDocument> list1CrawlQueue = new ArrayList<SPDocument>();
+    SPDocument document0 = new SPDocument(
+        "LIST_ITEM_1", "http://sharepoint.example.com/List1/DispForm.aspx?ID=1",
+        Calendar.getInstance(), ActionType.ADD);
+    document0.setParentList(list1);
+    list1CrawlQueue.add(document0);
+    SPDocument document1 = new SPDocument(
+        "LIST_ITEM_2",
+        "http://sharepoint.example.com/List1/DispForm.aspx?ID=2",
+        Calendar.getInstance(), ActionType.ADD);
+    document1.setParentList(list1);
+    list1CrawlQueue.add(document1);
+    list1.setCrawlQueue(list1CrawlQueue);
+
+    SPDocument document2 = new SPDocument("LIST_ITEM_1_LIST2",
+        "http://sharepoint.example.com/List2/DispForm.aspx?ID=1",
+        Calendar.getInstance(), ActionType.ADD);
+    document2.setParentList(list2);
+    List<SPDocument> list2CrawlQueue = new ArrayList<SPDocument>();
+    list2CrawlQueue.add(document2);
+    list2.setCrawlQueue(list2CrawlQueue);
+
+    SPDocumentList traversalResult =
+        spClient.traverse(globalState, dummyWebState, 0, true);
+
+    assertNotNull(traversalResult);
+    assertEquals(ImmutableList.of(
+        document0, document1, document2), traversalResult.getDocuments());
+    assertEquals(ImmutableList.of(document0, document1), list1.getCrawlQueue());
+    assertEquals(ImmutableList.of(document2), list2.getCrawlQueue());
+  }
+
+  /** Returns SharepointClientContext with MockClientFactory for tests. */
+  private SharepointClientContext getSharePointClientContext() {
+    MockClientFactory mockClientFactory = new MockClientFactory() {
+      @Override public int checkConnectivity(HttpMethodBase method,
+          Credentials credentials) throws IOException {
+        return 200;
+      }
+    };
+    SharepointClientContext spContext =
+        new SharepointClientContext(mockClientFactory);
+    spContext.setIncludedURlList("http://sharepoint.example.com");
+    spContext.setUsername("username");
+    spContext.setPassword("password");
+    spContext.setPushAcls(false);
+    spContext.setBatchHint(500);
+    return spContext;
   }
 }

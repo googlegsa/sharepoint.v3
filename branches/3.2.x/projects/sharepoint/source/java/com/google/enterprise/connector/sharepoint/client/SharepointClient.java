@@ -16,6 +16,7 @@ package com.google.enterprise.connector.sharepoint.client;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.enterprise.connector.sharepoint.client.AlertsHelper;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.SPType;
@@ -94,7 +95,8 @@ public class SharepointClient {
    * @param list Represents the current list state
    * @return {@link SPDocumentList} conatining the crawled documents.
    */
-  private SPDocumentList handleCrawlQueueForList(final GlobalState globalState,
+  @VisibleForTesting
+  SPDocumentList handleCrawlQueueForList(final GlobalState globalState,
       final WebState web, final ListState list) {
     if (null == web) {
       LOGGER.log(Level.WARNING, "web is not found");
@@ -110,7 +112,8 @@ public class SharepointClient {
       LOGGER.log(Level.FINE, "No CrawlQueue..");
       return null;
     }
-    final ArrayList<SPDocument> newlist = new ArrayList<SPDocument>();
+    ImmutableList.Builder<SPDocument> newListBuilder =
+        new ImmutableList.Builder<SPDocument>();
     for (SPDocument doc : list.getCrawlQueue()) {
       ListState parentList = doc.getParentList();
       if (parentList == null) {
@@ -122,7 +125,7 @@ public class SharepointClient {
         if (!list.getPrimaryKey().equals(parentList.getPrimaryKey())) {
           LOGGER.log(Level.WARNING, 
               "Skipping document . Parent List - crawl queue mismatch"
-              + "for document [{0}]. Parent List is [{1}]. "
+              + " for document [{0}]. Parent List is [{1}]. "
               + "Crawl Queue is associated with list is [{2}].",
               new Object[] {doc, parentList, list});
           continue;
@@ -135,11 +138,12 @@ public class SharepointClient {
         doc.setContentDwnldURL(doc.getUrl());
       }
 
-      newlist.add(doc);
+      newListBuilder.add(doc);
       LOGGER.log(Level.FINEST, "[ DocId = " + doc.getDocId() + ", URL = "
           + doc.getUrl() + " ]");
     }
     
+    ImmutableList<SPDocument> newlist = newListBuilder.build();
     if (newlist.isEmpty()) {
       // If all documents are skipped because of possible 
       // crawl queue mismatch, then clear crawl queue for list.

@@ -7,7 +7,7 @@ The following sections describe the release in detail and provide information th
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
 
-Release 3.2.4, January 22, 2014
+Release 3.2.4, February 27, 2014
 ===============================
 
 Introduction
@@ -35,6 +35,16 @@ same component.
 
 Issues Fixed Since 3.2.2
 ------------------------
+13214052 - ACL web service sends domain group SIDs instead of group names as 
+           part of web application policy ACLs when SharePoint is configured 
+           to use claims authentication.
+
+13170900 - SharePoint connector throws IndexOutOfBoundsException while saving 
+           checkpoint.
+
+12937392 - ACL Web service fails to resolve users and domain groups under
+           web application policy in SharePoint 2013.
+
 12584298 - SharePoint connector associates documents from one list to crawl 
            queue for another list. Connector gets stuck into the loop feeding 
            same documents again and again.
