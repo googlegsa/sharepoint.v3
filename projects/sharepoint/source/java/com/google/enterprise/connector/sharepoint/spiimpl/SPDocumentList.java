@@ -24,6 +24,7 @@ import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants.ActionType;
+import java.util.ArrayList;
 
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class SPDocumentList implements DocumentList {
   public SPDocumentList(final List<SPDocument> inDocuments,
       final GlobalState inGlobalState) {
     if (inDocuments != null) {
-      documents = inDocuments;
+      documents = new ArrayList<SPDocument>(inDocuments);
     }
 
     globalState = inGlobalState;

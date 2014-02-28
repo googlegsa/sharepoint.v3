@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.ListsHelper;
 import com.google.enterprise.connector.sharepoint.client.SiteDataHelper;
@@ -23,14 +24,19 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.state.GlobalState;
 import com.google.enterprise.connector.sharepoint.state.ListState;
 import com.google.enterprise.connector.sharepoint.state.WebState;
+import com.google.enterprise.connector.sharepoint.wsclient.mock.MockClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.Document;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
+import com.google.enterprise.connector.spi.SpiConstants;
 
+import junit.framework.TestCase;
+
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.TestCase;
 
 public class SPDocumentListTest extends TestCase {
   SPDocumentList docs;
@@ -87,5 +93,29 @@ public class SPDocumentListTest extends TestCase {
     } catch (final Exception e) {
       System.out.println("[ checkpoint() ] Test Failed.");
     }
+  }
+
+  public void testDefensiveCopyForDocumentList() {
+    MockClientFactory mockClientFactory = new MockClientFactory();
+    GlobalState globalState =
+        new GlobalState(mockClientFactory,"temp",FeedType.CONTENT_FEED);
+    List<SPDocument> mutableDocumentList = new ArrayList<SPDocument>();
+    SPDocument document1 = new SPDocument(
+        "LIST_ITEM_1", "http://sharepoint.example.com/List1/DispForm.aspx?ID=1",
+        Calendar.getInstance(), SpiConstants.ActionType.ADD);
+    mutableDocumentList.add(document1);
+    
+    SPDocumentList documentList =
+        new SPDocumentList(mutableDocumentList, globalState);
+    assertEquals(ImmutableList.of(document1), documentList.getDocuments());
+
+    // Add new document to mutable list
+    SPDocument document2 = new SPDocument(
+        "LIST_ITEM_2", "http://sharepoint.example.com/List1/DispForm.aspx?ID=2",
+        Calendar.getInstance(), SpiConstants.ActionType.ADD);
+    mutableDocumentList.add(document2);
+
+    //Verify SPDocumentList is not modified
+    assertEquals(ImmutableList.of(document1), documentList.getDocuments());
   }
 }
