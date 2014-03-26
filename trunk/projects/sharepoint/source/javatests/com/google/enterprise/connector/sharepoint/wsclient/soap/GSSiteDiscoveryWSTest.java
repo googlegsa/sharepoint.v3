@@ -45,7 +45,7 @@ public class GSSiteDiscoveryWSTest extends TestCase {
   public final void testGetMatchingSiteCollections() {
     Set<String> siteCol = siteDisc.getMatchingSiteCollections();
     assertNotNull(siteCol);
-    assertEquals(10, siteCol.size());
+    assertEquals(TestConfiguration.siteColSize, siteCol.size());
   }
 
   public final void testGetFQDNHost() {

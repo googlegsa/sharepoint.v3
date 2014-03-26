@@ -234,6 +234,8 @@ public class TestConfiguration {
 
   public static ClientFactory clientFactory = new SPClientFactory();
 
+  public static int siteColSize;
+
   static {
     final Properties properties = new Properties();
     try {
@@ -424,6 +426,7 @@ public class TestConfiguration {
     socialOption = properties.getProperty("SocialOption");
     UTF8SiteUrl = properties.getProperty("UTF8SiteUrl");
     publishingSiteUrl = properties.getProperty("PublishingSiteUrl");
+    siteColSize = new Integer(properties.getProperty("siteColSize")).intValue();
   }
 
   public static Map<String, String> getConfigMap() {
