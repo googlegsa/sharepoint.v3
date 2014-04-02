@@ -10,6 +10,110 @@ known issues and workarounds.
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/issues/list
 
 
+Release 3.2.4, 27 Mar, 2014
+===========================
+
+INTRODUCTION
+------------
+This is a maintenance release that improves quality. Users of previous releases are encouraged to
+upgrade.
+
+Features
+--------
+Google Search Appliance Resource Kit for SharePoint 3.2.4 (64-bit) installer bundles the following 
+components:
+   
+   * Connector Services for SharePoint
+   * Search Box for SharePoint
+   * SAML Bridge for Windows
+   
+   Connector Services for SharePoint (formerly Google Services for SharePoint): Custom web services
+     used by the Google Search Appliance Connector for Microsoft SharePoint 2007.
+   
+   Search Box for SharePoint:  Search Box for SharePoint replaces the native SharePoint site search
+     with search provided by the Google Search Appliance, while retaining the look-and-feel of the
+     native SharePoint search facility.
+   
+   SAML Bridge for Windows:  Authenticates the user when a search is performed.  It consists of the 
+     following components:
+     - Search Box for SharePoint Test Utility : Verifies the Search Box for SharePoint 
+       parameters, cookies and headers. 
+     - GSA Security SPI Simulator: It is used to test SAML Bridge for Windows without involving the
+       complexity of the search appliance. Once you know that SAML Bridge for Windows works, you
+       can reconfigure it to work with the search appliance.
+     - SAML Bridge for Windows: It enables Search Box for SharePoint to perform search on NTLM 
+       contents.
+
+Platform Support
+----------------
+* Windows Server 2003, 2008, or 2012, Standard Edition or higher.
+
+Pre-requisites
+--------------
+* Microsoft .NET Framework 2.0./3.5/4.5.
+* IIS 6.0/IIS 7.0/IIS 8.0.
+
+Version Compatibility
+---------------------
+The Content Services for SharePoint are supported on the following SharePoint versions:
+* Microsoft Office SharePoint Server 2007 (MOSS 2007) 
+* Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
+* Microsoft SharePoint Server 2010
+* Microsoft SharePoint Foundation 2010
+* Microsoft SharePoint Server 2013
+* Microsoft SharePoint Foundation 2013
+
+Note:
+-----
+* If you have already installed Content Services for SharePoint or Search Box for SharePoint 
+  earlier using the old installer (i.e. GSS.msi or GSBS.msi or Google Search Appliance Resource Kit
+  for SharePoint 1.x or Google Search Appliance Resource Kit for SharePoint 2.x or Google Search 
+  Appliance Resource Kit for SharePoint 3.0), please uninstall them before trying the Google Search
+  Appliance Resource Kit for SharePoint 3.2.4 installer.
+* Microsoft SharePoint is not required if you are installing only GSA Security SPI Simulator or 
+  SAML Bridge for Windows.
+* Google Search Appliance Resource Kit for SharePoint now supports SharePoint 2013.
+* There are separate installers for 32-bit and 64-bit Operating System.
+* The 64-bit installer is supported on machines with x64 platform.
+
+Issues fixed since 3.2.0
+------------------------
+8239617 - Installation of Search Box should warn user when executed without the necessary 
+          permissions.
+12096780 - Search Box Configuration Wizard title should not have "Google" in the string.
+
+Known Issues/Limitations
+------------------------
+1. The Installer does not validate the port number for 'GSA Resource Kit for SharePoint'. User 
+   needs to enter a valid non-conflicting port during installation. Assigned port number could be
+   changed even after Installation directly through IIS Manager.
+2. The Installer does not validate the 'Artifact Consumer' URL on "Google SAML Bridge for Windows 
+   - Configuration Wizard".
+3. Cancelling Installer does not initiate rollback of the installed components. You need to run 
+   installer again in 'remove' mode to clean up the installed components.
+4. SharePoint web applications added after Search Box for SharePoint is installed will not 
+   automatically use Search Box.
+
+Certified Against
+-----------------
+Microsoft Windows Server 2012
+Standard x64 Edition
+Intel  Xeon  CPU
+E7330 @ 2.40GHz, 12.00 GB of RAM
+
+Microsoft Windows Server 2008
+Enterprise x64 Edition
+Intel  Xeon  CPU
+E5504 @ 2.00GHz, 4.00 GB of RAM
+
+Microsoft Windows Server 2003
+Enterprise x64 Edition
+Intel  Xeon  CPU
+E5504 @ 2.00GHz, 2.00 GB of RAM
+
+----------------------------------------------------------------------------------------------------------------------
+
+
 Release 3.2.0, 10 Oct, 2013
 ===========================
 
