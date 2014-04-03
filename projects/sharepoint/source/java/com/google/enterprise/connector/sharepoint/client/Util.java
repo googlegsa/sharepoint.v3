@@ -63,8 +63,6 @@ import java.util.regex.Pattern;
 
 /**
  * Class to hold random utility functions
- *
- * @author nitendra_thakur
  */
 public final class Util {
 
@@ -691,28 +689,28 @@ public final class Util {
       if ((user_or_group_and_domain != null)
           && (user_or_group_and_domain.length == 2)) {
         modified_name = user_or_group_and_domain[1]
-            + SPConstants.DOUBLEBACKSLASH + user_or_group_and_domain[0];
+            + SPConstants.BACKSLASH + user_or_group_and_domain[0];
         // convert to domain\\user format
         LOGGER.log(Level.FINEST, "returning [ " + modified_name
             + " for input [ " + tmpName + " ], domain [ " + domain + " ]. ");
         return modified_name;
       }
-    } else if (name.lastIndexOf(SPConstants.SLASH) != SPConstants.MINUS_ONE) {
+    } else if (name.lastIndexOf(SPConstants.SLASH) != -1) {
       final String[] user_and_domain = name.split(SPConstants.SLASH);// domain/user
       if ((user_and_domain != null) && (user_and_domain.length == 2)) {
-        modified_name = user_and_domain[0] + SPConstants.DOUBLEBACKSLASH
+        modified_name = user_and_domain[0] + SPConstants.BACKSLASH
             + user_and_domain[1];
         // convert to domain\\user format
         LOGGER.log(Level.FINEST, "returning [ " + modified_name
             + " for input [ " + tmpName + " ], domain [ " + domain + " ]. ");
         return modified_name;
       }
-    } else if (name.lastIndexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+    } else if (name.lastIndexOf(SPConstants.BACKSLASH) != -1) {
       LOGGER.log(Level.FINEST, "returning [ " + name + " for input [ "
           + tmpName + " ], domain [ " + domain + " ]. ");
       return name;
     } else if (null != domain) {
-      modified_name = domain + SPConstants.DOUBLEBACKSLASH + name;
+      modified_name = domain + SPConstants.BACKSLASH + name;
       LOGGER.log(Level.FINEST, "returning [ " + modified_name + " for input [ "
           + tmpName + " ], domain [ " + domain + " ]. ");
       return modified_name;
@@ -737,8 +735,8 @@ public final class Util {
       return null;
     }
     String modified_Name = null;
-    if (name.lastIndexOf(SPConstants.DOUBLEBACKSLASH) != -1) {
-      name = name.replace(SPConstants.DOUBLEBACKSLASH_CHAR, SPConstants.SLASH_CHAR);
+    if (name.lastIndexOf(SPConstants.BACKSLASH) != -1) {
+      name = name.replace(SPConstants.BACKSLASH_CHAR, SPConstants.SLASH_CHAR);
       // else gives pattern exception while parsing
     }
     if (name.lastIndexOf(SPConstants.SLASH) != -1) {
@@ -781,8 +779,9 @@ public final class Util {
         if ((cred != null) && (cred.length == 2)) {
           domain = cred[1];
         }
-      } else if (userName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
-        userName = userName.replace(SPConstants.DOUBLEBACKSLASH_CHAR, SPConstants.SLASH_CHAR);
+      } else if (userName.indexOf(SPConstants.BACKSLASH) != -1) {
+        userName = userName.replace(SPConstants.BACKSLASH_CHAR,
+            SPConstants.SLASH_CHAR);
         final String[] cred = userName.split(SPConstants.SLASH);
         if ((cred != null) && (cred.length == 2)) {
           domain = cred[0];
@@ -808,8 +807,9 @@ public final class Util {
         if ((cred != null) && (cred.length == 2)) {
           user = cred[0];
         }
-      } else if (userName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
-        userName = userName.replace(SPConstants.DOUBLEBACKSLASH_CHAR, SPConstants.SLASH_CHAR);
+      } else if (userName.indexOf(SPConstants.BACKSLASH) != -1) {
+        userName = userName.replace(SPConstants.BACKSLASH_CHAR,
+            SPConstants.SLASH_CHAR);
         final String[] cred = userName.split(SPConstants.SLASH);
         if ((cred != null) && (cred.length == 2)) {
           user = cred[1];
@@ -917,7 +917,7 @@ public final class Util {
       return docId;
     }
     if (FeedType.CONTENT_FEED == feedType) {
-      final String[] parts = docId.split(SPConstants.DOUBLEBACKSLASH
+      String[] parts = docId.split(SPConstants.BACKSLASH
           + SPConstants.DOC_TOKEN); // because | is a regexp character
       // and has to be delimited.
       if (parts.length == 2) {
@@ -1205,20 +1205,20 @@ public final class Util {
 
         if (aliasPattern.startsWith(SPConstants.GLOBAL_ALIAS_IDENTIFIER)) {
           aliasPattern = aliasPattern.substring(1);
-          if (patternURL.getPort() == SPConstants.MINUS_ONE) {
+          if (patternURL.getPort() == -1) {
             aliasPattern = patternURL.getProtocol() + SPConstants.URL_SEP
                 + patternURL.getHost();
-            if (objURL.getPort() != SPConstants.MINUS_ONE) {
+            if (objURL.getPort() != -1) {
               aliasPattern += SPConstants.COLON + objURL.getPort();
             }
             aliasPattern += patternURL.getFile();
           }
-        } else if ((objURL.getPort() == SPConstants.MINUS_ONE)
+        } else if ((objURL.getPort() == -1)
             && (patternURL.getPort() == patternURL.getDefaultPort())) {
           aliasPattern = patternURL.getProtocol() + SPConstants.URL_SEP
               + patternURL.getHost() + patternURL.getFile();
         } else if ((objURL.getPort() == objURL.getDefaultPort())
-            && (patternURL.getPort() == SPConstants.MINUS_ONE)) {
+            && (patternURL.getPort() == -1)) {
           aliasPattern = patternURL.getProtocol() + SPConstants.URL_SEP
               + patternURL.getHost() + SPConstants.COLON
               + patternURL.getDefaultPort() + patternURL.getFile();
@@ -1249,7 +1249,7 @@ public final class Util {
       strUrl = objURL.getProtocol() + SPConstants.URL_SEP;
       strUrl += getFQDNHostName(objURL.getHost(), fqdn) + SPConstants.COLON;
       final int portNo = objURL.getPort();
-      if (portNo != SPConstants.MINUS_ONE) {
+      if (portNo != -1) {
         strUrl += portNo;
       } else {
         strUrl += objURL.getDefaultPort();

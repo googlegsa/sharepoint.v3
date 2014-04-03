@@ -79,8 +79,6 @@ import javax.naming.ldap.LdapContext;
  * ConnectorType implementation for Sharepoint This class is mainly desinged for
  * controlling the connector configuration which incompasses creation of
  * connector configuration form, validating the configuration values etc.
- *
- * @author nitendra_thakur
  */
 public class SharepointConnectorType implements ConnectorType {
   private final Logger LOGGER = Logger.getLogger(SharepointConnectorType.class
@@ -461,7 +459,7 @@ public class SharepointConnectorType implements ConnectorType {
         + SPConstants.USE_SP_SEARCH_VISIBILITY + "\""
         + SPConstants.CLOSE_ELEMENT);
     buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
-    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
   }
 
@@ -497,7 +495,7 @@ public class SharepointConnectorType implements ConnectorType {
         + SPConstants.FEED_UNPUBLISHED_CONTENT + "\""
         + SPConstants.CLOSE_ELEMENT);
     buf.append(rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
-    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
     buf.append(SPConstants.BREAK_LINE);
   }
@@ -610,7 +608,7 @@ public class SharepointConnectorType implements ConnectorType {
         + SPConstants.EQUAL_TO + "\"" + key + "\""
         + SPConstants.CLOSE_ELEMENT);
     buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
-    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
   }
 
@@ -642,7 +640,7 @@ public class SharepointConnectorType implements ConnectorType {
         + SPConstants.CLOSE_ELEMENT);
     buf.append(rb.getString(
             SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
-    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
   }
 

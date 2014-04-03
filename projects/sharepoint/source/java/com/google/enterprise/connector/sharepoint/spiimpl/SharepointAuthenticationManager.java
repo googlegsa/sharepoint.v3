@@ -51,8 +51,6 @@ import java.util.logging.Logger;
  * into the Connector Manager framework refer to
  * http://code.google.com/apis/searchappliance
  * /documentation/connectors/110/connector_dev/cdg_authentication.html
- *
- * @author nitendra_thakur
  */
 public class SharepointAuthenticationManager implements AuthenticationManager {
   private static final Logger LOGGER =
@@ -117,9 +115,9 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
         this.sharepointClientContext.getDomain() : domain;
         LOGGER.log(Level.FINE, "domainToUse [ " + domainToUse
             + " ], input domain [ " + domain + " ]. "); 
-    if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+    if (format.indexOf(SPConstants.AT) != -1) {
       return Util.getUserNameAtDomain(userName, domainToUse);
-    } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+    } else if (format.indexOf(SPConstants.BACKSLASH) != -1) {
       return Util.getUserNameWithDomain(userName, domainToUse);
     } else {
       return userName;

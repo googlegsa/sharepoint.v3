@@ -69,8 +69,6 @@ import java.util.regex.Pattern;
  * the basic authorization unit and corresponds to an item to be authorized. For
  * detailed structuring of AuthData and AuthDataPacket, refer to the web service
  * documentation.
- *
- * @author nitendra_thakur
  */
 public class SharepointAuthorizationManager implements AuthorizationManager {
   private static Logger LOGGER = Logger.getLogger(SharepointAuthorizationManager.class.getName());
@@ -99,8 +97,6 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
    * <p/>
    * This class acts as a key (hence, final and immutable) for storing
    * authorization dependency information in such case.
-   *
-   * @author nitendra_thakur
    */
   private final static class AttachmentKey {
     private final String listUrl;
@@ -422,14 +418,13 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
       LOGGER.log(Level.WARNING, "Unable to Decode!", e1);
     }
     final Container container = new Container();
-    StringTokenizer strTok = null;
-    String URL = null;
+    StringTokenizer strTok;
+    String URL;
     String DocID = null;
     // In case of meta URL feed, separate list URL from the docID using
     // "?" as a delimiter.
     if (complexDocId.indexOf(SPConstants.EQUAL_TO) != -1) {
-      strTok = new StringTokenizer(complexDocId,
-          SPConstants.META_URL_FEED_DOC_TOKEN);
+      strTok = new StringTokenizer(complexDocId, "?");
       URL = strTok.nextToken();
       String tempDocID = strTok.nextToken();
       // to remove "ID=" from docID.
