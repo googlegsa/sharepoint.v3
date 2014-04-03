@@ -14,13 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
 
 /**
- * Used to store constants
- *
- * @author nitendra_thakur
+ * Used to store constants.
  */
 public class SPConstants {
   // used while parsing the alias string
@@ -92,15 +89,14 @@ public class SPConstants {
   public static final String URL_SEP = "://";
   public static final String COLON = ":";
   public static final String SLASH = "/";
-  public static final String DOUBLEBACKSLASH = "\\";
+  public static final String BACKSLASH = "\\";
   public static final String AT = "@";
   public static final char SLASH_CHAR = '/';
-  public static final char DOUBLEBACKSLASH_CHAR = '\\';
+  public static final char BACKSLASH_CHAR = '\\';
   public static final char AT_CHAR = '@';
 
-  // The string to be stripped off from the atrribute's name as web service
-  // return so.
-
+  // The string to be stripped off from the attribute's name as web service
+  // returns it.
   public static final String OWS = "ows_";
   public static final String METAINFO = "MetaInfo_";
   public static final String VTI = "vti_";
@@ -253,9 +249,6 @@ public class SPConstants {
   public static final String REGEXP = "regexp:";
   public static final String REGEXP_CASE = "regexpCase:";
   public static final String REGEXP_IGNORE_CASE = "regexpIgnoreCase:";
-
-  // Used in SPDocumentList.
-  public static final int MINUS_ONE = -1;
 
   // Used by SharePointClientContext
   public static final String SEPARATOR = " ";
@@ -514,7 +507,6 @@ public class SPConstants {
   public static final String ON_CLICK = "onclick=";
   public static final String OFF = "off";
   public static final String LABEL_FOR = "label for";
-  public static final String FORWARD_SLASH = "/";
   public static final String LABEL = "label";
   public static final String SELECT = "select";
   public static final String STYLE = "style=\"width:11em\"";
@@ -524,7 +516,6 @@ public class SPConstants {
   public static final String MODERATION_STATUS = "ows__ModerationStatus";
   public static final String FEED_UNPUBLISHED_CONTENT = "feedUnPublishedDocuments";
   public static final String FEED_UNPUBLISHED_CONTENT_LABEL = "feed_Un_Published_Documents";
-  public static final String META_URL_FEED_DOC_TOKEN = "?";
   public static final CharSequence ALERTS_EQUALTO = "Alert=";
   public static final String GSAADMINUSER = "gsaAdminUser";
   public static final String GSAADMINPASSWORD = "gsaAdminPassword";
