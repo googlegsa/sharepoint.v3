@@ -458,7 +458,6 @@ public class SPConstants {
   public static final String VAR_KRB5_REALM_UPPERCASE = "{REALM}";
   public static final String VAR_KRB5_REALM_LOWERCASE = "{realm}";
   public static final String VAR_KRB5_KDC_SERVER = "{kdcserver}";
-  public static final String UTF_8 = "UTF-8";
   public static final String SYS_PROP_AUTH_LOGIN_CONFIG = "java.security.auth.login.config";
   public static final String SYS_PROP_AUTH_KRB5_CONFIG = "java.security.krb5.conf";
   public static final String SYS_PROP_AUTH_USESUBJETCREDSONLY = "javax.security.auth.useSubjectCredsOnly";
