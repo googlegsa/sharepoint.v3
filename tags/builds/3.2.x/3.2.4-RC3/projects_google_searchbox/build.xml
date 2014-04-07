@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This build.xml creates binary archive files (.zip) for Search Box for SharePoint.  It requires
+  that SAML Bridge for Windows source be checked out.  The path to the SAML Bridge for Windows 
+  source should be set in ${saml.dir}.  For example, if the source files are checked out with the 
+  following commands, then ${saml.dir} should be set to the value 
+  "../../google-saml-bridge-for-windows":
+  
+  svn checkout http://google-enterprise-connector-sharepoint.googlecode.com/svn/trunk 
+  google-enterprise-connector-sharepoint
+  
+  svn checkout http://google-saml-bridge-for-windows.googlecode.com/svn/trunk 
+  google-saml-bridge-for-windows
+  
+  The default ant target, "zip", will do the follwing:
+    1. delete any previous files still present from previous ant tasks ("clean")
+    2. collect files for distribution in a temp directory ("prep07", "prep10", "prep13")
+    3. create zip files of the temp directory for distribution ("zip")
+-->
+
+<project name="SearchBox" default="zip" basedir=".">
+  
+  <!-- SAML Bridge -->
+  <property name="saml.dir" value="../../google-saml-bridge-for-windows" />
+
+  <!--PROPERTIES-->
+  <property name="version" value="3.2.0" />
+
+  <!--Directories-->
+  <property name="projsb.dir" value="." />
+  <property name="common.dir" value="./Common Files" />
+  <property name="sp2013.dir" value="./SP2013" />
+  <property name="sp2010.dir" value="./SP2010" />
+  <property name="sp2007.dir" value="./SP2007" />
+  <property name="gsafeature.dir" value="./Common Files/GSAFeature" />
+
+  <!--Files-->
+  <property name="proj.2013" value="GSBS-${version}_SharePoint2013" />
+  <property name="proj.2010" value="GSBS-${version}_SharePoint2010" />
+  <property name="proj.2007" value="GSBS-${version}_SharePoint2007" />  
+
+  <property name="temprootdir.2013" value="./_temp${proj.2013}" />  
+  <property name="temprootdir.2010" value="./_temp${proj.2010}" />  
+  <property name="temprootdir.2007" value="./_temp${proj.2007}" />
+
+  <property name="temp.2013" value="${temprootdir.2013}/${proj.2013}" />  
+  <property name="temp.2010" value="${temprootdir.2010}/${proj.2010}" />  
+  <property name="temp.2007" value="${temprootdir.2007}/${proj.2007}" />
+
+  <property name="gsaforward.file.2007" value="${sp2007.dir}/GSAForward.aspx" />
+  <property name="gsasearcharea.file.2007" value="${sp2007.dir}/GSASearchArea.ascx" />
+  <property name="gsasearchresults.file.2007" value="${sp2007.dir}/GSASearchresults.aspx" />
+
+  <property name="gsaforward.file.2010" value="${sp2010.dir}/GSAForward.aspx" />
+  <property name="gsasearcharea.file.2010" value="${sp2010.dir}/GSASearchArea.ascx" />
+  <property name="gsasearchresults.file.2010" value="${sp2010.dir}/GSASearchresults.aspx" />
+
+  <!-- For SharePoint 2013, only GSASearchArea.ascx file is different than 2010-->
+  <property name="gsasearcharea.file.2013" value="${sp2013.dir}/GSASearchArea.ascx" />
+  <property name="gsasearchresults.file.2013" value="${gsasearchresults.file.2010}" />
+  <property name="gsaforward.file.2013" value="${gsaforward.file.2010}" />
+  
+  <!-- Common -->
+  <property name="elements.file" value="${gsafeature.dir}/elements.xml" />
+  <property name="feature.file" value="${gsafeature.dir}/Feature.xml" />
+  <property name="copying.file" value="${projsb.dir}/COPYING" />
+  <property name="readme.file" value="${projsb.dir}/README" />
+  <property name="rel-notes.file" value="${projsb.dir}/RELEASE_NOTES" />
+  <property name="watermark.file" value="${common.dir}/google_custom_search_watermark.gif" />
+  <property name="gsa2sp.file" value="${common.dir}/GSA2SP.xsl" />  
+  <property name="frontend.file" value="${common.dir}/SPS_frontend.xslt" />
+  <property name="spactual.file" value="${common.dir}/SP_Actual.xsl" />
+  <property name="postresponse.file" value="${saml.dir}/saml-bridge/PostResponse.xml" />
+
+  <target name="clean">
+    <delete file="${proj.2013}.zip" />
+    <delete file="${proj.2010}.zip" />
+    <delete file="${proj.2007}.zip" />
+    <delete dir="${temprootdir.2013}" />
+    <delete dir="${temprootdir.2010}" />
+    <delete dir="${temprootdir.2007}" />
+  </target>
+
+  <target name="prep07">
+    <mkdir dir="${temp.2007}"/>
+    <copy file="${copying.file}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${readme.file}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${rel-notes.file}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${watermark.file}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${gsa2sp.file}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${frontend.file}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${spactual.file}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${gsaforward.file.2007}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${gsasearcharea.file.2007}" preservelastmodified="true" todir="${temp.2007}"/>
+    <copy file="${gsasearchresults.file.2007}" preservelastmodified="true" todir="${temp.2007}"/>
+    <mkdir dir="${temp.2007}/GSAFeature"/>
+    <copy file="${elements.file}" preservelastmodified="true" todir="${temp.2007}/GSAFeature"/>
+    <copy file="${feature.file}" preservelastmodified="true" todir="${temp.2007}/GSAFeature"/>
+    <copy file="${postresponse.file}" preservelastmodified="true" todir="${temp.2007}"/>
+  </target>
+
+  <target name="prep10">
+    <mkdir dir="${temp.2010}"/>
+    <copy file="${copying.file}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${readme.file}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${rel-notes.file}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${watermark.file}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${gsa2sp.file}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${frontend.file}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${spactual.file}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${gsaforward.file.2010}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${gsasearcharea.file.2010}" preservelastmodified="true" todir="${temp.2010}"/>
+    <copy file="${gsasearchresults.file.2010}" preservelastmodified="true" todir="${temp.2010}"/>
+    <mkdir dir="${temp.2010}/GSAFeature"/>
+    <copy file="${elements.file}" preservelastmodified="true" todir="${temp.2010}/GSAFeature"/>
+    <copy file="${feature.file}" preservelastmodified="true" todir="${temp.2010}/GSAFeature"/>
+    <copy file="${postresponse.file}" preservelastmodified="true" todir="${temp.2010}"/>
+  </target>
+
+  <target name="prep13">
+    <mkdir dir="${temp.2013}"/>
+    <copy file="${copying.file}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${readme.file}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${rel-notes.file}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${watermark.file}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${gsa2sp.file}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${frontend.file}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${spactual.file}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${gsaforward.file.2013}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${gsasearcharea.file.2013}" preservelastmodified="true" todir="${temp.2013}"/>
+    <copy file="${gsasearchresults.file.2013}" preservelastmodified="true" todir="${temp.2013}"/>
+    <mkdir dir="${temp.2013}/GSAFeature"/>
+    <copy file="${elements.file}" preservelastmodified="true" todir="${temp.2013}/GSAFeature"/>
+    <copy file="${feature.file}" preservelastmodified="true" todir="${temp.2013}/GSAFeature"/>
+    <copy file="${postresponse.file}" preservelastmodified="true" todir="${temp.2013}"/>
+  </target>
+
+  <target name="zip" depends="clean,prep07,prep10,prep13">
+    <zip destfile="${proj.2007}.zip" >
+      <fileset dir="${temprootdir.2007}" />
+    </zip>
+    <zip destfile="${proj.2010}.zip" >
+      <fileset dir="${temprootdir.2010}" />
+    </zip>
+    <zip destfile="${proj.2013}.zip" >
+      <fileset dir="${temprootdir.2013}" />
+    </zip>
+    <delete dir="${temprootdir.2007}"/>
+    <delete dir="${temprootdir.2010}"/>
+    <delete dir="${temprootdir.2013}"/>
+  </target>
+
+</project>
