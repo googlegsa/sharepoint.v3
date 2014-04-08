@@ -140,7 +140,6 @@ namespace GSBControlPanel
                             //SaveConfigurationsToFile(gc, webConfigFilePath);
                             gc.SaveConfigurationsToFile(webConfigFilePath, true); //change the settings of the web application as per the "GSA Settings panel"
                             //This will always be called during installation
-
                         }
                         #endregion update all checked web applications
 
@@ -173,7 +172,6 @@ namespace GSBControlPanel
                 btnEdit.WebConfigPath = wa.IisSettings[0].Path.ToString();
                 tlpWebAppEntry.Controls.Add(btnEdit, 2, i);
             }
-
         }
 
 
@@ -187,39 +185,42 @@ namespace GSBControlPanel
 
             try
             {
-                //get the site collection for the central administration
-                foreach (SPWebApplication wa in SPWebService.AdministrationService.WebApplications)
+                if (SPWebService.AdministrationService != null)
                 {
-                    try
+                    //get the site collection for the central administration
+                    foreach (SPWebApplication wa in SPWebService.AdministrationService.WebApplications)
                     {
-                        //need to check if the web application are from the same machine.useful for farm scenario
-                        if (isLocalWebApplication(wa))
+                        try
                         {
-                            AddNewWebApplication(wa, ++i);
-                            isNoWebApps = false;
+                            //need to check if the web application are from the same machine.useful for farm scenario
+                            if (isLocalWebApplication(wa))
+                            {
+                                AddNewWebApplication(wa, ++i);
+                                isNoWebApps = false;
+                            }
                         }
+                        catch { }
                     }
-                    catch { }
                 }
 
-                foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
+                if (SPWebService.ContentService != null)
                 {
-                    try
+                    foreach (SPWebApplication wa in SPWebService.ContentService.WebApplications)
                     {
-                        //need to check if the web application are from the same machine.useful for farm scenario
-                        if (isLocalWebApplication(wa))
+                        try
                         {
-                            AddNewWebApplication(wa, ++i);
-                            isNoWebApps = false;
+                            //need to check if the web application are from the same machine.useful for farm scenario
+                            if (isLocalWebApplication(wa))
+                            {
+                                AddNewWebApplication(wa, ++i);
+                                isNoWebApps = false;
+                            }
                         }
+                        catch { }
                     }
-                    catch { }
                 }
             }
-            catch (Exception)
-            {
-                //MessageBox.Show(e.StackTrace.ToString(), e.Message);
-            }
+            catch { }
 
             //handling for blank web apps
             if (isNoWebApps == true)
@@ -228,10 +229,13 @@ namespace GSBControlPanel
                  * 1. change the display message
                  * 2. disable the OK button.. user should not be allowed to proceed further
                  */
-                lblWarning.Text = "No local SharePoint web applications found in this machine";
+                String warningMessage = "No local SharePoint web applications were found on this machine.  If SharePoint is installed locally, then the current user may not "
+                    + "have the necessary permissions.  SearchBox for SharePoint requires that the user running the installation be a member of the db_owner role on the "
+                    + "database server.";
+                lblWarning.Text = warningMessage;
+                lblWarning.Size = new System.Drawing.Size(lblWarning.Size.Width, lblWarning.Size.Height + 20); //grow height to fit new lblWarning.Text.
                 button2.Enabled = false;
             }
-
         }
 
         /// <summary>
@@ -250,7 +254,6 @@ namespace GSBControlPanel
 
         }
 
-
         private void button2_Click_1(object sender, EventArgs e)
         {
             if (isInstaller == true)
@@ -262,7 +265,7 @@ namespace GSBControlPanel
                 DialogResult result = GSAParamForm.ShowDialog();
 
                 //check if OK was clicked
-                if (result == DialogResult.OK)
+                if(result == DialogResult.OK)
                 {
                     GSAConfiguration gc = GSAParamForm.PopulateGSAConfiguration(myBasePath);
                     SaveAllWebAppConfigurationsToFile(gc);//save the form
@@ -297,7 +300,5 @@ namespace GSBControlPanel
         {
 
         }
-
-
     }
 }
