@@ -133,6 +133,7 @@
         <pathelement location="${junit.jarfile}" />
         <fileset dir="${cm-third-party.jar}">
           <include name="prod/*.jar" />
+          <include name="tests/*.jar" />
         </fileset>
 <!--XXX
         <fileset dir="${lib.jar.dir}">
@@ -162,6 +163,7 @@
         <pathelement location="${jarfile}" />
         <fileset dir="${cm-third-party.jar}">
           <include name="prod/*.jar" />
+          <include name="tests/*.jar" />
         </fileset>
         <pathelement location="${junit.jarfile}" />
         <pathelement location="${sql.properties}/*.properties" />
