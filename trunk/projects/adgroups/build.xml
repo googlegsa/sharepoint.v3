@@ -173,6 +173,7 @@
         <pathelement location="${tests.classes}" />
         <pathelement location="${tests.src}" />
         <pathelement path="${java.class.path}" />
+        <pathelement path="${build.jdbc.classpath}" />
       </classpath>
       <formatter type="xml" />
       <batchtest fork="yes" todir="${reports.xml.dir}">
