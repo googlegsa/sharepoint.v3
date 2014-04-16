@@ -461,14 +461,6 @@ public class SPConstants {
   public static final String GROUPNAME_CONSTANT_IN_ACL = "groupname";
   public static final String DOMAIN_CONSTANT_IN_ACL = "domain";
   public static final String DEFAULT_SITE_LANDING_PAGE = "/default.aspx";
-  public static final String LEFT_SQUARE_BRACKET = "[";
-  public static final String RIGHT_SQUARE_BRACKET = "]";
-  public static final String UDS_TABLE = "'TABLE'";
-  public static final String SELECTED_DATABASE = "oracle";
-  public static final String TABLE_NAME = "TABLE_NAME";
-  public static final String USER_NAME = "user_name";
-  public static final String GROUP_NAME = "group_name";
-  public static final int MINUS_THREE = -3;
   public static final String ON = "on";
   public static final String UNCHECKED = "unchecked";
   public static final String LDAP_DEFAULT_PORT_NUMBER = "389";
@@ -487,7 +479,6 @@ public class SPConstants {
   public static final String SEARCH_BASE_INVALID_NAME = "Search_Base_Invalid_Name";
   public static final String INVALID_PORT_NUMBER = "Invalid_Port_Number";
   public static final String ONKEY_PRESS = "onkeypress=";
-  public static final String GROUPS = "groups";
   public static final String EQUAL_TO = "=";
   public static final String INVALID_INITIAL_CACHE_SIZE = "Invalid_Initial_Cache_Size";
   public static final String INVALID_CACHE_REFRESH_INTERVAL = "Invalid_Cache_Refresh_Interval";
@@ -530,12 +521,5 @@ public class SPConstants {
      = "InvalidCollectionName";
   public static final String NON_EMPTY_STRING = "NonEmptyString";
 
-  public static final String CONNECTOR_NAME_COLUMN = "connectorname";
-  public static final String CONNECTOR_NAME_COLUMN_CAPITAL = "CONNECTORNAME";
   public static final String SYSTEM_UPDATE = "SystemUpdate";
-
-  // User store query constants.
-  public static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
-  public static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
-  public static final String UDS_COLUMN_USER_NAME = "SPUserName";
 }
