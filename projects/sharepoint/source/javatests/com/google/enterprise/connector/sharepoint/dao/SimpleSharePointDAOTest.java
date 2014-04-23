@@ -27,21 +27,31 @@ import junit.framework.TestCase;
 /**
  * @author nitendra_thakur
  */
-public class SharePointDAOTest extends TestCase {
-  SharePointDAO simpleSPDAO;
+public class SimpleSharePointDAOTest extends TestCase {
+  SimpleSharePointDAO simpleSPDAO;
   QueryProvider queryProvider;
   Set<UserGroupMembership> memberships = null;
   String namespace;
 
+  /*
+   * (non-Javadoc)
+   *
+   * @see junit.framework.TestCase#setUp()
+   */
   protected void setUp() throws Exception {
     super.setUp();
     queryProvider = TestConfiguration.getUserDataStoreQueryProvider();
-    simpleSPDAO = new SharePointDAO(
+    simpleSPDAO = new SimpleSharePointDAO(
         TestConfiguration.getUserDataSource(), queryProvider);
     namespace = TestConfiguration.sharepointUrl;
     memberships = TestConfiguration.getMembershipsForNameSpace(namespace);
   }
 
+  /**
+   * Test method for
+   * {@link com.google.enterprise.connector.sharepoint.dao.SimpleSharePointDAO#batchUpdate(org.springframework.jdbc.core.namedparam.SqlParameterSource[], com.google.enterprise.connector.sharepoint.dao.QueryBuilder.Query)}
+   * .
+   */
   public void testBatchUpdate() {
     Query query = Query.UDS_INSERT;
     try {

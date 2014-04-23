@@ -62,6 +62,8 @@ import javax.naming.ldap.LdapContext;
  * {@link SharepointAuthenticationManager} and also it talks to
  * {@link UserDataStoreDAO} to get all SP groups. This implementation is
  * specific to Active Directory service at the moment.
+ *
+ * @author nageswara_sura
  */
 public class UserGroupsService implements LdapService {
 
@@ -807,12 +809,12 @@ public class UserGroupsService implements LdapService {
     String domain = this.sharepointClientContext.getDomain();
     LOGGER.config("Domain : " + domain);
     Set<String> groups = new HashSet<String>();
-    if (format.indexOf(SPConstants.AT) != -1) {
+    if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
       for (String groupName : groupNames) {
         groups.add(Util.getGroupNameAtDomain(groupName.toLowerCase(), domain.toUpperCase()));
       }
       return groups;
-    } else if (format.indexOf(SPConstants.BACKSLASH) != -1) {
+    } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
       for (String groupName : groupNames) {
         groups.add(Util.getGroupNameWithDomain(groupName.toLowerCase(), domain.toUpperCase()));
       }
@@ -836,9 +838,9 @@ public class UserGroupsService implements LdapService {
     String format = this.sharepointClientContext.getUsernameFormatInAce();
     LOGGER.config("Username format in ACE : " + format);
     String domain = this.sharepointClientContext.getDomain();
-    if (format.indexOf(SPConstants.AT) != -1) {
+    if (format.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
       return Util.getUserNameAtDomain(userName, domain);
-    } else if (format.indexOf(SPConstants.BACKSLASH) != -1) {
+    } else if (format.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
       return Util.getUserNameWithDomain(userName, domain);
     } else {
       return userName;
