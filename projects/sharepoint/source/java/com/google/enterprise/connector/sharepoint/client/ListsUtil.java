@@ -537,7 +537,10 @@ public abstract class ListsUtil {
         LOGGER.log(Level.WARNING, "Unable to get the link URL");
       } else {
         // filter out description
-        linkSiteURL = linkSiteURL.substring(0, linkSiteURL.indexOf(SPConstants.COMMA));
+        int comma = linkSiteURL.indexOf(",");
+        if (comma != -1) {
+          linkSiteURL = linkSiteURL.substring(0, comma); 
+        }
         LOGGER.config("Linked Site / Site Directory URL :" + linkSiteURL);
         if (sharepointClientContext.isIncludedUrl(linkSiteURL, LOGGER)) {
           allWebs.add(linkSiteURL);

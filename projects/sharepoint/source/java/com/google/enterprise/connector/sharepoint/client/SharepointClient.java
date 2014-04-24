@@ -1450,15 +1450,11 @@ public class SharepointClient {
       try {
         AclHelper aclHelper = new AclHelper(sharepointClientContext,
             webState.getWebUrl());
-        if (aclHelper != null) {
-          SPDocument webAppPolicy = aclHelper.getWebApplicationPolicy(webState,
-              sharepointClientContext.getFeedType().toString());
+        SPDocument webAppPolicy = aclHelper.getWebApplicationPolicy(webState,
+            sharepointClientContext.getFeedType().toString());
+        if (webAppPolicy != null) {
           webAppPolicy.setParentList(dummySiteListState);
-          if (webAppPolicy != null) {
-            documentList.add(webAppPolicy);
-          }
-        } else {
-          LOGGER.log(Level.WARNING, "GssAcl Object is null.");
+          documentList.add(webAppPolicy);
         }
       } catch (final Exception e) {
         LOGGER.log(Level.WARNING, "Problem while getting web app policy. ", e);

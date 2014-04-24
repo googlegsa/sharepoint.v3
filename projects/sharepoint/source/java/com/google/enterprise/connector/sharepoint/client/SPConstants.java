@@ -240,7 +240,6 @@ public class SPConstants {
   // Other Misc. characters used mostly by SharePointClientUtils and during
   // processing the data returned by WS.
   public static final String BLANK_STRING = "";
-  public static final String COMMA = ",";
   public static final String HASH = "#";
   public static final String MINUS = "-";
   public static final String DOLLAR = "$";
