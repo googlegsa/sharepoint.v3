@@ -14,9 +14,13 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import static com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE;
+import static com.google.enterprise.connector.spi.SpiConstants.PrincipalType.UNQUALIFIED;
+
 import com.google.common.base.Strings;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.wsclient.client.BaseWS;
+import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 import org.apache.axis.AxisFault;
@@ -832,6 +836,19 @@ public final class Util {
     } else {
       return getUserNameAtDomain(userName, null);
     }
+  }
+
+  /**
+   * Gets a {@code Principal} for the given SharePoint local group.
+   *
+   * @param namespace the GSA local namespace for the group
+   * @param scope the site collection URL for the group
+   * @param groupName the name for the group
+   */
+  public static Principal getSharePointGroupPrincipal(String namespace,
+      String scope, String groupName) {
+    return new Principal(UNQUALIFIED, namespace,
+        "[" + scope + "]" + groupName, EVERYTHING_CASE_INSENSITIVE);
   }
 
   /**

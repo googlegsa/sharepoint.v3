@@ -237,6 +237,7 @@
         <pathelement location="${adgroups.jar}" />
         <fileset dir="${cm-third-party.jar}">
           <include name="prod/*.jar" />
+          <include name="tests/*.jar" />
         </fileset>
         <fileset dir="${lib.jar.dir}">
           <include name="**/*.jar" />
@@ -277,7 +278,7 @@
         <pathelement location="${adgroups.jar}" />
         <fileset dir="${cm-third-party.jar}">
           <include name="prod/*.jar" />
-          <include name="tests/jcr-1.0.jar" />
+          <include name="tests/*.jar" />
         </fileset>
         <pathelement location="${config}" />
         <fileset dir="${lib.jar.dir}">

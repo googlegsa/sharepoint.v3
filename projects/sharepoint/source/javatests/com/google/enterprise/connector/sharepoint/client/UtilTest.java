@@ -14,8 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
+import static com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE;
+import static com.google.enterprise.connector.spi.SpiConstants.PrincipalType.UNQUALIFIED;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
+import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.RepositoryException;
 
 import org.joda.time.DateTime;
@@ -250,6 +254,12 @@ public class UtilTest extends TestCase {
     String format3 = Util.getGroupNameAtDomain("testdomain\\testgroup", "testdomain");
     assertNotNull(format3);
     assertEquals(expectedGroupNameFormat, format3);
+  }
+
+  public void testGetSharePointGroupPrincipal() {
+    assertEquals(new Principal(UNQUALIFIED, "ns", "[url]name",
+            EVERYTHING_CASE_INSENSITIVE),
+        Util.getSharePointGroupPrincipal("ns", "url", "name"));
   }
 
   /**
