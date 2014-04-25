@@ -61,7 +61,8 @@ public class QueryProvider {
   }
 
   /**
-   * {@inheritDoc} Constructs a {@link Locale} for the given vendor/attributes
+   * Initializes the QueryProvider to serve SQL queries.
+   * Constructs a {@link Locale} for the given vendor/attributes
    * and loads the corresponding {@literal sqlQueries.properties}. For all the
    * queries registered in {@link Query}, reads the query string and resolves
    * all the placeholders. In fact, only entities and attribute names are
