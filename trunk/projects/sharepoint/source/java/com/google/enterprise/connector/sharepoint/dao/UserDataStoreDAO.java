@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.sharepoint.dao;
 
 import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
@@ -52,8 +53,6 @@ public class UserDataStoreDAO extends SharePointDAO {
   static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
 
   private static final String GROUPS = "groups";
-  private static final String LEFT_SQUARE_BRACKET = "[";
-  private static final String RIGHT_SQUARE_BRACKET = "]";
   private static final String TABLE_NAME = "TABLE_NAME";
   private static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
   private static final String UDS_COLUMN_USER_NAME = "SPUserName";
@@ -120,11 +119,8 @@ public class UserDataStoreDAO extends SharePointDAO {
         getAllMembershipsForSearchUserAndLdapGroups(groupNames, searchUser.toLowerCase());
     Set<Principal> spGroups = new HashSet<Principal>();
     for (UserGroupMembership membership : spMemberships) {
-      // append name space to SP groups.
-      String groupName = LEFT_SQUARE_BRACKET + membership.getNamespace()
-          + RIGHT_SQUARE_BRACKET + membership.getGroupName();
-      spGroups.add(
-          new Principal(PrincipalType.UNQUALIFIED, localNamespace, groupName));
+      spGroups.add(Util.getSharePointGroupPrincipal(localNamespace,
+          membership.getNamespace(), membership.getGroupName()));
     }
     if (LOGGER.isLoggable(Level.INFO)) {
       StringBuffer sb = new StringBuffer("Resolved ").append(spGroups.size())

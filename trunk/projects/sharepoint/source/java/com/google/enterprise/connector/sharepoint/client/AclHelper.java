@@ -602,7 +602,8 @@ public class AclHelper {
    * @param webStateUrl Site Collection Url from WebState
    * @param memberships UserGroup Membership object
    */
-  private void processPrincipal(GssPrincipal principal, Set<Principal> users,
+  @VisibleForTesting
+  void processPrincipal(GssPrincipal principal, Set<Principal> users,
       Set<Principal> groups, String principalName, String webStateUrl,
       Set<UserGroupMembership> memberships, WebState webState) {
     String globalNamespace = sharepointClientContext.getGoogleGlobalNamespace();
@@ -616,9 +617,8 @@ public class AclHelper {
               globalNamespace, principalName,
               CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
     } else if (PrincipalType.SPGROUP.equals(principal.getType())) {
-      groups.add(new Principal(SpiConstants.PrincipalType.UNQUALIFIED,
-              localNamespace, "[" + webStateUrl + "]" + principalName,
-              CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE));
+      groups.add(Util.getSharePointGroupPrincipal(localNamespace,
+          webStateUrl, principalName));
 
       // If it's a SharePoint group, add the membership info
       // into the User Data Store
