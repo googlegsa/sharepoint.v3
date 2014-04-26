@@ -28,42 +28,17 @@
   <property name="jarfile" value="${jar.dir}/connector-adgroups.jar" />
   <property name="connector-manager.dir" value="${CONNECTOR_MANAGER_DIR}" />
   <property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
-  <property name="lib.jar.dir" value="../sharepoint/lib" />
-  <property name="lib.dev.jar.dir" value="${lib.jar.dir}/dev" />
   <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
-  <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
   <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
   <property name="downloads.dir" value="downloads" />
   <property name="cm-third-party.jar" value="${connector-manager.dir}/third-party/" />
   <property name="sql.properties" value="source/java/com/google/enterprise/connector/sharepoint/sql/" />
-
-  <condition property="console" value="/bin/sh">
-    <os family="unix" />
-  </condition>
-  <condition property="console" value="cmd">
-    <os family="windows" />
-  </condition>
-
-  <condition property="family" value="unix">
-    <os family="unix" />
-  </condition>
-  <condition property="family" value="windows">
-    <os family="windows" />
-  </condition>
-  <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="${lib.jar.dir}/dev/ant-contrib-1.0b3.jar"/>
 
   <!--Cobertura properties -->
   <property file="${config}/build_code_coverage.properties" />
   <path id="cobertura.classpath">
     <fileset dir="${connector-manager.dir}/third-party/cobertura">
       <include name="**/*.jar" />
-    </fileset>
-  </path>
-
-  <path id="axis.classpath">
-    <fileset dir="lib">
-      <include name="*.jar" />
-      <include name="dev/*.jar" />
     </fileset>
   </path>
 
@@ -88,16 +63,11 @@
 
   <target name="compile" depends="init">
     <!-- compile java source files -->
-<!--XXX
-    <copy todir="${classes.dir}/com/google/enterprise/connector/sharepoint/sql">
-      <fileset dir="${sql.properties}"/>
-    </copy>
--->
     <javac srcdir="${src}" destdir="${classes}" 
            includeantruntime="false"
            debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" 
            target="${COMPILE_TARGET}" source="${COMPILE_TARGET}">
-      <!-- Axis JAR Class-Path references are not available. -->
+      <!-- CM and GData JAR Class-Path references are not available. -->
       <compilerarg line="-Xlint -Xlint:-serial -Xlint:-path"/>
       <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
       <classpath>
@@ -105,9 +75,6 @@
         <pathelement location="${config}" />
         <fileset dir="${cm-third-party.jar}">
           <include name="prod/*.jar" />
-        </fileset>
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
         </fileset>
         <pathelement 
             location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
@@ -121,7 +88,7 @@
            includeantruntime="false"
            debug="${COMPILE_DEBUG_FLAG}" debuglevel="${COMPILE_DEBUG_LEVEL}" 
            target="${COMPILE_TARGET}" source="${COMPILE_TARGET}">
-      <!-- Axis JAR Class-Path references are not available. -->
+      <!-- CM and GData JAR Class-Path references are not available. -->
       <compilerarg line="-Xlint -Xlint:-serial -Xlint:-path"/>
       <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
       <classpath>
@@ -130,16 +97,10 @@
         <pathelement location="${spi.jarfile}" />
         <pathelement location="${config}" />
         <pathelement location="${classes}" />
-        <pathelement location="${junit.jarfile}" />
         <fileset dir="${cm-third-party.jar}">
           <include name="prod/*.jar" />
           <include name="tests/*.jar" />
         </fileset>
-<!--XXX
-        <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-        </fileset>
--->
         <pathelement 
             location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
       </classpath>
@@ -165,7 +126,6 @@
           <include name="prod/*.jar" />
           <include name="tests/*.jar" />
         </fileset>
-        <pathelement location="${junit.jarfile}" />
         <pathelement location="${sql.properties}/*.properties" />
         <pathelement location="${config}" />
         <pathelement 
@@ -290,10 +250,6 @@
         </fileset>
         <pathelement location="${jarfile}" />
         <pathelement location="${config}" />
-        <fileset dir="${lib.jar.dir}">
-          <include name="*.jar" />
-          <include name="**/*.properties" />
-        </fileset>
         <pathelement location="${tests.classes}" />
         <pathelement location="${tests.src}" />
         <pathelement path="${java.class.path}" />
@@ -331,11 +287,6 @@
         <include name="com/google/enterprise/connector/adgroups/*.class" />
         <exclude name="**/*Test.class" />
       </fileset>
-<!--XXX
-      <fileset dir="${classes.dir}/org/apache/commons/httpclient/contrib/ssl">
-        <include name="**/*.class"/>
-      </fileset>
--->
     </cobertura-instrument>
   </target>
 
