@@ -98,6 +98,7 @@ public class GSAclWSTest extends TestCase {
     SharepointClientContext spContext = (SharepointClientContext)sharepointClientContext.clone();
     SimpleTraversalContext context = new SimpleTraversalContext();
     context.setSupportsInheritedAcls(true);
+    context.setSupportsDenyAcls(true);
     spContext.setTraversalContext(context);
 
     AclHelper aclHelper = new AclHelper(spContext, webState.getWebUrl());

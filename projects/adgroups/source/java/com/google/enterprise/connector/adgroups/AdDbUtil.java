@@ -15,6 +15,7 @@
 package com.google.enterprise.connector.adgroups;
 
 import com.google.enterprise.connector.spi.RepositoryException;
+import com.google.enterprise.connector.util.database.DatabaseConnectionPool;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -94,7 +95,7 @@ public class AdDbUtil {
   }
 
   private DataSource dataSource;
-  private Connection connection;
+  private DatabaseConnectionPool connectionPool;
   private int batchHint = 50;
 
   //TODO: load table names from bean
@@ -113,10 +114,12 @@ public class AdDbUtil {
     queries =
         ResourceBundle.getBundle(getClass().getPackage().getName() + ".sql",
         new Locale(databaseType));
+    connectionPool = new DatabaseConnectionPool(dataSource);
 
     this.dataSource = dataSource;
     try {
-      connection = dataSource.getConnection();
+      // Test connection to datasource.
+      connectionPool.releaseConnection(connectionPool.getConnection());
       try {
         select(Query.TEST_CONNECTORNAME, null);
       } catch (SQLException e) {
@@ -239,9 +242,11 @@ public class AdDbUtil {
    */
   public Long getEntityId(Query query, Map<String, Object> params)
       throws SQLException {
+    Connection connection = null;
     PreparedStatement statement = null;
     ResultSet rs = null;
     try {
+      connection = connectionPool.getConnection();
       List<String> identifiers = new ArrayList<String>();
       // function sortParams fills identifiers variable
       String sql = sortParams(query, identifiers);
@@ -255,20 +260,28 @@ public class AdDbUtil {
       Long result = rs.getLong(1);    
       return result;
     } finally {
-      if (rs != null) {
-        rs.close();
-      }
-      if (statement != null) {
-        statement.close();
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (statement != null) {
+          statement.close();
+        }
+      } finally {
+        if (connection != null) {
+          connectionPool.releaseConnection(connection);
+        }
       }
     }
   }
 
   public String getSingleString(Query query, Map<String, Object> params,
       String columnName) throws SQLException {
+    Connection connection = null;
     PreparedStatement statement = null;
     ResultSet rs = null;
     try {
+      connection = connectionPool.getConnection();
       List<String> identifiers = new ArrayList<String>();
       // function sortParams fills identifiers variable
       String sql = sortParams(query, identifiers);
@@ -286,11 +299,17 @@ public class AdDbUtil {
       }
       return rs.getString(column);
     } finally {
-      if (rs != null) {
-        rs.close();
-      }
-      if (statement != null) {
-        statement.close();
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (statement != null) {
+          statement.close();
+        }
+      } finally {
+        if (connection != null) {
+          connectionPool.releaseConnection(connection);
+        }
       }
     }
   }
@@ -315,10 +334,12 @@ public class AdDbUtil {
    */
   public List<HashMap<String, Object>>
       select(Query query, Map<String, Object> params) throws SQLException {
+    Connection connection = null;
     PreparedStatement statement = null;
     ResultSet rs = null;
     try {
       List<String> identifiers = new ArrayList<String>();
+      connection = connectionPool.getConnection();
       // function sortParams fills identifiers variable
       String sql = sortParams(query, identifiers);
       statement = connection.prepareStatement(sql);
@@ -343,11 +364,17 @@ public class AdDbUtil {
       }
       return results;
     } finally {
-      if (rs != null) {
-        rs.close();
-      }
-      if (statement != null) {
-        statement.close();
+      try {
+        if (rs != null) {
+          rs.close();
+        }
+        if (statement != null) {
+          statement.close();
+        }
+      } finally {
+        if (connection != null) {
+          connectionPool.releaseConnection(connection);
+        }
       }
     }
   }
@@ -361,17 +388,25 @@ public class AdDbUtil {
    */
   public boolean execute(Query query, Map<String, Object> params)
       throws SQLException {
+    Connection connection = null;
     PreparedStatement statement = null;
     try {
       List<String> identifiers = new ArrayList<String>();
       String sql = sortParams(query, identifiers);
+      connection = connectionPool.getConnection();
       statement = connection.prepareStatement(sql);
       addParams(statement, identifiers, params);
       boolean result = statement.execute();
       return result;
     } finally {
-      if (statement != null) {
-        statement.close();
+      try {
+        if (statement != null) {
+          statement.close();
+        }
+      } finally {
+        if (connection != null) {
+          connectionPool.releaseConnection(connection);
+        }
       }
     }
   }
@@ -400,10 +435,12 @@ public class AdDbUtil {
    */
   public void executeBatch (Query query,
       List<? extends Map<String, Object>> sqlParams) throws SQLException {
+    Connection connection = null;
     PreparedStatement statement = null;
     try {
       List<String> identifiers = new ArrayList<String>();
       String sql = sortParams(query, identifiers);
+      connection = connectionPool.getConnection();
       statement = connection.prepareStatement(sql);
 
       int batch = 0;      
@@ -419,8 +456,14 @@ public class AdDbUtil {
       }
       statement.executeBatch();
     } finally {
-      if (statement != null) {
-        statement.close();
+      try {
+        if (statement != null) {
+          statement.close();
+        }
+      } finally {
+        if (connection != null) {
+          connectionPool.releaseConnection(connection);
+        }
       }
     }
   }
@@ -460,9 +503,11 @@ public class AdDbUtil {
         LOGGER.fine(sb.toString());
       }
 
-      PreparedStatement insertStatement = null;
+      Connection connection = null;
+      PreparedStatement insertStatement = null;      
       try {
         List<String> identifiers = new ArrayList<String>();
+        connection = connectionPool.getConnection();
         insertStatement = connection.prepareStatement(
             sortParams(Query.MERGE_MEMBERSHIP, identifiers));
 
@@ -502,17 +547,24 @@ public class AdDbUtil {
         }
         insertStatement.executeBatch();
       } finally {
-        if (insertStatement != null) {
-          insertStatement.close();
+        try {
+          if (insertStatement != null) {
+            insertStatement.close();
+          }
+        } finally {
+          if (connection != null) {
+            connectionPool.releaseConnection(connection);
+          }
         }
       }
-      
+
       // whatever remained in dbMemberships must be removed from DB
       Map<String, Object> params = e.getSqlParams();
       PreparedStatement delStatement = null;
       int batch = 0;
       try {
         List<String> identifiers = new ArrayList<String>();
+        connection = connectionPool.getConnection();
         delStatement = connection.prepareStatement(sortParams(
             Query.DELETE_MEMBERSHIPS_BY_DN_AND_MEMBERDN, identifiers));
         Map<String, Object> delParams = e.getSqlParams();
@@ -529,8 +581,14 @@ public class AdDbUtil {
         }
         delStatement.executeBatch();
       } finally {
-        if (delStatement != null) {
-          delStatement.close();
+        try {
+          if (delStatement != null) {
+            delStatement.close();
+          }
+        } finally {
+          if (connection != null) {
+            connectionPool.releaseConnection(connection);
+          }
         }
       }
     }

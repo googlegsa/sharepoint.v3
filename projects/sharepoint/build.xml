@@ -33,34 +33,12 @@
   <property name="connector-manager.dir" value="${CONNECTOR_MANAGER_DIR}" />
   <property name="spi.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-spi.jar" />
   <property name="lib.jar.dir" value="lib" />
-  <property name="lib.dev.jar.dir" value="${lib.jar.dir}/dev" />
   <property name="adgroups.jar" value="../adgroups/dist/jarfile/connector-adgroups.jar" />
   <property name="spi.jar.dir" value="${connector-manager.dir}/${jar.dir}" />
-  <property name="junit.jarfile" value="${lib.jar.dir}/dev/junit.jar" />
   <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
   <property name="downloads.dir" value="downloads" />
   <property name="cm-third-party.jar" value="${connector-manager.dir}/third-party/" />
   <property name="sql.properties" value="source/java/com/google/enterprise/connector/sharepoint/sql/" />
-  <condition property="wsdl2java" value="wsdl2java.sh">
-    <os family="unix" />
-  </condition>
-  <condition property="wsdl2java" value="wsdl2java.bat">
-    <os family="windows" />
-  </condition>
-
-  <condition property="console" value="/bin/sh">
-    <os family="unix" />
-  </condition>
-  <condition property="console" value="cmd">
-    <os family="windows" />
-  </condition>
-
-  <condition property="family" value="unix">
-    <os family="unix" />
-  </condition>
-  <condition property="family" value="windows">
-    <os family="windows" />
-  </condition>
 
   <condition property="client.factory" value="com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory">
     <not>
@@ -105,17 +83,6 @@
     <mkdir dir="${downloads.dir}" />
     <mkdir dir="${javadoc}" />
   </target>
-
-  <!-- TODO: The following Ant task produces slightly different stubs
-       from the command line tool. Should we figure that out?
-    <taskdef resource="axis-tasks.properties"
-             classpathref="axis.classpath" />
-    <axis-wsdl2java output="${src}" url="${wsdl}/SiteData.wsdl">
-     <mapping
-         namespace="http://schemas.microsoft.com/sharepoint/soap/"
-         package="${generated.package}.sitedata" />
-    </axis-wsdl2java>
-  -->
 
   <macrodef name="wsdl2java"
             description="Generates WSDL stubs with simple dependency checking.">
@@ -184,7 +151,7 @@
       <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
       <classpath>
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
+          <include name="*.jar" />
         </fileset>
       </classpath>
       <include name="**/generated/**" />
@@ -211,7 +178,7 @@
         </fileset>
         <pathelement location="${adgroups.jar}" />
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
+          <include name="*.jar" />
         </fileset>
       </classpath>
       <exclude name="**/generated/**" />
@@ -233,14 +200,13 @@
         <pathelement location="${spi.jarfile}" />
         <pathelement location="${config}" />
         <pathelement location="${classes}" />
-        <pathelement location="${junit.jarfile}" />
         <pathelement location="${adgroups.jar}" />
         <fileset dir="${cm-third-party.jar}">
           <include name="prod/*.jar" />
           <include name="tests/*.jar" />
         </fileset>
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
+          <include name="*.jar" />
         </fileset>
       </classpath>
     </javac>
@@ -282,8 +248,7 @@
         </fileset>
         <pathelement location="${config}" />
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-          <include name="**/*.properties" />
+          <include name="*.jar" />
         </fileset>
         <pathelement location="${tests.classes}" />
         <pathelement location="${tests.src}" />
@@ -451,46 +416,11 @@
   </target>
 
   <target name="clean" depends="clean_code_coverage" description="Deletes files produced by compile and test.">
-    <available file="${build}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-      <then>
-        <delete dir="${build}" />
-      </then>
-    </if>
-
-    <available file="${dist}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-      <then>
-        <delete dir="${dist}" />
-      </then>
-    </if>
-
-    <available file="${downloads.dir}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-      <then>
-        <delete dir="${downloads.dir}" />
-      </then>
-    </if>
-
-    <available file="${tests.todir}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-      <then>
-        <delete dir="${tests.todir}" />
-      </then>
-    </if>
-
-    <available file="${javadoc}" property="exists"/>
-    <if>
-      <equals arg1="${exists}" arg2="true" />
-      <then>
-        <delete dir="${javadoc}" />
-      </then>
-    </if>
-
+    <delete dir="${build}" />
+    <delete dir="${dist}" />
+    <delete dir="${downloads.dir}" />
+    <delete dir="${tests.todir}" />
+    <delete dir="${javadoc}" />
     <delete dir="${src_generated}"/>
   </target>
 
@@ -514,10 +444,10 @@
         <pathelement location="${adgroups.jar}" />
         <fileset dir="${cm-third-party.jar}">
           <include name="prod/*.jar" />
+          <include name="tests/junit.jar" />
         </fileset>
         <fileset dir="${lib.jar.dir}">
-          <include name="**/*.jar" />
-          <include name="**/*.properties" />
+          <include name="*.jar" />
         </fileset>
         <pathelement location="${tests.classes}" />
         <pathelement location="${tests.src}" />
