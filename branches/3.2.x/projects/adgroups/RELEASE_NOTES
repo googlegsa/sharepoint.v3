@@ -9,6 +9,58 @@ main documentation.
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
+Release 3.2.6, April 25, 2014
+=============================
+
+Introduction
+------------
+This is a maintenance release that improves quality and performance
+without adding any new functionality. Users of previous releases are
+encouraged to upgrade.
+
+This connector replaces functionality previously provided by the
+SharePoint connector. This connector can be used automatically in
+conjunction with the SharePoint connector as a drop-in replacement for
+the previous functionality, or used separately with other connectors
+or content sources.
+
+Issues Fixed Since 3.2.4
+------------------------	
+10344956 - AD Groups connectors configured with an external database
+           (Oracle or SQL Server) failed to restore lost connections
+           to the database. Using an external database now requires a
+           JDBC driver that supports the isValid method of
+           java.sql.Connection, part of the JDBC 4.0 specification in
+           Java 6.
+
+Version Compatibility
+---------------------
+Connector instances created using versions 3.0.0 through 3.2.4 may be
+used with this version. This version works with Connector Manager
+version 3.2.6 and above. Versions lower than 3.2.6 of the Connector
+Manager will not work correctly with this version of the connector.
+
+Java SE 5.0 is no longer supported. Java 6 or later is required. To
+use an external database, a JDBC 4.0 compliant driver is required.
+
+For optimal performance, if you are upgrading from a previous 3.0.x
+version, you need to ensure that all required indexes are available.
+You can either create them manually, or if feasible, Google recommends
+dropping the database tables and resetting the traversal for your connector
+instances after the upgrade. When using the default H2 database, you can
+simply delete the connector_manager.h2.db file under
+Tomcat/webapps/connector-manager/WEB-INF/connector_manager.db
+while Tomcat is stopped.
+
+Note that when using the AD groups connector with the SharePoint
+connector, resetting the traversal with an AD groups connector instance
+embedded in a SharePoint connector instance will result in reindexing
+your SharePoint content as well as Active Directory. Deleting the H2
+database will also clear the cache of SharePoint groups, which is used
+for group lookup with ACLs. Restoring the cache requires reindexing your
+SharePoint content.
+
+
 Release 3.2.4, January 31, 2014
 ===============================
 
@@ -42,7 +94,6 @@ Issues Fixed Since 3.2.2
 
 Version Compatibility
 ---------------------
-
 Connector instances created using versions 3.0.0 through 3.2.2 may be
 used with this version. This version works with Connector Manager
 version 3.0.0 and above. Versions lower than 3.0.0 of the Connector

@@ -19,6 +19,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import static com.google.enterprise.connector.sharepoint.social.SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX;
+
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointConnector;
 import com.google.enterprise.connector.spi.Document;
@@ -34,6 +36,8 @@ import com.google.enterprise.connector.database.ConnectorPersistentStoreFactory;
 import com.google.enterprise.connector.spi.ConnectorPersistentStore;
 import com.google.enterprise.connector.util.database.testing.TestJdbcDatabase;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -145,8 +149,7 @@ public class SharepointSocialTraversalManagerTest {
     int halfSize = EXPECTED_NAMES.size() / 2;
     int halfway = new MockUserProfileGenerator().getNextValue(halfSize);
     String checkpoint =
-        SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX
-        + ",0," + halfway;
+        CHECKPOINT_PREFIX + "{" + "\"userProfileNextIndex\":" + halfway + "}";
     DocumentList docList = trav.resumeTraversal(checkpoint);
     ArrayList<String> names = new ArrayList<String>();
     testUserProfiles(docList, names);
@@ -155,7 +158,7 @@ public class SharepointSocialTraversalManagerTest {
   }
 
   @Test
-  public void testMultipleBatches() throws RepositoryException {
+  public void testMultipleBatches() throws RepositoryException, JSONException {
     TraversalManager trav = session.getTraversalManager();
     ArrayList<String> names = new ArrayList<String>();
 
@@ -166,8 +169,11 @@ public class SharepointSocialTraversalManagerTest {
     assertEquals(EXPECTED_NAMES.subList(0, halfSize), names);
 
     String checkpoint = docList.checkpoint();
-    assertTrue(checkpoint, checkpoint.startsWith(
-        SharepointSocialUserProfileDocumentList.CHECKPOINT_PREFIX + ",0,"));
+    JSONObject jo = new 
+        JSONObject(checkpoint.substring(CHECKPOINT_PREFIX.length()));
+    assertTrue(jo.has("userProfileChangeToken"));
+    assertTrue(jo.has("userProfileLastFullSync"));
+    assertTrue(jo.has("userProfileNextIndex"));
     trav.setBatchHint(500);
     docList = trav.resumeTraversal(checkpoint);
     testUserProfiles(docList, names);

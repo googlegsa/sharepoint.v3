@@ -49,7 +49,7 @@ public class IntegrationTest extends TestCase {
     final Traverser traverser = new QueryTraverser(new MockPusher(System.out),
         traversalManager, instantiator.getTraversalStateStore(connectorName),
         connectorName, Context.getInstance().getTraversalContext(),
-        new SystemClock(), null);
+        new SystemClock());
     BatchResult result = traverser.runBatch(new BatchSize(10));
     int totalDocsProcessed = result.getCountProcessed();
     assertTrue(totalDocsProcessed > 0);
