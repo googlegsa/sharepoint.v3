@@ -1208,7 +1208,7 @@ public class SharepointClient {
       listState.setCrawlQueue(listItems);
       // Set the last crawled date time. This is informative value for the
       // user viewing the state file
-      listState.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
+      listState.setLastCrawledDateTime(Util.getCurrentTimestampString());
 
       if (null == listItems || listItems.size() == 0) {
         LOGGER.log(Level.CONFIG, "No items found from list " + listState);
@@ -1230,7 +1230,7 @@ public class SharepointClient {
 
     // Set the last crawled date time. This is informative value for the
     // user viewing the state file
-    webState.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
+    webState.setLastCrawledDateTime(Util.getCurrentTimestampString());
 
     // Mark the current list as null so that the next time crawl queues are
     // scanned, all the ListStates are traversed and no documents that have

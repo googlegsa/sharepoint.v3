@@ -38,52 +38,6 @@ public class UtilTest extends TestCase {
     System.out.println("\n--------------");
   }
 
-  public final void testListItemsStringToCalendar() {
-    System.out.println("Testing listItemsStringToCalendar()...");
-    final String listItemChangesString = "2008-07-16 5:30:35"; // Date in
-    // UTC
-    // format
-    Calendar cal = null;
-    try {
-      cal = Util.listItemsStringToCalendar(listItemChangesString); // UTC
-      // format
-      // to
-      // Calender
-      System.out.println("Method Returned : " + cal);
-      assertNotNull(cal);
-      final Date dt = cal.getTime();
-      System.out.println("Date : " + dt);
-    } catch (final ParseException pe) {
-      System.out.println(pe);
-      System.out.println("[ listItemsStringToCalendar() ] Test Failed.");
-      return;
-    }
-    System.out.println("[ listItemsStringToCalendar() ] Test Passed");
-  }
-
-  public final void testListItemChangesStringToCalendar() {
-    System.out.println("Testing listItemChangesStringToCalendar()...");
-    final String listItemChangesString = "2008-07-16T05:30:35Z"; // Date in
-    // UTC
-    // format
-    Calendar cal = null;
-    try {
-      cal = Util.listItemChangesStringToCalendar(listItemChangesString); // UTC
-      // format
-      // to
-      // Calender
-      System.out.println("Method Returned : " + cal);
-      assertNotNull(cal);
-      final Date dt = cal.getTime();
-      System.out.println("Date : " + dt);
-    } catch (final ParseException pe) {
-      System.out.println(pe);
-      System.out.println("[ listItemChangesStringToCalendar() ] Test Failed.");
-      return;
-    }
-    System.out.println("[ listItemChangesStringToCalendar() ] Test Passed");
-  }
-
   public final void testSiteDataStringToCalendar() {
     System.out.println("Testing siteDataStringToCalendar()...");
     final String listItemChangesString = "2008-07-16 5:30:35Z"; // Date in
@@ -150,28 +104,6 @@ public class UtilTest extends TestCase {
     System.out.println("[ parseDate() ] Test Passed");
   }
 
-  public final void testRemoveLineTerminators() {
-    System.out.println("Testing removeLineTerminators()...");
-    final CharSequence str = Util.removeLineTerminators("X\\rY\\nZ");
-    System.out.println("Method Returned : " + str);
-    assertNotNull(str);
-    System.out.println("[ removeLineTerminators() ] Test Passed");
-  }
-
-  public final void testGetEscapedSiteName() {
-    System.out.println("Testing getEscapedSiteName()...");
-    try {
-      final String str = Util.getEscapedSiteName("http://host.domain.co.in:20000/default.aspx");
-      System.out.println("Method Returned : " + str);
-      assertNotNull(str);
-      System.out.println("[ getEscapedSiteName() ] Test Passed");
-    } catch (final RepositoryException re) {
-      System.out.println(re);
-      System.out.println("[ getEscapedSiteName() ] Test Failed.");
-      return;
-    }
-  }
-
   public final void testMatcher() {
     System.out.println("Testing matcher()..");
     final boolean bl = Util.match(new String[] { "sp.intranet.teldta.com/" }, "https://sp.intranet.teldta.com", null);
@@ -179,27 +111,10 @@ public class UtilTest extends TestCase {
     System.out.println("[ matcher() ] Test Completed");
   }
 
-  /**
-   * @Test Tests {@link Util#formatDate(Calendar, String)}
-   */
-  public void testFormatDate() {
-    Calendar calendar = Calendar.getInstance();
-
-    calendar.set(2009, Calendar.JUNE, 12, 11, 30, 30);
-
-    String expectedFormat = "2009-06-12 11:30:30";
-
-    String formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT1);
-
-    assertNotNull(formattedDate);
-    assertEquals(expectedFormat, formattedDate);
-
-    expectedFormat = "2009-06-12 11:30:30 " + TestConfiguration.timeZone;
-
-    formattedDate = Util.formatDate(calendar, Util.TIMEFORMAT_WITH_ZONE);
-
-    assertNotNull(formattedDate);
-    assertEquals(expectedFormat, formattedDate);
+  public void testGetCurrentTimestampString() {
+    String formattedDate = Util.getCurrentTimestampString();
+    assertTrue(formattedDate, formattedDate.matches(
+        "201[4-9]-[01]\\d-[0-3]\\d [0-2]\\d:[0-6]\\d:[0-6]\\d .+"));
   }
 
   public void testDoAliasMapping() {
