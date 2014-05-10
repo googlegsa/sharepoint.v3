@@ -69,56 +69,16 @@ import java.util.regex.Pattern;
  * Class to hold random utility functions
  */
 public final class Util {
-
-  public static final String TIMEFORMAT1 = "yyyy-MM-dd HH:mm:ss";
-  private static final String TIMEFORMAT2 = "yyyy-MM-dd HH:mm:ss'Z'";
-  private static final String TIMEFORMAT3 = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-
-  public static final String TIMEFORMAT_WITH_ZONE = "yyyy-MM-dd HH:mm:ss z";
-
-  public static final String AUTHOR = "sharepoint:author";
-  public static final String LIST_GUID = "sharepoint:listguid";
-
   private static final InstantConverter TIME_CONVERTER_FROM_CALENDAR = ConverterManager.getInstance().getInstantConverter(new GregorianCalendar());
   private static final InstantConverter TIME_CONVERTER_FROM_JODA = ConverterManager.getInstance().getInstantConverter(new DateTime());
   private static final Chronology CHRON = new DateTime().getChronology();
   private static final DateTimeFormatter FORMATTER = ISODateTimeFormat.basicDateTime();
-  private static final SimpleDateFormat SIMPLE_DATE_FORMATTER1 = new SimpleDateFormat(
-      TIMEFORMAT1);
-  private static final SimpleDateFormat SIMPLE_DATE_FORMATTER2 = new SimpleDateFormat(
-      TIMEFORMAT2);
-  private static final SimpleDateFormat SIMPLE_DATE_FORMATTER3 = new SimpleDateFormat(
-      TIMEFORMAT3);
+  private static final SimpleDateFormat SIMPLE_DATE_FORMATTER1 =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+  private static final SimpleDateFormat SIMPLE_DATE_FORMATTER2 =
+      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss'Z'");
 
   private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
-
-  /**
-   * Formats last modified date (yyyy-MM-dd HH:mm:ss) to Calendar format
-   *
-   * @param strDate
-   * @throws ParseException
-   */
-  public static Calendar listItemsStringToCalendar(final String strDate)
-      throws ParseException {
-    final Date dt = SIMPLE_DATE_FORMATTER1.parse(strDate);
-    final Calendar c = Calendar.getInstance();
-    c.setTime(dt);
-    return c;
-  }
-
-  /**
-   * Formats last modified date (yyyy-MM-dd'T'HH:mm:ss'Z') to Calendar format
-   *
-   * @param strDate
-   * @throws ParseException
-   */
-  public static Calendar listItemChangesStringToCalendar(final String strDate)
-      throws ParseException {
-    final Date dt = SIMPLE_DATE_FORMATTER3.parse(strDate);
-    final Calendar c = Calendar.getInstance();
-    c.setTime(dt);
-    return c;
-  }
 
   /**
    * Formats last modified date (yyyy-MM-dd HH:mm:ss'Z') to Calendar format
@@ -178,31 +138,12 @@ public final class Util {
   }
 
   /**
-   * Formats a date with the given format
+   * Gets the current date and time in a readable format for logging.
    *
-   * @param cal The calendar instance representing the date, time, timezone
-   * @param format The supported formats. Currently following are supported:
-   *          TIMEFORMAT1, TIMEFORMAT_WITH_ZONE
-   * @return The formatted date time string as per the given format
-   * @throws IllegalArgumentException In case any invalid format is given as
-   *           input
-   * @throws NullPointerException In case any argument is null
+   * @return The formatted date time string
    */
-  public static String formatDate(final Calendar cal, String format) {
-    if (cal == null || format == null) {
-      throw new NullPointerException();
-    }
-
-    if (format.equals(TIMEFORMAT1)) {
-      return SIMPLE_DATE_FORMATTER1.format(new Date(cal.getTimeInMillis()));
-    } else if (format.equals(TIMEFORMAT_WITH_ZONE)) {
-      SimpleDateFormat dateFormatter = new SimpleDateFormat(
-          TIMEFORMAT_WITH_ZONE);
-      return dateFormatter.format(new Date(cal.getTimeInMillis()));
-    } else {
-      throw new IllegalArgumentException(
-          "Invalid value specified for the format : " + format);
-    }
+  public static String getCurrentTimestampString() {
+    return SIMPLE_DATE_FORMATTER1.format(new Date());
   }
 
   /**
@@ -213,44 +154,6 @@ public final class Util {
   public static DateTime parseDate(final String str) {
     DateTime dt = FORMATTER.parseDateTime(str);
     return dt;
-  }
-
-  /**
-   * For removing line terminators
-   *
-   * @param inputStr
-   */
-  public static CharSequence removeLineTerminators(final CharSequence inputStr) {
-    final String patternStr = "(?m)$^|[\\r\\n]+\\z";
-    final String replaceStr = " ";
-    final Pattern pattern = Pattern.compile(patternStr);
-    final Matcher matcher = pattern.matcher(inputStr);
-    CharSequence charSeq = matcher.replaceAll(replaceStr);
-    return charSeq;
-  }
-
-  /**
-   * Returns a formatted site URL. appends / at the end and encodes various
-   * non-UTF character.
-   *
-   * @param siteName
-   * @throws RepositoryException
-   */
-  public static String getEscapedSiteName(final String siteName)
-      throws RepositoryException {
-    final StringBuffer escapedSiteName = new StringBuffer();
-    final String siteNamearray[] = siteName.split(SPConstants.SLASH);
-    for (final String str : siteNamearray) {
-      try {
-        escapedSiteName.append(URLEncoder.encode(str, "UTF-8")).append(SPConstants.SLASH);
-      } catch (final UnsupportedEncodingException e) {
-        throw new RepositoryException(e.toString());
-      }
-    }
-    final String str = escapedSiteName.toString();
-    str.replace('+', ' ');
-    String strModified = str.replaceAll(" ", "%20");
-    return strModified;
   }
 
   /**
@@ -299,7 +202,7 @@ public final class Util {
           strDecodedValue = strValue;
           strDecodedURLPat = strURLPat;
         }
-        if (Util.matcher(strDecodedURLPat, strDecodedValue)) {
+        if (matcher(strDecodedURLPat, strDecodedValue)) {
           if (matchedPattern != null) {
             matchedPattern.append(strURLPat);
           }
@@ -316,7 +219,7 @@ public final class Util {
    * @param pattern
    * @param strValue
    */
-  public static boolean matcher(final String pattern, final String strValue) {
+  private static boolean matcher(final String pattern, final String strValue) {
     // null check for the arguments
     if ((pattern == null) | (strValue == null)) {
       return false;
@@ -337,9 +240,6 @@ public final class Util {
     // string in pattern
     if (pattern.startsWith(SPConstants.CONTAINS)) {
       final StringBuffer tempBuffer = new StringBuffer(pattern);
-      if (tempBuffer == null) {
-        return false;
-      }
       final String strContainKey = new String(
           tempBuffer.delete(0, SPConstants.CONTAINS.length()));
       RE re;
@@ -361,9 +261,6 @@ public final class Util {
     // case
     if (pattern.startsWith(SPConstants.REGEXP)) {
       final StringBuffer tempBuffer = new StringBuffer(pattern);
-      if (tempBuffer == null) {
-        return false;
-      }
       final String strRegexPattrn = new String(
           tempBuffer.delete(0, SPConstants.REGEXP.length()));
       RE re;
@@ -385,9 +282,6 @@ public final class Util {
     // case
     if (pattern.startsWith(SPConstants.REGEXP_CASE)) {
       final StringBuffer tempBuffer = new StringBuffer(pattern);
-      if (tempBuffer == null) {
-        return false;
-      }
       final String strRegexCasePattrn = new String(
           tempBuffer.delete(0, SPConstants.REGEXP_CASE.length()));
       RE re;
@@ -409,9 +303,6 @@ public final class Util {
     // match without case
     if (pattern.startsWith(SPConstants.REGEXP_IGNORE_CASE)) {
       final StringBuffer tempBuffer = new StringBuffer(pattern);
-      if (tempBuffer == null) {
-        return false;
-      }
       final String strRegexIgnoreCasePattrn = new String(
           tempBuffer.delete(0, SPConstants.REGEXP_IGNORE_CASE.length()));
       RE re;
@@ -830,7 +721,7 @@ public final class Util {
    *
    * @param userName
    */
-  public static String switchUserNameFormat(final String userName) {
+  private static String switchUserNameFormat(final String userName) {
     if (userName.indexOf(SPConstants.AT) != -1) {
       return getUserNameWithDomain(userName, null);
     } else {
@@ -857,7 +748,7 @@ public final class Util {
    * @param web
    */
   public static String getWebApp(final String web) {
-    URL url = null;
+    URL url;
     try {
       url = new URL(web);
     } catch (final MalformedURLException e) {
@@ -911,9 +802,6 @@ public final class Util {
   public static boolean isURL(final String value) {
     try {
       final URL url = new URL(value);
-      if (url == null) {
-        return false;
-      }
     } catch (final Exception e) {
       LOGGER.log(Level.FINE, value + " ... " + e.getMessage());
       return false;
@@ -1083,11 +971,7 @@ public final class Util {
    * @param info message to be written
    */
   public static void logInfo(final String filePath, final String info) {
-    File file;
-    file = new File(filePath);
-    if (file == null) {
-      return;
-    }
+    File file = new File(filePath);
     try {
       final FileWriter fw = new FileWriter(file, true);
       final PrintWriter pw = new PrintWriter(fw);
@@ -1114,13 +998,8 @@ public final class Util {
    * @param strURL
    */
   public static String encodeURL(final String strURL) {
-    URL url = null;
     try {
-      url = new URL(strURL);
-      if (null == url) {
-        LOGGER.log(Level.SEVERE, "Malformed URL!");
-        return strURL;
-      }
+      URL url = new URL(strURL);
       // URI does the encoding of the URL automatically and also checks
       // for the valid URL
       final URI uri = new URI(url.getProtocol(), null, url.getHost(),
@@ -1136,13 +1015,9 @@ public final class Util {
    * @param strURL
    */
   public static String getHost(final String strURL) {
-    URL url = null;
+    URL url;
     try {
       url = new URL(strURL);
-      if (null == url) {
-        LOGGER.log(Level.SEVERE, "Malformed URL [ " + strURL + " ]. ");
-        return null;
-      }
     } catch (final Exception e) {
       LOGGER.log(Level.SEVERE, "Malformed URL [ " + strURL + " ]. ");
       return null;
@@ -1344,7 +1219,7 @@ public final class Util {
   }
 
   /**
-   * An interferace used for making SOAP requests.
+   * An interface used for making SOAP requests.
    */
   public interface RequestExecutor<T> {
     /**
@@ -1381,7 +1256,7 @@ public final class Util {
       // or vice versa.
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (ctx.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(ws.getUsername());
+        final String username = switchUserNameFormat(ws.getUsername());
         LOGGER.info("Web service call failed for username [ " 
             + ws.getUsername() + " ], re-trying with username [ " 
             + username + " ].");
@@ -1401,7 +1276,7 @@ public final class Util {
   }
 
   /**
-   * An interferace used for making SOAP requests.
+   * An interface used for making SOAP requests.
    */
   public interface RequestExecutorVoid {
     /**
@@ -1436,7 +1311,7 @@ public final class Util {
       // or vice versa.
       if ((SPConstants.UNAUTHORIZED.indexOf(af.getFaultString()) != -1)
           && (ctx.getDomain() != null)) {
-        final String username = Util.switchUserNameFormat(ws.getUsername());
+        final String username = switchUserNameFormat(ws.getUsername());
         LOGGER.info("Web service call failed for username [ " 
             + ws.getUsername() + " ], re-trying with username [ " 
             + username + " ].");
