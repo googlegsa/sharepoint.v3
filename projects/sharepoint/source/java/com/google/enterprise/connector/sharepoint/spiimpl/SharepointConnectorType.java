@@ -14,8 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.spiimpl;
 
-import static com.google.common.base.Charsets.UTF_8;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -55,6 +53,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -79,6 +78,8 @@ import javax.naming.ldap.LdapContext;
  * ConnectorType implementation for Sharepoint This class is mainly desinged for
  * controlling the connector configuration which incompasses creation of
  * connector configuration form, validating the configuration values etc.
+ *
+ * @author nitendra_thakur
  */
 public class SharepointConnectorType implements ConnectorType {
   private final Logger LOGGER = Logger.getLogger(SharepointConnectorType.class
@@ -459,7 +460,7 @@ public class SharepointConnectorType implements ConnectorType {
         + SPConstants.USE_SP_SEARCH_VISIBILITY + "\""
         + SPConstants.CLOSE_ELEMENT);
     buf.append(rb.getString(SPConstants.USE_SP_SEARCH_VISIBILITY_LABEL));
-    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SLASH
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
   }
 
@@ -495,7 +496,7 @@ public class SharepointConnectorType implements ConnectorType {
         + SPConstants.FEED_UNPUBLISHED_CONTENT + "\""
         + SPConstants.CLOSE_ELEMENT);
     buf.append(rb.getString(SPConstants.FEED_UNPUBLISHED_CONTENT_LABEL));
-    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SLASH
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
     buf.append(SPConstants.BREAK_LINE);
   }
@@ -608,7 +609,7 @@ public class SharepointConnectorType implements ConnectorType {
         + SPConstants.EQUAL_TO + "\"" + key + "\""
         + SPConstants.CLOSE_ELEMENT);
     buf.append(rb.getString(SPConstants.PUSH_ACLS_LABEL));
-    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SLASH
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
   }
 
@@ -640,7 +641,7 @@ public class SharepointConnectorType implements ConnectorType {
         + SPConstants.CLOSE_ELEMENT);
     buf.append(rb.getString(
             SPConstants.USE_CACHE_TO_STORE_LDAP_USER_GROUPS_MEMBERSHIP_LABEL));
-    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.SLASH
+    buf.append(SPConstants.OPEN_ELEMENT + SPConstants.FORWARD_SLASH
         + SPConstants.LABEL + SPConstants.CLOSE_ELEMENT);
   }
 
@@ -2013,8 +2014,7 @@ public class SharepointConnectorType implements ConnectorType {
       if (krb5In != null) {
         try {
           File krb5File = new File(googleConnWorkDir, SPConstants.FILE_KRB5);
-          String krb5Config =
-              new String(ByteStreams.toByteArray(krb5In), UTF_8);
+          String krb5Config = new String(ByteStreams.toByteArray(krb5In), SPConstants.UTF_8);
           krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_UPPERCASE,
               configData.get(SPConstants.DOMAIN).toString().toUpperCase());
           krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_REALM_LOWERCASE,
@@ -2022,7 +2022,7 @@ public class SharepointConnectorType implements ConnectorType {
           krb5Config = krb5Config.replace(SPConstants.VAR_KRB5_KDC_SERVER,
               configData.get(SPConstants.KDC_SERVER).toString().toUpperCase());
           FileOutputStream out = new FileOutputStream(krb5File);
-          out.write(krb5Config.getBytes(UTF_8));
+          out.write(krb5Config.getBytes(SPConstants.UTF_8));
           out.close();
         } catch (IOException e) {
           LOGGER.log(Level.SEVERE,
@@ -2035,10 +2035,9 @@ public class SharepointConnectorType implements ConnectorType {
       if (loginIn != null) {
         try {
           File loginFile = new File(googleConnWorkDir, SPConstants.FILE_LOGIN);
-          String loginConfig =
-              new String(ByteStreams.toByteArray(loginIn), UTF_8);
+          String loginConfig = new String(ByteStreams.toByteArray(loginIn), SPConstants.UTF_8);
           FileOutputStream out = new FileOutputStream(loginFile);
-          out.write(loginConfig.getBytes(UTF_8));
+          out.write(loginConfig.getBytes(SPConstants.UTF_8));
           out.close();
         } catch (IOException e) {
           LOGGER.log(Level.SEVERE,

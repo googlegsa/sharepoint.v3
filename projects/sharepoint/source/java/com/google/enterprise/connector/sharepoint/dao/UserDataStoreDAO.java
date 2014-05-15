@@ -15,7 +15,7 @@
 package com.google.enterprise.connector.sharepoint.dao;
 
 import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
-import com.google.enterprise.connector.sharepoint.client.Util;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
@@ -46,17 +46,11 @@ import javax.sql.DataSource;
 
 /**
  * Data Access Object layer for accessing the user data store
+ *
+ * @author nitendra_thakur
  */
-public class UserDataStoreDAO extends SharePointDAO {
+public class UserDataStoreDAO extends SimpleSharePointDAO {
   private final Logger LOGGER = Logger.getLogger(UserDataStoreDAO.class.getName());
-
-  static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
-
-  private static final String GROUPS = "groups";
-  private static final String TABLE_NAME = "TABLE_NAME";
-  private static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
-  private static final String UDS_COLUMN_USER_NAME = "SPUserName";
-
   private UserDataStoreCache<UserGroupMembership> udsCache;
   private DataSourceTransactionManager transactionManager;
   private ParameterizedRowMapper<UserGroupMembership> rowMapper;
@@ -119,8 +113,13 @@ public class UserDataStoreDAO extends SharePointDAO {
         getAllMembershipsForSearchUserAndLdapGroups(groupNames, searchUser.toLowerCase());
     Set<Principal> spGroups = new HashSet<Principal>();
     for (UserGroupMembership membership : spMemberships) {
-      spGroups.add(Util.getSharePointGroupPrincipal(localNamespace,
-          membership.getNamespace(), membership.getGroupName()));
+      // append name space to SP groups.
+      String groupName = SPConstants.LEFT_SQUARE_BRACKET
+          + membership.getNamespace()
+          + SPConstants.RIGHT_SQUARE_BRACKET
+          + membership.getGroupName();
+      spGroups.add(
+          new Principal(PrincipalType.UNQUALIFIED, localNamespace, groupName));
     }
     if (LOGGER.isLoggable(Level.INFO)) {
       StringBuffer sb = new StringBuffer("Resolved ").append(spGroups.size())
@@ -149,10 +148,10 @@ public class UserDataStoreDAO extends SharePointDAO {
     if (null == groups) {
       ldapGroups = new HashSet<String>();
       ldapGroups.add(searchUser);
-      groupsObject.put(GROUPS, ldapGroups);
+      groupsObject.put(SPConstants.GROUPS, ldapGroups);
     } else {
       groups.add(searchUser);
-      groupsObject.put(GROUPS, groups);
+      groupsObject.put(SPConstants.GROUPS, groups);
     }
     List<UserGroupMembership> memberships;
     try {
@@ -491,7 +490,7 @@ public class UserDataStoreDAO extends SharePointDAO {
 
       // Specific to oracle database to check required entities in user
       // data store data base.
-      if (getQueryProvider().getDatabase().equalsIgnoreCase("oracle")) {
+      if (getQueryProvider().getDatabase().equalsIgnoreCase(SPConstants.SELECTED_DATABASE)) {
         statement = getConnection().createStatement(
             ResultSet.TYPE_SCROLL_INSENSITIVE,
             ResultSet.CONCUR_READ_ONLY);
@@ -543,12 +542,12 @@ public class UserDataStoreDAO extends SharePointDAO {
   private void updateUDSTable(DatabaseMetaData dbm, String tablePattern)
       throws SQLException {
     updateColumnIfNeeded(dbm, tablePattern,
-        UDS_COLUMN_USER_NAME,
-        UDS_MAX_GROUP_NAME_LENGTH,
+        SPConstants.UDS_COLUMN_USER_NAME,
+        SPConstants.UDS_MAX_GROUP_NAME_LENGTH,
         Query.UDS_UPGRADE_COL_USERNAME);
     updateColumnIfNeeded(dbm, tablePattern,
-        UDS_COLUMN_GROUP_NAME,
-        UDS_MAX_GROUP_NAME_LENGTH,
+        SPConstants.UDS_COLUMN_GROUP_NAME,
+        SPConstants.UDS_MAX_GROUP_NAME_LENGTH,
         Query.UDS_UPGRADE_COL_GROUPNAME);
   }
 
@@ -642,8 +641,8 @@ public class UserDataStoreDAO extends SharePointDAO {
           // inserted membership in Oracle data base. in MS SQL
           // data base and -3 represents missed cache entry in MY SQL
           // data base. hence it makes sense to have a check against
-          // status >= -3.
-          if (status[i] >= -3) {
+          // status >=3.
+          if (status[i] >= SPConstants.MINUS_THREE) {
             udsCache.add(membership);
           }
         }
@@ -697,7 +696,7 @@ public class UserDataStoreDAO extends SharePointDAO {
       if (fromStatement) {
         currName = rsTables.getString(1);
       } else {
-        currName = rsTables.getString(TABLE_NAME);
+        currName = rsTables.getString(SPConstants.TABLE_NAME);
       }
       if (tableName.equalsIgnoreCase(currName)) {
         tableFound = true;

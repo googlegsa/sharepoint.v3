@@ -704,7 +704,7 @@ public class GlobalState {
     // If the flag is true it implies that the connector finished traversing
     // the repository once and hence is done with a complete crawl cycle
     if (bFullReCrawl) {
-      lastFullCrawlDateTime = Util.getCurrentTimestampString();
+      lastFullCrawlDateTime = Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE);
       LOGGER.info("Connector completed a full crawl cycle traversing all the known site collections at time : "
           + lastFullCrawlDateTime);
     }

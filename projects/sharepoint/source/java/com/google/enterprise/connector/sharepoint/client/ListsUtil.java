@@ -772,7 +772,7 @@ public abstract class ListsUtil {
   }
 
   /**
-   * An interface that contains the query information needed to make Sharepoint
+   * An interferace that contains the query information needed to make Sharepoint
    * SOAP queries.
    */
   public interface SPQueryInfo {

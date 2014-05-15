@@ -14,13 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-import static com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE;
-import static com.google.enterprise.connector.spi.SpiConstants.PrincipalType.UNQUALIFIED;
-
-import com.google.common.collect.ImmutableSet;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
-import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
-import com.google.enterprise.connector.spi.Principal;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -175,18 +169,5 @@ public class UserDataStoreDAOTest extends TestCase {
     } catch (Exception e) {
       fail(e.getMessage());
     }
-  }
-
-  public void testGetSharePointGroupsForSearchUserAndLdapGroups()
-      throws SharepointException {
-    Set<Principal> ldapGroups = ImmutableSet.of();
-    Set<Principal> spGroups =
-        userDataStoreDAO.getSharePointGroupsForSearchUserAndLdapGroups(
-            "ns", ldapGroups, "user1");
-    String expectedGroup = String.format("[%s]%s", namespace, "group1");
-    Set<Principal> expectedGroups = ImmutableSet.of(
-        new Principal(UNQUALIFIED, "ns", expectedGroup,
-            EVERYTHING_CASE_INSENSITIVE));
-    assertEquals(expectedGroups, spGroups);
   }
 }

@@ -104,7 +104,7 @@ public class SharepointClientTest extends TestCase {
             System.out.println("<searchUrl>"
                 + searchUrlProp.nextValue().toString() + "</searchUrl>");
           }
-          final Property listGuidProp = pm.findProperty(SPConstants.LIST_GUID);
+          final Property listGuidProp = pm.findProperty(Util.LIST_GUID);
           if (listGuidProp != null) {
             System.out.println("<listGuid>"
                 + listGuidProp.nextValue().toString() + "</listguid>");
