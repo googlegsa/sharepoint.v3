@@ -48,8 +48,10 @@ import javax.xml.parsers.SAXParserFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -179,7 +181,7 @@ public class XmlClientFactory extends MockClientFactory {
 
     for (MockItem child : item.getChildren()) {
       if (MockType.List == child.getType()) {
-        lists.add(create_sList(webUrl, child.getName()));
+        lists.add(create_sList(item.getName(), child.getName()));
       } else if (MockType.Web == child.getType()) {
         final String childUrl = makeUrl(webUrl, child.getName());
         appendLists(lists, childUrl, child, username);
@@ -226,17 +228,17 @@ public class XmlClientFactory extends MockClientFactory {
   /**
    * Creates a new {@link _sList}.
    *
-   * @param webUrl The URL of the parent web
+   * @param itemName The name of the parent web
    * @param listName The name of the new list
    * @return a new {@link _sList}
    */
-  private _sList create_sList(final String webUrl, final String listName) {
+  private _sList create_sList(final String itemName, final String listName) {
     _sList list = new _sList();
     list.setInternalName(listName);
     list.setTitle(listName);
     list.setBaseType(SPConstants.DOC_LIB);
-    list.setDefaultViewUrl(webUrl + "/" + listName);
-    list.setLastModified(Util.formatDate(Calendar.getInstance()));
+    list.setDefaultViewUrl("/" + itemName + "/" + listName);
+    list.setLastModified(Util.calendarToSiteDataString(Calendar.getInstance()));
     list.setInheritedSecurity(true);
     return list;
   }
