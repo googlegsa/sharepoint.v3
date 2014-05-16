@@ -66,9 +66,11 @@ public class MockListsWSTest extends TestCase {
     List<ListState> listCollection = siteData.getNamedLists(ws);
     assertNotNull(listCollection);
 
-    testListUrl = "http://example.com/Web1/List1";
-    testListUsernameAtUrl = "http://example.com/WebAuth/ListAt";
-    testListUsernameSlashUrl = "http://example.com/WebAuth/ListSlash";
+    // A default port of 80 will be appended to "http://example.com" by
+    // SharepointClientContext.setSiteURL()
+    testListUrl = "http://example.com:80/Web1/List1";
+    testListUsernameAtUrl = "http://example.com:80/WebAuth/ListAt";
+    testListUsernameSlashUrl = "http://example.com:80/WebAuth/ListSlash";
 
     for (ListState baseList : listCollection) {
       if (testListUrl.equals(baseList.getListURL())) {

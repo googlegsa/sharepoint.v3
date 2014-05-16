@@ -95,6 +95,16 @@ public final class Util {
   }
 
   /**
+   * Returns calendar as a formatted String (yyyy-MM-dd HH:mm:ss'Z')
+   *
+   * @param date The calendar input to be converted to a date time string
+   * @return The formatted date time string
+   */
+  public static String calendarToSiteDataString(final Calendar cal){
+    return SIMPLE_DATE_FORMATTER2.format(new Date(cal.getTimeInMillis()));
+  }
+  
+  /**
    * Converts a DateTime format to Calendar
    *
    * @param date
@@ -1328,4 +1338,5 @@ public final class Util {
       executor.onError(e);
     }
   }
+ 
 }

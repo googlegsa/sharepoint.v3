@@ -14,15 +14,21 @@
 
 package com.google.enterprise.connector.sharepoint.wsclient.mock;
 
+import static com.google.common.base.Charsets.UTF_8;
+
+import com.google.common.io.ByteStreams;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders.ArrayOf_sListHolder;
 import com.google.enterprise.connector.sharepoint.generated.sitedata.holders._sWebMetadataHolder;
 import com.google.enterprise.connector.sharepoint.wsclient.client.SiteDataWS;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.rmi.RemoteException;
-import java.util.logging.Logger;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MockSiteDataWS implements SiteDataWS {
   private static final Logger LOGGER = Logger.getLogger(MockSiteDataWS.class.getName());
@@ -79,6 +85,15 @@ public class MockSiteDataWS implements SiteDataWS {
   }
 
   public String getContentList(String id) throws RemoteException {
-    return "";
+    try {
+      InputStream in = getClass().getClassLoader()
+          .getResourceAsStream("mock-site-data.xml");
+      return new String(ByteStreams.toByteArray(in), UTF_8)
+          .replace(System.getProperty("line.separator"), "");
+    } catch (Exception e) {
+      LOGGER.log(Level.WARNING, "Unable to load mock xml.", e);
+      return "";
+    }
   }
+
 }
