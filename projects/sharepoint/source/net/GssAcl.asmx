@@ -1434,7 +1434,8 @@ public sealed class GssAclUtility
         SPPolicyCollection policies = site.WebApplication.Policies;
         foreach (SPPolicy policy in policies)
         {
-            GssPrincipal principal = GetGssPrincipalForSecPolicyUser(site, policy.UserName);
+            GssPrincipal principal = GetGssPrincipalForSecPolicyUser(site, policy.UserName,
+                policy.DisplayName);
             if (null == principal)
             {
                 continue;
@@ -1462,7 +1463,8 @@ public sealed class GssAclUtility
         policies = site.WebApplication.ZonePolicies(site.Zone);
         foreach (SPPolicy policy in policies)
         {
-            GssPrincipal principal = GetGssPrincipalForSecPolicyUser(site, policy.UserName);
+            GssPrincipal principal = GetGssPrincipalForSecPolicyUser(site, policy.UserName,
+                policy.DisplayName);
             if (null == principal)
             {
                 continue;
@@ -2064,8 +2066,11 @@ public sealed class GssAclUtility
     /// </summary>
     /// <param name="site">SharePoint Site Collection whose context is to be used for constructing the prinicpal</param>
     /// <param name="login">user login name for which the prinicipal is to be created</param>
+    /// <param name="displayName">user display name for which the prinicipal is to be created
+    /// </param>
     /// <returns></returns>
-    public static GssPrincipal GetGssPrincipalForSecPolicyUser(SPSite site, string login)
+    public static GssPrincipal GetGssPrincipalForSecPolicyUser(SPSite site, string login,
+        string displayName)
     {
         if (null == site || null == login)
         {
@@ -2080,7 +2085,9 @@ public sealed class GssAclUtility
         // For SP 2010 need to check decoded identity value when using claims authentication
         // For SP 2013 need to check encoded login value when using claims authentication
         if (SPUtility.IsLoginValid(site, identity) 
-            || (login != identity && SPUtility.IsLoginValid(site, login)))
+            || (login != identity && SPUtility.IsLoginValid(site, login))
+            || (identity.ToLower().StartsWith("s-1-5") 
+                && SPUtility.IsLoginValid(site, displayName)))
         {
             try
             {
