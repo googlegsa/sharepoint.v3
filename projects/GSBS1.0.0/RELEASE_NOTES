@@ -1,0 +1,51 @@
+Release Notes
+==============
+
+Google Search Box for SharePoint 1.0.0
+
+This document contains the release notes for Google Search Box for SharePoint 1.0.0. See the 'Google Search Box for SharePoint User Guide' for more information on Search Box. The following sections describe the release in detail and provide information that supplements the main documentation.  See the Issues Tab on the Code Site for the current list of known issues and workarounds.
+
+Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+
+Release 1.0.0, 22 June, 2009
+=============================
+
+INTRODUCTION 
+-------------
+This is an early access release for wide evaluation and usage. Your feedback is important to us. Keep in mind that we are continuing to work on Google Search Box for SharePoint 1.0.0 and things may change in the future.
+
+FEATURES
+---------
+1. Google Search Box for SharePoint comes with a simple MSI based installer for easy installation and configuration of the Search Box on SharePoint sites.	
+   For a farm setup, you need to install the Search Box on all the SharePoint Installations (machines). 
+   Else, Search Box will be available only on the SharePoint sites which are part of the SharePoint installations where Search Box is installed.
+2. Google Search Box for SharePoint allows user to perform search on all the documents indexed on the Google Search Appliance(GSA). 
+   Note: The search results can be scoped using GSA "Collections".
+3. Google Search Box for SharePoint uses the current logged-in user for performing search. User need not enter credentials separately for performing search.
+4. The search results are displayed in SharePoint-like format. For displaying search results, following two approaches are supported: 
+   a) Using the locally deployed style sheet(using Installer)
+   b) Using GSA front end's style sheet. (This is a separate component and is not bundled with the Search Box installer)
+5. Google Search Box for SharePoint works with following authentication protocols:
+   a) Http Basic
+   b) Kerberos 
+6. Google Search Box for SharePoint supports simultaneous search on multiple GSA collections separated by pipe (|), e.g. collection1|collection2.
+7. Google Search Box for SharePoint allows user to customize style sheet to display the search results in user specified format.
+8. Google Search Box for SharePoint supports metadata search. This enables user to search documents based on their metadata.
+
+Version Compatibility
+----------------------
+The Google Search Box for SharePoint 1.0.0 is supported on the following SharePoint versions:
+* Microsoft Office SharePoint Server 2007 (MOSS 2007) 
+* Microsoft Windows SharePoint Services 3.0 (WSS 3.0)
+
+Browser Compatibility
+-----------------------
+The Google Search Box for SharePoint 1.0.0 is certified on following browsers:
+* Microsoft Internet Explorer 6.0
+* Microsoft Internet Explorer 7.0
+* Mozilla Firefox 3.0.5
+
+Known Limitations
+-------------------
+1. Search keyword is not displayed on the Search Box when using GSA's front end for displaying searched results and "repeat the search with the omitted results included" is clicked.
+2. The Search Box displays message "Installation is complete", even for Un-installation.
