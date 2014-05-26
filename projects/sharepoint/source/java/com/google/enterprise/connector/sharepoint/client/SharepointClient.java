@@ -224,7 +224,9 @@ public class SharepointClient {
 
     noOfVisitedListStates = 0;
     SPDocumentList resultSet = null;
-    for (final Iterator<ListState> iter = webState.getCurrentListstateIterator(); iter.hasNext();) {
+    Iterator<ListState> iter = sendPendingDocs ? webState.getIterator()
+        : webState.getCurrentListstateIterator();
+    while (iter.hasNext()) {
       final ListState list = iter.next();
       if (list.isSiteDefaultPage()) {
         continue;
