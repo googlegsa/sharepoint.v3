@@ -27,6 +27,7 @@ import com.google.enterprise.connector.sharepoint.state.WebState;
 import com.google.enterprise.connector.sharepoint.wsclient.mock.MockClientFactory;
 import com.google.enterprise.connector.sharepoint.wsclient.soap.SPClientFactory;
 import com.google.enterprise.connector.spi.Document;
+import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants;
 
@@ -83,16 +84,12 @@ public class SPDocumentListTest extends TestCase {
     System.out.println("[ nextDocument() ] Test Passed.");
   }
 
-  public void testCheckpoint() {
+  public void testCheckpoint() throws RepositoryException {
     System.out.println("Testing checkpoint()...");
     this.docs.setAliasMap(sharepointClientContext.getAliasMap());
-    try {
-      final String chk = this.docs.checkpoint();
-      assertNotNull(chk);
-      System.out.println("[ checkpoint() ] Test Completed.");
-    } catch (final Exception e) {
-      System.out.println("[ checkpoint() ] Test Failed.");
-    }
+    final String chk = this.docs.checkpoint();
+    assertNotNull(chk);
+    System.out.println("[ checkpoint() ] Test Completed.");
   }
 
   public void testDefensiveCopyForDocumentList() {

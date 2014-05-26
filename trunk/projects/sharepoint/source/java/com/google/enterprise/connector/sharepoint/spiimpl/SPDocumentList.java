@@ -218,6 +218,11 @@ public class SPDocumentList implements DocumentList {
   public String checkpoint() throws RepositoryException {
     LOGGER.log(Level.INFO, "checkpoint called. docsFedIndexPosition [ "
         + docsFedIndexPosition + " ] ");
+    if (docsFedIndexPosition == 0) {
+      LOGGER.log(Level.FINE, "Checkpoint called without fetching any document "
+          + "from DocumentList.");     
+      return SPConstants.CHECKPOINT_VALUE;
+    }
     for (int i = 0; i < docsFedIndexPosition; i++) {
       // Process the liststate and its crawl queue for the given doc which
       // has been sent to CM and fed to GSA successfully
@@ -368,10 +373,7 @@ public class SPDocumentList implements DocumentList {
 
   /**
    * All the logics which are governed by the document where checkpoint has
-   * occurred. This includes two things: 1. Setting the lastList and lastParent
-   * in globalstate 2. rolling back the change token and getting back the
-   * original token depending on whether all the docs discovered are also sent
-   * to CM.
+   * occurred. Sets the lastList and lastParent in GlobalState.
    */
   private void doCheckPoint() {
     SPDocument spDocument = documents.get(docsFedIndexPosition - 1);

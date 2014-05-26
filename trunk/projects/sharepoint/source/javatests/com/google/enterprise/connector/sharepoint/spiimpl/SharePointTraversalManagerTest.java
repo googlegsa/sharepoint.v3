@@ -16,12 +16,16 @@ package com.google.enterprise.connector.sharepoint.spiimpl;
 
 import com.google.enterprise.connector.adgroups.AdGroupsTraversalManager;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialClientContext;
 import com.google.enterprise.connector.sharepoint.social.SharepointSocialTraversalManager;
 import com.google.enterprise.connector.spi.DocumentList;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.Session;
+
+import java.util.Collections;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -74,5 +78,18 @@ public class SharePointTraversalManagerTest extends TestCase {
       System.out.println(re);
       System.out.println("[ resumeTraversal() ] Test Failed.");
     }
+  }
+  
+  public void testBatchTimeoutandCheckpoint() throws RepositoryException {
+    SharepointTraversalManager manager = this.travMan;
+    sharepointClientContext.setSocialOption(
+        SharepointConnector.SocialOption.NO);
+    DocumentList initial = manager.startTraversal();
+    List<SPDocument> pass1 = ((SPDocumentList) initial).getDocuments();
+    String checkpoint1 = initial.checkpoint();
+    assertEquals(SPConstants.CHECKPOINT_VALUE, checkpoint1);
+    DocumentList incremental = manager.resumeTraversal(checkpoint1);
+    List<SPDocument> pass2 = ((SPDocumentList) incremental).getDocuments();
+    assertEquals(pass1.size(), pass2.size());    
   }
 }
