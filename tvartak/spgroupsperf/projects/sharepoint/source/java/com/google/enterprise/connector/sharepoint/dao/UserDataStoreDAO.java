@@ -155,8 +155,17 @@ public class UserDataStoreDAO extends SharePointDAO {
       groupsObject.put(GROUPS, groups);
     }
     List<UserGroupMembership> memberships;
+
+    StringBuilder sbQuery = new StringBuilder("SELECT SPUserID, SPUserName, "
+        + "SPGroupID, SPGroupName, SPSite FROM USER_GROUP_MEMBERSHIPS WHERE"
+        + " SPUserName in (");
+    for(String sGroup : groups) {
+      sbQuery.append("'").append(sGroup.replace("'", "''")).append("',");
+    }
+    sbQuery.append(")");
+    String queryText = sbQuery.toString().replace(",)", ")");
     try {
-      memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
+      memberships = getSimpleJdbcTemplate().query(queryText, rowMapper);
     } catch (Throwable t) {
       throw new SharepointException("Query execution failed while getting "
           + "the membership info of a given user and AD groups.", t);
