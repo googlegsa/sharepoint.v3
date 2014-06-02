@@ -34,8 +34,9 @@ import java.util.List;
  * @see QueryProvider#registerQuery(Query)
  */
 enum Query {
-  UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES, UDS_SELECT_FOR_ADGROUPS(
-      "groups"), UDS_UPGRADE_COL_USERNAME, UDS_UPGRADE_COL_GROUPNAME,
+  UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES,
+  UDS_SELECT_FOR_ADGROUPS, // groups param is substituted by UserDataStoreDAO.
+  UDS_UPGRADE_COL_USERNAME, UDS_UPGRADE_COL_GROUPNAME,
 
   UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"), UDS_SELECT_FOR_USERNAME(
       "user_name"),
