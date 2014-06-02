@@ -30,9 +30,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,11 +48,11 @@ import javax.sql.DataSource;
  * Data Access Object layer for accessing the user data store
  */
 public class UserDataStoreDAO extends SharePointDAO {
-  private final Logger LOGGER = Logger.getLogger(UserDataStoreDAO.class.getName());
+  private static final Logger LOGGER =
+      Logger.getLogger(UserDataStoreDAO.class.getName());
 
   static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
 
-  private static final String GROUPS = "groups";
   private static final String TABLE_NAME = "TABLE_NAME";
   private static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
   private static final String UDS_COLUMN_USER_NAME = "SPUserName";
@@ -137,36 +137,33 @@ public class UserDataStoreDAO extends SharePointDAO {
    * Retrieves all the {@link UserGroupMembership} to which {@link Set} groups
    * belongs to including the search user.
    *
-   * @param groups set of AD groups whose SP groups are to be retrieved
+   * @param groups set of AD groups whose SP groups are to be retrieved;
+   *     must not be null
    * @param searchUser the search user name
    * @throws SharepointException
    */
   public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
       Set<String> groups, String searchUser) throws SharepointException {
-    Set<String> ldapGroups = null;
-    Query query = Query.UDS_SELECT_FOR_ADGROUPS;
-    Map<String, Object> groupsObject = new HashMap<String, Object>();
-    if (null == groups) {
-      ldapGroups = new HashSet<String>();
-      ldapGroups.add(searchUser);
-      groupsObject.put(GROUPS, ldapGroups);
-    } else {
-      groups.add(searchUser);
-      groupsObject.put(GROUPS, groups);
+    // The list of AD groups may be long and that is very slow on SQL
+    // Server. Substitute SQL escaped string literals for the IN
+    // values parameter in the SQL query. This is ~100x faster.
+    String queryTemplate = getSqlQuery(Query.UDS_SELECT_FOR_ADGROUPS);
+    StringBuilder groupBuffer = new StringBuilder();
+    groupBuffer.append("'").append(searchUser.replace("'", "''"));
+    for (String group : groups) {
+      groupBuffer.append("','").append(group.replace("'", "''"));
     }
-    List<UserGroupMembership> memberships;
+    groupBuffer.append("'");
+    // The null represents the table name substituted by QueryProvider.
+    String queryText =
+        MessageFormat.format(queryTemplate, null, groupBuffer.toString());
+
     try {
-      memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
+      return getSimpleJdbcTemplate().query(queryText, rowMapper);
     } catch (Throwable t) {
       throw new SharepointException("Query execution failed while getting "
           + "the membership info of a given user and AD groups.", t);
     }
-    if (null == groups) {
-      ldapGroups.remove(searchUser);
-    } else {
-      groups.remove(searchUser);
-    }
-    return memberships;
   }
 
   /**
