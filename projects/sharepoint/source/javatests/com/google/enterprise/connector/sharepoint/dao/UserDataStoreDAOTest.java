@@ -39,11 +39,6 @@ public class UserDataStoreDAOTest extends TestCase {
   UserDataStoreDAO userDataStoreDAO;
   Set<UserGroupMembership> memberships;
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see junit.framework.TestCase#setUp()
-   */
   protected void setUp() throws Exception {
     super.setUp();
     userDataStoreDAO = new UserDataStoreDAO(
@@ -55,16 +50,24 @@ public class UserDataStoreDAOTest extends TestCase {
     userDataStoreDAO.addMemberships(memberships);
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    // TODO Auto-generated method stub
-    super.tearDown();
+  /**
+   * Retrieves all the membership information pertaining to a user.
+   *
+   * @param username the user's login name, NOT the ID
+   * @return list of {@link UserGroupMembership} representing memberships
+   *     of the user
+   */
+  private List<UserGroupMembership> getAllMembershipsForUser(String username)
+      throws SharepointException {
+    return userDataStoreDAO.getAllMembershipsForSearchUserAndLdapGroups(
+        ImmutableSet.<String>of(), username);
   }
 
   public void testAddMemberships() {
     try {
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertTrue(userMemberships.contains(membership));
       }
@@ -83,7 +86,8 @@ public class UserDataStoreDAOTest extends TestCase {
       }
       userDataStoreDAO.removeUserMembershipsFromNamespace(userIds, namespace);
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertFalse(userMemberships.contains(membership));
       }
@@ -102,7 +106,8 @@ public class UserDataStoreDAOTest extends TestCase {
       }
       userDataStoreDAO.removeGroupMembershipsFromNamespace(groupIds, namespace);
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertFalse(userMemberships.contains(membership));
       }
@@ -117,7 +122,8 @@ public class UserDataStoreDAOTest extends TestCase {
       namespaces.add(namespace);
       userDataStoreDAO.removeAllMembershipsFromNamespace(namespaces);
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertFalse(userMemberships.contains(membership));
       }
@@ -140,7 +146,8 @@ public class UserDataStoreDAOTest extends TestCase {
       }
       userDataStoreDAO.syncGroupMemberships(membershipMap, namespace);
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertTrue(userMemberships.contains(membership));
       }
@@ -152,15 +159,12 @@ public class UserDataStoreDAOTest extends TestCase {
   public void testGetAllMembershipsForUser() {
     try {
       String userName = TestConfiguration.searchUserID;
-      List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser(userName);
+      List<UserGroupMembership> members = getAllMembershipsForUser(userName);
       assertNotNull(members);
-      Set<String> groups = new HashSet<String>();
       for (UserGroupMembership membership : members) {
         assertEquals(userName, membership.getUserName());
         assertNotNull(membership.getGroupName());
-        groups.add(membership.getGroupName());
       }
-      assertNotNull(groups);
     } catch (Exception e) {
       fail(e.getMessage());
     }
@@ -168,9 +172,7 @@ public class UserDataStoreDAOTest extends TestCase {
 
   public void testGetAllMembershipsForUserWithNull() {
     try {
-      // String userName = TestConfiguration.testuser;
-      List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser("testuser1");
-      // assertNull(members);
+      List<UserGroupMembership> members = getAllMembershipsForUser("testuser1");
       assertTrue(members.isEmpty());
     } catch (Exception e) {
       fail(e.getMessage());

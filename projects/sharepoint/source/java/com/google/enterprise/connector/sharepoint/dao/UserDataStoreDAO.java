@@ -14,6 +14,7 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
 import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
@@ -76,38 +77,6 @@ public class UserDataStoreDAO extends SharePointDAO {
     this.rowMapper = rowMapper;
   }
 
-  /**
-   * Retrieves all the membership information pertaining to a user. This would
-   * be useful to serve the GSA -> CM requests during session channel creation
-   *
-   * @param username the user's login name, NOT the ID
-   * @return list of {@link UserGroupMembership} representing memberships of the
-   *         user
-   */
-  public List<UserGroupMembership> getAllMembershipsForUser(
-      final String username) throws SharepointException {
-
-    UserGroupMembership paramMembership = new UserGroupMembership();
-    paramMembership.setUserName(username);
-    List<UserGroupMembership> lstParamMembership = new ArrayList<UserGroupMembership>();
-    lstParamMembership.add(paramMembership);
-
-    Query query = Query.UDS_SELECT_FOR_USERNAME;
-    SqlParameterSource[] params = createParameter(query, lstParamMembership);
-
-    List<UserGroupMembership> memberships = null;
-    try {
-      memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, params[0]);
-    } catch (Throwable t) {
-      throw new SharepointException(
-          "Query execution failed while getting the membership info of a given user ",
-          t);
-    }
-    LOGGER.log(Level.CONFIG, memberships.size()
-        + " Memberships identified for user [ " + username + " ]. ");
-    return memberships;
-  }
-
   public Set<Principal> getSharePointGroupsForSearchUserAndLdapGroups(
       String localNamespace, Collection<Principal> groups, String searchUser)
       throws SharepointException {
@@ -142,7 +111,8 @@ public class UserDataStoreDAO extends SharePointDAO {
    * @param searchUser the search user name
    * @throws SharepointException
    */
-  public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
+  @VisibleForTesting
+  List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
       Set<String> groups, String searchUser) throws SharepointException {
     // The list of AD groups may be long and that is very slow on SQL
     // Server. Substitute SQL escaped string literals for the IN
@@ -407,12 +377,6 @@ public class UserDataStoreDAO extends SharePointDAO {
     int count = 0;
 
     switch (query) {
-    case UDS_SELECT_FOR_USERNAME:
-      for (UserGroupMembership membership : memberships) {
-        namedParams[count++] = query.createParameter(membership.getUserName().toLowerCase());
-      }
-      break;
-
     case UDS_INSERT:
       for (UserGroupMembership membership : memberships) {
         namedParams[count++] = query.createParameter(membership.getUserId(), membership.getUserName().toLowerCase(), membership.getGroupId(), membership.getGroupName(), membership.getNamespace());

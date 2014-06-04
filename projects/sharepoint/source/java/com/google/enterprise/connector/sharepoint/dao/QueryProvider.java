@@ -119,7 +119,6 @@ public class QueryProvider {
     case UDS_DROP_TABLE:
 
     case UDS_INSERT:
-    case UDS_SELECT_FOR_USERNAME:
 
     case UDS_SELECT_FOR_USERID_NAMESPACE:
     case UDS_DELETE_FOR_USERID_NAMESPACE:
