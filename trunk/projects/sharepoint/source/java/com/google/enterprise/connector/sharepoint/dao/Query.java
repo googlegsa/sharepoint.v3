@@ -38,8 +38,7 @@ enum Query {
   UDS_SELECT_FOR_ADGROUPS, // groups param is substituted by UserDataStoreDAO.
   UDS_UPGRADE_COL_USERNAME, UDS_UPGRADE_COL_GROUPNAME,
 
-  UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"), UDS_SELECT_FOR_USERNAME(
-      "user_name"),
+  UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"),
 
   UDS_SELECT_FOR_USERID_NAMESPACE("user_id", "namespace"), UDS_DELETE_FOR_USERID_NAMESPACE(
       "user_id", "namespace"),
