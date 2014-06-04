@@ -40,6 +40,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.naming.InterruptedNamingException;
+import javax.naming.NamingException;
 
 public class AdGroupsTraversalManager implements TraversalManager {
   private static final Logger LOGGER =
@@ -87,7 +88,11 @@ public class AdGroupsTraversalManager implements TraversalManager {
             Integer.parseInt(ports[i]),
             principals[i],
             passwords[i]);
-        server.initialize();
+        try {
+          server.initialize();
+        } catch (NamingException ex) {
+          throw new RepositoryException(ex);
+        }
         servers.add(server);
       }
     }
@@ -400,13 +405,13 @@ public class AdGroupsTraversalManager implements TraversalManager {
           db.execute(Query.UPDATE_SERVER, server.getSqlParams());
         }
       } catch (SQLException e) {
-        LOGGER.log(Level.WARNING, "Merging data into database failed\n:", e);
-      } catch (RepositoryException e) {
-        LOGGER.log(Level.WARNING, "Connecting to the domain ["
-            + server.getnETBIOSName() + "] failed\n:", e);
+        LOGGER.log(Level.WARNING, "Merging data into database failed\n:", e);      
       } catch (InterruptedNamingException e) {
         LOGGER.log(Level.INFO, "Thread was interrupted, exiting AD crawl.", e);
         break;
+      } catch (NamingException e) {
+        LOGGER.log(Level.WARNING, "Connecting to the domain ["
+            + server.getnETBIOSName() + "] failed\n:", e);
       }
     }
   }
