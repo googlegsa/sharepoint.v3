@@ -84,6 +84,8 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
     final String password = identity.getPassword();
     final String domain = identity.getDomain();
 
+    long startAuthN = System.currentTimeMillis();
+
     LOGGER.log(Level.INFO, "Received authN request for Username [ "
         + username + " ], domain [ " + domain + " ]. ");
 
@@ -141,6 +143,9 @@ public class AdGroupsAuthenticationManager implements AuthenticationManager {
             + "] Active Directory: [" + identity.getDomain()
             + "\\" + identity.getUsername() + "]");
       }
+      LOGGER.log(Level.INFO, "Elapsed time for Active Directory authentication "
+          + "of user [{0}\\{1}] = [{2}ms]",  new Object[] {domain, username,
+            System.currentTimeMillis() - startAuthN});
       return new AuthenticationResponse(true, "", groups);
     } catch (SQLException e) {
       LOGGER.log(Level.WARNING,

@@ -21,6 +21,7 @@ import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -57,6 +58,8 @@ public class UserDataStoreDAO extends SharePointDAO {
   private static final String TABLE_NAME = "TABLE_NAME";
   private static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
   private static final String UDS_COLUMN_USER_NAME = "SPUserName";
+  
+  private static final int RETRY_ON_ERROR_601_LIMIT = 3;
 
   private UserDataStoreCache<UserGroupMembership> udsCache;
   private DataSourceTransactionManager transactionManager;
@@ -129,10 +132,35 @@ public class UserDataStoreDAO extends SharePointDAO {
         MessageFormat.format(queryTemplate, null, groupBuffer.toString());
 
     try {
-      return getSimpleJdbcTemplate().query(queryText, rowMapper);
+      return executeGroupMembershipQuery(queryText, rowMapper, 1);
     } catch (Throwable t) {
       throw new SharepointException("Query execution failed while getting "
           + "the membership info of a given user and AD groups.", t);
+    }
+  }
+
+  private List<UserGroupMembership> executeGroupMembershipQuery(
+      String queryText, ParameterizedRowMapper<UserGroupMembership> rowMapper,
+      int attempt) throws DataAccessException {
+    try {
+      return getSimpleJdbcTemplate().query(queryText, rowMapper);
+    } catch (DataAccessException e) {
+      if (attempt == RETRY_ON_ERROR_601_LIMIT) {
+        throw e;
+      }
+      if (e.getRootCause() instanceof SQLException) {
+        SQLException sqlException = (SQLException) (e.getRootCause());
+        if (sqlException.getErrorCode() == 601) {
+          LOGGER.log(Level.WARNING, "Error executing query [" + queryText + "] "
+              + "due to data move. Retrying attempt [" + (attempt + 1)
+              + " of " + RETRY_ON_ERROR_601_LIMIT + "].", sqlException);
+          return executeGroupMembershipQuery(queryText, rowMapper, attempt + 1);
+        } else {
+          throw e;
+        }
+      } else {
+        throw e;
+      }
     }
   }
 

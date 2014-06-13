@@ -129,12 +129,14 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
   private AuthenticationResponse authenticateAgainstActiveDirectory(
       final AuthenticationIdentity identity) throws RepositoryLoginException,
       RepositoryException {
+    long startAuthN = System.currentTimeMillis();
     AuthenticationResponse adAuthResult =
         adGroupsAuthenticationManager.authenticate(identity);
     if (!adAuthResult.isValid()) {
       return adAuthResult;
     }
 
+    long startSharePoint = System.currentTimeMillis();
     @SuppressWarnings("unchecked")
     Collection<Principal> adGroups =
         (Collection<Principal>) adAuthResult.getGroups();
@@ -148,6 +150,11 @@ public class SharepointAuthenticationManager implements AuthenticationManager {
     Collection<Principal> groups = new ArrayList<Principal>();
     groups.addAll(adGroups);
     groups.addAll(spGroups);
+    LOGGER.log(Level.INFO, "Authentication Duration [{0}] : Total = [{1}ms] "
+        + "SharePoint = [{2}ms] AD = [{3}ms]", new Object[] {strUserName,
+          (System.currentTimeMillis() - startAuthN),
+          (System.currentTimeMillis() - startSharePoint),
+          (startSharePoint - startAuthN)});
 
     return new AuthenticationResponse(
         adAuthResult.isValid(), adAuthResult.getData(), groups);
