@@ -22,6 +22,10 @@ import static org.easymock.EasyMock.isA;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.enterprise.connector.adgroups.AdConstants.Method;
+import com.google.enterprise.connector.adgroups.AdDbUtil.Query;
+
 import org.easymock.EasyMock;
 import org.easymock.IAnswer;
 
@@ -34,6 +38,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -54,18 +62,76 @@ public class AdDbUtilTest extends TestCase {
     util.select(AdDbUtil.Query.SELECT_CONNECTORNAME, null);
     verify(ds, c, statement, rs);
   }
-  
+
   public void testConstructorWithH2() throws SQLException {
     // Setup in-memory H2 JDBC DataSource;
     JdbcDataSource ds = new JdbcDataSource();
-    ds.setURL("jdbc:h2:mem");
+    ds.setURL("jdbc:h2:mem:");
     ds.setUser("sa");
-    ds.setPassword("sa");
+    ds.setPassword("");
     AdDbUtil util = new AdDbUtil(ds, "H2");
     util.select(AdDbUtil.Query.TEST_CONNECTORNAME, null);
     util.select(AdDbUtil.Query.TEST_SERVERS, null);
     util.select(AdDbUtil.Query.TEST_MEMBERS, null);
     util.select(AdDbUtil.Query.TEST_ENTITIES, null);
+  }
+
+  /**
+   * Tests that a 64-bit value greater than 2^31 - 1 can be written to
+   * and read from the database.
+   */
+  public void testHighestCommittedUsn() throws SQLException {
+    JdbcDataSource ds = new JdbcDataSource();
+    ds.setURL("jdbc:h2:mem:");
+    ds.setUser("sa");
+    ds.setPassword("");
+    AdDbUtil util = new AdDbUtil(ds, "H2");
+
+    Map<String, Object> queryParams =
+        ImmutableMap.<String, Object>of(AdConstants.DB_DN, "DC=example,DC=com");
+
+    List<HashMap<String, Object>> dbServers =
+        util.select(AdDbUtil.Query.SELECT_SERVER, queryParams);
+    assertServerCountEquals(0, dbServers);
+
+    Map<String, Object> serverParams = new HashMap<String, Object>();
+    serverParams.put(AdConstants.DB_DN, "DC=example,DC=com");
+    serverParams.put(AdConstants.DB_HIGHESTCOMMITTEDUSN, Long.MAX_VALUE);
+    serverParams.put(AdConstants.DB_DSSERVICENAME, "notnull");
+    serverParams.put(AdConstants.DB_INVOCATIONID, "notnull");
+    serverParams.put(AdConstants.DB_NETBIOSNAME, "notnull");
+    serverParams.put(AdConstants.DB_SID, "notnull");
+    serverParams.put(AdConstants.DB_DNSROOT, "notnull");
+    util.execute(Query.UPDATE_SERVER, serverParams);
+
+    dbServers = util.select(AdDbUtil.Query.SELECT_SERVER, queryParams);
+    assertServerCountEquals(1, dbServers);
+    assertEntriesEqual(serverParams, dbServers.get(0),
+        AdConstants.DB_DN, AdConstants.DB_HIGHESTCOMMITTEDUSN);
+  }
+
+  /**
+   * Produces a useful message when the wrong number of servers are
+   * returned by a query.
+   */
+  private void assertServerCountEquals(int expected,
+      List<HashMap<String, Object>> dbServers) {
+    if (dbServers.size() != expected) {
+      List<Object> dns = new ArrayList<Object>(dbServers.size());
+      for (Map<String, Object> entry : dbServers) {
+        dns.add(entry.get(AdConstants.DB_DN));
+      }
+      fail("Expected " + expected + " but got " + dbServers.size()
+          + " servers: " + dns);
+    }
+  }
+
+  /** Asserts partial equality of two maps, comparing only the given keys. */
+  private void assertEntriesEqual(Map<String, Object> expected,
+      Map<String, Object> actual, String... keys) {
+    for (String key : keys) {
+      assertEquals(key, expected.get(key), actual.get(key));
+    }
   }
 
   public void testSQLExceptionWith601Error2Times() throws SQLException {   
