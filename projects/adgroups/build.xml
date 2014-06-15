@@ -32,7 +32,6 @@
   <property name="tests.jarfile" value="${connector-manager.dir}/${jar.dir}/connector-tests.jar" />
   <property name="downloads.dir" value="downloads" />
   <property name="cm-third-party.jar" value="${connector-manager.dir}/third-party/" />
-  <property name="sql.properties" value="source/java/com/google/enterprise/connector/sharepoint/sql/" />
 
   <!--Cobertura properties -->
   <property file="${config}/build_code_coverage.properties" />
@@ -80,6 +79,11 @@
             location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
       </classpath>
     </javac>
+    <copy todir="${classes}" overwrite="yes">
+      <fileset dir="${src}">
+          <include name="**/sql*.properties" />
+      </fileset>
+    </copy>
   </target>
 
   <target name="compile_tests" depends="init, compile">
@@ -126,7 +130,6 @@
           <include name="prod/*.jar" />
           <include name="tests/*.jar" />
         </fileset>
-        <pathelement location="${sql.properties}/*.properties" />
         <pathelement location="${config}" />
         <pathelement 
             location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />

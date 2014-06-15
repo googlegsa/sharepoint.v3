@@ -25,6 +25,8 @@
   <property environment="env" />
   <property name="wsdl" value="wsdl" />
   <property name="tests.src" value="source/javatests" />
+  <property name="tests.data" value="${tests.src}/data" />
+  <property name="tests.data" value="${tests.src}/data" />
   <property name="tests.build" value="build/tests" />
   <property name="tests.classes" value="${tests.build}/classes" />
   <property name="tests.todir" value="tests_outdir" />
@@ -252,6 +254,8 @@
         </fileset>
         <pathelement location="${tests.classes}" />
         <pathelement location="${tests.src}" />
+        <pathelement location="${tests.data}" />
+        <pathelement location="${tests.data}" />
         <pathelement path="${java.class.path}" />
       </classpath>
       <formatter type="xml" />

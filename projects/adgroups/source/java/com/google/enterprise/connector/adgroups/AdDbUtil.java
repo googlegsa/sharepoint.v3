@@ -39,6 +39,8 @@ public class AdDbUtil {
   private static final Logger LOGGER =
     Logger.getLogger(AdDbUtil.class.getName());
 
+  private static final int RETRY_ON_ERROR_601_LIMIT = 3;
+
   public enum Query {
     TEST_SERVERS("TEST_SERVERS"),
     CREATE_SERVERS_SEQUENCE("CREATE_SERVERS_SEQUENCE"),
@@ -334,6 +336,12 @@ public class AdDbUtil {
    */
   public List<HashMap<String, Object>>
       select(Query query, Map<String, Object> params) throws SQLException {
+        return select(query, params, 1);
+  }
+
+  private List<HashMap<String, Object>>
+      select(Query query, Map<String, Object> params, int attempt)
+          throws SQLException {
     Connection connection = null;
     PreparedStatement statement = null;
     ResultSet rs = null;
@@ -363,6 +371,19 @@ public class AdDbUtil {
         results.add(result);
       }
       return results;
+    } catch (SQLException e) {
+      if (attempt == RETRY_ON_ERROR_601_LIMIT) {
+        throw e;
+      }
+
+      if (e.getErrorCode() == 601) {
+        LOGGER.log(Level.WARNING, "Error executing query [" + query + "] "
+              + "due to data move. Retrying attempt [" + (attempt + 1)
+              + " of " + RETRY_ON_ERROR_601_LIMIT + "].", e);
+        return select (query, params, attempt + 1);
+      } else {
+        throw e;
+      }
     } finally {
       try {
         if (rs != null) {

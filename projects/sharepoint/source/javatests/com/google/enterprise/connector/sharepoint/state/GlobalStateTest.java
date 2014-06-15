@@ -190,11 +190,11 @@ public class GlobalStateTest extends TestCase {
     WebState ws = state1.makeWebState(sharepointClientContext, TestConfiguration.Site1_URL);
     DateTime dt = new DateTime();
     ws.setInsertionTime(dt);
-    ws.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
+    ws.setLastCrawledDateTime(Util.getCurrentTimestampString());
 
     final ListState list = new ListState("X", "X", SPConstants.GENERIC_LIST,
         Calendar.getInstance(), "X", "X", ws);
-    list.setLastCrawledDateTime(Util.formatDate(Calendar.getInstance(), Util.TIMEFORMAT_WITH_ZONE));
+    list.setLastCrawledDateTime(Util.getCurrentTimestampString());
     list.setAttchmnts(new StringBuffer("X"));
     list.addToDeleteCache("X");
     list.setIDs(new StringBuffer("X"));

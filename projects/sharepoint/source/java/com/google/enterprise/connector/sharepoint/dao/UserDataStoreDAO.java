@@ -14,12 +14,14 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.enterprise.connector.sharepoint.cache.UserDataStoreCache;
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
+import com.google.enterprise.connector.sharepoint.client.Util;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 import com.google.enterprise.connector.spi.Principal;
 import com.google.enterprise.connector.spi.SpiConstants.PrincipalType;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -30,9 +32,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -46,11 +48,19 @@ import javax.sql.DataSource;
 
 /**
  * Data Access Object layer for accessing the user data store
- *
- * @author nitendra_thakur
  */
-public class UserDataStoreDAO extends SimpleSharePointDAO {
-  private final Logger LOGGER = Logger.getLogger(UserDataStoreDAO.class.getName());
+public class UserDataStoreDAO extends SharePointDAO {
+  private static final Logger LOGGER =
+      Logger.getLogger(UserDataStoreDAO.class.getName());
+
+  static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
+
+  private static final String TABLE_NAME = "TABLE_NAME";
+  private static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
+  private static final String UDS_COLUMN_USER_NAME = "SPUserName";
+  
+  private static final int RETRY_ON_ERROR_601_LIMIT = 3;
+
   private UserDataStoreCache<UserGroupMembership> udsCache;
   private DataSourceTransactionManager transactionManager;
   private ParameterizedRowMapper<UserGroupMembership> rowMapper;
@@ -70,38 +80,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     this.rowMapper = rowMapper;
   }
 
-  /**
-   * Retrieves all the membership information pertaining to a user. This would
-   * be useful to serve the GSA -> CM requests during session channel creation
-   *
-   * @param username the user's login name, NOT the ID
-   * @return list of {@link UserGroupMembership} representing memberships of the
-   *         user
-   */
-  public List<UserGroupMembership> getAllMembershipsForUser(
-      final String username) throws SharepointException {
-
-    UserGroupMembership paramMembership = new UserGroupMembership();
-    paramMembership.setUserName(username);
-    List<UserGroupMembership> lstParamMembership = new ArrayList<UserGroupMembership>();
-    lstParamMembership.add(paramMembership);
-
-    Query query = Query.UDS_SELECT_FOR_USERNAME;
-    SqlParameterSource[] params = createParameter(query, lstParamMembership);
-
-    List<UserGroupMembership> memberships = null;
-    try {
-      memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, params[0]);
-    } catch (Throwable t) {
-      throw new SharepointException(
-          "Query execution failed while getting the membership info of a given user ",
-          t);
-    }
-    LOGGER.log(Level.CONFIG, memberships.size()
-        + " Memberships identified for user [ " + username + " ]. ");
-    return memberships;
-  }
-
   public Set<Principal> getSharePointGroupsForSearchUserAndLdapGroups(
       String localNamespace, Collection<Principal> groups, String searchUser)
       throws SharepointException {
@@ -113,13 +91,8 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
         getAllMembershipsForSearchUserAndLdapGroups(groupNames, searchUser.toLowerCase());
     Set<Principal> spGroups = new HashSet<Principal>();
     for (UserGroupMembership membership : spMemberships) {
-      // append name space to SP groups.
-      String groupName = SPConstants.LEFT_SQUARE_BRACKET
-          + membership.getNamespace()
-          + SPConstants.RIGHT_SQUARE_BRACKET
-          + membership.getGroupName();
-      spGroups.add(
-          new Principal(PrincipalType.UNQUALIFIED, localNamespace, groupName));
+      spGroups.add(Util.getSharePointGroupPrincipal(localNamespace,
+          membership.getNamespace(), membership.getGroupName()));
     }
     if (LOGGER.isLoggable(Level.INFO)) {
       StringBuffer sb = new StringBuffer("Resolved ").append(spGroups.size())
@@ -136,36 +109,59 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
    * Retrieves all the {@link UserGroupMembership} to which {@link Set} groups
    * belongs to including the search user.
    *
-   * @param groups set of AD groups whose SP groups are to be retrieved
+   * @param groups set of AD groups whose SP groups are to be retrieved;
+   *     must not be null
    * @param searchUser the search user name
    * @throws SharepointException
    */
-  public List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
+  @VisibleForTesting
+  List<UserGroupMembership> getAllMembershipsForSearchUserAndLdapGroups(
       Set<String> groups, String searchUser) throws SharepointException {
-    Set<String> ldapGroups = null;
-    Query query = Query.UDS_SELECT_FOR_ADGROUPS;
-    Map<String, Object> groupsObject = new HashMap<String, Object>();
-    if (null == groups) {
-      ldapGroups = new HashSet<String>();
-      ldapGroups.add(searchUser);
-      groupsObject.put(SPConstants.GROUPS, ldapGroups);
-    } else {
-      groups.add(searchUser);
-      groupsObject.put(SPConstants.GROUPS, groups);
+    // The list of AD groups may be long and that is very slow on SQL
+    // Server. Substitute SQL escaped string literals for the IN
+    // values parameter in the SQL query. This is ~100x faster.
+    String queryTemplate = getSqlQuery(Query.UDS_SELECT_FOR_ADGROUPS);
+    StringBuilder groupBuffer = new StringBuilder();
+    groupBuffer.append("'").append(searchUser.replace("'", "''"));
+    for (String group : groups) {
+      groupBuffer.append("','").append(group.replace("'", "''"));
     }
-    List<UserGroupMembership> memberships;
+    groupBuffer.append("'");
+    // The null represents the table name substituted by QueryProvider.
+    String queryText =
+        MessageFormat.format(queryTemplate, null, groupBuffer.toString());
+
     try {
-      memberships = getSimpleJdbcTemplate().query(getSqlQuery(query), rowMapper, groupsObject);
+      return executeGroupMembershipQuery(queryText, rowMapper, 1);
     } catch (Throwable t) {
       throw new SharepointException("Query execution failed while getting "
           + "the membership info of a given user and AD groups.", t);
     }
-    if (null == groups) {
-      ldapGroups.remove(searchUser);
-    } else {
-      groups.remove(searchUser);
+  }
+
+  private List<UserGroupMembership> executeGroupMembershipQuery(
+      String queryText, ParameterizedRowMapper<UserGroupMembership> rowMapper,
+      int attempt) throws DataAccessException {
+    try {
+      return getSimpleJdbcTemplate().query(queryText, rowMapper);
+    } catch (DataAccessException e) {
+      if (attempt == RETRY_ON_ERROR_601_LIMIT) {
+        throw e;
+      }
+      if (e.getRootCause() instanceof SQLException) {
+        SQLException sqlException = (SQLException) (e.getRootCause());
+        if (sqlException.getErrorCode() == 601) {
+          LOGGER.log(Level.WARNING, "Error executing query [" + queryText + "] "
+              + "due to data move. Retrying attempt [" + (attempt + 1)
+              + " of " + RETRY_ON_ERROR_601_LIMIT + "].", sqlException);
+          return executeGroupMembershipQuery(queryText, rowMapper, attempt + 1);
+        } else {
+          throw e;
+        }
+      } else {
+        throw e;
+      }
     }
-    return memberships;
   }
 
   /**
@@ -409,12 +405,6 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
     int count = 0;
 
     switch (query) {
-    case UDS_SELECT_FOR_USERNAME:
-      for (UserGroupMembership membership : memberships) {
-        namedParams[count++] = query.createParameter(membership.getUserName().toLowerCase());
-      }
-      break;
-
     case UDS_INSERT:
       for (UserGroupMembership membership : memberships) {
         namedParams[count++] = query.createParameter(membership.getUserId(), membership.getUserName().toLowerCase(), membership.getGroupId(), membership.getGroupName(), membership.getNamespace());
@@ -490,7 +480,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
 
       // Specific to oracle database to check required entities in user
       // data store data base.
-      if (getQueryProvider().getDatabase().equalsIgnoreCase(SPConstants.SELECTED_DATABASE)) {
+      if (getQueryProvider().getDatabase().equalsIgnoreCase("oracle")) {
         statement = getConnection().createStatement(
             ResultSet.TYPE_SCROLL_INSENSITIVE,
             ResultSet.CONCUR_READ_ONLY);
@@ -542,12 +532,12 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
   private void updateUDSTable(DatabaseMetaData dbm, String tablePattern)
       throws SQLException {
     updateColumnIfNeeded(dbm, tablePattern,
-        SPConstants.UDS_COLUMN_USER_NAME,
-        SPConstants.UDS_MAX_GROUP_NAME_LENGTH,
+        UDS_COLUMN_USER_NAME,
+        UDS_MAX_GROUP_NAME_LENGTH,
         Query.UDS_UPGRADE_COL_USERNAME);
     updateColumnIfNeeded(dbm, tablePattern,
-        SPConstants.UDS_COLUMN_GROUP_NAME,
-        SPConstants.UDS_MAX_GROUP_NAME_LENGTH,
+        UDS_COLUMN_GROUP_NAME,
+        UDS_MAX_GROUP_NAME_LENGTH,
         Query.UDS_UPGRADE_COL_GROUPNAME);
   }
 
@@ -641,8 +631,8 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
           // inserted membership in Oracle data base. in MS SQL
           // data base and -3 represents missed cache entry in MY SQL
           // data base. hence it makes sense to have a check against
-          // status >=3.
-          if (status[i] >= SPConstants.MINUS_THREE) {
+          // status >= -3.
+          if (status[i] >= -3) {
             udsCache.add(membership);
           }
         }
@@ -696,7 +686,7 @@ public class UserDataStoreDAO extends SimpleSharePointDAO {
       if (fromStatement) {
         currName = rsTables.getString(1);
       } else {
-        currName = rsTables.getString(SPConstants.TABLE_NAME);
+        currName = rsTables.getString(TABLE_NAME);
       }
       if (tableName.equalsIgnoreCase(currName)) {
         tableFound = true;

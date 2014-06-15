@@ -14,13 +14,10 @@
 
 package com.google.enterprise.connector.sharepoint.client;
 
-import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
 
 /**
- * Used to store constants
- *
- * @author nitendra_thakur
+ * Used to store constants.
  */
 public class SPConstants {
   // used while parsing the alias string
@@ -92,15 +89,14 @@ public class SPConstants {
   public static final String URL_SEP = "://";
   public static final String COLON = ":";
   public static final String SLASH = "/";
-  public static final String DOUBLEBACKSLASH = "\\";
+  public static final String BACKSLASH = "\\";
   public static final String AT = "@";
   public static final char SLASH_CHAR = '/';
-  public static final char DOUBLEBACKSLASH_CHAR = '\\';
+  public static final char BACKSLASH_CHAR = '\\';
   public static final char AT_CHAR = '@';
 
-  // The string to be stripped off from the atrribute's name as web service
-  // return so.
-
+  // The string to be stripped off from the attribute's name as web service
+  // returns it.
   public static final String OWS = "ows_";
   public static final String METAINFO = "MetaInfo_";
   public static final String VTI = "vti_";
@@ -252,9 +248,6 @@ public class SPConstants {
   public static final String REGEXP = "regexp:";
   public static final String REGEXP_CASE = "regexpCase:";
   public static final String REGEXP_IGNORE_CASE = "regexpIgnoreCase:";
-
-  // Used in SPDocumentList.
-  public static final int MINUS_ONE = -1;
 
   // Used by SharePointClientContext
   public static final String SEPARATOR = " ";
@@ -457,7 +450,6 @@ public class SPConstants {
   public static final String VAR_KRB5_REALM_UPPERCASE = "{REALM}";
   public static final String VAR_KRB5_REALM_LOWERCASE = "{realm}";
   public static final String VAR_KRB5_KDC_SERVER = "{kdcserver}";
-  public static final String UTF_8 = "UTF-8";
   public static final String SYS_PROP_AUTH_LOGIN_CONFIG = "java.security.auth.login.config";
   public static final String SYS_PROP_AUTH_KRB5_CONFIG = "java.security.krb5.conf";
   public static final String SYS_PROP_AUTH_USESUBJETCREDSONLY = "javax.security.auth.useSubjectCredsOnly";
@@ -468,14 +460,6 @@ public class SPConstants {
   public static final String GROUPNAME_CONSTANT_IN_ACL = "groupname";
   public static final String DOMAIN_CONSTANT_IN_ACL = "domain";
   public static final String DEFAULT_SITE_LANDING_PAGE = "/default.aspx";
-  public static final String LEFT_SQUARE_BRACKET = "[";
-  public static final String RIGHT_SQUARE_BRACKET = "]";
-  public static final String UDS_TABLE = "'TABLE'";
-  public static final String SELECTED_DATABASE = "oracle";
-  public static final String TABLE_NAME = "TABLE_NAME";
-  public static final String USER_NAME = "user_name";
-  public static final String GROUP_NAME = "group_name";
-  public static final int MINUS_THREE = -3;
   public static final String ON = "on";
   public static final String UNCHECKED = "unchecked";
   public static final String LDAP_DEFAULT_PORT_NUMBER = "389";
@@ -494,7 +478,6 @@ public class SPConstants {
   public static final String SEARCH_BASE_INVALID_NAME = "Search_Base_Invalid_Name";
   public static final String INVALID_PORT_NUMBER = "Invalid_Port_Number";
   public static final String ONKEY_PRESS = "onkeypress=";
-  public static final String GROUPS = "groups";
   public static final String EQUAL_TO = "=";
   public static final String INVALID_INITIAL_CACHE_SIZE = "Invalid_Initial_Cache_Size";
   public static final String INVALID_CACHE_REFRESH_INTERVAL = "Invalid_Cache_Refresh_Interval";
@@ -514,7 +497,6 @@ public class SPConstants {
   public static final String ON_CLICK = "onclick=";
   public static final String OFF = "off";
   public static final String LABEL_FOR = "label for";
-  public static final String FORWARD_SLASH = "/";
   public static final String LABEL = "label";
   public static final String SELECT = "select";
   public static final String STYLE = "style=\"width:11em\"";
@@ -524,7 +506,6 @@ public class SPConstants {
   public static final String MODERATION_STATUS = "ows__ModerationStatus";
   public static final String FEED_UNPUBLISHED_CONTENT = "feedUnPublishedDocuments";
   public static final String FEED_UNPUBLISHED_CONTENT_LABEL = "feed_Un_Published_Documents";
-  public static final String META_URL_FEED_DOC_TOKEN = "?";
   public static final CharSequence ALERTS_EQUALTO = "Alert=";
   public static final String GSAADMINUSER = "gsaAdminUser";
   public static final String GSAADMINPASSWORD = "gsaAdminPassword";
@@ -539,12 +520,5 @@ public class SPConstants {
      = "InvalidCollectionName";
   public static final String NON_EMPTY_STRING = "NonEmptyString";
 
-  public static final String CONNECTOR_NAME_COLUMN = "connectorname";
-  public static final String CONNECTOR_NAME_COLUMN_CAPITAL = "CONNECTORNAME";
   public static final String SYSTEM_UPDATE = "SystemUpdate";
-
-  // User store query constants.
-  public static final int UDS_MAX_GROUP_NAME_LENGTH = 256;
-  public static final String UDS_COLUMN_GROUP_NAME = "SPGroupName";
-  public static final String UDS_COLUMN_USER_NAME = "SPUserName";
 }

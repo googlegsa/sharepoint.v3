@@ -14,14 +14,12 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,11 +30,14 @@ import javax.sql.DataSource;
 
 /**
  * Data Access Object layer for accessing the connector names table.
- *
- * @author nageswara_sura
  */
-public class ConnectorNamesDAO extends SimpleSharePointDAO {
-  private final Logger LOGGER = Logger.getLogger(ConnectorNamesDAO.class.getName());
+public class ConnectorNamesDAO extends SharePointDAO {
+  private static final Logger LOGGER =
+      Logger.getLogger(ConnectorNamesDAO.class.getName());
+
+  private static final String CONNECTOR_NAME_COLUMN = "connectorname";
+  private static final String CONNECTOR_NAME_COLUMN_CAPITAL = "CONNECTORNAME";
+
   public static Set<String> connectorNames = new HashSet<String>();
 
   public ConnectorNamesDAO(final DataSource dataSource,
@@ -67,7 +68,7 @@ public class ConnectorNamesDAO extends SimpleSharePointDAO {
       connectorNames.add(connectorName);
       Query query = Query.CN_INSERT;
       Map<String, Object> parameters = new HashMap<String, Object>();
-      parameters.put(SPConstants.CONNECTOR_NAME_COLUMN, connectorName);
+      parameters.put(CONNECTOR_NAME_COLUMN, connectorName);
       try {
         status = getSimpleJdbcTemplate().update(getSqlQuery(query), parameters);
       } catch (DataIntegrityViolationException e) {
@@ -102,7 +103,7 @@ public class ConnectorNamesDAO extends SimpleSharePointDAO {
     }
     Query query = Query.CN_DELETE;
     Map<String, Object> parameters = new HashMap<String, Object>();
-    parameters.put(SPConstants.CONNECTOR_NAME_COLUMN, connectorName);
+    parameters.put(CONNECTOR_NAME_COLUMN, connectorName);
     try {
       status = getSimpleJdbcTemplate().update(getSqlQuery(query), parameters);
     } catch (DataIntegrityViolationException e) {
@@ -156,9 +157,8 @@ public class ConnectorNamesDAO extends SimpleSharePointDAO {
           "Failed to retrieve all the connector names from the table with the quey ["
               + Query.CN_SELECT + "]", e);
     }
-    for (Iterator<Map<String, Object>> iterator = results.iterator(); iterator.hasNext();) {
-      Map<String, Object> map = iterator.next();
-      connectorNames.add((String) map.get(SPConstants.CONNECTOR_NAME_COLUMN_CAPITAL));
+    for (Map<String, Object> map : results) {
+      connectorNames.add((String) map.get(CONNECTOR_NAME_COLUMN_CAPITAL));
     }
     LOGGER.log(Level.INFO, "Returning all the connector names : "
         + connectorNames);

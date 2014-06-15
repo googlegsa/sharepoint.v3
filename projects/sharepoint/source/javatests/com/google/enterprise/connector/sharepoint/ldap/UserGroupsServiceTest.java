@@ -43,8 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Test class for {@link UserGroupsService}
- *
- * @author nageswara_sura
  */
 public class UserGroupsServiceTest {
   private LdapConnectionSettings ldapConnectionSettings;
@@ -141,17 +139,19 @@ public class UserGroupsServiceTest {
     Set<String> egroups = new HashSet<String>();
 
     egroups = this.userGroupsService.addGroupNameFormatForTheGroups(groups);
-    if (sharepointClientContext.getGroupnameFormatInAce().indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
+    if (sharepointClientContext.getGroupnameFormatInAce()
+        .indexOf(SPConstants.BACKSLASH) != -1) {
       for (String groupName : egroups) {
-        assertEquals(true, groupName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
+        assertEquals(true, groupName.indexOf(SPConstants.BACKSLASH) != -1);
       }
       for (String groupName : groups) {
         assertEquals(true, egroups.contains(this.sharepointClientContext.getDomain().toUpperCase()
                 + "\\" + groupName));
       }
-    } else if (sharepointClientContext.getGroupnameFormatInAce().indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
+    } else if (sharepointClientContext.getGroupnameFormatInAce()
+        .indexOf(SPConstants.AT) != -1) {
       for (String groupName : egroups) {
-        assertEquals(true, groupName.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE);
+        assertEquals(true, groupName.indexOf(SPConstants.AT) != -1);
       }
       for (String groupName : groups) {
         assertEquals(true, egroups.contains(this.sharepointClientContext.getDomain().toUpperCase()
@@ -169,12 +169,14 @@ public class UserGroupsServiceTest {
     String userName = TestConfiguration.usernameFormatInAce;
     String searchUserName = TestConfiguration.userNameFormat1;
     String finalUserName = this.userGroupsService.addUserNameFormatForTheSearchUser(searchUserName);
-    if (sharepointClientContext.getUsernameFormatInAce().indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE) {
-      assertEquals(true, finalUserName.indexOf(SPConstants.DOUBLEBACKSLASH) != SPConstants.MINUS_ONE);
+    if (sharepointClientContext.getUsernameFormatInAce()
+        .indexOf(SPConstants.BACKSLASH) != -1) {
+      assertEquals(true, finalUserName.indexOf(SPConstants.BACKSLASH) != -1);
       assertEquals(sharepointClientContext.getDomain()
-          + SPConstants.DOUBLEBACKSLASH + searchUserName, finalUserName);
-    } else if (sharepointClientContext.getUsernameFormatInAce().indexOf(SPConstants.AT) != SPConstants.MINUS_ONE) {
-      assertEquals(true, finalUserName.indexOf(SPConstants.AT) != SPConstants.MINUS_ONE);
+          + SPConstants.BACKSLASH + searchUserName, finalUserName);
+    } else if (sharepointClientContext.getUsernameFormatInAce()
+        .indexOf(SPConstants.AT) != -1) {
+      assertEquals(true, finalUserName.indexOf(SPConstants.AT) != -1);
       assertEquals(searchUserName, finalUserName);
     } else {
       assertTrue(userName.equalsIgnoreCase(finalUserName));

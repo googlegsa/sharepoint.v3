@@ -128,26 +128,17 @@ public class AdServer {
         AdConstants.ATTR_CONFIGURATIONNAMINGCONTEXT).get(0).toString();
   }
 
-  public void initialize() throws RepositoryException {
-    try {
-      connect();
-      sid = AdEntity.getTextSid((byte[])get(
-          AdConstants.ATTR_DISTINGUISHEDNAME + AdConstants.EQUALS + dn,
-          AdConstants.ATTR_OBJECTSID, dn));
-      invocationID = AdEntity.getTextGuid((byte[]) get(
-          AdConstants.ATTR_DISTINGUISHEDNAME
-          + AdConstants.EQUALS + dsServiceName,
-          AdConstants.ATTR_INVOCATIONID,
-          dsServiceName));
-    } catch (CommunicationException e) {
-      throw new RepositoryException(e);
-    } catch (AuthenticationNotSupportedException e) {
-      throw new RepositoryException(e);
-    } catch (AuthenticationException e) {
-      throw new RepositoryException(e);
-    } catch (NamingException e) {
-      throw new RepositoryException(e);
-    }
+  public void initialize() throws NamingException {
+    
+    connect();
+    sid = AdEntity.getTextSid((byte[])get(
+        AdConstants.ATTR_DISTINGUISHEDNAME + AdConstants.EQUALS + dn,
+        AdConstants.ATTR_OBJECTSID, dn));
+    invocationID = AdEntity.getTextGuid((byte[]) get(
+        AdConstants.ATTR_DISTINGUISHEDNAME
+        + AdConstants.EQUALS + dsServiceName,
+        AdConstants.ATTR_INVOCATIONID,
+        dsServiceName));
 
     LOGGER.info("Sucessfully created an Initial LDAP context");
 
@@ -223,7 +214,7 @@ public class AdServer {
    * @return list of entities found
    */
   public Set<AdEntity> search(String filter, boolean deleted,
-      String[] attributes) throws InterruptedNamingException {
+      String[] attributes) throws NamingException {
     Set<AdEntity> results = new HashSet<AdEntity>();
     searchCtls.setReturningAttributes(attributes);
     setControls(deleted);
@@ -282,10 +273,6 @@ public class AdServer {
           start += found;
         } while (!g.areAllMembershipsRetrieved());
       }
-    } catch (InterruptedNamingException e) {
-      throw e;
-    } catch (NamingException e) {
-      LOGGER.log(Level.WARNING, "", e);
     } catch (IOException e) {
       LOGGER.log(Level.WARNING, "Couldn't initialize LDAP paging control. Will"
           + " continue without paging - this can cause issue if there are more"

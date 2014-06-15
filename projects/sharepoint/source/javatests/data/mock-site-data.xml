@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This file mocks site data from SharePoint.  MockSiteDataWS.getContentList()
+  will strip out new line characters, as required by the SharePoint connector,
+  before returning content as a one-line string. -->
+<List>
+<Metadata ID="{6f33949a-b3ff-4b0c-ba99-93cb518ac2c0}"
+ LastModified="2012-05-04 21:24:32Z" Title="Custom List"
+ DefaultTitle="True" Description="" BaseType="GenericList"
+ BaseTemplate="GenericList"
+ DefaultViewUrl="/sites/SiteCollection/Lists/CustomList/AllItems.aspx"
+ DefaultViewItemUrl="/sites/SiteCollection/Lists/CustomList/DispForm.aspx"
+ RootFolder="Lists/CustomList" Author="System Account"
+ ItemCount="7" ReadSecurity="1" AllowAnonymousAccess="False"
+ AnonymousViewListItems="False" AnonymousPermMask="0"
+ CRC="1334405648" NoIndex="False"
+ ScopeID="{f9cb02b3-7f29-4cac-804f-ba6e14f1eb39}" />
+</List>
