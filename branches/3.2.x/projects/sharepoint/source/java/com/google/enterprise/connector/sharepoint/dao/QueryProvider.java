@@ -14,157 +14,176 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
+import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
 
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-
-import java.util.LinkedList;
+import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Provides the actual SQL queries for execution for all the queries (
  * {@link Query}) registered with the connector. This mainly includes loading of
  * queries from {@literal sqlQueries.properties} and resolving all the
  * placeholders to construct the final executable SQL query.
- *
- * @author nitendra_thakur
+ * Uses Java's Locale/ResourceBundle concept to load vendor-specific
+ * SQL queries from {@literal sqlQueries.properties}. This class can be safely
+ * extended to override any of the functionality e.g loading of queries,
+ * construction of queries etc.
  */
-public interface QueryProvider {
+public class QueryProvider {
+  private static final String UDS_TABLE = "'TABLE'";
+
+  private ResourceBundle sqlQueries;
+  private String basename;
+
+  // Required for constructing User Data Store queries
+  private String udsTableName;
+  private String udsIndexName;
+
+  // for connector names table
+  private String cnTableName;
+
+  // Queries that can be served
+  private Map<Query, String> sqlQueryMap = new HashMap<Query, String>();
+
+  private String database;
+
+  public QueryProvider(String basename) {
+    this.basename = basename;
+  }
+
+  public String getSqlQuery(Query query) {
+    return sqlQueryMap.get(query);
+  }
 
   /**
-   * Initializes the QueryProvider to serve SQL queries. ConnectorNames are used
-   * to ensure that that every connector possess its own schema. XXX Essence of
-   * this constraint may be re-thought in future.
+   * Initializes the QueryProvider to serve SQL queries.
+   * Constructs a {@link Locale} for the given vendor/attributes
+   * and loads the corresponding {@literal sqlQueries.properties}. For all the
+   * queries registered in {@link Query}, reads the query string and resolves
+   * all the placeholders. In fact, only entities and attribute names are
+   * resolved here; resolution of the parameter names are delegated to the
+   * queries themselves.
    *
+   * @see Query#getParameterPlaceholders()
    * @param vendor specifies the vendor for which the queries will be provided
    * @param attr specifies additional attributes that should be considered along
-   *          with vendor name while loading the queries
+   *          with vendor name while loading the queries. At max three
+   *          attributes are allowed. Anything more than that will be ignored
    * @throws SharepointException
    */
-  void init(String vendor, String... attr) throws SharepointException;
-
-  /**
-   * Returns the actual SQL query that can be executed.
-   *
-   * @param query the {@link Query}
-   * @return a string form of the SQL query
-   */
-  String getSqlQuery(Query query);
-
-  /**
-   * Returns the database that is being used for queries
-   *
-   * @return the string name of the database
-   */
-  String getDatabase();
-
-  /**
-   * Sets the database name to use for queries.
-   *
-   * @param database the database to use to all queries
-   */
-  void setDatabase(String database);
-
-  /**
-   * Name of the table representing User Group Memberships
-   *
-   * @return user data store table name
-   */
-  String getUdsTableName();
-
-  /**
-   * Name of the index to be created in for user data store. Currently, there is
-   * only one such index.
-   *
-   * @return the user data store index name
-   */
-  String getUdsIndexName();
-
-  /**
-   * Returns the connector names table.
-   *
-   * @return the connector names table
-   */
-  String getCnTableName();
-}
-
-/**
- * Enumerates all the queries used by connector. The values are keys which
- * identifies a query in {@literal sqlQueries.properties}. To support a new
- * query, the query must be added here along with {@literal
- * sqlQueries.properties}. Actual SQL queries are constructed using these
- * values.
- * <p/>
- * Notes to Programmers: While specifying the placeholders, only consider the
- * parameter values which will be passes during batch execution. Entities and
- * Attributes required ion the query must not be mentioned as placeholders.
- *
- * @see SimpleQueryProvider#registerQuery(Query)
- * @author nitendra_thakur
- */
-enum Query {
-  UDS_CREATE_TABLE, UDS_CREATE_INDEX, UDS_DROP_TABLE, UDS_CHECK_TABLES, UDS_SELECT_FOR_ADGROUPS(
-      "groups"), UDS_UPGRADE_COL_USERNAME, UDS_UPGRADE_COL_GROUPNAME,
-
-  UDS_INSERT("user_id", "user_name", "group_id", "group_name", "namespace"), UDS_SELECT_FOR_USERNAME(
-      "user_name"),
-
-  UDS_SELECT_FOR_USERID_NAMESPACE("user_id", "namespace"), UDS_DELETE_FOR_USERID_NAMESPACE(
-      "user_id", "namespace"),
-
-  UDS_SELECT_FOR_GROUPID_NAMESPACE("group_id", "namespace"), UDS_DELETE_FOR_GROUPID_NAMESPACE(
-      "group_id", "namespace"),
-
-  UDS_SELECT_FOR_NAMESPACE("namespace"), UDS_DELETE_FOR_NAMESPACE("namespace"), CN_CREATE_TABLE, CN_INSERT(
-      "connectorname"), CN_SELECT, CN_DELETE("connectorname"), CN_DROP_TABLE;
-
-  String[] parameters;
-
-  Query(String... parameters) {
-    this.parameters = parameters;
-  }
-
-  /**
-   * Creates a name-value map that can be used to execute a query.
-   *
-   * @param values the values for the parameters
-   * @return a {@link SqlParameterSource}
-   */
-  public SqlParameterSource createParameter(Object... values) {
-    check(values);
-    MapSqlParameterSource namedParam = new MapSqlParameterSource();
-    int i = 0;
-    for (String placeholder : parameters) {
-      namedParam.addValue(placeholder, values[i++]);
+  public void init(String vendor, String... attr) throws SharepointException {
+    Locale locale = null;
+    if (attr.length == 0) {
+      locale = new Locale(vendor);
+    } else if (attr.length == 1) {
+      locale = new Locale(vendor, attr[0]);
+    } else if (attr.length == 2) {
+      locale = new Locale(vendor, attr[0], attr[1]);
     }
-    return namedParam;
-  }
 
-  /**
-   * Checks if the no. of passed-in values is equal to the parameters that the
-   * query uses
-   */
-  private void check(Object... param) {
-    if (null == parameters && param.length == 0) {
-      return;
+    try {
+      sqlQueries = ResourceBundle.getBundle(basename, locale);
+    } catch (Exception e) {
+      throw new SharepointException(
+          "Could not load sqlQueries.properties for locale [ " + locale + " ] ");
     }
-    if (param.length != parameters.length) {
-      throw new IllegalArgumentException("No. of expected parameters "
-          + parameters.length + " ] is not equal to the passed-in values "
-          + param.length);
+
+    for (Query query : Query.values()) {
+      registerQuery(query);
     }
   }
 
   /**
-   * Creates placeholder names that should be used while constructing the
-   * actual SQL query.
+   * Iterate over each {@code Query} that connector needs to support. Construct
+   * the actual SQL query for each of them and register the query in a local map
+   * that will be used for serving the queries.
+   *
+   * @param query
    */
-  public List<String> getParameterPlaceholders() {
-    List<String> placeholders = new LinkedList<String>();
-    for (String parameter : parameters) {
-      placeholders.add(":" + parameter);
+  protected void registerQuery(Query query) {
+    String sqlQuery = null;
+    List<String> placeholders = query.getParameterPlaceholders();
+    switch (query) {
+    case UDS_CREATE_TABLE:
+    case UDS_UPGRADE_COL_USERNAME:
+    case UDS_UPGRADE_COL_GROUPNAME:
+      placeholders.add(0, udsTableName);
+      placeholders.add(1, Integer.toString(
+        UserDataStoreDAO.UDS_MAX_GROUP_NAME_LENGTH));
+      break;
+    case UDS_DROP_TABLE:
+
+    case UDS_INSERT:
+
+    case UDS_SELECT_FOR_USERID_NAMESPACE:
+    case UDS_DELETE_FOR_USERID_NAMESPACE:
+
+    case UDS_SELECT_FOR_GROUPID_NAMESPACE:
+    case UDS_DELETE_FOR_GROUPID_NAMESPACE:
+
+    case UDS_SELECT_FOR_NAMESPACE:
+    case UDS_DELETE_FOR_NAMESPACE:
+      placeholders.add(0, udsTableName);
+      break;
+    case UDS_CREATE_INDEX:
+      placeholders.add(0, udsIndexName);
+      placeholders.add(1, udsTableName);
+      break;
+    case UDS_CHECK_TABLES:
+      placeholders.add(0, UDS_TABLE);
+      break;
+    case UDS_SELECT_FOR_ADGROUPS:
+      placeholders.add(0, udsTableName);
+      break;
+
+    case CN_CREATE_TABLE:
+    case CN_INSERT:
+    case CN_SELECT:
+    case CN_DELETE:
+    case CN_DROP_TABLE:
+      placeholders.add(0, cnTableName);
+      break;
     }
-    return placeholders;
+    sqlQuery = MessageFormat.format(sqlQueries.getString(query.name()), placeholders.toArray());
+    sqlQueryMap.put(query, sqlQuery);
   }
+
+  // XXX This is temporary
+  public String getDatabase() {
+    return database;
+  }
+
+  public void setDatabase(String database) {
+    this.database = database;
+  }
+
+  public String getUdsTableName() {
+    return udsTableName;
+  }
+
+  public void setUdsTableName(String udsTableName) {
+    this.udsTableName = udsTableName;
+  }
+
+  public String getUdsIndexName() {
+    return udsIndexName;
+  }
+
+  public void setUdsIndexName(String udsIndexName) {
+    this.udsIndexName = udsIndexName;
+  }
+
+  public String getCnTableName() {
+    return cnTableName;
+  }
+
+  public void setCnTableName(String cnTableName) {
+    this.cnTableName = cnTableName;
+  }
+
 }

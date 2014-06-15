@@ -18,7 +18,6 @@ import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
 import com.google.enterprise.connector.sharepoint.client.SPConstants.FeedType;
 import com.google.enterprise.connector.sharepoint.dao.QueryProvider;
-import com.google.enterprise.connector.sharepoint.dao.SimpleQueryProvider;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembership;
 import com.google.enterprise.connector.sharepoint.dao.UserGroupMembershipRowMapper;
 import com.google.enterprise.connector.sharepoint.ldap.UserGroupsService;
@@ -915,7 +914,7 @@ public class TestConfiguration {
 
   public static QueryProvider getUserDataStoreQueryProvider()
       throws SharepointException {
-    SimpleQueryProvider queryProvider = new SimpleQueryProvider(
+    QueryProvider queryProvider = new QueryProvider(
         "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
     queryProvider.setUdsTableName(TestConfiguration.UDS_TABLE_NAME);
     queryProvider.setUdsIndexName(TestConfiguration.UDS_INDEX_NAME);

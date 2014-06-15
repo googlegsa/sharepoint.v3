@@ -14,14 +14,37 @@
 
 package com.google.enterprise.connector.sharepoint.dao;
 
-import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import static com.google.enterprise.connector.spi.SpiConstants.CaseSensitivityType.EVERYTHING_CASE_INSENSITIVE;
+import static com.google.enterprise.connector.spi.SpiConstants.PrincipalType.UNQUALIFIED;
+import static org.easymock.EasyMock.createMock;
+import static org.easymock.EasyMock.createNiceMock;
+import static org.easymock.EasyMock.expect;
+import static org.easymock.EasyMock.isA;
+import static org.easymock.EasyMock.isNull;
+import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.verify;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.enterprise.connector.sharepoint.TestConfiguration;
+import com.google.enterprise.connector.sharepoint.spiimpl.SharepointException;
+import com.google.enterprise.connector.spi.Principal;
+
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DeadlockLoserDataAccessException;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
@@ -33,11 +56,6 @@ public class UserDataStoreDAOTest extends TestCase {
   UserDataStoreDAO userDataStoreDAO;
   Set<UserGroupMembership> memberships;
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see junit.framework.TestCase#setUp()
-   */
   protected void setUp() throws Exception {
     super.setUp();
     userDataStoreDAO = new UserDataStoreDAO(
@@ -49,16 +67,24 @@ public class UserDataStoreDAOTest extends TestCase {
     userDataStoreDAO.addMemberships(memberships);
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    // TODO Auto-generated method stub
-    super.tearDown();
+  /**
+   * Retrieves all the membership information pertaining to a user.
+   *
+   * @param username the user's login name, NOT the ID
+   * @return list of {@link UserGroupMembership} representing memberships
+   *     of the user
+   */
+  private List<UserGroupMembership> getAllMembershipsForUser(String username)
+      throws SharepointException {
+    return userDataStoreDAO.getAllMembershipsForSearchUserAndLdapGroups(
+        ImmutableSet.<String>of(), username);
   }
 
   public void testAddMemberships() {
     try {
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertTrue(userMemberships.contains(membership));
       }
@@ -77,7 +103,8 @@ public class UserDataStoreDAOTest extends TestCase {
       }
       userDataStoreDAO.removeUserMembershipsFromNamespace(userIds, namespace);
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertFalse(userMemberships.contains(membership));
       }
@@ -96,7 +123,8 @@ public class UserDataStoreDAOTest extends TestCase {
       }
       userDataStoreDAO.removeGroupMembershipsFromNamespace(groupIds, namespace);
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertFalse(userMemberships.contains(membership));
       }
@@ -111,7 +139,8 @@ public class UserDataStoreDAOTest extends TestCase {
       namespaces.add(namespace);
       userDataStoreDAO.removeAllMembershipsFromNamespace(namespaces);
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertFalse(userMemberships.contains(membership));
       }
@@ -134,7 +163,8 @@ public class UserDataStoreDAOTest extends TestCase {
       }
       userDataStoreDAO.syncGroupMemberships(membershipMap, namespace);
       for (UserGroupMembership membership : memberships) {
-        List<UserGroupMembership> userMemberships = userDataStoreDAO.getAllMembershipsForUser(membership.getUserName());
+        List<UserGroupMembership> userMemberships =
+            getAllMembershipsForUser(membership.getUserName());
         assertNotNull(userMemberships);
         assertTrue(userMemberships.contains(membership));
       }
@@ -146,15 +176,12 @@ public class UserDataStoreDAOTest extends TestCase {
   public void testGetAllMembershipsForUser() {
     try {
       String userName = TestConfiguration.searchUserID;
-      List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser(userName);
+      List<UserGroupMembership> members = getAllMembershipsForUser(userName);
       assertNotNull(members);
-      Set<String> groups = new HashSet<String>();
       for (UserGroupMembership membership : members) {
         assertEquals(userName, membership.getUserName());
         assertNotNull(membership.getGroupName());
-        groups.add(membership.getGroupName());
       }
-      assertNotNull(groups);
     } catch (Exception e) {
       fail(e.getMessage());
     }
@@ -162,12 +189,67 @@ public class UserDataStoreDAOTest extends TestCase {
 
   public void testGetAllMembershipsForUserWithNull() {
     try {
-      // String userName = TestConfiguration.testuser;
-      List<UserGroupMembership> members = userDataStoreDAO.getAllMembershipsForUser("testuser1");
-      // assertNull(members);
+      List<UserGroupMembership> members = getAllMembershipsForUser("testuser1");
       assertTrue(members.isEmpty());
     } catch (Exception e) {
       fail(e.getMessage());
     }
+  }
+
+  public void testGetSharePointGroupsForSearchUserAndLdapGroups()
+      throws SharepointException {
+    Set<Principal> ldapGroups = ImmutableSet.of();
+    Set<Principal> spGroups =
+        userDataStoreDAO.getSharePointGroupsForSearchUserAndLdapGroups(
+            "ns", ldapGroups, "user1");
+    String expectedGroup = String.format("[%s]%s", namespace, "group1");
+    Set<Principal> expectedGroups = ImmutableSet.of(
+        new Principal(UNQUALIFIED, "ns", expectedGroup,
+            EVERYTHING_CASE_INSENSITIVE));
+    assertEquals(expectedGroups, spGroups);
+  }  
+  
+  public void testSharePointGroupResolutionWith601ErrorRetry()
+      throws SharepointException, SQLException { 
+    QueryProvider queryProvider = new QueryProvider(
+        "com.google.enterprise.connector.sharepoint.sql.sqlQueries");
+    queryProvider.setUdsTableName("USER_GROUP_MEMBERSHIPS");
+    queryProvider.setCnTableName("CONNECTOR_NAMES");
+    queryProvider.setDatabase("sqlserver");
+    queryProvider.init("sqlserver");
+    
+    UserGroupMembershipRowMapper rowMapper = new UserGroupMembershipRowMapper();
+    rowMapper.setUserID("SPUserID");
+    rowMapper.setUserName("SPUserName");
+    rowMapper.setGroupID("SPGroupID");
+    rowMapper.setGroupName("SPGroupName");
+    rowMapper.setNamespace("SPSite");
+
+    DataSource ds = createMock(DataSource.class);
+    Connection c = createMock(Connection.class);
+    DatabaseMetaData dbm = createNiceMock(DatabaseMetaData.class);
+    Statement statement = createMock(Statement.class);
+    ResultSet rs = createNiceMock(ResultSet.class);
+    SQLException e601 = createNiceMock(SQLException.class);
+    DataAccessException dataException = new DeadlockLoserDataAccessException(
+        "Fake DataAccess exception", e601);   
+
+    expect(ds.getConnection()).andReturn(c).anyTimes();
+    expect(dbm.getTables(isNull(String.class), isNull(String.class),
+        isA(String.class), isNull(String[].class))).andReturn(rs).anyTimes();
+    expect(c.getMetaData()).andReturn(dbm).anyTimes();
+    expect(c.createStatement()).andReturn(statement).anyTimes();
+    expect(statement.executeUpdate(isA(String.class))).andReturn(1).anyTimes();
+    expect(statement.executeQuery(isA(String.class))).andThrow(dataException)
+        .andThrow(dataException).andReturn(rs);
+    expect(e601.getMessage()).andReturn("Fake Data Move Exception").anyTimes();
+    expect(e601.getErrorCode()).andReturn(601).anyTimes();
+    replay(ds, c, statement, e601, dbm, rs);
+
+    UserDataStoreDAO userDataStore = new UserDataStoreDAO(
+        ds, queryProvider, rowMapper);
+    userDataStore.getAllMembershipsForSearchUserAndLdapGroups(
+        new HashSet<String>(), "SearchUser");
+    verify(ds, c, statement, e601, dbm, rs);
   }
 }

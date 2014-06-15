@@ -33,12 +33,9 @@ import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.SimpleProperty;
 import com.google.enterprise.connector.spi.SkippedDocumentException;
 import com.google.enterprise.connector.spi.SpiConstants;
+import com.google.enterprise.connector.spi.SpiConstants.ActionType;
 import com.google.enterprise.connector.spi.SpiConstants.DocumentType;
 import com.google.enterprise.connector.spi.Value;
-import com.google.enterprise.connector.spi.SpiConstants.ActionType;
-import com.google.enterprise.connector.spiimpl.BooleanValue;
-import com.google.enterprise.connector.spiimpl.DateValue;
-import com.google.enterprise.connector.spiimpl.StringValue;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethodBase;
@@ -508,7 +505,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
           }
           String contentType = content.getContentType();
           return (contentType == null) ? null : new SimpleProperty(
-              new StringValue(contentType));
+              Value.getStringValue(contentType));
         }
       }
     } else if (collator.equals(strPropertyName,
@@ -529,7 +526,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_SEARCHURL)) {
       if (FeedType.CONTENT_FEED != getFeedType()) {
         // TODO Handle ACL feed here.
-        return new SimpleProperty(new StringValue(getUrl()));
+        return new SimpleProperty(Value.getStringValue(getUrl()));
       }
     } else if (collator.equals(strPropertyName,
             SpiConstants.PROPNAME_ACLINHERITANCETYPE)) {
@@ -539,7 +536,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
         // web application policy document.
         return null;
       }
-      return new SimpleProperty(new StringValue(
+      return new SimpleProperty(Value.getStringValue(
               SpiConstants.AclInheritanceType.PARENT_OVERRIDES.toString()));
     } else if (collator.equals(strPropertyName,
             SpiConstants.PROPNAME_ACLINHERITFROM_DOCID)) {
@@ -550,40 +547,40 @@ public class SPDocument implements Document, Comparable<SPDocument> {
       if (getFeedType() == FeedType.CONTENT_FEED) {
         parentUrlToSend = parentUrlToSend + "|" + getParentId().toUpperCase();
       }
-      return new SimpleProperty(new StringValue(parentUrlToSend));
+      return new SimpleProperty(Value.getStringValue(parentUrlToSend));
     } else if (collator.equals(strPropertyName,
         SpiConstants.PROPNAME_ACLINHERITFROM)) {
       String parentUrlToSend = getParentUrl();
       if (FeedType.CONTENT_FEED == getFeedType()) {
         return null;
       }
-      return new SimpleProperty(new StringValue(parentUrlToSend));
+      return new SimpleProperty(Value.getStringValue(parentUrlToSend));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_FEEDTYPE)) {
-      return new SimpleProperty(new StringValue(feedType.toString()));
+      return new SimpleProperty(Value.getStringValue(feedType.toString()));
     } else if (collator.equals(strPropertyName,
         SpiConstants.PROPNAME_ACLINHERITFROM_FEEDTYPE)) {
-      return new SimpleProperty(new StringValue(feedType.toString()));
+      return new SimpleProperty(Value.getStringValue(feedType.toString()));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_DISPLAYURL)) {
-      return new SimpleProperty(new StringValue(displayUrl));
+      return new SimpleProperty(Value.getStringValue(displayUrl));
     } else if (collator.equals(strPropertyName, SPConstants.PARENT_WEB_TITLE)) {
-      return new SimpleProperty(new StringValue(getParentWebTitle()));
+      return new SimpleProperty(Value.getStringValue(getParentWebTitle()));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_DOCID)) {
-      return new SimpleProperty(new StringValue(getDocId()));
+      return new SimpleProperty(Value.getStringValue(getDocId()));
     } else if (collator.equals(strPropertyName, SpiConstants.PROPNAME_LASTMODIFIED)) {
-      return new SimpleProperty(new DateValue(getLastMod()));
+      return new SimpleProperty(Value.getDateValue(getLastMod()));
     } else if (collator.equals(strPropertyName, SPConstants.LIST_GUID)) {
       if (null != getParentList()) {
-        return new SimpleProperty(new StringValue(
+        return new SimpleProperty(Value.getStringValue(
             getParentList().getPrimaryKey()));
       }
     } else if (collator.equals(strPropertyName, SPConstants.SPAUTHOR)) {
-      return new SimpleProperty(new StringValue(getAuthor()));
+      return new SimpleProperty(Value.getStringValue(getAuthor()));
     } else if (strPropertyName.equals(SPConstants.OBJECT_TYPE)) {
-      return new SimpleProperty(new StringValue(getObjType()));
+      return new SimpleProperty(Value.getStringValue(getObjType()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ISPUBLIC)) {
-      return new SimpleProperty(BooleanValue.makeBooleanValue(publicDocument));
+      return new SimpleProperty(Value.getBooleanValue(publicDocument));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACTION)) {
-      return new SimpleProperty(new StringValue(getAction().toString()));
+      return new SimpleProperty(Value.getStringValue(getAction().toString()));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYUSERS)) {
       return getPrincipalProperty(aclDenyUsers);
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLDENYGROUPS)) {
@@ -593,10 +590,11 @@ public class SPDocument implements Document, Comparable<SPDocument> {
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_ACLGROUPS)) {
       return getPrincipalProperty(aclGroups);
     } else if (strPropertyName.startsWith(SpiConstants.PROPNAME_TITLE)) {
-      return new SimpleProperty(new StringValue(title));
+      return new SimpleProperty(Value.getStringValue(title));
     } else if (strPropertyName.equals(SpiConstants.PROPNAME_DOCUMENTTYPE)) {
       if (documentType != null) {
-        return new SimpleProperty(new StringValue(documentType.toString()));
+        return new SimpleProperty(
+            Value.getStringValue(documentType.toString()));
       } else {
         return null;
       }
@@ -620,7 +618,7 @@ public class SPDocument implements Document, Comparable<SPDocument> {
             List<String> values =  Util.processMultiValueMetadata(strAttrValue);
             valuesToPass = new ArrayList<Value>();
             for (String str : values) {
-              valuesToPass.add(new StringValue(str));
+              valuesToPass.add(Value.getStringValue(str));
             }
           } else {
             valuesToPass = null;          
