@@ -6,6 +6,85 @@ The following sections describe the release in detail and provide information th
 
 Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
 
+Release 3.2.8, June 16, 2014
+============================
+
+Introduction
+------------
+This is a maintenance release that improves quality without adding any
+new functionality. Users of previous releases are encouraged to review
+the changes below to determine whether to upgrade. Users of previous
+releases should check the "Version Compatibility" section below for
+instructions on how to use existing data with this new release.
+
+Summary of Changes
+------------------
+Java SE 5.0 is no longer supported. Java 6 or later is required.
+
+SharePoint 2003 and WSS 2.0 are no longer supported.
+
+The Google Services for SharePoint (GSS) component has been renamed to
+Connector Services for SharePoint in Google Search Appliance.
+Some occurrences of the old name may still appear, but refer to the
+same component.
+
+Issues Fixed Since 3.2.6
+------------------------
+15386188 - Slow UPDATEs during traversal by SharePoint connector on MS SQL 
+           server database causes slow SELECTs during group resolution due to 
+           table locking.
+
+15365252 - SharePoint group resolution is slow on SQL Server with many 
+           AD group memberships.
+
+15109986(*) - SharePoint connector skips domain groups from web application  
+           policy ACLs on SharePoint 2010 when SharePoint is configured to use  
+           claims based authentication.
+
+12803928 - SharePoint connector encountered deadlock during SharePoint group 
+           resolution.
+
+11182100 - SharePoint connector throws ArrayIndexOutOfBoundsException 
+           when CM interrupts the batch and calls checkpoint after getting a 
+           DocumentList but before processing any of the documents in it.
+
+Notes : (*) - Need Connector Services for SharePoint 3.2.8 to work correctly.
+
+Version Compatibility
+---------------------
+This version works with Connector Manager version 3.2.6 and above. Versions
+lower than 3.2.6 of the Connector Manager will not work correctly with this
+version of the connector. Connectors with version 2.4.0 and above can be
+safely upgraded using the steps given below.
+
+This version works with Connector Services for SharePoint 3.2.4 and above. 
+Versions lower than 3.2.4 of Connector Services for SharePoint will not work
+correctly with this version of the connector. Bugs marked with (*) will require
+upgrade to Connector Services for SharePoint 3.2.8
+
+This version works with Active Directory Groups connector 3.2.0 and above.
+Versions lower than 3.2.0 of Active Directory Groups connector are not
+compatible with version 3.2.8 of the SharePoint connector.
+
+Manually upgrade an existing connector and Connector Services for SharePoint
+----------------------------------------------------------------------------
+The steps to manually upgrade an existing connector or a Connector Services for 
+SharePoint can be found at http://code.google.com/p/google-enterprise-connector-sharepoint/wiki/ManualInstallation.
+
+Platform Support
+------------------
+The connector can be installed and run on both 32-bit and 64-bit Windows
+and Linux environments.
+
+--Microsoft Windows Server 2012
+--Microsoft Windows Server 2008 R2
+--Microsoft Windows Server 2008
+--Microsoft Windows Server 2003
+--Red Hat Enterprise Linux 6
+--Red Hat Enterprise Linux 5
+
+Note: This release has been tested against blank form templates and sample form templates provided by Microsoft Office InfoPath 2007 and InfoPath 2010.
+
 
 Release 3.2.6, April 25, 2014
 =============================
