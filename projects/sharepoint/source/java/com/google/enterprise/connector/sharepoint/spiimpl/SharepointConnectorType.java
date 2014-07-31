@@ -38,7 +38,6 @@ import com.google.enterprise.connector.spi.ConnectorFactory;
 import com.google.enterprise.connector.spi.ConnectorType;
 import com.google.enterprise.connector.spi.SocialCollectionHandler;
 import com.google.enterprise.connector.spi.XmlUtils;
-import com.google.gdata.util.common.base.StringUtil;
 
 import org.apache.commons.httpclient.auth.AuthPolicy;
 import org.apache.commons.httpclient.contrib.auth.NegotiateScheme;
@@ -120,10 +119,7 @@ public class SharepointConnectorType implements ConnectorType {
         "cacheRefreshInterval",
         // User profile settings
         "socialOption",
-        "userProfileCollection",
-        // gdata connection credential
-        "gsaAdminUser",
-        "gsaAdminPassword");
+        "userProfileCollection");
     CONFIG_LABELS = ImmutableList.<String>builder()
         .addAll(prefix)
         .add("sharepointCrawlingOptions")
@@ -791,8 +787,7 @@ public class SharepointConnectorType implements ConnectorType {
   private void addTextField(String value, StringBuffer buf, String key) {
     buf.append(SPConstants.OPEN_ELEMENT);
     buf.append(SPConstants.INPUT);
-    if (key.equals(SPConstants.PASSWORD)
-        || key.equals(SPConstants.GSAADMINPASSWORD)) {
+    if (key.equals(SPConstants.PASSWORD)) {
       appendAttribute(buf, SPConstants.TYPE, SPConstants.PASSWORD);
     } else if (key.equals(SPConstants.ALIAS_MAP)) {
       appendAttribute(buf, SPConstants.TYPE, SPConstants.HIDDEN);
@@ -1205,30 +1200,13 @@ public class SharepointConnectorType implements ConnectorType {
             return false;
           }
           if (!option.equalsIgnoreCase(SPConstants.SOCIAL_OPTION_NO)) {
-            // validate collection name is well-formed and 
-            // admin/password not empty
-            boolean valid = true;
+            // Validate collection name is well-formed.
             String collectionName = configData.get(
                 SPConstants.SOCIAL_USER_PROFILE_COLLECTION);
             if (!(SocialCollectionHandler.validateCollectionName(
                 collectionName))) {
               ed.set(SPConstants.SOCIAL_USER_PROFILE_COLLECTION, 
                   rb.getString(SPConstants.SOCIAL_COLLECTION_INVALID));
-              valid = false;
-            }
-            if (StringUtil.isEmptyOrWhitespace(configData.
-                get(SPConstants.GSAADMINUSER))) {
-              ed.set(SPConstants.GSAADMINUSER, rb.getString(
-                  SPConstants.NON_EMPTY_STRING));
-              valid = false;
-            }
-            if (StringUtil.isEmptyOrWhitespace(configData.
-                get(SPConstants.GSAADMINPASSWORD))) {
-              ed.set(SPConstants.GSAADMINPASSWORD, rb.getString(
-                  SPConstants.NON_EMPTY_STRING));
-              valid = false;
-            }
-            if (!valid) {
               return false;
             }
           }

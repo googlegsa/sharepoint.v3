@@ -216,13 +216,10 @@ public class TestConfiguration {
   public static String ldapGroup1;
   public static String groupNameFormatInACE;
   public static String userNameFormatInACE;
-  private static String gsaHost;
+
   //Time zone;
   public static String timeZone;
 
-  private static int gsaPort;
-  private static String gsaAdmin;
-  private static String gsaAdminPassword;
   private static String socialOption;
 
   //UTF-8 support
@@ -417,11 +414,6 @@ public class TestConfiguration {
 
     timeZone = properties.getProperty("timeZone");
 
-    gsaHost = properties.getProperty("GsaHost");
-    gsaPort = Integer.parseInt(properties.getProperty("GsaPort"));
-    gsaAdmin = properties.getProperty("GsaAdminUsername");
-    gsaAdminPassword = properties.getProperty("GsaAdminPassword");
-
     socialOption = properties.getProperty("SocialOption");
     UTF8SiteUrl = properties.getProperty("UTF8SiteUrl");
     publishingSiteUrl = properties.getProperty("PublishingSiteUrl");
@@ -459,8 +451,6 @@ public class TestConfiguration {
     configMap.put("cacheRefreshInterval", cacheRefreshInterval);
     configMap.put(SPConstants.SOCIAL_OPTION, socialOption);
     configMap.put(SPConstants.SOCIAL_USER_PROFILE_COLLECTION, "");
-    configMap.put(SPConstants.GSAADMINUSER, gsaAdmin);
-    configMap.put(SPConstants.GSAADMINPASSWORD, gsaAdminPassword);
 
     return configMap;
   }
@@ -852,9 +842,6 @@ public class TestConfiguration {
     connector.setSearchBase("DC=gdc-psl,DC=net");
     connector.setLdapConnectiionSettings(TestConfiguration.getLdapConnetionSettings());
     connector.setSocialOption(TestConfiguration.getSocialOption());
-    connector.setGsaAdminUser(TestConfiguration.getGsaAdmin());
-    connector.setGsaAdminPassword(TestConfiguration.getGsaAdminPassword());
-    connector.setGsaHostAddress(gsaHost);
     return connector;
   }
 
@@ -957,17 +944,5 @@ public class TestConfiguration {
 
   public static String getSocialOption() {
     return socialOption;
-  }
-
-  public static String getGsaAdmin() {
-    return gsaAdmin;
-  }
-
-  public static String getGsaAdminPassword() {
-    return gsaAdminPassword;
-  }
-
-  public static String getGsaHost() {
-    return gsaHost;
   }
 }
