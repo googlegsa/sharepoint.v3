@@ -1,0 +1,14 @@
+.OPTION Explicit
+.Set DiskDirectory1="build"
+.Set CabinetNameTemplate=connector-services-sharepoint.wsp
+manifest.xml
+.Set DestinationDir=ISAPI
+source/net/GssAcldisco.aspx
+source/net/GssAcl.asmx
+source/net/GssAclwsdl.aspx
+source/net/GSBulkAuthorizationdisco.aspx
+source/net/GSBulkAuthorizationwsdl.aspx
+source/net/GSBulkAuthorization.asmx
+source/net/GSSiteDiscoverydisco.aspx
+source/net/GSSiteDiscoverywsdl.aspx
+source/net/GSSiteDiscovery.asmx
