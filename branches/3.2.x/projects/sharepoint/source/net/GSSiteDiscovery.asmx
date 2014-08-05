@@ -54,7 +54,7 @@ public class SiteDiscovery : System.Web.Services.WebService
         return webSiteList;//return the list
     }
     /// <summary>
-    /// Populate full URL for all the site collections under given SPWebApplication object
+    /// Populate full URL for all the unlocked site collections under given SPWebApplication object
     /// </summary>
     /// <param name="wa">SPWebApplication object to fetch all the Site Collections</param>
     /// <param name="webSiteList">ArrayList object to hold URLs for all the site collections under SPWebApplication</param> 
@@ -64,13 +64,34 @@ public class SiteDiscovery : System.Web.Services.WebService
         {
             // Get web application URL for current request URL Zone.
             string strWebappUrl = wa.GetResponseUri(SPContext.Current.Site.Zone).AbsoluteUri;
-            if (!strWebappUrl.EndsWith("/"))
+            if (strWebappUrl.EndsWith("/"))
             {
-                strWebappUrl = strWebappUrl + "/";
-            }        
-            foreach (String url in wa.Sites.Names)
+                strWebappUrl = strWebappUrl.Substring(0, strWebappUrl.Length - 1);
+            }
+            foreach (SPSite site in wa.Sites)
             {
-                webSiteList.Add(strWebappUrl + url);
+                using (site)
+                {
+                    try
+                    {
+                        if (!site.ReadLocked)
+                        {
+                            if (site.HostHeaderIsSiteName)
+                            {
+                                webSiteList.Add(site.Url);
+                            }
+                            else
+                            {
+                                webSiteList.Add(strWebappUrl + site.RootWeb.ServerRelativeUrl);
+                            }
+                        }
+                    }
+                    catch (Exception ignore)
+                    {
+                        // Possible exception from Locked site on "Site.ReadLocked" call.
+                        // TODO : Add log message to web service response.
+                    }
+                }
             }
         }
     }
