@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  *
  * @author nitendra_thakur
  */
-public class ListState implements StatefulObject {
+public class ListState implements Comparable<ListState> {
   protected String key = null;
 
   /**
@@ -406,16 +406,12 @@ public class ListState implements StatefulObject {
    * Comparison is first on the lastMod date. If that produces a tie, the
    * primary key (the GUID) is used as tie-breaker.
    *
-   * @param o other ListState. If null, returns 1.
-   * @return the usual integer result: -1 if this object is less, 1 if it's
-   *         greater, 0 if equal (which should only happen for the identity
+   * @param other the other ListState
+   * @return -1 if this object is less, 1 if it is null or greater, 0
+   *         if equal (which should only happen for the identity
    *         comparison).
    */
-  public int compareTo(final StatefulObject o) {
-    ListState other = null;
-    if (o instanceof ListState) {
-      other = (ListState) o;
-    }
+  public int compareTo(ListState other) {
     if ((other == null) || (other.lastMod == null)) {
       return 1; // anything is greater than null
     }
