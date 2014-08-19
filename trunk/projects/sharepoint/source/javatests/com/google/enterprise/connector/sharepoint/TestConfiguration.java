@@ -123,6 +123,8 @@ public class TestConfiguration {
   public static String Site1_List1_URL;
   public static String Site1_List1_Item1_URL;
   public static String Site1_List1_Item2_URL;
+  public static int Site1_List1_Published_Item_Count;
+  public static int Site1_List1_Unpublished_Item_Count;
   public static String Site1_List2_GUID;
   public static String Site1_List2_URL;
   public static String Site1_List2_Item1_URL;
@@ -292,6 +294,10 @@ public class TestConfiguration {
     Site1_List1_URL = properties.getProperty("Site1_List1_URL");
     Site1_List1_Item1_URL = properties.getProperty("Site1_List1_Item1_URL");
     Site1_List1_Item2_URL = properties.getProperty("Site1_List1_Item2_URL");
+    Site1_List1_Published_Item_Count = new Integer(properties.getProperty(
+        "Site1_List1_Published_Item_Count")).intValue();
+    Site1_List1_Unpublished_Item_Count = new Integer(properties.getProperty(
+        "Site1_List1_Unpublished_Item_Count")).intValue();
     Site1_List2_GUID = properties.getProperty("Site1_List2_GUID");
     Site1_List2_URL = properties.getProperty("Site1_List2_URL");
     Site1_List2_Item1_URL = properties.getProperty("Site1_List2_Item1_URL");
