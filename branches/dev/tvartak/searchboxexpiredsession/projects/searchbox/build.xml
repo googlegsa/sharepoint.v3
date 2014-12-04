@@ -24,7 +24,7 @@
   <property name="saml.dir" value="../../google-saml-bridge-for-windows" />
 
   <!--PROPERTIES-->
-  <property name="version" value="3.2.0" />
+  <property name="version" value="3.2.9-X1" />
 
   <!--Directories-->
   <property name="projsb.dir" value="." />
