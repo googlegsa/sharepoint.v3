@@ -1,0 +1,22 @@
+.OPTION Explicit
+.Set DiskDirectory1="build"
+.Set CabinetNameTemplate=googlesearchboxsharepointsp2010.wsp
+manifest.xml
+"Common Files/GSA2SP.xsl"
+"Common Files/SP_Actual.xsl"
+.Set DestinationDir=Layouts
+SP2010/GSAForward.aspx
+SP2010/GSASearchresults.aspx
+"Common Files/dnav_gsbs.js"
+"Common Files/PostResponse.xml"
+.Set DestinationDir=CONTROLTEMPLATES
+SP2010/GSASearchArea.ascx
+.Set DestinationDir=IMAGES
+"Common Files/google_custom_search_watermark.gif"
+"Common Files/ic_search.png"
+"Common Files/less.gif"
+"Common Files/more.gif"
+"Common Files/remove.gif"
+.Set DestinationDir=GSAFeature
+"Common Files/GSAFeature/elements.xml"
+"Common Files/GSAFeature/Feature.xml"
