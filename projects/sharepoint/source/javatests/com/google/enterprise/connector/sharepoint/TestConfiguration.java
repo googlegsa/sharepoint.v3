@@ -123,8 +123,6 @@ public class TestConfiguration {
   public static String Site1_List1_URL;
   public static String Site1_List1_Item1_URL;
   public static String Site1_List1_Item2_URL;
-  public static int Site1_List1_Published_Item_Count;
-  public static int Site1_List1_Unpublished_Item_Count;
   public static String Site1_List2_GUID;
   public static String Site1_List2_URL;
   public static String Site1_List2_Item1_URL;
@@ -218,10 +216,13 @@ public class TestConfiguration {
   public static String ldapGroup1;
   public static String groupNameFormatInACE;
   public static String userNameFormatInACE;
-
+  private static String gsaHost;
   //Time zone;
   public static String timeZone;
 
+  private static int gsaPort;
+  private static String gsaAdmin;
+  private static String gsaAdminPassword;
   private static String socialOption;
 
   //UTF-8 support
@@ -294,10 +295,6 @@ public class TestConfiguration {
     Site1_List1_URL = properties.getProperty("Site1_List1_URL");
     Site1_List1_Item1_URL = properties.getProperty("Site1_List1_Item1_URL");
     Site1_List1_Item2_URL = properties.getProperty("Site1_List1_Item2_URL");
-    Site1_List1_Published_Item_Count = new Integer(properties.getProperty(
-        "Site1_List1_Published_Item_Count")).intValue();
-    Site1_List1_Unpublished_Item_Count = new Integer(properties.getProperty(
-        "Site1_List1_Unpublished_Item_Count")).intValue();
     Site1_List2_GUID = properties.getProperty("Site1_List2_GUID");
     Site1_List2_URL = properties.getProperty("Site1_List2_URL");
     Site1_List2_Item1_URL = properties.getProperty("Site1_List2_Item1_URL");
@@ -420,6 +417,11 @@ public class TestConfiguration {
 
     timeZone = properties.getProperty("timeZone");
 
+    gsaHost = properties.getProperty("GsaHost");
+    gsaPort = Integer.parseInt(properties.getProperty("GsaPort"));
+    gsaAdmin = properties.getProperty("GsaAdminUsername");
+    gsaAdminPassword = properties.getProperty("GsaAdminPassword");
+
     socialOption = properties.getProperty("SocialOption");
     UTF8SiteUrl = properties.getProperty("UTF8SiteUrl");
     publishingSiteUrl = properties.getProperty("PublishingSiteUrl");
@@ -457,6 +459,8 @@ public class TestConfiguration {
     configMap.put("cacheRefreshInterval", cacheRefreshInterval);
     configMap.put(SPConstants.SOCIAL_OPTION, socialOption);
     configMap.put(SPConstants.SOCIAL_USER_PROFILE_COLLECTION, "");
+    configMap.put(SPConstants.GSAADMINUSER, gsaAdmin);
+    configMap.put(SPConstants.GSAADMINPASSWORD, gsaAdminPassword);
 
     return configMap;
   }
@@ -848,6 +852,9 @@ public class TestConfiguration {
     connector.setSearchBase("DC=gdc-psl,DC=net");
     connector.setLdapConnectiionSettings(TestConfiguration.getLdapConnetionSettings());
     connector.setSocialOption(TestConfiguration.getSocialOption());
+    connector.setGsaAdminUser(TestConfiguration.getGsaAdmin());
+    connector.setGsaAdminPassword(TestConfiguration.getGsaAdminPassword());
+    connector.setGsaHostAddress(gsaHost);
     return connector;
   }
 
@@ -950,5 +957,17 @@ public class TestConfiguration {
 
   public static String getSocialOption() {
     return socialOption;
+  }
+
+  public static String getGsaAdmin() {
+    return gsaAdmin;
+  }
+
+  public static String getGsaAdminPassword() {
+    return gsaAdminPassword;
+  }
+
+  public static String getGsaHost() {
+    return gsaHost;
   }
 }

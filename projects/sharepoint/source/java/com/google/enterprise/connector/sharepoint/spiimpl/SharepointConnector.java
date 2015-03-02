@@ -196,7 +196,15 @@ public class SharepointConnector implements Connector,
     }
     Session socialSession = null;
     if (sharepointClientContext.getSocialOption() != SocialOption.NO) {
-      socialSession = socialConnector.login();
+      try {
+        socialSession = socialConnector.login();
+      } catch (RepositoryException e) {
+        LOGGER
+            .warning("Social Connection login failed with exception message: "
+                + e.getMessage());
+        LOGGER
+            .warning("This can be normal if the target Sharepoint server is pre 2010");
+      }
     }
     Session adGroupsSession = 
         !oldLdapBehavior && pushAcls ? adGroupsConnector.login() : null;
@@ -886,21 +894,31 @@ public class SharepointConnector implements Connector,
   }
 
   public void setGsaHostAddress(String gsaHost) {
-    LOGGER.warning("Deprecated gsaHostAddress property, set to "
-        + gsaHost + ", will be ignored");
+    socialConnector.setGsaHost(gsaHost);
+  }
+
+  public String getGsaHostAddress() {
+    return socialConnector.getGsaHost();
   }
 
   public void setGsaAdminUser(String gsaAdmin) {
-    LOGGER.warning("Deprecated gsaAdminUser property, set to "
-        + gsaAdmin + ", will be ignored");
+    socialConnector.setGsaAdminUser(gsaAdmin);
+  }
+
+  public String getGsaAdminUser() {
+    return socialConnector.getGsaAdminUser();
   }
 
   public void setGsaAdminPassword(String gsaPassword) {
-    LOGGER.warning("Deprecated gsaAdminPassword property will be ignored");
+    socialConnector.setGsaAdminPassword(gsaPassword);
   }
 
   public void setUserProfileCollection(String name) {
     socialConnector.setUserProfileCollection(name);
+  }
+
+  public String getUserProfileCollection(String name) {
+    return socialConnector.getUserProfileCollection();
   }
 
   /*

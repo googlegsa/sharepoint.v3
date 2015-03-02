@@ -49,4 +49,9 @@ public class SharepointSocialConstants {
    * Standard SharePoint property.
    */
   public static final String PROPNAME_PASTPROJECTS = "SPS_PastProjects";
+  /**
+   * Default port for GSA admin controller.
+   */
+  public static final int DEFAULT_GSAADMINPORT = 8000;
+  
 }

@@ -54,7 +54,11 @@ import java.util.logging.Logger;
 /**
  * Represents the state of a site. Can be persisted to XML and loaded again from
  * the XML. This would normally be done if the connector wants to be
- * restartable.
+ * restartable. The state of SharePoint traversal is composed almost entirely of
+ * the state of other classes, which must implement the StatefulObject
+ * interface. As of May 2007, there is only one StatefulObject -- ListState.
+ * Classes: GlobalState. related classes: StatefulObject (interface) ListState
+ * (implements StatefulObject)
  */
 public class GlobalState {
   private static final Logger LOGGER = Logger.getLogger(GlobalState.class.getName());
@@ -64,8 +68,11 @@ public class GlobalState {
   private FeedType feedType;
   /**
    * To keep track of WebStates, we keep two data structures: a TreeSet relying
-   * on the insertion time property of a WebState, and a HashMap on the
-   * primary key of the object (id for Webs).
+   * on the insertion time property of a StatefulObject, and a HashMap on the
+   * primary key of the object (id for Webs). The StatefulObject interface is
+   * often used to reduce our dependency on peculiarities of WebState. (At one
+   * time, it was thought that there would be other instances of StatefulObject,
+   * and in the future there could be again)
    */
   protected SortedSet<WebState> dateMap = new TreeSet<WebState>();
   protected Map<String, WebState> keyMap = new HashMap<String, WebState>();

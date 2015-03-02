@@ -48,7 +48,7 @@ import java.util.logging.Logger;
  *
  * @author nitendra_thakur
  */
-public class WebState implements Comparable<WebState> {
+public class WebState implements StatefulObject {
   private final ClientFactory clientFactory;
   private String webUrl = null;
   private String webId = null;
@@ -60,7 +60,7 @@ public class WebState implements Comparable<WebState> {
   // Flag indicating Web Application Policy Change. Default is false;
   private boolean webApplicationPolicyChange = false;
 
-  private final TreeSet<ListState> allListStateSet = new TreeSet<ListState>();
+  private TreeSet<ListState> allListStateSet = new TreeSet<ListState>();
   private final Map<String, ListState> keyMap = new HashMap<String, ListState>();
   private static final Logger LOGGER = Logger.getLogger(WebState.class.getName());
 
@@ -70,7 +70,7 @@ public class WebState implements Comparable<WebState> {
   private ListState currentList = null;
   private ListState lastCrawledList = null;
 
-  private final SPType spType;
+  private SPType spType;
 
   /**
    * The timestamp of when was the site crawled last time by the connector
@@ -102,7 +102,7 @@ public class WebState implements Comparable<WebState> {
   // for determining the crawl behavior of the web
   private WebCrawlInfo webCrawlInfo;
   
-  private final Set<String> spGroupsToResolve = new TreeSet<String>();
+  private Set<String> spGroupsToResolve;
 
   /**
    * For the sole purpose of loading WebState nodes as WebState objects when
@@ -237,17 +237,19 @@ public class WebState implements Comparable<WebState> {
    * Compares this WebState to another (for the Comparable interface).
    * Comparison is first on the insertion date. If that produces a tie, the
    * primary key (the WebID) is used as tie-breaker. The comparison is flipped
-   * to achieve descending ordering based on insertionTime.
+   * to achieve descending ordering based on insertionTime
    *
-   * @param other the other WebState
-   * @return -1 if other object is less than current, 1 if other is
-   *         null or greater than current, 0 if equal (which should
-   *         only happen for the identity comparison).
+   * @param o
+   *          other WebState. If null, returns 1.
+   * @return the usual integer result: -1 if other object is less than current,
+   *         1 if other is greater than current, 0 if equal (which should only
+   *         happen for the identity comparison).
    */
-  public int compareTo(WebState other) {
-    if (equals(other)) {
+  public int compareTo(final StatefulObject o) {
+    if (equals(o)) {
       return 0;
     }
+    final WebState other = (WebState) o;
     if (other == null) {
       return 1; // anything is greater than null
     }
@@ -294,6 +296,13 @@ public class WebState implements Comparable<WebState> {
    */
   public TreeSet<ListState> getAllListStateSet() {
     return allListStateSet;
+  }
+
+  /**
+   * @param inAllListStateSet
+   */
+  public void setAllListStateSet(final TreeSet<ListState> inAllListStateSet) {
+    allListStateSet = inAllListStateSet;
   }
 
   /**
@@ -531,6 +540,14 @@ public class WebState implements Comparable<WebState> {
   }
 
   /**
+   * @return the insertion time of the web. This is the ime when this web has
+   *         been discovered and added into the state
+   */
+  public DateTime getInsertionTime() {
+    return insertionTime;
+  }
+
+  /**
    * @param inInsertionTime
    */
   public void setInsertionTime(final DateTime inInsertionTime) {
@@ -552,10 +569,21 @@ public class WebState implements Comparable<WebState> {
   }
 
   /**
+   * @param title
+   */
+  public void setTitle(final String title) {
+    this.title = title;
+  }
+
+  /**
    * @return the sharepoint version for this web
    */
   public SPType getSharePointType() {
     return spType;
+  }
+
+  public void setSharePointType(SPType spType) {
+    this.spType = spType;
   }
 
   /**
@@ -610,8 +638,10 @@ public class WebState implements Comparable<WebState> {
     // the content to be re-crawled from start but from the point where it
     // had stopped. Having the liststates persisted to state file will
     // ensure the same
-    for (ListState list : allListStateSet) {
-      list.dumpStateToXML(handler, feedType);
+    if (null != allListStateSet || !allListStateSet.isEmpty()) {
+      for (ListState list : allListStateSet) {
+        list.dumpStateToXML(handler, feedType);
+      }
     }
 
     handler.endElement("", "", SPConstants.WEB_STATE);
@@ -748,13 +778,23 @@ public class WebState implements Comparable<WebState> {
   }
 
   /**
+   * @param spGroups SharePoint groups to resolve to set
+   */
+  public void setSPGroupsToResolve(Set<String> spGroups) {
+    this.spGroupsToResolve = spGroups;
+  }
+  
+  /**
    * Method to add SharePoint Group to resolve for WebState
    * @param spGroup to add
    */
   public void addSPGroupToResolve(String spGroup) {
+    if (spGroupsToResolve == null) {
+      spGroupsToResolve = new TreeSet<String>();      
+    }
     spGroupsToResolve.add(spGroup);
   }
-
+  
   /**
    * Method to remove SharePoint Group to resolve for WebState
    * @param spGroup to remove
@@ -762,6 +802,11 @@ public class WebState implements Comparable<WebState> {
    *         available for removal.
    */
   public boolean removeSPGroupToResolve(String spGroup) {
-    return spGroupsToResolve.remove(spGroup);
+    if (spGroupsToResolve != null && spGroupsToResolve.contains(spGroup)) {
+      spGroupsToResolve.remove(spGroup);
+      return true;
+    } else {
+      return false;
+    }
   }
 }

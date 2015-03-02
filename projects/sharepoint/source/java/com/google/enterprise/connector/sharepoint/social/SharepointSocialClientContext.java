@@ -26,7 +26,11 @@ public class SharepointSocialClientContext {
   private String userName;
   private String password;
   private String domain;
+  private String gsaHost;
+  private int gsaPort;
   private String connectorName;
+  private String gsaAdmin;
+  private String gsaAdminPassword;
   private SharepointConfig config;
   private SharepointClientContext spClientContext;
   private String userProfileCollection;
@@ -39,6 +43,19 @@ public class SharepointSocialClientContext {
 
   public SharepointConfig getConfig() {
     return config;
+  }
+
+  public void setGsaHost(String gsaHostInput) {
+    String host = gsaHostInput;
+    String[] parts = host.split(":");
+    if (parts.length > 1) {
+      gsaHost = parts[0];
+      setGsaPort(Integer.parseInt(parts[1]));
+    } else {
+      gsaHost = host;
+      setGsaPort(SharepointSocialConstants.DEFAULT_GSAADMINPORT);
+    }
+
   }
 
   public void setParentContext(SharepointClientContext parentCtxt) {
@@ -77,6 +94,22 @@ public class SharepointSocialClientContext {
     domain = dom;
   }
 
+  public String getGsaAdmin() {
+    return gsaAdmin;
+  }
+
+  public void setGsaAdmin(String gsaAdm) {
+    gsaAdmin = gsaAdm;
+  }
+
+  public String getGsaPassword() {
+    return gsaAdminPassword;
+  }
+
+  public void setGsaPassword(String gsaPass) {
+    gsaAdminPassword = gsaPass;
+  }
+
   public String getConnectorName() {
     return connectorName;
   }
@@ -95,6 +128,18 @@ public class SharepointSocialClientContext {
 
   public void setSiteUrl(String siteUrl) {
     this.siteUrl = siteUrl;
+  }
+
+  public String getGsaHost() {
+    return gsaHost;
+  }
+
+  public int getGsaPort() {
+    return gsaPort;
+  }
+
+  public void setGsaPort(int gsaPort) {
+    this.gsaPort = gsaPort;
   }
 
   public SharepointClientContext getSpClientContext() {

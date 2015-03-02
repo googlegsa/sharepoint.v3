@@ -232,8 +232,7 @@ public class SPListsWSTest extends TestCase {
     List<SPDocument> items =
         listsHelper.getListItems(this.testList, null, null, null);
     assertNotNull(items);
-    assertEquals(TestConfiguration.Site1_List1_Published_Item_Count, 
-        items.size());
+    assertEquals(3, items.size());
     System.out.println("[ getListItems() ] test passed.");
   }
 
@@ -245,8 +244,7 @@ public class SPListsWSTest extends TestCase {
     List<SPDocument> items =
         listsHelper.getListItems(this.testList, null, null, null);
     assertNotNull(items);
-    assertEquals(TestConfiguration.Site1_List1_Unpublished_Item_Count,
-        items.size());
+    assertEquals(3, items.size());
     System.out.println("[ getListItems() ] test passed");
   }
 

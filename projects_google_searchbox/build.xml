@@ -29,7 +29,6 @@
   <!--Directories-->
   <property name="projsb.dir" value="." />
   <property name="common.dir" value="./Common Files" />
-  <property name="build.dir" value="./build" />
   <property name="sp2013.dir" value="./SP2013" />
   <property name="sp2010.dir" value="./SP2010" />
   <property name="sp2007.dir" value="./SP2007" />
@@ -149,33 +148,6 @@
     <delete dir="${temprootdir.2007}"/>
     <delete dir="${temprootdir.2010}"/>
     <delete dir="${temprootdir.2013}"/>
-  </target>
-  
-  <target name="oscheck">
-    <condition property="isWindows">
-      <os family="windows" />
-    </condition>
-  </target>
-  
-  <target name="solution-package" depends="oscheck"
-       if="isWindows">
-    <delete>
-        <fileset dir="${build.dir}">
-            <include name="*.wsp"/>
-        </fileset>
-    </delete>
-    <exec executable="makecab">
-        <arg value="/f"/>
-        <arg value="build_2007.ddf"/>
-    </exec>
-    <exec executable="makecab">
-        <arg value="/f"/>
-        <arg value="build_2010.ddf"/>
-    </exec>
-    <exec executable="makecab">
-        <arg value="/f"/>
-        <arg value="build_2013.ddf"/>
-    </exec>
   </target>
 
 </project>

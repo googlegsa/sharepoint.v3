@@ -14,7 +14,6 @@
 
 package com.google.enterprise.connector.sharepoint.state;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.enterprise.connector.sharepoint.TestConfiguration;
 import com.google.enterprise.connector.sharepoint.client.SPConstants;
 import com.google.enterprise.connector.sharepoint.client.SharepointClientContext;
@@ -100,22 +99,5 @@ public class WebStateTest extends TestCase {
     System.out.println("Testing endRecrawl for WebState..");
     this.webState.endRecrawl(this.sharepointClientContext);
     System.out.println("[ endRecrawl() ] Test Completed. ");
-  }
-
-  public void testSPGroupsToResolve() {
-    assertEquals(ImmutableSet.of(), webState.getSPGroupsToResolve());
-    assertFalse(webState.removeSPGroupToResolve("foo"));
-
-    webState.addSPGroupToResolve("foo");
-    webState.addSPGroupToResolve("bar");
-    assertEquals(ImmutableSet.of("foo", "bar"),
-        webState.getSPGroupsToResolve());
-
-    assertTrue(webState.removeSPGroupToResolve("foo"));
-    assertEquals(ImmutableSet.of("bar"), webState.getSPGroupsToResolve());
-
-    assertFalse(webState.removeSPGroupToResolve("foo"));
-    assertTrue(webState.removeSPGroupToResolve("bar"));
-    assertEquals(ImmutableSet.of(), webState.getSPGroupsToResolve());
   }
 }

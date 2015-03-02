@@ -22,6 +22,7 @@ import com.google.enterprise.connector.spi.Connector;
 import com.google.enterprise.connector.spi.RepositoryException;
 import com.google.enterprise.connector.spi.RepositoryLoginException;
 import com.google.enterprise.connector.spi.Session;
+import com.google.enterprise.connector.spi.SocialCollectionHandler;
 import com.google.enterprise.connector.spi.TraversalManager;
 
 import java.util.logging.Logger;
@@ -79,6 +80,14 @@ public class SharepointSocialConnector implements Connector {
     return this.ctxt.getSiteUrl();
   }
 
+  public String getGsaHost() {
+    return this.ctxt.getGsaHost();
+  }
+
+  public void setGsaHost(String gsaHost) {
+    this.ctxt.setGsaHost(gsaHost);
+  }
+
   public void setConnectorName(String connector) {
     this.ctxt.setConnectorName(connector);
   }
@@ -87,13 +96,34 @@ public class SharepointSocialConnector implements Connector {
     return this.ctxt.getConnectorName();
   }
 
+  public void setGsaAdminUser(String gsaAdmin) {
+    this.ctxt.setGsaAdmin(gsaAdmin);
+  }
+
+  public String getGsaAdminUser() {
+    return this.ctxt.getGsaAdmin();
+  }
+
+  public void setGsaAdminPassword(String gsaAdminPassword) {
+    this.ctxt.setGsaPassword(gsaAdminPassword);
+  }
+
+  public String getGsaAdminPassword() {
+    return this.ctxt.getGsaPassword();
+  }
+
   public void init(SharepointClientContext parentCtxt) {
     ctxt.setParentContext(parentCtxt);
   }
 
   @Override
-  public Session login() {
+  public Session login() throws RepositoryLoginException, RepositoryException {
+
+    SocialCollectionHandler.initializeSocialCollection(ctxt.getGsaHost(),
+        ctxt.getGsaPort(), ctxt.getGsaAdmin(), ctxt.getGsaPassword(),
+        ctxt.getUserProfileCollection());
     return new SharepointSocialSession();
+
   }
 
   public class SharepointSocialSession implements Session {

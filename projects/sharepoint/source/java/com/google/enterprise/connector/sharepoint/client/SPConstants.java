@@ -507,6 +507,8 @@ public class SPConstants {
   public static final String FEED_UNPUBLISHED_CONTENT = "feedUnPublishedDocuments";
   public static final String FEED_UNPUBLISHED_CONTENT_LABEL = "feed_Un_Published_Documents";
   public static final CharSequence ALERTS_EQUALTO = "Alert=";
+  public static final String GSAADMINUSER = "gsaAdminUser";
+  public static final String GSAADMINPASSWORD = "gsaAdminPassword";
   public static final String SOCIAL_OPTION = "socialOption";
   public static final String SOCIAL_OPTION_YES = "yes";
   public static final String SOCIAL_OPTION_NO = "no";
