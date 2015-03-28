@@ -49,8 +49,7 @@ import java.util.logging.Logger;
  * This class provides an implementation of AuthenticationManager SPI provided
  * by CM for authenticating the search users. To understand how this module fits
  * into the Connector Manager framework refer to
- * http://code.google.com/apis/searchappliance
- * /documentation/connectors/110/connector_dev/cdg_authentication.html
+ * http://google-enterprise-connector-manager.googlecode.com/svn/docs/devguide/2.4.0/cdg_authentication.html
  */
 public class SharepointAuthenticationManager implements AuthenticationManager {
   private static final Logger LOGGER =
