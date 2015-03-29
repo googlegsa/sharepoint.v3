@@ -1,0 +1,1 @@
+The content in this document has been revised and moved to the [Guide to the SharePoint Connector Release 2.8](https://docs.google.com/a/google.com/document/pub?id=1fy7nObTIwkd61tLdsKhdqFD2ToMgbdI9jhE5PDoZkJ4). Please update your bookmarks to point to this new location
