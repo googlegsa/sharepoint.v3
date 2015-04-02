@@ -41,7 +41,6 @@ public class MockSiteDataWS implements SiteDataWS {
    *    information can be used to create the instance of current class
    *    web service endpoint is set to the default SharePoint URL stored
    *    in SharePointClientContext.
-   * @throws SharepointException
    */
   public MockSiteDataWS(final SharepointClientContext ctx) {
     sharepointClientContext = ctx;

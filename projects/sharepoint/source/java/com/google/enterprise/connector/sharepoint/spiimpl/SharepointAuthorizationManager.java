@@ -64,7 +64,7 @@ import java.util.regex.Pattern;
  * containers where the item is stored. If site collection information is cannot
  * be found for a document URL, the web service still works with some loss of
  * performance.
- * <p/>
+ * <p>
  * Every {@link AuthDataPacket} contains an array of {@link AuthData} which is
  * the basic authorization unit and corresponds to an item to be authorized. For
  * detailed structuring of AuthData and AuthDataPacket, refer to the web service
@@ -80,7 +80,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
    * under it. These site collection URLs are used for grouping authZ urls as
    * per their parent site collection URLs. The URLs are arranged in
    * non-increasing order of their length.
-   * <p/>
+   * <p>
    * TODO The best place to have this information is in the connector's state.
    * This can be a subset of {@link GlobalState#getAllWebStateSet()}
    */
@@ -94,7 +94,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
    * Hence, if there are multiple attachments of a single item are to be
    * authorized then it make sense to authorize the item itself and replicate
    * the authZ status for every attachments that it owns.
-   * <p/>
+   * <p>
    * This class acts as a key (hence, final and immutable) for storing
    * authorization dependency information in such case.
    */
@@ -231,7 +231,7 @@ public class SharepointAuthorizationManager implements AuthorizationManager {
    * instance of AuthData contains entire document specific details required for
    * authorization. AuthDataPacket helps to group AuthData units according to
    * their parent site collection.
-   * <p/>
+   * <p>
    * WS calls are made per web application. So, AuthDataPackets are finally
    * grouped as per the web application.
    *

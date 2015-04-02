@@ -169,7 +169,7 @@ public class UserDataStoreDAO extends SharePointDAO {
    * the passed in collection, only those memberships which are not in cache are
    * picked up for the SQL insert. The rest other memberships are removed from
    * the collection.
-   * <p/>
+   * <p>
    * Note: Hence, this method may (and often does) modify the passed in
    * collection. After the method returns, the caller can ensure that the
    * collection contains only those memberships which the connector really
@@ -294,8 +294,10 @@ public class UserDataStoreDAO extends SharePointDAO {
    * Synchronizes the membership information of all groups identified by the
    * keyset of the passed in map. The groups are picked up as group-namespace
    * view. The synchronization involves deleting all the persisted memberships
-   * and adding the most latest ones. </p> This synchronization is performed as
-   * one atomic operation using transaction.
+   * and adding the most latest ones.
+   * <p>
+   * This synchronization is performed as one atomic operation using
+   * a transaction.
    *
    * @param groupMembershipMap identifies groups and their corresponding most
    *          latest membership information

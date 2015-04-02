@@ -53,8 +53,6 @@ import java.util.logging.Logger;
  * has the inteliigence to know which web service should be consulted for some
  * purpose. This class has all the methods needed to get documents and sites
  * from the sharepoint server.
- *
- * @author nitendra_thakur
  */
 public class SharepointClient {
   private static final Logger LOGGER = Logger.getLogger(SharepointClient.class.getName());
@@ -176,16 +174,13 @@ public class SharepointClient {
    * constructs a {@link SPDocumentList} object to be returned to CM.
    * {@link WebState#getCurrentListstateIterator()} takes care of the fact that
    * same list is not scanned twice in case the traversal has been resumed.
-   * <p/>
    * <p>
    * At the end, fetches the ACL of all the documents contained in the
    * {@link SPDocumentList} object. Ensures that ACL are not re-fetched when
    * documents from previous batch traversal are being returned.
-   * </p>
    * <p>
    * <b>No documents are returned in case there are failures/errors while
    * retrieving ACLs</b>
-   * </p>
    * <p>
    * Logs the {@link OutOfMemoryError} when fetching ACLs. For retry, need to
    * edit properties in connectorInstance.xml and restart
@@ -195,7 +190,6 @@ public class SharepointClient {
    * <li>Both 'fetchACLInBatches' and 'aclBatchSizeFactor' can be edited from
    * connectorInstance.xml</li>
    * </ul>
-   * </p>
    *
    * @param globalState The {@link GlobalState} representing all the SharePoint
    *          sites. Primary required when constructing the

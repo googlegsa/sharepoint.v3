@@ -34,10 +34,8 @@ import javax.xml.transform.stream.StreamSource;
  * responses) before it reaches the client. The handler checks if there are
  * any invalid XML characters present in the response and filters out all such
  * characters as per the filter rules.
- * <p/>
+ * <p>
  * Refer Code Site Issue50
- *
- * @author nitendra_thakur
  */
 public class InvalidXmlCharacterHandler extends BasicHandler {
   private static final Logger LOGGER = Logger.getLogger(InvalidXmlCharacterHandler.class.getName());

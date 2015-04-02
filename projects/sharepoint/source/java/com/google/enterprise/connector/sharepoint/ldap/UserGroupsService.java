@@ -852,7 +852,6 @@ public class UserGroupsService implements LdapService {
    * fetch all SP groups.
    *
    * @param searchUser the searchUser
-   * @throws SharepointException
    */
   private ConcurrentHashMap<String, Set<Principal>>
       getAllADGroupsAndSPGroupsForSearchUser(String searchUser) {

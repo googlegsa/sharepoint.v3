@@ -26,7 +26,7 @@ import java.util.List;
  * query, the query must be added here along with {@literal
  * sqlQueries.properties}. Actual SQL queries are constructed using these
  * values.
- * <p/>
+ * <p>
  * Notes to Programmers: While specifying the placeholders, only consider the
  * parameter values which will be passes during batch execution. Entities and
  * Attributes required in the query must not be mentioned as placeholders.

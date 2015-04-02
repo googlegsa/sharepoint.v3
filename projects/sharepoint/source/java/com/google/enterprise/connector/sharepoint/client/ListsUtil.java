@@ -148,7 +148,7 @@ public abstract class ListsUtil {
    * @return the created query being used for WS call
    * @throws ParserConfigurationException
    * @throws IOException
-   * @throws ParseException
+   * @throws SAXException
    */
   public static MessageElement[] createQuery1(String listItemID)
       throws ParserConfigurationException, IOException, SAXException {
@@ -176,7 +176,7 @@ public abstract class ListsUtil {
    * @return the created query being used for WS call
    * @throws ParserConfigurationException
    * @throws IOException
-   * @throws ParseException
+   * @throws SAXException
    */
   public static MessageElement[] createQuery2(String listItemID)
       throws ParserConfigurationException, IOException, SAXException {
@@ -235,7 +235,7 @@ public abstract class ListsUtil {
    * @return the created query being used for WS call
    * @throws ParserConfigurationException
    * @throws IOException
-   * @throws ParseException
+   * @throws SAXException
    */
   public static MessageElement[] createQuery3(String listItemID)
       throws ParserConfigurationException, IOException, SAXException {
@@ -467,7 +467,7 @@ public abstract class ListsUtil {
   }
 
   /**
-   * Parses a typical &ltz:row..&gt node which are returned by SharePoint web
+   * Parses a typical &lt;z:row..&gt; node which are returned by SharePoint web
    * services for individual documents/listItems.
    *
    * @param listItem The one rs:rows node to be parsed.

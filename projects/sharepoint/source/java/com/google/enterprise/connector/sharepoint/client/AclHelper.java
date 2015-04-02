@@ -874,7 +874,7 @@ public class AclHelper {
    * trigger a re-crawl of all the list and items which are inheriting role
    * assignments.
    *
-   * @param wsResult @link{GssGetAclChangesSinceTokenResult}
+   * @param wsResult {@link GssGetAclChangesSinceTokenResult}
    * @param webstate The {@link WebState} for which the change detection is
    *          being done
    */
@@ -1175,8 +1175,9 @@ public class AclHelper {
 
   /**
    * Resolves a set of groups identified by their IDs and returns a map
-   * <groupID, latest_memberships>. This is useful when a group has been changed
-   * and its membership is to be re-synced with the user data store.
+   * &lt;groupID, latest_memberships&gt;. This is useful when a group has
+   * been changed and its membership is to be re-synced with the user data
+   * store.
    *
    * @param changedGroups IDs of the groups that is to be resolved
    * @return a map of group ID to latest memberships, the map could be 

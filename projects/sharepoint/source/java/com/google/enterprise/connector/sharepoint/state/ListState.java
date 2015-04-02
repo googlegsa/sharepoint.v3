@@ -45,8 +45,6 @@ import java.util.regex.Pattern;
 
 /**
  * Represents a SharePoint List/Library as a stateful object
- *
- * @author nitendra_thakur
  */
 public class ListState implements Comparable<ListState> {
   protected String key = null;
@@ -1548,7 +1546,7 @@ public class ListState implements Comparable<ListState> {
    * gives an scope to update the crawling status but not using it until an
    * specified time. These methods are helpful for the connectro where crawling
    * and feeding of documents are not one atomic operation.
-   * <p/>
+   * <p>
    * Note: The current usage of committing the ACL crawl status is idempotent
    * meaning, if i call this method consecutively more than once without setting
    * a new crawl status (i.e without calling

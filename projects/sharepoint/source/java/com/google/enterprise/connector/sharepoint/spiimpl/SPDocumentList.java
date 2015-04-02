@@ -36,8 +36,6 @@ import java.util.logging.Logger;
  * that are to be sent to GSA. This class holds all the things that should be
  * taken care of 1. when a document is actually sent to CM 2. when checkpoint is
  * received
- *
- * @author nitendra_thakur
  */
 public class SPDocumentList implements DocumentList {
 
@@ -106,7 +104,7 @@ public class SPDocumentList implements DocumentList {
    * The processing that are done when the document is actually sent to CM. Site
    * Alias mapping defined during connector configuration are used at this point
    * only.
-   * <p>
+   *
    * <ul>
    * <li>Updates the index position of the document in the document list
    * maintained here</li>
@@ -116,7 +114,6 @@ public class SPDocumentList implements DocumentList {
    * alias mapping is done as the docId never contains the aliased URL</li>
    * <li>Does not remove the document from the crawl queue of the list</li>
    * </ul>
-   * </p>
    */
   public Document nextDocument() throws SkippedDocumentException {
     SPDocument spDocument = null;
@@ -207,13 +204,12 @@ public class SPDocumentList implements DocumentList {
   /**
    * Marks a pointer in the state info maintained by the connector and saves it
    * to the disk.
-   * <p>
+   *
    * <ul>
    * <li>Processes the list to which the document belong to update the change
    * token value and removes the doc from the crawl queue</li>
    * <li>Saves the current in-memory state to the disk</li>
    * </ul>
-   * </p>
    */
   public String checkpoint() throws RepositoryException {
     LOGGER.log(Level.INFO, "checkpoint called. docsFedIndexPosition [ "
@@ -266,7 +262,7 @@ public class SPDocumentList implements DocumentList {
   /**
    * Processes and updates the liststate of the list for the given document
    * during checkpoint
-   * <p>
+   *
    * <ul>
    * <li>In case action was DELETE
    * <ul>
@@ -282,7 +278,6 @@ public class SPDocumentList implements DocumentList {
    * checks if any more docs are pending</li>
    * <li>The document is removed from the list's crawl queue</li>
    * </ul>
-   * </p>
    *
    * @param spDocument The document being processed. This document is the one
    *          from the list maintained here and not the one from crawlqueue of

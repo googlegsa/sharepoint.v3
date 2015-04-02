@@ -37,7 +37,6 @@ public class MockAclWS implements AclWS {
    *    information can be used to create the instance of current class
    *    web service endpoint is set to the default SharePoint URL stored
    *    in SharePointClientContext.
-   * @throws SharepointException
    */
   public MockAclWS(final SharepointClientContext ctx, String webUrl) {
     sharepointClientContext = ctx;

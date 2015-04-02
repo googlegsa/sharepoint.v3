@@ -29,12 +29,12 @@ import java.util.WeakHashMap;
  * minimize disk IO operation. This, however, does not make any assumption about
  * locality of reference, neither uses any specific algorithm for optimizing
  * data storage and access.
- * <p/>
+ * <p>
  * The cache does not impose any limits on the elements as such. Rather, leaves
  * the concern of freeing up the memory to the JVM. Java references are used for
  * this purpose which ensures that the cache size will never lead to any memory
  * issues. Hence, elements in cache are stored as soft references.
- * <p/>
+ * <p>
  * Views are used to optimize the access, updates and deletion of elements in
  * cache. These are analogous to the SQL views in the sense that they gives a
  * partial view of the original object. Along with every view, a list of
@@ -42,9 +42,7 @@ import java.util.WeakHashMap;
  * view based deletion which is a common case in User Data Store DAO
  * implementation. Views are stored as weak references because their lifetime
  * depends on the actual elements that are their in the cache.
- * <p/>
  *
- * @author nitendra_thakur
  * @param <T>
  */
 public abstract class CacheProvider<T> implements ICache<T> {
@@ -55,8 +53,6 @@ public abstract class CacheProvider<T> implements ICache<T> {
    * being cached. Since, the cache relies on soft and weak references, if the
    * caller will maintain any strong reference of the objects, the cache will
    * keep on growing.
-   *
-   * @author nitendra_thakur
    */
   protected interface View {
   }
@@ -65,8 +61,6 @@ public abstract class CacheProvider<T> implements ICache<T> {
    * A subclass of Java's SoftReference whose equality and ordering is decided
    * by its referent and not by the reference itself. Hence, a new definition
    * for equals() and hashCode() is given
-   *
-   * @author nitendra_thakur
    */
   private static final class SPSoftReference<T> extends SoftReference<T> {
     int hashcode;
@@ -109,8 +103,6 @@ public abstract class CacheProvider<T> implements ICache<T> {
    * A subclass of Java's WeakReference whose equality and ordering is decided
    * by its referent and not by the reference itself. Hence, a new definition
    * for equals() and hashCode() is given
-   *
-   * @author nitendra_thakur
    */
   private static final class SPWeakReference<T> extends WeakReference<T> {
     int hashcode;
@@ -183,7 +175,7 @@ public abstract class CacheProvider<T> implements ICache<T> {
    * separate from the actual cache. Implementors can specify what all views are
    * to be maintained by giving an appropriate implementation of
    * {@link CacheProvider#getViews(Object)}
-   * <p/>
+   * <p>
    * After this method call returns, caller can get the cached element using any
    * of the views that was registered.
    *

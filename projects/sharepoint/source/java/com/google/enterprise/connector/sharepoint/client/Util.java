@@ -97,7 +97,7 @@ public final class Util {
   /**
    * Returns calendar as a formatted String (yyyy-MM-dd HH:mm:ss'Z')
    *
-   * @param date The calendar input to be converted to a date time string
+   * @param cal The calendar input to be converted to a date time string
    * @return The formatted date time string
    */
   public static String calendarToSiteDataString(final Calendar cal){
@@ -727,7 +727,8 @@ public final class Util {
   }
 
   /**
-   * COnversion: domain\\username <=> username@domain
+   * Converts usernames in NetBIOS format (domain\\username) to DNS
+   * format (username@domain), and vice versa.
    *
    * @param userName
    */
