@@ -33,6 +33,22 @@
   <property name="downloads.dir" value="downloads" />
   <property name="cm-third-party.jar" value="${connector-manager.dir}/third-party/" />
 
+  <!-- =========================== PATHS =============================== -->
+  <path id="compile.prod.classpath">
+    <pathelement location="${spi.jarfile}" />
+    <fileset dir="${cm-third-party.jar}">
+      <include name="prod/*.jar" />
+    </fileset>
+  </path>
+
+  <path id="compile.tests.classpath">
+    <path refid="compile.prod.classpath"/>
+    <pathelement location="${classes}" />
+    <fileset dir="${cm-third-party.jar}">
+      <include name="tests/*.jar" />
+    </fileset>
+  </path>
+
   <!--Cobertura properties -->
   <property file="${config}/build_code_coverage.properties" />
   <path id="cobertura.classpath">
@@ -44,9 +60,7 @@
   <!-- =========================== TASKS =============================== -->
   <include file="${connector-manager.dir}/../svnbuild.xml" as="svn"/>
 
-  <target name="build" depends="clean,init, compile, jar,
-    download-adgroups-connector">
-  </target>
+  <target name="build" depends="init,compile,compile_tests,jar"/>
 
   <target name="init" >
     <mkdir dir="${build}" />
@@ -69,15 +83,7 @@
       <!-- CM and GData JAR Class-Path references are not available. -->
       <compilerarg line="-Xlint -Xlint:-serial -Xlint:-path"/>
       <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
-      <classpath>
-        <pathelement location="${spi.jarfile}" />
-        <pathelement location="${config}" />
-        <fileset dir="${cm-third-party.jar}">
-          <include name="prod/*.jar" />
-        </fileset>
-        <pathelement 
-            location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
-      </classpath>
+      <classpath refid="compile.prod.classpath"/>
     </javac>
     <copy todir="${classes}" overwrite="yes">
       <fileset dir="${src}">
@@ -95,47 +101,32 @@
       <!-- CM and GData JAR Class-Path references are not available. -->
       <compilerarg line="-Xlint -Xlint:-serial -Xlint:-path"/>
       <bootclasspath path="${COMPILE_BOOTCLASSPATH}"/>
-      <classpath>
-        <pathelement location="${spi.jar.dir}/connector.jar" />
-        <pathelement location="${tests.jarfile}" />
-        <pathelement location="${spi.jarfile}" />
-        <pathelement location="${config}" />
-        <pathelement location="${classes}" />
-        <fileset dir="${cm-third-party.jar}">
-          <include name="prod/*.jar" />
-          <include name="tests/*.jar" />
-        </fileset>
-        <pathelement 
-            location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
-      </classpath>
+      <classpath refid="compile.tests.classpath" />
     </javac>
-
   </target>
 
-  <target name="run_tests" depends="compile_tests,instrument">
+  <target name="run_tests">
+    <echo message="The run_tests target is deprecated. Use test instead." />
+  </target>
+
+  <target name="test" depends="build,instrument">
     <property name="test.suite" value="*" />
     <junit printsummary="yes" haltonfailure="no"
            failureproperty="${ant.project.name}.failure">
       <!-- The instrumented classes reference classes used by the Cobertura runtime, so
             Cobertura and its dependencies must be on your classpath. -->
-      <classpath location="${instrumented.dir}" />
-      <classpath location="${classes.dir}" />
-      <classpath refid="cobertura.classpath" />
       <classpath>
+        <pathelement location="${instrumented.dir}" />
+        <path refid="cobertura.classpath" />
+        <path refid="compile.tests.classpath"/>
         <pathelement location="${spi.jar.dir}/connector.jar" />
-        <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
         <pathelement location="${jarfile}" />
-        <fileset dir="${cm-third-party.jar}">
-          <include name="prod/*.jar" />
-          <include name="tests/*.jar" />
-        </fileset>
         <pathelement location="${config}" />
         <pathelement 
             location="../sharepoint/dist/jarfile/connector-sharepoint.jar" />
         <pathelement location="${tests.classes}" />
         <pathelement location="${tests.src}" />
-        <pathelement path="${java.class.path}" />
         <pathelement path="${build.jdbc.classpath}" />
       </classpath>
       <formatter type="xml" />
@@ -188,7 +179,7 @@
     </jar>
   </target>
 
-  <target name="download-adgroups-connector" depends="jar,javadoc">
+  <target name="downloads" depends="jar,javadoc">
     <zip destfile="${downloads.dir}/${downloads.prefix}-src.zip">
       <zipfileset dir="." prefix="${downloads.prefix}">
         <include name="javadoc/**" />
@@ -255,23 +246,20 @@
                bottom       ="Copyright 2009 Google Inc.">
       <arg value="${javadoc.doclint}"/>
       <classpath>
+        <path refid="compile.prod.classpath"/>
         <pathelement location="${spi.jar.dir}/connector.jar" />
-        <pathelement location="${spi.jar.dir}/connector-spi.jar" />
         <pathelement location="${tests.jarfile}" />
         <pathelement location="${spi.jar.dir}/connector-util.jar" />
-        <fileset dir="${cm-third-party.jar}">
-          <include name="prod/*.jar" />
-        </fileset>
         <pathelement location="${jarfile}" />
         <pathelement location="${config}" />
         <pathelement location="${tests.classes}" />
         <pathelement location="${tests.src}" />
-        <pathelement path="${java.class.path}" />
       </classpath>
     </javadoc>
   </target>
 
-  <target name="everything" description="Do it all!" depends="clean,build,run_tests" />
+  <target name="everything" description="Do it all!"
+          depends="clean,build,test,downloads" />
 
   <!-- Cobertura Tasks -->
 
@@ -287,7 +275,6 @@
     <mkdir dir="${coverage.html.dir}" />
   </target>
 
-
   <target name="compile_code_coverage" 
           depends="init_code_coverage,compile,compile_tests" />
 
@@ -296,6 +283,10 @@
       <!--  The following line causes instrument to ignore any  source line
             containing a reference to log4j, for the purposes of coverage reporting. -->
       <ignore regex="org.apache.log4j.*" />
+
+      <!-- Cobertura needs prod class dependencies during instrumentation. -->
+      <auxClassPath refid="compile.prod.classpath"/>
+
       <fileset dir="${classes.dir}">
         <!-- Instrument all the application classes, but don't instrument the test classes. -->
         <include name="com/google/enterprise/connector/adgroups/*.class" />
@@ -318,7 +309,6 @@
     </cobertura-report>
   </target>
 
-
   <target name="clean_code_coverage" description="Remove all files created by the build/test process.">
     <delete dir="${classes.dir}" />
     <delete dir="${instrumented.dir}" />
@@ -326,5 +316,9 @@
     <delete file="cobertura.log" />
     <delete file="cobertura.ser" />
   </target>
-  <target name="run_code_coverage" depends="run_tests,coverage-report,alternate-coverage-report" description="Compile, instrument ourself, run the tests and generate JUnit and coverage reports."/>
+
+  <target name="run_code_coverage"
+          depends="test,coverage-report,alternate-coverage-report"
+          description="Compile, instrument ourself, run the tests and generate JUnit and coverage reports."/>
+
 </project>
