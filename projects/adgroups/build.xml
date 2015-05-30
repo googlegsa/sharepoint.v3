@@ -23,7 +23,6 @@
   <property name="tests.src" value="source/javatests" />
   <property name="tests.build" value="build/tests" />
   <property name="tests.classes" value="${tests.build}/classes" />
-  <property name="tests.todir" value="tests_outdir" />
   <property name="jar.dir" value="${dist}/jarfile" />
   <property name="jarfile" value="${jar.dir}/connector-adgroups.jar" />
   <property name="connector-manager.dir" value="${CONNECTOR_MANAGER_DIR}" />
@@ -68,7 +67,6 @@
     <mkdir dir="${classes}" />
     <mkdir dir="${tests.build}" />
     <mkdir dir="${tests.classes}" />
-    <mkdir dir="${tests.todir}" />
     <mkdir dir="${jar.dir}" />
     <mkdir dir="${downloads.dir}" />
     <mkdir dir="${javadoc}" />
@@ -220,7 +218,6 @@
     <delete dir="${build}" />
     <delete dir="${dist}" />
     <delete dir="${downloads.dir}" />
-    <delete dir="${tests.todir}" />
     <delete dir="${javadoc}" />
   </target>
 

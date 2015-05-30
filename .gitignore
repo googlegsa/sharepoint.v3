@@ -1,0 +1,9 @@
+build/
+dist/
+downloads/
+javadoc/
+reports/
+
+cobertura.ser
+
+/projects/sharepoint/source/java/com/google/enterprise/connector/sharepoint/generated/
