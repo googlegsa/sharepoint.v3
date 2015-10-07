@@ -7,7 +7,18 @@ Connector for Active Directory Groups. The following sections describe
 the release in detail and provide information that supplements the
 main documentation.
 
-Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+For information about the latest version of the Connector for Active
+Directory Groups, see the version 4 overview page and GitHub project:
+
+    http://googlegsa.github.io/adaptor/index.html
+
+    https://github.com/googlegsa/activedirectory
+
+For more about version 3, see the version 3 GitHub project, part of
+the Connector for SharePoint:
+
+    https://github.com/googlegsa/sharepoint.v3
+
 
 Release 3.2.8, June 16, 2014
 ============================
@@ -45,7 +56,7 @@ used with this version. This version works with Connector Manager
 version 3.2.6 and above. Versions lower than 3.2.6 of the Connector
 Manager will not work correctly with this version of the connector.
 
-Java SE 5.0 is no longer supported. Java 6 or later is required. To
+Java SE 5.0 is no longer supported. Java 6 or 7 is required. To
 use an external database, a JDBC 4.0 compliant driver is required.
 
 For optimal performance, if you are upgrading from a previous 3.0.x

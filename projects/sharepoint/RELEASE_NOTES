@@ -1,10 +1,23 @@
+
            Google Search Appliance Connector for SharePoint
                             Release Notes
 
-This document contains the release notes for Google Search Appliance Connector for SharePoint.
-The following sections describe the release in detail and provide information that supplements the main documentation.
+This document contains the release notes for Google Search Appliance
+Connector for SharePoint. The following sections describe the release
+in detail and provide information that supplements the main
+documentation.
 
-Web Site: http://code.google.com/p/google-enterprise-connector-sharepoint/
+For information about the latest version of the Connector for SharePoint,
+see the version 4 overview page and GitHub project:
+
+    http://googlegsa.github.io/adaptor/index.html
+
+    https://github.com/googlegsa/sharepoint
+
+For more about version 3, see the version 3 GitHub project:
+
+    https://github.com/googlegsa/sharepoint.v3
+
 
 Release 3.2.10, February 03, 2015
 =================================
@@ -21,10 +34,6 @@ existing data with this new release.
 
 Summary of Changes
 ------------------
-Java SE 5.0 is no longer supported. Java 6 or later is required.
-
-SharePoint 2003 and WSS 2.0 are no longer supported.
-
 The Google Services for SharePoint (GSS) component has been renamed to
 Connector Services for SharePoint in Google Search Appliance.
 Some occurrences of the old name may still appear, but refer to the
@@ -46,6 +55,9 @@ This version works with Connector for SharePoint 3.2.8. Versions lower
 than 3.2.8 of the connector will not work correctly with this version of 
 Connector Services.
 
+This product is designed to function with Microsoft SharePoint Server
+2010 and 2013. SharePoint Server 2007 and WSS 3.0 are no longer supported.
+
 Manually upgrade an existing connector and Connector Services for SharePoint
 ----------------------------------------------------------------------------
 The steps to manually upgrade an existing connector or a Connector Services for 
@@ -59,7 +71,7 @@ and Linux environments.
 --Microsoft Windows Server 2012
 --Microsoft Windows Server 2008 R2
 --Microsoft Windows Server 2008
---Microsoft Windows Server 2003
+--Red Hat Enterprise Linux 7
 --Red Hat Enterprise Linux 6
 --Red Hat Enterprise Linux 5
 
@@ -79,10 +91,6 @@ instructions on how to use existing data with this new release.
 
 Summary of Changes
 ------------------
-Java SE 5.0 is no longer supported. Java 6 or later is required.
-
-SharePoint 2003 and WSS 2.0 are no longer supported.
-
 The Google Services for SharePoint (GSS) component has been renamed to
 Connector Services for SharePoint in Google Search Appliance.
 Some occurrences of the old name may still appear, but refer to the
@@ -125,6 +133,11 @@ upgrade to Connector Services for SharePoint 3.2.8
 This version works with Active Directory Groups connector 3.2.0 and above.
 Versions lower than 3.2.0 of Active Directory Groups connector are not
 compatible with version 3.2.8 of the SharePoint connector.
+
+Java SE versions 6 and 7 are supported.
+
+This product is designed to function with Microsoft SharePoint Server
+2010 and 2013. SharePoint Server 2007 and WSS 3.0 are no longer supported.
 
 Manually upgrade an existing connector and Connector Services for SharePoint
 ----------------------------------------------------------------------------

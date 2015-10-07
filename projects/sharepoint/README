@@ -6,27 +6,33 @@ repositories, such as enterprise content management systems. An
 enterprise content management (ECM) system provides a central
 repository for large numbers of documents.
 
-The Google Search Appliance Connector for SharePoint enables the
-appliance to traverse documents and attachments on SharePoint sites.
-The connector supports SPS 2003 (SharePoint Portal Server), MOSS 2007
-(Microsoft Office SharePoint Server), WSS 2.0, WSS 3.0 (Windows
-SharePoint Services), SP 2010 (SharePoint Server 2010), and SharePoint
-Foundation 2010. The Metadata blacklist and whitelist for the
-documents has been externalized.
+The Connector for SharePoint provides access to documents and document
+metadata stored in the SharePoint Server developed by the Microsoft
+Corporation.
 
-The Google Search Appliance Connector for Microsoft SharePoint
-communicates with the SharePoint Server using the SharePoint Web services
-and feed SharePoint content to the search appliance.
+The connector communicates with the SharePoint Server using the
+SharePoint Web services.
+
+This source code repository is for version 3 of the connector. For
+information about the latest version of the Connector for SharePoint,
+see the version 4 overview page and GitHub project:
+
+    http://googlegsa.github.io/adaptor/index.html
+
+    https://github.com/googlegsa/sharepoint
 
 
 Documentation Links
 
     * Documentation for the Google Search Appliance Connectors
-      http://code.google.com/apis/searchappliance/documentation/connectors/index.html
+      https://support.google.com/gsa/topic/4566684?ref_topic=2709671
 
     * Google Search Appliance Connector for SharePoint
-      http://code.google.com/p/google-enterprise-connector-sharepoint/
+      Version 4: https://github.com/googlegsa/sharepoint
+      Version 3: https://github.com/googlegsa/sharepoint.v3
 
+    * Google Search Appliance
+      https://support.google.com/gsa/
 
 Licensing
 
@@ -35,11 +41,10 @@ Licensing
 
       A copy of the licensing terms is available in a file called COPYING.
 
-
 Source code for 3rd party libraries
 
-      SharePoint connector uses various 3rd party open source
+      The Connector for SharePoint uses various 3rd party open source
       libraries. The versions of these libraries are embedded in the
       names of the files. If you have trouble locating the source code
-      of any of the libraries used by SharePoint connector, you can
-      file an issue on the SharePoint connector project site.
+      of any of the libraries used by the Connector for SharePoint,
+      you can file an issue on this project site.
