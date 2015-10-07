@@ -1,0 +1,21 @@
+Welcome to the Google Search Appliance Connector for Active Directory Groups
+
+This source code repository is for version 3 of the connector. For
+information about the latest version of the Connector for Active
+Directory Groups, see the version 4 overview page and GitHub project:
+
+    http://googlegsa.github.io/adaptor/index.html
+
+    https://github.com/googlegsa/activedirectory
+
+Documentation Links
+
+    * Documentation for the Google Search Appliance Connectors
+      https://support.google.com/gsa/topic/4566684?ref_topic=2709671
+
+    * Google Search Appliance Connector for Active Directory Groups
+      Version 4: https://github.com/googlegsa/activedirectory
+      Version 3: https://github.com/googlegsa/sharepoint.v3
+
+    * Google Search Appliance
+      https://support.google.com/gsa/

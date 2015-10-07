@@ -1,0 +1,33 @@
+Welcome to the Google Search Appliance Connector for SharePoint
+
+This source code repository is for version 3 of the connector. For
+information about the latest version of the Connector for SharePoint
+and related components, see the version 4 overview page and GitHub
+projects:
+
+    http://googlegsa.github.io/adaptor/index.html
+
+    * Connector for Active Directory Groups
+      https://github.com/googlegsa/activedirectory
+
+    * Connector for SharePoint
+      https://github.com/googlegsa/sharepoint
+
+Version 3 components in this repository:
+
+    * adgroups - Connector for Active Directory Groups
+    * gsarks - Resource Kit for SharePoint
+               (installer for non-connector components)
+    * searchbox - Search Box for SharePoint
+    * sharepoint - Connector for SharePoint
+
+Documentation Links
+
+    * Documentation for the Google Search Appliance Connectors
+      https://support.google.com/gsa/topic/4566684?ref_topic=2709671
+
+    * Google Search Appliance Connector for SharePoint
+      https://github.com/googlegsa/sharepoint.v3
+
+    * Google Search Appliance
+      https://support.google.com/gsa/
